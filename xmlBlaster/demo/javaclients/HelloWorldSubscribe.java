@@ -3,7 +3,6 @@ package javaclients;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.ErrorCode;
@@ -17,7 +16,6 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
@@ -202,7 +200,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "Waiting on update ...");
 
          if (interactiveUpdate) {
-            try { Thread.currentThread().sleep(1000000000); } catch( InterruptedException i) {}
+            try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
          }
 
          if (unSubscribe) {
@@ -275,7 +273,7 @@ public class HelloWorldSubscribe implements I_Callback
 
       if (this.updateSleep > 0L) {
          log.info(ME, "Sleeping for " + this.updateSleep + " millis ...");
-         try { Thread.currentThread().sleep(this.updateSleep); } catch( InterruptedException i) {}
+         try { Thread.sleep(this.updateSleep); } catch( InterruptedException i) {}
          log.info(ME, "Waking up.");
       } else if (this.interactiveUpdate) {
          log.info(ME, "Hit a key to return from update() (we are blocking the server callback) ...");

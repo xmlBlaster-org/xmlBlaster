@@ -96,7 +96,8 @@ public class CallbackSocketDriver implements I_CallbackDriver
       return this.callbackAddress.getRawAddress();
    }
 
-   public void init(Global glob, CallbackAddress callbackAddress) {
+   public void init(Global glob, CallbackAddress callbackAddress) 
+      throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("socket");
       this.ME = "CallbackSocketDriver" + this.glob.getLogPrefixDashed();

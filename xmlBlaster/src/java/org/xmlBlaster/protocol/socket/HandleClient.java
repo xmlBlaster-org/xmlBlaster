@@ -16,11 +16,8 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
 
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 
 /**
@@ -227,6 +224,7 @@ public class HandleClient extends Executor implements Runnable
                               driver.getGlobal().removeNativeCallbackDriver(cbKey);
                               oldCallback = null;
                            }
+                           if (this.log.TRACE) this.log.trace(ME, "run: register new callback driver: '" + cbKey + "'");
                            driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                         }
                         else {

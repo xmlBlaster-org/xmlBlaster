@@ -113,7 +113,7 @@ abstract public class DispatchConnectionsHandler
          for (int ii=0; ii<tmpList.size(); ii++) {
             boolean found = false;
             for (int jj=0; jj<cbAddr.length; jj++) {
-               if (((DispatchConnection)tmpList.get(ii)).getAddress().equals(cbAddr[jj])) {
+               if (((DispatchConnection)tmpList.get(ii)).getAddress().isSameAddress(cbAddr[jj])) {
                   found = true;
                   break;
                }
@@ -129,9 +129,11 @@ abstract public class DispatchConnectionsHandler
          for (int ii=0; ii<cbAddr.length; ii++) {
             boolean found = false;
             for (int jj=0; jj<tmpList.size(); jj++) {
-               if (cbAddr[ii].equals(((DispatchConnection)tmpList.get(jj)).getAddress())) {
+               DispatchConnection tmpCon = (DispatchConnection)tmpList.get(jj);
+               if (cbAddr[ii].isSameAddress((tmpCon).getAddress())) {
                   found = true;
-                  conList.add(tmpList.get(jj)); // reuse
+                  tmpCon.setAddress(cbAddr[ii]);
+                  conList.add(tmpCon); // reuse
                   break;
                }
             }

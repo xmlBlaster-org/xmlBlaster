@@ -80,6 +80,10 @@ abstract public class DispatchConnection implements I_Timeout
       this.address = address;
    }
 
+   public void setAddress(AddressBase address) {
+      if (this.log.TRACE) this.log.trace(ME, "setAddress: configuration has changed (with same url) set to new address object");
+   }
+
    /**
     * @return A nice name for logging
     */

@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.engine;
 
+import java.util.HashMap;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -29,7 +31,6 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
-import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
@@ -45,6 +46,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
    private final static String ME = "SessionPersistencePlugin";
    private final static String PERSISTENCE_ID = "__persitenceId";
+   /** when recovering all subscriptions must be 'noInitialUpdate' because otherwise
+    * we would get messages which we already got in the past
+    */
+   private final static String ORIGINAL_INITIAL_UPDATES = "__originalInitialUpdates";
    
    private PluginInfo info;
    private Global global;
@@ -63,32 +68,14 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private Object sync = new Object();
    
    /**
-    * @param sessionId the original private sessionId
-    * @return the private sessionId currently used (could be different since corba
-    * creates a new one on each reconnect)
+    * 
+    * @return hash map containing the secret sessionId of the entries recovered 
+    *         as values and as keys the corresponding absolute name for the session (String)
+    * @throws XmlBlasterException
     */
-   /*
-   private String getCurrentSessionId(String sessionId) {
-      String ret = (String)this.newFromOldSessionIds.get(sessionId);
-      if (ret != null) return ret;
-      return sessionId;
-   }      
-   */
-   /**
-    * @param sessionId the current private sessionId used
-    * @return the private sessionId used on the first connect (could be different since corba
-    * creates a new one on each reconnect)
-    */
-   /*
-   private String getOriginalSessionId(String sessionId) {
-      String ret = (String)this.oldFromNewSessionIds.get(sessionId);
-      if (ret != null) return ret;
-      return sessionId;
-   }      
-   */
-   
-   private void recoverSessions() throws XmlBlasterException {
+   private HashMap recoverSessions() throws XmlBlasterException {
       I_MapEntry[] entries = this.sessionStore.getAll();
+      HashMap sessionIds = new HashMap();
       boolean isInternal = true;
       for (int i=0; i < entries.length; i++) {
          if (entries[i] instanceof SessionEntry) {
@@ -96,7 +83,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionEntry entry = (SessionEntry)entries[i];
             ConnectQosData data = this.connectQosFactory.readObject(entry.getQos());
             ConnectQosServer qos = new ConnectQosServer(this.global, data, isInternal);
-            if (this.log.TRACE) this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
+            SessionName sessionName = data.getSessionName();
+            String sessionId = data.getSessionQos().getSecretSessionId();
+            sessionIds.put(sessionName.getAbsoluteName(), sessionId); 
+            if (this.log.TRACE) this.log.trace(ME, "recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "'");
+            // if (this.log.TRACE) this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
             ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos);
             if (this.log.DUMP) this.log.dump(ME, "recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
          }
@@ -104,6 +95,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the storage should be of type 'SessionEntry' but is of type'" + entries[i].getClass().getName() + "'");
          }
       }
+      return sessionIds;
    }
 
 
@@ -113,23 +105,27 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * 
     * @throws XmlBlasterException
     */   
-   private void recoverSubscriptions() throws XmlBlasterException {
+   private void recoverSubscriptions(HashMap sessionIds) throws XmlBlasterException {
       I_MapEntry[] entries = this.subscribeStore.getAll();
       boolean isInternal = true;
+      
       for (int i=0; i < entries.length; i++) {
          if (entries[i] instanceof SubscribeEntry) {
             // do connect
             SubscribeEntry entry = (SubscribeEntry)entries[i];
             String qos = entry.getQos();
             QueryQosData qosData = this.queryQosFactory.readObject(qos);
+            boolean initialUpdates = qosData.getInitialUpdateProp().getValue();
+            if (initialUpdates) {
+               qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(this.global, ORIGINAL_INITIAL_UPDATES, "boolean", null, "false"));
+               qosData.setWantInitialUpdate(false);               
+            }
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
-
-            // TODO better performance by storing the SessionName separately
-            // then the qos has not to be parsed
-            SessionInfo info = this.global.getRequestBroker().getAuthenticate().getSessionInfo(sessionName);
-            SessionQos sessionQos = info.getConnectQos().getSessionQos();
-            String sessionId = sessionQos.getSecretSessionId();
-            this.global.getAuthenticate().getXmlBlaster().subscribe(sessionId, entry.getKey(), qos);
+            String sessionId = (String)sessionIds.get(sessionName.getAbsoluteName());
+            if (sessionId == null)
+               throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
+      
+            this.global.getAuthenticate().getXmlBlaster().subscribe(sessionId, entry.getKey(), qosData.toXml());
          }
          else {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSubscriptions: the entry in the storage should be of type 'SubscribeEntry'but is of type'" + entries[i].getClass().getName() + "'");
@@ -197,8 +193,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          // register before having retreived the data since needed to fill info objects with persistenceId
          this.global.getRequestBroker().getAuthenticate().addClientListener(this);
          this.global.getRequestBroker().addSubscriptionListener(this);
-         recoverSessions();
-         recoverSubscriptions();
+         HashMap sessionIds = recoverSessions();
+         recoverSubscriptions(sessionIds);
       }
    }
 
@@ -331,6 +327,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          long uniqueId = clientProperty.getLongValue();
          if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: filling OLD uniqueId into subscriptionInfo '" + uniqueId + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
+         ClientProperty prop = subscribeQosData.getClientProperty(ORIGINAL_INITIAL_UPDATES);
+         if (prop != null) {
+            subscribeQosData.getClientProperties().remove(ORIGINAL_INITIAL_UPDATES);
+            subscribeQosData.setWantContent(true);
+         }
       }
    }
 

@@ -21,6 +21,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
@@ -94,15 +95,23 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          ConnectQos connectQos = new ConnectQos(glob, senderName, passwd); // == "<qos>...</qos>";
          // set the persitent connection 
          connectQos.setPersitent(this.persistent);
-
-         // Setup fail save handling ...
+         // Setup fail save handling for connection ...
          Address addressProp = new Address(glob);
          addressProp.setDelay(reconnectDelay); // retry connecting every 2 sec
          addressProp.setRetries(-1);       // -1 == forever
          addressProp.setPingInterval(-1L); // switched off
          con.registerConnectionListener(this);
-
          connectQos.setAddress(addressProp);
+         
+         // setup failsafe handling for callback ...
+         CallbackAddress cbAddress = new CallbackAddress(this.glob);
+         cbAddress.setRetries(-1);
+         cbAddress.setPingInterval(-1);
+         cbAddress.setDelay(1000L);
+         connectQos.addCallbackAddress(cbAddress);
+
+
+
          this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
          con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
       }
@@ -188,8 +197,11 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    }
 
 
-   public void testPersitentSession() {
+   public void testPersitentSessionWithStop() {
       testPersitentSession(true);
+   }
+
+   public void testPersitentSessionWithRunlevelChange() {
       testPersitentSession(false);
    }
 
@@ -210,7 +222,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                }
                else {
                   log.info(ME, "changing run level but continue with publishing ...");
-                  this.serverThread.changeRunlevel("1", true);
+                  this.serverThread.changeRunlevel(0, true);
                }
             }
             if (i == numStart) {
@@ -221,7 +233,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                }
                else {
                   log.info(ME, "changing runlevel again to runlevel 9. Expecting the previous published two messages ...");
-                  this.serverThread.changeRunlevel("9", true);
+                  this.serverThread.changeRunlevel(9, true);
                   log.info(ME, "xmlBlaster runlevel 9 reached, waiting on tail back messsages");
                }
                
@@ -281,7 +293,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       }
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
       testSub.setUp();
-      testSub.testPersitentSession();
+      testSub.testPersitentSessionWithStop();
+      testSub.tearDown();
+      testSub.setUp();
+      testSub.testPersitentSessionWithRunlevelChange();
       testSub.tearDown();
    }
 }

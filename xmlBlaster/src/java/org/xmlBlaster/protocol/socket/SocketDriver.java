@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.36 2003/10/03 19:36:10 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.37 2004/02/05 20:29:09 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -19,8 +19,6 @@ import org.xmlBlaster.protocol.I_Driver;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -197,7 +195,7 @@ public class SocketDriver extends Thread implements I_Driver
       start(); // Start the listen thread
 
       while (!listenerReady) {
-         try { Thread.currentThread().sleep(10); } catch( InterruptedException i) {}
+         try { Thread.sleep(10); } catch( InterruptedException i) {}
       }
    }
 

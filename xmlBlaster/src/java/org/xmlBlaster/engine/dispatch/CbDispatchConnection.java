@@ -60,7 +60,6 @@ public final class CbDispatchConnection extends DispatchConnection
 
    /** Load the appropriate protocol driver */
    public final void loadPlugin() throws XmlBlasterException {
-      
       // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
       //if (address.getId().equalsIgnoreCase("NATIVE")) {
       this.cbKey = address.getType() + address.getRawAddress();
@@ -71,7 +70,7 @@ public final class CbDispatchConnection extends DispatchConnection
          if (this.cbDriver == null)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, callback protocol type='" + address.getType() + "' is not supported");
             
-         glob.addNativeCallbackDriver(this.cbKey, this.cbDriver);
+         // glob.addNativeCallbackDriver(this.cbKey, this.cbDriver);
          if (log.TRACE) log.trace(ME, "Created callback plugin '" + this.address.getType() + "'");
       }
       else {
@@ -192,6 +191,8 @@ public final class CbDispatchConnection extends DispatchConnection
     * On reconnect polling try to establish the connection. 
     */
    protected final void reconnect() throws XmlBlasterException {
+      // this.connectionsHandler.createDispatchConnection(address);
+this.log.error(ME, "reconnect:_driver='" + this.cbDriver.getName() + "' instance='" + this.cbDriver);
       this.cbDriver.init(glob, (CallbackAddress)address);
    }
 

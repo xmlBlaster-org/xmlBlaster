@@ -41,6 +41,7 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
     */
    public DispatchConnection createDispatchConnection(AddressBase address) throws XmlBlasterException {
       CbDispatchConnection c = new CbDispatchConnection(glob, this, address);
+      if (this.log.TRACE) this.log.trace(ME, "createDispatchConnection for address='" + address.toXml() + "'");
       c.loadPlugin();
       return c;
    }

@@ -3,13 +3,13 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.14 2004/02/02 22:13:29 laghi Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.15 2004/02/05 20:29:09 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.I_Main;
-import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 
 import java.net.URLClassLoader;
@@ -241,8 +241,13 @@ public class EmbeddedXmlBlaster
     * @exception XmlBlasterException for invalid run level
     * @see org.xmlBlaster.engine.runlevel.RunlevelManager#changeRunlevel(int, boolean)
     */
-   public int changeRunlevel(String newRunlevel, boolean force) throws XmlBlasterException {
-      int numErrors = getMain().getGlobal().getRunlevelManager().changeRunlevel(org.xmlBlaster.engine.runlevel.RunlevelManager.RUNLEVEL_STANDBY, force);
+   public int changeRunlevel(int newRunlevel, boolean force) throws XmlBlasterException {
+      int numErrors = 1;
+      if (newRunlevel == RunlevelManager.RUNLEVEL_HALTED ||
+          newRunlevel == RunlevelManager.RUNLEVEL_STANDBY ||
+          newRunlevel == RunlevelManager.RUNLEVEL_CLEANUP ||
+          newRunlevel == RunlevelManager.RUNLEVEL_RUNNING)
+         numErrors = getMain().getGlobal().getRunlevelManager().changeRunlevel(newRunlevel, force);
       return numErrors;
    }
 
