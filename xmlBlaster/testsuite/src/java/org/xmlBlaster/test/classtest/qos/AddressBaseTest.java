@@ -8,7 +8,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import junit.framework.*;
 
 /**
- * Test MsgQosSaxFactory. 
+ * Test AddressBase. 
  * <p />
  * All methods starting with 'test' and without arguments are invoked automatically
  * <p />
