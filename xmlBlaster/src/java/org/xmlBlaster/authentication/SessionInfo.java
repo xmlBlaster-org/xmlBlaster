@@ -582,5 +582,18 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.persistenceId = persistenceId;
    }
 
+   /**
+    * Sets the DispachManager belonging to this session to active or inactive.
+    * It is initially active. Setting it to false temporarly inhibits dispatch of
+    * messages which are in the callback queue. Setting it to true starts the 
+    * dispatch again.
+    * @param dispatchActive
+    */
+   public void setDispatcherActive(boolean dispatcherActive) {
+      this.dispatchManager.setDispatcherActive(dispatcherActive);
+   }
    
+   public boolean getDispatcherActive() {
+      return this.dispatchManager.isDispatcherActive();
+   }
 }

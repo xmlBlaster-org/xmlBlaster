@@ -45,4 +45,13 @@ public class SessionInfoProtector implements I_AdminSession
    public final String getKillSession() throws XmlBlasterException {
       return this.sessionInfo.getKillSession();
    }
+   
+   public void setDispatcherActive(boolean dispatcherActive) {
+      this.sessionInfo.setDispatcherActive(dispatcherActive);
+   }
+   
+   public boolean getDispatcherActive() {
+      return this.sessionInfo.getDispatcherActive();
+   }
+     
 }

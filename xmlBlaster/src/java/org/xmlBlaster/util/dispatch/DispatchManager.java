@@ -13,7 +13,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
@@ -71,6 +70,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private int burstModeMaxEntries = -1;
    private long burstModeMaxBytes = -1L;
 
+   /** async delivery is activated only when this flag is 'true'. Used to temporarly inhibit dispatch of messages */
+   private boolean dispatcherActive = true;
 
    /**
     * @param msgQueue The message queue which i use (!!! TODO: this changes, we should pass it on every method where needed)
@@ -488,7 +489,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void putPost(I_QueueEntry queueEntry) throws XmlBlasterException {
       //log.error(ME, "DEBUG ONLY: putPost() is not implemented");
       if (!this.isSyncMode) {
-         notifyAboutNewEntry();
+         if (this.dispatcherActive) notifyAboutNewEntry();
          if (((MsgQueueEntry)queueEntry).wantReturnObj()) {
             // Simulate return values, and manipulate missing informations into entries ...
             I_QueueEntry[] entries = new I_QueueEntry[] { queueEntry };
@@ -504,7 +505,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void putPost(I_QueueEntry[] queueEntries) throws XmlBlasterException {
       //log.error(ME, "DEBUG ONLY: putPost([]) is not implemented");
       if (!this.isSyncMode) {
-         notifyAboutNewEntry();
+         if (this.dispatcherActive) notifyAboutNewEntry();
          if (queueEntries.length > 0 && ((MsgQueueEntry)queueEntries[0]).wantReturnObj()) {
             // Simulate return values, and manipulate missing informations into entries ...
             getDispatchConnectionsHandler().createFakedReturnObjects(queueEntries, Constants.STATE_OK, Constants.INFO_QUEUED);
@@ -876,4 +877,24 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       return sb.toString();
    }
+   
+   /**
+    * Inhibits/activates the delivery of asynchronous dispatches of messages.
+    * @param dispatcherActive
+    */
+   public void setDispatcherActive(boolean dispatcherActive) {
+      this.dispatcherActive = dispatcherActive;
+      if (this.dispatcherActive) notifyAboutNewEntry();
+   }
+   
+   /**
+    * 
+    * @return true if the dispacher is currently activated, i.e. if it is 
+    * able to deliver asynchronousy messages from the callback queue.
+    */
+   public boolean isDispatcherActive() {
+      return this.dispatcherActive;
+   }
+   
+   
 }
