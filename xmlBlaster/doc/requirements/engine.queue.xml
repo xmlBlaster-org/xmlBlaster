@@ -100,19 +100,11 @@
 
       <qos>
          ...
-         <!-- default SessionQueue callback: Use CORBA to send messages back -->
-         <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
-            IOR:00011200070009990000....
-         </callback>
-      </qos>
-
-
-      <qos>
-         ...
-         <!-- SubjectQueue callback: Use email -->
-         <queue relating='subject' maxMsg='1600' expires='360000000' onOverflow='discardOldest'>
-            <callback type='EMAIL'>
-               et@mars.universe
+         <!-- SessionQueue callback: Use CORBA to send messages back -->
+         <queue relating='subject' maxMsg='1600' expires='360000000'
+                onOverflow='block' onFailure='deadLetter'>
+            <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
+               IOR:00011200070009990000....
             </callback>
          </queue>
       </qos>
@@ -120,7 +112,19 @@
 
       <qos>
          ...
-         <callback type='IOR'> <!-- SessionQueue callback: Use CORBA to send messages back -->
+         <!-- specify subjectQueue parameters -->
+         <queue relating='subject' maxMsg='1600' expires='360000000'
+                onOverflow='deadLetter'>
+         </queue>
+      </qos>
+
+
+      <qos>
+         ...
+         <!-- SessionQueue callback:
+              Use CORBA to send messages back with default queue parameters
+         -->
+         <callback type='IOR'>
             IOR:00011200070009990000....
             <compress type='gzip' minSize='1000' />
                       <!-- compress messages bigger 1000 bytes before sending them to me -->
@@ -157,7 +161,7 @@
             </callback>
          </queue>
 
-         <callback type='EMAIL'>  <!-- callback specification is always unrelated -->
+         <callback type='EMAIL' onFailure='deadLetter'>
             tolkien@mars.universe <!-- Sends messages to tolkien, with default queue settings -->
          </callback>
 
@@ -178,11 +182,14 @@
    </example>
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
+   <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
+   <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <see type="REQ">engine.callback</see>
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

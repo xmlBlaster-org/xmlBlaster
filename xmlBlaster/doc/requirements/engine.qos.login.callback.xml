@@ -141,7 +141,7 @@
          </callback>
 
          <!-- A full blown example: -->
-         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+         <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='block' onFailure='deadLetter'>
             <callback type='XML-RPC' sessionId='4e56890ghdFzj0' pingInterval='60000' useForSubjectQueue='true'>
                http:/www.mars.universe:8080/RPC2
                <ptp>true</ptp>
@@ -191,9 +191,12 @@
    <see type="REQ">protocol</see>
    <see type="REQ">engine.callback</see>
    <see type="API">org.xmlBlaster.client.LoginQosWrapper</see>
+   <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
+   <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

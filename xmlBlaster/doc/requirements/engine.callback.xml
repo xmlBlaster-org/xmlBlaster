@@ -128,15 +128,41 @@
    </description>
    <example lang="Java">
       <![CDATA[
+         
+         <!--
+            Example:
+
+            Use CORBA to callback messages, on error retry 5 times pausing 60000 millis between retries
+            
+            Deliver the given sessionId with update() to the client so that the client can trust us.
+            
+            Ping the client every 60000 millis (one minute) to check if he is alive.
+            
+            The given callback may be used by the subjectQueue as well
+            
+            Compress messages bigger 1000 bytes before sending them to me.
+
+            Collect messages for 400 milliseconds and update them in one callback (burst mode)
+            This update mode is a 'transaction' for all collected messages
+          -->
+         
+         <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true'>
+            IOR:00044550005...
+            <compress type='gzip' minSize='1000'/>
+            <burstMode collectTime='400'/>
+         </callback>
       ]]>
    </example>
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
+   <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
+   <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <see type="REQ">engine.queue</see>
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
