@@ -3,13 +3,15 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.17 2002/06/15 16:15:47 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.18 2002/06/18 18:08:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.UriAuthority;
+import org.xmlBlaster.util.Uri;
 import java.util.*;
 import java.net.*;
 import java.io.*;
@@ -28,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -95,7 +97,7 @@ public class HttpIORServer extends Thread
                log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
                break;
             }
-            HandleRequest hh = new HandleRequest(log, accept, knownRequests);
+            HandleRequest hh = new HandleRequest(glob, log, accept, knownRequests);
          }
       }
       catch (java.net.UnknownHostException e) {
@@ -156,6 +158,7 @@ public class HttpIORServer extends Thread
 class HandleRequest extends Thread
 {
    private String ME = "HandleRequest";
+   private final Global glob;
    private final LogChannel log;
    private final Socket sock;
    private final Hashtable knownRequests;
@@ -164,8 +167,9 @@ class HandleRequest extends Thread
 
    /**
     */
-   public HandleRequest(LogChannel log, Socket sock, Hashtable knownRequests)
+   public HandleRequest(Global glob, LogChannel log, Socket sock, Hashtable knownRequests)
    {
+      this.glob = glob;
       this.log = log;
       this.sock = sock;
       this.knownRequests = knownRequests;
@@ -208,6 +212,26 @@ class HandleRequest extends Thread
          String method = toks.nextToken();   // "GET"
          String resource = toks.nextToken(); // "/AuthenticationService.ior"
          String version = toks.nextToken();  // "HTTP/1.0"
+
+         { // TEST ONLY:
+            Uri uri = null;
+            try {
+               // TODO: use UriAuthority to parse the request and forward it to CommandManager
+               //UriAuthority uriAuthority = new UriAuthority(resource);
+
+               // To test a telnet with
+               // GET http://joe:mypasswd@develop:3412/admin/?key=XX HTTP/1.0
+
+               // From browser we only get "/admin/?key=XX" -> 'joe:mypasswd' is not delivered!!
+               uri = new Uri(glob, resource);
+               if (log.CALL) log.call(ME, "Request is" + uri.toXml());
+            }
+            catch (XmlBlasterException e) {
+               log.warn(ME, e.toString());
+               errorResponse(oStream, "HTTP/1.1 400 Bad Request", e.toString(), true);
+               return;
+            }
+         }
 
          // RFC 2068 enforces minimum implementation GET and HEAD
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("HEAD")) {
