@@ -7,6 +7,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**
  * This class wraps the return string of
@@ -62,6 +63,13 @@ public class ConnectReturnQos {
    }
    public ConnectReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
       this(glob, glob.getConnectQosFactory().readObject(xmlQos));
+   }
+
+   /**
+    * Access the wrapped data holder (for internal use only). 
+    */
+   public ConnectQosData getData() {
+      return this.connectQosData;
    }
 
    /**
@@ -122,6 +130,15 @@ public class ConnectReturnQos {
    public CbQueueProperty getSubjectQueueProperty() {
       return this.connectQosData.getSubjectQueueProperty();
    }
+
+   /**
+    * Returns the connection state directly after the connect() method returns. 
+    * @return Usually ConnectionStateEnum.ALIVE or ConnectionStateEnum.POLLING
+    */
+   public ConnectionStateEnum getInitialConnectionState() {
+      return this.connectQosData.getInitialConnectionState();
+   }
+
    /**
     * @return true A client has reconnected to an existing session
     */

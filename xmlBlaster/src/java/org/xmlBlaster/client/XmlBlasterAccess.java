@@ -171,6 +171,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * @param qos Your configuration desire
     * @param updateListener If not null a callback server will be created and 
     *        callback messages will be routed to your updateListener.update() method. 
+    * @param ConnectReturnQos with all informations, never null
+    * @exception On connection failure
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public synchronized ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
@@ -212,6 +214,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
          // Try to connect to xmlBlaster ...
          this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
+         this.connectReturnQos.getData().setInitialConnectionState(this.deliveryManager.getDeliveryConnectionsHandler().getState());
       }
       catch (XmlBlasterException e) {
          shutdown(null, false, true, true);

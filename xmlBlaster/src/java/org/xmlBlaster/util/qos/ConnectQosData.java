@@ -22,6 +22,7 @@ import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import java.util.Vector;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
 {
    private final String ME = "ConnectQosData";
    protected transient I_ConnectQosFactory factory;
+   private ConnectionStateEnum initialConnectionState = ConnectionStateEnum.UNDEF;
 
    /** 
     * PtP messages wanted? True is default
@@ -556,6 +558,21 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
          return "NoLoginName";
       else
          return this.securityQos.getUserId();
+   }
+
+   /**
+    * Returns the connection state directly after the connect() method returns (client side only). 
+    * @return Usually ConnectionStateEnum.ALIVE or ConnectionStateEnum.POLLING
+    */
+   public ConnectionStateEnum getInitialConnectionState() {
+      return this.initialConnectionState;
+   }
+
+   /**
+    * Set the connection state directly after the connect() (client side only). 
+    */
+   public void setInitialConnectionState(ConnectionStateEnum initialConnectionState) {
+      this.initialConnectionState = initialConnectionState;
    }
 
    /** 
