@@ -875,7 +875,11 @@ omni_thread::get_time(unsigned long* abs_sec, unsigned long* abs_nsec,
 
 
 int
-omni_thread::posix_priority(priority_t pri)
+omni_thread::posix_priority(priority_t
+#ifdef PthreadSupportThreadPriority
+   pri
+#endif
+   )
 {
 #ifdef PthreadSupportThreadPriority
     switch (pri) {
