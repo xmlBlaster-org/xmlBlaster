@@ -3,12 +3,14 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.10 2002/03/28 15:18:33 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.11 2002/05/06 07:33:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import java.util.Vector;
 
@@ -124,11 +126,12 @@ public class SubscribeQosWrapper extends QosWrapper
    /** For testing: java org.xmlBlaster.client.SubscribeQosWrapper */
    public static void main(String[] args)
    {
+      Global glob = new Global(args);
       try {
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
          qos.setContent(false);
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", "800"));
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "3.2", "a<10"));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "3.2", new Query(glob, "a<10")));
          System.out.println(qos.toXml());
       }
       catch (Throwable e) {

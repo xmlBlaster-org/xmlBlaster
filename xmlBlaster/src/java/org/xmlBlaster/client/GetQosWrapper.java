@@ -3,14 +3,17 @@ Name:      GetQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: GetQosWrapper.java,v 1.4 2002/03/28 15:18:50 ruff Exp $
+Version:   $Id: GetQosWrapper.java,v 1.5 2002/05/06 07:33:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.engine.mime.Query;
+
 import java.util.Vector;
 
 
@@ -97,10 +100,11 @@ public class GetQosWrapper extends QosWrapper
    /** For testing: java org.xmlBlaster.client.GetQosWrapper */
    public static void main(String[] args)
    {
+      Global glob = new Global(args);
       try {
          GetQosWrapper qos = new GetQosWrapper();
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", "800"));
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "3.2", "a<10"));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "3.2", new Query(glob, "a<10")));
          System.out.println(qos.toXml());
       }
       catch (Throwable e) {
