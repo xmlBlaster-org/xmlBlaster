@@ -991,8 +991,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                         I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
                                                      filterQos[jj].getType(),
                                                      filterQos[jj].getVersion(),
-                                                     xmlKey.getContentMime(),
-                                                     xmlKey.getContentMimeExtended());
+                                                     msgUnitWrapper.getContentMime(),
+                                                     msgUnitWrapper.getContentMimeExtended());
                         if (log.TRACE) log.trace(ME, "get("+xmlKeyExact.getOid()+") filter=" + filter + " qos=" + getQos.toXml());
                         if (filter != null && filter.match(sessionInfo,
                                                      msgUnitWrapper.getMsgUnit(),
