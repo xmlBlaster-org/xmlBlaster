@@ -21,7 +21,8 @@ and XML Shemas (xmlBlaster.xsd) are not yet supported.
 <xmlBlaster method="publish" sessionId="12aa3z45X" xmlns="http://www.xmlBlaster.org">
 
    <key oid="myMessageId" contentType="text/plain">
-      <!-- Some user specified meta information for this content -->
+      <!-- Some user specified meta information for this content
+           which is queryable with XPATH -->
    </key>
 
    <content link="" xmlns="">
@@ -97,8 +98,9 @@ c. How to do a login?
       </qos>
    </xmlBlaster>
 
-   This message could respond with the sessionId for a synchronous http
-   invocation, but it would not be very smart with asynchronous emails.
+   This message could respond with the 'sessionId' for a synchronous http
+   invocation (allowing to recognize the client again on following
+   invocations), but it would not be very smart to use with asynchronous emails.
    With emails sending loginName and passwd with each invocation
    may be more convenient.
 
