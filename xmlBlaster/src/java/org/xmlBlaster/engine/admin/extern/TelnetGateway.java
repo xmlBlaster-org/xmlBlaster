@@ -361,7 +361,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    public String help() {
       return CRLF +
              "  XmlBlaster telnet administration" + CRLF +
-             "   connect [name] [passwd]  Login with you login name and password" + CRLF +
+             "   connect [name] [passwd]  Login with your login name and password" + CRLF +
              "   get [query]              Get property or xmlBlaster state" + CRLF +
              "   set [query]              Set a property or change xmlBlaster setting" + CRLF +
              "   time                     Display current time on server" + CRLF +
