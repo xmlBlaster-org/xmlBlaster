@@ -61,6 +61,11 @@
             24000         <!-- Default is no erasing (similar to pass 0 milliseconds) -->
          </erase>
 
+         <isVolatile>false</isVolatile> 
+                          <!-- A non-volatile messages stays in memory as long as the server runs or until it is erased explicitly -->
+                          <!-- A volatile messages exists only during publish and processing it (doing the updates). -->
+                          <!-- Default is false -->
+
          <isDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
                           <!-- If you use this feature, you normally give the message a well known key oid -->
                           <!-- Default is transient -->

@@ -3,7 +3,14 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.79b [???, ?? 2000]
 ================================
 
- - Change of behaviour: 
+ - Added support for volatile messages (thanks to Peter Antman).
+   A volatile messages exists only during publish and processing it (doing the updates).
+   A non-volatile messages (which is default) stays in memory as long as the server runs.
+
+ - erase() now reports the correct number of erased messages
+   if some of the messages did not exist.
+
+ - Change of behaviour (thanks to Stefan Nickisch):
    If a callback to a client fails, the subscription will be
    automatically canceled for this client.
 
@@ -14,7 +21,7 @@ Changes for 0.79b [???, ?? 2000]
  - Added _release() calls to avoid JacORB memory leak on shutdown()
 
  - Bug fixed in JDBC adapter, NullPointerException because of
-   missing namespace.
+   missing namespace (thanks to Juergen Freidling).
 
  - Subscribe Bug fixed (reported by Stefan Nickisch)
    If a subscriber crashes without logout, this will disturb all other

@@ -2,6 +2,7 @@
 
 <!ELEMENT qos (destination*,
                expires?,
+               isVolatile?,
                isDurable?,
                forceUpdate?,
                readonly?,
@@ -20,6 +21,8 @@
 
 <!-- QoS-Flags PUBLISH -->
 <!ELEMENT expires (#PCDATA)>
+
+<!ELEMENT isVolatile (#PCDATA)>
 
 <!ELEMENT isDurable EMPTY>
 
