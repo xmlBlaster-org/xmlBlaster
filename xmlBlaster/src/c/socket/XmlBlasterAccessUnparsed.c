@@ -852,6 +852,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       }
       /* this thread will deliver the update message to the client code,
          Note: we need a thread pool cache for better performance */
+      xa->threadCounter++;
       threadRet = pthread_create(&tid, (const pthread_attr_t *)0,
                         (void * (*)(void *))runUpdate, (void *)container);
       if (threadRet != 0) {
@@ -864,9 +865,9 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
          xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, exception->message);
          ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
          cb->sendResponseOrException(ret, cb, socketDataHolder, msgUnitArrP, exception);
+         xa->threadCounter--;
          return;
       }
-      xa->threadCounter++;
 
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
