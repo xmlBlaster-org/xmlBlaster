@@ -165,6 +165,10 @@ namespace org { namespace xmlBlaster { namespace util {
          "The remote connection is not established and we have given up to poll for it."
    );
 
+   const ErrorCode USER_WRONG_API_USAGE("user.wrongApiUsage",
+         "Please check your code."
+   );
+
    const ErrorCode USER_CONFIGURATION("user.configuration",
          "Login to xmlBlaster failed due to configuration problems."
    );
