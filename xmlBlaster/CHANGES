@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o Property loading cleanup in Global.java 
+   Thanks to Peter Antman for the discussion
+
  o Fixed build.xml 'dist' task to include HSQLDB
 
  o Bugfix in persistence layer for huge messages.
