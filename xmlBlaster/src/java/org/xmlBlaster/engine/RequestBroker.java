@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.91 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.92 2001/09/08 22:50:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.91 $
+ * @version $Revision: 1.92 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -61,7 +61,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * The login name "__RequestBroker_internal__" is reserved!<br />
     * TODO: security discussion
     */
-   private final ClientInfo unsecureClientInfo = new ClientInfo("__RequestBroker_internal__");
+   private final ClientInfo unsecureClientInfo;
 
    /**
     * Helper to handle the subscriptions
@@ -106,6 +106,8 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
+      unsecureClientInfo = new ClientInfo("__RequestBroker_internal__");
+      
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
 

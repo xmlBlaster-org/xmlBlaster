@@ -88,7 +88,7 @@ public class ClientInfo
     * <p />
     * @param loginName The unique login name
     */
-   public ClientInfo(String loginName)
+   public ClientInfo(String loginName) throws XmlBlasterException
    {
       instanceId = instanceCounter++;
       PluginManager pLdr = PluginManager.getInstance();
