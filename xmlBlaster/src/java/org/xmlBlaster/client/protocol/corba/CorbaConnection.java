@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.1 2000/10/15 23:28:05 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.2 2000/10/18 21:21:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -19,8 +19,6 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.util.I_InvocationRecorder;
-import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
@@ -31,7 +29,10 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
-import org.omg.CosNaming.*;
+import org.omg.CosNaming.NamingContext;
+import org.omg.CosNaming.NameComponent;
+import org.omg.CosNaming.NamingContextHelper;
+
 import java.applet.Applet;
 
 
@@ -65,7 +66,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -593,7 +594,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode).
+    * Enforced by I_XmlBlasterConnection interface (fail save mode).
     * see explanations of publish() method.
     * @see xmlBlaster.idl
     */
@@ -611,7 +612,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
@@ -634,7 +635,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * If the server disappears you get an exception.
     * This call will not block.
     * <p />
-    * Enforced by I_InvocationRecorder interface (fail save mode)
+    * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
