@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides a wrapper defining a database connection
- * Version:   $Id: ConnectionDescriptor.java,v 1.2 2000/06/18 15:22:01 ruff Exp $
+ * Version:   $Id: ConnectionDescriptor.java,v 1.3 2000/07/03 16:39:50 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -94,7 +94,7 @@ public class ConnectionDescriptor {
          }
          else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:command")) {
-            if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
+            if (curNode.getFirstChild().getNodeType() == Node.CDATA_SECTION_NODE) {
                command = curNode.getFirstChild().getNodeValue();
             }
          }

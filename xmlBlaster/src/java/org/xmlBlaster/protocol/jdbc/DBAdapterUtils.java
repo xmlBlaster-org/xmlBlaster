@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.4 2000/07/03 13:38:22 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.5 2000/07/03 16:39:50 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -44,7 +44,7 @@ public class DBAdapterUtils {
    }
 
    /**
-    * Creates a DOM representation of the result set. 
+    * Creates a DOM representation of the result set.
     * @param rootnode
     * @param rownode
     * @param rowlimit
@@ -147,10 +147,7 @@ public class DBAdapterUtils {
 
                if (Log.TRACE) Log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", columnValue='" + columnValue + "'");
                ElementNode col = (ElementNode) doc.createElement(columnName);
-               //CDATASection col = (CDATASection) doc.createCDATASection(columnName);
-
-               Text        cvalue = (Text) doc.createTextNode(columnValue);
-               //CDATASection cvalue = (CDATASection) doc.createCDATASection(columnName);
+               CDATASection cvalue = (CDATASection) doc.createCDATASection(columnValue);
 
                col.appendChild(cvalue);
                row.appendChild(col);
