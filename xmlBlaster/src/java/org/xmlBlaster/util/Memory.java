@@ -3,7 +3,7 @@ Name:      Memory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Memory.java,v 1.1 1999/12/21 12:02:55 ruff Exp $
+Version:   $Id: Memory.java,v 1.2 1999/12/21 12:09:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -55,16 +55,18 @@ public class Memory
    public static final String getStatistic()
    {
       StringBuffer statistic = new StringBuffer();
-      statistic.append("Total memory available = ");
+      statistic.append("Total memory allocated = ");
       statistic.append(byteString(Runtime.getRuntime().totalMemory()));
+      statistic.append(".");
       statistic.append(" Free memory available = ");
       statistic.append(byteString(Runtime.getRuntime().freeMemory()));
+      statistic.append(".");
       return statistic.toString();
    }
 
 
    /**
-    * Testsuite for Memory class. 
+    * Testsuite for Memory class.
     * <p />
     * Invoke: java org.xmlBlaster.util.Memory
     */

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.15 1999/12/11 14:44:43 ruff Exp $
+Version:   $Id: Main.java,v 1.16 1999/12/21 12:09:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -94,6 +94,9 @@ public class Main
                          e.toString() +
                          "\nYou don't need the naming service, i'll switch to builtin http IOR download");
          }
+
+         Log.info(ME, Memory.getStatistic());
+
          Log.info(ME, "####################################");
          Log.info(ME, "# xmlBlaster is ready for requests #");
          Log.info(ME, "####################################");
