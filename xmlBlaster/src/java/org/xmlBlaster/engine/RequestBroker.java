@@ -1209,7 +1209,8 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             checkExistingSubscriptions(sessionInfo, xmlKey, msgUnitHandler, publishQos);
 
             // First all callback calls must be successful - the CbWorker checks it as well
-            if (msgUnitHandler.getMessageUnitWrapper().getEnqueueCounter() == 0)
+            if (msgUnitHandler.getMessageUnitWrapper().getPublishQos().isVolatile() &&
+                msgUnitHandler.getMessageUnitWrapper().getEnqueueCounter() == 0)
                eraseVolatile(sessionInfo, msgUnitHandler);
 } // synchronized
          }
