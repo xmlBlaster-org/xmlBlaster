@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.2 2000/11/05 19:17:57 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.3 2000/11/05 21:23:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -150,8 +150,11 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       subscribers = new Subscriber[numClients];
 
+      long usedBefore = getUsedServerMemory();
+
       Log.info(ME, "Setting up " + numClients + " subscriber clients ...");
       Log.removeLogLevel("INFO");
+      stopWatch = new StopWatch();
       for (int ii=0; ii<numClients; ii++) {
          Subscriber sub = new Subscriber();
          sub.loginName = "Joe-" + ii;
@@ -176,9 +179,29 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
          subscribers[ii] = sub;
       }
+      double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
       Log.addLogLevel("INFO");
 
-      Log.info(ME, numClients + " subscriber clients are ready");
+      long usedAfter = getUsedServerMemory();
+      long memPerLogin = (usedAfter - usedBefore)/numClients;
+
+      Log.info(ME, numClients + " subscriber clients are ready.");
+      Log.info(ME, "Server memory per login consumed=" + memPerLogin);
+      Log.info(ME, "Time " + (long)(numClients/timeForLogins) + " logins/sec");
+   }
+
+
+   long getUsedServerMemory() {
+      String xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
+      String qos = "<qos></qos>";
+      try {
+         MessageUnit[] msgArr = senderConnection.get(xmlKey, qos);
+         String mem = new String(msgArr[0].content);
+         return new Long(mem).longValue();
+      } catch (XmlBlasterException e) {
+         Log.warn(ME, e.toString());
+         return 0L;
+      }
    }
 
 
@@ -239,7 +262,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      Log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      //Log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
       numReceived += 1;
       if (numReceived == numClients) {
          long avg = 0;

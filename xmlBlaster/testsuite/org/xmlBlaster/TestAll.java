@@ -3,7 +3,7 @@ Name:      TestAll.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
-Version:   $Id: TestAll.java,v 1.26 2000/10/29 20:24:17 ruff Exp $
+Version:   $Id: TestAll.java,v 1.27 2000/11/05 21:23:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -50,6 +50,7 @@ public class TestAll
       suite.addTest(TestInvocationRecorder.suite());
       suite.addTest(TestFailSave.suite());
       suite.addTest(TestFailSavePing.suite());
+      suite.addTest(TestSubManyClients.suite());
       suite.addTest(LoadTestSub.suite());
       suite.addTest(RamTest.suite());
       return suite;
