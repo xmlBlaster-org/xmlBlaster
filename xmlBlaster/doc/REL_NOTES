@@ -8,8 +8,8 @@ Changes for 0.78 [???     2000]
     its own pool, allowing heavy load server simultaneous
     database access (thread save).
     See online requirements for more informations/examples:
-       engine.service.rdbms
-       engine.service.rdbms.jdbcpool
+       http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+       http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.jdbcpool.html
 
   - Michele Laghi added complete C++ client support for MICO and ORBacus.
     He implemented all necessary C++ client helper classes for easy and cool
