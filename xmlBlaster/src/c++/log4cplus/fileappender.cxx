@@ -11,8 +11,11 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: fileappender.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
+//
+// Revision 1.23  2004/01/29 03:08:18  tcsmith
+// Fixed Bug #842280 - "'Append' mode when using FileAppended from cfg file."
 //
 // Revision 1.22  2003/09/10 06:42:17  tcsmith
 // Modified calculateNextRolloverTime() to remove the unnecessary break statements
@@ -144,17 +147,22 @@ log4cplus::FileAppender::FileAppender(const Properties& properties,
 : Appender(properties),
   immediateFlush(true)
 {
-     tstring filename = properties.getProperty( LOG4CPLUS_TEXT("File") );
-     if(filename.length() == 0) {
-         getErrorHandler()->error( LOG4CPLUS_TEXT("Invalid filename") );
-         return;
-     }
-     if(properties.exists( LOG4CPLUS_TEXT("ImmediateFlush") )) {
-         tstring tmp = properties.getProperty( LOG4CPLUS_TEXT("ImmediateFlush") );
-         immediateFlush = (toLower(tmp) == LOG4CPLUS_TEXT("true"));
-     }
+    bool append = (mode == ios::app);
+    tstring filename = properties.getProperty( LOG4CPLUS_TEXT("File") );
+    if(filename.length() == 0) {
+        getErrorHandler()->error( LOG4CPLUS_TEXT("Invalid filename") );
+        return;
+    }
+    if(properties.exists( LOG4CPLUS_TEXT("ImmediateFlush") )) {
+        tstring tmp = properties.getProperty( LOG4CPLUS_TEXT("ImmediateFlush") );
+        immediateFlush = (toLower(tmp) == LOG4CPLUS_TEXT("true"));
+    }
+    if(properties.exists( LOG4CPLUS_TEXT("Append") )) {
+        tstring tmp = properties.getProperty( LOG4CPLUS_TEXT("Append") );
+        append = (toLower(tmp) == LOG4CPLUS_TEXT("true"));
+    }
 
-     init(filename, mode);
+    init(filename, (append ? ios::app : ios::trunc));
 }
 
 

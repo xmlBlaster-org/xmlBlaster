@@ -11,8 +11,8 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: hierarchy.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
 //
 // Revision 1.10  2003/08/08 07:10:58  tcsmith
 // Modified getInstanceImpl() to "deep copy" Logger names.

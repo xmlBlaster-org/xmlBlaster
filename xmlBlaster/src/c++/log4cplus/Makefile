@@ -121,13 +121,13 @@ host_os = linux
 host_vendor = suse
 includedir = ${prefix}/include
 infodir = ${prefix}/info
-install_sh = /opt/log4cplus-1.0.1/install-sh
+install_sh = /opt/log4cplus-1.0.2/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localstatedir = ${prefix}/var
 mandir = ${prefix}/man
 oldincludedir = /usr/include
-prefix = /opt/log4cplus-1.0.1-bin
+prefix = /opt/log4cplus-1.0.2-bin
 program_transform_name = s,x,x,
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
@@ -217,9 +217,9 @@ SINGLE_THREADED_SRC = appenderattachableimpl.cxx \
 			 syslogappender.cxx \
 			 timehelper.cxx
 
-#LIB_SRC = $(SINGLE_THREADED_SRC)
 
 LIB_SRC = $(SINGLE_THREADED_SRC) threads.cxx
+#LIB_SRC = $(SINGLE_THREADED_SRC)
 
 liblog4cplus_la_SOURCES = $(LIB_SRC)
 

@@ -217,9 +217,9 @@ SINGLE_THREADED_SRC = appenderattachableimpl.cxx \
 			 syslogappender.cxx \
 			 timehelper.cxx
 
-@MULTI_THREADED_FALSE@LIB_SRC = $(SINGLE_THREADED_SRC)
 
 @MULTI_THREADED_TRUE@LIB_SRC = $(SINGLE_THREADED_SRC) threads.cxx
+@MULTI_THREADED_FALSE@LIB_SRC = $(SINGLE_THREADED_SRC)
 
 liblog4cplus_la_SOURCES = $(LIB_SRC)
 

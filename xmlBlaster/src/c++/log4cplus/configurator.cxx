@@ -10,8 +10,11 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: configurator.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
+//
+// Revision 1.20  2004/01/29 02:49:29  tcsmith
+// Fixed Bug #875724 - "ConfigureAndWatchThread and mounted file systems"
 //
 // Revision 1.19  2003/12/07 06:48:57  tcsmith
 // Fixed bug #827804 - "UMR in ConfigurationWatchdogThread".
@@ -516,6 +519,7 @@ namespace log4cplus {
           lastModTime(Time::gettimeofday()),
           lock(NULL)
         {
+            updateLastModTime();
             if(waitSecs <= 0) {
                 waitSecs = 1;
             }
@@ -529,6 +533,7 @@ namespace log4cplus {
         virtual void addAppender(Logger &logger, log4cplus::SharedAppenderPtr& appender);
         
         bool checkForFileModification();
+        void updateLastModTime();
         virtual ~ConfigurationWatchDogThread(){}
         
     private:
@@ -555,9 +560,9 @@ ConfigurationWatchDogThread::run()
             // reconfigure the Hierarchy
             theLock.resetConfiguration();
             reconfigure();
+            updateLastModTime();
             
             // release the lock
-            lastModTime = Time::gettimeofday();
             lock = NULL;
         }
         
@@ -609,6 +614,18 @@ ConfigurationWatchDogThread::checkForFileModification()
 #endif
     
     return modified;
+}
+
+
+
+void 
+ConfigurationWatchDogThread::updateLastModTime()
+{
+    struct stat fileStatus;
+    if(::stat(LOG4CPLUS_TSTRING_TO_STRING(propertyFilename).c_str(), &fileStatus) == -1) {
+        return;  // stat() returned error, so the file must not exist
+    }
+    lastModTime = Time(fileStatus.st_mtime);
 }
 
 

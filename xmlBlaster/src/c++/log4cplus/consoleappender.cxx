@@ -11,8 +11,11 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: consoleappender.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
+//
+// Revision 1.11  2004/02/10 06:11:37  tcsmith
+// Added a flush() to the append() method.
 //
 // Revision 1.10  2003/10/29 16:08:33  tcsmith
 // Ensure that "logToStdErr" is set in the ctor.
@@ -51,20 +54,26 @@ using namespace log4cplus::helpers;
 // log4cplus::ConsoleAppender ctors and dtor
 //////////////////////////////////////////////////////////////////////////////
 
-log4cplus::ConsoleAppender::ConsoleAppender(bool logToStdErr)
-: logToStdErr(logToStdErr)
+log4cplus::ConsoleAppender::ConsoleAppender(bool logToStdErr, bool immediateFlush)
+: logToStdErr(logToStdErr),
+  immediateFlush(immediateFlush)
 {
 }
 
 
 
 log4cplus::ConsoleAppender::ConsoleAppender(const log4cplus::helpers::Properties properties)
- : Appender(properties),
-   logToStdErr(false)
+: Appender(properties),
+  logToStdErr(false),
+  immediateFlush(false)
 {
     tstring val = toLower(properties.getProperty(LOG4CPLUS_TEXT("logToStdErr")));
     if(val == LOG4CPLUS_TEXT("true")) {
         logToStdErr = true;
+    }
+    if(properties.exists( LOG4CPLUS_TEXT("ImmediateFlush") )) {
+        tstring tmp = properties.getProperty( LOG4CPLUS_TEXT("ImmediateFlush") );
+        immediateFlush = (toLower(tmp) == LOG4CPLUS_TEXT("true"));
     }
 }
 
@@ -102,7 +111,11 @@ void
 log4cplus::ConsoleAppender::append(const spi::InternalLoggingEvent& event)
 {
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( getLogLog().mutex )
-        layout->formatAndAppend((logToStdErr ? tcerr : tcout), event);
+        log4cplus::tostream& output = (logToStdErr ? tcerr : tcout);
+        layout->formatAndAppend(output, event);
+        if(immediateFlush) {
+            output.flush();
+        }
     LOG4CPLUS_END_SYNCHRONIZE_ON_MUTEX
 }
 

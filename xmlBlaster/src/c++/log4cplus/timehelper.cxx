@@ -11,8 +11,12 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: timehelper.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
+//
+// Revision 1.7  2004/01/29 07:27:54  tcsmith
+// Fixed Bug #805203 - The getFormattedTime() method now pads the time string with
+// leading zeros where needed.
 //
 // Revision 1.6  2003/08/05 09:20:08  tcsmith
 // Modified the getFormattedTime() method to increase performance.
@@ -203,7 +207,12 @@ Time::getFormattedTime(const log4cplus::tstring& fmt, bool use_gmtime) const
     size_t pos = ret.find( LOG4CPLUS_TEXT("%q") );
     if(pos != tstring::npos) {
         tstring tmp(ret.substr(0, pos));
-        tmp += convertIntegerToString((tv_usec / 1000));
+        tstring seconds( convertIntegerToString((tv_usec / 1000)) );
+        switch(seconds.length()) {
+            case 1: tmp += LOG4CPLUS_TEXT("00"); break;
+            case 2: tmp += LOG4CPLUS_TEXT("0"); break;
+        }
+        tmp += seconds;
         tmp += ret.substr(pos + 2);
         ret = tmp;
     }
@@ -211,7 +220,12 @@ Time::getFormattedTime(const log4cplus::tstring& fmt, bool use_gmtime) const
     pos = ret.find( LOG4CPLUS_TEXT("%Q") );
     if(pos != tstring::npos) {
         tstring tmp(ret.substr(0, pos));
-        tmp += convertIntegerToString((tv_usec / 1000));
+        tstring seconds( convertIntegerToString((tv_usec / 1000)) );
+        switch(seconds.length()) {
+            case 1: tmp += LOG4CPLUS_TEXT("00"); break;
+            case 2: tmp += LOG4CPLUS_TEXT("0"); break;
+        }
+        tmp += seconds;
 #if defined(HAVE_GETTIMEOFDAY)
         tstring usecs( convertIntegerToString((tv_usec % 1000)) );
         switch(usecs.length()) {

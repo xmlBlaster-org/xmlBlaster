@@ -11,8 +11,11 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: property.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
+//
+// Revision 1.13  2004/02/10 07:36:37  tcsmith
+// Fixed UNICODE support.
 //
 // Revision 1.12  2003/10/22 05:46:38  tcsmith
 // Now strip trailing \r.  (A property file can be created on Windows and used
@@ -106,7 +109,12 @@ log4cplus::helpers::Properties::init(log4cplus::tistream& input)
         {
             // Check if we have a trailing \r because we are 
             // reading a properties file produced on Windows.
-            int buffLen = strlen(buffer);
+            size_t buffLen = 
+#ifdef UNICODE
+				wcslen(buffer);
+#else
+				strlen(buffer);
+#endif
             if((buffLen > 0) && buffer[buffLen-1] == '\r') {
                 // Remove trailing 'Windows' \r
                 buffer[buffLen-1] = '\0';

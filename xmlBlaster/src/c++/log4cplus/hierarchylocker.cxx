@@ -11,8 +11,11 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: hierarchylocker.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
+//
+// Revision 1.3  2004/01/29 02:26:05  tcsmith
+// Fixed Bug #875960 - "log4cplus::ConfigureAndWatchThread crash"
 //
 // Revision 1.2  2003/12/07 07:40:34  tcsmith
 // Changed ctor() to remove warnings for the SUN CC compiler.
@@ -36,8 +39,8 @@ using namespace log4cplus::helpers;
 //////////////////////////////////////////////////////////////////////////////
 
 HierarchyLocker::HierarchyLocker(Hierarchy& _h)
-: hierarchyLocker(h.hashtable_mutex),
-  h(_h),
+: h(_h),
+  hierarchyLocker(h.hashtable_mutex),
   loggerList()
 {
     // Get a copy of all of the Hierarchy's Loggers (except the Root Logger)

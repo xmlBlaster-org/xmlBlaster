@@ -11,8 +11,8 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: appenderattachableimpl.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
 //
 // Revision 1.7  2003/07/02 05:52:20  tcsmith
 // Modified to support the rename of mutex to appender_list_mutex.

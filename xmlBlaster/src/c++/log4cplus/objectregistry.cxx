@@ -11,8 +11,8 @@
 // distribution in the LICENSE.APL file.
 //
 // $Log: objectregistry.cxx,v $
-// Revision 1.1  2004/02/08 22:52:24  ruff
-// Added http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+// Revision 1.2  2004/02/11 08:45:05  ruff
+// Updated to version 1.0.2
 //
 // Revision 1.3  2003/04/18 21:57:40  tcsmith
 // Converted from std::string to log4cplus::tstring.
