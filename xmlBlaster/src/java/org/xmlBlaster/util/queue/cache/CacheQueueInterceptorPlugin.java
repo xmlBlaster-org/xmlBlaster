@@ -444,7 +444,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     */
    public I_QueueEntry take() throws XmlBlasterException
    {
-      return (I_QueueEntry)take(-1,-1L).get(0);
+      return (I_QueueEntry)take(1,-1L).get(0);
    }
 
    /**
