@@ -56,6 +56,11 @@ public final class CommandWrapper
    /** The rest of the command -> "?java.vm.version"*/
    String tail = null;
 
+   /** "sysprop/?call[auth]=true" this is "call[auth]" */
+   String key = null;
+   /** "sysprop/?call[auth]=true" this is "true" */
+   String value = null;
+
    public CommandWrapper(Global glob, String cmd) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
@@ -173,7 +178,44 @@ public final class CommandWrapper
    }
 
    /**
-    * @return The original command, with added absolute path if the original was relative
+    * @return If set() is invoked the value behind the "="
+    * "sysprop/?trace[core]=true" would return 'true'
+    * @exception XmlBlasterException if no value found
+    */
+   public final String getValue() throws XmlBlasterException {
+      if (key == null && value == null)
+         parseKeyValue();
+      return value;
+   }
+
+   /**
+    * @return If set() is invoked the value before the "="
+    * "sysprop/?trace[core]=true" would return 'trace[core]'
+    * @exception XmlBlasterException if no value found
+    */
+   public final String getKey() throws XmlBlasterException {
+      if (key == null && value == null)
+         parseKeyValue();
+      return key;
+   }
+
+   private void parseKeyValue() throws XmlBlasterException { 
+      int qIndex = cmd.indexOf("?");
+      if (qIndex < 1 || cmd.length() <= (qIndex+1))
+         throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find '?'");
+      String pair = cmd.substring(qIndex+1);
+
+      int equalsIndex = pair.indexOf("=");
+      if (equalsIndex < 1 || pair.length() <= (equalsIndex+1))
+         throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find assignment '='");
+      
+      key = pair.substring(0,equalsIndex).trim();
+      value = pair.substring(equalsIndex+1);
+   }
+
+   /**
+    * @return The original command, with added absolute path if the original was relative, e.g.
+    *         /node/heron/?runlevel
     */
    public final String getCommand() {
       return cmd;
