@@ -24,8 +24,10 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #  include <unistd.h>      // gethostname()
 #endif
 
+#include <util/XmlBlasterException.h>
 #include <util/Global.h>
 
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 
 namespace org {
@@ -35,7 +37,7 @@ namespace org {
     namespace corba {
 
 
-CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
+CorbaConnection::CorbaConnection(Global& global, bool orbOwner, CORBA::ORB_ptr orb)
   : /* loginQos_(), */
     connectReturnQos_(global), 
     global_(global), 
@@ -47,9 +49,17 @@ CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
   if (log_.CALL) log_.call(me(), "CorbaConnection constructor ...");
   if (numOfSessions_ == 0) {
-     int args                 = global_.getArgs();
-     const char * const* argc = global_.getArgc();
-     orb_ = CORBA::ORB_init(args, const_cast<char **>(argc));
+     if (orb) orb_ = orb;
+     else {
+        int args                 = global_.getArgs();
+        const char * const* argc = global_.getArgc();
+        orb_ = CORBA::ORB_init(args, const_cast<char **>(argc));
+     }
+  }
+  else {
+     if (orb) {
+        throw XmlBlasterException(USER_CONFIGURATION, "c++-client", me() + " constructor: this constructor can only be called as the first instance of this class. Use the other constructor (please consult the API)");
+     }
   }
   numOfSessions_++;
   nameServerControl_ = 0;

@@ -102,7 +102,7 @@ namespace org {
        *    <li>-ns true/false, if a naming service shall be used</li>
        * </ul>
        */
-      CorbaConnection(Global& global, bool orbOwner=false);
+      CorbaConnection(Global& global, bool orbOwner=false, CORBA::ORB_ptr orb=NULL);
 
       ~CorbaConnection();
 

@@ -75,7 +75,7 @@ namespace org {
        */
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
-      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner = false);
+      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner = false, CORBA::ORB_ptr orb=NULL);
 
 //      CorbaDriver();
 
@@ -89,7 +89,8 @@ namespace org {
 
    public:
 
-      static CorbaDriver& getInstance(Global& global, const string& instanceName);
+      static CorbaDriver& getInstance(Global& global, const string& instanceName, bool isOrbOwner=false, CORBA::ORB_ptr orb=NULL);
+
       static int killInstance(const string& instanceName);
 
       // methods inherited from I_CallbackServer

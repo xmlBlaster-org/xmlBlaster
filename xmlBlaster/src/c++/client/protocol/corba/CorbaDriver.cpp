@@ -114,7 +114,7 @@ DriverMap& CorbaDriver::getDrivers()
 }
 
 
-CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName)
+CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName, bool isOrbOwner, CORBA::ORB_ptr orb)
 {
    static Mutex mutex;
    static bool  isRunning = false;
@@ -127,9 +127,9 @@ CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName
    DriverMap::iterator iter = driverMap.find(instanceName);
    if (iter == driverMap.end()) {
       if (log.TRACE) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
-      driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, false);
+      driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, isOrbOwner, orb);
       driverMap.insert(DriverMap::value_type(instanceName, driver));
-      if (!isRunning) driver->start();
+      if (!isRunning && (orb == NULL)) driver->start(); // check if this is really what it should be ...
    }
    else driver = (*iter).second;
    int count = driver->count_++;
@@ -187,8 +187,7 @@ void CorbaDriver::run()
    isRunning_ = false;
 }
 
-
-CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner)
+CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, bool connectionOwner, CORBA::ORB_ptr orb)
    : doRun_(doRun),
      isRunning_(isRunning),
      mutex_(mutex),
@@ -203,7 +202,7 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunn
    defaultCallback_ = NULL;
 
    _COMM_TRY
-      connection_ = new CorbaConnection(global_, connectionOwner);
+      connection_ = new CorbaConnection(global_, connectionOwner, orb);
    _COMM_CATCH("::Constructor", true, false)
 }
 
