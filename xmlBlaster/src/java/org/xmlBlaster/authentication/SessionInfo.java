@@ -441,7 +441,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       return this.sessionQueue.getMaxNumOfEntries();
    }
 
-   public final String getSubscribeList() throws XmlBlasterException {
+   public final String getSubscriptionList() throws XmlBlasterException {
       SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
       if (subs.length < 1)
          return "";
