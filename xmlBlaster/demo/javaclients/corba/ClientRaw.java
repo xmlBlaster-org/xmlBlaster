@@ -3,11 +3,12 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.6 2002/03/17 17:21:52 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.7 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 import org.jutils.io.FileUtil;
@@ -45,20 +46,24 @@ import org.omg.CosNaming.*;
  */
 public class ClientRaw
 {
-   private org.omg.CORBA.ORB orb = null;
-   private Server xmlBlaster = null;
    private static String ME = "ClientRaw";
+   
+   private final org.omg.CORBA.ORB orb;
+   private final String[] args;
+
+   private Server xmlBlaster = null;
 
    public ClientRaw(String args[])
    {
-      orb = org.omg.CORBA.ORB.init(args,null);
+      this.args = args;
+      orb = org.omg.CORBA.ORB.init(this.args,null);
       try {
          AuthServer authServer;
-         ME = Args.getArg(args, "-name", ME);
+         ME = Args.getArg(this.args, "-name", ME);
          String loginName = ME;
 
-         String fileName = Args.getArg(args, "-iorFile", (String)null); // a file with the IOR string
-         String authServerIOR = Args.getArg(args, "-ior", (String)null); // the IOR string
+         String fileName = Args.getArg(this.args, "-iorFile", (String)null); // a file with the IOR string
+         String authServerIOR = Args.getArg(this.args, "-ior", (String)null); // the IOR string
 
          if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
 
@@ -92,7 +97,7 @@ public class ClientRaw
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // Intialize my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new RawCallback(ME));
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new RawCallback(args, ME));
          BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
 
          rootPOA.the_POAManager().activate();
@@ -244,12 +249,15 @@ public class ClientRaw
 class RawCallback implements BlasterCallbackOperations
 {
    final String ME;
+   /** Command line args */
+   final String[] args;
 
    /**
     * Construct it.
     */
-   public RawCallback(java.lang.String name) {
+   public RawCallback(String[] args, java.lang.String name) {
       this.ME = "RawCallback-" + name;
+      this.args = args;
       if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
    }
 
@@ -265,7 +273,7 @@ class RawCallback implements BlasterCallbackOperations
          MessageUnit msgUnit = msgUnitArr[ii];
          XmlKeyBase xmlKey = null;
          try {
-            xmlKey = new XmlKeyBase(msgUnit.xmlKey);
+            xmlKey = new XmlKeyBase(new Global(args), msgUnit.xmlKey);
          } catch (org.xmlBlaster.util.XmlBlasterException e) {
             Log.error(ME, e.reason);
          }

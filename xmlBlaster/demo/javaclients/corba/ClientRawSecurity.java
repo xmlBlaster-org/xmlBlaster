@@ -3,11 +3,12 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.6 2002/03/17 17:21:52 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.7 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 import org.jutils.io.FileUtil;
@@ -51,12 +52,16 @@ import org.omg.CosNaming.*;
  */
 public class ClientRawSecurity
 {
-   private org.omg.CORBA.ORB orb = null;
-   private Server xmlBlaster = null;
    private static String ME = "ClientRawSecurity";
+
+   private final Global glob;
+   private final org.omg.CORBA.ORB orb;
+
+   private Server xmlBlaster = null;
 
    public ClientRawSecurity(String args[])
    {
+      glob = new Global(args);
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
@@ -98,7 +103,7 @@ public class ClientRawSecurity
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // Intialize my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new RawCallback(ME));
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new RawCallback(glob, ME));
          BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
 
          rootPOA.the_POAManager().activate();
@@ -126,7 +131,7 @@ public class ClientRawSecurity
             String retXml = authServer.connect(qos);
 
             // Parse the returned string, it contains the server IOR
-            ConnectReturnQos returnQos = new ConnectReturnQos(retXml);
+            ConnectReturnQos returnQos = new ConnectReturnQos(glob, retXml);
 
             Log.info(ME, "Login (Connect) done.");
             Log.info(ME, "Used QoS=\n" + qos);
@@ -270,11 +275,13 @@ public class ClientRawSecurity
    private class RawCallback implements BlasterCallbackOperations
    {
       final String ME;
+      final Global glob;
 
       /**
        * Construct it.
        */
-      public RawCallback(java.lang.String name) {
+      public RawCallback(Global glob, java.lang.String name) {
+         this.glob = glob;
          this.ME = "RawCallback-" + name;
          if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
       }
@@ -290,7 +297,7 @@ public class ClientRawSecurity
             MessageUnit msgUnit = msgUnitArr[ii];
             XmlKeyBase xmlKey = null;
             try {
-               xmlKey = new XmlKeyBase(msgUnit.xmlKey);
+               xmlKey = new XmlKeyBase(glob, msgUnit.xmlKey);
             } catch (org.xmlBlaster.util.XmlBlasterException e) {
                Log.error(ME, e.reason);
             }

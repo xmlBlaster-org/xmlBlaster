@@ -31,7 +31,7 @@ public class HelloWorld3 implements I_Callback
          String name = glob.getProperty().get("name", "HelloWorld3");
          String passwd = glob.getProperty().get("passwd", "secret");
 
-         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
+         ConnectQos qos = new ConnectQos(glob, "simple", "1.0", name, passwd);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
 
@@ -49,7 +49,7 @@ public class HelloWorld3 implements I_Callback
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorld3");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         con.subscribe(sk.toXml(), sq.toXml());
+         String subId = con.subscribe(sk.toXml(), sq.toXml());
 
 
          msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
@@ -60,7 +60,7 @@ public class HelloWorld3 implements I_Callback
          catch( InterruptedException i) {} // wait a second to receive update()
 
 
-         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper("HelloWorld3");
+         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subId);
          UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
          con.unSubscribe(uk.toXml(), uq.toXml());
 

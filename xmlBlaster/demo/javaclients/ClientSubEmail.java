@@ -3,11 +3,12 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.6 2002/03/18 00:30:22 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.7 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -74,18 +75,18 @@ public class ClientSubEmail implements I_Callback
 
    public ClientSubEmail(String args[])
    {
-      initArgs(args); // Initialize command line argument handling (this is optional)
+      Global glob = initArgs(args); // Initialize command line argument handling (this is optional)
 
       try {
          // check if parameter -name <userName> is given at startup of client
          String loginName = Args.getArg(args, "-name", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
-         ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
+         ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
          loginQos.addCallbackAddress(new CallbackAddress("EMAIL", Args.getArg(args, "-email", "ruff@swand.lake.de")));
          loginQos.addCallbackAddress(new CallbackAddress("EMAIL", Args.getArg(args, "-email2", "et@xyz.org")));
          loginQos.addCallbackAddress(new CallbackAddress("EMAIL", Args.getArg(args, "-email3", "root@localhost")));
 
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
+         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
          blasterConnection.login(loginName, passwd, loginQos, this);
          // Now we are connected to xmlBlaster MOM server.
 
@@ -190,16 +191,10 @@ public class ClientSubEmail implements I_Callback
    /**
     * Initialize command line argument handling (this is optional)
     */
-   private void initArgs(String args[])
+   private Global initArgs(String args[])
    {
-      boolean showUsage = false;
-      try {
-         showUsage = XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         showUsage = true;
-         Log.error(ME, e.toString());
-      }
-      if (showUsage) {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [ClientSubEmail].");
          Log.plain("   -passwd             The login name [secret].");
@@ -215,6 +210,7 @@ public class ClientSubEmail implements I_Callback
          Log.usage();
          Log.exit(ME, "Example: java javaclients.ClientSubEmail -name Jeff -email et@universe.xy\n");
       }
+      return glob;
    }
 
 

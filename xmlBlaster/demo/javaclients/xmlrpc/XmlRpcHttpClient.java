@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.9 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.10 2002/04/26 21:33:29 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
@@ -67,17 +68,17 @@ public class XmlRpcHttpClient
     * protocol transparently ...
     * <br />
     */
-   private void testWithHelperClasses(String[] args)
+   private void testWithHelperClasses(Global glob)
    {
       try {
          // force XML-RPC protocol:
          XmlBlasterProperty.set("client.protocol", "XML-RPC");
          
-         XmlBlasterConnection client = new XmlBlasterConnection(args);
+         XmlBlasterConnection client = new XmlBlasterConnection(glob);
          
          Log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterConnection");
          String sessionId = "Session1";
-         ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
+         ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
 
          client.login("LunaMia", "silence", loginQos, null);
          Log.info(ME, "Login successful");
@@ -113,19 +114,15 @@ public class XmlRpcHttpClient
       final String ME = "XmlRpcHttpClient";
       boolean showUsage = false;
 
-      try {
-         if (XmlBlasterProperty.init(args)) {
-            usage();
-            Log.exit(ME, "");
-         }
-      } catch(org.jutils.JUtilsException e) {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
          usage();
-         Log.panic(ME, e.toString());
+         Log.exit(ME, "");
       }
 
       XmlRpcHttpClient client = new XmlRpcHttpClient();
 
-      client.testWithHelperClasses(args);
+      client.testWithHelperClasses(glob);
 
       Log.exit(ME, "EXIT NOW....");
    }

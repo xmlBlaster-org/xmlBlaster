@@ -3,11 +3,12 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.28 2002/03/18 00:30:22 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.29 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -47,6 +48,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class ClientSub implements I_Callback
 {
    private static String ME = "ClientSub";
+   private Global glob = null;
    private int numReceived = 0;         // error checking
    public static long startTime;
    public static long elapsed;
@@ -59,7 +61,7 @@ public class ClientSub implements I_Callback
          // check if parameter -name <userName> is given at startup of client
          String loginName = Args.getArg(args, "-name", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
-         ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
+         ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
 
          XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
          blasterConnection.login(loginName, passwd, loginQos, this);
@@ -210,14 +212,8 @@ public class ClientSub implements I_Callback
     */
    private void initArgs(String args[])
    {
-      boolean showUsage = false;
-      try {
-         showUsage = XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         showUsage = true;
-         Log.error(ME, e.toString());
-      }
-      if (showUsage) {
+      glob = new Global();
+      if (glob.init(args) != 0) {
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [ClientSub].");
          Log.plain("   -passwd             The login name [secret].");

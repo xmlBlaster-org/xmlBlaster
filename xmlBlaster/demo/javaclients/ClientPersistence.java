@@ -3,7 +3,7 @@ Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.3 2002/03/18 00:30:22 ruff Exp $
+Version:   $Id: ClientPersistence.java,v 1.4 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -12,6 +12,7 @@ import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -151,11 +152,8 @@ public class ClientPersistence implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
+      Global glob = new Global();
+      if (glob.init(args) != 0) Log.panic(ME, "");
       ClientPersistence Sub = new ClientPersistence();
       Sub.setUp();
       Sub.tearDown();

@@ -3,7 +3,7 @@ Name:      ChessMover.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The demo class which moves around the chess peaces
-Version:   $Id: ChessMover.java,v 1.3 2002/03/29 21:05:22 laghi Exp $
+Version:   $Id: ChessMover.java,v 1.4 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.rhino;
 
@@ -18,6 +18,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,10 +39,11 @@ public class ChessMover
 
    public ChessMover (String[] args) throws XmlBlasterException
    {
+      Global glob = new Global(args);
       sleepTime = Long.parseLong(args[1]);
       random = new Random(100L);
-      this.connection = new XmlBlasterConnection(args);
-      this.connection.login("chessMover", "secret", new ConnectQos());
+      this.connection = new XmlBlasterConnection(glob);
+      this.connection.login("chessMover", "secret", new ConnectQos(glob));
    }
 
 
@@ -75,9 +77,9 @@ public class ChessMover
       catch (Exception ex) {
          System.err.println(ex.toString());
 
-	    System.err.println("usage: java javaclients.svg.rhino.ChessMover -interval updateInterval");
-	    System.err.println("where updateInterval is the time in ms between each move");
-	    System.exit(1);
+            System.err.println("usage: java javaclients.svg.rhino.ChessMover -interval updateInterval");
+            System.err.println("where updateInterval is the time in ms between each move");
+            System.exit(1);
 
       }
    }

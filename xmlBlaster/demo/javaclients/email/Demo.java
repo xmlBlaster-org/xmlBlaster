@@ -27,7 +27,7 @@ public class Demo
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         ConnectQos qos = new ConnectQos("simple", "1.0", "joe", "secret");
+         ConnectQos qos = new ConnectQos(glob, "simple", "1.0", "joe", "secret");
 
          String receiver = glob.getProperty().get("email.receiver", "xmlblaster@xmlblaster.org");
          qos.addCallbackAddress(new CallbackAddress("EMAIL", receiver));

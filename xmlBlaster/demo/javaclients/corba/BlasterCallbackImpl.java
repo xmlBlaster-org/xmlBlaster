@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.6 2002/03/17 17:21:52 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.7 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -31,7 +31,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    final String ME;
 
    /**
-    * Construct a persistently named object.
+    * Construct the client CORBA side callback server. 
     */
    public BlasterCallbackImpl(java.lang.String name) {
       this.ME = "BlasterCallbackImpl-" + name;
@@ -39,7 +39,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    }
 
    /**
-    * Construct a transient object.
+    * Construct the client CORBA side callback server. 
     */
    public BlasterCallbackImpl() {
       super();
@@ -62,7 +62,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
          MessageUnit msgUnit = msgUnitArr[ii];
          XmlKeyBase xmlKey = null;
          try {
-            xmlKey = new XmlKeyBase(msgUnit.xmlKey);
+            xmlKey = new XmlKeyBase(null, msgUnit.xmlKey);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }

@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.5 2002/03/18 00:30:22 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.6 2002/04/26 21:33:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -57,7 +57,7 @@ public class ClientSubDispatch implements I_Callback
          // check if parameter -name <userName> is given at startup of client
          String loginName = Args.getArg(args, "-name", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
-         ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
+         ConnectQos loginQos = new ConnectQos(null); // creates "<qos></qos>" string
 
          XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
          blasterConnection.login(loginName, passwd, loginQos, this);
