@@ -449,10 +449,6 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
       }
    }
 
-   /* if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfoP->requestIdStr); */
-   if (mutexUnlock(msgRequestInfoP, exception) == false)
-      return (MsgRequestInfo *)0;
-
    msgRequestInfoP->blob.dataLen = msgRequestInfoP->responseBlob.dataLen;
    msgRequestInfoP->blob.data = msgRequestInfoP->responseBlob.data;
    msgRequestInfoP->responseBlob.dataLen = 0;
@@ -473,6 +469,10 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
 
    msgRequestInfoP->responseType = 0;
    
+   /* if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfoP->requestIdStr); */
+   if (mutexUnlock(msgRequestInfoP, exception) == false)
+      return (MsgRequestInfo *)0;
+
    return msgRequestInfoP;
 }
 
