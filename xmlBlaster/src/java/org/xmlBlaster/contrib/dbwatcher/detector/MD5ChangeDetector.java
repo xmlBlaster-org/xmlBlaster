@@ -416,8 +416,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
             if (!first && !groupColValue.equals(newGroupColValue)) {
                first = false;
                if (log.isLoggable(Level.FINE)) log.fine("Processing " + groupColName + "=" +
-                  groupColValue + " has changed to '" +
-                  newGroupColValue + "'");
+                  groupColValue + " next one to check is '" + newGroupColValue + "'");
                String newMD5 = getMD5(buf.toString());
                String old = (String)md5Map.get(groupColValue);
                if (old == null || !old.equals(newMD5)) {
