@@ -56,13 +56,14 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       this.updateInterceptors = new MsgInterceptor[1];
    }
 
-   private void writeToFileSlowly(String filename, int numChunks, long chunkSize, long delayBetweenChunks) throws XmlBlasterException {
-      char[] chunk = new char[numChunks];
+   private void writeToFileSlowly(String filename, int numChunks, int chunkSize, long delayBetweenChunks) throws XmlBlasterException {
+      char[] chunk = new char[chunkSize];
       int sizeChanges = 0;
       int timeChanges = 0;
       long time = -1L;
       long size = -1L;
-      for (int i=0; i < numChunks; i++) 
+      this.log.info(ME, "writeToFileSlowly: '" + filename + "' numChunks=" + numChunks + " chunkSize=" + chunkSize);
+      for (int i=0; i < chunkSize; i++) 
          chunk[i] = 'a';
       try {
          File file = new File(filename);
@@ -173,7 +174,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
    public void testSystem() {
       try {
          int numChunks = 10;
-         long chunkSize = 10000L;
+         int chunkSize = 10000;
          long delayBetweenChunks = 2000L;
          writeToFileSlowly("testFilePollerPlugin.dat", numChunks, chunkSize, delayBetweenChunks);
       }
