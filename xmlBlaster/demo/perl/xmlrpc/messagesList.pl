@@ -52,7 +52,7 @@ try
         #       Connecting 2 clients
         #
 
-        print "> Construct client ...\n";
+        print "> Construct client for server $server ...\n";
         my $xb = xmlBlaster::XmlBlaster->new(
                                         {
                                         'host'=> $server,
@@ -61,8 +61,9 @@ try
                                         }
                                 );
 
-        print "> Connect ...\n";
+        print "> Connect with $xb ...\n";
         $xb->connect();
+        print "> Connected ...\n";
 
         #
         #       We're connected
