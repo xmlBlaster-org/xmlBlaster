@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.37 $
+# $Revision: 1.38 $
 #-----------------------------------------------------------
 
 
@@ -100,6 +100,37 @@ else
 fi
 
 
+#-------- Checking JDK version -
+if [ ${JDK_HOME:=""} != "" ] ; then
+   if [ -d ${JDK_HOME} ] ; then
+      if [ -f ${JDK_HOME}/lib/classes.zip ]; then
+         # JDK 1.1.x
+         JDK_1_1=true
+         export JDK_1_1
+         CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
+      else
+         # JDK 1.2
+         CLASSPATH=${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}
+         export CLASSPATH
+      fi
+      PATH=${JDK_HOME}/bin:${PATH}
+      export PATH
+      # set JAVA_HOME for ANT:
+      JAVA_HOME=$JDK_HOME
+      export JAVA_HOME
+   else
+      ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
+   fi
+else
+   ${ECHO} "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
+   ${ECHO} "$BLACK_LTGREEN            and your CLASSPATH setting needs at least         $ESC"
+   ${ECHO} "$BLACK_LTGREEN               export CLASSPATH=\${JDK_HOME}/jre/lib/rt.jar    $ESC"
+   ${ECHO} "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
+   ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'      $ESC"
+fi
+
+
+
 #-------- Checking JacORB --------
 # Is JacORB home not set already? Try to find where JacORB is:
 if [ ${JacORB_HOME:=""} = "" ] ; then
@@ -134,7 +165,8 @@ if [ -d ${JacORB_HOME} ] ; then
       JacORB_LIB=${JacORB_HOME}/lib
    fi
    export JacORB_LIB
-   CLASSPATH=${JacORB_LIB}/jacorb.jar:${JacORB_LIB}/idl.jar:${CLASSPATH}
+   CLASSPATH=${JacORB_LIB}/idl.jar:${CLASSPATH}
+   CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
    ${ECHO} "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
@@ -154,37 +186,6 @@ if [ ${MICO_HOME:=""} = "" ] || [ ! -d ${MICO_HOME} ] ; then
    ${ECHO} "         Example: 'export MICO_HOME=/usr/local/mico'"
 else
    ${ECHO} "$BLACK_LTGREEN      Using MICO_HOME=${MICO_HOME}  $ESC"
-fi
-
-
-
-#-------- Checking JDK version -
-if [ ${JDK_HOME:=""} != "" ] ; then
-   if [ -d ${JDK_HOME} ] ; then
-      if [ -f ${JDK_HOME}/lib/classes.zip ]; then
-         # JDK 1.1.x
-         JDK_1_1=true
-         export JDK_1_1
-         CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
-      else
-         # JDK 1.2
-         CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
-         export CLASSPATH
-      fi
-      PATH=${JDK_HOME}/bin:${PATH}
-      export PATH
-      # set JAVA_HOME for ANT:
-      JAVA_HOME=$JDK_HOME
-      export JAVA_HOME
-   else
-      ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
-   fi
-else
-   ${ECHO} "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
-   ${ECHO} "$BLACK_LTGREEN            and your CLASSPATH setting needs at least         $ESC"
-   ${ECHO} "$BLACK_LTGREEN               export CLASSPATH=\${JDK_HOME}/jre/lib/rt.jar    $ESC"
-   ${ECHO} "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
-   ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'      $ESC"
 fi
 
 
