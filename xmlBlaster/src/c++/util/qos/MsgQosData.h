@@ -32,10 +32,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_QOS_MSGQOSDATA_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Constants.h>
+#include <util/qos/QosData.h>
+
+// #include <util/Constants.h>
 #include <util/Destination.h>
 #include <util/qos/SessionQos.h>
-#include <util/Timestamp.h>
+#include <util/qos/TopicProperty.h>
+// #include <util/Timestamp.h>
 #include <util/PriorityEnum.h>
 #include <util/cluster/RouteInfo.h>
 #include <util/cluster/NodeId.h>
@@ -44,27 +47,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cluster;
-using org::xmlBlaster::util::qos::SessionQos;
+// using namespace org::xmlBlaster::util::qos;
 
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
+/*
 extern Dll_Export const bool DEFAULT_isVolatile;
 extern Dll_Export const bool DEFAULT_isDurable;
 extern Dll_Export const bool DEFAULT_forceUpdate;
 extern Dll_Export const bool DEFAULT_readonly;
+*/
 
-typedef vector<RouteInfo> RouteVector;
+// typedef vector<RouteInfo> RouteVector;
 
-class Dll_Export MsgQosData
+class Dll_Export MsgQosData : public QosData
 {
 private:
-   string  ME; // = "MsgQosData";
-   Global& global_;
-   Log&    log_;
-   string  serialData_;
-   bool    isExpired_; // = false; // cache the expired state for performance reasons
+
+   bool isExpired_; // = false; // cache the expired state for performance reasons
+
+   TopicProperty* topicProperty_;
 
    /**
     * A message lease lasts forever if not otherwise specified. <p />
@@ -80,12 +84,6 @@ private:
       return Global.instance().getProperty().get("message.maxLifeTime", -1L);
    }
 */
-
-
-   /** the state of the message, defaults to "OK" if no state is returned */
-   string state_; // = Constants::STATE_OK;
-   /** Human readable information */
-   string stateInfo_;
 
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    string subscriptionId_;
@@ -107,17 +105,8 @@ private:
     * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
     */
    bool forceUpdate_; // = DEFAULT_forceUpdate;
-   bool readonly_; // = DEFAULT_readonly;
 
-   /** 
-    * The receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   Timestamp rcvTimestamp_;
-   bool rcvTimestampFound_; // = false;
-
-   /** 
+   /**
     * A message expires after some time and will be discarded.
     * Clients will get a notify about expiration.
     * This is the configured lifeTime in millis of the message.
@@ -137,15 +126,6 @@ protected:
     * ArrayList for loginQoS, holding all destination addresses (Destination objects)
     */
    vector<Destination> destinationList_;
-   Destination destination_;
-
-   /**
-    * ArrayList containing RouteInfo objects
-    */
-   RouteVector routeNodeList_;
-   /** Cache for RouteInfo in an array */
-//   RouteVector routeNodes_;
-//   static RouteInfo[] ROUTE_INFO_ARR_DUMMY = new RouteInfo[0];
 
 
    // TODO: Pass with client QoS!!!
@@ -160,7 +140,7 @@ public:
     * Constructs the specialized quality of service object for a publish() or update() call.
     * @param The factory which knows how to serialize and parse me
     */
-   long size_;
+//   long size_;
 
    MsgQosData(Global& global, const string& serialData="");
 
@@ -185,53 +165,6 @@ public:
     *         false if Publish/Subscribe style is used
     */
    bool isPtp();
-
-   /**
-    * @param state The state of an update message
-    */
-   void setState(const string& state);
-
-   /**
-    * Access state of message on update().
-    * @return OK (Other values are not yet supported)
-    */
-   string getState() const;
-
-   /**
-    * @param state The human readable state text of an update message
-    */
-   void setStateInfo(const string& stateInfo);
-
-   /**
-    * Access state of message on update().
-    * @return The human readable info text
-    */
-   string getStateInfo() const;
-
-   /**
-    * True if the message is OK on update(). 
-    */
-   bool isOk() const;
-
-   /**
-    * True if the message was erased by timer or by a
-    * client invoking erase(). 
-    */
-   bool isErased() const;
-
-   /**
-    * True if a timeout on this message occurred. 
-    * <p />
-    * Timeouts are spanned by the publisher and thrown by xmlBlaster
-    * on timeout to indicate for example
-    * STALE messages or any other user problem domain specific event.
-    */
-   bool isTimeout() const;
-
-   /**
-    * True on cluster forward problems
-    */
-   bool isForwardError() const;
 
    /**
     * @param volatile true/false
@@ -345,26 +278,6 @@ public:
    long getQueueIndex() const;
 
    /**
-    * Adds a new route hop to the QoS of this message. 
-    * The added routeInfo is assumed to be one stratum closer to the master
-    * So we will rearrange the stratum here. The given stratum in routeInfo
-    * is used to recalculate the other nodes as well.
-    */
-   void addRouteInfo(const RouteInfo& routeInfo);
-
-   /**
-    * Check if the message has already been at the given node (circulating message). 
-    * @return How often the message has travelled the node already
-    */
-   int count(const NodeId& nodeId) const;
-
-   /**
-    * Check if the message has already been at the given node (circulating message). 
-    * @return How often the message has travelled the node already
-    */
-   bool dirtyRead(NodeId nodeId);
-
-   /**
     * Message priority.
     * @return priority 0-9
     * @see org.xmlBlaster.engine.helper.Constants
@@ -430,20 +343,6 @@ public:
     * @return max span of life for a message
     */
    long getMaxLifeTime() const;
-
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   void setRcvTimestamp(Timestamp rcvTimestamp);
-
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   Timestamp getRcvTimestamp() const;
 
    /**
     * Tagged form of message receive, e.g.:<br />

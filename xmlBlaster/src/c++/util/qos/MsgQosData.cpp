@@ -49,8 +49,6 @@ Dll_Export const bool DEFAULT_readonly    = false;
 
    void MsgQosData::init()
    {
-      state_ = Constants::STATE_OK;
-      stateInfo_ = "";
       subscriptionId_ = "";
       redeliver_ = 0;
       queueIndex_ = -1;
@@ -59,23 +57,17 @@ Dll_Export const bool DEFAULT_readonly    = false;
       volatileFlag_ = DEFAULT_isVolatile;
       durable_ = DEFAULT_isDurable;
       forceUpdate_= DEFAULT_forceUpdate;
-      readonly_ = DEFAULT_readonly;
-      rcvTimestamp_ = 0;
-      rcvTimestampFound_ = false;
       lifeTime_ = -1;
       remainingLifeStatic_ = -1;
       priority_ = NORM_PRIORITY;
-      size_ = 0;
-      serialData_ = "";
       isExpired_ = false; // cache the expired state for performance reasons
       maxLifeTime_ = global_.getProperty().getLongProperty("message.maxLifeTime", -1);
       receiveTimestampHumanReadable_ = global_.getProperty().getBoolProperty("cb.receiveTimestampHumanReadable", false);
+      topicProperty_ = NULL;
    }
 
    void MsgQosData::copy(const MsgQosData& data)
    {
-      state_ = data.state_;
-      stateInfo_ = data.stateInfo_;
       subscriptionId_ = data.subscriptionId_;
       redeliver_ = data.redeliver_;
       queueIndex_ = data.queueIndex_;
@@ -84,49 +76,38 @@ Dll_Export const bool DEFAULT_readonly    = false;
       volatileFlag_ = data.volatileFlag_;
       durable_ = data.durable_;
       forceUpdate_= data.forceUpdate_;
-      readonly_ = data.readonly_;
-      rcvTimestamp_ = data.rcvTimestamp_;
-      rcvTimestampFound_ = data.rcvTimestampFound_;
       lifeTime_ = data.lifeTime_;
       remainingLifeStatic_ = data.remainingLifeStatic_;
       priority_ = data.priority_;
-      size_ = data.size_;
-      serialData_ = data.serialData_;
       isExpired_ = data.isExpired_;
       maxLifeTime_ = data.maxLifeTime_;
       receiveTimestampHumanReadable_ = data.receiveTimestampHumanReadable_;
+      topicProperty_ = NULL;
+      if (data.topicProperty_)
+         topicProperty_ = new TopicProperty(*data.topicProperty_);
    }
 
 
    MsgQosData::MsgQosData(Global& global, const string& serialData)
-      : ME("MsgQosData"),
-        global_(global),
-        log_(global.getLog("core")),
+      : QosData(global, serialData),
         sender_(SessionQos(global)),
-        destinationList_(),
-        destination_(),
-        routeNodeList_()
+        destinationList_()
    {
       init();
-      serialData_ = serialData;
-
    }
 
 
    MsgQosData::MsgQosData(const MsgQosData& data)
-      : ME(data.ME),
-        global_(data.global_),
-        log_(data.log_),
+      : QosData(data),
         sender_(data.sender_),
-        destinationList_(data.destinationList_),
-        destination_(data.destination_),
-        routeNodeList_(data.routeNodeList_)
+        destinationList_(data.destinationList_)
    {
       copy(data);
    }
 
    MsgQosData& MsgQosData::operator=(const MsgQosData& data)
    {
+      QosData::copy(data);
       copy(data);
       return *this;
    }
@@ -134,6 +115,7 @@ Dll_Export const bool DEFAULT_readonly    = false;
 
    MsgQosData::~MsgQosData()
    {
+      delete topicProperty_;
    }
 
    bool MsgQosData::isPubSubStyle() const
@@ -144,70 +126,6 @@ Dll_Export const bool DEFAULT_readonly    = false;
    bool MsgQosData::isPtp()
    {
       return !isPubSubStyle();
-   }
-
-   void MsgQosData::setState(const string& state)
-   {
-      state_ = state;
-   }
-
-   string MsgQosData::getState() const
-   {
-      return state_;
-   }
-
-   /**
-    * @param state The human readable state text of an update message
-    */
-   void MsgQosData::setStateInfo(const string& stateInfo)
-   {
-      stateInfo_ = stateInfo;
-   }
-
-   /**
-    * Access state of message on update().
-    * @return The human readable info text
-    */
-   string MsgQosData::getStateInfo() const
-   {
-      return stateInfo_;
-   }
-
-   /**
-    * True if the message is OK on update(). 
-    */
-   bool MsgQosData::isOk() const
-   {
-      return Constants::STATE_OK == state_;
-   }
-
-   /**
-    * True if the message was erased by timer or by a
-    * client invoking erase(). 
-    */
-   bool MsgQosData::isErased() const
-   {
-      return Constants::STATE_ERASED == state_;
-   }
-
-   /**
-    * True if a timeout on this message occurred. 
-    * <p />
-    * Timeouts are spanned by the publisher and thrown by xmlBlaster
-    * on timeout to indicate for example
-    * STALE messages or any other user problem domain specific event.
-    */
-   bool MsgQosData::isTimeout() const
-   {
-      return Constants::STATE_TIMEOUT == state_;
-   }
-
-   /**
-    * True on cluster forward problems
-    */
-   bool MsgQosData::isForwardError() const
-   {
-      return Constants::STATE_FORWARD_ERROR == state_;
    }
 
    /**
@@ -293,31 +211,6 @@ Dll_Export const bool DEFAULT_readonly    = false;
    }
 
    /**
-    * @return readonly Once published the message can't be changed. 
-    */
-   void MsgQosData::setReadonly(bool readonly)
-   {
-      readonly_ = readonly;
-   }
-
-   /**
-    * @return true/false
-    */
-   bool MsgQosData::isReadonly()
-   {
-      return readonly_;
-   }
-
-   /**
-    * Access sender login name.
-    * @return loginName of sender or null if not known
-   string getSender()
-   {
-      return (sender == null) ? (const string&)null : sender.getLoginName();
-   }
-    */
-
-   /**
     * Access sender unified naming object.
     * @return sessionName of sender or null if not known
     */
@@ -325,18 +218,6 @@ Dll_Export const bool DEFAULT_readonly    = false;
    {
       return sender_;
    }
-
-   /**
-    * Set the sender name. 
-    * <p>
-    * Prefer setSender(SessionName)
-    * </p>
-    * @param loginName, relative name or absolute name of the sender
-   void setSender(const string& sender)
-   {
-      sender = new SessionName(glob, sender);
-   }
-    */
 
    /**
     * Access sender name.
@@ -403,57 +284,6 @@ Dll_Export const bool DEFAULT_readonly    = false;
    long MsgQosData::getQueueIndex() const
    {
       return queueIndex_;
-   }
-
-   /**
-    * Adds a new route hop to the QoS of this message. 
-    * The added routeInfo is assumed to be one stratum closer to the master
-    * So we will rearrange the stratum here. The given stratum in routeInfo
-    * is used to recalculate the other nodes as well.
-    */
-   void MsgQosData::addRouteInfo(const RouteInfo& routeInfo)
-   {
-      routeNodeList_.insert(routeNodeList_.end(), routeInfo);
-
-      // Set stratum to new values
-      int offset = routeInfo.getStratum();
-      if (offset < 0) offset = 0;
-
-      vector<RouteInfo>::reverse_iterator iter = routeNodeList_.rbegin();
-      while (iter != routeNodeList_.rend()) {
-         (*iter).setStratum(offset++);
-         iter++;
-      }
-   }
-
-   /**
-    * Check if the message has already been at the given node (circulating message). 
-    * @return How often the message has travelled the node already
-    */
-   int MsgQosData::count(const NodeId& nodeId) const
-   {
-      int cnt = 0;
-      if (routeNodeList_.empty()) return cnt;
-      vector<RouteInfo>::const_iterator iter = routeNodeList_.begin();
-      while (iter != routeNodeList_.end()) {
-         if ((*iter).getNodeId() == nodeId) cnt++;
-         iter++;
-      }
-      return cnt;
-   }
-
-   /**
-    * Check if the message has already been at the given node (circulating message). 
-    * @return How often the message has travelled the node already
-    */
-   bool MsgQosData::dirtyRead(NodeId nodeId)
-   {
-      if (routeNodeList_.empty()) return false;
-      vector<RouteInfo>::iterator iter = routeNodeList_.begin();
-      while (iter != routeNodeList_.end()) {
-         if ((*iter).getNodeId() == nodeId) return (*iter).getDirtyRead();
-      }
-      return false;
    }
 
    /**
@@ -569,47 +399,6 @@ Dll_Export const bool DEFAULT_readonly    = false;
       return maxLifeTime_;
    }
 
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   void MsgQosData::setRcvTimestamp(Timestamp rcvTimestamp)
-   {
-      rcvTimestamp_ = rcvTimestamp;
-   }
-
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   Timestamp MsgQosData::getRcvTimestamp() const
-   {
-      return rcvTimestamp_;
-   }
-
-   /**
-    * Tagged form of message receive, e.g.:<br />
-    * &lt;rcvTimestamp nanos='1007764305862000004'/>
-    *
-    * @see org.xmlBlaster.util.Timestamp
-    */
-   string MsgQosData::getXmlRcvTimestamp()
-   {
-      // if human readable is not considered here. It could be implemented in
-      // the TimestampFactory as a static method.
-      return string("<timestamp>") + lexical_cast<string>(getRcvTimestamp()) + "</timestamp>";
-   }
-
-   /**
-    * Set timestamp to current time.
-    */
-   void MsgQosData::touchRcvTimestamp()
-   {
-      rcvTimestamp_ = TimestampFactory::getInstance().getTimestamp();
-   }
-
    /**
     * Get all the destinations of this message.
     * This should only be used with PTP style messaging<br />
@@ -637,7 +426,7 @@ Dll_Export const bool DEFAULT_readonly    = false;
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII string
     */
-   string MsgQosData::toXml(const string& extraOffset="")
+   string MsgQosData::toXml(const string& extraOffset)
    {
       log_.warn(ME, "toXml not implemented yet");
 //      return factory.writeObject(this, extraOffset);
