@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.21 2002/06/27 11:12:44 ruff Exp $
+Version:   $Id: Global.java,v 1.22 2002/08/16 11:37:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -30,7 +30,7 @@ import java.io.IOException;
  * <p>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public final class Global extends org.xmlBlaster.util.Global
+public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
    private RunlevelManager runlevelManager;
 
@@ -56,6 +56,31 @@ public final class Global extends org.xmlBlaster.util.Global
    private boolean useAdminManager = true;
    private boolean firstUseAdminManager = true; // to allow caching
    private MomClientGateway momClientGateway = null;
+
+
+   public void shutdown() { 
+      log.info(ME, "Destroying global handle");
+      if (cbWorkerPool != null) {
+         // registered itsell to Runlevel changes cbWorkerPool.shutdown();
+         cbWorkerPool = null;
+      }
+      if (burstModeTimer != null) {
+         burstModeTimer.shutdown();
+         burstModeTimer = null;
+      }
+      if (cbPingTimer != null) {
+         cbPingTimer.shutdown();
+         cbPingTimer = null;
+      }
+      if (sessionTimer != null) {
+         sessionTimer.shutdown();
+         sessionTimer = null;
+      }
+      if (messageTimer != null) {
+         messageTimer.shutdown();
+         messageTimer = null;
+      }
+   }
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -109,6 +134,7 @@ public final class Global extends org.xmlBlaster.util.Global
          super.setId(nodeId.toString());
          log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + nodeId.toString() + "'");
       }
+      getRunlevelManager().addRunlevelListener(this);
    }
 
    /**
@@ -426,6 +452,44 @@ public final class Global extends org.xmlBlaster.util.Global
 
    public RequestBroker getRequestBroker() {
       return this.requestBroker;
+   }
+
+   /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
+   }
+
+   /**
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_RUNNING) {
+         }
+      }
+      else if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+         }
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            shutdown();
+         }
+      }
    }
 
    public String getDump() throws XmlBlasterException {
