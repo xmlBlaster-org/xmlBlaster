@@ -117,6 +117,8 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       glob.init(Util.getOtherServerPorts(serverPort));
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
+        "-ProtocolPlugin[XML-RPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver",
+        "-CbProtocolPlugin[XML-RPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver",
         "-client.protocol", "XML-RPC",
         "-xmlrpc.portCB", ""+(serverPort+1),
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
@@ -149,7 +151,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.error(ME, "Can't connect to xmlBlaster: " + e.getMessage());
       }
 
       this.updateInterceptor.getMsgs().clear();
@@ -199,11 +201,12 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish '" + oid + "' returned state=" + rq.getState());
+         log.info(ME, "SUCCESS publish '" + oid + "' " + pq.toXml() + ", returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.toString());
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         e.printStackTrace();
          fail("publish of configuration data - XmlBlasterException: " + e.getMessage());
       }
 
