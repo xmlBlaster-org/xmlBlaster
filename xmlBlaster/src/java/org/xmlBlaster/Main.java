@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.60 2000/11/01 11:02:52 ruff Exp $
+Version:   $Id: Main.java,v 1.61 2000/11/01 19:11:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -29,6 +29,7 @@ import java.util.Vector;
 import java.util.StringTokenizer;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.lang.reflect.Method;
 
 
 /**
@@ -116,19 +117,7 @@ public class Main
          authenticate = new Authenticate();
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
-         /* Marcel: Runs fine with JDK 1.3, but does not compile with JDK 1.2
-         try {  // Add shutdown hook (since JDK 1.3, catch signals)
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-               public void run() {
-                  Log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
-                  shutdown();
-               }
-            });
-            Log.info(ME, "Shutdown hook added, Ctrl-C will work to stop the server on UNIX.");
-         } catch (Throwable e)  { // JDK 1.2.. ignore!
-            Log.info(ME, "Could not add shutdown hook for JDK 1.2, Ctrl-C wont work.");
-         }
-         */
+         catchSignals();
 
          loadDrivers();
 
@@ -366,6 +355,51 @@ public class Main
          }
       }
    }
+
+
+   /**
+    * Add shutdown hook.
+    * <p />
+    * Catch signals, e.g. Ctrl C to stop xmlBlaster.<br />
+    * Uses reflection since only JDK 1.3 supports it.
+    */
+   public void catchSignals()
+   {
+      class Shutdown extends Thread {
+         public void run() {
+            Log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
+            shutdown();
+         }
+      }
+
+      Method method;
+      try  {
+         Class cls = Runtime.getRuntime().getClass();
+         Class[] paramCls = new Class[1];
+         paramCls[0] = Class.forName("java.lang.Thread");
+         method = cls.getDeclaredMethod("addShutdownHook", paramCls);
+      }
+      catch (java.lang.ClassNotFoundException e) {
+         return;
+      }
+      catch (java.lang.NoSuchMethodException e) {
+         Log.trace(ME, "No shutdown hook established");
+         return;
+      }
+
+      try {
+         if (method != null) {
+            Object[] params = new Object[1];
+            params[0] = new Shutdown();
+            method.invoke(Runtime.getRuntime(), params);
+         }
+      }
+      catch (java.lang.reflect.InvocationTargetException e) {
+      }
+      catch (java.lang.IllegalAccessException e) {
+      }
+   }
+
 
 
    /**
