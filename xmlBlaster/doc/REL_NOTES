@@ -2,6 +2,12 @@
 
 Changes for 0.74 [Feb.??, 2000]
 ==============================
+   - Set up xmlBLaster to use Ant as it's build system
+
+   - Added the revolutionary XML based JDBC database gateway.
+	  see xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc
+	  see xmlBlaster/demo/javaclients/jdbc
+
    - Added servlet / browser callback framework
 	  see xmlBlaster/src/java/org/xmlBlaster/protocol/http
 
