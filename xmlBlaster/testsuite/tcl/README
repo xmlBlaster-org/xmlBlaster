@@ -1,0 +1,8 @@
+This is an example to access xmlBlaster from a Tcl client
+
+- client uses the tclmico (TCL) CORBA library
+
+- xmlBlaster runs with JacORB (Java)
+
+
+Sorry, not yet implemented!
