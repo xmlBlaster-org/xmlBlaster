@@ -92,6 +92,8 @@ public class SessionInfo implements I_Timeout
          Log.info(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
          timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
+      else
+         Log.info(ME, "Session lasts forever, requested expiry timer was 0");
    }
 
    public void finalize()
