@@ -435,7 +435,8 @@ Else add it manually.
      <exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl">
         <env key="PATH" path="${CORBACPP_HOME}/bin"/>
         <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
-        <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX -->
+        <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
+        <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
         <arg line="--poa"/>
         <arg line="--c++-suffix cpp"/>
         <arg line="../../../${idl.dir}/xmlBlaster.idl"/>
