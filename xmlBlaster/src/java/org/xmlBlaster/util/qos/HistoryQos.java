@@ -36,6 +36,9 @@ public final class HistoryQos
    public static final int DEFAULT_numEntries = 1;
    private int numEntries = DEFAULT_numEntries;
 
+   public static final boolean DEFAULT_newestFirst = true;
+   private boolean newestFirst = DEFAULT_newestFirst;
+
    /**
     * @param glob The global handle holding environment and logging objects
     */
@@ -73,6 +76,25 @@ public final class HistoryQos
    }
 
    /**
+    * The sorting order in which the history entries are delivered. 
+    * The higher priority messages are always delivered first.
+    * In one priority the newest message is delivered first with 'true', setting 'false'
+    * reverts the delivery sequence in this priority.
+    * @param newestFirst defaults to true. 
+    */
+   public void setNewestFirst(boolean newestFirst) {
+      this.newestFirst = newestFirst;
+   }
+
+   /**
+    * @return defaults to true
+    * @see #setNewestFirst(boolean)
+    */
+   public boolean getNewestFirst() {
+      return newestFirst;
+   }
+
+   /**
     * Called for SAX history start tag
     * @return true if ok, false on error
     */
@@ -90,6 +112,9 @@ public final class HistoryQos
                if (attrs.getQName(i).equalsIgnoreCase("numEntries") ) {
                   String entryStr = attrs.getValue(i).trim();
                   try { setNumEntries(Integer.parseInt(entryStr)); } catch(NumberFormatException e) { log.error(ME, "Invalid history - numEntries =" + entryStr); };
+               }
+               if (attrs.getQName(i).equalsIgnoreCase("newestFirst") ) {
+                  setNewestFirst((new Boolean(attrs.getValue(i).trim())).booleanValue());
                }
                else {
                   log.warn(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in history section.");
@@ -142,7 +167,10 @@ public final class HistoryQos
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<history numEntries='").append(getNumEntries()).append("'/>");
+      sb.append(offset).append("<history");
+      sb.append(" numEntries='").append(getNumEntries()).append("'");
+      sb.append(" newestFirst='").append(getNewestFirst()).append("'");
+      sb.append("/>");
 
       return sb.toString();
    }
