@@ -18,6 +18,7 @@
 
         <li> Compiles with C or with C++ compiler</li>
 
+        <li> The communication protocol is based on the xmlBlaster internal SOCKET protocol</li>
         <li> Object/executable size is only 25 - 40 KBytes</li>
         
         <li> Supports synchronous xmlBlaster access with
@@ -40,7 +41,7 @@
           for all methods to have object oriented like access,
           see HelloWorld.c as a usage example</li>
 
-        <li> You can create multiple independant instances of client connections or callback servers
+        <li> You can create multiple independent instances of client connections or callback servers
           and they can run in parallel.</li>
 
         <li> The access library and the callback library is thread safe (no global variables).
@@ -51,7 +52,7 @@
           </li>
     </ul>
 
-     
+     <h3>Functionality</h3>
      <p>
      All invocations to xmlBlaster are done by invoking function pointers
      on struct XmlBlasterAccessUnparsed.
@@ -68,9 +69,8 @@
      <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
      </ul>
      </p>
-     <p>
-     The communication protocol is based on the xmlBlaster internal SOCKET protocol.
-     </p>
+
+     <h3>Memory footprint</h3>
      <p>
      On Linux the 'hello world' client executable has a very little footprint,
      on Windows you need to add the pthreadVC.lib size of ~ 29 kBytes:
@@ -90,6 +90,51 @@
    libpthread.so.0 => /lib/libpthread.so.0 (0x4002b000)
    libc.so.6 => /lib/libc.so.6 (0x4007b000)
    /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+     </pre>
+     <h3>Compilation</h3>
+     <p>
+     A make file or ant based compilation is not yet available,
+     here is an example how to compile single threaded synchronous client:
+     </p>
+     <pre>
+cd xmlBlaster/src/c
+
+Linux C:
+   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
+
+Linux C++:
+   g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
+
+Windows:
+   cl -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c
+                                   socket\xmlBlasterSocket.c ws2_32.lib
+
+Solaris:
+   cc -Xc -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c
+                                   socket/xmlBlasterSocket.c -lsocket -lnsl
+     </pre>
+     <p>
+     To compile a multi threaded client with synchronous access and asynchronous
+     callbacks:
+     </p>
+     <pre>
+cd xmlBlaster/src/c/socket
+
+Linux C:
+   gcc -DXmlBlasterAccessUnparsedMain -Wall -pedantic -g -D_REENTRANT -I..
+       -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c
+       xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
+
+Windows:
+   cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads
+      /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\msgUtil.c
+      xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
+      ws2_32.lib pthreadVC.lib
+    
+Solaris:
+   cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain
+       XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c
+       CallbackServerUnparsed.c -lpthread -lsocket -lnsl
      </pre>
      <p>
      Compilation hints are in the source files 
@@ -563,7 +608,7 @@ int main(int argc, char** argv)
       <li> Add another layer which parses the QoS with Expat</li>
 
       <li> Use it as a SOCKET protocol plugin for our C++ client library to 
-           get all the nice fail safe features for the C++ lib and to
+           get all the nice fail safe features for the C lib and to
            make the C++ lib smaller (the CORBA plugin is quite big).</li>
 
       <li> Add ant task c-lib</li>
@@ -588,6 +633,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 </requirement>
 
