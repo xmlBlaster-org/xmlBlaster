@@ -1,7 +1,7 @@
 This is the framework to allow callbacks from xmlBlaster to browsers.
 
-We provide the JSDK from SUN  xmlBlaster/lib/servlet-2.0.jar
-in this distribution.
+We provide the JSDK from SUN  xmlBlaster/lib/servlet.jar (2.0)
+in this distribution to allow compilation.
 
 The servlets connects to xmlBlaster using CORBA
 and to the browser using a persistent http connection
@@ -10,6 +10,17 @@ and to the browser using a persistent http connection
 The messages are directly transferred to the browser, which has a
 XML parser and notifies the interested browser frames about the callback.
 For Javascript examples see the javascript directory.
+
+Create a war file:
+
+  build.sh all
+  build.sh deploy_war
+
+and deploy it to tomcat.
+
+
+
+****----- Stop reading further: The rest of this file is outdated! -------****
 
 
 IMPORTANT NOTE FOR SERVLET INSTALLATION:
@@ -148,7 +159,7 @@ Config files setup:
       wrapper.classpath=/home/ruff/xmlBlaster/classes
       #wrapper.classpath=/home/ruff/xmlBlaster/lib/xmlBlaster.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/servlet-2.0.jar
-      wrapper.classpath=/home/ruff/xmlBlaster/lib/test.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/junit.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/omquery.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/xtdash.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/parser.jar
