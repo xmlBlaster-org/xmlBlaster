@@ -43,5 +43,12 @@ xmlBlaster:
            -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
            org.xmlBlaster.MainGUI
 
+DOCUMENT_ROOT=${XMLBLASTER_HOME}/demo/html
+
+# Not finished: Deploy everything necessary for applets to Document Root
+install:
+	$(MKDIR_RECURSIVE) $(DOCUMENT_ROOT)/classes 
+	( $(CD) $(DOCUMENT_ROOT)/classes; $(JAR) xvf $(JAR_DIR)/xmlrpc.jar )
+
 #doc:
 #	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java
