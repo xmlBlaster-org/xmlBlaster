@@ -892,6 +892,7 @@ TODO
                <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
                <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
                <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
+               <env key="PATH" path="${CORBACPP_HOME}/bin" />
                <arg line="--poa"/>
                <arg line="--c++-suffix cpp"/>
                <arg line="../../../${idl.file}"/>
