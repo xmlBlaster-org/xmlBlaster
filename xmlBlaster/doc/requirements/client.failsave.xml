@@ -3,11 +3,12 @@
 
 <requirement id='client.failsave' type='NEW' prio='LOW' status="CLOSED">
    <topic>
-      CorbaConnection is a java helper class for Java clients which supports
+      XmlBlasterConnection is a helper class for Java clients which supports
       polling for xmlBlaster and record/playback of messages during lost connections.
    </topic>
    <description>
-      See CorbaConnection.java for a usage description and TestFailSave.java (testsuite)
+      The protocol used (CORBA, RMI, XML-RPC) is transparently hidden.
+      See XmlBlasterConnection.java for a usage description and TestFailSave.java (testsuite)
       for a code example how to use it.
    </description>
    <example lang="Java">
@@ -15,7 +16,7 @@
       public void login()
       {
          try {
-            corbaConnection = new CorbaConnection(); // Hides Corba stuff
+            xmlBlasterConnection = new XmlBlasterConnection(); // Hides Corba stuff
 
             // Setup fail save handling (optional) ...
             long retryInterval = 4000L;// if connection to xmlBlaster is lost,
@@ -24,9 +25,9 @@
             int maxMessages = 1000;    // if connection to xmlBlaster is lost,
                                        // no. of messages to record locally and playback on reconnect
             long pingInterval = 2000L;
-            corbaConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
+            xmlBlasterConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
 
-            corbaConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
+            xmlBlasterConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
          }
          catch (XmlBlasterException e) {
              System.out.println("Login failed, ID=" + e.id + " REASON=" + e.reason);
@@ -34,7 +35,7 @@
       }
 
       /**
-       * This is the callback method invoked from CorbaConnection
+       * This is the callback method invoked from XmlBlasterConnection
        * informing the client in an asynchronous mode if the connection was established.
        * This method is enforced through interface I_ConnectionProblems
        */
@@ -42,8 +43,8 @@
       {
          // Code your recovery handling ...
          try {
-            if (corbaConnection.queueSize() > 0) {
-               corbaConnection.flushQueue();    // send all tailback messages
+            if (xmlBlasterConnection.queueSize() > 0) {
+               xmlBlasterConnection.flushQueue();    // send all tailback messages
             }
          } catch (XmlBlasterException e) {
          }
@@ -56,10 +57,11 @@
       }
       ]]>
    </example>
-   <see>org.xmlBlaster.client.CorbaConnection</see>
+   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -7,9 +7,9 @@
    </topic>
    <description>
       The xmlBlaster interface has a ping method. This allows checking the CORBA connection.
-      The Java CorbaConnection class uses this ping (if in fail save mode) and
+      The Java XmlBlasterConnection class uses this ping (if in fail save mode) and
       starts login polling if the ping fails.
-      Use method CorbaConnection.initFailSave() to activate the ping feature
+      Use method XmlBlasterConnection.initFailSave() to activate the ping feature
       and set the ping interval.
       Note that this is a pure client behavior, and for the moment the only reference implementation
       is in Java.
@@ -17,7 +17,7 @@
    <example lang="Java">
       <![CDATA[
       try {
-         corbaConnection = new CorbaConnection(); // Hides Corba stuff
+         xmlBlasterConnection = new XmlBlasterConnection(); // Hides Corba stuff
 
          // Setup fail save handling ...
          long retryInterval = 4000L;
@@ -25,23 +25,24 @@
          int maxMessages = 1000;
          long pingInterval = 1000L;  // ping xmlBlaster server every second
                                      // 0 switches pinging off
-         corbaConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
+         xmlBlasterConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
 
          // and do the login ...
          String loginName = "Ben";
          String passwd = "secret";
          String qos = "<qos></qos>";
-         corbaConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
+         xmlBlasterConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
           System.out.println("Login failed, ID=" + e.id + " REASON=" + e.reason);
       }
       ]]>
    </example>
-   <see>org.xmlBlaster.client.CorbaConnection</see>
+   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
    <date>2000 02 29</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

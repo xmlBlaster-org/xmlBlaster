@@ -8,8 +8,9 @@
    </topic>
    <description>
       <![CDATA[
-      The Java CorbaConnection class has a built in cache. If you activate this
-      cache with the initCache() method, the corbaConnection.get() method accesses
+      The Java XmlBlasterConnection class (a helper class for Java clients) has a built in cache.
+      If you activate this
+      cache with the initCache() method, the xmlBlasterConnection.get() method accesses
       a message on the first call synchronously and returns it to you.<br />
       Behind the scenes, a subscribe() is done as well, and incoming updates
       of this messages are put into the cache.<br />
@@ -23,36 +24,36 @@
    <example lang="Java">
       <![CDATA[
       try {
-         corbaConnection = new CorbaConnection(); // Hides Corba stuff
+         xmlBlasterConnection = new XmlBlasterConnection(); // Hides Corba stuff
 
          // Setup cache ...
-         corbaConnection.initCache(10);
+         xmlBlasterConnection.initCache(10);
 
          // and do the login ...
          String loginName = "Gesa";
          String passwd = "secret";
          String qos = "<qos></qos>";
-         corbaConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
+         xmlBlasterConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
 
          // This get() is only on the first call a write through to xmlBlaster
          // Following calls retrieve the up to date data from the local cache:
          MessageUnitContainer[] msgUnitArr =
-               corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
+               xmlBlasterConnection.get(xmlKey.toXml(), xmlQos.toXml());
       }
       catch (XmlBlasterException e) {
           System.out.println("ERROR, ID=" + e.id + " REASON=" + e.reason);
       }
       ]]>
    </example>
-   <todo>Rename corbaConnection.get() to getCached(), which automatically initializes the cache</todo>
+   <todo>Rename xmlBlasterConnection.get() to getCached(), which automatically initializes the cache</todo>
    <todo>Add a test case to the testsuite</todo>
    <todo>How to unsubscribe?</todo>
-   <see>org.xmlBlaster.client.CorbaConnection</see>
+   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <see>org.xmlBlaster.client.BlasterCache</see>
    <author>Konrad.Krafft@doubleSlash.de</author>
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
