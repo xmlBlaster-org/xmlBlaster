@@ -2,34 +2,39 @@
   
 Changes for 0.77 [?, 2000]
 ===============================
+   - Stripped from jacorb.jar unneeded classes.
+	  This reduces the size from 3.7 MB to 2.3 MB. 
+
+   - Bug work around for thread leak: The thread leak from
+     JacORB 1.1 is for the bug being fixed in CorbaConnection.java
+
    - Bugfix in CorbaConnection.java: Cleanup for Callback server added.
 
    - Changed XML parser to jaxp 1.0.1 and added servlet support
-	  to xtdash.jar (from original xt.jar).
+     to xtdash.jar (from original xt.jar).
 
    - Changed xmlBlaster.idl
-	  from
-	     login(in string loginName, in string passwd,
+     from
+        login(in string loginName, in string passwd,
               in clientIdl::BlasterCallback cb,
               in serverIdl::XmlType qos)
-	  to 
-	     login(in string loginName, in string passwd,
+     to 
+        login(in string loginName, in string passwd,
               in serverIdl::XmlType qos)
-	  The callback protocol and address is now passed using
-	  the xml based qos.
-	  NOTE: You need to change your client code as well!
-	  See requirement engine.qos.login.callback
-	  
-
+     The callback protocol and address is now passed using
+     the xml based qos.
+     NOTE: You need to change your client code as well!
+     See requirement engine.qos.login.callback
+     
    - CORBA implementors other than JACORB and MICO can now be used. ORBACUS 
      can work for the xmlBlaster server, java clients and c++ clients. You 
      need OB-4.0b3 (for c++) and JOB-4.0b3 (for Java) or higher. You can 
      find more about ORBACUS at http://www.ooc.com.
 
-	- Persistent browser callback bugfixes
-	  * Added proper logout
-	  * Fixed security hole
-	  * Added support to set system properties through initArgs
+   - Persistent browser callback bugfixes
+     * Added proper logout
+     * Fixed security hole
+     * Added support to set system properties through initArgs
      * Removed memory leak
      * Added ping/pong, to allow servlet to detect a lost browser
 
