@@ -79,20 +79,20 @@ Read
 Read !!! the good Apache Jserv configuring overview at
    http://www.magiccookie.com/computers/apache-jserv/
 
-1) Edit /etc/httpd/httpd.conf	  (Apache 1.3.12)
+1) Edit /etc/httpd/httpd.conf     (Apache 1.3.12)
       LoadModule jserv_module       /usr/lib/apache/mod_jserv.so
       AddModule mod_jserv.c
       <IfModule mod_jserv.c>
       Include /etc/httpd/conf/jserv/jserv.conf
       </IfModule>
 
-		# KeepAlive: Whether or not to allow persistent connections (more than
-		# one request per connection). Set to "Off" to deactivate.
-		KeepAlive On
+      # KeepAlive: Whether or not to allow persistent connections (more than
+      # one request per connection). Set to "Off" to deactivate.
+      KeepAlive On
 
-		# MaxKeepAliveRequests: The maximum number of requests to allow
-		# during a persistent connection. Set to 0 to allow an unlimited amount.
-		MaxKeepAliveRequests 0
+      # MaxKeepAliveRequests: The maximum number of requests to allow
+      # during a persistent connection. Set to 0 to allow an unlimited amount.
+      MaxKeepAliveRequests 0
 
 2) Watch log output:
       tail -f  /var/log/httpd/jserv.log
@@ -130,26 +130,33 @@ Config files setup:
       servlet.SystemInfo.code=demo.html.systemInfo.SystemInfo
       servlet.PXSLServlet.code=PXSLServlet
 
+      servlets.default.initArgs=org.omg.CORBA.ORBClass=jacorb.orb.ORB
+      servlets.default.initArgs=org.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+      servlets.default.initArgs=org.xml.sax.parser=com.sun.xml.parser.Parser
+
+
    Edit /etc/httpd/conf/jserv/jserv.properties
 
       wrapper.bin=/usr/local/jdk/bin/java
 
       wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
       wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+      wrapper.bin.parameters=-Dorg.xml.sax.parser=com.sun.xml.parser.Parser
 
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/idl.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/classes
-		#wrapper.classpath=/home/ruff/xmlBlaster/lib/xmlBlaster.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/servlet-2.0.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/test.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/omquery.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/xtdash.jar
-		wrapper.classpath=/home/ruff/xmlBlaster/lib/xml.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/idl.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/classes
+      #wrapper.classpath=/home/ruff/xmlBlaster/lib/xmlBlaster.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/servlet-2.0.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/test.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/omquery.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/xtdash.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/parser.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/jaxp.jar
 
       log.file=/var/log/httpd/jserv.log
       
-		security.authentication=false
+      security.authentication=false
 
 
 
@@ -160,8 +167,8 @@ Config files setup:
    Start the serlvet runtime manually on your xterm (command prompt):
 
       - switch off the automatic starting in jserv.conf:
-		  (you can start jserv manually or use the automatic startup with apache
-		  both runs fine)
+        (you can start jserv manually or use the automatic startup with apache
+        both runs fine)
          ApJServManual on
 
          ApJServLogFile /var/log/httpd/mod_jserv.log
@@ -227,9 +234,9 @@ Installs to=====>
 Put this line somewhere in Apache's httpd.conf file:
    Include /etc/httpd/jserv/jserv.conf
 
-	# MaxKeepAliveRequests: The maximum number of requests to allow
-	# during a persistent connection. Set to 0 to allow an unlimited amount.
-	MaxKeepAliveRequests 0
+   # MaxKeepAliveRequests: The maximum number of requests to allow
+   # during a persistent connection. Set to 0 to allow an unlimited amount.
+   MaxKeepAliveRequests 0
 
 Test it:
 http://localhost/servlets/Hello
