@@ -523,7 +523,8 @@ TODO
             <exclude name="org/jutils"/>
             <exclude name="README"/>
             <exclude name="**/servlet/Req*.java"/>
-            <exclude name="**/client/protocol/http/j2me/**"/>
+            <exclude name="**/client/protocol/http/j2me/UrlConnectionMicro.java"/> <!-- We need Base64.java -->
+            <exclude name="**/client/protocol/http/j2me/XmlBlasterAccessJ2ME.java"/>
             <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver (IS NOT IMPLEMENTED) -->
             <!-- Activate excludes to compile with JDK 1.2 -->
             <patternset id="jdk12.notcompatible.sources">
