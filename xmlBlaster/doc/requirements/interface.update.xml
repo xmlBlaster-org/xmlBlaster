@@ -61,6 +61,9 @@
          or an empty qos "&lt;qos/>".
          </td>
          </tr>
+         <tr>
+         <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
+         </tr>
       </table>
 
       <p>
@@ -184,7 +187,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>

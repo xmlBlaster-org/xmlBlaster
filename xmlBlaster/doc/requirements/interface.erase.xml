@@ -30,6 +30,9 @@
          <tr>
          <td>return</td><td>array of string</td><td>An array of XML encoded strings containing status and the deleted messages (see EraseRetQos link below)</td>
          </tr>
+         <tr>
+         <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
+         </tr>
       </table>
 
       <p>
@@ -105,7 +108,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
