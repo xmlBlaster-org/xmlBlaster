@@ -88,6 +88,44 @@ xmlBlaster\demo\activex
 <pre>
     java -jar lib\xmlBlaster.jar
 </pre>
+
+   <h3>Usage</h3>
+   <p>
+   The Java bean <a href="http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/client/activex/XmlScriptAccess.html" target="others">XmlScriptAccess</a> exports
+   all needed functionality to activeX aware languages.
+   All native data types are directly available from C#/VisualBasic, 
+   xmlBlaster specific java objects returned by XmlScriptAccess methods
+   are automatically available in C#/VisualBasic, so you simply use
+   the returned objects as you would in java. Here is an example
+   of the subscribe method declaration in Java (XmlSriptAccess bean)
+   </p>
+   <pre>
+public SubscribeReturnQos subscribe(String xmlKey, String xmlQos)
+                                    throws XmlBlasterException
+   </pre>
+   <p>In Visual Basic you use the returned java object like
+   </p>
+   <pre><![CDATA[
+Try
+   ...
+
+   Dim subscribeReturnQos As Object
+
+   subscribeReturnQos = xmlBlaster.subscribe("&lt;key oid='HelloWorld3'/>", "&lt;qos/>")
+   
+   ' Access examples:
+   ' subscribeReturnQos.getSubcriptionId()
+   ' subscribeReturnQos.getStateInfo()
+   ' ...
+
+   ...
+Catch e As SystemException
+   Console.WriteLine("Exception:" & e.ToString())
+   ]]></pre>
+   <p>You just lookup all methods of the returned
+   java object in the Javadoc API and call the
+   methods as you would do in Java
+   </p>
    </description>
 
    <example lang="Csharp" type="HTML">
@@ -194,6 +232,7 @@ End Module
 
    <see type="REQ">interface</see>
    <see type="REQ">client.script</see>
+   <see type="API">org.xmlBlaster.client.activex.XmlScriptAccess</see>
    <see type="INTERNET">http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html</see>
    <see type="INTERNET">http://forum.java.sun.com/forum.jsp?forum=40</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/activex/README</see>
@@ -201,6 +240,6 @@ End Module
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 </requirement>
 
