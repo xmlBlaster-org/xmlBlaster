@@ -39,9 +39,9 @@ Comment:   Validates xml requirements
 <!ELEMENT author  (%text;)>  <!-- who wrote the requirement -->
 <!ELEMENT hacker  (%text;)>  <!-- who coded it -->
 <!ELEMENT effort  (%text;)>  <!-- how many days you expect / you needed to implement -->
-<!ELEMENT date  (%text;)>         <!-- date you setup this requirement -->
-<!ELEMENT revision  (%text;)> <!-- the cvs revision number -->
-<!ELEMENT log  (%text;)>          <!-- the cvs log informations (optional) -->
+<!ELEMENT date  (%text;)>    <!-- date you setup this requirement -->
+<!ELEMENT revision  (%text;)> <!-- the subversion revision number -->
+<!ELEMENT log  (%text;)>     <!-- the svn log informations (optional) -->
 
 <!-- if the requirement needs to be changed (optional) -->
 <!ELEMENT changerequest (
