@@ -12,6 +12,7 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.property.PropEntry;
 
 
 /**
@@ -58,7 +59,12 @@ public final class PublishQos
    public PublishQos(Global glob) {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.msgQosData = new MsgQosData(glob, glob.getMsgQosFactory()); 
-      setLifeTime(org.xmlBlaster.util.Global.instance().getProperty().get("message.lifeTime", -1L)); // TODO: use local glob
+
+      // TODO: use local glob
+      long lt = org.xmlBlaster.util.Global.instance().getProperty().get("message.lifeTime", -1L);
+      if (lt != -1L) {
+         this.msgQosData.getLifeTimeProp().setValue(lt, PropEntry.CREATED_BY_PROPFILE);
+      }
    }
 
    /**
