@@ -294,14 +294,23 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
-    * Accessing a unique id generated for this SubscriptionInfo.
+    * Accessing a unique id generated for this SubscriptionInfo. 
+    * <p />
+    * The key will be generated on first invocation
     * @return A unique key for this particular subscription
     */
    public final String getUniqueKey() throws XmlBlasterException
    {
       if (uniqueKey == null) {
-         if (querySub != null)
-            this.uniqueKey = querySub.getUniqueKey(); // My parent XPATH subscription object
+         if (querySub != null) {
+            StringBuffer buf = new StringBuffer(126);
+            synchronized (SubscriptionInfo.class) {
+               uniqueCounter++;
+               // Using praefix of my parent XPATH subscription object:
+               buf.append(querySub.getUniqueKey()).append(":").append(uniqueCounter);
+            }
+            this.uniqueKey = buf.toString();
+         }
          else
             this.uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, xmlQoSBase).toString();
       }
