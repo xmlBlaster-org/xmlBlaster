@@ -75,14 +75,25 @@ public class FileInfo {
     * @return Returns the lastChange.
     */
    public long getLastChange() {
-      return lastChange;
+      return this.lastChange;
    }
    /**
     * @return Returns the name.
     */
    public String getName() {
-      return name;
+      return this.name;
    }
+   
+   public static String getRelativeName(String name) {
+      int pos = name.lastIndexOf(File.separatorChar);
+      if (pos < 0) return name;
+      return name.substring(pos+1);
+   }
+   
+   public String getRelativeName() {
+      return getRelativeName(this.name);
+   }
+   
    /**
     * @return Returns the size.
     */

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 Name:      Publisher.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.client.filesystem;
@@ -185,6 +185,8 @@ public class Publisher implements I_Timeout {
                byte[] content = this.directoryManager.getContent(infos[i]);
                if (content != null) {
                   MsgUnit msgUnit = new MsgUnit(this.publishKey, content, this.publishQos);
+                  msgUnit.getQosData().addClientProperty("_fileName", infos[i].getRelativeName());
+                  msgUnit.getQosData().addClientProperty("_fileDate", infos[i].getTimestamp());
                   this.access.publish(msgUnit);
                }
             }

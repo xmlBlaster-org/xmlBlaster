@@ -23,7 +23,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
-
 /**
  * DirectoryManager
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -78,7 +77,13 @@ public class DirectoryManager {
    private File initDirectory(File parent, String propName, String dirName) throws XmlBlasterException {
       File dir = null;
       if (dirName != null) {
-         dir = new File(parent, dirName);
+         File tmp = new File(dirName);
+         if (tmp.isAbsolute() || parent == null) {
+            dir = new File(dirName);
+         }
+         else {
+            dir = new File(parent, dirName);
+         }
          if (!dir.exists()) {
             String absDirName  = null; 
             try {
@@ -330,10 +335,7 @@ public class DirectoryManager {
       if (!destinationDirectory.canWrite())
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".removeEntry", "no rights to write to '" + destinationDirectory.getName() + "'");
       
-      String relativeName = file.getName();
-      int pos = relativeName.lastIndexOf(File.pathSeparatorChar);
-      if (pos > -1)
-         relativeName = relativeName.substring(pos+1);
+      String relativeName = FileInfo.getRelativeName(file.getName());
       try {
          file.renameTo(new File(this.directory, relativeName));
       }
