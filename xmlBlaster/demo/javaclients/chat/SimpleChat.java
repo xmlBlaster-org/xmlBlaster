@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.15 2000/10/21 20:50:03 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.16 2000/11/14 16:39:07 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -40,7 +40,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener{
 
    // XmlBlaster attributes
    private XmlBlasterConnection corbaConnection = null;
-   private static String ME = "Mike´s TestClient";
+   private static String ME = "Mike's TestClient";
    private static String passwd ="some";
    private static String qos = "<qos></qos>";
    private String publishOid = "javaclients.chat.SimpleChat";

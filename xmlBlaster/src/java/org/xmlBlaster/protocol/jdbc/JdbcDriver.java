@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.9 2000/10/24 09:48:46 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.10 2000/11/14 16:39:07 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -193,7 +193,7 @@ public class JdbcDriver implements I_Driver, I_Publish
       for (int i = 0; i < numDrivers; i++) {
          try {
             driver = st.nextToken().trim();
-            if (Log.TRACE) Log.trace(ME, "Trying JDBC driver Class.forName(´" + driver + "´) ...");
+            if (Log.TRACE) Log.trace(ME, "Trying JDBC driver Class.forName('" + driver + "') ...");
             Class cl = Class.forName(driver);
             java.sql.Driver dr = (java.sql.Driver)cl.newInstance();
             java.sql.DriverManager.registerDriver(dr);
