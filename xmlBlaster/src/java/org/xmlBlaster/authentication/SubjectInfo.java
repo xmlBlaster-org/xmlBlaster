@@ -46,13 +46,18 @@ import java.util.Collections;
 
 /**
  * SubjectInfo stores all known data about a client.
- * <p />
+ * <p>
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
- *
+ * </p>
+ * <p>
+ * There are three states for SubjectInfo namely UNDEF, ALIVE, DEAD.
+ * A transition from UNDEF directly to DEAD is not supported.
+ * Transitions from ALIVE or DEAD to UNDEF are not possible.
+ * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class SubjectInfo implements I_AdminSubject
+public final class SubjectInfo implements I_AdminSubject
 {
    private String ME = "SubjectInfo";
    private final Global glob;
@@ -68,8 +73,6 @@ public class SubjectInfo implements I_AdminSubject
     */
    private Map sessionMap = new HashMap();
    private SessionInfo[] sessionArrCache;
-   /** Check if instance is still valid */
-   private boolean isShutdown = false;
    public CallbackAddress[] callbackAddressCache = null;
 
    private final DeliveryStatistic deliveryStatistic;
@@ -81,6 +84,14 @@ public class SubjectInfo implements I_AdminSubject
    /** Incarnation time of this object instance in millis */
    private long uptime;
    private int maxSessions;
+   
+   /** State during and after construction */
+   public final int UNDEF = -1;
+   /** State after calling toAlive() */
+   public final int ALIVE = 0;
+   /** State after calling shutdown() */
+   public final int DEAD = 1;
+   private int state = UNDEF;
 
 
    /**
@@ -96,41 +107,13 @@ public class SubjectInfo implements I_AdminSubject
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
 
-
    /**
-    * Create this instance when a client did a login.
     * <p />
+    * @param subjectName  The unique loginName
     * @param securityCtx  The security context of this subject
     * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
     */
-   public SubjectInfo(Global glob, I_Subject securityCtx, CbQueueProperty prop) throws XmlBlasterException {
-      this(glob, securityCtx.getName(), securityCtx, prop);
-      if (securityCtx==null) {
-         String tmp="SubjectInfo(securityCtx==null); // a correct security manager must be set.";
-         log.error(ME+".illegalArgument", tmp);
-         throw new XmlBlasterException(ME+".illegalArgument", tmp);
-      }
-      if (log.CALL) log.call(ME, "Created new SubjectInfo " + instanceId + ": " + toString());
-   }
-
-   /**
-    * Create this instance when a message is sent to this client, but he is not logged in
-    * <p />
-    * @param loginName The unique login name
-    */
-   public SubjectInfo(Global glob, String loginName) throws XmlBlasterException {
-      this(glob, loginName, null, null);
-      if (log.CALL) log.trace(ME, "Creating new empty SubjectInfo");
-   }
-
-   /**
-    * Initialize.
-    * <p />
-    * @param loginName    The unique loginName
-    * @param securityCtx  The security context of this subject
-    * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
-    */
-   private SubjectInfo(Global glob, String loginName, I_Subject securityCtx, CbQueueProperty prop)
+   public SubjectInfo(Global glob, SessionName subjectName) //, I_Subject securityCtx, CbQueueProperty prop)
           throws XmlBlasterException {
       synchronized (SubjectInfo.class) {
          instanceId = instanceCounter;
@@ -139,11 +122,32 @@ public class SubjectInfo implements I_AdminSubject
       this.glob = glob;
       this.log = this.glob.getLog("auth");
       String prae = glob.getLogPrefix();
-      this.subjectName = new SessionName(glob, glob.getNodeId(), loginName);
+      this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
-      this.uptime = System.currentTimeMillis();
-      this.securityCtx = securityCtx;
       this.deliveryStatistic = new DeliveryStatistic();
+
+      this.glob.getAuthenticate().addLoginName(this); // register myself
+      if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
+   }
+
+   /**
+    * Initialize SubjectInfo
+    * @param securityCtx Can be null for PtP message with implicit SubjectInfo creation
+    * @param prop The property to configure the PtP message queue
+    */
+   public synchronized void toAlive(I_Subject securityCtx, CbQueueProperty prop) throws XmlBlasterException {
+      if (isAlive()) {
+         return;
+      }
+      //if (isDead()) {
+      //   log.error(ME, "State transition from DEAD -> ALIVE is not implemented");
+      //   throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "State transition from DEAD -> ALIVE is not implemented");
+      //}
+      if (securityCtx != null) {
+         this.securityCtx = securityCtx;
+      }
+
+      this.uptime = System.currentTimeMillis();
 
       this.maxSessions = glob.getProperty().get("session.maxSessions", SessionQos.DEFAULT_maxSessions);
       if (glob.getId() != null)
@@ -153,35 +157,77 @@ public class SubjectInfo implements I_AdminSubject
       String type = prop.getType();
       String version = prop.getVersion();
       this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version,
-                          new StorageId(Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
+                           new StorageId(Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
       this.subjectQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
-      if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
+      if (isDead()) {
+         this.glob.getAuthenticate().addLoginName(this); // register myself
+      }
+
+      this.state = ALIVE;
+
+      if (log.TRACE) log.trace(ME, "Transition from UNDEF to ALIVE done");
    }
 
-   public void finalize() {
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
-   }
+   /**
+    * The shutdown is synchronized and checks if there is no need for this subject anymore. 
+    * <p>
+    * clearQueue==false&&forceIfEntries==true: We shutdown and preserve existing PtP messages
+    * </p>
+    * @param clearQueue Shall the message queue of the client be destroyed as well on last session logout?
+    * @param forceIfEntries Shutdown even if there are messages in the queue
+    */
+   public synchronized void shutdown(boolean clearQueue, boolean forceIfEntries) {
+      if (log.CALL) log.call(ME, "shutdown(clearQueue=" + clearQueue + ", forceIfEntries=" + forceIfEntries + ") of subject " + getLoginName());
 
-   public boolean isShutdown() {
-      return this.isShutdown;
-   }
+      if (!this.isAlive()) {
+         if (log.TRACE) log.trace(ME, "Ignoring shutdown request as we are in state " + getStateStr());
+         return;
+      }
 
-   public void shutdown() {
-      if (log.CALL) log.call(ME, "shutdown() of subject " + getLoginName());
-      this.isShutdown = true;
-      boolean force = false;
-      this.subjectQueue.shutdown(force);
-      this.subjectQueue = null;
+      if (isLoggedIn()) {
+         if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still login sessions");
+         return;
+      }
+
+      if (!forceIfEntries && !clearQueue && getSubjectQueue().getNumOfEntries() > 0) {
+         if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still messages in the subject queue");
+         return;
+      }
+
+      if (getSubjectQueue().getNumOfEntries() < 1)
+         log.info(ME, "Destroying SubjectInfo " + getSubjectName() + ". Nobody is logged in and no queue entries available");
+      else
+         log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + " as clearQueue is set to true. Lost " + getSubjectQueue().getNumOfEntries() + " messages");
+
+      this.glob.getAuthenticate().removeLoginName(this);  // deregister
+
+      this.state = DEAD;
+
+      if (clearQueue)
+         this.subjectQueue.clear();
+
       if (getSessions().length > 0) {
          log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + getSessions().length + " sessions - memory leak?");
       }
       synchronized (this.sessionMap) {
-         this.sessionMap.clear();
          this.sessionArrCache = null;
+         this.sessionMap.clear();
          this.callbackAddressCache = null;
       }
-      this.securityCtx = null;
+
+      // Not possible to allow toAlive()
+      //this.securityCtx = null;
+   }
+
+   /**
+    * Shutdown my queue
+    */
+   public void finalize() {
+      //log.error(ME, "DEBUG ONLY: finalize - garbage collected " + getLoginName());
+      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
+      boolean force = true;
+      this.subjectQueue.shutdown(force);
    }
 
    /**
@@ -278,11 +324,11 @@ public class SubjectInfo implements I_AdminSubject
     *    PUBLISH, SUBSCRIBE, GET, ERASE,
     */
    public boolean isAuthorized(MethodName actionKey, String key) {
-      if (securityCtx == null) {
+      if (this.securityCtx == null) {
          log.warn(ME, "No authorization for '" + actionKey + "' and msg=" + key);
          return false;
       }
-      return securityCtx.isAuthorized(actionKey, key);
+      return this.securityCtx.isAuthorized(actionKey, key);
    }
 
    /**
@@ -346,6 +392,11 @@ public class SubjectInfo implements I_AdminSubject
             log.warn(ME, "Can't forward message " + id + " to session queue, keeping it in subject queue");
          }
       }
+
+      if (!isLoggedIn()) { // Check if we can shutdown now
+         shutdown(false, false);
+      }
+
       return numMsgs;
    }
 
@@ -385,7 +436,10 @@ public class SubjectInfo implements I_AdminSubject
     *         false client is not on line
     */
    public final boolean isLoggedIn() {
-      return getSessions().length > 0;
+      synchronized (this.sessionMap) {
+         return this.sessionMap.size() > 0;
+      }
+      //return getSessions().length > 0;
    }
 
    /**
@@ -468,7 +522,7 @@ public class SubjectInfo implements I_AdminSubject
     * This notifies about a client login.
     */
    public final void notifyAboutLogin(SessionInfo sessionInfo) throws XmlBlasterException {
-      if (isShutdown()) { // disconnect() and connect() are not synchronized, so this can happen
+      if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
          String text = "SubjectInfo is shutdown, try to login again";
          Thread.currentThread().dumpStack();
          log.error(ME, text);
@@ -491,16 +545,17 @@ public class SubjectInfo implements I_AdminSubject
     * <br />
     * Note that the loginName is not reset.
     * @param absoluteSessionName == sessionInfo.getId()
-    * @param clearQueue Shall the message queue of the client be destroyed as well?
+    * @param clearQueue Shall the message queue of the client be cleared&destroyed as well (e.g. disconnectQos.deleteSubjectQueue())?
+    * @param forceShutdownEvenIfEntriesExist on last session
     */
-   public final void notifyAboutLogout(String absoluteSessionName, boolean clear) throws XmlBlasterException {
-      if (isShutdown()) { // disconnect() and connect() are not synchronized, so this can happen
+   public final void notifyAboutLogout(String absoluteSessionName, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist) throws XmlBlasterException {
+      if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
          String text = "SubjectInfo is shutdown, no logout";
          Thread.currentThread().dumpStack();
          log.error(ME, text);
          throw new XmlBlasterException(ME, text);
       }
-      if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + absoluteSessionName + ", " + clear + ")");
+      if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + absoluteSessionName + ", " + clearQueue + ")");
       SessionInfo sessionInfo = null;
       synchronized (this.sessionMap) {
          sessionInfo = (SessionInfo)sessionMap.remove(absoluteSessionName);
@@ -516,10 +571,11 @@ public class SubjectInfo implements I_AdminSubject
 
       if (log.DUMP) log.dump(ME, this.subjectQueue.toXml(null));
 
-      if (getSessions().length == 0 && clear) {
-         // "Clearing of subject queue see Authenticate.java:351
-         // authenticate.loginNameSubjectInfoMap.remove(loginName);
-      }
+      //if (!isLoggedIn()) {
+      //   if (clearQueue || getSubjectQueue().getNumOfEntries() < 1) {
+            shutdown(clearQueue, forceShutdownEvenIfEntriesExist); // Does shutdown only on last session
+      //   }
+      //}
    }
 
    /**
@@ -559,7 +615,7 @@ public class SubjectInfo implements I_AdminSubject
    }
 
    public I_Subject getSecuritySubject() {
-      return securityCtx;
+      return this.securityCtx;
    }
 
    public void setSecuritySubject(I_Subject ctx) {
@@ -571,7 +627,7 @@ public class SubjectInfo implements I_AdminSubject
     * <br>
     * @return internal state of SubjectInfo as a XML ASCII string
     */
-   public final String toXml() throws XmlBlasterException {
+   public final String toXml() {
       return toXml((String)null);
    }
 
@@ -581,16 +637,14 @@ public class SubjectInfo implements I_AdminSubject
     * @param extraOffset indenting of tags for nice output
     * @return internal state of SubjectInfo as a XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
+   public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<SubjectInfo id='").append(this.subjectName.getAbsoluteName()).append("'>");
-      if (isShutdown) {
-         sb.append(offset).append(" <isShutdown/>");
-      }
-      else {
+      sb.append(offset).append(" <state>").append(getStateStr()).append("</state>");
+      if (isAlive()) {
          sb.append(offset).append(" <subjectId>").append(getLoginName()).append("</subjectId>");
          sb.append(subjectQueue.toXml(extraOffset+Constants.INDENT));
          SessionInfo[] sessions = getSessions();
@@ -619,6 +673,33 @@ public class SubjectInfo implements I_AdminSubject
             return sessionInfo;
       }
       return null;
+   }
+
+   public final boolean isUndef() {
+      return this.state == UNDEF;
+   }
+
+   public final boolean isAlive() {
+      return this.state == ALIVE;
+   }
+
+   public final boolean isDead() {
+      return this.state == DEAD;
+   }
+
+   public final String getStateStr() {
+      if (isAlive()) {
+         return "ALIVE";
+      }
+      else if (isDead()) {
+         return "DEAD";
+      }
+      else if (isUndef()) {
+         return "UNDEF";
+      }
+      else {
+         return "INTERNAL_ERROR";
+      }
    }
 
 

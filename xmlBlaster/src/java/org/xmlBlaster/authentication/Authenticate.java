@@ -131,7 +131,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(this.glob, loginName.getLoginName(), "");
       session.init(securityQos);
       I_Subject subject = session.getSubject();
-      SubjectInfo subjectInfo = new SubjectInfo(getGlobal(), subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
+      SubjectInfo subjectInfo = new SubjectInfo(getGlobal(), loginName);
+      subjectInfo.toAlive(subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
       connectQos.getSessionQos().setSessionTimeout(0L);  // Lasts forever
       return new SessionInfo(subjectInfo, session, new ConnectQosServer(glob, connectQos.getData()), getGlobal());
@@ -273,44 +274,50 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          // Check if user is known, otherwise create an entry ...
          I_Subject subjectCtx = sessionCtx.getSubject();
          SessionName subjectName = connectQos.getSessionName();
-         /*
-         try {
-            subjectName = new SessionName(glob, subjectCtx.getName());
-         }
-         catch (IllegalArgumentException e) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "Please check your login name '" + subjectCtx.getName() + "': " + e.toString());
-         }
-         */
-         subjectInfo = getSubjectInfoByName(subjectName);
-         //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
-         if (subjectInfo == null) {
-            subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectQueueProperty());
-            addLoginName(subjectInfo);
-         }
-         else  // TODO: Reconfigure subject queue only when queue relating='subject' was used
-            subjectInfo.setCbQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
 
-         // Check if client does a relogin and wants to destroy old sessions
-         if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {
-            SessionInfo[] sessions = subjectInfo.getSessions();
-            for (int i=0; i<sessions.length; i++ ) {
-               SessionInfo si = sessions[i];
-               log.warn(ME, "Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
-               disconnect(si.getSecretSessionId(), (String)null);
+         synchronized(this.loginNameSubjectInfoMap) { // Protect against two simultaneous logins
+            subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
+            //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
+            if (subjectInfo == null) {
+               subjectInfo = new SubjectInfo(getGlobal(), subjectName);
             }
-            return connect(connectQos, secretSessionId);
-         }
+         } // synchronized(this.loginNameSubjectInfoMap)
 
-         if (log.TRACE) log.trace(ME, "Creating sessionInfo for " + subjectInfo.getId());
+         // This sync gap is no problem for SubjectInfo if somebody else does a subjectInfo.shutdown()
+         // since the subjectInfo does a transition from DEAD to ALIVE below
 
-         // Create the new sessionInfo instance
-         sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
-         synchronized(this.sessionInfoMap) {
-            this.sessionInfoMap.put(secretSessionId, sessionInfo);
-         }
-         subjectInfo.notifyAboutLogin(sessionInfo);
+         synchronized(subjectInfo) {
+            if (subjectInfo.isAlive()) {
+               // TODO: Reconfigure subject queue only when queue relating='subject' was used
+               subjectInfo.setCbQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
+            }
+            else {
+               subjectInfo.toAlive(subjectCtx, connectQos.getSubjectQueueProperty());
+            }
 
-         fireClientEvent(sessionInfo, true);
+            // Check if client does a relogin and wants to destroy old sessions
+            if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {
+               SessionInfo[] sessions = subjectInfo.getSessions();
+               for (int i=0; i<sessions.length; i++ ) {
+                  SessionInfo si = sessions[i];
+                  log.warn(ME, "Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
+                  disconnect(si.getSecretSessionId(), (String)null);
+               }
+               // will create a new SubjectInfo instance (which should be OK)
+               return connect(connectQos, secretSessionId);
+            }
+
+            if (log.TRACE) log.trace(ME, "Creating sessionInfo for " + subjectInfo.getId());
+
+            // Create the new sessionInfo instance
+            sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
+            synchronized(this.sessionInfoMap) {
+               this.sessionInfoMap.put(secretSessionId, sessionInfo);
+            }
+            subjectInfo.notifyAboutLogin(sessionInfo);
+
+            fireClientEvent(sessionInfo, true);
+         } // synchronized(subjectInfo)
 
          // --- compose an answer -----------------------------------------------
          ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, connectQos.getData());
@@ -392,7 +399,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
          DisconnectQosServer disconnectQos = new DisconnectQosServer(glob, qos_literal);
 
-         resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue());
+         boolean forceShutdownEvenIfEntriesExist = false;
+         resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue(), forceShutdownEvenIfEntriesExist);
 
          if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
             SessionInfo[] sessions = subjectInfo.getSessions();
@@ -432,17 +440,31 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
       SubjectInfo subjectInfo = getSubjectInfoByName(subjectName);
       if (subjectInfo == null) {
-         subjectInfo = new SubjectInfo(getGlobal(), subjectName.getRelativeName());
-         addLoginName(subjectInfo);
+         SessionName name = new SessionName(glob, glob.getNodeId(), subjectName.getRelativeName()); // strip nodeId
+         subjectInfo = new SubjectInfo(getGlobal(), name);
+         subjectInfo.toAlive(null, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       }
 
       return subjectInfo;
    }
 
-   private void addLoginName(SubjectInfo subjectInfo) {
+   /**
+    * Add a new SubjectInfo instance. 
+    */
+   void addLoginName(SubjectInfo subjectInfo) {
+      Object oldInstance = null;
       synchronized(this.loginNameSubjectInfoMap) {
-         this.loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
+         oldInstance = this.loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
       }
+
+      if (oldInstance != null) {
+         SubjectInfo old = (SubjectInfo)oldInstance;
+         if (old != subjectInfo) {
+            log.error(ME, "Internal problem: didn't expect two different SubjectInfo old=" + old.toXml() + " new=" + subjectInfo.toXml());
+         }
+         return;
+      }
+
       try {
          glob.getRequestBroker().updateInternalUserList();
       }
@@ -451,9 +473,16 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
    }
 
-   private void removeLoginName(SubjectInfo subjectInfo) {
+   /**
+    * Remove a SubjectInfo instance. 
+    */
+   void removeLoginName(SubjectInfo subjectInfo) {
+      Object entry = null;
       synchronized(this.loginNameSubjectInfoMap) {
-         this.loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
+         entry = this.loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
+      }
+      if (entry == null) {
+         return;
       }
       try {
          glob.getRequestBroker().updateInternalUserList();
@@ -549,9 +578,10 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
    /**
     * @param xmlServer xmlBlaster CORBA handle
-    * @param clearQueue Shall the message queue of the client be destroyed as well?
+    * @param clearQueue Shall the message queue of the client be destroyed as well on last session logout?
+    * @param forceShutdownEvenIfEntriesExist on last session
     */
-   private void resetSessionInfo(SessionInfo sessionInfo, boolean clearQueue) throws XmlBlasterException
+   private void resetSessionInfo(SessionInfo sessionInfo, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist) throws XmlBlasterException
    {
       String secretSessionId = sessionInfo.getSecretSessionId();
       Object obj;
@@ -572,19 +602,10 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       fireClientEvent(sessionInfo, false); // informs all I_ClientListener
 
       SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
-      subjectInfo.notifyAboutLogout(sessionInfo.getId(), true);
-
-      if (!subjectInfo.isLoggedIn()) {
-         if (clearQueue || subjectInfo.getSubjectQueue().getNumOfEntries() < 1) {
-            if (subjectInfo.getSubjectQueue().getNumOfEntries() < 1)
-               log.info(ME, "Destroying SubjectInfo " + subjectInfo.getSubjectName() + ". Nobody is logged in and no queue entries available");
-            else
-               log.warn(ME, "Destroying SubjectInfo " + subjectInfo.getSubjectName() + " as clearQueue is set to true. Lost " + subjectInfo.getSubjectQueue().getNumOfEntries() + " messages");
-            removeLoginName(subjectInfo);
-            subjectInfo.shutdown();
-            subjectInfo = null;
-         }
-      }
+      subjectInfo.notifyAboutLogout(sessionInfo.getId(), clearQueue, forceShutdownEvenIfEntriesExist);
+      //if (subjectInfo.isShutdown()) {
+      //   subjectInfo = null; // Give GC a hint
+      //}
 
       sessionInfo.shutdown();
       sessionInfo = null;
@@ -774,8 +795,9 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
             SessionInfo[] sessionInfoArr = getSessionInfoArr();
             for (int ii=0; ii<sessionInfoArr.length; ii++) {
                try {
-                  boolean clearQueue = true;
-                  resetSessionInfo(sessionInfoArr[ii], clearQueue);
+                  boolean clearQueue = false;
+                  boolean forceShutdownEvenIfEntriesExist = true;
+                  resetSessionInfo(sessionInfoArr[ii], clearQueue, forceShutdownEvenIfEntriesExist);
                }
                catch (Throwable e) {
                   log.error(ME, "Problem on session shutdown, we ignore it: " + e.getMessage());
