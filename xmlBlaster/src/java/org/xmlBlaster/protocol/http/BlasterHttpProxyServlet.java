@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.54 2001/12/17 16:41:32 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.55 2001/12/23 13:10:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -64,6 +64,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       }
 
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
+      // Use xmlBlaster/demo/http/WEB-INF/web.xml to configure logging.
       Log.setDefaultLogLevel();
       if (conf.getInitParameter("dump") != null && conf.getInitParameter("dump").equals("true"))
          Log.addLogLevel("DUMP"); // Use this to dump messages
@@ -253,7 +254,19 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             }
          }
 
+         else if ("publish".equalsIgnoreCase(actionType)) {
+            doPost(req, res);
+         }
          else if ("subscribe".equalsIgnoreCase(actionType)) {
+            doPost(req, res);
+         }
+         else if ("unSubscribe".equalsIgnoreCase(actionType)) {
+            doPost(req, res);
+         }
+         else if ("get".equalsIgnoreCase(actionType)) {
+            doPost(req, res);
+         }
+         else if ("erase".equalsIgnoreCase(actionType)) {
             doPost(req, res);
          }
 
@@ -370,6 +383,18 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (actionType.equals("unSubscribe")) {
             Log.trace(ME, "unSubscribe arrived ...");
+            String oid = Util.getParameter(req, "key.oid", null);
+            if (oid == null) {
+               String str = "Please call servlet with some key.oid when unSubscribing";
+               Log.error(ME, str);
+               htmlOutput(str, res);
+               return;
+            }
+            UnSubscribeKeyWrapper xmlKey = new UnSubscribeKeyWrapper(oid);
+            UnSubscribeQosWrapper xmlQos = new UnSubscribeQosWrapper();
+
+            xmlBlaster.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
+            Log.info(ME, "UnSubscribed from " + oid);
          }
 
          else if (actionType.equals("get")) {
@@ -378,12 +403,20 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (actionType.equals("publish")) {
             Log.trace(ME, "publish arrived ...");
-            String xmlKey =
-                      "<key oid='HelloWorld' contentMime='text/plain' contentMimeExtended='-'>\n" +
-                      "</key>";
-            String qos = "<qos></qos>";
-            String content = "Hello world";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
+            String key_literal = Util.getParameter(req, "key", null);
+            String content = Util.getParameter(req, "content", null);
+            String qos_literal = Util.getParameter(req, "qos", null);
+            if (key_literal == null) {
+               String str = "Please call servlet with some key when subscribing";
+               Log.error(ME, str);
+               htmlOutput(str, res);
+               return;
+            }
+            if (content == null)
+               content = "";
+
+            Log.info(ME, "Publishing '" + key_literal + "'");
+            MessageUnit msgUnit = new MessageUnit(key_literal, content.getBytes(), qos_literal);
             try {
                String publishOid = xmlBlaster.publish(msgUnit);
                Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
@@ -394,6 +427,19 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (actionType.equals("erase")) {
             Log.trace(ME, "erase arrived ...");
+            String oid = Util.getParameter(req, "key.oid", null);
+            if (oid == null) {
+               String str = "Please call servlet with some key.oid when eraseing";
+               Log.error(ME, str);
+               htmlOutput(str, res);
+               return;
+            }
+            EraseKeyWrapper xmlKey = new EraseKeyWrapper(oid);
+            EraseQosWrapper xmlQos = new EraseQosWrapper();
+
+            String[] ret = xmlBlaster.erase(xmlKey.toXml(), xmlQos.toXml());
+            for (int ii=0; ii<ret.length; ii++)
+               Log.info(ME, "Erased " + ret[ii]);
          }
 
          else {

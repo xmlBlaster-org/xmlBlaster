@@ -3,6 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    konrad.krafft@doubleslash.de ruff@swand.lake.de
+See:       persistentWindow/index.html and demo/http/svg/systemInfo/northFrame.html
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -23,10 +24,14 @@ function xmlBlasterLogout()
 function publish(message)
 {
    Log.error("Publish implementation to xmlBlaster is missing");
+   Log.trace("Invoking get request for " + key.oid + " ...");
+   request("publish", message);
+   Log.trace("Get request for " + key.oid + " done");
 }
 
 function get(key, qos)
 {
+   Log.error("Synchronous GET implementation to xmlBlaster is not supported");
    Log.trace("Invoking get request for " + key.oid + " ...");
    request("get", new MessageWrapperLiteral(key, "", qos));
    Log.trace("Get request for " + key.oid + " done");
@@ -39,9 +44,96 @@ function subscribe(key, qos)
    Log.trace("Subscribe request for " + key.oid + " done");
 }
 
+function unSubscribe(key, qos)
+{
+   Log.error("UnSubscribe implementation to xmlBlaster is missing");
+   Log.trace("Invoking unSubscribe request for " + key.oid + " ...");
+   request("unSubscribe", new MessageWrapperLiteral(key, "", qos));
+   Log.trace("UnSubscribe request for " + key.oid + " done");
+}
+
 function erase(key, qos)
 {
    Log.error("Erase implementation to xmlBlaster is missing");
+   Log.trace("Invoking get erase for " + key.oid + " ...");
+   request("erase", new MessageWrapperLiteral(key, "", qos));
+   Log.trace("Get erase for " + key.oid + " done");
+}
+
+
+/**
+ * This allows to send a request to the servlet.
+ * We use a dedicated little frame 'requestFrame' for this,
+ * the returned html from the servlet is ignored there.
+ */
+function request(methodName, msgWrapper)
+{
+   if (Log.TRACE) Log.trace("Sending request " + methodName + " to serlvet");
+   if (isExplorer) {
+      self.frames["requestFrame"].location.reload(true);
+   }
+   req = "/xmlBlaster/BlasterHttpProxyServlet?ActionType="+methodName+"&";
+   req += "key.oid=" + msgWrapper.key.oid;
+   self.frames["requestFrame"].location.href=req; // Invoke servlet.
+}
+
+
+/**
+ * The Servlet is pinging the browser to keep connection alive.
+ * This method is invoked from the callbackFrame.
+ * @param state The string "refresh-73"<br />
+ *        When login is done successfully, state="loginSucceeded" is sent one time
+ */
+function ping(state) {
+   if (state == "loginSucceeded") {
+      Log.info("Received ping for successful login");
+      self.opener.loginSucceeded(self); // callback my opener that the connection is established
+   }
+   else {
+      // Response to servlet that we are alive ...
+      if (Log.TRACE) Log.trace("Received ping '" + state + "', sending pong back to servlet");
+      if (isExplorer) {
+         // Force a reload, is necessary for MSIE5, otherwise its refreshed from the browser cache
+         self.frames["pingFrame"].location.reload(true);
+      }
+      // Sending the state is for debugging and for proxies to let it through (not a similar request)
+      self.frames["pingFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
+   }
+   if ((typeof pingTimeoutHandler) != "undefined")
+      window.clearTimeout(pingTimeoutHandler);
+
+   // Check for ping every 15 seconds, this value needs to
+   // be bigger than the HttpPushHandler.java  PING_INTERVAL value
+   pingTimeoutHandler = window.setTimeout( "cutConnection()", 35000);
+}
+
+
+/**
+ * Timeout occurred, lost the server
+ */
+function cutConnection() {
+   Log.info("Entering cutConnection() ...");
+   self.connectionTextFrame.document.location.href="notConnected.html";
+}
+
+
+/**
+ * This allows to notify the servlet that the browser processed the
+ * last request and is ready to receive the next message.
+ */
+function browserReady()
+{
+   if (Log.TRACE) Log.trace("Sending browserReady() to serlvet");
+   // add some dynamic data (milliseconds since 1970), that MSIE 5 resends it.
+   var date = new Date();
+   var millisec = Date.parse(date);
+   //if (isExplorer) {
+      self.frames["controlFrame"].location.reload(true);
+   //}
+   // This alone is not enough, sometimes the request does not reach the servlet (mozilla 0.91/tomcat 3.2.3):
+   // See http://developer.netscape.com/docs/manuals/communicator/jsref/wina1.htm
+   //self.frames["controlFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec;
+   self.frames["controlFrame"].location.replace("/xmlBlaster/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec);
 }
 
 
