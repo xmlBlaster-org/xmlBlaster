@@ -463,6 +463,7 @@ int main(int argc, char** argv)
             char usage[XMLBLASTER_MAX_USAGE_LEN];
             const char *pp =
             "\n  -debug               true/false [false]"
+            "\n  -numTests            How often to run the same tests [1]"
             "\n\nExample:"
             "\n  XmlBlasterAccessUnparsedMain -debug true -dispatch/connection/plugin/socket/hostname server.mars.universe";
             printf("Usage:\n%s%s\n", xmlBlasterAccessUnparsedUsage(usage), pp);
