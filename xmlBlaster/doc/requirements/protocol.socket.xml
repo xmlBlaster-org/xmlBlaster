@@ -425,7 +425,6 @@ ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.Sock
 ClientCbServerProtocolPlugin[socket_ssl][1.0]=\
        org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
       </pre>
-
       <p>
       Starting the server is simple as all configuration is done in the above
       <tt>xmlBlasterPlugins.xml</tt> file (please read the previous example on
@@ -447,6 +446,10 @@ java HelloWorld3 -protocol SOCKET
 java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socket_ssl/SSL true
                  -plugin/socket_ssl/keystore testStore
       </pre>
+      <p>
+      The xmlBlaster.properties entries 'socket_ssl' are in fact optional, this would work as well:
+      <i>java HelloWorld3 -protocol SOCKET -plugin/socket/port 7609 -plugin/socket/SSL true -plugin/socket/keystore testStore</i>
+      </p>
    </example>
 
    <configuration where="server">
@@ -702,7 +705,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
    <see type="INTERNET" label="SSL reference guide">http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.45 $</revision>
+   <revision>$Revision: 1.46 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
