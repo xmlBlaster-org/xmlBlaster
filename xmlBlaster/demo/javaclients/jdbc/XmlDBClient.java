@@ -72,7 +72,7 @@ public class XmlDBClient implements I_Callback
 
 
    /**
-    * Find xmlBlaster server and login. 
+    * Find xmlBlaster server and login.
     */
    public void initBlaster(String[] args)
    {
@@ -113,7 +113,7 @@ public class XmlDBClient implements I_Callback
    }
 
    /**
-    * Send the SQL message. 
+    * Send the SQL message.
     */
    private void query(String[] args) throws JUtilsException
    {
@@ -132,6 +132,7 @@ public class XmlDBClient implements I_Callback
       try {
          String oid = corbaConnection.publish(wrap.toMessage());
          Log.info(ME, "Published query ...");
+         if (Log.DUMP) Log.dump(ME, wrap.toXml());
       }
       catch (Exception e) { Log.error(ME, e.getMessage()); }
 
