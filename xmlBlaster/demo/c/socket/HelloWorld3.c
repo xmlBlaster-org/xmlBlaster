@@ -6,8 +6,12 @@ Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build c
            (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+           Manually:
+            cd xmlBlaster/src/c
+            gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld3 
+                ../../demo/c/socket/HelloWorld3.c util/*.c socket/*.c -pthread
 Invoke:    HelloWorld3 -help
-See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
