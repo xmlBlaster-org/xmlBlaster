@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.50 2000/09/15 17:16:12 ruff Exp $
+Version:   $Id: Main.java,v 1.51 2000/09/21 08:53:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -207,7 +207,7 @@ public class Main
          try {
             driver.init(args, authenticate, xmlBlasterImpl);
          } catch (XmlBlasterException e) {
-            Log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
+            //Log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
             throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.reason);
          }
       }
@@ -225,7 +225,12 @@ public class Main
       Log.info(ME, "Shutting down xmlBlaster ...");
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         driver.shutdown();
+         try {
+            driver.shutdown();
+         }
+         catch (Throwable e) {
+            Log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
+         }
       }
       protocols.clear();
    }

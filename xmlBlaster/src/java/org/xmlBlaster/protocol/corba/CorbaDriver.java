@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.7 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.8 2000/09/21 08:53:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -139,7 +139,11 @@ public class CorbaDriver implements I_Driver
                }
             }
          }
-      } catch (Throwable e) {
+      }
+      catch (org.omg.CORBA.COMM_FAILURE e) {
+         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco org.xmlBlaster.Main' and read instructions in xmlBlaster/bin/jaco : " + e.toString());
+      }
+      catch (Throwable e) {
          e.printStackTrace();
          throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA: " + e.toString());
       }
