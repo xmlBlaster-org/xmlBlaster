@@ -165,9 +165,10 @@ Else add it manually.
       <echo message="Examples:"/>
       <echo message="   ${script} clean"/>
       <echo message="   ${script} all"/>
-      <echo message="   ${script} -Ddebug=off all"/>
+      <echo message="   ${script} -Ddebug=off -DJVM.target=1.1 all"/>
       <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
       <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true -DADD_PROP=mystuff/xmlBlaster.properties  dist-client"/>
+      <echo message="   ${script} -verbose cpp-lib"/>
       <echo message=""/>
       <echo message=""/>
    </target>
@@ -673,7 +674,8 @@ Else add it manually.
          <sysincludepath location="${CORBACPP_HOME}/include" />
          <sysincludepath location="${CORBACPP_HOME}/include/windows" /> <!-- necessary for mico on win32 -->
          <sysincludepath location="${XMLCPP_HOME}/src" />               <!-- win32 -->
-         <sysincludepath location="${XMLCPP_HOME}/include" />
+         <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
+         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
          <defineset>
             <define name="MICO" value="1" />
             <!-- undefine name="UNWANTEDDEF" / -->
@@ -735,7 +737,8 @@ Else add it manually.
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
          <sysincludepath location="${CORBACPP_HOME}/include" />
-         <sysincludepath location="${XMLCPP_HOME}/include" />
+         <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
+         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
          <libset refid="libs"/>
          <defineset>
             <define name="MICO" value="1" />
