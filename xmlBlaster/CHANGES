@@ -5,11 +5,13 @@ Changes for x.xxx [xxx, xx xxxx]
 
 TODO:
 
-* Test message lifecycle (some implementation is missing)
+* Test message expiry lifecycle (some implementation is missing)
+* Add support to reconnect to previous session again on reconnect
 * PtP with session destination
+* PtP in cluster environment
 * RequestBroker.get() the return QoS should be merged with UpdateQos
 * Test (implement?) forceUpdate=false with same content
-* Remove thread save gap in RequestBroker:publish()
+* Remove thread save gap in RequestBroker:publish() for PtP messages
 * Test: Perl client ...
 * Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 * Change to Sun coding convention: http://checkstyle.sourceforge.net/
@@ -22,39 +24,44 @@ TODO:
 
 BUGS:
 
+* PtP isDurable redelivery
 
-DONE:
- - Multithreading publish() bug in RequestBroker.java fixed (with synchronize)
 
- - Added runlevel listener framework to allow switching between
-   run levels like RUNNING, CLEANUP, STANDBY and HALTED
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+Changes for 0.79f [Jun, 17 2002]
+================================
 
- - Added framework for xmlBlaster administration (SNMP/JMX/telnet/message based).
-   Added readonly access from telnet on properties and xmlBlaster core attributes
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.html
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html
+  - Added runlevel listener framework to allow switching between
+    run levels like RUNNING, CLEANUP, STANDBY and HALTED
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+ 
+  - Multithreading publish() bug in RequestBroker.java fixed (with synchronize)
+ 
+  - Added framework for xmlBlaster administration (SNMP/JMX/telnet/message based).
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.html
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html
+ 
+  - Added full administration access from telnet on properties and
+    xmlBlaster core attributes
+    This is based on remotecons.jar 1.0
+    See http://wttools.sourceforge.net/ and
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html
 
- - Changed default security plugin from 'simple' to Cyrilles 'htpasswd'
-   http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/htpasswd/README
-
- - Added support for dirty reads in clusters
-   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html
-
- - Added support for filtering published messages
-   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html
-
- - HtPassWd is now extended to accept partial usernames. e.g. if the passwordsfile contains
-    "Username", HtPassWd also accepts "User". Additionally if the passwordfile just contains
-    "*" any username and password is accepted.
-
+  - Changed default security plugin from 'simple' to Cyrilles 'htpasswd'
+    http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/htpasswd/README
+ 
+    HtPassWd is now extended to accept partial usernames. e.g. if the passwordsfile contains
+     "Username", HtPassWd also accepts "User". Additionally if the passwordfile just contains
+     "*" any username and password is accepted [Andreas Stelzl]
+ 
+  - Added support for dirty reads in clusters
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html
+ 
+  - Added support for filtering published messages
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html
+ 
   - You can automatically build an xmlBlaster distribution, see:
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.deploy.html
-
-  - Incompatible changes:
-    publish() returns now XML string instead of the plain oid
-    Introduced PublishRetQos, see
-    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html
 
   - Added support to ping the callback client side server, see
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.callback.html
@@ -85,26 +92,13 @@ DONE:
     the first Global instance with:
       Global glob = Global.instance();
 
-  - Added support to access xmlBlaster with telnet.
-    This is based on remotecons.jar 1.0
-    See http://wttools.sourceforge.net/ and
-    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html
+  - Log.java is deprecated to use directly, use Global with LogChannel instead:
+      glob.getProperty().getLog("corba").warn("X", "Y");
 
   - Testsuite: Ported from Junit 1.0 to Junit 3.7
 
   - Splitted PropertyQueue class to handle client connect queue
     and server callback queue
-
-  - Incompatible change of ConnectQos:
-    - The constructor expects now a Global instance as the
-      first argument (you can pass null).
-
-  - Incompatible change of command line options:
-    -client.failSave.retryInterval   ->  -delay
-    -client.failSave.pingInterval    ->  -pingInterval
-    -client.failSave.retries         ->  -retries
-    -client.failSave.maxInvocations  ->  -queue.maxMsg
-    -client.publishOneway.collectTime->  -burstMode.collectTimeOneway
 
   - The generated key oid now contains the node id
 
@@ -115,25 +109,10 @@ DONE:
     and in future other informations.
     Port 7609 is not used as a default any more.
 
-  - Incompatible change:
-     Removed XmlKeyBase.java, use XmlKey.java instead
-     XmlKeyBase.DEFAULT_contentMimeExtended -> Constants.DEFAULT_CONTENT_MIME_EXTENDED
-
-  - Incompatible change of file name:
-     UpdateQoS.java -> UpdateQos.java
-
-  - Incompatible change of command line options:
-    -iorHost  ->  -hostname
-    -iorPort  ->  -port
-    -iorFile  ->  -ior.file
-
-  - Incompatible change of QoS returns:
-    Old: "<qos><state>OK</state></qos>"
-    New: "<qos><state id="OK"/></qos>"
-   
   - Server internal changes:
     Tuned performance for internal messages
-    Changed subscriptionId to contain a prefix
+
+  - Changed subscriptionId to contain a prefix
  
   - Changed (bugfix?) message erase behavior: When a message
     is deleted, the subscribe on it is not destroyed but placed as
@@ -178,6 +157,39 @@ DONE:
     disconnect now shutdown the protocol driver and callback server as well.
     See javadoc API of XmlBlasterConnection.
 
+  - Incompatible changes:
+    ---------------------
+    * publish() returns now XML string instead of the plain oid
+      Introduced PublishRetQos, see
+      http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html
+
+    * Incompatible change of ConnectQos:
+      The constructor expects now a Global instance as the
+      first argument (you can pass null).
+
+    * Incompatible change of command line options:
+      -client.failSave.retryInterval   ->  -delay
+      -client.failSave.pingInterval    ->  -pingInterval
+      -client.failSave.retries         ->  -retries
+      -client.failSave.maxInvocations  ->  -queue.maxMsg
+      -client.publishOneway.collectTime->  -burstMode.collectTimeOneway
+
+    * Incompatible change:
+      Removed XmlKeyBase.java, use XmlKey.java instead
+      XmlKeyBase.DEFAULT_contentMimeExtended -> Constants.DEFAULT_CONTENT_MIME_EXTENDED
+
+    * Incompatible change of file name:
+      UpdateQoS.java -> UpdateQos.java
+
+    * Incompatible change of command line options:
+      -iorHost  ->  -hostname
+      -iorPort  ->  -port
+      -iorFile  ->  -ior.file
+ 
+    * Incompatible change of QoS returns:
+      Old: "<qos><state>OK</state></qos>"
+      New: "<qos><state id="OK"/></qos>"
+   
 
 Changes for 0.79e [Mar, 27 2002]
 ================================

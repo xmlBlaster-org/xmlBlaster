@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.92 2002/06/15 16:15:00 ruff Exp $
+Version:   $Id: Main.java,v 1.93 2002/06/17 06:45:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -63,7 +63,7 @@ public class Main implements I_RunlevelListener
    private RunlevelManager runlevelManager = null;
 
    /** Version string, please change for new releases (4 digits) */
-   private String version = "0.79e";
+   private String version = "0.79f";
 
    private boolean showUsage = false;
 
