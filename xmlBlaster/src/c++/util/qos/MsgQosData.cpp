@@ -51,7 +51,7 @@ void MsgQosData::init()
    queueSize_ = -1;
    fromPersistenceStore_ = false;
    persistent_ = DEFAULT_persistent;
-   forceUpdate_= DEFAULT_forceUpdate;
+   forceUpdate_.setValue(global_.getProperty(), "forceUpdate");
    lifeTime_ = -1;
    remainingLifeStatic_ = -1;
    priority_ = NORM_PRIORITY;
@@ -90,6 +90,7 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
      subscribable_(Prop<bool>(DEFAULT_isSubscribable)),
      sender_(SessionQos(global)),
      destinationList_(),
+     forceUpdate_(Prop<bool>(DEFAULT_forceUpdate)),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
 {
    init();
@@ -168,7 +169,7 @@ void MsgQosData::setVolatile(bool volatileFlag)
  */
 bool MsgQosData::isVolatile() const
 {
-   return getLifeTime()==0L && getForceDestroy()==false;
+   return getLifeTime()==0L && isForceDestroy()==false;
 }
 
 /**
@@ -211,7 +212,7 @@ bool MsgQosData::isPersistent() const
  */
 void MsgQosData::setForceUpdate(bool forceUpdate)
 {
-   forceUpdate_ = forceUpdate;
+   forceUpdate_.setValue(forceUpdate, CREATED_BY_SETTER);
 }
 
 /**
@@ -219,15 +220,7 @@ void MsgQosData::setForceUpdate(bool forceUpdate)
  */
 bool MsgQosData::isForceUpdate() const
 {
-   return forceUpdate_;
-}
-
-/**
- * @return true if we have default setting
- */
-bool MsgQosData::isForceUpdateDefault() const
-{
-   return DEFAULT_forceUpdate == forceUpdate_;
+   return forceUpdate_.getValue();
 }
 
 /**
@@ -501,10 +494,10 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += offset + " <redeliver>" + lexical_cast<std::string>(getRedeliver()) + "</redeliver>";
    if (isPersistent())
       ret += offset + " <persistent/>";
-   if (!isForceUpdateDefault())
-      ret += offset + " <forceUpdate>" + Global::getBoolAsString(isForceUpdate()) + "</forceUpdate>";
+   if (forceUpdate_.isModified())
+      ret += offset + " <forceUpdate>" + lexical_cast<string>(forceUpdate_.getValue()) + "</forceUpdate>";
    if (forceDestroy_.isModified())
-      ret += offset + " <forceDestroy>" + Global::getBoolAsString(forceDestroy_.getValue()) + "</forceDestroy>";
+      ret += offset + " <forceDestroy>" + lexical_cast<string>(forceDestroy_.getValue()) + "</forceDestroy>";
 
    if (topicProperty_ != NULL) {
       ret += topicProperty_->toXml(extraOffset1);
@@ -547,7 +540,7 @@ bool MsgQosData::hasTopicProperty() const
 }
 
 
-bool MsgQosData::getForceDestroy() const
+bool MsgQosData::isForceDestroy() const
 {
    return forceDestroy_.getValue();
 }

@@ -27,6 +27,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 #include <util/qos/storage/MsgUnitStoreProperty.h>
 #include <util/qos/storage/HistoryQueueProperty.h>
+#include <util/Prop.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -46,10 +47,10 @@ extern Dll_Export const bool DEFAULT_readonly;
 class Dll_Export TopicProperty
 {
 private:
-   std::string                ME;
-   org::xmlBlaster::util::Global&               global_;
-   org::xmlBlaster::util::Log&                  log_;
-   org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty*   msgUnitStoreProperty_;
+   std::string ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log& log_;
+   org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty* msgUnitStoreProperty_;
    org::xmlBlaster::util::qos::storage::HistoryQueueProperty* historyQueueProperty_;
 
    /* If Pub/Sub style update: contains the subscribe ID which caused this topic */
@@ -64,6 +65,8 @@ private:
    long destroyDelay_;
 
    long destroyDelay_DEFAULT; // = org::xmlBlaster::util::Global.instance().getProperty().get("topic.destroyDelay", destroyDelay_DEFAULT_DEFAULT);
+
+   Prop<bool> createDomEntry_;
 
    void copy(const TopicProperty& prop);
 
@@ -97,6 +100,20 @@ public:
     * The life time of the message topic in state UNREFERENCED
     */
    void setDestroyDelay(long destroyDelay);
+
+   /**
+    * Is the topic available in the internal DOM tree? 
+    * @return true This is default and the topic is queryable with XPATH<br />
+    *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
+    */
+   bool createDomEntry() const;
+
+   /**
+    * Set if the topic is available in the internal DOM tree. 
+    * @param true This is default and the topic is queryable with XPATH<br />
+    *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
+    */
+   void setCreateDomEntry(bool createDomEntry);
 
    bool hasMsgUnitStoreProperty();
 

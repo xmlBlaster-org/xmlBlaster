@@ -96,8 +96,9 @@ private:
     * Send message to subscriber even the content is the same as the previous?
     * <br />
     * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.forceUpdate.html">The engine.qos.publish.forceUpdate requirement</a>
     */
-   bool forceUpdate_; // = DEFAULT_forceUpdate;
+   Prop<bool> forceUpdate_; // = DEFAULT_forceUpdate;
 
    /**
     * A message expires after some time and will be discarded.
@@ -145,6 +146,11 @@ public:
 
    virtual ~MsgQosData();
 
+   /**
+    * As a default setting you can subscribe on all messages (PtP or PubSub). 
+    * @param isSubscribable true if Publish/Subscribe style is used<br />
+    *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
+    */
    void setSubscribable(const bool isSubcribeable);
 
    /**
@@ -209,11 +215,6 @@ public:
     * @return true/false
     */
    bool isForceUpdate() const;
-
-   /**
-    * @return true if we have default setting
-    */
-   bool isForceUpdateDefault() const;
 
    /**
     * @return readonly Once published the message can't be changed. 
@@ -384,9 +385,15 @@ public:
 
    bool hasTopicProperty() const;
 
+   /**
+    * Control message life cycle on message expiry. 
+    * @param forceDestroy true Force message destroy on message expire<br />
+    *        false On message expiry messages which are already in callback queues are delivered.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.isVolatile.html">The engine.qos.publish.isVolatile requirement</a>
+    */
    void setForceDestroy(bool forceDestroy);
 
-   bool getForceDestroy() const;
+   bool isForceDestroy() const;
 
 };
 

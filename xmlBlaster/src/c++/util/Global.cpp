@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.54 2004/01/20 19:03:10 www Exp $
+Version:   $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -28,9 +28,9 @@ Version:   $Id: Global.cpp,v 1.54 2004/01/20 19:03:10 www Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.54 2004/01/20 19:03:10 www Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.54 2004/01/20 19:03:10 www Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.55 2004/01/21 13:12:26 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -40,12 +40,16 @@ namespace org { namespace xmlBlaster { namespace util {
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
 template<> std::string lexical_cast(bool arg)
 {
-   return (arg) ? "true" : "false";
+   static const std::string _TRUE = "true";
+   static const std::string _FALSE = "false";
+   return (arg) ? _TRUE : _FALSE;
 }
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
 template<> const char * lexical_cast(bool arg)
 {
-   return (arg) ? "true" : "false";
+   static const char * const _TRUE = "true";
+   static const char * const _FALSE = "false";
+   return (arg) ? _TRUE : _FALSE;
 }
 #endif
 using namespace std;

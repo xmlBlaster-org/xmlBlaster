@@ -66,7 +66,8 @@ const bool DEFAULT_readonly = false;
 
 
    TopicProperty::TopicProperty(Global& global)
-      : ME("TopicProperty"), global_(global), log_(global.getLog("core"))
+      : ME("TopicProperty"), global_(global), log_(global.getLog("core")),
+        createDomEntry_(Prop<bool>(true))
    {
       msgUnitStoreProperty_  = NULL;
       historyQueueProperty_= NULL;
@@ -78,13 +79,15 @@ const bool DEFAULT_readonly = false;
    }
 
    TopicProperty::TopicProperty(const TopicProperty& prop)
-      : ME(prop.ME), global_(prop.global_), log_(prop.log_)
+      : ME(prop.ME), global_(prop.global_), log_(prop.log_),
+        createDomEntry_(prop.createDomEntry_)
    {
       copy(prop);
    }
 
    TopicProperty& TopicProperty::operator =(const TopicProperty& prop)
    {
+      createDomEntry_ = prop.createDomEntry_;
       copy(prop);
       return *this;
    }
@@ -125,6 +128,25 @@ const bool DEFAULT_readonly = false;
    void TopicProperty::setDestroyDelay(long destroyDelay)
    {
       destroyDelay_ = destroyDelay;
+   }
+
+   /**
+    * Is the topic available in the internal DOM tree? 
+    * @return true This is default and the topic is queryable with XPATH<br />
+    *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
+    */
+   bool TopicProperty::createDomEntry() const
+   {
+      return createDomEntry_.getValue();
+   }
+
+   /**
+    * Set if the topic is available in the internal DOM tree. 
+    * @param true This is default and the topic is queryable with XPATH<br />
+    *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
+    */
+   void TopicProperty::setCreateDomEntry(bool createDomEntry) {
+      createDomEntry_.setValue(createDomEntry);
    }
 
    bool TopicProperty::hasMsgUnitStoreProperty()

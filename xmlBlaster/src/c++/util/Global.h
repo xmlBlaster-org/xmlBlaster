@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.26 2004/01/14 14:59:25 ruff Exp $
+Version:   $Id: Global.h,v 1.27 2004/01/21 13:12:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -157,7 +157,8 @@ public:
     Timeout& getPingTimer();
 
     /**
-     * returns the specified value as a std::string.
+     * Returns the specified value as a std::string. 
+     * @deprecated Please use 'lexical_cast<string>(bool)' instead
      */
     static const std::string& getBoolAsString(bool val);
 
