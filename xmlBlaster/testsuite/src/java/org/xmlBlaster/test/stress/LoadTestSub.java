@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.13 2003/04/25 09:51:36 laghi Exp $
+Version:   $Id: LoadTestSub.java,v 1.14 2003/10/01 17:20:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -336,7 +336,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       int ret = glob.init(args);
       if (ret != 0) {
          usage();
-         System.out.println("Oneway Example: java -Xms18M -Xmx32M org.xmlBlaster.test.stress.LoadTestSub -publish.oneway true -burstMode/collectTimeOneway 500 -dispatch/callback/oneway true -dispatch/callback/burstMode/collectTime 200 -numPublish 5000 -protocol IOR");
+         System.out.println("Oneway Example: java -Xms18M -Xmx32M org.xmlBlaster.test.stress.LoadTestSub -publish.oneway true -burstMode/collectTime 500 -dispatch/callback/oneway true -dispatch/callback/burstMode/collectTime 200 -numPublish 5000 -protocol IOR");
          System.out.println("Syn    Example: java -Xms18M -Xmx32M org.xmlBlaster.test.stress.LoadTestSub -publish.oneway false -dispatch/callback/oneway false -publish.burstMode 200 -dispatch/callback/burstMode/collectTime 200 -numPublish 5000 -protocol IOR");
          System.exit(1);
       }
