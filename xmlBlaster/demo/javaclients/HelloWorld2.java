@@ -41,8 +41,8 @@ public class HelloWorld2 implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQoS updateQoS)
    {
-      Log.info("", "Received asynchronous message '" + updateKey.getOid() +
-                   "' from xmlBlaster");
+      Log.info("HelloWorld2", "Received asynchronous message '" +
+               updateKey.getOid() + "' from xmlBlaster");
       return "";
    }
 

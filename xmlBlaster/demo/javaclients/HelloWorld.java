@@ -21,7 +21,7 @@ public class HelloWorld
 
          MessageUnit[] msgs = con.get("<key oid='__sys__FreeMem'/>", null);
 
-         Log.info("", "xmlBlaster has currently " + new String(msgs[0].getContent()) +
+         Log.info("HelloWorld", "xmlBlaster has currently " + new String(msgs[0].getContent()) +
                       " bytes of free memory");
 
          con.disconnect(null);
