@@ -9,9 +9,11 @@ Changes for 0.79b [???, ?? 2000]
    No more communication is possible until the crashed subscriber will log on
    again.
 
- - Added proper RMI server and callback server shutdown 
+ - Added proper RMI server and callback server shutdown
 
- - Added servlet.jar from tomcat 4.0
+ - Renamed servlet-2.0.jar to servlet.jar
+
+   (- Added servlet.jar from tomcat 4.0)
    (Java Servlet 2.3 and JSP 1.2 specifications)
 
  - Added a simple Python hello world demo,
@@ -23,6 +25,7 @@ Changes for 0.79b [???, ?? 2000]
  - Persistent Db integration (code, but no release).
 
  - Changed to JAXP and DOM2 Sun/crimson XML parser
+   jaxp-1.1ea2 from SUN, DOM2 SAX2
 
  - Changed code to conform to SAX2
 
