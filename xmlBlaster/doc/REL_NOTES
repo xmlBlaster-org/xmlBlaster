@@ -2,6 +2,11 @@
 
 Changes for 0.78 [???     2000]
 ==============================
+  - xmlBlaster.properties allows variables ${...} replacement.
+    see util.property.args.xml, util.property.env.xml, util.property.xml
+    NOTE: You need to replace your xmlBlaster.properties
+    with the new xmlBlaster.properties.template!
+
   - The "+" for command line options (e.g. +trace) is not supported
     any more, use for example '-trace true' instead.
 

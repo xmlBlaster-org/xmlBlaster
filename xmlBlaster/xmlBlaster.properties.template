@@ -4,15 +4,14 @@
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # Comment:   Properties for xmlBlaster MOM server, copy into you home directory
 #
-#The variables 
-#   $user.dir
-#   $user.home
-#may be used and will be replaced to the current directory and
+#All JVM system variables are supported, e.g.
+#   ${user.dir}
+#   ${user.home}
+#could be used and would be replaced to the current directory and
 #the users home directory respectively.
 #
-#You may set $XMLBLASTER_HOME in your JVM environment or here, e.g.
-#   $XMLBLASTER_HOME=$user.home/xmlBlaster
-#and use it as a variable in this file.
+#Further you can reference all variables in this file or from command line
+#with ${...}
 #------------------------------------------------------------------------------
 
 
@@ -20,7 +19,7 @@
 # Persistent store (see javadoc of FileDriver)
 # Lazy recover (not at server startup but on demand) is not yet supported.
 Persistence.Driver=org.xmlBlaster.engine.persistence.FileDriver
-Persistence.Path=$user.home/tmp
+Persistence.Path=${user.home}/tmp
 Persistence.LazyRecovery=false
 #------------------------------------------------------------------------------
 
@@ -91,7 +90,7 @@ LogFormat.Time=MEDIUM
 #PDOM.Cachesize=1000000
 #
 #   Configure you xmldb-path
-#PDOM.Dbpath=$user.home
+#PDOM.Dbpath=${user.home}
 #
 #   Setup max size of a message in byte default is 5kbyte
 #PDOM.Messagesize=100
