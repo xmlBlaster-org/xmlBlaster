@@ -1263,7 +1263,13 @@ public final class TopicHandler implements I_Timeout
       try {
          if (this.topicEntry != null) {
             int num = this.requestBroker.removePersistentTopicHandler(this.topicEntry);
-            if (log.TRACE) log.trace(ME, "" + num + " TopicHandler removed from persistency");
+            this.topicEntry = null;
+            if (num == 0) {
+               log.warn(ME, "" + num + " TopicHandler removed from persistency");
+            }
+            else {
+               if (log.TRACE) log.trace(ME, "" + num + " TopicHandler removed from persistency");
+            }
             return num>0;
          }
       }
@@ -1353,6 +1359,7 @@ public final class TopicHandler implements I_Timeout
             if (this.topicEntry != null) {
                removeTopicPersistence();
             }
+            else log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
 
             if (isAlive()) {
                if (numSubscribers() > 0 || hasCacheEntries() || hasHistoryEntries())
@@ -1389,6 +1396,10 @@ public final class TopicHandler implements I_Timeout
             }
             if (this.msgUnitCache != null) {
                this.msgUnitCache.shutdown(true);
+            }
+
+            if (this.topicEntry != null) { // a second time if the above notifySubscribersAboutErase() made an unconfigured topic alive
+               removeTopicPersistence();
             }
          }
          catch (Throwable e) {
@@ -1531,17 +1542,17 @@ public final class TopicHandler implements I_Timeout
     * @param topicHandler
     */
    final void fireMessageEraseEvent(SessionInfo sessionInfo, EraseQosServer eraseQos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering fireMessageEraseEvent");
+      if (log.CALL) log.call(ME, "Entering fireMessageEraseEvent forceDestroy=" + eraseQos.getForceDestroy());
       eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob)) : eraseQos;
 
       synchronized (this) {
-         if (isAlive()) {
+         if (isAlive() || isUnconfigured()) {
             if (eraseQos.getForceDestroy()) {
                toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
                return;
             }
             else {
-               toSoftErased(sessionInfo); // kills all history entries
+               toSoftErased(sessionInfo); // kills all history entries, notify subscribers
                long numMsgUnitStore = this.msgUnitCache.getNumOfEntries();
                if (numMsgUnitStore < 1) { // has no callback references?
                   toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
@@ -1558,11 +1569,12 @@ public final class TopicHandler implements I_Timeout
             toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
             return;
          }
-
+         /*
          if (isUnconfigured()) {
             toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
             return;
          }
+         */
       }
 
       // else ignore
