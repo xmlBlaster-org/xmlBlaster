@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.51 2002/06/27 14:13:10 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.52 2002/06/27 15:17:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -42,8 +42,8 @@ import org.jacorb.poa.gui.beans.FillLevelBar;
  */
 public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
 {
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
    private final String ME = "MainGUI";
