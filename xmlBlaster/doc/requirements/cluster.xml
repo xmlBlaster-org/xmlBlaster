@@ -279,8 +279,8 @@
       <table border="1">
          <tr><td>1</td><td>Mapping of a cluster node ID to a physical xmlBlaster instance</td></tr>
          <tr><td>key</td><td><pre>
-   &lt;key oid='__sys__cluster.node:heron'>
-      &lt;__sys__cluster.node/>
+   &lt;key oid='__sys__cluster.node.info[heron]'>
+      &lt;__sys__cluster.node.info/>
    &lt;/key>
          </pre></td></tr>
          <tr><td>content</td><td><pre>
@@ -307,8 +307,8 @@
       <table border="1">
          <tr><td>2</td><td>Determine the master: Mapping of messages to cluster node IDs</td><td>Comments</td></tr>
          <tr><td>2a) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.domainmapping:heron'>
-      &lt;__sys__cluster.node.domainmapping/>
+   &lt;key oid='__sys__cluster.node.master[heron]'>
+      &lt;__sys__cluster.node.master/>
    &lt;/key>
          </pre></td>
          <td> </td>
@@ -328,8 +328,8 @@
          </tr>
 
          <tr><td>2b) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.domainmapping:frodo'>
-      &lt;__sys__cluster.node.domainmapping/>
+   &lt;key oid='__sys__cluster.node.master[frodo]'>
+      &lt;__sys__cluster.node.master/>
    &lt;/key>
          </pre></td>
          <td> </td>
@@ -346,8 +346,8 @@
          </tr>
 
          <tr><td>2c) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.domainmapping:bilbo'>
-      &lt;__sys__cluster.node.domainmapping/>
+   &lt;key oid='__sys__cluster.node.master[bilbo]'>
+      &lt;__sys__cluster.node.master/>
    &lt;/key>
          </pre></td>
          <td> </td>
@@ -373,8 +373,8 @@
          </tr>
 
          <tr><td>2d) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.domainmapping:heron'>
-      &lt;__sys__cluster.node.domainmapping/>
+   &lt;key oid='__sys__cluster.node.master[heron]'>
+      &lt;__sys__cluster.node.master/>
    &lt;/key>
          </pre></td>
          <td> </td>
@@ -396,8 +396,8 @@
          </tr>
 
          <tr><td>2e) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.domainmapping:heron'>
-      &lt;__sys__cluster.node.domainmapping/>
+   &lt;key oid='__sys__cluster.node.master[heron]'>
+      &lt;__sys__cluster.node.master/>
    &lt;/key>
          </pre></td>
          <td> </td>
@@ -432,7 +432,7 @@
       <table border="1">
          <tr><td>3</td><td>The current status of a cluster node</td></tr>
          <tr><td>key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.state:heron'>
+   &lt;key oid='__sys__cluster.node.state[heron]'>
       &lt;__sys__cluster.node.state/>
    &lt;/key>
          </pre></td></tr>
@@ -472,6 +472,44 @@
          </tr>
       </table>
       </p>
+      <p>
+      This shows more complete the syntax of the configuration possibilities:
+      </p>
+      <pre>
+   &lt;clusternode id='heron.mycomp.com'>
+      &lt;info>
+         &lt;address type='IOR'>
+            IOR:09456087000
+         &lt;/address>
+         &lt;address type='XML-RPC'>
+            http://www.mycomp.com/XMLRPC/
+         &lt;/address>
+         &lt;callback type='RMI'>
+            rmi://mycomp.com
+         &lt;/callback>
+         &lt;backupnode>
+            &lt;clusternode id='aragon.mycomp.com'/>
+            &lt;clusternode id='bilbo.mycomp.com'/>
+         &lt;/backupnode>
+      &lt;/info>
+      
+      &lt;master type='DomainToMaster' version='0.9'>
+         &lt;![CDATA[
+            &lt;key domain='RUGBY'/>
+            &lt;key type='XPATH'>//STOCK&lt;/key>
+         ]]&gt;
+      &lt;/master>
+      &lt;master stratum='1' refId='frodo' type='MyOwnMapperPlugin' version='2.0'>
+         &lt;![CDATA[My own rule]]&gt;
+      &lt;/master>
+
+      &lt;state>
+         &lt;cpu id='0' idle='40'/>
+         &lt;cpu id='1' idle='44'/>
+         &lt;ram free='12000'/>
+      &lt;/state>
+   &lt;/clusternode>
+      </pre>
    </example>
 
    <configuration where="server">
@@ -481,19 +519,21 @@
       <table border="1">
          <tr>
             <td>Property</td>
-            <td>Default</td>
+            <td>Default / Example</td>
             <td>Description</td>
             <td>Implemented</td>
          </tr>
+
          <tr>
             <td>cluster</td>
             <td>false</td>
             <td>Switch on/off cluster support</td>
             <td>yes</td>
          </tr>
+
          <tr>
             <td>cluster.node.id</td>
-            <td>167.92.1.4:7607</td>
+            <td> 167.92.1.4:7607<br />or<br /> heron.mycomp.com</td>
             <td>The world wide unique name of this xmlBlaster instance (= cluster node id), 
                 if not specified defaults to the listen port of one of your activated
                 protocol drivers.
@@ -501,28 +541,91 @@
             </td>
             <td>yes</td>
          </tr>
+
          <tr>
             <td>cluster.domainMapper.type</td>
             <td>DomainToMaster</td>
             <td>Specifies which domain to master mapping plugin to use (see xmlBlaster.properties)</td>
             <td>yes</td>
          </tr>
+         
          <tr>
             <td>cluster.domainMapper.version</td>
             <td>1.0</td>
             <td>The plugin version to use</td>
             <td>yes</td>
          </tr>
+         
          <tr>
             <td>cluster.loadBalancer.type</td>
             <td>RoundRobin</td>
             <td>Specifies which load balance plugin to use (see xmlBlaster.properties)</td>
             <td>yes</td>
          </tr>
+         
          <tr>
             <td>cluster.loadBalancer.version</td>
             <td>1.0</td>
             <td>The plugin version to use</td>
+            <td>yes</td>
+         </tr>
+         
+         <tr>
+            <td>cluster.node.info[heron]</td>
+            <td><pre>
+&lt;clusternode id='heron'>
+   &lt;info>
+      &lt;address type='SOCKET'>
+         192.168.1.2:7607
+      &lt;/address>
+   &lt;/info>
+&lt;/clusternode>
+            </pre></td>
+            <td>
+            Configures how to access <i>heron</i>,
+            replace the node name in the brackets with your specific xmlBlaster node.<br />
+            NOTE: This setting can be overwritten by <i>__sys__cluster.node.info[heron]</i> messages.
+            </td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>cluster.node.master[heron]</td>
+            <td><pre>
+&lt;clusternode id='heron'>
+   &lt;master type='DomainToMaster'>
+      &lt;![CDATA[
+         &lt;key domain='RUGBY_NEWS'/>
+      ]]&gt;
+   &lt;/master>
+&lt;/clusternode>
+            </pre></td>
+            <td>Configures for which message types <i>heron</i> is the master node.<br />
+            NOTE: This setting can be overwritten by <i>__sys__cluster.node.master[heron]</i> messages.
+            </td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>cluster.node[heron]</td>
+            <td><pre>
+&lt;clusternode id='heron'>
+   &lt;info>
+      &lt;address type='SOCKET'>
+         192.168.1.2:7607
+      &lt;/address>
+   &lt;/info>
+   &lt;master type='DomainToMaster'>
+      &lt;![CDATA[
+         &lt;key domain='RUGBY_NEWS'/>
+      ]]&gt;
+   &lt;/master>
+&lt;/clusternode>
+            </pre></td>
+            <td>
+            The combination of <i>cluster.node.info[...]</i> and <i>cluster.node.master[...]</i>
+            to allow a more compact configuration.
+            </td>
             <td>yes</td>
          </tr>
       </table>
@@ -535,7 +638,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
