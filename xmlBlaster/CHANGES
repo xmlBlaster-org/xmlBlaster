@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.84x [xxx, xx 2003]
+Changes for 0.843 [Mar, 10 2003]
 ================================
  o Bugfix in client.key.GetKey.java constructor
 
@@ -19,6 +19,8 @@ Changes for 0.84x [xxx, xx 2003]
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.corba.NameService.html
 
  o C++: Bugfix: returned pointer was freed before usage in to_string()
+
+ o C++: Memory leaks fixed in CORBA plugin
 
 Changes for 0.842 [Feb, 21 2003]
 ================================

@@ -1,7 +1,7 @@
 Salute,
 
-the new release 0.842 is out (Feb, 21. 2003).
-(We wait with 0.85 until we got feedback about 0.842)
+the new release 0.843 is out (Mar, 10. 2003).
+(We wait with 0.85 until we got feedback about 0.843)
 
 XmlBlaster is maturing to industrial strength.
 
@@ -47,15 +47,7 @@ If you upgrade from 0.840 or older:
 NEW FEATURES:
 -------------
 
-1. Full client side C++ support (by Michele Laghi, Marting Johnson, Marcel Ruff and others)
-  * It is known to run on Linux/Solaris/Windows with g++ 2.9x/3.x, VC7 and more.
-  * See 
-      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
-      http://www.xmlblaster.org/xmlBlaster/src/c++/doc/html/ 
-      xmlBlaster/src/c++
-      xmlBlaster/testsuite/src/c++
-
-2. Many server side bug fixes
+Bug fixes
 
 Please read the CHANGES file for more informations.
 
@@ -71,7 +63,7 @@ KNOWN BUGS:
 
 3. C++ clients with MICO 2.37 and 2.3.8: If you invoke XmlBlasterAccess::shutdown on one XmlBlasterAccess
    instance, you will not receive any callbacks anymore from any other instance of that class. This problem
-   does NOT exist with TAO.
+   does NOT exist with TAO or ORBIX.
 
 NEXT RELEASES:
 --------------
@@ -81,16 +73,14 @@ The next release is 0.85 and we strive to have these additional changes:
 1. The new queue framework is embedded to the Java client library
    (inclusive the dispatcher plugin framework)
 
-2. Sessions and subcriptions are made persistent to survive a server crash
-
-3. History message access will be better documented and more
+2. History message access will be better documented and more
    query options are implemented
 
-4. Performance profiling and extended memory leak checks
+3. Performance profiling and extended memory leak checks
 
-5. An embedded JDBC database additionally to Postgres and Oracle.
+4. An embedded JDBC database additionally to Postgres and Oracle.
 
-6. Finish port to new property syntax (see mailing list discussion).
+5. Finish port to new property syntax (see mailing list discussion).
 
 
 The planned features of release 0.9 are an open issue.
