@@ -78,7 +78,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
             log_.dump("content", "Message received '" + msg + "' with size=" + lexical_cast<std::string>(msgUnit.content.length()));
          }
          if (log_.dump()) log_.dump("UpdateQos", "\n" + updateQos->toXml());
-         if (log_.trace()) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
+         if (log_.trace()) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender()->getAbsoluteName());
 
          //Checking whether the Update is for the Cache or for the boss
          //The boss should not be interested in cache updates
@@ -151,7 +151,7 @@ void DefaultCallback::updateOneway(const char* sessionId,
             log_.error(me(), string(e.message) );
          }
 
-         if (log_.trace()) log_.trace(me(), "Received oneway message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
+         if (log_.trace()) log_.trace(me(), "Received oneway message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender()->getAbsoluteName());
 
          if (boss_) {
             boss_->update(sessionId, *updateKey,

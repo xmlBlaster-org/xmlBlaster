@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.33 2004/08/29 22:13:14 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.34 2004/09/23 07:26:14 ruff Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -480,8 +480,8 @@ private:
       }
 
       string name = returnQos_.getSessionQos().getAbsoluteName();
-      if (/*senderName_*/ name != updateQos.getSender().getAbsoluteName()) {
-         log_.error(ME, string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender().getAbsoluteName());
+      if (/*senderName_*/ name != updateQos.getSender()->getAbsoluteName()) {
+         log_.error(ME, string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender()->getAbsoluteName());
          assert(0);
       }
       if (subscribeOid_.find(updateQos.getSubscriptionId()) == string::npos) {
