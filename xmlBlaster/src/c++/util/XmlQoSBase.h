@@ -11,6 +11,7 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 
 #ifndef _UTIL_XMLQOSBASE_H
 #define _UTIL_XMLQOSBASE_H
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {

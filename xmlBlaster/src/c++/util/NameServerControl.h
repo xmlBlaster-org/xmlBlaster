@@ -8,6 +8,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #ifndef _UTIL_NAMESERVERCONTROL_H
 #define _UTIL_NAMESERVERCONTROL_H
+using namespace std;
 
 #include <vector>
 #include <algorithm>

@@ -10,10 +10,11 @@ Comment:   Handling the Client data
 #ifndef _UTIL_LOG_H
 #define _UTIL_LOG_H
 
+#include <iostream>
+#include <strstream>
+#include <time.h>
 #include <stdlib.h>
 #include <util/Property.h>
-#include <strstream.h>
-#include <time.h>
 
 /**
  * Logging output.
@@ -24,6 +25,7 @@ Comment:   Handling the Client data
  * code below).
  */
 
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -52,35 +54,36 @@ namespace util {
       /**
        * Logging levels
        */
-      static const int L_NOLOG  = 0x0;   // No logs at all
-      static const int L_PANIC  = 0x1;   // Do exit on error
-      static const int L_ERROR  = 0x2;   // Internal error occured
-      static const int L_WARN   = 0x4;   // Warning about user actions
-      static const int L_INFO   = 0x8;   // Important informational logs only
-      static const int L_CALL  = 0x10;  // Trace entry of methods
-      static const int L_TIME   = 0x20;  // Show elapsed milliseconds
-      static const int L_TRACE  = 0x40;  // Trace application flow
-      static const int L_DUMP   = 0x80;  // Dump internal state
-      static const int L_EXIT   = 0x100; // Do a normal exit
-      static const int L_PLAIN  = 0x200; // Marker for plain output
+      enum {L_NOLOG= 0x0,   // No logs at all
+            L_PANIC= 0x1,   // Do exit on error
+            L_ERROR= 0x2,   // Internal error occured
+            L_WARN = 0x4,   // Warning about user actions
+            L_INFO = 0x8,   // Important informational logs only
+            L_CALL = 0x10,    // Trace entry of methods
+            L_TIME = 0x20,    // Show elapsed milliseconds
+            L_TRACE= 0x40,   // Trace application flow
+            L_DUMP = 0x80,    // Dump internal state
+            L_EXIT = 0x100,    // Do a normal exit
+            L_PLAIN= 0x200  // Marker for plain output
+            };
 //      static int lookAndFeelTime = LC_TIME;
       /**
        * colors foreground/background
        */
-      static char* const ESC          = "\033[0m"; 
-      static char* const BOLD         = "\033[1m";
-      static char* const RED_BLACK    = "\033[31;40m";
-      static char* const GREEN_BLACK  = "\033[32;40m";
-      static char* const YELLOW_BLACK = "\033[33;40m";
-      static char* const BLUE_BLACK   = "\033[34;40m";
-      static char* const PINK_BLACK   = "\033[35;40m";
-      static char* const LTGREEN_BLACK= "\033[36;40m";
-      static char* const WHITE_BLACK  = "\033[37;40m";
-      static char* const WHITE_RED    = "\033[37;41m";
-      static char* const BLACK_RED    = "\033[30;41m";
-      static char* const BLACK_GREEN  = "\033[40;42m";
-      static char* const BLACK_PINK   = "\033[40;45m";
-      static char* const BLACK_LTGREEN= "\033[40;46m";
+      static char* const ESC          ;
+      static char* const BOLD         ;
+      static char* const RED_BLACK    ;
+      static char* const GREEN_BLACK  ;
+      static char* const YELLOW_BLACK ;
+      static char* const BLUE_BLACK   ;
+      static char* const PINK_BLACK   ;
+      static char* const LTGREEN_BLACK;
+      static char* const WHITE_BLACK  ;
+      static char* const WHITE_RED    ;
+      static char* const BLACK_RED    ;
+      static char* const BLACK_GREEN  ;
+      static char* const BLACK_PINK   ;
+      static char* const BLACK_LTGREEN;
 
       static Property *properties_;
       static int      logLevel_;
@@ -132,7 +135,7 @@ namespace util {
        * @param val exit code for operating system
        */
       void exitLow(int val) {
-         std::exit(val);
+         _exit(val);
       }
       
             
@@ -318,24 +321,7 @@ namespace util {
        * @param text     e.g. "Login denied"
        */
       void log(const string &levelStr, int level, const string &instance, 
-               const string &text) {
-         if (logFormatPropertyRead == false) {
-            initialize();
-         }
-
-         string logFormat;
-         if(level & L_DUMP)
-            logFormat = "{3}";
-         else
-            logFormat = currentLogFormat;
-         
-         string logEntry = levelStr + " ";
-         if (level & L_TIME) logEntry += getTime() + ": ";
-         if ((level & L_ERROR) || (level & L_WARN) || (level & L_PANIC))
-            cerr << logEntry << instance << " " << text << endl;
-         else
-            cout << logEntry << instance << " " << text << endl;
-      }
+               const string &text);
 
 
       Property& getProperties() {
@@ -343,6 +329,8 @@ namespace util {
       }
 
    }; // end of class Log
+
+
 
 }}} // end of namespace util
 

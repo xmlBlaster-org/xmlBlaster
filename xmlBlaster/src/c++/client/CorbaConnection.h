@@ -21,6 +21,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 
@@ -97,7 +98,7 @@ namespace org { namespace xmlBlaster {
        */
       bool orbPerformWork() {
          if (orb_ != NULL) {
-            bool ret = orb_->work_pending();
+            bool ret = (orb_->work_pending() != 0);
             if (ret) orb_->perform_work();
             return ret;
          }

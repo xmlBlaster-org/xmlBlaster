@@ -13,8 +13,9 @@ Comment:   Handling one xmlKey, knows how to parse it with DOM
 #include <util/SaxHandlerBase.h>
 #include <sax/AttributeList.hpp>
 
+using namespace std;
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { 
    
 /**
  * This class encapsulates the Message meta data and unique identifier of a 
@@ -117,7 +118,7 @@ namespace org { namespace xmlBlaster {
        * You may include this into your derived startElement() method like 
        * this:<br />
        * <pre>
-       *  if (client::UpdateKey::startElementBase(name, attrs) == true)
+       *  if (UpdateKey::startElementBase(name, attrs) == true)
        *     return;
        * </pre>
        * @return true if the tag is parsed here, the derived class doesn't 
@@ -197,7 +198,7 @@ namespace org { namespace xmlBlaster {
        * You may include this into your derived endElement() method like 
        * this:<br />
        * <pre>
-       *  if (client::UpdateKey::endElementBase(name)) return;
+       *  if (UpdateKey::endElementBase(name)) return;
        * </pre>
        * @return true if the tag is parsed here, the derived class doesn't 
        *           need to look at this tag anymore

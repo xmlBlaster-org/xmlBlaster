@@ -10,7 +10,9 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #ifndef _UTIL_STRINGSTRIPPER2_H
 #define _UTIL_STRINGSTRIPPER2_H
 
-#include <pair.h>
+#ifdef _WIN32
+#  include <_pair.h>
+#endif
 #include <util/StringStripper.h>
 
 
@@ -29,6 +31,8 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
  * separator will be the first element in the pair. The result will be:
  * <"ti","che">,<"ta","tacat">,<"i","tac">,<"tacumi","tac">
  */
+using namespace std;
+
 namespace org { namespace xmlBlaster {
 namespace util {
    

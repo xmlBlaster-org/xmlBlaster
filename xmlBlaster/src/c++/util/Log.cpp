@@ -3,13 +3,33 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.1 2001/12/12 17:30:22 ruff Exp $
+Version:   $Id: Log.cpp,v 1.2 2001/12/16 22:47:38 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
+#include <time.h>
+
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {
+
+char* const Log::ESC          = "\033[0m"; 
+char* const Log::BOLD         = "\033[1m";
+char* const Log::RED_BLACK    = "\033[31;40m";
+char* const Log::GREEN_BLACK  = "\033[32;40m";
+char* const Log::YELLOW_BLACK = "\033[33;40m";
+char* const Log::BLUE_BLACK   = "\033[34;40m";
+char* const Log::PINK_BLACK   = "\033[35;40m";
+char* const Log::LTGREEN_BLACK= "\033[36;40m";
+char* const Log::WHITE_BLACK  = "\033[37;40m";
+char* const Log::WHITE_RED    = "\033[37;41m";
+char* const Log::BLACK_RED    = "\033[30;41m";
+char* const Log::BLACK_GREEN  = "\033[40;42m";
+char* const Log::BLACK_PINK   = "\033[40;45m";
+char* const Log::BLACK_LTGREEN= "\033[40;46m";
+
+
 
    Log::Log(int args, const char * const argc[]) {
       bool isNewProperty = false;
@@ -242,6 +262,25 @@ namespace util {
          }
       }
 
+   void Log::log(const string &levelStr, int level, const string &instance, 
+             const string &text) {
+       if (logFormatPropertyRead == false) {
+          initialize();
+       }
+
+       string logFormat;
+       if(level & L_DUMP)
+          logFormat = "{3}";
+       else
+          logFormat = currentLogFormat;
+   
+       string logEntry = levelStr + " ";
+       if (level & L_TIME) logEntry += getTime() + ": ";
+       if ((level & L_ERROR) || (level & L_WARN) || (level & L_PANIC))
+         cerr << logEntry << instance << " " << text << endl;
+       else
+          cout << logEntry << instance << " " << text << endl;
+    }
 
    void Log::usage() {
       plain(ME, "");
@@ -373,8 +412,8 @@ namespace util {
    string Log::getTime() {
       // adapt it here to the correct time format (locales) ?!
       time_t theTime;
-      std::time(&theTime);
-      string timeStr = std::ctime(&theTime), ret;
+      ::time(&theTime);
+      string timeStr = ctime(&theTime), ret;
       // eliminate new lines (if any)
       int pos = timeStr.find("\n");
       if (pos < 0) return timeStr;

@@ -71,17 +71,17 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #endif // _COMPATIBLECORBA_H
 
-#ifdef   SERVER_HEADER
+/*#ifdef   SERVER_HEADER
 #define  SERVER_INCLUDE2  <SERVER_INCLUDE(SERVER_HEADER)>
 #include SERVER_INCLUDE2
 #undef   SERVER_HEADER
 #endif
-
+*/
  // #include <generated/xmlBlaster.h>
-#ifdef   CLIENT_HEADER
+/*#ifdef   CLIENT_HEADER
 #define  CLIENT_INCLUDE2  <CLIENT_INCLUDE(CLIENT_HEADER)>
 #include CLIENT_INCLUDE2
 #undef   CLIENT_HEADER
 #endif
-
+*/
 const char* to_string(const CORBA::Exception &ex);

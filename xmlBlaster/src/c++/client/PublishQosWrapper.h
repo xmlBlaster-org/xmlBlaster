@@ -13,6 +13,7 @@
 #include <strstream.h>
 #include <client/QosWrapper.h>
 #include <util/Destination.h>
+using namespace std;
 
 namespace org { namespace xmlBlaster {
    

@@ -7,6 +7,7 @@ Comment:   Throw this exception to stop SAX parsing
 
 #ifndef _UTIL_STOPPARSEEXCEPTION
 #define _UTIL_STOPPARSEEXCEPTION
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {

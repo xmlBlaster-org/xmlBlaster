@@ -29,6 +29,7 @@ Comment:   Handling one xmlQoS
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
+using namespace std;
 
 namespace org { namespace xmlBlaster {
    

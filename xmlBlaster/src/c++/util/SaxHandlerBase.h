@@ -20,6 +20,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/Log.h>
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -88,14 +89,14 @@ namespace util {
                                        xmlData.size(), "xmlBlaster", false);
             parser.parse(inSource);
          }
-         catch (StopParseException &e) { 
+         catch (StopParseException &) { 
             // If it does not work, it could be wrapped into SAXParseException
             if (log_.TRACE) log_.trace(me(), string("StopParseException: ") +
                                   "Parsing execution stopped half the way");
             return;
          }
          catch (...) {
-            cerr << "SOME OTHER EXEPTION" << endl;
+           cerr << "SOME OTHER EXEPTION" << std::endl;
          }
       }
 
@@ -248,7 +249,7 @@ namespace util {
          delete systemIdHelper;
          if (systemId != "") {
             int index = systemId.find_last_of('/');
-            if (index != -1) systemId.assign(systemId, index + 1);
+            if (index != -1) systemId.assign(systemId.c_str(), index + 1);
             str += systemId;
          }
          char buffer[128];
@@ -272,7 +273,7 @@ namespace util {
       void resetDocument() {
       }
 
-      void setDocumentLocator(Locator *) {
+      void setDocumentLocator(const Locator* const ) {
       }
  
 
@@ -299,5 +300,3 @@ namespace util {
 }}} // namespace
 
 #endif
-
-

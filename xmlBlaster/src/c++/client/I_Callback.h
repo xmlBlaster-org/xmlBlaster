@@ -13,6 +13,7 @@ Comment:   Helper to easy get the callback messages
 #include <client/UpdateQoS.h>
 #define CLIENT_HEADER generated/xmlBlaster    // xmlBlaster.h
 #include <util/CompatibleCorba.h>
+using namespace std;
 
 
 namespace org { namespace xmlBlaster {
@@ -22,7 +23,7 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.5 $
+    * @version $Revision: 1.6 $
     * @author $Author: ruff $
     */
    class I_Callback {

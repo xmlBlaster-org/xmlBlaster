@@ -15,6 +15,7 @@ Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 #define _CLIENT_UPDATEQOS_H
 
 #include <util/XmlQoSBase.h>
+using namespace std;
 
 namespace org { namespace xmlBlaster {
    
@@ -137,7 +138,7 @@ namespace org { namespace xmlBlaster {
        * @param attrs the attributes of the tag
        */
       void startElement(const XMLCh* const name, AttributeList &attrs) {
-         util::XmlQoSBase::startElement(name, attrs);
+         XmlQoSBase::startElement(name, attrs);
          if (!setFlagForAttribute(name, "state" , inState_,  attrs)) return;
          if (!setFlagForAttribute(name, "sender", inSender_, attrs)) return;
          setFlagForAttribute(name,"subscriptionId", inSubscriptionId_, attrs);
@@ -150,7 +151,7 @@ namespace org { namespace xmlBlaster {
        * @param name Tag name
        */
       void endElement(const XMLCh* const name) {
-         util::XmlQoSBase::endElement(name);
+         XmlQoSBase::endElement(name);
          if (caseCompare(name, "state")) {
             inState_ = false;
             char *stateHelper = charTrimmer_.trim(character_.c_str());

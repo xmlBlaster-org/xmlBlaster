@@ -9,7 +9,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define _CLIENT_DEFAULTCALLBACK_H
 
 #include <string>
-#include <strstream.h>
+#include <strstream>
 #include <util/Log.h>
 #include <client/I_Callback.h>
 #include <client/UpdateKey.h>
@@ -17,6 +17,9 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
+#include <generated/xmlBlaster.h>
+
+using namespace std;
 
 namespace org { namespace xmlBlaster {
    

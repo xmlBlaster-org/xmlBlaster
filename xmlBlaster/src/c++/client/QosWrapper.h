@@ -9,6 +9,8 @@ Comment:   Handling one QoS message
 #define _CLIENT_QOSWRAPPER_H
 
 #include <string>
+using namespace std;
+
 
 namespace org { namespace xmlBlaster {
 

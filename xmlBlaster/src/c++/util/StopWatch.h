@@ -12,6 +12,7 @@ Comment:   Handling the Client data
 #include <string>
 #include <strstream.h>
 
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {

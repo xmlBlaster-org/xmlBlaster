@@ -11,6 +11,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #include <string>
 #include <vector>
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -49,7 +50,7 @@ namespace util {
          int            pos;
          while ((pos=line.find(separator_)) >= 0) {
             sub.assign(line,0, pos);
-            line.assign(line, pos+sepSize_);
+            line.assign(line.c_str(), pos+sepSize_);
             ret.insert(ret.end(), sub);
          }
          ret.insert(ret.end(), line);

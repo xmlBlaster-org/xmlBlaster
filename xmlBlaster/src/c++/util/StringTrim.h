@@ -8,6 +8,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #ifndef _UTIL_STRINGTRIM_H
 #define _UTIL_STRINGTRIM_H
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {

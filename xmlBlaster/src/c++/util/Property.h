@@ -8,11 +8,15 @@ Comment:   Class used to read, store & write (java) properties.
 #ifndef _UTIL_PROPERTY_H
 #define _UTIL_PROPERTY_H
 
+# include <iostream>
+#include <fstream>
 #include <map>
-#include <string>
-#include <fstream.h>
+# include <string>
+
 #include <stdlib.h>
 #include <util/PropertyDef.h>
+
+using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -70,7 +74,7 @@ namespace util {
          }
          string name, value;
          name.assign(line, 0, pos);
-         value.assign(line, pos+1);
+         value.assign(line.c_str(), pos+1);
          return pair<const string, string>(filter(name), filter(value));
       }
       
@@ -248,7 +252,7 @@ namespace util {
          while (count < nmax) {
             string name = argc[count];
             if (name.find(sep) == 0) { // it is a property
-               name.assign(name, sep.length());
+               name.assign(name.c_str(), sep.length());
                if (!javaStyle) { // Corba style (or other non-java styles)
                   count++;
                   value = argc[count];
