@@ -111,7 +111,105 @@ xmlBlaster/demo/javaclients/jdbc/XmlDBClientSync.java
    <example lang="any" type="HTML">
       <p>
       We demonstrate RDBMS access with a simple command line example,
-      creating, inserting and querying a table 'person' with Oracle:
+      creating, inserting and querying a table 'cars'. Usually you wouldn't do
+      this from command line but embed it into your xmlBlaster client. Each
+      query is an xmlBlaster message sent.
+      </p>
+      <p>
+      This example uses <a href="http://www.jepstone.net/tinySQL/"><b>tinySQL</b></a>,
+      a <b>JDBC driver supporting dBase</b> file formats. It is delivered
+      with xmlBlaster to allow regression tests of our JDBC plugin, so you can instantly
+      try the following commands or query one of your dBase files:
+      </p>
+
+      <table border="1"><tr><td><pre>
+java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type update \
+      -query "CREATE TABLE cars (name CHAR(25), id NUMERIC(4,0))"
+
+java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type update \
+      -query "INSERT INTO cars (name, id) VALUES('Fiat', 1)"
+
+java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type update \
+      -query "INSERT INTO cars (name, id) VALUES('Jeep', 7)"
+
+java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type query \
+      -query "SELECT * from cars"
+
+java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type query \
+      -query "SELECT * from cars where id > 0"
+
+java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type update \
+      -query "DROP table cars"
+      </pre></td></tr></table>
+
+      <p>NOTE:</p>
+      <ol>
+        <li>
+            The given user name is optional as tinySQL (dBase) does not support authentication, it is useful
+            for nicer logging only.
+        </li>
+        <li>
+            tinySQL can only access files on the host where xmlBlaster is running (it is
+            no socket based JDBC driver).
+        </li>
+        <li>
+            The given url "jdbc:dbfFile:." looks for or adds dBase files in the given directory ".", that is
+            there where xmlBlaster was started. In the above example you will find a dBase file
+            cars.DBF in the directory where you started xmlBlaster.<br />
+            You can pass any path on your local harddisk like
+            "jdbc:dbfFile:/home/marcel/test" or "jdbc:dbfFile:C:\testBlaster\db"<br />
+            If you have a dBase file <i>C:\testBlaster\db\myData.DBF</i> you access it like
+            <i>"jdbc:dbfFile:C:\testBlaster\db"</i> and <i>select * from myData</i>
+        </li>
+        <li>
+            Using xmlBlaster it is possible to query dBase files remotely from any
+            programming language like C/C++, Java, PHP, perl  etc.
+        </li>
+        <li>
+            The last query returns the cars entered formatted with XML.
+        </li>
+      </ol>
+      <table border="1"><tr><td><pre>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+
+&lt;dbadapterresults>
+  &lt;desc>
+    &lt;numcolumns>2&lt;/numcolumns>
+    &lt;columnnames>
+      &lt;column>name&lt;/column>
+      &lt;column>id&lt;/column>
+    &lt;/columnnames>
+    &lt;rownum>2&lt;/rownum>
+  &lt;/desc>
+  &lt;results>
+    &lt;row>
+      &lt;name>
+        Fiat
+      &lt;/name>
+      &lt;id>
+        1
+      &lt;/id>
+    &lt;/row>
+    &lt;row>
+      &lt;name>
+         Jeep
+      &lt;/name>
+      &lt;id>
+        7
+      &lt;/id>
+    &lt;/row>
+  &lt;/results>
+&lt;/dbadapterresults>
+      </pre></td></tr></table>
+      <p>
+      Note that the result values are encapsulated by CDATA sections (not shown here).
+      </p>
+   </example>
+
+   <example lang="any" type="HTML">
+      <p>
+      We demonstrate RDBMS access with a simple command line example,
+      creating, inserting and querying a table 'person' with <b>Oracle</b>:
       </p>
 
       <table border="1"><tr><td><pre>
@@ -126,6 +224,10 @@ java javaclients.jdbc.XmlDBClient \
 java javaclients.jdbc.XmlDBClient \
    -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
    -query "INSERT INTO person VALUES( 'Tim', '8' )"
+
+java javaclients.jdbc.XmlDBClient \
+   -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
+   -query "INSERT INTO person VALUES( 'Gesa', '10' )"
 
 java javaclients.jdbc.XmlDBClient \
    -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf \
@@ -171,6 +273,14 @@ java javaclients.jdbc.XmlDBClient \
       Note that the result values are encapsulated by CDATA sections (not shown here).
       </p>
    </example>
+
+   <example lang="any" type="HTML">
+     <p>
+        As default Sun's <b>JDBC-ODBC bridge</b> is activate so you can
+        instantly access any ODBC database over xmlBlaster.
+     </p>
+   </example>
+
    <todo>
    INSERT and UPDATE are currently literally given, there should
    be a xml encoded variant allowing to use the Prepared statement.
@@ -185,7 +295,7 @@ java javaclients.jdbc.XmlDBClient \
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>
