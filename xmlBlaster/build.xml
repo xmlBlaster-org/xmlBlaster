@@ -260,7 +260,9 @@ TODO
       <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message=""/>
       <echo message="   runTests    --> starts xmlBlaster and runs all JUNIT tests"/>
+      <echo message="                   you need to compile xmlBlaster before with target 'all'"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
+      <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
       <echo message=""/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   javadocs-delete --> remove the above"/>
@@ -440,7 +442,9 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster testsuite source directory                  -->
    <!-- =================================================================== -->
-   <target name="testsuite" depends="xmlBlaster" description="Compile Java testsuite (based on junit)">
+   <target name="testsuite" depends="xmlBlaster,testsuite-only" description="Compile Java testsuite into testsuite.jar (based on junit) and xmlBlaster before">
+   </target>
+   <target name="testsuite-only" description="Compile Java testsuite only into testsuite.jar (based on junit)">
       <copy todir="${build.src}/testsuite/src/java/org">
          <fileset dir="${testsuite.dir}/src/java/org">
             <exclude name="README, Makefile"/>
@@ -607,7 +611,7 @@ TODO
    <!-- =================================================================== -->
    <!-- starts xmlBlaster and the junit tests                               -->
    <!-- =================================================================== -->
-   <target name="runTests">
+   <target name="runTests" description="Start xmlBlaster (in blocking mode) and run Junit">
       <parallel>
          <antcall target="startXmlBlasterServer"/>  <!-- blocks -->
          <sequential>
@@ -633,10 +637,17 @@ TODO
       <!-- echo message="Viewing the report ..."/>
       <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows XP" vmlauncher="false"/>
       <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows 2000" vmlauncher="false"/>
-      <exec dir="${report.dir}/html" executable="netscape" os="Linux" vmlauncher="false">
+      <exec dir="${report.dir}/html" executable="mozilla" os="Linux" vmlauncher="false">
          <arg line="${report.dir}/html/junit-noframes.html"/>
       </exec -->
    </target>
+
+   <!-- =================================================================== -->
+   <!-- Note that sometimes xmlBlaster does not stop completely             -->
+   <!-- because of xmlrpc does not stop listener thread proper              -->
+   <!-- Than you need to start the report manually                          -->
+   <!-- =================================================================== -->
+   <target name="runTestsAndReport" depends="runTests,report" description="Does runTests and report in one step"/>
 
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
