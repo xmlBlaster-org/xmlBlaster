@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.22 2004/02/09 09:41:40 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.23 2004/04/09 10:35:03 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.22 2004/02/09 09:41:40 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.23 2004/04/09 10:35:03 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -350,9 +350,11 @@ Dll_Export void freeMsgUnit(MsgUnit *msgUnit)
 /**
  * NOTE: You need to free the returned pointer with free()!
  *
+ * @param maxContentDumpLen for -1 get the complete content, else limit the
+ *        content to the given number of bytes
  * @return A ASCII XML formatted message or NULL if out of memory
  */
-Dll_Export char *messageUnitToXml(MsgUnit *msg)
+Dll_Export char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen)
 {
    if (msg->key == 0 && msg->contentLen < 1) {
       return strcpyAlloc(msg->qos);
@@ -364,17 +366,31 @@ Dll_Export char *messageUnitToXml(MsgUnit *msg)
    }
    else {
       char *contentStr = strFromBlobAlloc(msg->content, msg->contentLen);
-      size_t len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
+      size_t len = 200 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
       char *xml = (char *)calloc(len, sizeof(char));
       if (xml == 0) {
          free(contentStr);
          return 0;
       }
-      SNPRINTF(xml, len, "%s\n <content><![CDATA[%s]]></content>%s",
-                         msg->key, contentStr, msg->qos);
+      if (maxContentDumpLen == 0)
+         *contentStr = 0;
+      else if (maxContentDumpLen > 0 && maxContentDumpLen < (msg->contentLen-5))
+         strcpy(contentStr+maxContentDumpLen, " ...");
+      SNPRINTF(xml, len, "%s\n <content size='%d'><![CDATA[%s]]></content>%s",
+                         msg->key, msg->contentLen, contentStr, msg->qos);
       free(contentStr);
       return xml;
    }
+}
+
+/**
+ * NOTE: You need to free the returned pointer with free()!
+ *
+ * @return A ASCII XML formatted message or NULL if out of memory
+ */
+Dll_Export char *messageUnitToXml(MsgUnit *msg)
+{
+   return messageUnitToXmlLimited(msg, -1);
 }
 
 /**
@@ -488,7 +504,7 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
  * Guarantees a '\0' terminated string
  * @param to The destination string must be big enough
  * @param from The source to be copied
- * @param maxLen of 'to' will be filled with a '\0',
+ * @param (maxLen-1) of 'to' will be filled with a '\0',
  *        so effectively only maxLen-1 from 'from' are copied.
  * @return The destination string 'to'
  */

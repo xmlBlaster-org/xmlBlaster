@@ -127,6 +127,7 @@ Dll_Export extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
 Dll_Export extern void freeMsgUnitArrInternal(MsgUnitArr *msgUnitArr);
 Dll_Export extern void freeQosArr(QosArr *qosArr);
 Dll_Export extern char *messageUnitToXml(MsgUnit *msg);
+Dll_Export extern char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen);
 Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
 Dll_Export extern char *strcpyAlloc(const char *src);
 Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
