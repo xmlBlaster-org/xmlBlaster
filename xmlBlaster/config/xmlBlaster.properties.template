@@ -123,6 +123,13 @@ RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
 #admin.remoteconsole.sessionTimeout=600000
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# Pluggable Loggers
+LoggableDevicePlugin[console][1.0]=org.xmlBlaster.util.log.ConsoleLogDeviceFactory
+LoggableDevicePlugin[file][1.0]=org.xmlBlaster.util.log.FileLogDeviceFactory,logFile=mylogfile
+# Control wich logger to use globaly, comma separated list
+logDevice=console
+#------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # When an XmlBlasterException is thrown, log it to console
