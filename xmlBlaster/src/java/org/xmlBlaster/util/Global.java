@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.9 2002/05/11 08:09:01 ruff Exp $
+Version:   $Id: Global.java,v 1.10 2002/05/11 09:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -110,6 +110,21 @@ public class Global implements Cloneable
       try {
          // XmlBlasterProperty.addArgs2Props(this.args); // enforce that the args are added to the xmlBlaster.properties hash table
          boolean showUsage = property.init(this.args);  // initialize
+         if (showUsage) return 1;
+         return 0;
+      } catch (JUtilsException e) {
+         System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
+         return -1;
+      }
+   }
+
+   /**
+    * @return 1 Show usage, 0 OK, -1 error
+    */
+   public int init(java.applet.Applet applet)
+   {
+      try {
+         boolean showUsage = property.init(applet);
          if (showUsage) return 1;
          return 0;
       } catch (JUtilsException e) {
