@@ -125,24 +125,39 @@ function logToWindow(level, codePos, text)
    }
    var d = logWindow.document;
 
-   if (logEntries.length >= MAX_LOG_ENTRIES) {
-      // TODO: only half the logs, not empty them totally
+   if (level == "CLEAR") {
+      logEntries.length = 0;
+   }
+   else if (logEntries.length >= MAX_LOG_ENTRIES) {
+      // only half the logs, not empty them totally
+      alert("Stripping logging output to " + logEntries.length / 2 + " lines");
+      var jj=0;
+      for (var ii=logEntries.length/2; ii<logEntries.length; ii++) {
+         logEntries[jj] = logEntries[ii];
+         jj++;
+      }
+      logEntries.length = logEntries.length / 2;
+   }
+   else {
       logEntries[logEntries.length] = new logObject(level, codePos, text);
    }
 
-   logEntries[logEntries.length] = new logObject(level, codePos, text);
-
    var headerStr =
-      '<HTML>' +
-      '<HEAD>' +
-      '   <title>Log your code!</title>' +
-      '</HEAD>' +
-      '<BODY>' +
-      '<CENTER><H3>Logging output from XmlBlaster Javascript</H3></CENTER>';
+      '<HTML>\n' +
+      '<HEAD>\n' +
+      '   <title>Log your code!</title>\n' +
+      '   <style type="text/css">\n' +
+      '   <!--\n' +
+      '      body, a, table, tr, td, th {FONT-FAMILY: verdana,arial,helvetica,sans-serif; font-size:11pt; }' +
+      '   //-->\n' +
+      '   </style>\n' +
+      '</HEAD>\n' +
+      '<BODY>\n' +
+      '<CENTER><H3>Logging output from XmlBlaster Javascript</H3></CENTER>\n';
    d.writeln(headerStr);
 
    var tableStr =
-         "<TABLE NAME='ChatTable' BORDER='2' WIDTH='100%'>" +
+         "<TABLE NAME='ChatTable' BORDER='2' WIDTH='100%'>\n" +
          "   <TR>" +
          "      <TD WIDTH='10%'>" +
          "Level" +
@@ -153,26 +168,33 @@ function logToWindow(level, codePos, text)
          "      <TD WIDTH='80%'>" +
          "Logging text" +
          "      </TD>" +
-         "   </TR>";
+         "   </TR>\n";
    for (var ii=0; ii<logEntries.length; ii++) {
       tableStr +=
          "   <TR>" +
          "      <TD BGCOLOR='" + levelColor[logEntries[ii].level] + "'>" +
+         "         <FONT size=2>" +
          logEntries[ii].level +
+         "         </FONT>" +
          "      &nbsp;</TD>" +
          "      <TD>" +
+         "         <FONT size=2>" +
          logEntries[ii].codePos +
+         "         </FONT>" +
          "      &nbsp;</TD>" +
          "      <TD>" +
+         "         <FONT size=2>" +
          logEntries[ii].text +
+         "         </FONT>" +
          "      &nbsp;</TD>" +
-         "   </TR>";
+         "   </TR>\n";
    }
-   tableStr += "</TABLE>";
-   tableStr += "<A HREF='javascript:opener.logEntries.length=0;'>clear</A>";
+   tableStr += "</TABLE>\n";
+   var clearStr = 'javascript:opener.logToWindow("CLEAR", "CLEAR", "CLEAR")';
+   tableStr += "<A HREF='" + clearStr + "'>clear</A>\n";
 
    d.writeln(tableStr);
-   d.writeln('</BODY></HTML>');
+   d.writeln('</BODY>\n</HTML>');
    d.close();
    logWindow.focus();
    return;
