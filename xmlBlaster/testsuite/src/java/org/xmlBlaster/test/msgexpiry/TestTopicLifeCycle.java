@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TestAliveUnreferencedDead.java
+Name:      TestTopicLifeCycle.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing some topic state transitions
@@ -39,12 +39,7 @@ import junit.framework.*;
 /**
  * Here we test some state transitions of a topic. 
  * <p>
- * We traverse the transitions
- * <pre>
- * Start -[2]->  ALIVE (3 sec)
- *       -[6]->  UNREFERENCED (3 sec)
- *       -[11]-> DEAD
- * <pre>
+ * We traverse the possible transitions of a topic (TopicHandler.java)
  * as described in requirement engine.message.lifecycle by sending some expiring messages (see
  * state transition brackets in requirement)<br />
  * Please see individual test for a description
@@ -53,34 +48,34 @@ import junit.framework.*;
  * Invoke examples:
  * </p>
  * <pre>
- *    java junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestAliveUnreferencedDead
+ *    java junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
  *
- *    java junit.swingui.TestRunner org.xmlBlaster.test.msgexpiry.TestAliveUnreferencedDead
+ *    java junit.swingui.TestRunner org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
  * </pre>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">The engine.message.lifecycle requirement</a>
  * @see org.xmlBlaster.engine.TopicHandler
  */
-public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
-   private String ME = "TestAliveUnreferencedDead";
+public class TestTopicLifeCycle extends TestCase implements I_Callback {
+   private String ME = "TestTopicLifeCycle";
    private final Global glob;
    private final LogChannel log;
 
    private final String senderName = "Gesa";
    private XmlBlasterConnection con = null;
-   private String senderContent = "Some volatile content";
-   private String publishOid = "TestAliveUnreferencedDeadMsg";
+   private String senderContent = "Some message content";
+   private String publishOid = "TestTopicLifeCycleMsg";
    private SubscribeReturnQos subscribeReturnQos;
    private long blockUpdateTime = 0L;
 
    private int numReceived = 0;
 
    /**
-    * Constructs the TestAliveUnreferencedDead object.
+    * Constructs the TestTopicLifeCycle object.
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestAliveUnreferencedDead(Global glob, String testName) {
+   public TestTopicLifeCycle(Global glob, String testName) {
       super(testName);
       this.glob = glob;
       this.log = this.glob.getLog("test");
@@ -127,6 +122,7 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
       log.info(ME, "Erasing a topic forceDestroy=" + forceDestroy);
       try {
          EraseQos eq = new EraseQos(glob);
+         eq.setForceDestroy(forceDestroy);
          EraseKey ek = new EraseKey(glob, publishOid);
          EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
          return er;
@@ -167,7 +163,7 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
    /**
     * Subscribe a volatile message.
     */
-   public void subscribeVolatile() {
+   public void subscribeMsg() {
       log.info(ME, "Subscribing message '" + publishOid + "'...");
       try {
          // Subscribe for the volatile message
@@ -184,7 +180,7 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
    /**
     * unSubscribe a message.
     */
-   public void unSubscribeVolatile() {
+   public void unSubscribeMsg() {
       log.info(ME, "unSubscribing a volatile message ...");
       try {
          // Subscribe for the volatile message
@@ -229,9 +225,9 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
     * </p>
     */
    public void testExpiry() {
-      this.ME = "TestAliveUnreferencedDead-testExpiry";
+      this.ME = "TestTopicLifeCycle-testExpiry";
       log.info(ME, "Entering testExpiry ...");
-      if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
+      numReceived = 0;
 
       {  // topic transition from START -> [2] -> ALIVE (3 sec)
          long topicDestroyDelay = 6000L;
@@ -242,10 +238,10 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestAliveUnreferencedDeadMsg' state='ALIVE'>
-         //  <uniqueKey>TestAliveUnreferencedDeadMsg</uniqueKey>
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='ALIVE'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
       }
 
 
@@ -253,10 +249,10 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
          try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestAliveUnreferencedDeadMsg' state='UNREFERENCED'>
-         //  <uniqueKey>TestAliveUnreferencedDeadMsg</uniqueKey>
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNREFERENCED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='UNREFERENCED'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNREFERENCED'") != -1);
       }
 
       {  // topic transition from UNREFERENCED -> [11] -> DEAD
@@ -286,9 +282,9 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
     * </p>
     */
    public void testVolatile() {
-      this.ME = "TestAliveUnreferencedDead-testVolatile";
+      this.ME = "TestTopicLifeCycle-testVolatile";
       log.info(ME, "Entering testVolatile ...");
-      if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
+      numReceived = 0;
 
       {  // topic transition from START -> [2] -> ALIVE -> DEAD
          long topicDestroyDelay = 0L;
@@ -304,19 +300,20 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
     * Transitions [1] -> [4] -> [6] -> [11]
     */
    public void testSubscribeVolatile() {
-      this.ME = "TestAliveUnreferencedDead-testSubscribeVolatile";
+      this.ME = "TestTopicLifeCycle-testSubscribeVolatile";
       log.info(ME, "Entering testSubscribeVolatile ...");
+      numReceived = 0;
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
-         subscribeVolatile();
+         subscribeMsg();
          if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestAliveUnreferencedDeadMsg' state='UNCONFIGURED'>
-         //  <uniqueKey>TestAliveUnreferencedDeadMsg</uniqueKey>
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='UNCONFIGURED'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
       }
 
       {  // topic transition from UNCONFIGURED -> [4] -> ALIVE
@@ -328,15 +325,17 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestAliveUnreferencedDeadMsg' state='ALIVE'>
-         //  <uniqueKey>TestAliveUnreferencedDeadMsg</uniqueKey>
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='ALIVE'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
       }
 
-      {  // topic transition from ALIVE -> [6] -> UNREFERENCED -> [11] DEAD
+      {  // topic transition from ALIVE -> [6] -> UNREFERENCED
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
-         unSubscribeVolatile();
+         unSubscribeMsg();
+         // topic transition from UNREFERENCED -> [11] DEAD (wait 200 millis as this is done by timeout thread (async))
+         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
@@ -348,19 +347,20 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
     * Transitions [1] -> [4] -> [7] -> [12]
     */
    public void testSoftErased() {
-      this.ME = "TestAliveUnreferencedDead-testSoftErased";
+      this.ME = "TestTopicLifeCycle-testSoftErased";
       log.info(ME, "Entering testSoftErased ...");
+      numReceived = 0;
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
-         subscribeVolatile();
+         subscribeMsg();
          if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestAliveUnreferencedDeadMsg' state='UNCONFIGURED'>
-         //  <uniqueKey>TestAliveUnreferencedDeadMsg</uniqueKey>
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='UNCONFIGURED'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
       }
 
       {  // topic transition from UNCONFIGURED -> [4] -> ALIVE
@@ -369,14 +369,14 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
          this.blockUpdateTime = 3000L; // Blocking callback thread for 3 sec to force state SOFTERASED !!
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
          waitOnUpdate(2000L, 1);
-         assertEquals("numReceived after sending", 1, numReceived); // no message arrived?
+         assertEquals("numReceived after sending", 1, numReceived); // message arrived?
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestAliveUnreferencedDeadMsg' state='ALIVE'>
-         //  <uniqueKey>TestAliveUnreferencedDeadMsg</uniqueKey>
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='ALIVE'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
       }
 
       {  // topic transition from ALIVE -> [7] -> SOFTERASED
@@ -385,7 +385,7 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
          assertEquals("erase failed", 1, erq.length);
          String dump = getDump();
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
-         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestAliveUnreferencedDeadMsg' state='SOFTERASED'") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='SOFTERASED'") != -1);
       }
 
       {  // topic transition from SOFTERASED -> [12] --> DEAD
@@ -394,6 +394,113 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
       log.info(ME, "SUCCESS testSoftErased");
+   }
+
+   /**
+    * THIS IS THE TEST
+    * Transitions [1] -> [4] -> [10]
+    */
+   public void testForcedErased() {
+      this.ME = "TestTopicLifeCycle-testForcedErased";
+      log.info(ME, "Entering testForcedErased ...");
+      numReceived = 0;
+
+      {  // topic transition from START -> [1] -> UNCONFIGURED
+         subscribeMsg();
+         if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
+      }
+
+      {  // topic transition from UNCONFIGURED -> [4] -> ALIVE
+         long topicDestroyDelay = 400000L;
+         long msgLifeTime = 400000L;
+         this.blockUpdateTime = 0L;
+         sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
+         waitOnUpdate(2000L, 1);
+         assertEquals("numReceived after sending", 1, numReceived); // no message arrived?
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
+      }
+
+      {  // topic transition from ALIVE -> [10]
+         boolean forceDestroy = true;
+         EraseReturnQos[] erq = sendErase(forceDestroy);
+         assertEquals("erase failed", 1, erq.length);
+         String dump = getDump();
+         assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+      log.info(ME, "SUCCESS testForcedErased");
+   }
+
+   /**
+    * THIS IS THE TEST
+    * Transitions [1] -> [9]
+    */
+   public void testUnconfiguredErased() {
+      this.ME = "TestTopicLifeCycle-testUnconfiguredErased";
+      log.info(ME, "Entering testUnconfiguredErased ...");
+      numReceived = 0;
+
+      {  // topic transition from START -> [1] -> UNCONFIGURED
+         subscribeMsg();
+         if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
+      }
+
+      {  // topic transition from UNCONFIGURED -> [9] -> DEAD
+         boolean forceDestroy = false;
+         EraseReturnQos[] erq = sendErase(forceDestroy);
+         assertEquals("erase failed", 1, erq.length);
+         String dump = getDump();
+         assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+      log.info(ME, "SUCCESS testUnconfiguredErased");
+   }
+
+   /**
+    * THIS IS THE TEST
+    * Transitions [1] -> [9] (by unSubscribe)
+    */
+   public void testUnconfiguredUnSubscribe() {
+      this.ME = "TestTopicLifeCycle-testUnconfiguredUnSubscribe";
+      log.info(ME, "Entering testUnconfiguredUnSubscribe ...");
+      numReceived = 0;
+
+      {  // topic transition from START -> [1] -> UNCONFIGURED
+         subscribeMsg();
+         if (log.TRACE) log.trace(ME, "Retrieving initial dump=" + getDump());
+         String dump = getDump();
+         log.trace(ME, dump);
+         // Expecting something like:
+         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
+         assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
+         assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
+      }
+
+      {  // topic transition from UNCONFIGURED -> [9] -> DEAD
+         unSubscribeMsg();
+         String dump = getDump();
+         assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+      log.info(ME, "SUCCESS testUnconfiguredUnSubscribe");
    }
 
    /**
@@ -450,25 +557,31 @@ public class TestAliveUnreferencedDead extends TestCase implements I_Callback {
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestAliveUnreferencedDead(new Global(), "testExpiry"));
-       suite.addTest(new TestAliveUnreferencedDead(new Global(), "testVolatile"));
-       suite.addTest(new TestAliveUnreferencedDead(new Global(), "testSubscribeVolatile"));
-       suite.addTest(new TestAliveUnreferencedDead(new Global(), "testSoftErased"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testExpiry"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testVolatile"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testSubscribeVolatile"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testSoftErased"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testForcedErased"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testUnconfiguredErased"));
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testUnconfiguredUnSubscribe"));
        return suite;
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.msgexpiry.TestAliveUnreferencedDead
+    * Invoke: java org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestAliveUnreferencedDead</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle</pre>
     */
    public static void main(String args[]) {
-      TestAliveUnreferencedDead testSub = new TestAliveUnreferencedDead(new Global(args), "TestAliveUnreferencedDead");
+      TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
       testSub.setUp();
       testSub.testExpiry();
       testSub.testVolatile();
       testSub.testSubscribeVolatile();
       testSub.testSoftErased();
+      testSub.testForcedErased();
+      testSub.testUnconfiguredErased();
+      testSub.testUnconfiguredUnSubscribe();
       testSub.tearDown();
    }
 }
