@@ -263,11 +263,11 @@ ActionType=login&amp;xmlBlaster.loginName=joe&amp;xmlBlaster.passwd=secret
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>12</effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>
-      <test tool="MANUAL">Netscape 4.72, Mozilla M13 run fine.</test>
+      <test tool="MANUAL">Netscape 4.72, Mozilla M13, Mozilla 1.5, Opera 7.21 run fine.</test>
    </testcase>
 </requirement>
 
