@@ -3,7 +3,7 @@ Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.5 2002/01/31 21:45:00 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.6 2002/04/16 20:21:29 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <string>
@@ -138,13 +138,13 @@ public:
             + "' queryType='EXACT'></key>";
          string qos = "<qos></qos>";
          serverIdl::MessageUnitArr* msgArr = corbaConnection_->get(xmlKey, qos);
-         log_.error(me(), "get of not existing message " + publishOid_);
+         log_.info(me(), string("Success, got empty array for trying to get unknown message: "));
          delete msgArr;
-         usage();
-         assert(0);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.info(me(), string("Success, got XmlBlasterException for trying to get unknown message: ") + string(e.reason));
+         log_.error(me(), "get of not existing message " + publishOid_);
+         usage();
+         assert(0);
       }
 
       if (log_.TRACE) log_.trace(me(), "2. Publish a message ...");
@@ -209,12 +209,12 @@ public:
          try {
             serverIdl::MessageUnitArr* msgArr =
                corbaConnection_->get(xmlKey, qos);
-            log_.error(me(), "Got a not existing message message");
+            log_.info(me(), string("Success"));
             delete msgArr;
-            assert(0);
          }
          catch(serverIdl::XmlBlasterException &e) {
-            log_.info(me(), string("Success, got XmlBlasterException for trying to get unknown message: ") + string(e.reason));
+            log_.error(me(), "Exception for a not existing message" + string(e.reason));
+            assert(0);
          }
       }
       log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages done");
