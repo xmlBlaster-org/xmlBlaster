@@ -91,7 +91,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
          if (!forCache) {
             if (boss_) {
                int size = 0;
-               if (size > 0) size = msgUnit.content.length();
+               size = msgUnit.content.length();
                void *content = NULL;
                if (size > 0) content = (void*)&msgUnit.content[0];
                if (log_.trace()) log_.trace(me(), "going to invoke client specific update");
