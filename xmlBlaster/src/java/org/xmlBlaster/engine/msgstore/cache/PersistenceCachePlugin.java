@@ -78,7 +78,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       if (this.persistentStore == null) return; // should never happen
 
       //try {
-         log.warn(ME, "Persistent store has reconnected, we may have a memory leak as send messsages are not cleaned up");
+         log.warn(ME, "Persistent store has reconnected, we may have a memory leak as send messsages are not cleaned up. Current persistent messages are handled transient only, new ones will be handled persistent");
          /*
          // TODO: Implement an arraylist to remember the sent messages and destroy them
          // Happens for persistent messages and swapped messages (if JDBC connection lost)
@@ -90,8 +90,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          }
          */
 
-         log.warn(ME, "Persistent store has reconnected, current persistent messages are handled transient only, new ones will be handled persistent");
          /*
+         log.warn(ME, "Persistent store has reconnected, current persistent messages are handled transient only, new ones will be handled persistent");
          // add all new persistent entries to the persistent storage ...
          this.storeNewPersistentRecovery = true;
          synchronized(this.storeNewPersistentRecoveryMonitor) {
