@@ -113,7 +113,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
    org::xmlBlaster::util::thread::Mutex waitForTimeoutMutex_;
    org::xmlBlaster::util::thread::Condition waitForTimeoutCondition_;
 
-   size_t Timeout::getTimeoutMapSize();
+   size_t getTimeoutMapSize();
 
    /**
     * Starts the thread

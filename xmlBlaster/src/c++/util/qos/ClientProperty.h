@@ -52,7 +52,7 @@ private:
    mutable std::string type_;
 
    template <typename T_VALUE> void guessType(const T_VALUE& value) const;
-   bool ClientProperty::needsEncoding() const;
+   bool needsEncoding() const;
 
 public:
 
