@@ -72,6 +72,7 @@ public class ReferenceEntry extends MsgQueueEntry
    public ReferenceEntry(String ME, Global glob, String entryType, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
                         String keyOid, long msgUnitWrapperUniqueId, boolean isDurable, SessionName receiver) {
       super(glob, entryType, priority, entryTimestamp, storageId, isDurable);
+      this.glob = glob;
       this.ME = ME;
       this.keyOid = keyOid;
       this.msgUnitWrapperUniqueId = msgUnitWrapperUniqueId;
