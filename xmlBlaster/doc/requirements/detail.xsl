@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.10 2002/03/17 13:10:57 ruff Exp $
+Version:   $Id: detail.xsl,v 1.11 2002/04/08 13:22:42 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -33,12 +33,27 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/03/17 13:10:57 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/04/08 13:22:42 $ $Author: ruff $ </p -->
+   <table width="700" border="1">
+   <tr>
+      <td>
+      <p>
+      <a href="http://www.xmlBlaster.org"><img src="logo_xmlBlaster_2.gif" border="0" title="XmlBlaster Logo" alt="XmlBlaster Logo" /></a>
+      </p>
+      </td>
+      <td>
+      <p class="sitetitel">REQUIREMENT</p>
+      <p class="sitetitel"><xsl:value-of select="@id"/></p>
+      </td>
+      <td align="right">
+      <p>
+      <a href="http://www.xmlBlaster.org"><img src="logo_xmlBlaster_2.gif" border="0" title="XmlBlaster Logo" alt="XmlBlaster Logo" /></a>
+      </p>
+      </td>
+   </tr>
+   </table>
 
-   <p class="sitetitel">REQUIREMENT</p>
-   <p class="sitetitel"><xsl:value-of select="@id"/></p>
-
-   <p /><br />
+   <p />
    <table cellpadding="2" cellspacing="4">
       <tr>
          <td class="reqId">Type</td>
