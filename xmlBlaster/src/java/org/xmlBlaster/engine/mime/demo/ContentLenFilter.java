@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.6 2002/03/28 10:00:47 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.7 2002/03/28 15:19:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -159,11 +159,11 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
             throw new XmlBlasterException(ME, "Test what happens if we throw an exception");
          }
          if (msgUnit.getContent().length > maxLen) {
-            log.info(ME, "Message update denied, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
+            log.info(ME, "Message access denied, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
             return false; // message will not be send to client
          }
          else {
-            log.info(ME, "Message update OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
+            log.info(ME, "Message access OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
             return true;  // message will be delivered
          }
       }
