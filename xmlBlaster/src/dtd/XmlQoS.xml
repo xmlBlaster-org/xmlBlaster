@@ -14,11 +14,11 @@
          <expires>        <!-- Expires after given milliseconds, clients will get a notify about expiration -->
             12000         <!-- Default is no expiration (similar to pass 0 milliseconds) -->
          </expires>
-         
+
          <erase>          <!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
             24000         <!-- Default is no erasing (similar to pass 0 milliseconds) -->
          </erase>
-         
+
          <IsDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
                           <!-- Default is transient -->
 
@@ -79,6 +79,21 @@
       </qos>
    </update>
 
+
+   <!-- QoS with login -->
+   <client>
+      <compress type='gzip'>
+         1000
+      </compress>
+      <queue>
+         <size>
+            1000
+         </size>
+         <timeout>
+            3600
+         </timeout>
+      </queue>
+   </client>
 
 </demo>
 
