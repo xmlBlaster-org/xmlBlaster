@@ -8,7 +8,7 @@ Comment:   Class used to read, store & write (java) properties.
 #ifndef _UTIL_PROPERTY_H
 #define _UTIL_PROPERTY_H
 
-#include <map.h>
+#include <map>
 #include <string>
 #include <fstream.h>
 #include <stdlib.h>
