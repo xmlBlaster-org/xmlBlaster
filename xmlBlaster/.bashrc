@@ -189,6 +189,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
       CLASSPATH=${XMLBLASTER_HOME}:${CLASSPATH}
       CLASSPATH=${XMLBLASTER_HOME}/testsuite/src/java/org/xmlBlaster:${CLASSPATH}
    fi
+
+   CLASSPATH=${XMLBLASTER_HOME}/lib/java_cup.jar:${CLASSPATH}
+
    export CLASSPATH
 
    PATH=${PATH}:${XMLBLASTER_HOME}/bin:${XMLBLASTER_HOME}/testsuite/src/c/bin:${XMLBLASTER_HOME}/testsuite/src/c++/bin:${XMLBLASTER_HOME}/demo/c/socket/bin:${XMLBLASTER_HOME}/demo/c++/bin

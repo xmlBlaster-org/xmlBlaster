@@ -314,3 +314,9 @@ only the SNMP subagent module jax.jar is GPL only!
   See xmlBlaster\src\java\org\xmlBlaster\MainSvc.java
   See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.start.asService.html
   http://wrapper.tanukisoftware.org/doc/english/introduction.html
+
+38) java_cup.jar
+================
+  Used to generate java parser for queries to ClientProperties in org.xmlBlaster.util.lexical
+  http://www.cs.princeton.edu/~appel/modern/java/CUP/
+
