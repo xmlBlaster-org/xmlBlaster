@@ -684,7 +684,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public String usage()
    {
       StringBuffer sb = new StringBuffer(512);
-      sb.append(super.usage());
+      sb.append(logUsage());
       sb.append("\n");
       sb.append("  There are fine grained logging possibilities like:\n");
       sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
