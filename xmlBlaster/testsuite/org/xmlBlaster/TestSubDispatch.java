@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.1 2001/08/30 21:23:34 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.2 2001/08/30 21:28:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -26,6 +26,7 @@ import test.framework.*;
  * This client tests the method subscribe() with a later publish() with XPath query.
  * <br />
  * The subscribe() should be recognized for this later arriving publish()
+ * and will be received in the specialized, anonymous, update implementation.
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
