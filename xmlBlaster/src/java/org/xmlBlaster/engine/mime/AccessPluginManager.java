@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.12 2002/05/16 18:34:42 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.13 2002/05/16 20:46:37 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -162,7 +162,7 @@ public class AccessPluginManager extends PluginManagerBase {
          key.append(type).append(version);
          obj = accessFilterMap.get(key.toString());
          if (obj != null) {
-            log.info(ME, "Filter plugin for type=" + type + " version=" + version + " mime=" + mime + " mimeExtended=" + mimeExtended + " is loaded but does not match");
+            if (log.TRACE) log.trace(ME, "Filter plugin type=" + type + " version=" + version + " is loaded but does not support mime=" + mime + " mimeExtended=" + mimeExtended);
             return null; // Plugin is loaded but does not support the mime types
          }
 
