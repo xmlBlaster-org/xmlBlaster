@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -35,8 +36,14 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.MsgInterceptor;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.custommonkey.xmlunit.XMLUnit;
 
 
 /**
@@ -58,7 +65,7 @@ import junit.framework.*;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">The engine.message.lifecycle requirement</a>
  * @see org.xmlBlaster.engine.TopicHandler
  */
-public class TestTopicLifeCycle extends TestCase implements I_Callback {
+public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
    private String ME = "TestTopicLifeCycle";
    private Global glob;
    private LogChannel log;
@@ -67,6 +74,8 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    private I_XmlBlasterAccess con = null;
    private String senderContent = "Some message content";
    private String publishOid = "TestTopicLifeCycleMsg";
+   private final String xpathTag = "<something/>";
+   private final String xpath = "//something";
    private SubscribeReturnQos subscribeReturnQos;
    private long blockUpdateTime = 0L;
 
@@ -74,7 +83,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    private int serverPort = 9566;
    private boolean startEmbedded = true;
 
-   private int numReceived = 0;
+   private MsgInterceptor updateInterceptor;
 
    /**
     * Constructs the TestTopicLifeCycle object.
@@ -108,12 +117,14 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String passwd = "secret";
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         con.connect(qos, this);
+         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, this);
+         con.connect(qos, this.updateInterceptor);
       }
       catch (Exception e) {
           log.error(ME, e.toString());
           e.printStackTrace();
       }
+      this.updateInterceptor.clear();
    }
 
    /**
@@ -164,7 +175,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    }
 
    /**
-    * Publish an almost volatile message.
+    * Publish an almost volatile message. 
     */
    public void sendExpiringMsg(boolean initializeTopic, long topicDestroyDelay, long msgLifeTime) {
       log.info(ME, "Sending a message initializeTopic=" + initializeTopic + " topicDestroyDelay=" + topicDestroyDelay + " msgLifeTime=" + msgLifeTime);
@@ -192,6 +203,35 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    }
 
    /**
+    * Publish an almost volatile XPATH message. 
+    * @return publishOid
+    */
+   public String sendExpiringXPathMsg(long topicDestroyDelay, long msgLifeTime) {
+      log.info(ME, "Sending a XPath message topicDestroyDelay=" + topicDestroyDelay + " msgLifeTime=" + msgLifeTime);
+      try {
+         // Publish a volatile message
+         PublishKey pk = new PublishKey(glob, "", "text/xml", "1.0");
+         pk.setClientTags(xpathTag);
+         PublishQos pq = new PublishQos(glob);
+         pq.setLifeTime(msgLifeTime);
+         pq.setForceDestroy(false);
+         // Configure the topic to our needs
+         TopicProperty topicProperty = new TopicProperty(glob);
+         topicProperty.setDestroyDelay(topicDestroyDelay);
+         topicProperty.setCreateDomEntry(true);
+         pq.setTopicProperty(topicProperty);
+         MsgUnit msgUnit = new MsgUnit(pk, senderContent, pq);
+         PublishReturnQos publishReturnQos = con.publish(msgUnit);
+         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishReturnQos.getKeyOid() + " " + msgUnit.toXml());
+         return publishReturnQos.getKeyOid();
+      } catch(XmlBlasterException e) {
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
+         return ""; // never reached
+      }
+   }
+
+   /**
     * Subscribe a volatile message.
     */
    public void subscribeMsg() {
@@ -200,11 +240,31 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, publishOid);
          SubscribeQos sq = new SubscribeQos(glob);
-         subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
+         this.subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
          log.info(ME, "Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
          log.error(ME, "subscribe() XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
+      }
+   }
+
+   /**
+    * Subscribe topics with XPATH.
+    * @return The subscription id
+    */
+   public String subscribeXPathMsg() {
+      log.info(ME, "Subscribing message xpath='" + xpath + "'...");
+      try {
+         // Subscribe for the volatile message
+         SubscribeKey sk = new SubscribeKey(glob, xpath, Constants.XPATH);
+         SubscribeQos sq = new SubscribeQos(glob);
+         this.subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
+         log.info(ME, "Subscribing of '" + xpath + "' done");
+         return this.subscribeReturnQos.getSubscriptionId();
+      } catch(XmlBlasterException e) {
+         log.error(ME, "subscribe() XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
+         return ""; // never reached
       }
    }
 
@@ -243,6 +303,23 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    }
 
    /**
+    * Retrieve the number of topics in xmlBlaster. 
+    */
+   private int getNumTopics() {
+      try {
+         GetKey gk = new GetKey(glob, "__cmd:?numTopics");
+         GetQos gq = new GetQos(glob);
+         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         assertEquals("Did not expect returned msg for get()", 1, msgs.length);
+         return Integer.valueOf(msgs[0].getContentStr()).intValue();
+      }
+      catch (XmlBlasterException e) {
+         fail("Didn't expect an exception in get(): " + e.getMessage());
+      }
+      return -1; // never reached
+   }
+
+   /**
     * THIS IS THE TEST
     * <p>
     * We traverse the transitions
@@ -258,14 +335,13 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testExpiry() {
       this.ME = "TestTopicLifeCycle-testExpiry";
       log.info(ME, "Entering testExpiry ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [2] -> ALIVE (3 sec)
          long topicDestroyDelay = 6000L;
          long msgLifeTime = 3000L;
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
-         waitOnUpdate(1000L, 0);
-         assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
+         assertEquals("numReceived after sending", 0, this.updateInterceptor.waitOnUpdate(1000L, 0)); // no message arrived?
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -312,17 +388,16 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
     * state transition brackets in requirement)
     * </p>
     */
-   public void testUnreferencedAlive() {
+   public void testUnreferencedAlive() throws Exception {
       this.ME = "TestTopicLifeCycle-testUnreferencedAlive";
       log.info(ME, "Entering testUnreferencedAlive ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [2] -> ALIVE (3 sec)
          long topicDestroyDelay = 6000L;
          long msgLifeTime = 3000L;
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
-         waitOnUpdate(1000L, 0);
-         assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
+         assertEquals("numReceived after sending", 0, this.updateInterceptor.waitOnUpdate(1000L, 0)); // no message arrived?
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -345,8 +420,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
       {  // topic transition from UNREFERENCED -> [5] -> ALIVE (3 sec)
          long msgLifeTime = 3000L;
          sendExpiringMsg(true, 0L, msgLifeTime); 
-         waitOnUpdate(1000L, 0);
-         assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
+         assertEquals("numReceived after sending", 0, this.updateInterceptor.waitOnUpdate(1000L, 0)); // no message arrived?
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -354,6 +428,8 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
+         //System.out.println(dump);
+         assertXpathEvaluatesTo(publishOid, "//uniqueKey", dump);
       }
 
       {  // topic transition from ALIVE -> [10] -> DEAD
@@ -362,6 +438,19 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          assertEquals("erase failed", 1, erq.length);
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
+      }
+
+      {  // topic transition from ALIVE -> [10] -> DEAD with XPath subscription
+         subscribeXPathMsg();
+         long topicDestroyDelay = 0L;
+         long msgLifeTime = 0L;
+         String oid = sendExpiringXPathMsg(topicDestroyDelay, msgLifeTime); 
+         assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(1000L, oid, Constants.STATE_OK));
+         assertEquals("", 1, this.updateInterceptor.getMsgs().length);
+         String dump = getDump();
+         assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+oid+"</uniqueKey>") == -1);
+         assertXpathNotExists("//uniqueKey", dump);
+         unSubscribeMsg();
       }
 
       log.info(ME, "SUCCESS testUnreferencedAlive");
@@ -384,7 +473,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testVolatile() {
       this.ME = "TestTopicLifeCycle-testVolatile";
       log.info(ME, "Entering testVolatile ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [2] -> ALIVE -> DEAD
          long topicDestroyDelay = 0L;
@@ -402,7 +491,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testSubscribeVolatile() {
       this.ME = "TestTopicLifeCycle-testSubscribeVolatile";
       log.info(ME, "Entering testSubscribeVolatile ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
@@ -420,8 +509,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          long topicDestroyDelay = 0L;
          long msgLifeTime = 0L;
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
-         waitOnUpdate(2000L, 1);
-         assertEquals("numReceived after sending", 1, numReceived); // no message arrived?
+         assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(2000L, 1));
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -449,7 +537,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testUnconfiguredSubscribeSubscribe() {
       this.ME = "TestTopicLifeCycle-testUnconfiguredSubscribeSubscribe";
       log.info(ME, "Entering testUnconfiguredSubscribeSubscribe ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
@@ -476,11 +564,13 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
 
       {  // topic transition from UNCONFIGURED -> [9] -> DEAD
          boolean forceDestroy = false;
+         this.updateInterceptor.countErased(true);
          EraseReturnQos[] erq = sendErase(forceDestroy);
          log.info(ME, "erase num=" + erq.length);
          assertEquals("erase failed", 1, erq.length);
-         waitOnUpdate(1000L, 2); // Expecting two erase events (for the above subscriptions)
+         assertEquals("", 2, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_ERASED, 2)); // Expecting two erase events (for the above subscriptions)
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
+         this.updateInterceptor.countErased(false);
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
@@ -494,7 +584,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testSoftErased() {
       this.ME = "TestTopicLifeCycle-testSoftErased";
       log.info(ME, "Entering testSoftErased ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       try {
       {  // topic transition from START -> [1] -> UNCONFIGURED
@@ -513,8 +603,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          long msgLifeTime = 400000L;
          this.blockUpdateTime = 3000L; // Blocking callback thread for 3 sec to force state SOFTERASED !!
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
-         waitOnUpdate(2000L, 1);
-         assertEquals("numReceived after sending", 1, numReceived); // message arrived?
+         assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(2000L, 1)); // message arrived?
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -528,7 +617,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          boolean forceDestroy = false;
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
-         waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
+         this.updateInterceptor.waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
@@ -556,7 +645,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testForcedErased() {
       this.ME = "TestTopicLifeCycle-testForcedErased";
       log.info(ME, "Entering testForcedErased ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
@@ -575,8 +664,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          long msgLifeTime = 400000L;
          this.blockUpdateTime = 0L;
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
-         waitOnUpdate(2000L, 1);
-         assertEquals("numReceived after sending", 1, numReceived); // no message arrived?
+         assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(2000L, 1));
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
@@ -603,7 +691,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testUnconfiguredErased() {
       this.ME = "TestTopicLifeCycle-testUnconfiguredErased";
       log.info(ME, "Entering testUnconfiguredErased ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
@@ -621,7 +709,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          boolean forceDestroy = false;
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
-         waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
+         this.updateInterceptor.waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
@@ -636,7 +724,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public void testUnconfiguredUnSubscribe() {
       this.ME = "TestTopicLifeCycle-testUnconfiguredUnSubscribe";
       log.info(ME, "Entering testUnconfiguredUnSubscribe ...");
-      numReceived = 0;
+      this.updateInterceptor.clear();
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
@@ -666,10 +754,8 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       log.info(ME, "Receiving update of a message " + updateKey.getOid() + " " + updateQos.getState());
 
-      numReceived += 1;
-
       if (updateQos.isOk()) {
-         assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
+         //assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
          assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       }
 
@@ -680,31 +766,6 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          log.info(ME, "Block released, reset blockTimer");
       }
       return "";
-   }
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait) {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (numReceived < numWait) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
    }
 
    /**
@@ -728,17 +789,23 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
     * Invoke: java org.xmlBlaster.test.topic.TestTopicLifeCycle -startEmbedded false
     */
    public static void main(String args[]) {
-      TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
-      testSub.setUp();
-      testSub.testExpiry();
-      testSub.testUnreferencedAlive();
-      testSub.testVolatile();
-      testSub.testSubscribeVolatile();
-      testSub.testUnconfiguredSubscribeSubscribe();
-      testSub.testSoftErased();
-      testSub.testForcedErased();
-      testSub.testUnconfiguredErased();
-      testSub.testUnconfiguredUnSubscribe();
-      testSub.tearDown();
+      try {
+         TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
+         testSub.setUp();
+         testSub.testExpiry();
+         testSub.testUnreferencedAlive();
+         testSub.testVolatile();
+         testSub.testSubscribeVolatile();
+         testSub.testUnconfiguredSubscribeSubscribe();
+         testSub.testSoftErased();
+         testSub.testForcedErased();
+         testSub.testUnconfiguredErased();
+         testSub.testUnconfiguredUnSubscribe();
+         testSub.tearDown();
+      }
+      catch(Exception e) {
+         e.printStackTrace();
+         System.out.println("ERROR!!!!: " + e.toString());
+      }
    }
 }
