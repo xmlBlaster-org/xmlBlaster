@@ -114,7 +114,8 @@ jar:
 	(	\
 		cd ${CLASS_TOP_DIR}; \
 		$(CP) ${XMLBLASTER_HOME}/config/jacorb.properties.template ${CLASS_TOP_DIR}/jacorb.properties; \
-		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties HelloWorld*; \
+		$(CP) ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${CLASS_TOP_DIR}/xmlBlaster.properties; \
+		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties xmlBlaster.properties HelloWorld*; \
 	)
 
 
