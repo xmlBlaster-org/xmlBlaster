@@ -17,25 +17,63 @@
         <li>UnSubscribeQos</li>
         <li>GetQos</li>
         <li>EraseQos</li>
+        <li>UpdateQos</li>
       </ul>	
 
       </p>
+      <p>
 	The information you send inside this tag is not processed by the core. It could be processed by
 	other clients (for example in the update method) or by plugins.
+      </p>
       <p>
+       If no type is specified it is assumed to be a String. Other objects supported are:
+       <ul>
+         <li>Boolean (type='boolean')</li>
+         <li>Byte (type='boolean')</li>
+         <li>Short (type='short')</li>
+         <li>Integer (type='int')</li>
+         <li>Long (type='long')</li>
+         <li>Float (type='float')</li>
+         <li>Double (type='double')</li>
+       </ul>
       </p>
    </description>
    <example lang="XML">
 &lt;-- Publish QoS to send a message with a given correlationId -->
 
+in with java:
+   PublishQos publishQos = new PublishQos(global);
+   publishQos.setClientProperty("correlationId", "" + 0102203030303030452378);
+
+which generates:
 &lt;qos>
    ...
    &lt;clientProperty name='correlationId'>0102203030303030452378&lt;/clientProperty>
    ...
 &lt;/qos>
+
+or
+
+   PublishQos publishQos = new PublishQos(global);
+   publishQos.setClientProperty("windSpeed", 1.2323);
+
+which generates:
+&lt;qos>
+   ...
+   &lt;clientProperty name='windSpeed' type='double'>1.2323&lt;/clientProperty>
+   ...
+&lt;/qos>
+
+in the update method:
+   String correlationId = (String)updateQos.getData().getClientProperties().get("correlationId");
+or
+   Double windSpeed = (Double)updateQos.getData().getClientProperties().get("windSpeed");
+
+
    </example>
    <see type="API">org.xmlBlaster.util.qos.QosData</see>
    <see type="API">org.xmlBlaster.client.qos.ConnectQos</see>
+   <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.client.qos.DisconnectQos</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.qos.SubscribeQos</see>
@@ -44,7 +82,7 @@
    <see type="API">org.xmlBlaster.client.qos.EraseQos</see>
    <author>laghi@swissinfo.org</author>
    <date>2003 09 18</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
