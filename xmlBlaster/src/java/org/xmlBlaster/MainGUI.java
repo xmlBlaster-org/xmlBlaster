@@ -3,24 +3,26 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.53 2002/11/26 12:37:41 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.54 2002/12/18 12:41:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.RequestBroker;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.UpdateKey;
 
 import java.util.Vector;
 import java.awt.*;
@@ -642,7 +644,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                   }
                   queryOutput.setText("");
                   getQueryHistory().changedHistory(inputTextField.getText());
-                  MessageUnit[] msgArr = clientQuery.get(inputTextField.getText());
+                  MsgUnit[] msgArr = clientQuery.get(inputTextField.getText());
                   for (int ii=0; ii<msgArr.length; ii++) {
                      /*
                      UpdateKey updateKey = new UpdateKey();
@@ -702,7 +704,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    private class GuiQuery
    {
       private final String ME = "__sys__GuiQuery";
-      private String queryType = "XPATH";
+      private String queryType = Constants.XPATH;
       private StopWatch stop = new StopWatch();
       /** Handle to login */
       Authenticate authenticate = null;
@@ -733,18 +735,18 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       /**
        * Query xmlBlaster.
        */
-      MessageUnit[] get(String queryString)
+      MsgUnit[] get(String queryString)
       {
          try {
-            XmlKey kk = new XmlKey(this.authenticate.getGlobal(), "<key oid='' queryType='" + queryType + "'>" + queryString + "</key>");
+            GetKey getKey = new GetKey(this.authenticate.getGlobal(), queryString, queryType);
             stop.restart();
-            MessageUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(
-                     unsecureSessionInfo, kk, new GetQosServer(this.authenticate.getGlobal(), "<qos/>"));
+            MsgUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(
+                     unsecureSessionInfo, getKey.getData(), new GetQosServer(this.authenticate.getGlobal(), "<qos/>"));
             log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
             log.error(ME, "XmlBlasterException: " + e.getMessage());
-            return new MessageUnit[0];
+            return new MsgUnit[0];
          }
       }
 

@@ -20,7 +20,7 @@ package org.xmlBlaster.j2ee.k2;
 import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 
@@ -50,10 +50,10 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Fetch a message from server
      */
-    public MessageUnit[] get(String xmlKey, String qos) 
+    public MsgUnit[] get(String xmlKey, String qos) 
         throws XmlBlasterException {
         checkSanity();
-        MessageUnit[] ret = null;
+        MsgUnit[] ret = null;
         try {
             ret = mc.getBlasterConnection().get(xmlKey,qos);
         }catch(XmlBlasterException ex) {
@@ -74,7 +74,7 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Publish one message
      */
-    public PublishReturnQos publish(MessageUnit msgUnit)
+    public PublishReturnQos publish(MsgUnit msgUnit)
         throws XmlBlasterException {
         checkSanity();
         PublishReturnQos ret = null;
@@ -98,7 +98,7 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Publish one or more message
      */
-    public PublishReturnQos[] publishArr(MessageUnit[] msgUnitArr) 
+    public PublishReturnQos[] publishArr(MsgUnit[] msgUnitArr) 
         throws  XmlBlasterException{
         checkSanity();
         PublishReturnQos[] ret = null;
