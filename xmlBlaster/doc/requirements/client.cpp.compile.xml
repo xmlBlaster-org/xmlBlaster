@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='clients.cpp.tao' type='NEW' prio='LOW' status="INWORK">
+   <topic>xmlBlaster C++ client library is compiled with Apaches's ant tool</topic>
+   <description>
+     <p>
+     To allow portable development, the xmlBlaster C++ clients can be compiled with <i>ant</i>
+     from Apache ...
+     </p>
+   </description>
+
+   <example lang="CPP" type="HTML">
+   </example>
+
+   <configuration where="client">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+      <p>
+      Testsuite is missing.
+      </p>
+   </todo>
+   
+   <see type="INTERNET">http://www.cs.wustl.edu/~schmidt/TAO.html</see>
+   <see type="INTERNET">http://www.xmlblaster.org./xmlBlaster/src/c++/tao.xml</see>
+   <see type="REQ">client.cpp.tao</see>
+   
+   <author>Martin Johnson, mjhn@bigpond.net.au</author>
+   
+   <date>2002 08 27</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment></comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
