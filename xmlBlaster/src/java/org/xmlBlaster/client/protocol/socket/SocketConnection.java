@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.12 2002/02/18 21:41:04 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.13 2002/02/25 13:42:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -89,14 +89,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected String sessionId = null;
    /** The client login name */
    protected String loginName = "";
-   boolean SOCKET_DEBUG=false;
+   int SOCKET_DEBUG=0;
 
    /**
     * Connect to xmlBlaster using plain socket with native message format.
     */
    public SocketConnection(String[] args) throws XmlBlasterException
    {
-      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", false);
+      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
    }
 
    /**
@@ -104,7 +104,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public SocketConnection(java.applet.Applet ap) throws XmlBlasterException
    {
-      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", false);
+      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
    }
 
    /**
@@ -646,7 +646,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     *                      Defaults to our hostname</li>
     *  <li>-socket.responseTimeout  How long to wait for a method invocation to return
     *                      Defaults to one minute</li>
-    *  <li>-socket.debug       true switches on detailed SOCKET debugging [false]</li>
+    *  <li>-socket.debug       1 or 2 switches on detailed SOCKET debugging [0]</li>
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" prefix there.
@@ -665,7 +665,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "                       Defaults to our hostname.\n";
       text += "   -socket.responseTimeout  How long to wait for a method invocation to return.\n";
       text += "                       Defaults to one minute.\n";
-      text += "   -socket.debug       true switches on detailed SOCKET debugging [false].\n";
+      text += "   -socket.debug       1 or 2 switches on detailed SOCKET debugging [0].\n";
       text += "\n";
       return text;
    }
