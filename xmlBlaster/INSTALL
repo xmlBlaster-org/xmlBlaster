@@ -99,18 +99,26 @@ how to do it.
 | CONFIGURATION              |
 +----------------------------+
 
-There are two property files which you need to copy.
+There are three property files which you may want to copy.
 
    a) %HOME%/xmlBlaster.properties
       There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
       to use as a base.
 
-   b) %HOME%/jacorb.properties
+   b) %HOME%/xmlBlasterPlugins.xml
+      There is a template %XMLBLASTER_HOME%/config/xmlBlasterPlugins.xml.template
+      to use as a base.
+
+   c) %HOME%/jacorb.properties
       There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
       to use as a base.
       This file is needed only if you use the CORBA plugin.
       A default setting is included in xmlBlaster.jar which you should remove
       before you play with the %HOME%/jacorb.properties settings.
+
+Note that all three configuration files are in the xmlBlaster.jar file.
+xmlBlaster.properties and xmlBlasterPlugins.xml in your HOME directory have
+precedence.
 
 
 +----------------------------+
