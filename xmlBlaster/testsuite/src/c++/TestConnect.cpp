@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.11 2003/01/16 18:03:57 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.12 2003/01/22 16:04:36 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -21,48 +21,30 @@ Version:   $Id: TestConnect.cpp,v 1.11 2003/01/16 18:03:57 laghi Exp $
  * </pre>
  */
 
-#include <string>
-#include <util/Log.h>
-#include <client/XmlBlasterAccess.h>
-#include <util/qos/ConnectQos.h>
+#include "TestSuite.h"
 #include <util/qos/ConnectQosFactory.h>
-// #include <client/LoginQosWrapper.h>
-#include <util/PlatformUtils.hpp>
-#include <util/StopWatch.h>
-#include <util/XmlBlasterException.h>
-#include <client/I_Callback.h>
-#include <util/MessageUnit.h>
-#include <util/EmbeddedServer.h>
-#include <util/Global.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::client;
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace test {
 
-class TestConnect : public virtual client::I_Callback {
+class TestConnect : public virtual client::I_Callback, public TestSuite
+{
 
 private:
-   string me() {
-      return "connect";
-   }
 
    string            publishReturnQos, secondOid_;
    string            oid_;
    string            qos1_, qos2_;
    string            senderContent_;
-   XmlBlasterAccess* conn1_, *conn2_;
-   EmbeddedServer*   embeddedServer_;
+   XmlBlasterAccess* conn2_;
    MessageUnit*      msgUnit_;
    int               numReceived_; // error checking
    string            contentMime_;
    string            contentMimeExtended_;
-   StopWatch         stopWatch_;
-   Global&           global_;
-   Log&              log_;
-   bool              useEmbeddedServer_;
 
 public:
    /**
@@ -72,8 +54,9 @@ public:
     * @param loginName  The name to login to the xmlBlaster
     * @param secondName The name to login to the xmlBlaster again
     */
-   TestConnect(Global& global, const string &qos1, const string &qos2)
-      : stopWatch_(), global_(global), log_(global.getLog("test")) {
+   TestConnect(int args, char * argv[], const string &qos1, const string &qos2)
+      : TestSuite(args, argv, "TestConnect")
+   {
       qos1_                = qos1;
       qos2_                = qos2;
       publishReturnQos     = "";
@@ -83,14 +66,11 @@ public:
       contentMime_         = "text/plain";
       contentMimeExtended_ = "1.0";
       msgUnit_             = NULL;
-      conn1_               = conn2_ = NULL;
-      embeddedServer_      = NULL;
-      useEmbeddedServer_   = false;
+      conn2_               = NULL;
    }
 
    ~TestConnect() {
-      delete embeddedServer_;
-      delete conn1_;
+      cout << "Destructor for TestConnect invoked" << endl;
       delete conn2_;
       delete msgUnit_;
    }
@@ -112,10 +92,12 @@ public:
     * @return The status string
     */
    string update(const string &/*sessionId*/,
-               UpdateKey &/*updateKey*/,
-               void * /*content*/, long /*contentSize*/,
-               UpdateQos &/*updateQos*/) {
-      if (log_.CALL) log_.call(me(), "Receiving update of a message ...");
+                 UpdateKey &/*updateKey*/,
+                 void * /*content*/, 
+                 long /*contentSize*/,
+                 UpdateQos &/*updateQos*/) 
+   {
+      if (log_.CALL) log_.call(ME, "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
    }
@@ -125,26 +107,13 @@ public:
     * Connect to xmlBlaster and login
     */
 
-   void setUp(int args, char *argc[]) {
-      for (int ii=0; ii<args; ii++) {
-         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
-            usage();
-            exit(0);
-         }
-      }
+   void setUp() 
+   {
+      TestSuite::setUp();
       try {
-         if (conn1_) delete conn1_;
-         conn1_ = new XmlBlasterAccess(global_); // Find server
-
-         if (useEmbeddedServer_) {
-            embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", conn1_);
-            embeddedServer_->start();
-            Thread::sleepSecs(10);
-         }
-
          ConnectQosFactory factory(global_);
          ConnectQos connectQos1 = factory.readObject(qos1_);
-         conn1_->connect(connectQos1, NULL);
+         connection_.connect(connectQos1, NULL);
 
          // Login to xmlBlaster
          if (conn2_) delete conn2_;
@@ -153,7 +122,7 @@ public:
          conn2_->connect(connectQos2, NULL);
       }
       catch (XmlBlasterException &e) {
-         log_.error(me(), e.toXml());
+         log_.error(ME, e.toXml());
          usage();
       }
    }
@@ -164,39 +133,20 @@ public:
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   void tearDown() {
-      conn1_->disconnect(DisconnectQos(global_));
+   void tearDown() 
+   {
+      TestSuite::tearDown();
+      connection_.disconnect(DisconnectQos(global_));
       conn2_->disconnect(DisconnectQos(global_));
    }
 
-private:
-   void usage()
-   {
-//      log_.plain(me(), "----------------------------------------------------------");
-//      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
-//      log_.plain(me(), "Usage:");
-//      CorbaDriver::usage();
-      log_.usage();
-      log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestLogin -ior.file /tmp/ior.dat -trace true");
-      log_.plain(me(), "----------------------------------------------------------");
-   }
 };
 
-}} // namespace
+}}} // namespace
 
+using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
-   // Init the XML platform
-   try {
-      XMLPlatformUtils::Initialize();
-   }
-
-   catch(const XMLException& toCatch) {
-      cout << "Error during platform init! Message:\n"
-           << endl;
-      return 1;
-   }
 
    string qos1 =
       string("<qos>\n") +
@@ -224,9 +174,8 @@ int main(int args, char *argc[]) {
 
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
-   org::xmlBlaster::TestConnect
-    *testConnect = new org::xmlBlaster::TestConnect(glob, qos1, qos2);
-   testConnect->setUp(args, argc);
+   TestConnect *testConnect = new TestConnect(args, argc, qos1, qos2);
+   testConnect->setUp();
    testConnect->tearDown();
    delete testConnect;
    return 0;

@@ -5,45 +5,25 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-// #include <client/XmlBlasterAccess.h>
-// #include <util/EmbeddedServer.h>
-#include <util/XmlBlasterException.h>
-#include <util/Global.h>
-#include <util/Log.h>
-#include <util/PlatformUtils.hpp>
-// #include <util/thread/ThreadImpl.h>
-// #include <util/Timestamp.h>
 #include <client/protocol/corba/CorbaDriver.h>
-#include <boost/lexical_cast.hpp>
-#include "testSuite.h"
-
-
-/**
- *
- */
+#include "TestSuite.h"
 
 using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
-// using namespace org::xmlBlaster::util::thread;
-// using namespace org::xmlBlaster::client;
-// using namespace org::xmlBlaster::client::qos;
-// using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster::client::protocol::corba;
-// using namespace org::xmlBlaster;
 
-namespace org { namespace xmlBlaster {
 
-class TestCorbaDriver // : public I_Callback
+namespace org { namespace xmlBlaster { namespace test {
+
+class TestCorbaDriver
 {
 private:
    string  ME;
    Global& global_;
    Log&    log_;
-
-//   EmbeddedServer     embeddedServer_;
-   Mutex              updateMutex_;
-   int                numOfUpdates_;
+   Mutex   updateMutex_;
+   int     numOfUpdates_;
 
 public:
 
@@ -51,7 +31,6 @@ public:
       : ME("TestCorbaDriver"), 
         global_(glob), 
         log_(glob.getLog()),
-//        embeddedServer_(glob, "", "-info false -warn false -error false"),
         updateMutex_()
    {
    }
@@ -120,19 +99,9 @@ public:
       log_.info(ME, "testing multiple drivers: end");
    }
 
-/*
-   string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
-   {
-      Lock lock(updateMutex_);
-      log_.info(ME, "update invoked");
-//      numOfUpdates_++;
-      return "";
-   }
-*/
-
 };
 
-}}
+}}}
 
 /**
  * Try
@@ -141,7 +110,7 @@ public:
  * </pre>
  * for usage help
  */
-using namespace org::xmlBlaster;
+using namespace org::xmlBlaster::test;
 
 int main(int args, char ** argv)
 {

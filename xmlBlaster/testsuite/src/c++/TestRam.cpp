@@ -3,20 +3,11 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.2 2003/01/16 10:11:57 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.3 2003/01/22 16:04:36 laghi Exp $
 ---------------------------------------------------------------------------*/
 
-#include <string>
-#include <boost/lexical_cast.hpp>
-#include <client/XmlBlasterAccess.h>
-#include <util/qos/ConnectQos.h>
-#include <authentication/SecurityQos.h>
-#include <util/XmlBlasterException.h>
-#include <util/PlatformUtils.hpp>
-
+#include "TestSuite.h"
 #include <util/StopWatch.h>
-#include <util/Global.h>
-#include <util/EmbeddedServer.h>
 
 using namespace std;
 using namespace boost;
@@ -37,7 +28,7 @@ using namespace org::xmlBlaster::authentication;
  * as it cleans up everything after his tests are done. <p>
  */
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace test {
 
 /**
  * Constructs the TestRam object.
@@ -46,40 +37,30 @@ namespace org { namespace xmlBlaster {
  * @param loginName The name to login to the xmlBlaster
  */
 
-class TestRam {
+class TestRam : public TestSuite
+{
 
 private:
 
-   string me() {
-      return "Tim";
-   }
-
    static const string::size_type NUM_PUBLISH = 1000;
-   util::StopWatch   stopWatch_;
-   XmlBlasterAccess* senderConnection_;
-   string            publishOid_;
-   string            senderName_;
-   string            senderContent_;
-   string            contentMime_;
-   string            contentMimeExtended_;
-   util::Global&     global_;
-   util::Log&        log_;
-   EmbeddedServer*   embeddedServer_;
+   StopWatch stopWatch_;
+   string    publishOid_;
+   string    senderName_;
+   string    senderContent_;
+   string    contentMime_;
+   string    contentMimeExtended_;
 
 public:
-   TestRam(Global& global, const string &loginName) :
-                 stopWatch_(), global_(global), log_(global.getLog("test")) {
+   TestRam(int args, char *argc[], const string &loginName) 
+      :	 TestSuite(args, argc, "TestRam"), stopWatch_()
+   {
       senderName_   = loginName;
       publishOid_   = "";
       contentMime_  = "text/plain";
       contentMimeExtended_ = "1.0";
-      senderConnection_ = 0;
-      embeddedServer_ = NULL;
    }
 
    ~TestRam() {
-      delete senderConnection_;
-      delete embeddedServer_;
    }
 
 
@@ -88,27 +69,19 @@ public:
     * <p />
     * Connect to xmlBlaster and login
     */
-   void setUp(int args=0, char *argc[]=0) {
-      for (int ii=0; ii<args; ii++) {
-         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
-            usage();
-            log_.exit(me(), "Good bye");
-         }
-      }
+   void setUp() 
+   {
+      TestSuite::setUp();
       try {
-         senderConnection_ = new XmlBlasterAccess(global_); // Find server
-         embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", senderConnection_);
-         embeddedServer_->start();
-         Thread::sleepSecs(10);
          string passwd = "secret";
          SecurityQos secQos(global_, senderName_, passwd);
          ConnectQos connQos(global_);
          connQos.setSecurityQos(secQos);
-         senderConnection_->connect(connQos, 0);
+         connection_.connect(connQos, 0);
           // Connect to xmlBlaster without Callback
       }
       catch (XmlBlasterException &e) {
-          log_.error(me(), e.toXml());
+          log_.error(ME, e.toXml());
           usage();
       }
    }
@@ -119,8 +92,9 @@ public:
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   void tearDown() {
-      log_.info(me(), "tearDown() ...");
+   void tearDown() 
+   {
+      log_.info(ME, "tearDown() ...");
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          EraseKey key(global_);
@@ -128,19 +102,19 @@ public:
          EraseQos qos(global_);
          vector<EraseReturnQos> strArr;
          try {
-            strArr = senderConnection_->erase(key, qos);
+            strArr = connection_.erase(key, qos);
             if (strArr.size() != 1) {
-               log_.error(me(), "num erased messages is wrong");
+               log_.error(ME, "num erased messages is wrong");
                assert(0);
             }
          }
          catch(XmlBlasterException &e) {
-            log_.error(me(), string("XmlBlasterException: ") + e.toXml());
+            log_.error(ME, string("XmlBlasterException: ") + e.toXml());
          }
       }
-      log_.info(me(), "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
+      log_.info(ME, "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
 
-      senderConnection_->disconnect(DisconnectQos(global_));
+      connection_.disconnect(DisconnectQos(global_));
    }
 
 
@@ -149,8 +123,9 @@ public:
     * <p />
     * The returned publishOid is checked
     */
-   void testPublish() {
-      if (log_.TRACE) log_.trace(me(), "Publishing messages ...");
+   void testPublish() 
+   {
+      if (log_.TRACE) log_.trace(ME, "Publishing messages ...");
 
       vector<util::MessageUnit> msgVec;
       msgVec.reserve(NUM_PUBLISH);
@@ -169,24 +144,24 @@ public:
          GetKey key(global_);
          key.setOid("__cmd:?usedMem");
          GetQos qos(global_);
-         vector<util::MessageUnit> msgRetVec = senderConnection_->get(key, qos);
+         vector<util::MessageUnit> msgRetVec = connection_.get(key, qos);
          if (msgRetVec.size() != 1) {
-            log_.error(me(), "msgRetVec.length!=1");
+            log_.error(ME, "msgRetVec.length!=1");
             assert(0);
          }
          if (msgRetVec[0].getContentLen() == 0) {
-            log_.error(me(), "returned msgRetVec[0].msgUnit.content.length == 0");
+            log_.error(ME, "returned msgRetVec[0].msgUnit.content.length == 0");
             assert(0);
          }
          string usedMemBefore = msgRetVec[0].getContentStr();
          long usedBefore = lexical_cast<long>(usedMemBefore);
-         log_.info(me(), string("xmlBlaster used allocated memory before ") +
+         log_.info(ME, string("xmlBlaster used allocated memory before ") +
                    "publishing = " + usedMemBefore);
 
-         log_.info(me(), "Publishing " + lexical_cast<string>(NUM_PUBLISH) + " messages ...");
+         log_.info(ME, "Publishing " + lexical_cast<string>(NUM_PUBLISH) + " messages ...");
          stopWatch_.restart();
          // 2. publish all the messages
-         vector<PublishReturnQos> publishOidArr = senderConnection_->publishArr(msgVec);
+         vector<PublishReturnQos> publishOidArr = connection_.publishArr(msgVec);
          double elapsed = 0.001 * stopWatch_.elapsed();
 
          for (unsigned int i=0; i < NUM_PUBLISH; i++) {
@@ -195,24 +170,24 @@ public:
          }
 
          long avg = (long)((double)NUM_PUBLISH / elapsed);
-         log_.info(me(), "Success: Publishing done, " + lexical_cast<string>(NUM_PUBLISH) + " messages sent, average messages/second = " + lexical_cast<string>(avg));
+         log_.info(ME, "Success: Publishing done, " + lexical_cast<string>(NUM_PUBLISH) + " messages sent, average messages/second = " + lexical_cast<string>(avg));
 
          if (publishOidArr.size() != NUM_PUBLISH) {
-            log_.error(me(), "numPublished is wrong");
+            log_.error(ME, "numPublished is wrong");
             assert(0);
          }
 
          // 3. Query the memory allocated in xmlBlaster after publishing all
          // the messages
-         msgRetVec = senderConnection_->get(key, qos);
+         msgRetVec = connection_.get(key, qos);
          string usedMemAfter = msgRetVec[0].getContentStr();
          long usedAfter = lexical_cast<long>(usedMemAfter);
-         log_.info(me(), string("xmlBlaster used allocated memory after ") +
+         log_.info(ME, string("xmlBlaster used allocated memory after ") +
                    "publishing = " + usedMemAfter);
-         log_.info(me(), lexical_cast<string>((usedAfter-usedBefore)/NUM_PUBLISH) + " bytes/message");
+         log_.info(ME, lexical_cast<string>((usedAfter-usedBefore)/NUM_PUBLISH) + " bytes/message");
       }
       catch(XmlBlasterException &e) {
-         log_.warn(me(), string("Exception: ") + e.toXml());
+         log_.warn(ME, string("Exception: ") + e.toXml());
          assert(0);
       }
    }
@@ -221,43 +196,32 @@ public:
    /**
     * TEST: Construct 1000 messages and publish it.
     */
-   void testManyPublish() {
+   void testManyPublish() 
+   {
       testPublish();
    }
 
-   void usage()
+   void usage() const
    {
-      log_.plain(me(), "----------------------------------------------------------");
-      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
-      log_.plain(me(), "Usage:");
+   		TestSuite::usage();
+      log_.plain(ME, "----------------------------------------------------------");
+      log_.plain(ME, "Testing C++ access to xmlBlaster");
+      log_.plain(ME, "Usage:");
       XmlBlasterAccess::usage();
       log_.usage();
-      log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestRam -hostname myHostName");
-      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(ME, "Example:");
+      log_.plain(ME, "   TestRam -hostname myHostName");
+      log_.plain(ME, "----------------------------------------------------------");
    }
 };
 
-}} // namespace
+}}} // namespace
 
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
-   // Init the XML platform
-   try {
-      XMLPlatformUtils::Initialize();
-   }
-
-   catch(const XMLException& toCatch) {
-      cout << "Error during platform init! Message:\n"
-           << endl;
-      return 1;
-   }
-
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argc);
-   org::xmlBlaster::TestRam *testSub = new org::xmlBlaster::TestRam(glob, "Tim");
-   testSub->setUp(args, argc);
+   TestRam *testSub = new TestRam(args, argc, "Tim");
+   testSub->setUp();
    testSub->testManyPublish();
    testSub->tearDown();
    return 0;

@@ -5,19 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-#include <client/XmlBlasterAccess.h>
-#include <util/XmlBlasterException.h>
-#include <util/EmbeddedServer.h>
-#include <util/Global.h>
-#include <util/Log.h>
-#include <util/PlatformUtils.hpp>
-#include <util/Timestamp.h>
-#include <boost/lexical_cast.hpp>
-#include "testSuite.h"
-
-/**
- *
- */
+#include "TestSuite.h"
 
 using boost::lexical_cast;
 using namespace std;
@@ -27,6 +15,8 @@ using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster;
+
+namespace org { namespace xmlBlaster { namespace test {
 
 class TestEmbeddedServer
 {
@@ -81,11 +71,13 @@ public:
 
 };
 
+}}} // namespace
+
+
+using namespace org::xmlBlaster::test;
 
 int main(int args, char *argv[])
 {
-//   ServerThread* server = new ServerThread("java org.xmlBlaster.Main");
-//   server->start();
    XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);

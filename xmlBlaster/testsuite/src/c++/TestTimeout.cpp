@@ -5,11 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-#include <util/Timeout.h>
-#include <iostream>
-#include <string>
-#include <util/Global.h>
-#include <util/thread/ThreadImpl.h>
+#include "TestSuite.h"
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -23,7 +19,7 @@ using namespace org::xmlBlaster::util::thread;
  * <p>
  */
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace test {
 
 class TestTimeout : public I_Timeout {
    
@@ -82,21 +78,22 @@ public:
    }
 };
    
-}} // namespace
+}}} // namespace
 
+using namespace org::xmlBlaster::test;
 
-
-int main(int args, char *argc[]) {
-
+int main(int args, char *argc[]) 
+{
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
 
-   org::xmlBlaster::TestTimeout *test = new org::xmlBlaster::TestTimeout(glob, "TestTimeout");
+   TestTimeout *testObj = new TestTimeout(glob, "TestTimeout");
 
-   test->setUp(args, argc);
-   test->testTimeout();
-   test->tearDown();
-   delete test;
+   testObj->setUp(args, argc);
+   testObj->testTimeout();
+   testObj->tearDown();
+   delete testObj;
+   testObj = NULL;
    return 0;
 }
 

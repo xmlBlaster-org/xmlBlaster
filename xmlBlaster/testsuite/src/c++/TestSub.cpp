@@ -3,18 +3,10 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.12 2003/01/22 13:11:30 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.13 2003/01/22 16:04:36 laghi Exp $
 -----------------------------------------------------------------------------*/
 
-#include <client/XmlBlasterAccess.h>
-#include <boost/lexical_cast.hpp>
-#include <util/XmlBlasterException.h>
-#include <util/Timestamp.h>
-#include <util/PlatformUtils.hpp>
-
-#include <util/StopWatch.h>
-#include <util/Global.h>
-#include <util/thread/ThreadImpl.h>
+#include "TestSuite.h"
 
 /**
  * This client tests the method subscribe() with a later publish() with XPath
@@ -35,34 +27,21 @@ using namespace org::xmlBlaster::client::key;
 
 using boost::lexical_cast;
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace test {
 
-class TestSub: public client::I_Callback {
+class TestSub: public TestSuite, public virtual I_Callback 
+{
 private:
-   string me() {
-      return "Tim";
-         log_.info(me(), string("Success: Publishing done, returned oid=") +
-                   publishOid_);
-         log_.info(me(), string("Success: Publishing done, returned oid=") +
-                   publishOid_);
-         log_.info(me(), string("Success: Publishing done, returned oid=") +
-                   publishOid_);
-   }
 
-   bool             messageArrived_; // = false;
-   int              numReceived_;    //  = 0;         // error checking
-   XmlBlasterAccess *senderConnection_;
-
+   bool   messageArrived_;      // = false;
+   int    numReceived_;         //  = 0;         // error checking
    string subscribeOid_;
-   string publishOid_; // = "dummy";
+   string publishOid_;          // = "dummy";
    string senderName_;
    string senderContent_;
-   string receiverName_;         // sender/receiver is here the same client
-
-   string contentMime_; // = "text/xml";
+   string receiverName_;        // sender/receiver is here the same client
+   string contentMime_;         // = "text/xml";
    string contentMimeExtended_; //  = "1.0";
-   Global&          global_;
-   util::Log&       log_;
    ConnectReturnQos returnQos_;
 
    /** Publish tests */
@@ -77,8 +56,8 @@ private:
     * @param loginName The name to login to the xmlBlaster
     */
  public:
-   TestSub(Global& global, const string &loginName)
-      : global_(global), log_(global.getLog("test")), returnQos_(global)
+   TestSub(int args, char *argc[], const string &loginName)
+      : TestSuite(args, argc, "TestSub"), returnQos_(global_)
    {
       senderName_          = loginName;
       receiverName_        = loginName;
@@ -89,33 +68,26 @@ private:
       senderContent_       = "Yeahh, i'm the new content";
    }
 
-   virtual ~TestSub() {
-      if (senderConnection_ != NULL)
-         delete senderConnection_;
+   virtual ~TestSub() 
+   {
    }
 
    /**
     * Sets up the fixture. <p />
     * Connect to xmlBlaster and login
     */
-   void setUp(int args=0, char *argc[]=0) {
-      for (int ii=0; ii<args; ii++) {
-         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
-            usage();
-            log_.exit(me(), "Good bye");
-         }
-      }
+   void setUp() 
+   {
+      TestSuite::setUp();
       try {
-         senderConnection_ = new XmlBlasterAccess(global_); // Find orb
          string passwd = "secret";
          SecurityQos secQos(global_, senderName_, passwd);
          ConnectQos connQos(global_);
-//         connQos.setSecurityQos(secQos);
-         returnQos_ = senderConnection_->connect(connQos, this);
+         returnQos_ = connection_.connect(connQos, this);
          // Login to xmlBlaster
       }
       catch (XmlBlasterException &e) {
-         log_.error(me(), string("Login failed: ") + e.toXml());
+         log_.error(ME, string("Login failed: ") + e.toXml());
          usage();
          assert(0);
       }
@@ -126,9 +98,9 @@ private:
     * Tears down the fixture. <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   void tearDown() {
-      //senderConnection_->run();
-      log_.info(me(), "Cleaning up test - erasing message.");
+   void tearDown() 
+   {
+      log_.info(ME, "Cleaning up test - erasing message.");
 
       EraseKey eraseKey(global_);
       eraseKey.setOid(publishOid_);
@@ -136,16 +108,16 @@ private:
 
       vector<EraseReturnQos> retArr;
       try {
-         retArr = senderConnection_->erase(eraseKey, eraseQos);
+         retArr = connection_.erase(eraseKey, eraseQos);
       }
       catch(XmlBlasterException &e) {
-         log_.error(me(), string("XmlBlasterException: ") + e.toXml());
+         log_.error(ME, string("XmlBlasterException: ") + e.toXml());
       }
       if (retArr.size() != 1) {
-         log_.error(me(), "Erased " + lexical_cast<string>(retArr.size()) + " messages");
+         log_.error(ME, "Erased " + lexical_cast<string>(retArr.size()) + " messages");
       }
-      // still old fashioned
-      senderConnection_->disconnect(DisconnectQos(global_));
+      connection_.disconnect(DisconnectQos(global_));
+      TestSuite::tearDown();
    }
 
 
@@ -153,20 +125,21 @@ private:
     * TEST: Subscribe to messages with XPATH.<p />
     * The returned subscribeOid is checked
     */
-   void testSubscribeXPath() {
-      if (log_.TRACE) log_.trace(me(), "Subscribing using XPath syntax ...");
+   void testSubscribeXPath() 
+   {
+      if (log_.TRACE) log_.trace(ME, "Subscribing using XPath syntax ...");
       SubscribeKey subKey(global_);
       subKey.setQueryString("//TestSub-AGENT");
       SubscribeQos subQos(global_);
       numReceived_ = 0;
       subscribeOid_ = "";
       try {
-         subscribeOid_ = senderConnection_->subscribe(subKey, subQos).getSubscriptionId();
-         log_.info(me(), string("Success: Subscribe subscription-id=") +
+         subscribeOid_ = connection_.subscribe(subKey, subQos).getSubscriptionId();
+         log_.info(ME, string("Success: Subscribe subscription-id=") +
                    subscribeOid_ + " done");
       }
       catch(XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")
+         log_.warn(ME, string("XmlBlasterException: ")
                       + e.toXml());
          cerr << "subscribe - XmlBlasterException: " << e.toXml() << endl;
          assert(0);
@@ -186,8 +159,9 @@ private:
     * TEST: Construct a message and publish it. <p />
     * The returned publishOid is checked
     */
-   void testPublishCorbaMethods(TestType testType) {
-      if (log_.TRACE) log_.trace(me(), "Publishing a message (old style) ...");
+   void testPublishCorbaMethods(TestType testType) 
+   {
+      if (log_.TRACE) log_.trace(ME, "Publishing a message (old style) ...");
       numReceived_ = 0;
       PublishKey pubKey(global_);
       pubKey.setOid(publishOid_);
@@ -207,29 +181,29 @@ private:
          if (testType == TEST_ONEWAY) {
             vector<MessageUnit> msgUnitArr;
             msgUnitArr.insert(msgUnitArr.begin(), msgUnit);
-            senderConnection_->publishOneway(msgUnitArr);
+            connection_.publishOneway(msgUnitArr);
             //delete msgUnitArr;
-            log_.info(me(), string("Success: Publishing oneway done (old style)"));
+            log_.info(ME, string("Success: Publishing oneway done (old style)"));
          }
          else if (testType == TEST_PUBLISH) {
-            string tmp = senderConnection_->publish(msgUnit).getKeyOid();
+            string tmp = connection_.publish(msgUnit).getKeyOid();
             if (tmp.find(publishOid_) == string::npos) {
-               log_.error(me(), "Wrong publishOid: " + tmp);
+               log_.error(ME, "Wrong publishOid: " + tmp);
                assert(0);
             }
-            log_.info(me(), string("Success: Publishing with ACK done (old style), returned oid=") +
+            log_.info(ME, string("Success: Publishing with ACK done (old style), returned oid=") +
                       publishOid_);
          }
          else {
             vector<MessageUnit> msgUnitArr;
             msgUnitArr.insert(msgUnitArr.begin(), msgUnit);
-            senderConnection_->publishArr(msgUnitArr);
+            connection_.publishArr(msgUnitArr);
             //delete msgUnitArr;
-            log_.info(me(), string("Success: Publishing array done (old style)"));
+            log_.info(ME, string("Success: Publishing array done (old style)"));
          }
       }
       catch(XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+e.toXml());
+         log_.warn(ME, string("XmlBlasterException: ")+e.toXml());
          assert(0);
       }
    }
@@ -239,8 +213,9 @@ private:
     * TEST: Construct a message and publish it. <p />
     * The returned publishOid is checked
     */
-   void testPublishSTLMethods(TestType testType) {
-      if (log_.TRACE) log_.trace(me(), "Publishing a message (the STL way) ...");
+   void testPublishSTLMethods(TestType testType) 
+   {
+      if (log_.TRACE) log_.trace(ME, "Publishing a message (the STL way) ...");
       numReceived_ = 0;
       string clientTags = string("") +
          "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
@@ -256,23 +231,23 @@ private:
          if (testType == TEST_ONEWAY) {
             vector<MessageUnit> msgVec;
             msgVec.push_back(msgUnit);
-            senderConnection_->publishOneway(msgVec);
-            log_.info(me(), string("Success: Publishing oneway done (the STL way)"));
+            connection_.publishOneway(msgVec);
+            log_.info(ME, string("Success: Publishing oneway done (the STL way)"));
          }
          else if (testType == TEST_PUBLISH) {
-            string tmp = senderConnection_->publish(msgUnit).getKeyOid();
-            log_.info(me(), string("the publish oid ='") + tmp + "'");
+            string tmp = connection_.publish(msgUnit).getKeyOid();
+            log_.info(ME, string("the publish oid ='") + tmp + "'");
          }
          else {
             vector<MessageUnit> msgVec;
             msgVec.push_back(msgUnit);
-            vector<PublishReturnQos> retArr = senderConnection_->publishArr(msgVec);
-            log_.info(me(), string("Success: Publishing array of size " + lexical_cast<string>(retArr.size())
+            vector<PublishReturnQos> retArr = connection_.publishArr(msgVec);
+            log_.info(ME, string("Success: Publishing array of size " + lexical_cast<string>(retArr.size())
                                    + " done (the STL way)"));
          }
       }
       catch(XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+e.toXml());
+         log_.warn(ME, string("XmlBlasterException: ")+e.toXml());
          assert(0);
       }
    }
@@ -282,33 +257,34 @@ private:
     * TEST: Construct a message and publish it,<br />
     * the previous XPath subscription should match and send an update.
     */
-   void testPublishAfterSubscribeXPath() {
+   void testPublishAfterSubscribeXPath() 
+   {
       testSubscribeXPath();
       waitOnUpdate(1000L);
       // Wait some time for callback to arrive ...
       if (numReceived_ != 0) {
-         log_.error(me(), "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
+         log_.error(ME, "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 /*
       testPublishCorbaMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing oneway = " + lexical_cast<string>(numReceived_));
+         log_.error(ME,"numReceived after publishing oneway = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 
       testPublishCorbaMethods(TEST_PUBLISH);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
+         log_.error(ME,"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 
       testPublishCorbaMethods(TEST_ARRAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
+         log_.error(ME,"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 */
@@ -316,21 +292,21 @@ private:
       testPublishSTLMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing STL oneway = " + lexical_cast<string>(numReceived_));
+         log_.error(ME,"numReceived after publishing STL oneway = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 */
       testPublishSTLMethods(TEST_PUBLISH);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
+         log_.error(ME,"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 /*
       testPublishSTLMethods(TEST_ARRAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
+         log_.error(ME,"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 */
@@ -354,8 +330,9 @@ private:
    string update(const string &sessionId,
                UpdateKey &updateKey,
                void *content, long contentSize,
-               UpdateQos &updateQos) {
-      log_.info(me(), string("Receiving update of message oid=") +
+               UpdateQos &updateQos) 
+   {
+      log_.info(ME, string("Receiving update of message oid=") +
                 updateKey.getOid() + " state=" + updateQos.getState() +
                 " authentication sessionId=" + sessionId + " ...");
       numReceived_ ++;
@@ -364,42 +341,42 @@ private:
 
       if (updateQos.getState() != util::Constants::STATE_OK &&
           updateQos.getState() != util::Constants::STATE_ERASED) {
-         log_.error(me(), "Unexpected message state=" + updateQos.getState());
+         log_.error(ME, "Unexpected message state=" + updateQos.getState());
          assert(0);
       }
 
       string name = returnQos_.getSessionQos().getAbsoluteName();
       if (/*senderName_*/ name != updateQos.getSender().getAbsoluteName()) {
-         log_.error(me(), string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender().getAbsoluteName());
+         log_.error(ME, string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender().getAbsoluteName());
          assert(0);
       }
       if (subscribeOid_.find(updateQos.getSubscriptionId()) == string::npos) {
-         log_.error(me(), string("engine.qos.update.subscriptionId: ")
+         log_.error(ME, string("engine.qos.update.subscriptionId: ")
                     + "Wrong subscriptionId, expected=" + subscribeOid_ + " received=" + updateQos.getSubscriptionId());
          //assert(0);
       }
       if (publishOid_ != updateKey.getOid()) {
-         log_.error(me(), "Wrong oid of message returned");
+         log_.error(ME, "Wrong oid of message returned");
          assert(0);
       }
       if (senderContent_ != contentStr) {
-         log_.error(me(), "Corrupted content expected '" + senderContent_ + "' size=" +
+         log_.error(ME, "Corrupted content expected '" + senderContent_ + "' size=" +
                            lexical_cast<string>(senderContent_.size()) + " but was '" + contentStr +
                            "' size=" + lexical_cast<string>(contentStr.size()) + " and contentSize=" +
                            lexical_cast<string>(contentSize));
          assert(0);
       }
       if (contentMime_ != updateKey.getContentMime()) {
-         log_.error(me(), "Message contentMime is corrupted");
+         log_.error(ME, "Message contentMime is corrupted");
          assert(0);
       }
       if (contentMimeExtended_ != updateKey.getContentMimeExtended()) {
-         log_.error(me(), "Message contentMimeExtended is corrupted");
+         log_.error(ME, "Message contentMimeExtended is corrupted");
          assert(0);
       }
       messageArrived_ = true;
 
-      log_.info(me(), "Success, message arrived as expected.");
+      log_.info(ME, "Success, message arrived as expected.");
       return "<qos><state id='OK'/></qos>";
    }
 
@@ -416,54 +393,68 @@ private:
 /*
       util::StopWatch stopWatch(timeout);
       while (stopWatch.isRunning()) {
-         senderConnection_->orbPerformWork();
+         connection_.orbPerformWork();
          if (messageArrived_) {
             messageArrived_ = false;
             return;
          }
       }
 */
-      log_.warn(me(), "Timeout of " + lexical_cast<string>(timeout) + " milliseconds occured");
+      log_.warn(ME, "Timeout of " + lexical_cast<string>(timeout) + " milliseconds occured");
    }
 
-   void usage()
+   void usage() const
    {
-      log_.plain(me(), "----------------------------------------------------------");
-      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster with subscribe()");
-      log_.plain(me(), "Usage:");
+      TestSuite::usage();
+      log_.plain(ME, "----------------------------------------------------------");
+      log_.plain(ME, "Testing C++/CORBA access to xmlBlaster with subscribe()");
+      log_.plain(ME, "Usage:");
       XmlBlasterAccess::usage();
       log_.usage();
-      log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestSub -hostname myHost.myCompany.com -port 3412 -trace true");
-      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(ME, "Example:");
+      log_.plain(ME, "   TestSub -hostname myHost.myCompany.com -port 3412 -trace true");
+      log_.plain(ME, "----------------------------------------------------------");
    }
 };
 
-}} // namespace
+}}} // namespace
 
+using namespace org::xmlBlaster::test;
 
+int main(int args, char *argc[]) 
+{
 
-
-int main(int args, char *argc[]) {
-
-   // Init the XML platform
    try {
-      XMLPlatformUtils::Initialize();
+      TestSub testSub(args, argc, "Tim");
+      testSub.setUp();
+      
+      testSub.testPublishAfterSubscribeXPath();
+      testSub.tearDown();
+   	  Thread::sleepSecs(1);
+   }
+   catch (XmlBlasterException& ex) {
+      std::cout << ex.toXml() << std::endl;
+   }
+   catch (bad_exception& ex) {
+      cout << "bad_exception: " << ex.what() << endl;
+   }
+   catch (exception& ex) {
+      cout << " exception: " << ex.what() << endl;
+   }
+   catch (string& ex) {
+      cout << "string: " << ex << endl;
+   }
+   catch (char* ex) {
+      cout << "char* :  " << ex << endl;
    }
 
-   catch(const XMLException& toCatch) {
-      cout << "Error during platform init! Message:\n"
-           << endl;
-      return 1;
+   catch (...)
+   {
+      cout << "unknown exception occured" << endl;
+      XmlBlasterException e(INTERNAL_UNKNOWN, "main", "main thread");
+      cout << e.toXml() << endl;
    }
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argc);
-   org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub(glob, "Tim");
-   testSub->setUp(args, argc);
-   testSub->testPublishAfterSubscribeXPath();
-   testSub->tearDown();
-   delete testSub;
-   // Log.exit(TestSub.ME, "Good bye");
+
    return 0;
 }
 

@@ -12,12 +12,7 @@ Comment:   Testing the Timeout Features
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
 #include <boost/lexical_cast.hpp>
-#include "testSuite.h"
-
-
-/**
- *
- */
+#include "TestSuite.h"
 
 using boost::lexical_cast;
 using namespace std;
@@ -25,6 +20,9 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster;
 using namespace org::xmlBlaster::util::qos::storage;
+
+
+namespace org { namespace xmlBlaster { namespace test {
 
 class TestConnectQos
 {
@@ -188,8 +186,12 @@ public:
          log_.info(me, string("connect qos: ") + connQos.toXml());
       }
    }
-
 };
+
+}}} // namespace 
+
+
+using namespace org::xmlBlaster::test;
 
 /**
  * Try

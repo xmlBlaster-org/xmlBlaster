@@ -5,20 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-#include <util/ReferenceHolder.h>
-#include <util/queue/PublishQueueEntry.h>
-#include <util/queue/ConnectQueueEntry.h>
-#include <util/queue/MsgQueue.h>
- 
-#include <iostream>
-#include <string>
-#include <util/Log.h>
-#include <util/Global.h>
-
-#include <boost/lexical_cast.hpp>
+#include "TestSuite.h"
 #include <vector>
-
-#include "testSuite.h"
 
 using boost::lexical_cast;
 
@@ -38,8 +26,7 @@ using namespace org::xmlBlaster::client::key;
  * - Intermixed comparisons (between PublishQueueEntry and ConnectQueueEntry).
  */
 
-namespace org { namespace xmlBlaster {
-
+namespace org { namespace xmlBlaster { namespace test {
 
 class TestQueue
 {
@@ -222,18 +209,18 @@ public:
          for (i=0; i < 10; i++) {
             ConnectQueueEntry entry(global_, connQos);
             queue_->put(entry);
-	 }
+         }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
       catch (XmlBlasterException &ex) {
          log_.error(me, "1. putting entries inside the queue: FAILED could not put inside the queue the entry nr. " + lexical_cast<string>(i));      
-	 assert(0);
+         assert(0);
       }
       try {
          ConnectQueueEntry entry(global_, connQos);
          queue_->put(entry);
          log_.error(me, "2. putting entries inside the queue: FAILED should have thrown an exception");      
-	 assert(0);
+         assert(0);
       }
       catch (XmlBlasterException ex) {
          assertEquals(log_, me, ex.getErrorCodeStr(), string("resource.overflow.queue.entries"), "3. checking that exceeding number of entries throws the correct exception.");
@@ -258,7 +245,7 @@ public:
          for (i=0; i < 10; i++) {
             ConnectQueueEntry entry(global_, connQos);
             queue_->put(entry);
-	 }
+         }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
       catch (XmlBlasterException &ex) {
@@ -285,60 +272,61 @@ public:
    {
       if (queue_) {
          delete queue_;
-	 queue_ = NULL;
+         queue_ = NULL;
       }
    }
 
    void tearDown() {
       if (queue_) {
          delete queue_;
-	 queue_ = NULL;
+         queue_ = NULL;
       }
    }
 
 
 };
    
-}} // namespace
+}}} // namespace
 
 
+using namespace org::xmlBlaster::test;
 
-int main(int args, char *argc[]) {
-
+int main(int args, char *argc[]) 
+{
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
 
-   org::xmlBlaster::TestQueue *test = new org::xmlBlaster::TestQueue(glob, "TestQueue");
+   TestQueue *testObj = new TestQueue(glob, "TestQueue");
 
-   test->setUp();
-   test->testPublishCompare();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testPublishCompare();
+   testObj->tearDown();
 
-   test->setUp();
-   test->testConnectCompare();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testConnectCompare();
+   testObj->setUp();
+   testObj->tearDown();
 
-   test->setUp();
-   test->testMixedCompare();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testMixedCompare();
+   testObj->tearDown();
 
-   test->setUp();
-   test->testWithOneEntry();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testWithOneEntry();
+   testObj->tearDown();
 
-   test->setUp();
-   test->testOrder();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testOrder();
+   testObj->tearDown();
 
-   test->setUp();
-   test->testMaxMsg();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testMaxMsg();
+   testObj->tearDown();
 
-   test->setUp();
-   test->testMaxEntries();
-   test->tearDown();
+   testObj->setUp();
+   testObj->testMaxEntries();
+   testObj->tearDown();
 
-   delete test;
    return 0;
 }
 

@@ -5,12 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing get()
 -----------------------------------------------------------------------------*/
 
-#include <client/XmlBlasterAccess.h>
-#include <boost/lexical_cast.hpp>
-#include <util/StopWatch.h>
-#include <util/XmlBlasterException.h>
-#include <util/PlatformUtils.hpp>
-#include <util/Global.h>
+#include "TestSuite.h"
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -28,24 +23,18 @@ using org::xmlBlaster::authentication::SecurityQos;
  * <p>
  */
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace test {
 
-class TestGet {
+class TestGet : public TestSuite
+{
+
 private:
-   string me() {
-      return "Tim";
-   }
-
-//   CorbaConnection* corbaConnection_;
-   XmlBlasterAccess* connection_;
-   string           publishOid_;
-   string           loginName_;
-   string           senderContent_;
-   string           contentMime_;
-   string           contentMimeExtended_;
-   int              numReceived_;  // error checking
-   Global&          global_;
-   util::Log&       log_;
+   string publishOid_;
+   string loginName_;
+   string senderContent_;
+   string contentMime_;
+   string contentMimeExtended_;
+   int    numReceived_;  // error checking
 
    /**
     * Constructs the TestGet object.
@@ -53,8 +42,8 @@ private:
     * @param loginName The name to login to the xmlBlaster
     */
 public:
-   TestGet(Global& global, const string &loginName)
-      : global_(global), log_(global.getLog("test"))
+   TestGet(int args, char *argc[], const string &loginName)
+      : TestSuite(args, argc, "TestGet")
    {
       loginName_           = loginName;
       publishOid_          = "TestGet";
@@ -62,39 +51,30 @@ public:
       contentMime_         = "text/xml";
       contentMimeExtended_ = "1.0";
       numReceived_         = 0;
-      connection_          = 0;
    }
 
-
-   ~TestGet() {
-      delete connection_;
+   ~TestGet() 
+   {
    }
-
 
    /**
     * Sets up the fixture.
     * <p />
     * Connect to xmlBlaster and login
     */
-   void setUp(int args=0, char *argc[]=0) {
-      for (int ii=0; ii<args; ii++) {
-         if (strcmp(argc[ii], "-?")==0 || strcmp(argc[ii], "-h")==0 || strcmp(argc[ii], "-help")==0) {
-            usage();
-            log_.exit(me(), "Good bye");
-         }
-      }
-
+   void setUp() 
+   {
+      TestSuite::setUp();
       try {
-         connection_ = new XmlBlasterAccess(global_); // Find orb
          string passwd = "secret";
          SecurityQos secQos(global_, loginName_, passwd);
          ConnectQos connQos(global_);
          connQos.setSecurityQos(secQos);
-         connection_->connect(connQos, NULL);
-         log_.info(me(), "Successful connection");
+         connection_.connect(connQos, NULL);
+         log_.info(ME, "Successful connection");
       }
       catch (XmlBlasterException &ex) {
-         log_.error(me(), ex.toXml());
+         log_.error(ME, ex.toXml());
          usage();
          assert(0);
       }
@@ -114,21 +94,22 @@ public:
 
       vector<EraseReturnQos> returnQosArr;
       try {
-         returnQosArr = connection_->erase(eraseKey, eraseQos);
-         log_.info(me(), "Success, erased a message");
+         returnQosArr = connection_.erase(eraseKey, eraseQos);
+         log_.info(ME, "Success, erased a message");
       }
       catch(XmlBlasterException &e) {
-         log_.error(me(), "XmlBlasterException: " + e.toXml());
+         log_.error(ME, "XmlBlasterException: " + e.toXml());
       }
       if (returnQosArr.size() != 1) {
-         log_.error(me(), "Erased " + lexical_cast<string>(returnQosArr.size()) + " messages");
+         log_.error(ME, "Erased " + lexical_cast<string>(returnQosArr.size()) + " messages");
       }
       // this is still old fashion ...
-      connection_->disconnect(DisconnectQos(global_));
+      connection_.disconnect(DisconnectQos(global_));
       // Give the server some millis to finish the iiop handshake ...
-      util::StopWatch stopWatch;
-      stopWatch.wait(200);
-      log_.info(me(), "Success, logged out");
+      Thread::sleep(200);
+      log_.info(ME, "Success, logged out");
+
+      TestSuite::tearDown();
    }
 
 
@@ -137,24 +118,25 @@ public:
     * <p />
     * The returned content is checked
     */
-   void testGet() {
-      if (log_.TRACE) log_.trace(me(), "1. Get a not existing message " + publishOid_ + " ...");
+   void testGet() 
+   {
+      if (log_.TRACE) log_.trace(ME, "1. Get a not existing message " + publishOid_ + " ...");
       try {
          GetKey getKey(global_);
          getKey.setOid(publishOid_);
          GetQos getQos(global_);
-         vector<util::MessageUnit> msgVec = connection_->get(getKey, getQos);
-         log_.info(me(), "Success, got array of size " + lexical_cast<string>(msgVec.size()) +
+         vector<util::MessageUnit> msgVec = connection_.get(getKey, getQos);
+         log_.info(ME, "Success, got array of size " + lexical_cast<string>(msgVec.size()) +
                          " for trying to get unknown message");
          assert(msgVec.size() == 0);
       }
       catch(XmlBlasterException &e) {
-         log_.error(me(), "get of not existing message " + publishOid_);
+         log_.error(ME, "get of not existing message " + publishOid_);
          usage();
          assert(0);
       }
 
-      if (log_.TRACE) log_.trace(me(), "2. Publish a message ...");
+      if (log_.TRACE) log_.trace(ME, "2. Publish a message ...");
 
       try {
          PublishKey publishKey(global_);
@@ -163,26 +145,26 @@ public:
 
          PublishQos publishQos(global_);
          MessageUnit msgUnit(publishKey, senderContent_, publishQos);
-         connection_->publish(msgUnit);
-         log_.info(me(), "Success, published a message");
+         connection_.publish(msgUnit);
+         log_.info(ME, "Success, published a message");
       }
       catch(XmlBlasterException &e) {
-         log_.error(me(), "publish - XmlBlasterException: " + e.toXml());
+         log_.error(ME, "publish - XmlBlasterException: " + e.toXml());
          usage();
          assert(0);
       }
 
-      if (log_.TRACE) log_.trace(me(), "3. Get an existing message ...");
+      if (log_.TRACE) log_.trace(ME, "3. Get an existing message ...");
       try {
          GetKey getKey(global_);
          getKey.setOid(publishOid_);
          GetQos getQos(global_);
-         vector<MessageUnit> msgVec = connection_->get(getKey, getQos);
-         log_.info(me(), "Success, got " + lexical_cast<string>(msgVec.size()) + " message");
+         vector<MessageUnit> msgVec = connection_.get(getKey, getQos);
+         log_.info(ME, "Success, got " + lexical_cast<string>(msgVec.size()) + " message");
          assert(msgVec.size() == 1);
          string str = msgVec[0].getContentStr();
          if (senderContent_ != str) {
-            log_.error(me(), "Corrupted content expected '" + senderContent_ + "' size=" +
+            log_.error(ME, "Corrupted content expected '" + senderContent_ + "' size=" +
                              lexical_cast<string>(senderContent_.size()) + " but was '" + str +
                              "' size=" + lexical_cast<string>(str.size()) + " and contentLen=" +
                              lexical_cast<string>(msgVec[0].getContentLen()));
@@ -191,7 +173,7 @@ public:
          }
       }
       catch(XmlBlasterException &e) {
-         log_.error(me(), string("XmlBlasterException for trying to get ")
+         log_.error(ME, string("XmlBlasterException for trying to get ")
                     + "a message: " + e.toXml());
          usage();
          assert(0);
@@ -202,64 +184,55 @@ public:
    /**
     * LOAD TEST: get 50 times a non-existing message
     */
-   void testGetMany() {
+   void testMany() 
+   {
       int num = 50;
-      log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages ...");
+      log_.info(ME, "Get " + lexical_cast<string>(num) + " not existing messages ...");
       GetKey getKey(global_);
       getKey.setOid("NotExistingMessage");
       GetQos getQos(global_);
       for (int i=0; i < num; i++) {
          try {
-            vector<MessageUnit> msgVec = connection_->get(getKey, getQos);
+            vector<MessageUnit> msgVec = connection_.get(getKey, getQos);
             assert(msgVec.size() == 0);
-            log_.info(me(), string("Success"));
+            log_.info(ME, string("Success"));
          }
          catch(XmlBlasterException &e) {
-            log_.error(me(), "Exception for a not existing message: " + e.toXml());
+            log_.error(ME, "Exception for a not existing message: " + e.toXml());
             assert(0);
          }
       }
-      log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages done");
+      log_.info(ME, "Get " + lexical_cast<string>(num) + " not existing messages done");
    }
 
-   void usage()
+   void usage() const
    {
-      log_.plain(me(), "----------------------------------------------------------");
-      log_.plain(me(), "Testing C++/CORBA access to xmlBlaster with a synchronous get()");
-      log_.plain(me(), "Usage:");
+   		TestSuite::usage();
+      log_.plain(ME, "----------------------------------------------------------");
+      log_.plain(ME, "Testing C++/CORBA access to xmlBlaster with a synchronous get()");
+      log_.plain(ME, "Usage:");
       XmlBlasterAccess::usage();
       log_.usage();
-      log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestGet -hostname serverHost.myCompany.com");
-      log_.plain(me(), "----------------------------------------------------------");
+      log_.plain(ME, "Example:");
+      log_.plain(ME, "   TestGet -hostname serverHost.myCompany.com");
+      log_.plain(ME, "----------------------------------------------------------");
    }
 };
 
-}} // namespace
+}}} // namespace
 
+using namespace org::xmlBlaster::test;
 
-
-int main(int args, char *argc[]) {
-
-   // Init the XML platform
-   try {
-      XMLPlatformUtils::Initialize();
-   }
-
-   catch(const XMLException& toCatch) {
-      cout << "Error during platform init! Message:\n"
-           << endl;
-      return 1;
-   }
-
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argc);
-   org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet(glob, "Tim");
-   testSub->setUp(args, argc);
-   testSub->testGetMany();
-   testSub->testGet();
-   testSub->tearDown();
-//   log_.exit(TestGet.me(), "Good bye");
+  
+int main(int args, char *argc[]) 
+{
+   TestGet *testObj = new TestGet(args, argc, "Tim");
+   testObj->setUp();
+   testObj->testMany();
+   testObj->testGet();
+   testObj->tearDown();
+   delete testObj;
+   testObj = NULL;
    return 0;
 }
 

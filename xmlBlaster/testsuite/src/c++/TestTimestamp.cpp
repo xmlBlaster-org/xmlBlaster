@@ -5,15 +5,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-#include <util/Timeout.h>
-#include <iostream>
-#include <string>
-
-#include <boost/lexical_cast.hpp>
+#include "TestSuite.h"
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-
 using boost::lexical_cast;
 
 /**
@@ -24,7 +19,7 @@ using boost::lexical_cast;
  * <p>
  */
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace test {
 
 class TestTimestamp {
    
@@ -69,18 +64,20 @@ public:
 };
 
    
-}} // namespace
+}}} // namespace
 
 
+using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
 
-   org::xmlBlaster::TestTimestamp *test = new org::xmlBlaster::TestTimestamp("TestTimestamp");
+   TestTimestamp *testObj = new TestTimestamp("TestTimestamp");
 
-   test->setUp(args, argc);
-   test->testTimestamp();
-   test->tearDown();
-   delete test;
+   testObj->setUp(args, argc);
+   testObj->testTimestamp();
+   testObj->tearDown();
+   delete testObj;
+   testObj = NULL;
    return 0;
 }
 

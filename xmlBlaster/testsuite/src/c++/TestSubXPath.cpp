@@ -5,21 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-#include <client/XmlBlasterAccess.h>
-#include <util/EmbeddedServer.h>
-#include <util/XmlBlasterException.h>
-#include <util/Global.h>
-#include <util/Log.h>
-#include <util/PlatformUtils.hpp>
-#include <util/thread/ThreadImpl.h>
-#include <util/Timestamp.h>
-#include <boost/lexical_cast.hpp>
-#include "testSuite.h"
-
-
-/**
- *
- */
+#include "TestSuite.h"
 
 using boost::lexical_cast;
 using namespace std;
@@ -30,17 +16,14 @@ using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster;
 
-class TestSubXPath : public I_Callback
+namespace org { namespace xmlBlaster { namespace test {
+
+class TestSubXPath : public TestSuite, public virtual I_Callback
 {
-private:					  
-   string            ME;
-   Global&           global_;
-   Log&              log_;
-   XmlBlasterAccess* connection_;
+private:                                          
    Mutex             updateMutex_;
    int               numOfUpdates_;
-   EmbeddedServer*   embeddedServer_;
-   bool              useEmbeddedServer_;				  
+
    void subscribeXPath(const string& query) 
    {
       if (log_.TRACE) log_.trace(ME, "Subscribing using XPath syntax ...");
@@ -49,7 +32,7 @@ private:
       SubscribeQos qos(global_);
       string subscribeOid = "";
       try {
-         subscribeOid = connection_->subscribe(subKey, qos).getSubscriptionId();
+         subscribeOid = connection_.subscribe(subKey, qos).getSubscriptionId();
          log_.info(ME, string("Success: Subscribe on ") + subscribeOid + " done:\n" + subKey.toXml());
       } catch(XmlBlasterException& e) {
          log_.warn(ME, string("XmlBlasterException: ") + e.toXml());
@@ -59,48 +42,30 @@ private:
    }
 
 
-
 public:
-   TestSubXPath(Global& glob) 
-      : ME("TestSubXPath"), 
-        global_(glob), 
-        log_(glob.getLog()),
-        updateMutex_()
+   TestSubXPath(int args, char *argc[]) 
+      :  TestSuite(args, argc, "TestSubXPath"), updateMutex_()
    {
-      embeddedServer_ = NULL; // (glob, "", "-info false -warn false -error false"),
-
-
-
-      connection_     = NULL;
-      numOfUpdates_   = 0;
+      numOfUpdates_ = 0;
    }
-
 
    void tearDown()
    {
+      TestSuite::tearDown();
    }
 
    virtual ~TestSubXPath()
    {
-      delete connection_;
    }
 
    void setUp()
    {
+      TestSuite::setUp();
       try {   
-/*
-         if (embeddedServer_.isSomeServerResponding()) {
-            log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
-            assert(0);
-         }
-         embeddedServer_.start();
-         Thread::sleepSecs(10);
-*/
-         connection_ = new XmlBlasterAccess(global_);
          ConnectQos connQos(global_, "Tim", "secret");
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
 
-         ConnectReturnQos retQos = connection_->connect(connQos, this);
+         ConnectReturnQos retQos = connection_.connect(connQos, this);
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
 
       }
@@ -129,7 +94,7 @@ public:
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq(global_);
          MessageUnit msgUnit(pk, "Hi", pq);
-         PublishReturnQos tmp = connection_->publish(msgUnit);
+         PublishReturnQos tmp = connection_.publish(msgUnit);
          if (oid != tmp.getKeyOid()) {
             log_.error(ME, string("wrong oid. It should be '") + oid + "' but is '" + tmp.getKeyOid());
             assert(0);
@@ -146,18 +111,13 @@ public:
          EraseKey key(global_);
          key.setOid(oid);
          EraseQos qos(global_);
-         vector<EraseReturnQos> arr = connection_->erase(key, qos);
+         vector<EraseReturnQos> arr = connection_.erase(key, qos);
          assertEquals(log_, ME, (size_t)1, arr.size(), "Erase");
       } 
       catch(XmlBlasterException& e) { 
          assert(0);
       }
    }
-
-
-
-
-
 
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
@@ -169,6 +129,10 @@ public:
 
 };
 
+}}} // namespaces
+
+using namespace org::xmlBlaster::test;
+
 /**
  * Try
  * <pre>
@@ -179,14 +143,12 @@ public:
 int main(int args, char ** argv)
 {
    try {
-      XMLPlatformUtils::Initialize();
-      Global& glob = Global::getInstance();
-      glob.initialize(args, argv);
 
-      TestSubXPath testSubXpath(glob);
+      TestSubXPath testSubXpath(args, argv);
       testSubXpath.setUp();
       testSubXpath.testInitial();
       testSubXpath.tearDown();
+      Thread::sleepSecs(1);
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
