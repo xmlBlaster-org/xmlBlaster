@@ -3,16 +3,30 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.2 2000/01/19 22:56:24 ruff Exp $
+Version:   $Id: Property.java,v 1.3 2000/01/20 19:41:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import java.io.*;
 import java.util.Properties;
+import java.util.Enumeration;
 
 
 /**
- * Properties for xmlBlaster, see $HOME/xmlBlaster.properties
+ * Properties for xmlBlaster, see $HOME/xmlBlaster.properties. 
+ * <p />
+ * The variables following variables may be used and are replaced on occurrence:
+ * <ul>
+ *    <li>$user.dir =   The current directory </i>
+ *    <li>$user.home =  The users home directory</i>
+ *    <li>$XMLBLASTER_HOME = The xmlBlaster home directory</i>
+ * </ul>
+ * A user may specify the XMLBLASTER_HOME directory and use it later as a variable as follows:<br />
+ * <pre>   java -DXMLBLASTER_HOME=/home/joe ...</pre><br />
+ * or in the xmlBlaster.properties file:<br />
+ * <pre>   $XMLBLASTER_HOME=/home/joe</pre>
+ * <p />
+ * NOTE: user.dir and user.home are without a path separator at the end
  */
 public class Property
 {
@@ -20,11 +34,11 @@ public class Property
 
    public final static String separator = System.getProperty("file.separator");
    /** The users home directory */
-   public final static String userHome = System.getProperty("user.home") + separator;
+   public final static String userHome = System.getProperty("user.home");
    /** current directory */
-   public       static String currentPath = System.getProperty("user.dir") + separator;
+   public       static String currentPath = System.getProperty("user.dir");
    /** command line (servlets using jrun/jserv property file) */
-   public       static String xmlBlasterPath = System.getProperty("XMLBLASTER_HOME");
+   public       static String xmlBlasterPath = System.getProperty("XMLBLASTER_HOME", null);
 
    private static Properties xmlBlasterProperties = null;
 
@@ -120,6 +134,35 @@ public class Property
          FileInputStream fis = new FileInputStream(file);
          xmlBlasterProperties.load(fis);
          fis.close();
+
+         // a user may specify the XMLBLASTER_HOME directory and use it later as a variable
+         String tmp = (String)xmlBlasterProperties.getProperty("$XMLBLASTER_HOME", null);
+         if (tmp != null) {
+            xmlBlasterPath = tmp;
+         }
+
+         // replace $user.dir and $user.home
+         for (Enumeration e = xmlBlasterProperties.keys(); e.hasMoreElements() ;) {
+            String key = (String)e.nextElement();
+            String value = (String)xmlBlasterProperties.get(key);
+            if (value.indexOf("$user.dir") != -1) {
+               xmlBlasterProperties.put(key, replace(value, "$user.dir", currentPath)); 
+               continue;
+            }
+            if (value.indexOf("$user.home") != -1) {
+               xmlBlasterProperties.put(key, replace(value, "$user.home", userHome)); 
+               continue;
+            }
+            if (value.indexOf("$XMLBLASTER_HOME") != -1) {
+               if (xmlBlasterPath == null) {
+                  Log.error(ME, "$XMLBLASTER_HOME is unknown, can't replace it in xmlBlaster.properties file!\n" +
+                                "Set it as environment 'java -DXMLBLASTER_HOME=/home/joe ...' or at the beginning of the file.");
+                  continue;
+               }
+               xmlBlasterProperties.put(key, replace(value, "$XMLBLASTER_HOME", xmlBlasterPath)); 
+               continue;
+            }
+         }
       }
       catch (Exception e) {
          Log.error(ME, "Unable to initilize xmlBlaster.properties: " + e);
@@ -127,6 +170,25 @@ public class Property
       }
 
       return xmlBlasterProperties;
+   }
+
+
+   /**
+    * Replace exactly one occurrence of 'from' with to 'to'
+    */
+   private final static String replace(String str, String from, String to)
+   {
+      int index = str.indexOf(from);
+      if (index >= 0) {
+         StringBuffer tmp = new StringBuffer("");
+         if (index > 0)
+            tmp.append(str.substring(0, index));
+         tmp.append(to);
+         tmp.append(str.substring(index + from.length()));
+         return tmp.toString();
+      }
+      else
+         return str;
    }
 
 
@@ -152,7 +214,7 @@ public class Property
          token.equalsIgnoreCase("0") ||
          token.equalsIgnoreCase("no"))
          return false;
-   
+
       throw new Exception("Can't parse <" + token + "> to true or false");
    }
 
@@ -169,11 +231,9 @@ public class Property
     */
    public final static String findPath(String fileName)
    {
-      String path = null;
       File f = null;
 
-      path = userHome + fileName;
-      f = new File(path);
+      f = new File(userHome, fileName);
       if (f.exists()) {
          return userHome;
       }
@@ -188,8 +248,7 @@ public class Property
          if (!xmlBlasterPath.endsWith(separator))
             xmlBlasterPath += separator;
 
-         path = xmlBlasterPath + fileName;
-         f = new File(path);
+         f = new File(xmlBlasterPath, fileName);
          if (f.exists()){
             return xmlBlasterPath;
          }
@@ -198,8 +257,7 @@ public class Property
       }
 
 
-      path = currentPath + fileName;
-      f = new File(path);
+      f = new File(currentPath, fileName);
       if (f.exists()) {
          return currentPath;
       }
@@ -212,8 +270,7 @@ public class Property
          guess = "/usr/local/xmlBlaster/";
       else
          guess = "\\xmlBlaster\\";
-      path = guess  + fileName;
-      f = new File(path);
+      f = new File(guess, fileName);
       if (f.exists()) {
          return guess;
       }
@@ -240,7 +297,7 @@ public class Property
          return null;
       }
 
-      String fullName = path + fileName;
+      String fullName = FileUtil.concatPath(path, fileName);
       Log.info(ME, "Using file '" + fullName + "'");
       return fullName;
    }
