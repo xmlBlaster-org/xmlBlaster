@@ -59,7 +59,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    private long creationTime = System.currentTimeMillis();
 
    /** uniqueId used to store this in queue */
-   private long persitenceId = -1L; 
+   private long persistenceId = -1L; 
 
    /**
     * Use this constructor for an exact subscription.
@@ -466,22 +466,22 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    }
 
    /**
-    * Gets the uniqueId for the persitence of this session.
+    * Gets the uniqueId for the persistence of this session.
     * @return the uniqueId used to identify this session as an  entry
     * in the queue where it is stored  (for persistent subscriptions).
-    * If the session is not persitent it returns -1L.
+    * If the session is not persistent it returns -1L.
     * 
     */
    public final long getPersistenceId() {
-      return this.persitenceId;
+      return this.persistenceId;
    }
    
    /**
-    * Sets the uniqueId used to retrieve this session from the persitence
+    * Sets the uniqueId used to retrieve this session from the persistence
     * @param persistenceId
     */
    public final void setPersistenceId(long persistenceId) {
-      this.persitenceId = persistenceId;
+      this.persistenceId = persistenceId;
    }
    
 //++++++++++ Enforced by I_AdminSubscription ++++++++++++++++

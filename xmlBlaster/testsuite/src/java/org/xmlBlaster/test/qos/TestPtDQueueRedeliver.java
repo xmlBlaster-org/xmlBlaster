@@ -52,7 +52,7 @@ import junit.framework.*;
  * This client does test if a subscriber can reconnect to its session and 
  * its callback queue holded the messages during downtime. 
  * <p>
- * See method testPersitentPtp() for a description.
+ * See method testPersistentPtp() for a description.
  * </p>
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
@@ -133,8 +133,8 @@ public class TestPtDQueueRedeliver extends TestCase
     * 3. receiver start and should receive the message
     * </p>
     */
-   public void testPersitentPtp() {
-      log.info(ME, "testPersitentPtp("+sessionNameRcv+") ...");
+   public void testPersistentPtp() {
+      log.info(ME, "testPersistentPtp("+sessionNameRcv+") ...");
 
       try {
 
@@ -236,7 +236,7 @@ public class TestPtDQueueRedeliver extends TestCase
          log.info(ME, "Disconnecting '" + sessionNameRcv + "'");
          if (conRcv != null) conRcv.disconnect(null);
       }
-      log.info(ME, "Success in testPersitentPtp()");
+      log.info(ME, "Success in testPersistentPtp()");
    }
 
    /**
@@ -245,7 +245,7 @@ public class TestPtDQueueRedeliver extends TestCase
    public static Test suite() {
        TestSuite suite= new TestSuite();
        String loginName = "TestPtDQueueRedeliver";
-       suite.addTest(new TestPtDQueueRedeliver(Global.instance(), "testPersitentPtp"));
+       suite.addTest(new TestPtDQueueRedeliver(Global.instance(), "testPersistentPtp"));
        return suite;
    }
 
@@ -259,7 +259,7 @@ public class TestPtDQueueRedeliver extends TestCase
    public static void main(String args[]) {
       TestPtDQueueRedeliver testSub = new TestPtDQueueRedeliver(new Global(args), "TestPtDQueueRedeliver");
       testSub.setUp();
-      testSub.testPersitentPtp();
+      testSub.testPersistentPtp();
       testSub.tearDown();
    }
 }

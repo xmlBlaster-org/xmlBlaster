@@ -385,18 +385,18 @@ public final class ConnectQos
    }
 
    /**
-    * sets the persitent flag for this subscription. If this flag is
+    * sets the persistent flag for this subscription. If this flag is
     * set, the subscription will persit a server crash.
-    * @param persitent
+    * @param persistent
     */
-   public void setPersistent(boolean persitent) {
-      this.connectQosData.setPersistent(persitent);
+   public void setPersistent(boolean persistent) {
+      this.connectQosData.setPersistent(persistent);
    }
    
    /**
-    * Gets the persitent flag for this subscription. If this flag is
+    * Gets the persistent flag for this subscription. If this flag is
     * set, the subscription will persit a server crash.
-    * @return true if persitent false otherwise.
+    * @return true if persistent false otherwise.
     */
    public boolean getPersistent() {
       return this.connectQosData.getPersistentProp().getValue();

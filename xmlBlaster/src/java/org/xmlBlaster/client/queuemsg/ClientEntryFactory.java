@@ -38,7 +38,7 @@ import java.io.IOException;
 /**
  * The implementation of the interface which can be used to convert an object
  * which implements the interface I_Entry to an Object and back. This is
- * useful for example if you want to store such entries in persitent storage
+ * useful for example if you want to store such entries in persistent storage
  * like a database or a file system. It might however be used even for other
  * purposes.
  * @author laghi@swissinfo.org

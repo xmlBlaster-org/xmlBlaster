@@ -858,7 +858,7 @@ final public class Authenticate implements I_RunlevelListener
    private void persistenceConnect(SessionInfo info) throws XmlBlasterException {
       I_SessionPersistencePlugin plugin = getSessionPersistencePlugin();
       if (plugin == null) {
-         this.log.error(ME, "persistenceConnect: the session persistence plugin is not registered (yet): can't make connection persitent");
+         this.log.error(ME, "persistenceConnect: the session persistence plugin is not registered (yet): can't make connection persistent");
          Thread.dumpStack();
          return;
       }
@@ -869,7 +869,7 @@ final public class Authenticate implements I_RunlevelListener
    private void persistenceDisConnect(SessionInfo info) throws XmlBlasterException {
       I_SessionPersistencePlugin plugin = getSessionPersistencePlugin();
       if (plugin == null) {
-         this.log.error(ME, "persistenceConnect: the session persistence plugin is not registered (yet): can't make connection persitent");
+         this.log.error(ME, "persistenceConnect: the session persistence plugin is not registered (yet): can't make connection persistent");
          Thread.dumpStack();
          return;
       }

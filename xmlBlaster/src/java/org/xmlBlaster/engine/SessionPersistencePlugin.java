@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      SessionPersitencePlugin.java
+Name:      SessionPersistencePlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
 import org.xmlBlaster.util.queue.StorageId;
 
 /**
- * SessionPersitencePlugin provides the persitent storage for both sessions
+ * SessionPersistencePlugin provides the persistent storage for both sessions
  * and subscriptions. 
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -45,7 +45,7 @@ import org.xmlBlaster.util.queue.StorageId;
 public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
    private final static String ME = "SessionPersistencePlugin";
-   private final static String PERSISTENCE_ID = "__persitenceId";
+   private final static String PERSISTENCE_ID = "__persistenceId";
    /** when recovering all subscriptions must be 'noInitialUpdate' because otherwise
     * we would get messages which we already got in the past
     */
@@ -178,7 +178,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             this.sessionStore = this.global.getStoragePluginManager().getPlugin(type, version, this.sessionStorageId, sessionProp);
          }
          else {
-            if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persitence for subscribe is switched of with maxEntries=0");
+            if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
          }
          QueuePropertyBase subscribeProp = new SubscribeStoreProperty(this.global, this.global.getStrippedId());   
          if (subscribeProp.getMaxEntries() > 0L) {
@@ -187,7 +187,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             this.subscribeStorageId = new StorageId(Constants.RELATING_SUBSCRIBE, this.global.getStrippedId() +"/" + this.info.getId());
             this.subscribeStore = this.global.getStoragePluginManager().getPlugin(type, version, this.subscribeStorageId, subscribeProp);
          }
-         else if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persitence for subscribe is switched of with maxEntries=0");
+         else if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
          this.isOK = true;
 
          // register before having retreived the data since needed to fill info objects with persistenceId
@@ -319,7 +319,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          subscribeQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
          QueryKeyData subscribeKeyData = (QueryKeyData)data;
          SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo.getConnectQos().getSessionName().getAbsoluteName(), uniqueId, 0L);
-         if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: putting to persitence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.toXml() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
+         if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: putting to persistence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.toXml() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
          this.subscribeStore.put(entry);
       }
@@ -353,7 +353,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       if (!qosData.getPersistentProp().getValue()) return;
 
       SubscribeEntry entry = new SubscribeEntry(keyData.toXml(), qosData.toXml(), subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName(), subscriptionInfo.getPersistenceId(), 0L);
-      if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove: removing from persitence entry '" + entry.getUniqueId() + "' secretSessionId='" + subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName());
+      if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove: removing from persistence entry '" + entry.getUniqueId() + "' secretSessionId='" + subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName());
       this.subscribeStore.remove(entry);
    }
 

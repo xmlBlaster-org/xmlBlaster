@@ -14,7 +14,7 @@ import org.xmlBlaster.util.Global;
 /**
  * The Interface which can be used to convert an object which implements the
  * interface I_Entry to a byte[] object and back. This is useful for
- * example if you want to store such entries in persitent storage like a
+ * example if you want to store such entries in persistent storage like a
  * database or a file system. It might however be used even for other
  * purposes.
  * @author laghi@swissinfo.org

@@ -192,7 +192,6 @@ public final class CbDispatchConnection extends DispatchConnection
     */
    protected final void reconnect() throws XmlBlasterException {
       // this.connectionsHandler.createDispatchConnection(address);
-this.log.error(ME, "reconnect:_driver='" + this.cbDriver.getName() + "' instance='" + this.cbDriver);
       this.cbDriver.init(glob, (CallbackAddress)address);
    }
 

@@ -31,9 +31,9 @@ import junit.framework.*;
 
 
 /**
- * Tests the persitent sessions .
- * <br />For a description of what this persitent sessions and subscriptions are
- * please read the requirement engine.persitent.session.
+ * Tests the persistent sessions .
+ * <br />For a description of what this persistent sessions and subscriptions are
+ * please read the requirement engine.persistent.session.
  * <p>
  * This is an interesting example, since it creates a XmlBlaster server instance
  * in the same JVM , but in a separate thread, talking over CORBA with it.
@@ -93,8 +93,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
 
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob, senderName, passwd); // == "<qos>...</qos>";
-         // set the persitent connection 
-         connectQos.setPersitent(this.persistent);
+         // set the persistent connection 
+         connectQos.setPersistent(this.persistent);
          // Setup fail save handling for connection ...
          Address addressProp = new Address(glob);
          addressProp.setDelay(reconnectDelay); // retry connecting every 2 sec
@@ -166,7 +166,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
       try {
          SubscribeKey key = new SubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
-         SubscribeQos qos = new SubscribeQos(this.glob); // "<qos><persitent>true</persitent></qos>";
+         SubscribeQos qos = new SubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
          qos.setPersistent(this.persistent);
          SubscribeReturnQos subscriptionId = con.subscribe(key, qos);
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
@@ -197,18 +197,18 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    }
 
 
-   public void testPersitentSessionWithStop() {
-      testPersitentSession(true);
+   public void testPersistentSessionWithStop() {
+      testPersistentSession(true);
    }
 
-   public void testPersitentSessionWithRunlevelChange() {
-      testPersitentSession(false);
+   public void testPersistentSessionWithRunlevelChange() {
+      testPersistentSession(false);
    }
 
    /**
     * TEST: <br />
     */
-   public void testPersitentSession(boolean doStop) {
+   public void testPersistentSession(boolean doStop) {
       //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       doSubscribe();
@@ -293,10 +293,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       }
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
       testSub.setUp();
-      testSub.testPersitentSessionWithStop();
+      testSub.testPersistentSessionWithStop();
       testSub.tearDown();
       testSub.setUp();
-      testSub.testPersitentSessionWithRunlevelChange();
+      testSub.testPersistentSessionWithRunlevelChange();
       testSub.tearDown();
    }
 }

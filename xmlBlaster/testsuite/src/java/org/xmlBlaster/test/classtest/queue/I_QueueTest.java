@@ -879,7 +879,7 @@ public class I_QueueTest extends TestCase {
          assertEquals(me+": Wrong number of entries in peekLowest return ", currentEntries, list.size());
          assertEquals(me+": Wrong number of entries in queue after peekLowest invocation ", entriesLeft, queue.getNumOfEntries());
          assertEquals(me+": Wrong number of bytes in queue after peekLowest invocation ", size*(entriesLeft), queue.getNumOfBytes());
-         assertEquals(me+": Wrong number of persitent bytes in queue after takeLowest invocation ", size*(entriesLeft), queue.getNumOfPersistentBytes());
+         assertEquals(me+": Wrong number of persistent bytes in queue after takeLowest invocation ", size*(entriesLeft), queue.getNumOfPersistentBytes());
       }
       catch (XmlBlasterException e) {
          if (e.getErrorCode()!=ErrorCode.INTERNAL_NOTIMPLEMENTED) throw e;
@@ -889,7 +889,7 @@ public class I_QueueTest extends TestCase {
       assertEquals(me+": Wrong number of entries in takeLowest return ", currentEntries, list.size());
       assertEquals(me+": Wrong number of entries in queue after takeLowest invocation ", entriesLeft-currentEntries, queue.getNumOfEntries());
       assertEquals(me+": Wrong number of bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfBytes());
-      assertEquals(me+": Wrong number of persitent bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfPersistentBytes());
+      assertEquals(me+": Wrong number of persistent bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfPersistentBytes());
 
       for (int i=entriesLeft-currentEntries; i < entriesLeft; i++) {
          int j = entriesLeft - 1 - i;

@@ -578,7 +578,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                }
                catch (Throwable ex) {
                   handlePersistents = false;
-                  this.log.error(ME, "takeLowest: exception occured when taking the lowest entry from the persitent queue: " + ex.toString());
+                  this.log.error(ME, "takeLowest: exception occured when taking the lowest entry from the persistent queue: " + ex.toString());
                   ex.printStackTrace();
                }
            
