@@ -12,6 +12,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 //import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.key.KeyData;
 
 import junit.framework.*;
 
@@ -191,7 +192,6 @@ public class QueryKeyFactoryTest extends TestCase {
       try {
          SubscribeKey subscribeKey = new SubscribeKey(glob, "oid");
          subscribeKey.setDomain("domain");
-         subscribeKey.setQueryType("XPATH");
          subscribeKey.setQueryString("//query");
 
          System.out.println("SubscribeKey: " + subscribeKey.toXml());
@@ -200,13 +200,62 @@ public class QueryKeyFactoryTest extends TestCase {
 
          assertEquals("", "oid", key.getOid());
          assertEquals("", "domain", key.getDomain());
-         assertEquals("", "XPATH", key.getQueryType());
          assertEquals("", "//query", key.getQueryString());
+         assertEquals("", "XPATH", key.getQueryType()); // The last was setQueryString() so this is the used type
       }
       catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());
       }
       System.out.println("***QueryKeyFactoryTest: SubscribeKey [SUCCESS]");
+   }
+
+   /**
+    * Tests client side SubscribeKey. 
+    */
+   public void testExactSubscribeKey() {
+      System.out.println("***QueryKeyFactoryTest: testExactSubscribeKey ...");
+      
+      try {
+         SubscribeKey subscribeKey = new SubscribeKey(glob, "myOid", "EXACT");
+
+         assertEquals("", "myOid", subscribeKey.getOid());
+         System.out.println("SubscribeKey: " + subscribeKey.toXml());
+
+         QueryKeyData key = factory.readObject(subscribeKey.toXml());
+
+         assertEquals("", "myOid", key.getOid());
+         assertEquals("", KeyData.CONTENTMIME_DEFAULT, key.getContentMime());
+         assertEquals("", KeyData.CONTENTMIMEEXTENDED_DEFAULT, key.getContentMimeExtended());
+         assertEquals("", (String)null, key.getDomain());
+         assertEquals("", "EXACT", key.getQueryType());
+         assertEquals("", (String)null, key.getQueryString());
+      }
+      catch (Throwable e) {
+         System.out.println("Test failed: " + e.toString());
+      }
+
+      try {
+         SubscribeKey subscribeKey = new SubscribeKey(glob, "//myTag", Constants.XPATH);
+         subscribeKey.getData().setContentMime("AAA");
+         subscribeKey.getData().setContentMimeExtended("BBB");
+         subscribeKey.setDomain("CCC");
+
+         assertEquals("", "myOid", subscribeKey.getOid());
+         System.out.println("SubscribeKey: " + subscribeKey.toXml());
+
+         QueryKeyData key = factory.readObject(subscribeKey.toXml());
+
+         assertEquals("", (String)null, key.getOid());
+         assertEquals("", "AAA", key.getContentMime());
+         assertEquals("", "BBB", key.getContentMimeExtended());
+         assertEquals("", "CCC", key.getDomain());
+         assertEquals("", Constants.XPATH, key.getQueryType());
+         assertEquals("", "//myTag", key.getQueryString());
+      }
+      catch (Throwable e) {
+         System.out.println("Test failed: " + e.toString());
+      }
+      System.out.println("***QueryKeyFactoryTest: testExactSubscribeKey [SUCCESS]");
    }
 
    /**
@@ -222,6 +271,7 @@ public class QueryKeyFactoryTest extends TestCase {
          suite.addTest(new QueryKeyFactoryTest(glob, "testCdata", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testToXml", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testSubscribeKey", i));
+         suite.addTest(new QueryKeyFactoryTest(glob, "testExactSubscribeKey", i));
          /*
          suite.addTest(new QueryKeyFactoryTest(glob, "testEraseKey", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testGetKey", i));
@@ -245,6 +295,7 @@ public class QueryKeyFactoryTest extends TestCase {
          testSub.testCdata();
          testSub.testToXml();
          testSub.testSubscribeKey();
+         testSub.testExactSubscribeKey();
          /*
          testSub.testEraseKey();
          testSub.testGetKey();
