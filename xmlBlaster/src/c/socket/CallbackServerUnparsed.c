@@ -513,6 +513,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
    char *data = 0;
    size_t i;
    MsgUnit msgUnit; /* we (mis)use MsgUnit for simple transformation of the exception into a raw blob */
+   bool allocated = false;
    memset(&msgUnit, 0, sizeof(MsgUnit));
 
    for (i=0; i<msgUnitArrP->len; i++) {
@@ -525,6 +526,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
       }
       else {
          msgUnit.qos = strcpyAlloc("<qos/>");
+         allocated = true;
       }
 
       if (data == 0) {
@@ -549,6 +551,8 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
    /*ssize_t numSent =*/(void) cb->writeToSocket.funcP(cb->updateCbUserData, cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
    free(rawMsg);
+
+   if (allocated) free(msgUnit.qos);
 }
 
 static void voidSendXmlBlasterException(CallbackServerUnparsed *cb, void *socketDataHolder, XmlBlasterException *exception)
