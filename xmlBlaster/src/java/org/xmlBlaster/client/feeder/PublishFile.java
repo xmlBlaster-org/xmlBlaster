@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.4 2000/02/25 13:51:01 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.5 2000/02/25 18:48:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -24,9 +24,9 @@ import java.io.File;
  * <br />
  * Use this as a command line tool to publish files as messages to xmlBlaster.
  * Invoke examples:<br />
- * <code>
- *    jaco org.xmlBlaster.client.feeder.PublishFile -c <content-file> -k <key-file> -q <qos-file> -m <mime-type>
- * </code>
+ * <pre>
+ *    jaco org.xmlBlaster.client.feeder.PublishFile -c &lt;content-file> -k &lt;key-file> -q &lt;qos-file> -m &lt;mime-type>
+ * </pre>
  */
 public class PublishFile
 {
