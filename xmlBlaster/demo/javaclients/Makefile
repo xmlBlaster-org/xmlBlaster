@@ -24,6 +24,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/ClientGet.class \
 			$(CLASS_DIR)/ClientXml.class \
 			$(CLASS_DIR)/ClientSub.class \
+			$(CLASS_DIR)/ClientQuery.class \
 			$(CLASS_DIR)/ClientRaw.class \
 			$(CLASS_DIR)/ClientErase.class \
 			$(CLASS_DIR)/ClientPubDestination.class 
