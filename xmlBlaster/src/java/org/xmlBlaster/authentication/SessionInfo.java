@@ -110,7 +110,7 @@ public class SessionInfo implements I_Timeout
    /**
     * This is a unique instance id per JVM. 
     * <p />
-    * It is NOT the sessionId and may be published with PtP messages
+    * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
     */
    public final long getInstanceId() {
