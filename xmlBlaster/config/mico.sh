@@ -19,7 +19,7 @@ if [ ${CORBACPP_VER:=""} = "" ] ; then
 fi
 
 # check if the mico library really exists
-MICO_LIBRARY_BASE=${CORBACPP_HOME}/libs/libmico${CORBACPP_VER}
+MICO_LIBRARY_BASE=${CORBACPP_HOME}/lib/libmico${CORBACPP_VER}
 if [ ! -f ${MICO_LIBRARY_BASE}.so ] && [ ! -f ${MICO_LIBRARY_BASE}.dll ] && [ ! -f ${MICO_LIBRARY_BASE}.a ] ; then 
   ${ECHO} "${BLACK_RED}   Could not find the MICO library in ${MICO_LIBRARY_BASE}. Check CORBACPP_HOME & CORBACPP_VER $ESC"
 fi
