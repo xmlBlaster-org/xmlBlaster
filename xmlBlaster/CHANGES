@@ -44,16 +44,28 @@ BUGS:
 * PtP isDurable redelivery
 
 
-Changes for 0.79dev [xxx, xx 200x]
-==================================
-  - The protocol specification changed to allow SOCKET messages without a MessageUnit
-    Bugfix to distinguish between empty get() return and empty QoS as
-    update return
+Changes for 0.80 [Sep, xx 2002]
+===============================
+
+  - Added build targets for documentation, e.g.
+      build.sh docs
+   generates javadoc, a html representation of each source file
+   and all requirement html pages from xml
+
+  - Changed testsuite directory structure
+
+  - SOCKET protocol
+    * The protocol specification changed to allow SOCKET messages without a
+      MessageUnit
+    * Bugfix: Distinguish between empty get() return and empty QoS as
+      update return
+    * Bugfix: Fail save mode of SOCKET did not propert callback
+      Reported by Sebastian Sturm
+    * Bugfix: Message where sometimes corrupted, during writing one message
+      another mixed enbetween. Fixed with synchronize.
+      Reported by Antti Jarvinen
 
   - Renamed ServerThread.java -> EmbeddedXmlBlaster.java
-
-  - Bugfix for fail save mode of SOCKET protocol
-    (reported by Sebastian Sturm)
 
   - New ClassLoader 'XmlBlasterClassloader', which isolates the xmlBlaster from
     user environment.
