@@ -8,7 +8,6 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.jdbc.*;
-import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.UpdateQoS;
 
