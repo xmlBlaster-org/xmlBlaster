@@ -58,11 +58,7 @@ SecurityQos SecurityQosFactory::parse(const string& xmlQoS_literal)
  */
 void SecurityQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   if (log_.call()) log_.call(ME, "startElement");
-   if (log_.trace()) {
-      string txt = getStartElementAsString(name, attrs);
-      log_.trace(ME, string("startElement: ") + txt);
-   }
+   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
    if (name.compare("securityService") == 0) {
       inSecurityService_ = true;
       AttributeMap::const_iterator iter = attrs.begin();
