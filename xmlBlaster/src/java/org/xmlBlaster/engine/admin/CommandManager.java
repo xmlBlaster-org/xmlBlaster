@@ -9,6 +9,7 @@ package org.xmlBlaster.engine.admin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.I_RunlevelListener;
@@ -56,11 +57,7 @@ public final class CommandManager implements I_RunlevelListener
       this.log = this.glob.getLog("admin");
       this.ME = "CommandManager-" + this.glob.getId();
       this.sessionInfo = sessionInfo;
-      glob.addRunlevelListener(this);
-
-      initializeInternal();
-      initializeExternal();
-      log.info(ME, "Administration manager is ready");
+      glob.getRunlevelManager().addRunlevelListener(this);
    }
 
    /**
@@ -202,13 +199,25 @@ public final class CommandManager implements I_RunlevelListener
    }
 
    /**
-    * Invoked on run level change, see Constants.RUNLEVEL_HALTED and Constants.RUNLEVEL_RUNNING
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
     * <p />
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      if (to < from) {
-         if (to == Constants.RUNLEVEL_HALTED) {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+            initializeInternal();
+            initializeExternal();
+            log.info(ME, "Administration manager is ready");
+         }
+      }
+
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
             shutdown(force);
          }
       }

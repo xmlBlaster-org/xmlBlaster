@@ -10,6 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.I_RunlevelListener;
+import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -98,9 +99,12 @@ public final class ClusterManager implements I_RunlevelListener
       this.sessionInfo = sessionInfo;
       this.log = this.glob.getLog("cluster");
       this.ME = "ClusterManager-" + this.glob.getId();
-      glob.addRunlevelListener(this);
+      glob.getRunlevelManager().addRunlevelListener(this);
    }
 
+   /**
+    * To initialize ClusterNode we need the addresses from the protocol drivers.
+    */
    public void postInit() throws XmlBlasterException {
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
@@ -184,10 +188,10 @@ public final class ClusterManager implements I_RunlevelListener
    /**
     * Initialize ClusterNode object, containing all informations about myself. 
     */
-   private void initClusterNode() {
+   private void initClusterNode() throws XmlBlasterException {
       this.myClusterNode = new ClusterNode(this.glob, this.glob.getNodeId(), this.sessionInfo);
       this.addClusterNode(this.myClusterNode);
-      I_Driver[] drivers = glob.getPublicProtocolDrivers();
+      I_Driver[] drivers = glob.getProtocolManager().getPublicProtocolDrivers();
       for (int ii=0; ii<drivers.length; ii++) {
          I_Driver driver = drivers[ii];
          Address addr = new Address(glob, driver.getProtocolId(), glob.getId());
@@ -198,8 +202,10 @@ public final class ClusterManager implements I_RunlevelListener
       if (drivers.length > 0) {
          if (log.TRACE) log.trace(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
       }
-      else
+      else {
+         Thread.currentThread().dumpStack();
          log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster (node=" + getId() + ") address available");
+      }
    }
 
    /**
@@ -647,13 +653,25 @@ public final class ClusterManager implements I_RunlevelListener
    }
 
    /**
-    * Invoked on run level change, see Constants.RUNLEVEL_HALTED and Constants.RUNLEVEL_RUNNING
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
     * <p />
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      if (to < from) {
-         if (to == Constants.RUNLEVEL_HALTED) {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (glob.useCluster() == false)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
+            postInit(); // Assuming the protocol drivers are initialized to deliver their addresses
+         }
+      }
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
             shutdown(force);
          }
       }
