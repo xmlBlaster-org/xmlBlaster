@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.50 2000/05/24 14:15:32 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.51 2000/05/24 14:40:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,15 +54,35 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.50 $
+ * <p />
+ * NOTE: JacORB 1.1 does not release the listener thread and the poa threads of the callback server
+ * on orb.shutdown().<br />
+ * Therefor we recycle the ORB and POA instance to avoid a thread leak.
+ * The drawback is that a client for the bug being can't change the orb behavior after the
+ * first time the ORB is created.<br />
+ * This will be fixed as soon as possible.
+ *
+ * @version $Revision: 1.51 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
 {
    private static final String ME = "CorbaConnection";
    protected String[] args = null;
-   protected org.omg.CORBA.ORB orb = null;
-   protected org.omg.PortableServer.POA rootPOA = null;
+
+   // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
+   // Thread leak from JacORB 1.1, the threads
+   //   - JacORB Listener Thread
+   //   - JacORB ReplyReceptor
+   //   - JacORB Request Receptor
+   // are never released on orb.shutdown() and rootPoa.deactivate()
+   //
+   // So we use a static orb and poa and recycle it.
+   // The drawback is that a running client can't change the
+   // orb behavior
+   static protected org.omg.CORBA.ORB orb = null;
+   static protected org.omg.PortableServer.POA rootPOA = null;
+
    protected NamingContext nameService = null;
    protected AuthServer authServer = null;
    protected Server xmlBlaster = null;
@@ -115,7 +135,8 @@ public class CorbaConnection implements ServerOperations
    public CorbaConnection()
    {
       args = new String[0];  // dummy
-      orb = org.omg.CORBA.ORB.init(args, null);
+      if (orb == null) // Thread leak !!!
+         orb = org.omg.CORBA.ORB.init(args, null);
    }
 
 
@@ -135,7 +156,8 @@ public class CorbaConnection implements ServerOperations
    {
       args = arg;
       Property.addArgs2Props(Property.getProps(), args); // enforce that the args are added to the xmlBlaster.properties hash table
-      orb = org.omg.CORBA.ORB.init(args, null);
+      if (orb == null) // Thread leak !!!
+         orb = org.omg.CORBA.ORB.init(args, null);
    }
 
 
@@ -249,7 +271,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Accessing the xmlBlaster handle. 
+    * Accessing the xmlBlaster handle.
     * For internal use, throws an ordinary Exception if xmlBlaster==null
     * We use this for similar handling as org.omg exceptions.
     * @return Server
@@ -639,16 +661,18 @@ public class CorbaConnection implements ServerOperations
          else
             Log.warning(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
          shutdownCallbackServer();
-         orb.shutdown(true);
-         orb = null;
+         // Thread leak !!!
+         // orb.shutdown(true);
+         // orb = null;
          return false;
       }
 
       try {
          authServer.logout(xmlBlaster);
          shutdownCallbackServer();
-         orb.shutdown(true);
-         orb = null;
+         // Thread leak !!!
+         // orb.shutdown(true);
+         // orb = null;
          xmlBlaster = null;
          return true;
       } catch(XmlBlasterException e) {
@@ -659,8 +683,9 @@ public class CorbaConnection implements ServerOperations
       }
 
       shutdownCallbackServer();
-      orb.shutdown(true);
-      orb = null;
+      // Thread leak !!!
+      // orb.shutdown(true);
+      // orb = null;
       xmlBlaster = null;
       return false;
    }
@@ -724,12 +749,15 @@ public class CorbaConnection implements ServerOperations
          callback = null;
       }
 
+      // Thread leak !!!
+      /*
       if (rootPOA != null) {
          try {
             rootPOA.the_POAManager().deactivate(true, true);
          } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
          rootPOA = null;
       }
+      */
       Log.info(ME, "The callback server is shutdown.");
    }
 
