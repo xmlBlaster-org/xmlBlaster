@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.46 $
+# $Revision: 1.47 $
 #-----------------------------------------------------------
 
 
@@ -147,10 +147,26 @@ else
    ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'      $ESC"
 fi
 
+if [ ${#1} == 0 ]; then
+    source ${XMLBLASTER_HOME}/config/jacorb.sh
+    source ${XMLBLASTER_HOME}/config/mico.sh
+    ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
+    ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
+else
 
-source ${XMLBLASTER_HOME}/config/jacorb.sh
-source ${XMLBLASTER_HOME}/config/mico.sh
-#source ${XMLBLASTER_HOME}/config/orbacus.sh
+    if [ ${1} == "orbacus" ]; then
+	source ${XMLBLASTER_HOME}/config/orbacus.sh
+	${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
+	${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
+    else 
+        ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
+	source ${XMLBLASTER_HOME}/config/jacorb.sh
+	source ${XMLBLASTER_HOME}/config/mico.sh
+	${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
+	${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
+    fi
+fi
+
 
 #-------- Checking jikes version -
 # use jikes 1.06 or better

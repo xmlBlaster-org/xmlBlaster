@@ -1,1 +1,1 @@
-java $@ -ORBconfig ~/orb.cfg
+java -Dorg.omg.CORBA.ORBClass=com.ooc.CORBA.ORB -Dorg.omg.CORBA.ORBSingletonClass=com.ooc.CORBA.ORBSingleton $@ -ORBconfig ${XMLBLASTER_HOME}/config/orbacus.cfg
