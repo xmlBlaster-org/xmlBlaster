@@ -70,8 +70,9 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->responseMutex = PTHREAD_MUTEX_INITIALIZER;
    xa->responseCond = PTHREAD_COND_INITIALIZER;
 #  else
-   /* On Linux gcc: "parse error before '{' token" when initializing directly,
-      so we do a hack here: */
+   /* On Linux gcc & SUN CC:
+        "parse error before '{' token"
+      when initializing directly, so we do a hack here: */
    {
       pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
       xa->responseMutex = mutex;
