@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.7 2002/04/26 21:33:28 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.8 2002/04/30 16:42:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
@@ -68,7 +69,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
          }
          Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
          Log.info(ME, new String(msgUnit.content));
-         ret[ii] = "<qos><state>OK</state></qos>";
+         ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
       }
       Log.info(ME, "#================== BlasterCallback update END ===============");
       return ret;

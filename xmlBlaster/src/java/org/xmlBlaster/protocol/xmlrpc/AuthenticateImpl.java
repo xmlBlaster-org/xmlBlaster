@@ -15,6 +15,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.jutils.text.StringHelper;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
@@ -89,7 +90,7 @@ public class AuthenticateImpl
    {
    if (Log.CALL) Log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
       authenticate.disconnect(sessionId, (new DisconnectQos()).toXml());
-      return "<qos><state>OK</state></qos>";
+      return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
    /**
@@ -130,7 +131,7 @@ public class AuthenticateImpl
       if (Log.CALL) Log.call(ME, "Entering logout()");
       authenticate.disconnect(sessionId, qos_literal);
       if (Log.CALL) Log.call(ME, "Exiting logout()");
-      return "<qos><state>OK</state></qos>";
+      return Constants.RET_OK;
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.7 2002/04/26 21:33:28 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.8 2002/04/30 16:42:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -305,7 +305,7 @@ public class ClientRawSecurity
             Log.plain(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
             Log.plain(ME, new String(msgUnit.content));
             Log.plain(ME, "================== BlasterCallback update END ===============\n");
-            ret[ii] = "<qos><state>OK</state></qos>";
+            ret[ii] = "<qos><state id='OK'/></qos>";
          }
          return ret;
       }

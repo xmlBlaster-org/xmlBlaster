@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.6 2002/03/17 17:10:31 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.7 2002/04/30 16:41:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -96,8 +96,8 @@ module clientIdl
        *
        * @param sessionId To identify server
        * @param msgUnit Contains a sequence of 1 - n MessageUnit structs
-       * @return For every message "<qos><state>OK</state></qos>"
-       *         If some messages failed: "<qos><state>ERROR</state></qos>"
+       * @return For every message "<qos><state id='OK'/></qos>"
+       *         If some messages failed: "<qos><state id='ERROR'/></qos>"
        * @exception On severe problem or on authentication deny
        *            an XmlBlasterException is thrown, all messages
        *            of this array are treated as lost

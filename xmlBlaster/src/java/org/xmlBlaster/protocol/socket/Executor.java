@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.16 2002/04/29 09:44:00 ruff Exp $
+Version:   $Id: Executor.java,v 1.17 2002/04/30 16:41:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -214,7 +214,7 @@ public abstract class Executor implements ExecutorBase
             executeResponse(receiver, response);
          }
          else if (Constants.PING.equals(receiver.getMethodName())) {
-            executeResponse(receiver, "<qos><state>OK</state></qos>");
+            executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>"
          }
          else if (Constants.SUBSCRIBE.equals(receiver.getMethodName())) {
             MessageUnit[] arr = receiver.getMessageArr();
@@ -229,7 +229,7 @@ public abstract class Executor implements ExecutorBase
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
             // !!! TODO better return value?
-            executeResponse(receiver, "<qos><state>OK</state></qos>");
+            executeResponse(receiver, Constants.RET_OK);
          }
          else if (Constants.ERASE.equals(receiver.getMethodName())) {
             MessageUnit[] arr = receiver.getMessageArr();

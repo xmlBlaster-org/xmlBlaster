@@ -209,8 +209,7 @@ namespace org { namespace xmlBlaster {
          offset += extraOffset;
          sb = offset + "<qos>"; //  <!-- UpdateQoS -->";
          if (state_ != "") {
-            sb += offset + "   <state>" + offset + "      " + state_;
-            sb += offset + "   </state>";
+            sb += offset + "   <state id='" + state_ + "'/>";
          }
          if (sender_ != "") {
             sb += offset + "   <sender>" + offset + "      " + sender_;

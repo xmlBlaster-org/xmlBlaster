@@ -528,6 +528,18 @@
       &lt;/state>
    &lt;/clusternode>
       </pre>
+      The return QoS value of a published message is if everything is OK as usual
+      <pre>
+   &lt;qos>&lt;state id='OK'/>&lt;/qos>
+      </pre>
+      If the message can't be forwarded to the master node, it is tailed back
+      by your local xmlBlaster node and flushed on reconnect to the master.
+      The publish return QoS indicates the situation with a "FORWARD_WARNING"
+      response:
+      <pre>
+   &lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos>
+      </pre>
+
    </example>
 
    <configuration where="server">
@@ -644,7 +656,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -136,7 +136,7 @@ namespace org { namespace xmlBlaster {
                //             forCache = cache_.update(updateQoS.getSubscriptionId(), 
                //                                      updateKey.toXml(), msgUnit.content);
                //          }
-               string oneRes = "<qos><state>OK</state></qos>";
+               string oneRes = "<qos><state id='OK'/></qos>";
                if (!forCache) {
                   if (boss_) {
                      oneRes = boss_->update(sessionId, *updateKey,
@@ -153,7 +153,7 @@ namespace org { namespace xmlBlaster {
             } 
             catch (serverIdl::XmlBlasterException &e) {
                log_.error(me(), string(e.reason) + " message is on error state: " + updateKey->printOn());
-               string oneRes = "<qos><state>ERROR</state></qos>";
+               string oneRes = "<qos><state id='ERROR'/></qos>";
                CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
                (*res)[i] = str;
             }

@@ -42,9 +42,7 @@ public interface I_CallbackDriver
     *         interpreted as OK
     * <pre>
     *  &lt;qos>
-    *     &lt;state>       &lt;!-- Client processing state -->
-    *        OK            &lt;!-- OK | ERROR -->
-    *     &lt;/state>
+    *     &lt;state id='OK'/>  &lt;!-- Client processing state OK | ERROR ... see Constants.java -->
     *  &lt;/qos>
     * </pre>
     * @exception On callback problems you need to throw a XmlBlasterException e.id="CallbackFailed",

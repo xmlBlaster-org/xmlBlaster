@@ -150,9 +150,8 @@ xml version='1.0' encoding='ISO-8859-1' ?>
    <!-- QoS when updating messages and for return values of get() method -->
    <update>
       <qos>
-         <state>          <!-- Server state -->
-            EXPIRED       <!-- OK | EXPIRED | ERASED -->
-         </state>
+         <state id='EXPIRED'/>     <!-- Server state -->
+                          <!-- OK | EXPIRED | ERASED -->
 
          <sender>         <!-- The publisher login name of this message -->
             Phillipe
@@ -186,9 +185,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
    <!-- From callback server returned QoS when updating messages (return values of update() method) -->
    <update>
       <qos>
-         <state>          <!-- Server state -->
-            OK            <!-- OK | ERROR -->
-         </state>
+         <state id='OK'/>   <!-- Server state OK | ERROR -->
       </qos>
    </update>
 

@@ -3,7 +3,7 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.3 2002/04/19 11:00:18 ruff Exp $
+Version:   $Id: PublishLenChecker.java,v 1.4 2002/04/30 16:41:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -16,6 +16,7 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.Global;
 
 
@@ -162,7 +163,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
          }
          else {
             log.info(ME, "Message access OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
-            return "OK";  // message is accepted
+            return Constants.STATE_OK; // "OK" message is accepted
          }
       }
       catch (XmlBlasterException e) {

@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.21 2002/04/29 09:42:26 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.22 2002/04/30 16:41:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -360,7 +360,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       try {
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.DISCONNECT, sessionId);
-         parser.addQos("<qos><state>OK</state></qos>");
+         parser.addQos(Constants.RET_OK); // "<qos><state id='OK'/></qos>"
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          getCbReceiver().execute(parser, ONEWAY);
@@ -647,7 +647,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       try {
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, null); // sessionId not necessary
-         parser.addQos(""); // ("<qos><state>OK</state></qos>");
+         parser.addQos(""); // ("<qos><state id='OK'/></qos>");
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          return (String)response;
       }
@@ -670,14 +670,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (Log.CALL) Log.call(ME, "Entering update()");
       if (cbClient == null) {
          Log.warn(ME, "Ignoring callback message, client is not interested in it");
-         return "<qos><state>OK</state></qos>";
+         return "<qos><state id='OK'/></qos>";
       }
       if (arr != null) {
          for (int ii=0; ii<arr.length; ii++) {
             cbClient.update(getLoginName(), arr[ii].getXmlKey(), arr[ii].getContent(), arr[ii].getQos());
          }
       }
-      return "<qos><state>OK</state></qos>";
+      return "<qos><state id='OK'/></qos>";
    }
     */
 

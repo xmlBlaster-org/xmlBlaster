@@ -1130,7 +1130,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       }
 
-      return "<qos><state>OK</state></qos>";
+      return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
    /*
@@ -1277,6 +1277,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
+    * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
+    *            id="TryingReconnect" if we are in fail save mode and polling for a connection,
+    #            your message is tailed back and flushed on reconnect
+    * @see #handleConnectionException(ConnectionException)
     */
    public final String publish(MessageUnit msgUnit) throws XmlBlasterException
    {

@@ -3,7 +3,7 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.13 2002/03/18 00:29:38 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.14 2002/04/30 16:41:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -75,9 +75,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     *         interpreted as OK
     * <pre>
     *  &lt;qos>
-    *     &lt;state>       &lt;!-- Client processing state -->
-    *        OK            &lt;!-- OK | ERROR -->
-    *     &lt;/state>
+    *     &lt;state id='OK'/>
     *  &lt;/qos>
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate

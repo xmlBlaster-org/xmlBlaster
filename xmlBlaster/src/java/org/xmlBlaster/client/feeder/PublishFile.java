@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.17 2001/05/06 07:56:53 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.18 2002/04/30 16:41:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.engine.helper.Constants;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.JUtilsException;

@@ -3,7 +3,7 @@ Name:      CallbackNativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using native interface.
-Version:   $Id: CallbackNativeDriver.java,v 1.5 2002/03/18 00:29:33 ruff Exp $
+Version:   $Id: CallbackNativeDriver.java,v 1.6 2002/04/30 16:41:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -65,7 +66,7 @@ public class CallbackNativeDriver implements I_CallbackDriver
 
       String[] ret = new String[msg.length];
       for (int ii=0; ii<ret.length; ii++)
-         ret[ii] = "<qos><state>OK</state></qos>";
+         ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
       return ret;
    }
 

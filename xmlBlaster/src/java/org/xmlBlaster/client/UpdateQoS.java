@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.22 2002/04/26 21:31:46 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.23 2002/04/30 16:41:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -23,7 +23,7 @@ import org.xml.sax.Attributes;
  * Example:
  * <pre>
  *   &lt;qos> &lt;!-- UpdateQoS -->
- *     &lt;state>OK&lt;/state>
+ *     &lt;state id='OK'/>
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;subscriptionId>subscriptionId:__sys__TotalMem&lt;/subscriptionId>
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
@@ -204,7 +204,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <state> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               if( attrs.getQName(i).equalsIgnoreCase("id") ) {
+                  state = attrs.getValue(i).trim();
+                  break;
+               }
             }
             // if (Log.TRACE) Log.trace(ME, "Found state tag");
          }
@@ -344,8 +347,6 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if(name.equalsIgnoreCase("state")) {
          inState = false;
-         state = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message state = " + state);
          character.setLength(0);
          return;
       }
@@ -508,7 +509,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       buf.append("\n<qos>");
 
       if (!org.xmlBlaster.engine.helper.Constants.STATE_OK.equals(state))
-         buf.append("\n <state>").append(state).append("</state>");
+         buf.append("\n <state id='").append(state).append("'/>");
 
       buf.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
 
@@ -545,9 +546,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    public static void main( String[] args ) throws XmlBlasterException
    {
       String xml = "<qos>\n" +
-                   "   <state>\n" +
-                   "      OK\n" +
-                   "   </state>\n" +
+                   "   <state id='OK'/>\n" +
                    "   <sender>\n" +
                    "      Joe\n" +
                    "   </sender>\n" +

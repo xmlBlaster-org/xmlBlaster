@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.6 2002/04/01 11:50:42 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.7 2002/04/30 16:42:00 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -103,7 +103,7 @@ public:
                UpdateQoS &updateQoS) {
       if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
       numReceived_++;
-      return "<qos><state>OK</state></qos>";
+      return "<qos><state id='OK'/></qos>";
    }
 
    /**

@@ -167,9 +167,7 @@ sub dump {
 #            bless( do{\(my $o = 'YWZkYXMKdGVzdAo=')}, 'Frontier::RPC2::Base64' ),
 #            '
 #<qos>
-#   <state>
-#      OK
-#   </state>
+#   <state id='OK'/>
 #   <sender>
 #      afdas
 #   </sender>
@@ -187,9 +185,7 @@ sub dump {
 #            bless( do{\(my $o = 'SEVMTE8gIQ==')}, 'Frontier::RPC2::Base64' ),
 #            '
 #<qos>
-#   <state>
-#      OK
-#   </state>
+#   <state id='OK'/>
 #   <sender>
 #      afdas
 #   </sender>

@@ -46,7 +46,7 @@
          <li>Reject the message<br />
             All other returned strings will reject the message and send
             the given string back to the publisher. For example a return value
-            like "REJECTED" will be delivered as "&lt;qos>&lt;state>REJECTED&lt;/state>&lt;/qos>"
+            like "REJECTED" will be delivered as "&lt;qos>&lt;state id='REJECTED'/>&lt;/qos>"
             to the publisher, which is the return value of the publish() invocation.</li>
          <li>Modify the message<br />
             The plugin may manipulate the content of the message if desired,
@@ -78,7 +78,7 @@ As the message is too long for our plugin, the plugin.intercept() method
 returns "TOOLONG".
 xmlBlaster rejects the messages and returns for this publish()
 
-   <qos><state>TOOLONG</state><qos>
+   <qos><state id='TOOLONG'/><qos>
 
 If you return strings containing '<' characters, please
 embrace your return value with a CDATA section.
@@ -98,7 +98,7 @@ embrace your return value with a CDATA section.
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

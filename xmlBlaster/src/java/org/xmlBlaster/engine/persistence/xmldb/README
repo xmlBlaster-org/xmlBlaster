@@ -1,4 +1,4 @@
-$Id: README,v 1.7 2002/03/05 09:45:44 goetzger Exp $
+$Id: README,v 1.8 2002/04/30 16:41:38 ruff Exp $
 
 Integration of Xindice (former dbXML) into xmlBlaster as persistence plugin
 ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@ TRAPS/BUGS: What is with BLOBs?
             Linux SuSE 7.2                      1.3.1_02 HotSpot(TM) (build 1.3.1_02-b02, mixed mode) // needs: 'ulimit -s 2048'
             Linux SuSE 7.2/3                    1.4.0 HotSpot(TM) (build 1.4.0-b92, mixed mode)
             9000/785/B2000 HP-UX B.11.00 A      JavaVM-1.3.0.01
-						1.4.0.00-Beta1 (build 1.4 1.4.0.00-Beta1-011205-14:15-PA_RISC2.0 PA2.0, mixed mode)
+                                                1.4.0.00-Beta1 (build 1.4 1.4.0.00-Beta1-011205-14:15-PA_RISC2.0 PA2.0, mixed mode)
 
 
 TODO:       Need to finish Test-case! (need to implemet CLASSLOADER before)
@@ -225,9 +225,7 @@ See another example here:
         </content>
 
            <qos> <!-- UpdateQoS -->
-              <state>
-                 OK
-              </state>
+              <state id='OK'/>
               <sender>
                  PublishFile
               </sender>

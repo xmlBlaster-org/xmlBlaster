@@ -39,7 +39,7 @@ public:
       print_msg(cout,messageUnitArr[i]);
       cout << endl;
 
-      CORBA::String_var str = CORBA::string_dup("<qos><state>OK</state></qos>");
+      CORBA::String_var str = CORBA::string_dup("<qos><state id='OK'/></qos>");
       (*res)[i] = str;
     }
     return res;

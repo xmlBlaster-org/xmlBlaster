@@ -544,7 +544,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                // Check with MsgQueueEntry.getUpdateQoS() !!!
                StringBuffer buf = new StringBuffer();
                buf.append("\n<qos>\n");
-               buf.append("   <state>OK</state>\n");    // OK | EXPIRED | ERASED
+               buf.append("   <state id='").append(Constants.STATE_OK).append("'/>\n");    // OK | EXPIRED | ERASED
                buf.append("   <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>\n");
                buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
 
@@ -937,8 +937,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                            if (e.id.equals("ClusterManager.PluginFailed")) {
                               useCluster = false;
                            }
-                           else
+                           else {
+                              e.printStackTrace();
                               throw e;
+                           }
                         }
                      }
                      

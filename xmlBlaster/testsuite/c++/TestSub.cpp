@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.6 2002/04/01 11:50:42 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.7 2002/04/30 16:42:00 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -259,7 +259,7 @@ private:
       messageArrived_ = true;
 
       log_.info(me(), "Success, message arrived as expected.");
-      return "<qos><state>OK</state></qos>";
+      return "<qos><state id='OK'/></qos>";
    }
 
 

@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.23 2002/04/19 10:59:39 ruff Exp $
+Version:   $Id: Parser.java,v 1.24 2002/04/30 16:41:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -65,7 +65,7 @@ import java.util.Vector;
  *  |        85**R**17711*publish***<qos></qos>*<key oid='hello'/>*20*Hello world response|
  *
  *  Testing a QoS return value
- *  |        59**R**17711*get***<qos><state>OK</state></qos>**0*|
+ *  |        58**R**17711*get***<qos><state id='OK'/></qos>**0*|
  *
  *  Testing two qos/key/content
  *  |       100**I**17711*publish*oxf6hZs**<qos/>*<key oid='x1'/>*6*Hello1<qos/>*<key oid='x2'/>*6*Hello2|
@@ -1116,7 +1116,7 @@ public class Parser
             //parser.setSessionId("");
             parser.setChecksum(false);
             parser.setCompressed(false);
-            parser.addQos("<qos><state>OK</state></qos>");
+            parser.addQos("<qos><state id='OK'/></qos>");
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
