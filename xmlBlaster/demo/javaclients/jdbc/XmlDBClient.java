@@ -9,8 +9,6 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.jdbc.*;
 import org.xmlBlaster.util.pool.jdbc.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.UpdateQoS;
 
@@ -26,63 +24,39 @@ import java.io.*;
 public class XmlDBClient implements I_Callback
  {
 
-   private Server          xmlBlaster = null;
    private static String   ME = "XmlDBClient";
-   private static String   adapter = "XmlDBAdapter";
-   private static String   passwd = "some";
-   private String          publishOid = "XmlDBClient";
-   private String          xmlKey = "";
    private CorbaConnection corbaConnection = null;
-   private static String   qos = "" + "<qos>"
-                                 + " <destination queryType='EXACT'>"
-                                 + adapter + " </destination>" + "</qos>";
-
-   private String          args[];
    private String          results;
    private boolean         done = false;
 
    /**
     * Constructor declaration
-    *
-    *
-    * @param args
-    *
-    * @see
     */
    public XmlDBClient(String args[]) throws JUtilsException
     {
-      this.args = args;
       try {
          XmlBlasterProperty.init(args);
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-
-      initBlaster();
-      query();
+      initBlaster(args);
+      query(args);
       waitOnResults();
    }
 
+
    /**
-    * Method declaration
-    *
-    *
-    * @see
     */
    private void waitOnResults()
     {
-      while (!done)
-       {
-         try
-          {
+      while (!done)  {
+         try {
             Thread.sleep(500);
          }
          catch (InterruptedException e) {}
-
-         System.out.println("Waiting...");
+         Log.plain("Waiting...");
       }
-
-      System.out.println(results);
+      Log.plain(results);
       logout();
    }
 
@@ -90,58 +64,44 @@ public class XmlDBClient implements I_Callback
    /**
     * CallBack of xmlBlaster
     */
-   public void update(String cust, UpdateKey key, byte[] content,
-                      UpdateQoS updateQos)
+   public void update(String cust, UpdateKey key, byte[] content, UpdateQoS updateQos)
     {
       results = new String(content);
       done = true;
-
    }
+
 
    /**
-    * find xmlBlaster server, login and subscribe
+    * Find xmlBlaster server and login. 
     */
-   public void initBlaster()
-    {
-      try
-       {
-
-         // ----------- Find orb ----------------------------------
-         corbaConnection = new CorbaConnection(args);
-
-         // ----------- Login to xmlBlaster -----------------------
-         xmlBlaster = corbaConnection.login(ME, passwd, null, this);
-
+   public void initBlaster(String[] args)
+   {
+      try {
+         corbaConnection = new CorbaConnection(args); // find ORB
+         String loginName = Args.getArg(args, "-name", ME);
+         String passwd = Args.getArg(args, "-passwd", "secret");
+         corbaConnection.login(loginName, passwd, null, this);
+         Log.info(ME, "Connected to xmlBlaster as '" + loginName + "'");
       }
-      catch (Exception e)
-       {
+      catch (Exception e) {
          e.printStackTrace();
+         Log.exit(ME, "Login to xmlBlaster failed");
       }
    }
+
 
    /**
     * unsubsrcibe and logout from xmlBlaster
     */
    public void logout()
-    {
-      if (xmlBlaster == null)
-       {
-         return;
-
-         // ----------- Logout --------------------------------------
-      }
-
-      Log.trace(ME, "Logout ...");
+   {
+      if (corbaConnection == null) return;
+      Log.info(ME, "Logout ...");
       corbaConnection.logout();
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @param args
-    *
-    * @see
+    * @param args Command line
     */
    public static void main(String args[])
    {
@@ -153,56 +113,32 @@ public class XmlDBClient implements I_Callback
    }
 
    /**
-    * Method declaration
-    *
-    *
-    * @see
+    * Send the SQL message. 
     */
-   private void query() throws JUtilsException
-    {
-      String   user = Args.getArg(args, "-user", "postgres");
-      String   pass = Args.getArg(args, "-pass", "");
-      String   type = Args.getArg(args, "-type", "query");
-      String   limit = Args.getArg(args, "-limit", "50");
-      String   confirm = Args.getArg(args, "-confirm", "true");
-      String   queryStr = Args.getArg(args, "-query",
-                                      "select * from intrauser");
-      String   url = Args.getArg(args, "-url",
-                                 "jdbc:postgresql://24.3.47.214/postgres");
-      String   query = "" + "<database:adapter>" + " <database:url>" + url
-                       + "</database:url>" + " <database:username>" + user
-                       + "</database:username>" + " <database:password>"
-                       + pass + "</database:password>"
-                       + " <database:interaction type='" + type + "'/>"
-                       + " <database:command>" + queryStr
-                       + "</database:command>"
-                       + " <database:connectionlifespan ttl='1'/>"
-                       + " <database:rowlimit max='" + limit + "'/>"
-                       + " <database:confirmation confirm='" + confirm
-                       + "'/>" + "</database:adapter>";
+   private void query(String[] args) throws JUtilsException
+   {
+      XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(
+         Args.getArg(args, "-user", "postgres"),
+         Args.getArg(args, "-pass", ""),
+         Args.getArg(args, "-url",  "jdbc:postgresql://24.3.47.214/postgres"));
 
-      String   xmlKey = "" + "<?xml version='1.0' encoding='ISO-8859-1' ?>"
-                        + "<key oid='XmlDBClient' contentMime='text/plain'>"
-                        + "</key>";
+      boolean confirm = Args.getArg(args, "-confirm", true);
+      String type = Args.getArg(args, "-type", "query");
+      int limit = Args.getArg(args, "-limit", 50);
+      String queryStr = Args.getArg(args, "-query", "select * from intrauser");
 
-      try
-       {
-         MessageUnit mu = new MessageUnit(xmlKey, query.getBytes(), qos);
-         String      oid = xmlBlaster.publish(mu);
+      wrap.init(type, limit, confirm, queryStr);
 
-         System.out.println("Published query...");
-         System.out.println("qos =>" + qos);
+      try {
+         String oid = corbaConnection.publish(wrap.toMessage());
+         Log.info(ME, "Published query ...");
       }
-      catch (Exception e) {}
+      catch (Exception e) { Log.error(ME, e.getMessage()); }
+
+      if (!queryStr.equalsIgnoreCase("query") && !confirm) {
+         logout();
+         Log.exit(ME, "Done, no waiting on confirmation");
+      }
    }
 
 }
-
-
-
-
-
-
-
-/*--- formatting done in "My Own Convention" style on 02-21-2000 ---*/
-
