@@ -86,13 +86,14 @@ public class HttpPushHandler
     * @param sessionId The browser id
     * @param loginName For debugging only
     */
-   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId, String loginName)
+   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId, String loginName, boolean isApplet)
                                throws ServletException, IOException
    {
       this.log = org.xmlBlaster.util.Global.instance().getLog("http");
       this.req = req;
       this.res = res;
       this.sessionId = sessionId;
+      this.isApplet = isApplet;
       String browserId = req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
       this.ME  = "HttpPushHandler-" + browserId;
 
@@ -472,13 +473,13 @@ public class HttpPushHandler
       return retStr.toString();
    }
 
-
    /**
     * Calls the message method in the parentframe of the callback frame.
     * <p />
     * See callback.js message() method.
     * @param text This must be Javascript code (usually a message string)
     */
+    /*
    public void message( String text )
    {
       try {
@@ -493,7 +494,7 @@ public class HttpPushHandler
          log.error(ME,e.toString());
       }
    }
-
+     */
 
    /**
     * Calls the error method in the parentframe of the callback frame.
@@ -501,6 +502,7 @@ public class HttpPushHandler
     * See callback.js error() method, which shows an alert window.
     * @param text This must be Javascript code (usually an error string)
     */
+    /*
    public void error(String text)
    {
       try {
@@ -515,7 +517,7 @@ public class HttpPushHandler
          log.error(ME,e.toString());
       }
    }
-
+    */
 
    /**
     * calls the ping method in the parentframe of the callback frame

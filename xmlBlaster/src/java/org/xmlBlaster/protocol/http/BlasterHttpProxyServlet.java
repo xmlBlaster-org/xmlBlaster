@@ -176,7 +176,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
             log.info(ME, "Login action");
 
-            HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId, loginName);
+            boolean isApplet = Util.getParameter(req, "xmlBlaster.isApplet", false);
+            HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId, loginName, isApplet);
 
             ProxyConnection proxyConnection = BlasterHttpProxy.getNewProxyConnection(glob, loginName, passwd);
             if (!session.isNew()) {
