@@ -175,12 +175,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (glob.getId() != null)
          this.maxSessions = glob.getProperty().get("session.maxSessions["+glob.getId()+"]", this.maxSessions);
 
-      if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
-      String type = prop.getType();
-      String version = prop.getVersion();
-      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version,
-                           new StorageId(Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
-      this.subjectQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      this.subjectQueue = createSubjectQueue(prop);
 
       if (isDead()) {
          this.authenticate.addLoginName(this); // register myself
@@ -189,6 +184,16 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       this.state = ALIVE;
 
       if (log.TRACE) log.trace(ME, "Transition from UNDEF to ALIVE done");
+   }
+
+   private I_Queue createSubjectQueue(CbQueueProperty prop) throws XmlBlasterException {
+      if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
+      String type = prop.getType();
+      String version = prop.getVersion();
+      I_Queue queue = glob.getQueuePluginManager().getPlugin(type, version,
+                           new StorageId(Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
+      queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      return queue;
    }
 
    /**
@@ -318,7 +323,76 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * </p>
     */
    public final void setCbQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
-      this.subjectQueue.setProperties(prop);
+      CbQueueProperty origProp = (CbQueueProperty)this.subjectQueue.getProperties();
+      if (origProp == null) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".setCbQueueProperty()", "Existing subject queue properties are null");
+      }
+
+      if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
+
+      synchronized(this) {
+         if (prop.getTypeVersion().equals(origProp.getTypeVersion())) {
+            this.subjectQueue.setProperties(prop);
+            return;
+         }
+
+         // TODO: Extend CACHE queue to handle reconfigurations hidden so we don't need to do anything here
+
+         if (!this.subjectQueue.isTransient()) {
+            I_Queue newQueue = createSubjectQueue(prop);
+            if (newQueue.isTransient()) {
+               log.info(ME, "Reconfiguring subject queue: Copying " + this.subjectQueue.getNumOfEntries() + " entries from old " + origProp.getType() + " queue to " + prop.getTypeVersion() + " queue");
+               java.util.ArrayList list = null;
+               int lastSize = -99;
+               while (this.subjectQueue.getNumOfEntries() > 0) {
+
+                  try {
+                     list = this.subjectQueue.peek(-1, -1);
+                     if (this.subjectQueue.getNumOfEntries() == lastSize) {
+                        log.error(ME, "PANIC: " + this.subjectQueue.getNumOfEntries() + " entries from old queue " + this.subjectQueue.getStorageId() + " can't be copied, giving up!");
+                        break;
+                     }
+                     lastSize = (int)this.subjectQueue.getNumOfEntries();
+                  }
+                  catch (XmlBlasterException e) {
+                     log.error(ME, "PANIC: Can't copy from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries: " + e.getMessage());
+                     e.printStackTrace();
+                     continue;
+                  }
+
+                  MsgQueueEntry[] queueEntries = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+                  // On error we send them as dead letters, as we don't know what to do with them in our holdback queue
+                  try {
+                     newQueue.put(queueEntries, false);
+                  }
+                  catch (XmlBlasterException e) {
+                     log.warn(ME, "flushHoldbackQueue() failed: " + e.getMessage());
+                     // errorCode == "ONOVERFLOW"
+                     this.msgErrorHandler.handleError(new MsgErrorInfo(glob, queueEntries, null, e));
+                  }
+
+                  try {
+                     long num = this.subjectQueue.remove(list.size(), -1);
+                     if (num != list.size()) {
+                        log.error(ME, "PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
+                     }
+                  }
+                  catch (XmlBlasterException e) {
+                     log.error(ME, "PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.getMessage());
+                  }
+               }
+
+               this.subjectQueue.clear();
+               this.subjectQueue.shutdown();
+               this.subjectQueue = newQueue;
+               return;
+            }
+         }
+      } // synchronized
+
+      log.error(ME+".setCbQueueProperty()", "Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
+      return;
+      //throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME+".setCbQueueProperty()", "Can't reconfigure subject queue type '" + origProps.getTypeVersion() + "' to '" + props.getTypeVersion() + "'");
    }
 
    /**
