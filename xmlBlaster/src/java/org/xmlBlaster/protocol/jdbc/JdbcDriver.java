@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.1 2000/07/02 18:06:47 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.2 2000/07/03 13:38:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * JDBC driver class using the native interface. 
+ * JDBC driver class using the native interface.
  * <p />
  * The jdbc driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
@@ -85,7 +85,7 @@ public class JdbcDriver implements I_Driver, I_Publish
       CallbackAddress callback = new CallbackAddress("JDBC", "org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
       LoginQosWrapper loginQos = new LoginQosWrapper(callback);
       sessionId = login(loginName, passwd, loginQos.toXml());
-      
+
       Log.info(ME, "Started successfully JDBC driver '" + loginName + "'.");
    }
 
@@ -159,7 +159,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
 
    /**
-    * Send the XML based result set to the client. 
+    * Send the XML based result set to the client.
     */
    public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
@@ -168,7 +168,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
 
    /**
-    * Load the JDBC drivers from xmlBlaster.properties. 
+    * Load the JDBC drivers from xmlBlaster.properties.
     */
    private void initDrivers() {
       String            drivers = XmlBlasterProperty.get("JdbcDriver.drivers", "");
@@ -190,7 +190,7 @@ public class JdbcDriver implements I_Driver, I_Publish
          }
       }
       if (numDrivers == 0) {
-         Log.warning(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers");
+         Log.warning(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver");
       }
    }
 }

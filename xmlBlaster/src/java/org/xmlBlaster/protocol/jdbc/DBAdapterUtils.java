@@ -1,21 +1,21 @@
-/*--- formatted by Jindent 2.1, (www.c-lab.de/~jindent) ---*/
-
 /*
  * ------------------------------------------------------------------------------
  * Name:      DBAdapterUtils.java
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.3 2000/06/18 15:22:01 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.4 2000/07/03 13:38:22 ruff Exp $
  * ------------------------------------------------------------------------------
  */
-
 package org.xmlBlaster.protocol.jdbc;
 
 import java.sql.*;
 import java.io.*;
-import com.sun.xml.tree.*;
-import org.w3c.dom.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import com.sun.xml.tree.XmlDocument;
+import com.sun.xml.tree.ElementNode;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Text;
 import org.jutils.log.Log;
 
 /**
@@ -38,25 +38,21 @@ public class DBAdapterUtils {
     *
     * @see
     */
-   public static XmlDocument createDocument(ResultSet rs) {
+   public static XmlDocument createDocument(ResultSet rs) throws XmlBlasterException
+   {
       return createDocument("jdbcresults", "row", -1, rs);
    }
 
    /**
-    * Method declaration
-    *
-    *
+    * Creates a DOM representation of the result set. 
     * @param rootnode
     * @param rownode
     * @param rowlimit
     * @param rs
-    *
-    * @return
-    *
-    * @see
+    * @return The DOM
     */
    public static XmlDocument createDocument(String rootnode, String rownode,
-                                            int rowlimit, ResultSet rs) {
+                    int rowlimit, ResultSet rs) throws XmlBlasterException {
 
       int rows = 0;
       XmlDocument doc = new XmlDocument();
@@ -68,23 +64,22 @@ public class DBAdapterUtils {
       root.appendChild(desc);
       root.appendChild(results);
 
+      String columnName = null;
+
       try {
          ResultSetMetaData rsmd = rs.getMetaData();
          int               columns = rsmd.getColumnCount();
 
-         ElementNode       numColumns =
-            (ElementNode) doc.createElement("numcolumns");
-         Text              numColumnsValue = (Text) doc.createTextNode(""
-                 + columns);
+         ElementNode       numColumns = (ElementNode) doc.createElement("numcolumns");
+         Text              numColumnsValue = (Text) doc.createTextNode("" + columns);
 
          numColumns.appendChild(numColumnsValue);
          desc.appendChild(numColumns);
 
-         ElementNode columnNames =
-            (ElementNode) doc.createElement("columnnames");
+         ElementNode columnNames = (ElementNode) doc.createElement("columnnames");
 
          for (int i = 1, j = columns; i <= j; i++) {
-            String      columnName = rsmd.getColumnName(i);
+            columnName = rsmd.getColumnName(i);
             ElementNode name = (ElementNode) doc.createElement("column");
             Text        value = (Text) doc.createTextNode(columnName);
 
@@ -109,7 +104,7 @@ public class DBAdapterUtils {
 
             for (int i = 1, j = columns; i <= j; i++) {
                int      cType = rsmd.getColumnType(i);
-               String   columnName = rsmd.getColumnName(i);
+               columnName = rsmd.getColumnName(i);
                String   columnValue = "";
 
                switch (cType) {
@@ -152,7 +147,10 @@ public class DBAdapterUtils {
 
                if (Log.TRACE) Log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", columnValue='" + columnValue + "'");
                ElementNode col = (ElementNode) doc.createElement(columnName);
+               //CDATASection col = (CDATASection) doc.createCDATASection(columnName);
+
                Text        cvalue = (Text) doc.createTextNode(columnValue);
+               //CDATASection cvalue = (CDATASection) doc.createCDATASection(columnName);
 
                col.appendChild(cvalue);
                row.appendChild(col);
@@ -161,8 +159,8 @@ public class DBAdapterUtils {
          }
       }
       catch (Exception e) {
-         Log.error(ME, "Error in scanning result set: " + e.toString());
-         // !!!!! throw XmlBlasterException
+         Log.error(ME, "Error in scanning result set for '" + columnName + "': " + e.toString());
+         throw new XmlBlasterException(ME+".DomResultSetError", "Error in scanning result set for '" + columnName + "': " + e.getMessage());
       }
 
       ElementNode numRows = (ElementNode) doc.createElement("rownum");
