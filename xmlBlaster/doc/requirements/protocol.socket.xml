@@ -298,8 +298,8 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
       Here we start the xmlBlaster server and it will offer its SOCKET service on host <i>myHost.com</i> and on port <i>7766</i>:
       </p>
       <pre>
-java -jar lib/xmlBlaster.jar -dispatch/connection/plugin/socket/hostname myHost.com
-                             -dispatch/connection/plugin/socket/port 7766
+java -jar lib/xmlBlaster.jar -plugin/socket/hostname myHost.com
+                             -plugin/socket/port 7766
       </pre>
       <p>
       This client tries to find an xmlBlaster server instance at host <i>myHost.com</i> and on port <i>7766</i>:
@@ -330,6 +330,7 @@ ConnectQos qos = new ConnectQos(glob);
    </example>
 
    <configuration where="server">
+      <h3>Server side configuration</h3>
       <table border="1">
          <tr>
             <th>Property</th>
@@ -426,11 +427,12 @@ ConnectQos qos = new ConnectQos(glob);
       </table>
    </configuration>
    <configuration where="client">
+      <h3>Additional client side configuration</h3>
       <p>The Java socket implementation on client side supports
          the same properties as the server (we reuse the same implementation).
          You need to add the "dispatch/callback/" or "dispatch/connection/" prefix
          to the property key.<br />
-         You have thes additional features on client side:
+         You have these additional features on client side:
       </p>
       <table border="1">
          <tr>
@@ -499,7 +501,7 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="CODE" lang="C">xmlBlaster/src/c/socket/xmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.35 $</revision>
+   <revision>$Revision: 1.36 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
