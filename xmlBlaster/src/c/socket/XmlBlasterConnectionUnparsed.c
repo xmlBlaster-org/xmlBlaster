@@ -506,7 +506,7 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0 && xb->isConnected(xb)) {
 #     if defined(_WINDOWS)
-      int how = SD_BOTH;         /* SD_BOTH; */
+      int how = SD_BOTH;   /* SD_BOTH requires Winsock2.h */
 #     else
       int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
 #     endif
