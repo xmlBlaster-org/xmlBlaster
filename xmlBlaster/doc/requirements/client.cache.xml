@@ -31,6 +31,10 @@
       Note that this is a pure client behavior, and for the moment the only reference implementation
       is in Java.
       </p>
+      <p>
+      A typical use case for this caching feature is a servlet environment
+      where synchronous browser requests need high performing html responses.
+      </p>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -59,7 +63,7 @@
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
