@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.43 2003/07/17 17:41:27 ruff Exp $
+Version:   $Id: Global.cpp,v 1.44 2003/07/17 17:43:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,9 +14,10 @@ Version:   $Id: Global.cpp,v 1.43 2003/07/17 17:41:27 ruff Exp $
 
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.43 2003/07/17 17:41:27 ruff Exp $ xmlBlaster @version@";
+   // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.44 2003/07/17 17:43:20 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.43 2003/07/17 17:41:27 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.44 2003/07/17 17:43:20 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
