@@ -25,6 +25,7 @@ public class AllTests
    public static Test suite() {
       TestSuite suite= new TestSuite("All xmlBlaster message expiry tests");
       suite.addTest(TestVolatile.suite());
+      suite.addTest(TestAliveUnreferencedDead.suite());
       return suite;
    }
 }
