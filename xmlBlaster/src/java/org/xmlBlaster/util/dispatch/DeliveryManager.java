@@ -625,7 +625,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<DeliveryManager id='").append(getId()).append("'>");
-      sb.append(deliveryConnectionsHandler.toXml(offset));
+      sb.append(deliveryConnectionsHandler.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append(" <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
       sb.append(offset).append("</DeliveryManager>");
 
