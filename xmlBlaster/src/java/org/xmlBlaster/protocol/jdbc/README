@@ -1,35 +1,17 @@
 Ok, so this is a quick and dirty 'HOWTO' for the DB adapter.
 
-First things first.  Do an update and do a make all.
-
 Add the following line to your xmlBlaster.properties file:
 JDBCDrivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
 
-It is a comma delimited list of databse drivers.  Use as many
-as you
-like.
-The appropriate driver class files(jar) must be in your
-classpath.
-(If you are using jdk 1.2, having the jar file in jre/lib/ext
-will
-not do you any good.  It must be in the CLASSPATH.  This is
-due
-to the bootstrapping of jaco)
+It is a comma delimited list of databse drivers.  Use as many as you like.  The appropriate driver class files(jar) must be in your classpath.  (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.  It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)
 
 Start up the server (jaco org.xmlBlaster.Main)
 
-Start up the XmlDBAdapter (jaco
-org.xmlBlaster.protocol.jdbc.XmlDBAdapter)
+Start up the XmlDBAdapter (jaco org.xmlBlaster.protocol.jdbc.XmlDBAdapter)
 (To exit the adapter, type 'q' in the console).
 
 -----TESTING-----
-You will need access to a database!  You can use the
-XmlDBClient
-unchanged
-if you don't mind typing a lot.  To invoke the client, try
-something
-similar to
-the following:
+You will need access to a database!  You can use the XmlDBClient unchanged if you don't mind typing a lot.  To invoke the client, try something similar to the following:
 
 jaco javaclients.jdbc.XmlDBClient
         -url "jdbc:postgresql://24.3.47.214/postgres"
@@ -45,38 +27,17 @@ Options:
         -user (valid DB username)
         -pass (valid DB password)
         -query (any valid SQL syntax)
-        -type (query|update) query by default - determines
-the interaction with
-db
-        -confirm (true|false) true by default - when set to
-true, you get an
-answer
-        -limit (any integer) 50 by default - used to limit
-the number of rows
-returned
+        -type (query|update) query by default - determines the interaction with db
+        -confirm (true|false) true by default - when set to true, you get an answer
+        -limit (any integer) 50 by default - used to limit the number of rows returned
 
 NOTE:
-        If you are querying, set your -type to 'query'.  If
-you are updating
-        (insert, update, delete) set -type to 'update'.
-        If you are updating and don't want a confirmation,
-set -confirm to
-'false'.
+        If you are querying, set your -type to 'query'.  If you are updating (insert, update, delete) set -type to 'update'.  If you are updating and don't want a confirmation, set -confirm to 'false'.
 
-For an example of what to expect, please look over the .xml
-files
-located
-in demo/javaclients/jdbc.  Most exceptions are caught and
-returned in
-the 
-appropriate xml message.  There are still one or two bugs
-that need to
-be squashed,
+For an example of what to expect, please look over the .xml files located in demo/javaclients/jdbc.  Most exceptions are caught and returned in the appropriate xml message.  There are still one or two bugs that need to be squashed,
 but I am working on those.
 
-If you have any difficulty or questions, feel free to send me
-an email
-at
+If you have any difficulty or questions, feel free to send me an email at
 jmbirchfield@proteus-technologies.com
 
 Jim
