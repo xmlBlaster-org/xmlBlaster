@@ -19,10 +19,15 @@ namespace util {
     * throw any exception. Errors in file-reading, writing etc. are handled
     * by returning a special value (which for integers is zero and for bool
     * is false and empty std::strings for std::strings.
-    *
+    * <br />
     * When reading or writing, comments and empty lines are ignored.
     * When writing, properties are written in alphabetical order (of the 
     * property name).
+    * <br />
+    * Fills during construction the properties <code>user.home</code> and
+    * <code>file.separator</code> and <code>path.separator</code>.
+    * This simplifies the reuse of the xmlBlaster.properties
+    * which used those settings from the Java environment.
     */
    class Dll_Export Property {
       
@@ -41,6 +46,7 @@ namespace util {
 
       /**
        * Set a property without replacing ${...} variables in value. 
+       * @return false if an old entry existed which was not overwritten
        */
       bool setProperty_(const std::string &name, const std::string &value,
                        bool overwrite=true);
