@@ -12,16 +12,15 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.Global;
 
+import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
-// import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.util.Comparator;
@@ -57,7 +56,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    private long persistentSizeInBytes = 0L;
    private long numOfPersistentEntries = 0L;
    private PluginInfo pluginInfo = null;
-
+   private I_QueueSizeListener queueSizeListener;
+   private Object queueSizeListenerSync = new Object();
+   
    /**
     * Is called after the instance is created.
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
@@ -74,7 +75,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 
       this.storageId = uniqueQueueId;
       if (storageId == null || glob == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal arguments in RamQueuePlugin constructor: storageId=" + storageId);
       }
 
@@ -208,7 +209,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          for (int ii=0; ii<entries.length; ii++) {
             entries[ii].setStored(false);
             if (this.notifiedAboutAddOrRemove) {
-                  entries[ii].removed(this.storageId);
+               entries[ii].removed(this.storageId);
             }
          }
 
@@ -216,6 +217,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
          this.numOfPersistentEntries = 0L;
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
          return ret;
       }
    }
@@ -250,6 +252,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             if (this.notifiedAboutAddOrRemove) {
                entry.removed(this.storageId);
             }
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
          }
 
          this.storage.removeAll(elementsToDelete);
@@ -491,6 +494,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                   this.numOfPersistentEntries--;
                }
             }
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
          }
       }
       return ret;
@@ -524,7 +528,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (isShutdown) {
          log.warn(ME, "The queue is shutdown, no message access is possible.");
-         if (log.TRACE) Thread.currentThread().dumpStack();
+         if (log.TRACE) Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The queue is shutdown, no message access is possible.");
       }
       ArrayList ret = null;
@@ -544,6 +548,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                }
             }
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
       }
       return ret;
    }
@@ -625,6 +630,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
          }
          // this.sizeInBytes -= totalSizeInBytes;
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
          return ret;
       }
    }
@@ -674,11 +680,12 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                if (this.notifiedAboutAddOrRemove) {
                   entry.added(this.storageId);
                }
+               if (this.queueSizeListener != null) invokeQueueSizeListener();
             }
          }
          else {
             log.error(ME, "Ignoring IDENTICAL uniqueId=" + entry.getUniqueId());
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
          }
       }
 
@@ -739,6 +746,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                }
             }
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
       }
 
       if (this.putListener != null && !ignorePutInterceptor) {
@@ -848,6 +856,46 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       return false;
    }
 
+   /**
+    * @see I_Queue#addQueueSizeListener(I_QueueSizeListener)
+    */
+   public void addQueueSizeListener(I_QueueSizeListener listener) {
+      if (listener == null) 
+         throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
+      synchronized(this.queueSizeListenerSync) {
+         this.queueSizeListener = listener;
+      }
+   }
+   
+   /**
+    * @see I_Queue#removeQueueSizeListener(I_QueueSizeListener)
+    */
+   public void removeQueueSizeListener(I_QueueSizeListener listener) {
+      if (listener == null)
+         throw new IllegalArgumentException(ME + ": removeQueueSizeListener(null) is not allowed");      
+      synchronized(this.queueSizeListenerSync) {
+         this.queueSizeListener = null;
+      }
+   }
+   
+   private final void invokeQueueSizeListener() {
+      synchronized(this.queueSizeListenerSync) {
+         if (this.queueSizeListener != null) {
+            this.queueSizeListener.changed(this.getNumOfEntries(), this.sizeInBytes);
+         }
+      }
+   }
+
+   /**
+    * @see I_Queue#hasQueueSizeListener(I_QueueSizeListener)
+    */
+   public boolean hasQueueSizeListener(I_QueueSizeListener listener) {
+      synchronized(this.queueSizeListenerSync) {
+         if (listener == null)
+            return this.queueSizeListener != null;
+         else return this.queueSizeListener == listener;
+      }      
+   }
 }
 
 /**

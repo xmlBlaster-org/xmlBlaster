@@ -452,6 +452,38 @@ public interface I_Queue extends I_StorageProblemNotifier
     */
    public boolean isShutdown();
 
+
+   /**
+    * adds a queue size listener to the queue. If one is already 
+    * registered it is silently replaced since only one listener is
+    * allowed.
+    *  
+    * @param listener the listener to be added. If you pass null nothing
+    *        an IllegalArgumentException is thrown.
+    */
+   public void addQueueSizeListener(I_QueueSizeListener listener);
+   
+   /**
+    * removes the specified listener from the queue.
+    * 
+    * @param listener the listener to be removed. Currently only one
+    *        listener is allowed. Passing null here will remove the 
+    *        only listener registered or none if none is registered.
+    *        If you pass null an IllegalArgumentException is throws.
+    */
+   public void removeQueueSizeListener(I_QueueSizeListener listener);
+   
+   /**
+    * Checks wether the specified listener is registered. Currenly only
+    * max. one listener is allowed to be registered.
+    * @param listener the listener to check against. If you pass null
+    *        it checks if one listener exists.
+    * @return true if the specified listener exists, false otherwise. If
+    *         you passed null in the argument list it returns true if a
+    *         listener exists.
+    */
+   public boolean hasQueueSizeListener(I_QueueSizeListener listener);
+   
    /**
     * @return a human readable usage help string
     */

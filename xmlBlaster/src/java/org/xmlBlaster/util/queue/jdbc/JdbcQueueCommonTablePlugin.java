@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -58,6 +59,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private PluginInfo pluginInfo = null;
 
    private boolean debug = false;
+
+   private I_QueueSizeListener queueSizeListener;
+   private Object queueSizeListenerSync = new Object();
 
    public boolean isTransient() {
       return false;
@@ -383,6 +387,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
       return false;
    }
 
@@ -441,6 +446,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(queueEntries);
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
    }
 
 
@@ -496,6 +502,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) this.numOfEntries--;
             }
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return ret;
          }
       }
@@ -534,6 +541,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return ret.list;
          }
       }
@@ -623,6 +631,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             if (ret != 0) { // since we are not able to calculate the size in the cache we have to recalculate it
                resetCounters();
             }
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return ret;
          }
       }
@@ -651,6 +660,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentBytes = getNumOfPersistentBytes_(true);
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return (int)ret.countEntries;
          }
       }
@@ -680,6 +690,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentBytes = getNumOfPersistentBytes_(true);
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return ret.countEntries;
          }
       }
@@ -739,6 +750,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentBytes -= currentPersistentSize;
             this.numOfPersistentEntries -= currentPersistentEntries;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
          return ret;
       }
    }
@@ -791,6 +803,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                this.numOfPersistentBytes -= currentPersistentSize;
                this.numOfPersistentEntries -= currentPersistentEntries;
             }
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return tmp;
          }
       }
@@ -825,6 +838,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             // not so performant but only called on init
             this.numOfBytes = -999L;
             this.numOfBytes = getNumOfBytes_();
+            if (this.queueSizeListener != null) invokeQueueSizeListener();
             return ret;
          }
       }
@@ -1078,6 +1092,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfBytes = 0L;
          this.numOfPersistentEntries = 0L;
          this.numOfPersistentBytes = 0L;
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
          return ret.countEntries;
       }
       catch (XmlBlasterException ex) {
@@ -1286,6 +1301,47 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          I_MapEntry oldEntry = get(uniqueId);
          return change(oldEntry, callback);
       }
+   }
+
+   /**
+    * @see I_Queue#addQueueSizeListener(I_QueueSizeListener)
+    */
+   public void addQueueSizeListener(I_QueueSizeListener listener) {
+      if (listener == null) 
+         throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
+      synchronized(this.queueSizeListenerSync) {
+         this.queueSizeListener = listener;
+      }
+   }
+   
+   /**
+    * @see I_Queue#removeQueueSizeListener(I_QueueSizeListener)
+    */
+   public void removeQueueSizeListener(I_QueueSizeListener listener) {
+      if (listener == null)
+         throw new IllegalArgumentException(ME + ": removeQueueSizeListener(null) is not allowed");      
+      synchronized(this.queueSizeListenerSync) {
+         this.queueSizeListener = null;
+      }
+   }
+   
+   private final void invokeQueueSizeListener() {
+      synchronized(this.queueSizeListenerSync) {
+         if (this.queueSizeListener != null) {
+            this.queueSizeListener.changed(this.numOfEntries, this.numOfBytes);
+         }
+      }
+   }
+
+   /**
+    * @see I_Queue#hasQueueSizeListener(I_QueueSizeListener)
+    */
+   public boolean hasQueueSizeListener(I_QueueSizeListener listener) {
+      synchronized(this.queueSizeListenerSync) {
+         if (listener == null)
+            return this.queueSizeListener != null;
+         else return this.queueSizeListener == listener;
+      }      
    }
 
 }

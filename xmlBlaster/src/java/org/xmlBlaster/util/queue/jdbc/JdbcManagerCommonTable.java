@@ -881,7 +881,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.error(ME, "exception when closing statement: " + ex1.toString());
             ex1.printStackTrace();
          }
-//         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
+//         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET
          this.log.warn(getLogId(queueName, nodeId, "addEntry"), "Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntry"), ex)) {
