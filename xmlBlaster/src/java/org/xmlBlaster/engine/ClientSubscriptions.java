@@ -224,7 +224,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       synchronized(clientSubscriptionMap) {
          obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
          if (obj == null) {
-            if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown! Message '" + keyOid + "' ignored");
+            if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown, there was no subscription of this session yet. Oid '" + keyOid + "' is not existing");
             return null;
          }
          subMap = (Map)obj;
