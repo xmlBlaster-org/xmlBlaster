@@ -3,7 +3,7 @@ Name:      I_Callback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.java,v 1.10 2002/11/26 12:37:55 ruff Exp $
+Version:   $Id: I_Callback.java,v 1.11 2002/12/18 12:28:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -18,8 +18,8 @@ import org.xmlBlaster.client.qos.UpdateQos;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XML-RPC.
  *
- * @version $Revision: 1.10 $
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @version $Revision: 1.11 $
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public interface I_Callback
 {
@@ -36,7 +36,7 @@ public interface I_Callback
     * @param cbSessionId The session ID specified by the client which registered the callback
     * @param updateKey   The arrived key
     * @param content     The arrived message content
-    * @param qos         Quality of Service of the MessageUnit
+    * @param qos         Quality of Service of the MsgUnit
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException;
 }
