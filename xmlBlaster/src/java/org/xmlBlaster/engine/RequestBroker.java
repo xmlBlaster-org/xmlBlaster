@@ -124,6 +124,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
    private PublishPluginManager publishPluginManager = null;
 
+   private boolean useCluster = false;
+
    /**
     * One instance of this represents one xmlBlaster server.
     * @param authenticate The authentication service
@@ -140,6 +142,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       accessPluginManager = new AccessPluginManager(getGlobal());
 
       publishPluginManager = new PublishPluginManager(getGlobal());
+
+      pluginManager = new PersistencePluginManager(getGlobal());
+
+      useCluster = getGlobal().getProperty().get("cluster", false);
 
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
@@ -318,7 +324,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          String pluginVersion = XmlBlasterProperty.get("Persistence.Driver.Version", "1.0");
 
          try {
-            pluginManager = PersistencePluginManager.getInstance();
             persistenceDriver = pluginManager.getPlugin(pluginType, pluginVersion);
          } catch (Exception e) {
             Log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate [" + pluginType + "][" + pluginVersion +"]: " + e.toString());
@@ -899,8 +904,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   if (obj == null) {
                      MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
 
-                     { // cluster support - forward message to master
+                     if (useCluster) { // cluster support - forward message to master
                         String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                        //Thread.currentThread().dumpStack();
                         if (ret != null) return ret;
                      }
                      
@@ -910,9 +916,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   else {
                      msgUnitHandler = (MessageUnitHandler)obj;
 
-                     { // cluster support - forward message to master
+                     if (useCluster) { // cluster support - forward message to master
                         MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
                         String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                        //Thread.currentThread().dumpStack();
                         if (ret != null) return ret;
                      }
 
