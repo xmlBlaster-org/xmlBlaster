@@ -18,6 +18,12 @@ Overview of the xmlBlaster.org packages
      All files in this directory are automatically generated
      only BlasterCallbackImpl.java is handcrafted
 
+   - client
+	  Some helper for Java clients.
+	  You may use these as a base if you are a Java programmer,
+	  for easy access to xmlBlaster
+
+
 2. The directory 'util' contains some helper classes
     which are used by the server.
    They may also be used by clients, but you are free to use
