@@ -65,12 +65,14 @@ public class HelloWorldGet
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
          String oid = glob.getProperty().get("oid", "");
+         String domain = glob.getProperty().get("domain", (String)null);
          String xpath = glob.getProperty().get("xpath", "");
          int numHistory = glob.getProperty().get("numHistory", 1);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
          String filterVersion = glob.getProperty().get("filter.version", "1.0");
          String filterQuery = glob.getProperty().get("filter.query", "");
          boolean content = glob.getProperty().get("content", true);
+         boolean saveToFile = glob.getProperty().get("saveToFile", false);
          boolean disconnect = glob.getProperty().get("disconnect", true);
 
          if (oid.length() < 1 && xpath.length() < 1) {
@@ -81,6 +83,7 @@ public class HelloWorldGet
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive       " + interactive);
          log.info(ME, "   -oid               " + oid);
+         log.info(ME, "   -domain            " + domain);
          log.info(ME, "   -xpath             " + xpath);
          log.info(ME, "   -numHistory        " + numHistory);
          log.info(ME, "   -content           " + content);
@@ -88,6 +91,7 @@ public class HelloWorldGet
          log.info(ME, "   -filter.type       " + filterType);
          log.info(ME, "   -filter.version    " + filterVersion);
          log.info(ME, "   -filter.query      " + filterQuery);
+         log.info(ME, "   -saveToFile        " + saveToFile);
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html");
 
@@ -101,6 +105,7 @@ public class HelloWorldGet
          log.info(ME, "Connect success as " + crq.toXml());
 
          GetKey gk = (oid.length() > 0) ? new GetKey(glob, oid) : new GetKey(glob, xpath, Constants.XPATH);
+         if (domain != null) gk.setDomain(domain);
          GetQos gq = new GetQos(glob);
          gq.setWantContent(content);
          
@@ -135,6 +140,16 @@ public class HelloWorldGet
             System.out.println("</xmlBlaster>");
             System.out.println("============= END #" + (imsg+1) + " '" + grk.getOid() + "' =========================");
             System.out.println("");
+
+            if (saveToFile) {
+               String fileName = grk.getOid()+"-"+grq.getRcvTimestamp().getTimestamp();
+               try {
+                  org.jutils.io.FileUtil.writeFile(fileName, msgs[imsg].toXml("").getBytes());
+               }
+               catch (org.jutils.JUtilsException e) {
+                  System.out.println("Can't dump content to file '" + fileName + "': " + e.toString());
+               }
+            }
             
          }
          if (msgs.length == 0) {
