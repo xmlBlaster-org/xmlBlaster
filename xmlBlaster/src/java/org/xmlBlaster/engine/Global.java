@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.13 2002/06/11 14:20:03 ruff Exp $
+Version:   $Id: Global.java,v 1.14 2002/06/12 18:43:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -14,6 +14,7 @@ import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterManager;
+import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.Authenticate;
@@ -22,6 +23,7 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Collection;
+import java.io.IOException;
 
 
 /**
@@ -55,6 +57,9 @@ public final class Global extends org.xmlBlaster.util.Global
    private boolean useCluster = true; // default
    private boolean firstUseCluster = true; // to allow caching
 
+   private CommandManager commandManager;
+   private boolean useAdminManager = true;
+   private boolean firstUseAdminManager = true; // to allow caching
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -126,6 +131,11 @@ public final class Global extends org.xmlBlaster.util.Global
    public final String getId() {
       if (getNodeId() == null) return null;
       return getNodeId().getId();
+   }
+
+   public final void setId(String id) {
+      super.setId(id);
+      nodeId = new NodeId(id);
    }
 
    public void addProtocolDriver(I_Driver driver) {
@@ -379,6 +389,50 @@ public final class Global extends org.xmlBlaster.util.Global
          }
       }
       return this.cbWorkerPool;
+   }
+
+   /**
+    * Access instance of remote command administration manager. 
+    * @return null if command administration support is switched off
+    */
+   public final CommandManager getCommandManager() throws XmlBlasterException {
+      if (this.commandManager == null) {
+         if (!useAdminManager())
+            return null;
+         log.error(ME, "Internal problem: please intialize CommandManager first");
+         Thread.currentThread().dumpStack();
+         throw new XmlBlasterException(ME, "Internal problem: please intialize CommandManager first - Please ask on mailing list for support");
+      }
+      return this.commandManager;
+   }
+
+   /**
+    * @return Is command administration support switched on?
+    */
+   public final boolean useAdminManager() {
+      if (firstUseAdminManager) {
+         useAdminManager = getProperty().get("admin", useAdminManager);
+         firstUseAdminManager = false;
+      }
+      return useAdminManager;
+   }
+
+   /**
+    * Initialize instance of remote command administration manager. 
+    * Only the first call will set the sessionInfo
+    * @param An internal sessionInfo instance, see RequestBroker.
+    * @return null if command support is switched off
+    */
+   public final CommandManager getCommandManager(org.xmlBlaster.authentication.SessionInfo sessionInfo) throws XmlBlasterException {
+      if (this.commandManager == null) {
+         if (!useAdminManager())
+            return null;
+         synchronized(this) {
+            if (this.commandManager == null)
+               this.commandManager = new CommandManager(this, sessionInfo);
+         }
+      }
+      return this.commandManager;
    }
 
    public void setAuthenticate(Authenticate auth) {
