@@ -311,11 +311,13 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * <p>
     * It will be only written if prop!= null. 
     * </p>
+    * @param prop CbQueueProperty transports subject queue property as well
+    *        TODO: we should have a clear named SubjectQueueProperty
     */
-   public final void setCbQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
+   public final void setSubjectQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
       CbQueueProperty origProp = (CbQueueProperty)this.subjectQueue.getProperties();
       if (origProp == null) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".setCbQueueProperty()", "Existing subject queue properties are null");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".setSubjectQueueProperty()", "Existing subject queue properties are null");
       }
 
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
@@ -380,9 +382,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
          }
       } // synchronized
 
-      log.error(ME+".setCbQueueProperty()", "Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
+      log.error(ME+".setSubjectQueueProperty()", "Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
       return;
-      //throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME+".setCbQueueProperty()", "Can't reconfigure subject queue type '" + origProps.getTypeVersion() + "' to '" + props.getTypeVersion() + "'");
+      //throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME+".setSubjectQueueProperty()", "Can't reconfigure subject queue type '" + origProps.getTypeVersion() + "' to '" + props.getTypeVersion() + "'");
    }
 
    /**
