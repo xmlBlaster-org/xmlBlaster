@@ -8,7 +8,7 @@ include $(XMLBLASTER_HOME)/Makefile.Include
 
 SUB_DIRS = src demo testsuite
 
-all: all_SUB_DIRS
+all: all_SUB_DIRS jar
 
 clean: clean_SUB_DIRS
 
