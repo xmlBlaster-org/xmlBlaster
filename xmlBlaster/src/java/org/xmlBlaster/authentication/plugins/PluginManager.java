@@ -2,6 +2,7 @@ package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -18,37 +19,18 @@ import java.util.StringTokenizer;
  * @author W. Kleinertz (wkl)
  * @version 1.0
  */
-
 public class PluginManager extends PluginManagerBase {
    private static final String                ME = "SecurityPluginManager";
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.simple.Manager";
-   private static       PluginManager         me = null;
    private              Authenticate        auth = null;
 
-   /** To protect the singleton */
-   private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
-
-   public PluginManager() {
+   public PluginManager(Global glob) {
+      super(glob);
       if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
          Log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
          Log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
       }
-   }
-
-   /**
-    * Return an instance of this singleton
-    *
-    * @return PluginManager
-    */
-   public static PluginManager getInstance() {
-      if (me == null) { // avoid 'expensive' synchronized
-         synchronized (SYNCHRONIZER) {
-            if (me == null)
-               me = new PluginManager();
-         }
-      }
-      return me;
    }
 
    /**

@@ -13,9 +13,13 @@ import org.a2Blaster.Environment;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/04/19 11:05:45 $)
  * Last Changes:
  *    ($Log: Manager.java,v $
+ *    (Revision 1.3  2002/04/19 11:05:45  ruff
+ *    (Changed plugin framework to pass util.Global to plugins
+ *    (Changed manager to be no singleton any more
+ *    (
  *    (Revision 1.2  2001/08/30 17:14:49  ruff
  *    (Renamed security stuff
  *    (
@@ -56,8 +60,9 @@ public class Manager implements I_Manager{
     * Initialize the Manager.
     * <p/>
     * @param XmlBlasterException
+    * @see org.xmlBlaster.util.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
     */
-   public void init(String[] options) throws org.xmlBlaster.util.XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
       if (Log.CALL) Log.call(ME+".init()", "-------START--------\n");
       if (options.length>0){
          Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");

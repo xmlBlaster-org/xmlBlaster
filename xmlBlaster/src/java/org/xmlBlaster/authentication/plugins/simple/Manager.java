@@ -29,7 +29,10 @@ public class Manager implements I_Manager{
       if (Log.CALL) Log.call(ME, "Constructor");
    }
 
-   public void init(String[] options) throws org.xmlBlaster.util.XmlBlasterException {
+   /**
+    * @see org.xmlBlaster.util.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
       if (Log.CALL) Log.call(ME, "init()");
       if (options.length>0) {
          Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
