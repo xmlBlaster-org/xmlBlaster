@@ -31,7 +31,7 @@ you can try this:
 
       SecurityPluginManager] Plugin 'org.xmlBlaster.authentication.plugins.ldap.Manager' successfully initialized 
 
-   Congratulations, were authenticated by LDAP!
+   Congratulations, you were authenticated by LDAP!
 
 
 3. Edit xmlBlaster.properties and add this line:
