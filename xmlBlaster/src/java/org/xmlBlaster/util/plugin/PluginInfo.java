@@ -35,9 +35,9 @@ public class PluginInfo {
    private Properties params;
    
 
-   public PluginInfo( Global glob, PluginManagerBase manager, String type_, String version_ ) throws XmlBlasterException {
-      log = glob.getLog("core");
-      propertyName = manager.getPluginPropertyName();
+   public PluginInfo( Global glob, I_PluginManager manager, String type_, String version_ ) throws XmlBlasterException {
+      log = glob.getLog("plugin");
+      propertyName = manager.getName();
       ME = "PluginInfo-"+propertyName;
       type = type_;
       version = version_;
