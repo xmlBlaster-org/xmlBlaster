@@ -287,13 +287,12 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
          }
 
          if (getSubjectQueue().getNumOfEntries() < 1)
-            log.info(ME, "Destroying SubjectInfo " + getSubjectName() + ". Nobody is logged in and no queue entries available");
+            log.info(ME, "Destroying SubjectInfo. Nobody is logged in and no queue entries available");
          else {
             if (clearQueue)
-               log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + ". Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
+               log.warn(ME, "Destroying SubjectInfo. Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
             else
-               log.warn(ME, "Destroying SubjectInfo " + getSubjectName() +
-                            ". The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
+               log.warn(ME, "Destroying SubjectInfo. The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
                             getSubjectQueue().getNumOfPersistentEntries() + " persistent messages remain on disk, the transients are lost");
          }
 

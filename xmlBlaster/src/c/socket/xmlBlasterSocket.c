@@ -298,6 +298,7 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    memset(exception, 0, sizeof(XmlBlasterException));
    exception->remote = false;
 
+   if (debug) printf("[xmlBlasterSocket] Blocking now for %s callback messages ...\n", (udp) ? "udp" : "tcp");
    if (udp)
       numRead = recv(xmlBlasterSocket, packet, MAX_PACKET_SIZE, 0);
    else
