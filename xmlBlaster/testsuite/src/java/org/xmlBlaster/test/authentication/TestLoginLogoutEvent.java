@@ -43,7 +43,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.authentication.TestLoginLogoutEvent
- *    java junit.swingui.TestRunner org.xmlBlaster.test.authentication.TestLoginLogoutEvent
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.authentication.TestLoginLogoutEvent
  * </pre>
  */
 public class TestLoginLogoutEvent extends TestCase
