@@ -9,7 +9,7 @@
 <body>
 
    <p class=sideend>
-      Last updated $Date: 2000/02/25 13:51:00 $ $Author: ruff $
+      Last updated $Date: 2000/03/25 23:40:52 $ $Author: ruff $
    </p>
    <p class=sitetitel>Guidelines for XmlBlaster core developers</p>
 
@@ -30,7 +30,6 @@
             If you don't like the guidelines, discuss it on the mailing list,
             enhance them or change them if it makes sense and respects the other
             core developer feelings.
-            But don't say this is rubbish, and do nothing.
          </td>
       </tr>
 
@@ -38,7 +37,6 @@
          <td>
          <p class=celltitel><a NAME="style"></a>Style Guide</p>
             Follow the common look and feel of xmlBlaster.<br />
-            But follow this rule please:<br />
             We don't use any tabs for indenting, indenting is done with
             3 blanks per level.
             We know, this discussion is as old as mankind.
@@ -48,12 +46,11 @@
 
       <tr>
          <td>
-         <p class=celltitel><a NAME="testing"></a>Testing</p>
-            <b>For every feature, a test case!</b><p />
+         <p class=celltitel><a NAME="testing"></a>Testing - for every feature, a test case.<p />
             We have a test suite for xmlBlaster, you find it under xmlBlaster/testsuite/org/xmlBlaster.<br />
-            Please! Add a test case there for everything you hack!<p />
+            Please add a test case there for everything you code.<p />
             Because many people develop xmlBlaster, and you develop for the world,
-            we need a full automatic test suite!!!<p />
+            we need a full automatic test suite.<p />
             Like this, before committing changes, we type 'make test', and if the
             test suite shows 'green' we can sleep well.<p />
             Believe it or not, this is a MUCH more relaxed developing style.
@@ -69,20 +66,21 @@
          <td>
          <p class=celltitel><a NAME="require"></a>Requirements</p>
             In the directory xmlBlaster/doc/requirements there is one xml file for every xmlBlaster requirement.<p />
-            Please! Take a copy of one of those, and note your hack in there! It takes you one minute!<p />
-            With XSL style sheets (still missing :-), we will generate
+            Please take a copy of one of those, and note your feature in there.
+            It takes you one minute but allows us to track exactly the state of xmlBlaster.<p />
+            With XSL style sheets we will generate
             <ul>
                <li>
                   A html table of supported features in xmlBlaster
                </li>
                <li>
-                  A list of open topics, where developers can pick some and hack it
+                  A list of open topics, where developers can pick some and code it
                </li>
                <li>
                   A printable reference manual from xmlBlaster
                </li>
                <li>
-                  And one thousand things more
+                  And maybe some other nice with XSL generated output
                </li>
             </ul>
             We are lazy, and this approach is simple and can be done with any vi editor.<p />
