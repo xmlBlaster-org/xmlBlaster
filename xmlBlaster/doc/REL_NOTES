@@ -2,8 +2,15 @@
 
 Changes for 0.78 [???     2000]
 ===============================
+  - The package org.xmlBlaster.authenticate is now CORBA independend.
+    It uses or generates a unique sessionId string to track a login session
+    of a user. This allows easier integration of other
+    protocols like xml-rpc.
+
   - Bug fix in PoolManager.erase() method
 
+  - ClientConnection: removed deprecated logout(server)
+                      Added killPing() in logout()
 
 Changes for 0.77 [Jun, 3 2000]
 ===============================
