@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Updated XPathFilter to support Jaxen XPath extension functions, also added the functions RecursiveTextFunction and ContainsIgnoreCaseFunction.
+
+ o Updated j2ee components to the latest API changes. Also fixed property handling so that xmlBlaster.properties is not loaded by default. xmlBlaster.properties and xmlBlasterPlugins.xml is removed from the xmlBlaster.jar to not upset the propertyloading.
+
+ o Changed ClassLoaderFactory to be interface based, now pluggable with property classLoaderFactory. Moved implementing ClassLoaderFactory to StandaloneClassLoaderFactory and added a ContextClassLoaderFactory to be used in certain embedded environments.
 
  o Bugfix in Timeout.java
    - userData is now correctly passed
