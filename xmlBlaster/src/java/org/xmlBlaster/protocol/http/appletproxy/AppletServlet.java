@@ -272,7 +272,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    }
 
    private final String decode(String in, String encoding) {
-      return new String(Base64.decodeBase64(in.getBytes()));
+      //return new String(Base64.decodeBase64(in.getBytes()));
+     return Global.decode(in, encoding);
    }
 
 
@@ -343,9 +344,11 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       try {
          // Extract the message data
          String oid = getParameter(req, "key.oid", (String)null);
+         if (log.TRACE) log.trace(ME, "encoded oid=" + oid);
          if (oid != null) oid = this.decode(oid, ENCODING);
 
          String key = getParameter(req, "key", (String)null);
+         if (log.TRACE) log.trace(ME, "encoded key=" + key);
          if (key != null) {
             key = this.decode(key, ENCODING);
             if (log.DUMP) log.dump(ME, "key=\n'" + key + "'");
@@ -354,13 +357,15 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          byte[] content;
          String contentStr = getParameter(req, "content", (String)null);
          if (contentStr != null) {
-            content = Base64.decodeBase64(contentStr.getBytes());
+            content = this.decode(contentStr, ENCODING).getBytes();
+            //content = Base64.decodeBase64(contentStr.getBytes());
          }
          else
             content = new byte[0];
          if (log.DUMP) log.dump(ME, "content=\n'" + new String(content) + "'");
 
          String qos = getParameter(req, "qos", (String)null);
+         if (log.TRACE) log.trace(ME, "encoded qos=" + qos);
          if (qos != null) {
             qos = this.decode(qos, ENCODING);
          }
@@ -369,7 +374,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
 
          if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
-            if (log.TRACE) log.trace(ME, "subscribe arrived ...");
+            if (log.TRACE) log.trace(ME, "subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);
             
             if (oid != null) {
                SubscribeKey xmlKey = new SubscribeKey(glob, oid);

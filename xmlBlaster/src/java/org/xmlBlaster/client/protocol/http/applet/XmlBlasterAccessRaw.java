@@ -92,7 +92,14 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
     * and simply map it to the old encode(String)
     */
    public String encode(String s, String enc) {
-      return new String(encodeBase64(s.getBytes()));
+      //return new String(encodeBase64(s.getBytes()));
+      //return Global.encode(s, enc);
+      try {
+         return java.net.URLEncoder.encode(s, enc);
+      }
+      catch (java.io.UnsupportedEncodingException e) {
+         throw new IllegalArgumentException(e.toString());
+      }
    }
    
    public byte[] encodeBase64(byte[] data) {

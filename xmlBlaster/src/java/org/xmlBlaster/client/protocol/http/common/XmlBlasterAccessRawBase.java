@@ -234,7 +234,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
          if (key != null) request += "&key=" + encode(key, "UTF-8");
          if (qos != null) request += "&qos=" + encode(qos, "UTF-8");
-         if (content != null) request += "&content=" + new String(encodeBase64(content));
+         if (content != null) request += "&content=" + encode(new String(content), "UTF-8");
 
          String url = (doPost) ? this.xmlBlasterServletUrl + "?" + request : this.xmlBlasterServletUrl + request;
       
@@ -244,7 +244,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          log("DEBUG", "doPost=" + doPost + ", sending '" + url + "' with request '" + request + "' ...");
          if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
             conn.setPostMethod();
-            writeRequest(conn, actionType, key, qos, content);
+            //writeRequest(conn, actionType, key, qos, content);
          }
          readCookie(conn);
 
