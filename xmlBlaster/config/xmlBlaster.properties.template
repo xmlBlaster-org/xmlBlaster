@@ -149,8 +149,10 @@ TopicStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
 TopicStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
 TopicStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
 
+
 # Choose the plugins
 #persistence.defaultPlugin=CACHE,1.0
+#persistence/topicStore/defaultPlugin=JDBC,1.0
 # If you choose CACHE as defaultPlugin configure the CACHE plugin:
 #persistence.cache.persistentQueue=JDBC,1.0
 #persistence.cache.transientQueue=RAM,1.0
@@ -253,6 +255,16 @@ RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
 #admin.remoteconsole.port=2702
 #admin.remoteconsole.sessionTimeout=600000
 #------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Switch off internal messages, events sent on client login and logout
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.LoginLogoutEvent.html
+#loginEvent=false
+#logoutEvent=false
+#userListEvent=false
+#------------------------------------------------------------------------------
+
 
 #------------------------------------------------------------------------------
 # Pluggable Loggers
