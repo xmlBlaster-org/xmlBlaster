@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.50 2003/02/26 18:15:45 laghi Exp $
+Version:   $Id: CorbaDriver.java,v 1.51 2003/02/26 20:50:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -25,7 +25,9 @@ import org.jutils.io.FileUtil;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
+import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NameComponent;
 
 
 /**
@@ -55,8 +57,9 @@ public class CorbaDriver implements I_Driver
    private static org.omg.CORBA.ORB orb = null;
    private Global glob = null;
    private LogChannel log;
-   private NamingContextExt nc = null;
-   private NameComponent [] name = null;
+   private NamingContextExt namingContextExt = null;
+   private NameComponent [] nameXmlBlaster = null;
+   private NameComponent [] nameNode = null;
    private String iorFile = null;
    /** The singleton handle for this xmlBlaster server */
    private AuthServerImpl authServer = null;
@@ -185,7 +188,7 @@ public class CorbaDriver implements I_Driver
             Class nameServer = Class.forName("jacorb.naming.NameServer");
             if (nameServer != null) {
                try {
-                  nc = getNamingService();
+                  namingContextExt = getNamingService();
                }
                catch (XmlBlasterException e) {
                   class MyNameServer extends Thread {
@@ -208,19 +211,60 @@ public class CorbaDriver implements I_Driver
             */
 
             // Register xmlBlaster with a name server:
+            // NameService entry is e.g. xmlBlaster.MOM/heron.MOM
             try {
-               nc = getNamingService();
-               name = new NameComponent[1];
-               name[0] = new NameComponent(); // name[0] = new NameComponent("AuthenticationService", "service");
-               name[0].id = "xmlBlaster-Authenticate";
-               name[0].kind = "MOM";
+               namingContextExt = getNamingService();
 
-               nc.rebind(name, authRef);
-               log.info(ME, "Published AuthServer IOR to naming service on " + System.getProperty("ORBInitRef.NameService"));
+               String contextId = glob.getProperty().get("NameService.context.id", "xmlBlaster");
+               String contextKind = glob.getProperty().get("NameService.context.kind", "MOM");
+
+               nameXmlBlaster = new NameComponent[1];
+               nameXmlBlaster[0] = new NameComponent();
+               nameXmlBlaster[0].id = contextId;      // old style: "xmlBlaster-Authenticate"
+               nameXmlBlaster[0].kind = contextKind;  // kind is like a file extension (does not make much sense here)
+               NamingContext relativeContext = null;
+               int numTries = 5;  // We need to retry
+               for(int i=0; i<numTries; i++) {
+                  try {
+                     relativeContext = namingContextExt.bind_new_context(nameXmlBlaster);
+                     if (relativeContext != null) {
+                        break;
+                     }
+                  }
+                  catch (org.omg.CosNaming.NamingContextPackage.AlreadyBound ex) {
+                     if (log.TRACE) log.trace(ME, "Can't register CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + ": " + ex.toString());
+                     try {
+                        org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
+                        relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
+                        break;
+                     }
+                     catch (Throwable e) {
+                        log.error(ME, "Can't register CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + ", #"+i+"/"+numTries+": " + e.toString());
+                     }
+                  }
+               }
+               if (relativeContext != null) {
+                  String clusterId = glob.getProperty().get("NameService.node.id", glob.getStrippedId());
+                  String clusterKind = glob.getProperty().get("NameService.node.kind", "MOM");
+                  nameNode = new NameComponent[1];
+                  nameNode[0] = new NameComponent();
+                  nameNode[0].id = clusterId;
+                  nameNode[0].kind = clusterKind;
+
+                  relativeContext.rebind(nameNode, authRef);
+               }
+               else {
+                  // delegate error handling
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "Can't bind to naming service");
+               }
+
+               log.info(ME, "Published AuthServer IOR to NameService '" + System.getProperty("ORBInitRef.NameService") +
+                            "' with name '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
+                                    nameNode[0].id + "." + nameNode[0].kind + "'");
             }
             catch (XmlBlasterException e) {
                log.warn(ME + ".NoNameService", e.getMessage());
-               nc = null;
+               namingContextExt = null;
                if (glob.getBootstrapAddress().getPort() > 0) {
                   log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
                }
@@ -232,7 +276,7 @@ public class CorbaDriver implements I_Driver
                   log.error(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump!");
                }
             } catch (org.omg.CORBA.COMM_FAILURE e) {
-               nc = null;
+               namingContextExt = null;
                if (glob.getBootstrapAddress().getPort() > 0) {
                   log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
@@ -272,8 +316,20 @@ public class CorbaDriver implements I_Driver
       glob.getHttpServer().removeRequest(urlPath);
 
       try {
-         if (nc != null) nc.unbind(name);
-         nc = null;
+         if (namingContextExt != null && nameXmlBlaster != null) {
+            NamingContext relativeContext = null;
+            try {
+               org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
+               relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
+            }
+            catch (Throwable e) {
+               log.warn(ME, "Can't unregister as resolve CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + " failed: " + e.toString());
+            }
+            if (relativeContext != null) {
+               relativeContext.unbind(nameNode);
+            }
+         }
+         namingContextExt = null;
       }
       catch (Throwable e) {
          log.warn(ME, "Problems during ORB cleanup: " + e.toString());
@@ -290,6 +346,22 @@ public class CorbaDriver implements I_Driver
 
       authRef._release();
 
+   }
+
+   /**
+    * Creates a string representation of a NameService name hierarchy. 
+    * This is useful for logging
+    * @return e.g. "xmlBlaster.MOM/heron.MOM"
+    */ 
+   public static String getString(NameComponent [] nameComponent) {
+      String ret = "";
+      for(int i=0; i<nameComponent.length; i++) {
+         if (i > 0) {
+            ret += "/";
+         }
+         ret += nameComponent[i].id + ((nameComponent[i].kind != null) ? "." + nameComponent[i].kind : "");
+      }
+      return ret;
    }
 
    /**
@@ -383,7 +455,10 @@ public class CorbaDriver implements I_Driver
       // and xmlBlaster will find it automatically if on same host
       if (System.getProperty("ORBInitRef.NameService") == null) {
          JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
-         log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
+         if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
+      }
+      else {
+         if (log.TRACE) log.trace(ME, "Using system ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService"));
       }
 
       return hostname;
@@ -455,8 +530,8 @@ public class CorbaDriver implements I_Driver
    private NamingContextExt getNamingService() throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "getNamingService() ...");
-      if (nc != null)
-         return nc;
+      if (namingContextExt != null)
+         return namingContextExt;
 
       NamingContextExt nameService = null;
       try {
@@ -482,7 +557,7 @@ public class CorbaDriver implements I_Driver
          throw e;
       }
       catch (Exception e) {
-         if (log.TRACE) log.trace(ME + ".NoNameService", e.toString());
+         if (log.TRACE) log.trace(ME + ".NoNameService", e.toString() + ": " + e.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
