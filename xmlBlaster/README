@@ -7,25 +7,19 @@
 
 
 The XmlBlaster is an XML based MOM (message-oriented
-Middleware) which comes with LGPL. XmlBlaster is a pure Java
-publish/subscribe MOM server which exchanges XML-encoded
-messages between publishers and subscribers.
+middleware) which comes under the LGPL license to be free to use
+in any application.
+XmlBlaster is a pure Java publish/subscribe MOM server which exchanges
+any messages between publishers and subscribers, the messages have a
+meta description using XML and are queryable with XPath.
 
 Communication with the server is based on CORBA, RMI, XMLRPC or SOCKET
 and subscribers can use XPath expressions to filter the messages
 they wish to receive.
 
-Examples for C++, Java, Perl and Python clients are provided.
+Examples for C, C++, Java, PHP, Python and Perl clients are provided.
 
 To install and getting started with xmlBlaster read the INSTALL file.
-
-
-The xmlBlaster has two sub orgs for
-(1) General used Java classes e.g. io/log...
-    see: http://www.jutils.org
-
-(2) The ACL in the xmlBlaster
-    see: http://www.a2Blaster.org
 
 XmlBlaster uses the Sun XML parser for XML parsing, and XT from
 James Clark for XSL parsing.
@@ -46,20 +40,22 @@ and
   xmlBlaster/testsuite/src/java/org/xmlBlaster/test
 
 
-Examples of C++/Perl/Tcl/Python/Java clients accessing xmlBlaster
+Examples of C++/C/Perl/PHP/Tcl/Python/Java clients accessing xmlBlaster
 you find in directory:
 
   xmlBlaster/demo
  and
   xmlBlaster/testsuite
 
-If you want to access xmlBlaster with other languages, read
-this guide:
+If you want to access xmlBlaster with other languages you have the
+choice of XmlRpc (simple), CORBA (high performing) or our native
+SOCKET protocol, for XmlRp read this guide:
 
   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
-
 
 ---------------------------------
 The xmlBlaster.org maintainers
 http://www.xmlBlaster.org
 http://www.xmlBlaster.net
+http://www.xmlBlaster.com
+http://www.xmlBlaster.info
