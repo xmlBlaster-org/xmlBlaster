@@ -79,7 +79,7 @@ public class PluginLoader {
     *
     * @return I_ClientHelper
     */
-   public I_ClientHelper getCurrentClientPlugin() throws Exception
+   public I_ClientHelper getCurrentClientPlugin() throws XmlBlasterException
    {
       if(plugin!=null) return plugin;
 
@@ -89,12 +89,12 @@ public class PluginLoader {
    /**
     * Load another plugin.
     * <p/>
-    * @param String The type of the plugin
-    * @param String The version of the plugin
+    * @param String The type of the plugin, e.g. "a2Blaster"
+    * @param String The version of the plugin, e.g. "1.0"
     * @return I_ClientHelper
     * @exception Exception Thrown if the plugin wasn't loadable or initializable
     */
-   public synchronized I_ClientHelper getClientPlugin(String mechanism, String version) throws Exception
+   public synchronized I_ClientHelper getClientPlugin(String mechanism, String version) throws XmlBlasterException
    {
       if((pluginMechanism!=null) && (pluginMechanism.equals(mechanism))) {
         if (((pluginVersion==null) && (version==null)) ||
@@ -117,7 +117,7 @@ public class PluginLoader {
     * @return I_Manager
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   private synchronized I_ClientHelper loadPlugin(String[] param) throws Exception
+   private synchronized I_ClientHelper loadPlugin(String[] param) throws XmlBlasterException
    {
       if(param==null) return null;
       if(param[0]==null) return null;
@@ -133,15 +133,15 @@ public class PluginLoader {
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
-         throw new Exception(ME+".NoClass: The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
+         throw new XmlBlasterException(ME+".NoClass", "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
       }
       catch (SecurityException e) {
          Log.error(ME, "Couldn't load security plugin '"+param[0]+"'. Access Denied");
-         throw new Exception(ME+".AccessDenied: The plugin class '"+param[0]+"' couldn't be loaded!");
+         throw new XmlBlasterException(ME+".AccessDenied", "The plugin class '"+param[0]+"' couldn't be loaded!");
       }
       catch (Throwable e) {
          Log.error(ME, "The plugin class '"+param[0]+"'is invalid!" + e.toString());
-         throw new Exception(ME+".InvalidClassOrInitializer");
+         throw new XmlBlasterException(ME+".InvalidClassOrInitializer", "The plugin class '"+param[0]+"'is invalid!" + e.toString());
       }
 
       System.arraycopy(param,1,p,0,param.length-1);
@@ -152,7 +152,7 @@ public class PluginLoader {
             Log.info(ME, "Plugin '"+param[0]+"' successfully initialized!");
          }
          catch(Exception e) {
-            throw new Exception(ME+".noInit: Couldn't initialize plugin '"+param[0]+"'. Reaseon: "+e.toString());
+            throw new XmlBlasterException(ME+".noInit", "Couldn't initialize plugin '"+param[0]+"'. Reaseon: "+e.toString());
          }
       }
 
@@ -170,7 +170,7 @@ public class PluginLoader {
     * @param String The version
     * @return String[] The name of the class and some parameters
     */
-   private synchronized String[] fetchClassnameAndParam(String mechanism, String version) throws Exception
+   private synchronized String[] fetchClassnameAndParam(String mechanism, String version) throws XmlBlasterException
    {
       String tmp = null;
       Vector v   = new Vector();
@@ -194,7 +194,7 @@ public class PluginLoader {
       if(version==null) version="";
 
       String s = XmlBlasterProperty.get("Security.Client.Plugin["+mechanism+"]["+version+"]", (String)null);
-      if(s==null) throw new Exception("Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
+      if(s==null) throw new XmlBlasterException(ME+".Unknown Plugin", "Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
 
       StringTokenizer st = new StringTokenizer(s,",");
       while(st.hasMoreTokens()) {
