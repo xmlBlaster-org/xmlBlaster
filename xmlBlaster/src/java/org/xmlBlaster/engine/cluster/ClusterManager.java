@@ -73,6 +73,16 @@ public final class ClusterManager
    private boolean postInitialized = false;
 
    /**
+    * Usually connecting on demand is enough (e.g. connecting when a message needs to be delivered). 
+    * <p />
+    * If you want to immediately resend tail back messages on server startup we can
+    * force to establish the connections to all nodes immediately.<br />
+    * The XmlBlasterConnection checks then for tailed back messages which where not yet delivered
+    * and sends them.
+    */
+   private boolean lazyConnect = false;
+
+   /**
     * You need to call postInit() after all drivers are loaded.
     *
     * @param sessionInfo Internal handle to be used directly with RequestBroker
@@ -135,10 +145,18 @@ public final class ClusterManager
       if (log.DUMP) log.dump(ME, toXml());
       this.log.info(ME, "Initialized and ready");
       postInitialized = true;
+
+      if (!lazyConnect)
+         initConnections();
    }
 
+   /**
+    * TODO: not implemented yet
+    * You can't currently configure the cluster setup with messages, only statically
+    * on startup
+    */
    private void publish() {
-      log.warn(ME, "publish() of cluster internal messages is missing");
+      if (log.TRACE) log.trace(ME, "publish() of cluster internal messages is missing");
    /*
       StringBuffer buf = new StringBuffer(256);
       buf.append("<key oid='").append(Constants.OID_CLUSTER_INFO).append("[").append(getId()).append("]").append("'><").append(Constants.OID_CLUSTER_INFO)("/></key>");
@@ -149,8 +167,13 @@ public final class ClusterManager
    */
    }
 
+   /**
+    * TODO: not implemented yet
+    * You can't currently configure the cluster setup with messages, only statically
+    * on startup
+    */
    private void subscribe() {
-      log.warn(ME, "subscribe() of cluster internal messages is missing");
+      if (log.TRACE) log.trace(ME, "subscribe() of cluster internal messages is missing");
    }
 
    /**
@@ -229,7 +252,7 @@ public final class ClusterManager
       msgUnit.setQos(publishQos.toXml());
 
       try {
-         return con.publish(msgUnit);
+         return con.publish(msgUnit).toXml();
       }
       catch (XmlBlasterException e) {
          if (e.id.equals("TryingReconnect"))
@@ -384,6 +407,21 @@ public final class ClusterManager
       info.resetXmlBlasterConnection();
    }
    */
+
+   /**
+    * Usually the connection is established on demand (a message wants to travel to a node). 
+    * <p />
+    * Here you can force to establish connections to all known cluster nodes.
+    */
+   private void initConnections() throws XmlBlasterException {
+      Iterator it = getClusterNodeMap().values().iterator();
+      // for each cluster node ...
+      while (it.hasNext()) {
+         ClusterNode clusterNode = (ClusterNode)it.next();
+         // force a connect (not allowed and local node are checked to do nothing) ...
+         clusterNode.getXmlBlasterConnection();    // should we check for Exception and proceed with other nodes ?
+      }
+   }
 
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
