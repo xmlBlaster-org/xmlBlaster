@@ -109,17 +109,22 @@ public class QueueServerEntryTest extends TestCase {
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
       }
-      this.queue.shutdown();
+      if (this.queue != null) {
+         this.queue.shutdown();
+      }
    }
 
 
    public void tearDown() {
-      try {
-         this.queue.clear();
-         this.queue.shutdown();
-      }
-      catch (Exception ex) {
-         this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+      if (this.queue != null) {
+         try {
+            this.queue.clear();
+            this.queue.shutdown();
+            this.queue = null;
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+         }
       }
    }
 
