@@ -735,7 +735,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
                         "the combination '" + status + "' is not handled");
                   }
-                  if (i>0) { try { Thread.currentThread().sleep(1L); } catch( InterruptedException i) {}}
+                  if (i>0) { try { Thread.currentThread().sleep(1L); } catch( InterruptedException ie) {}}
                   ConnectReturnQosServer q = authenticate.connect(connectQosServer);
                   receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
                   if (receiverSessionInfo == null) continue;
