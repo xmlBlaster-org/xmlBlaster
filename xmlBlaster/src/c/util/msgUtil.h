@@ -88,9 +88,6 @@ typedef ExceptionStruct                   XmlBlasterException;
 
 Dll_Export extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException);
 
-Dll_Export extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
-Dll_Export extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
-
 Dll_Export extern const char *getXmlBlasterVersion(void);
 Dll_Export extern void xmlBlasterFree(char *p);
 Dll_Export extern void freeMsgUnitData(MsgUnit *msgUnit);
@@ -100,7 +97,6 @@ Dll_Export extern void freeMsgUnitArrInternal(MsgUnitArr *msgUnitArr);
 Dll_Export extern void freeQosArr(QosArr *qosArr);
 Dll_Export extern char *messageUnitToXml(MsgUnit *msg);
 Dll_Export extern char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen);
-Dll_Export extern char *blobDump(XmlBlasterBlob *blob);
 Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
 
 #ifdef __cplusplus

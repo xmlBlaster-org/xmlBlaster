@@ -29,9 +29,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.28 2004/04/17 13:16:55 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.29 2004/05/02 19:03:58 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.28 2004/04/17 13:16:55 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.29 2004/05/02 19:03:58 ruff Exp $ xmlBlaster @version@";
 #endif
 
 /**
@@ -183,56 +183,6 @@ Dll_Export char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen)
 Dll_Export char *messageUnitToXml(MsgUnit *msg)
 {
    return messageUnitToXmlLimited(msg, -1);
-}
-
-/**
- * Allocates the string with malloc for you. 
- * You need to free it with free()
- * @param blob If null it is malloc()'d for you, else the given blob is used to be filled. 
- * @return The given blob (or a new malloc()'d if blob was NULL), the data is 0 terminated.
- *         We return NULL on out of memory.
- */
-Dll_Export XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen)
-{
-   if (blob == 0) {
-      blob = (XmlBlasterBlob *)calloc(1, sizeof(XmlBlasterBlob));
-      if (blob == 0) return blob;
-   }
-   blob->dataLen = dataLen;
-   blob->data = (char *)malloc((dataLen+1)*sizeof(char));
-   if (blob->data == 0) {
-      free(blob);
-      return (XmlBlasterBlob *)0;
-   }
-   *(blob->data + dataLen) = 0;
-   memcpy(blob->data, data, dataLen);
-   return blob;
-}
-
-/**
- * free()'s the data in the given blob, does not free the blob itself. 
- * @param blob
- * @return The given blob
- */
-Dll_Export XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob)
-{
-   if (blob->data != 0) {
-      free(blob->data);
-      blob->data = 0;
-      blob->dataLen = 0;
-   }
-   return blob;
-}
-
-/**
- * Converts the given binary data to a more readable string,
- * the '\0' are replaced by '*'
- * @param blob The binary data
- * @return readable is returned, it must be free()'d
- */
-Dll_Export char *blobDump(XmlBlasterBlob *blob)
-{
-   return toReadableDump(blob->data, blob->dataLen);
 }
 
 /**
