@@ -70,6 +70,7 @@ if ! [ ${JacORB_HOME} ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
+		export PATH=${JacORB_HOME}/bin:${PATH}
    else
       echo -e ""
       echo -e "$BLACK_RED   Please set environment variable JacORB_HOME                       $ESC"
@@ -80,6 +81,7 @@ if ! [ ${JacORB_HOME} ] ; then
    fi
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 else
+   export PATH=${JacORB_HOME}/bin:${PATH}
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 fi
 
