@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      Embeeded.java
+Name:      Embedded.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -16,28 +16,26 @@ import org.xmlBlaster.test.Util;
 
 
 /**
- * Here we start stop an embeeded xmlBlaster instance to test memory an thread consumption. 
+ * Here we start stop an embeded xmlBlaster instance to test memory an thread consumption. 
  */
-public class Embeeded
+public class Embedded
 {
-   private static String ME = "Embeeded";
+   private static String ME = "Embedded";
    private final Global glob;
    private final LogChannel log;
    private int serverPort = 7615;
 
    /**
-    * Constructs the Embeeded object.
+    * Constructs the Embedded object.
     */
-   public Embeeded(Global glob) {
+   public Embedded(Global glob) {
       this.glob = glob;
       this.log = glob.getLog(null);
-      Thread.currentThread().setName("EmbeededTest.MainThread");
+      Thread.currentThread().setName("EmbeddedTest.MainThread");
    }
 
    /**
-    * Sets up the fixture.
-    * <p />
-    * Connect to xmlBlaster and login
+    * Loop with start and stop embeded xmlBlaster. 
     */
    protected void testLoop() {
       boolean interactive = this.glob.getProperty().get("interactive", false);
@@ -47,11 +45,11 @@ public class Embeeded
       for(int i=0; i<n; i++) {
 
          if (interactive) {
-            log.info(ME, "Hit a key to start embeeded xmlBlaster #" + (i+1) + "/" + n);
+            log.info(ME, "Hit a key to start embedded xmlBlaster #" + (i+1) + "/" + n);
             try { System.in.read(); } catch(java.io.IOException e) {}
          }
          else {
-            log.info(ME, "********* Start embeeded xmlBlaster #" + (i+1) + "/" + n);
+            log.info(ME, "********* Start embedded xmlBlaster #" + (i+1) + "/" + n);
          }
 
          if (i==0) {
@@ -67,11 +65,11 @@ public class Embeeded
          ThreadLister.listAllThreads(System.out);
 
          if (interactive) {
-            log.info(ME, "Hit a key to stop embeeded xmlBlaster #" + (i+1) + "/" + n);
+            log.info(ME, "Hit a key to stop embedded xmlBlaster #" + (i+1) + "/" + n);
             try { System.in.read(); } catch(java.io.IOException e) {}
          }
          else {
-            log.info(ME, "********* Stop embeeded xmlBlaster #" + (i+1) + "/" + n);
+            log.info(ME, "********* Stop embedded xmlBlaster #" + (i+1) + "/" + n);
          }
 
          embeddedXmlBlaster.stopServer(true);
@@ -90,12 +88,12 @@ public class Embeeded
    /**
     * Invoke: 
     * <pre>
-    *   java org.xmlBlaster.test.memoryleak.Embeeded -interactive true
+    *   java org.xmlBlaster.test.memoryleak.Embedded -interactive true
     * <pre>
     */
    public static void main(String args[]) {
-      Embeeded embeeded = new Embeeded(new Global(args));
-      embeeded.testLoop();
+      Embedded embedded = new Embedded(new Global(args));
+      embedded.testLoop();
    }
 }
 
