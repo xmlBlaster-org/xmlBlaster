@@ -76,11 +76,12 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
    static MainGUI controlPanel = null;
 
    /**
-    * You need to call init() after construction.
+    * You need to call init() after construction. 
+    * Currently used by XmlBlasterClassLoader
     */
-   public Main() {
-      //System.out.println("Default constructor called ...");
-   }
+    public Main() {
+       //System.out.println("Default constructor called ...");
+    }
 
 
    public Main(Global glob, MainGUI controlPanel) {
@@ -91,16 +92,17 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 
 
    /**
-    * Start xmlBlaster.
+    * Start xmlBlaster using the properties from utilGlob
+    * without loading xmlBlaster.properties again
     * @param args The command line parameters
     */
    public Main(org.xmlBlaster.util.Global utilGlob) {
-      Global g = new Global(utilGlob); // engine.Global
-      init(g);
+      init(utilGlob);
    }
 
    /**
-    * Start xmlBlaster.
+    * Start xmlBlaster using the given properties
+    * and load xmlBlaster.properties.
     * @param args The command line parameters
     */
    public Main(String[] args) {
@@ -111,12 +113,23 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       return this.glob;
    }
 
-   public void init(org.xmlBlaster.util.Global g) {
-      init(new org.xmlBlaster.engine.Global(g, true));
+   /*
+    * Start xmlBlaster using the properties from utilGlob
+    * without loading xmlBlaster.properties again
+    */
+   public void init(org.xmlBlaster.util.Global utilGlob) {
+      org.xmlBlaster.engine.Global gg = 
+          new org.xmlBlaster.engine.Global(utilGlob.getProperty().getProperties(), false);
+      utilGlob.setId(gg.getId()); // Inherit backwards the cluster node id
+      init(gg);
    }
 
+   /*
+    * Start xmlBlaster using the given properties
+    * and load xmlBlaster.properties.
+    */
    public void init(java.util.Properties props) {
-      this.init(new org.xmlBlaster.engine.Global(props));
+      this.init(new org.xmlBlaster.engine.Global(props, true));
    }
 
    public final void init(Global glob)
