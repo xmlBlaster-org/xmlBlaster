@@ -69,6 +69,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      set CLASSPATH=%XMLBLASTER_HOME%/lib/test.jar;%CLASSPATH%
      set CLASSPATH=%JacORB_LIB%/jacorb.jar;%CLASSPATH%
      set CLASSPATH=%JacORB_LIB%/idl.jar;%CLASSPATH%
+     set CLASSPATH=%XMLBLASTER_HOME%/lib/gun-regexp-1.0.8.jar;%CLASSPATH%
      
      If you use the release version of xmlBlaster you should add the xmlBlaster.jar
      to your classpath environment.
