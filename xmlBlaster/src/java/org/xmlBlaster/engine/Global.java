@@ -584,9 +584,18 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       sb.append(" buildJavaVendor='").append(getBuildJavaVendor()).append("'");
       sb.append(" buildJavaVersion='").append(getBuildJavaVersion()).append("'");
       sb.append("\n   ");
+      sb.append(" java.vendor='").append(System.getProperty("java.vendor")).append("'");
+      sb.append(" java.version='").append(System.getProperty("java.version")).append("'");
+      sb.append("\n   ");
+      sb.append(" os.name='").append(System.getProperty("os.name")).append("'");
+      sb.append(" os.version='").append(System.getProperty("os.version")).append("'");
+      sb.append("\n   ");
       sb.append(" dumpTimestamp='").append(org.jutils.time.TimeHelper.getDateTimeDump(0)).append("'");
       //sb.append(" ='").append(get()).append("'");
       sb.append(">");
+      sb.append(offset).append(" <ThreadDump><![CDATA[");
+      sb.append(org.jutils.runtime.ThreadLister.listAllThreads());
+      sb.append(offset).append(" ]]></ThreadDump>");
       if (getAuthenticate() != null) {
          sb.append(getAuthenticate().toXml());
          if (getAuthenticate().getXmlBlaster() != null) {
