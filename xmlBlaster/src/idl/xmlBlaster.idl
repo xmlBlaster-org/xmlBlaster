@@ -3,8 +3,8 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.3 1999/11/08 22:37:38 ruff Exp $
-Comment:   PRE RELEASE
+           $Id: xmlBlaster.idl,v 1.4 1999/11/10 20:08:39 ruff Exp $
+Comment:   Not even alpha
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 ================================================================================
 */
