@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.14 2000/10/18 20:45:45 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.15 2000/10/24 11:00:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -152,7 +152,7 @@ public class TestPersistence extends TestCase implements I_Callback
    void checkContent(boolean checkContent)
    {
       String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
-      if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.FileDriver")) {
+      if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.filestore.FileDriver")) {
          Log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
