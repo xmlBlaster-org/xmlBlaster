@@ -3,7 +3,7 @@ Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.java,v 1.2 2002/05/11 09:36:26 ruff Exp $
+Version:   $Id: QueuePropertyBase.java,v 1.3 2002/05/17 19:03:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -51,7 +51,7 @@ public abstract class QueuePropertyBase
    protected int maxSize;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_BLOCK | Constants.ONOVERFLOW_DEADLETTER | Constants.ONOVERFLOW_DISCARDOLDEST */
-   public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_BLOCK;
+   public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_DEADLETTER;
    protected String onOverflow;
 
    /** Error handling when callback failed (after all retries etc.): Constants.ONOVERFLOW_DEADLETTER */
@@ -213,12 +213,12 @@ public abstract class QueuePropertyBase
       else if (Constants.ONOVERFLOW_DISCARDOLDEST.equalsIgnoreCase(onOverflow)) {
          this.onOverflow = Constants.ONOVERFLOW_DISCARDOLDEST;
 
-         Log.error(ME, "queue onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to blocking mode");
-         this.onOverflow = Constants.ONOVERFLOW_BLOCK; // TODO !!!
+         this.onOverflow = Constants.ONOVERFLOW_DEADLETTER; // TODO !!!
+         Log.error(ME, "queue onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
       }
       else {
-         Log.warn(ME, "The queue onOverflow attribute is invalid '" + onOverflow + "', setting to 'deadLetter'");
-         this.onOverflow = Constants.ONOVERFLOW_BLOCK;
+         this.onOverflow = Constants.ONOVERFLOW_DEADLETTER;
+         Log.warn(ME, "The queue onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
       }
    }
 
