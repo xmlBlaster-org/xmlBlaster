@@ -139,7 +139,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
             this.glob.getJdbcQueueManager(this.queueId).registerListener(this);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "could not initialize the persistent queue. Is the JDBC Driver jar file in the CLASSPATH ? Is the DB up and running ?");
+            this.log.error(ME, "Could not initialize the persistent queue. Is the JDBC Driver jar file in the CLASSPATH ?" +
+                " Is the DB up and running ? We continue RAM based ..." + ex.getMessage());
             // start a polling thread to see if the connection can be established later 
 
          }
@@ -479,7 +480,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
          }
          else {
             ArrayList list = this.transientQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
-            if (list.size() > 0) {
+            if (list.size() > 0 && this.persistentQueue!=null) {
                this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
             }
             return list;
