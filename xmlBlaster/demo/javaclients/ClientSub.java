@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.26 2002/03/17 07:30:10 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.27 2002/03/17 13:30:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -183,22 +183,21 @@ public class ClientSub implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
     *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * @param cbSessionId The session ID specified by the client which registered the callback
+    * @param updateKey   The arrived key
+    * @param content     The arrived message content
+    * @param qos         Quality of Service of the MessageUnit
+    *
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       elapsed = System.currentTimeMillis() - startTime;
       numReceived++;
-      Log.info(ME, "Received asynchronous callback-update " + numReceived + " from xmlBlaster from publisher " + updateQoS.getSender() + " (latency=" + elapsed + "milli seconds):");
+      Log.info(ME, "Received asynchronous callback-update " + numReceived + " with cbSessionId='" + cbSessionId + "' from xmlBlaster from publisher " + updateQoS.getSender() + " (latency=" + elapsed + " milli seconds):");
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
       Log.plain("UpdateQoS", updateQoS.toXml());
