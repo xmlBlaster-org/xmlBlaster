@@ -266,7 +266,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          if (qosData.getSender() == null) {
             qosData.setSender(sessionInfo.getSessionName());
          }
-         else if (!sessionInfo.getSessionName().equals(qosData.getSender())) {
+         else if (!sessionInfo.getSessionName().equalsAbsolute(qosData.getSender())) {
             //if (! publishQos.isFromPersistenceStore()) {
             log.warn(ME, sessionInfo.getId() + " sends message '" + key.getOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
             qosData.setSender(sessionInfo.getSessionName());
