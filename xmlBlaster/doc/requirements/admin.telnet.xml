@@ -97,7 +97,7 @@
   CMD> set ?runlevel=3 
 
   set ?runlevel=3
-  /node/heron/?runlevel=/node/heron/?runlevel=3
+  /node/heron/?runlevel=3
     </pre>
 
     <p>
@@ -149,7 +149,7 @@
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
