@@ -966,7 +966,7 @@ public class Global implements Cloneable
     public SAXParserFactory getSAXParserFactory() throws XmlBlasterException{
       if ( saxFactory == null) {
          try {
-            log.info(ME, getProperty().toXml());
+            if (log.DUMP) log.dump(ME, getProperty().toXml());
             saxFactory = JAXPFactory.newSAXParserFactory(
                getProperty().get(
                   "javax.xml.parsers.SAXParserFactory", 
@@ -987,7 +987,7 @@ public class Global implements Cloneable
    public DocumentBuilderFactory getDocumentBuilderFactory()throws XmlBlasterException {
       if ( docBuilderFactory == null) {
          try {
-            log.info(ME, getProperty().toXml());
+            if (log.DUMP) log.dump(ME, getProperty().toXml());
             docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
                getProperty().get(
                   "javax.xml.parsers.DocumentBuilderFactory", 
