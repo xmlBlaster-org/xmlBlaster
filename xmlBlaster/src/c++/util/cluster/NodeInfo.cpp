@@ -262,7 +262,7 @@ string NodeInfo::getId() const
     * Dump state of this object into a XML ASCII string.
     * @param extraOffset indenting of tags for nice output
     */
-   string NodeInfo::toXml(const string& extraOffset="")
+   string NodeInfo::toXml(const string& extraOffset)
    {
       string ret;
       string offset = "\n   ";
