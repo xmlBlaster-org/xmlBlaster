@@ -2095,10 +2095,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
    }
    public String getGc() {
+      if (log.TRACE) log.trace(ME, "Garbage collector is activated");
       System.gc();
       return "OK";
    }
    public void setGc(String dummy) {
+      if (log.TRACE) log.trace(ME, "Garbage collector is activated");
       System.gc();
    }
 
