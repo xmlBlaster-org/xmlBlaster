@@ -51,7 +51,7 @@ ParserFactory::ParserFactory(Global& global) :
       char* message = XMLString::transcode(toCatch.getMessage());
       std::string txt = std::string("Constructor - error during initialization. Exception message is: ") + std::string(message);
       log_.error(ME, txt);
-      XMLString::release(&message);
+      Sax2Parser::releaseXMLCh(&message);
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
 }
@@ -91,7 +91,7 @@ I_Parser* ParserFactory::createParser(XmlHandlerBase *handler)
       char* message = XMLString::transcode(toCatch.getMessage());
       std::string txt = std::string("createParser: error during SAX parser initialization. Exception message is: ") + std::string(message);
       log_.error(ME, txt);
-      XMLString::release(&message);
+      Sax2Parser::releaseXMLCh(&message);
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
 }
