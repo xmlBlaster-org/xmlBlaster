@@ -135,6 +135,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     */
    public XmlScriptInterpreter(Global glob, I_XmlBlasterAccess access, I_Callback callback, HashMap attachments, OutputStream out) {
       super();
+      setUseLexicalHandler(true);
       this.glob = glob;
       this.log = glob.getLog("script");
       this.commandsToFire.add("get");
@@ -582,6 +583,28 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
    }
 
+   public void startCDATA() {
+      if (this.log.CALL) this.log.call(ME, "startCDATA");
+      // append on the corresponding buffer
+      if (this.inQos > 0) this.qos.append("<![CDATA[");
+      else if (this.inKey > 0) this.key.append("<![CDATA[");
+      else if (this.inContent > 0) this.content.append("<![CDATA[");
+      else super.character.append("<![CDATA[");
+   }
+   
+   public void endCDATA() {
+      if (this.log.CALL) {
+         String txt = "";
+         if (this.qos != null) this.qos.toString();
+         this.log.call(ME, "endCDATA: " + txt);
+      }
+      // append on the corresponding buffer
+      if (this.inQos > 0) this.qos.append("]]>");
+      else if (this.inKey > 0) this.key.append("]]>");
+      else if (this.inContent > 0) this.content.append("]]>");
+      else super.character.append("]]>");
+   }
+   
    public static void main(String[] args) {
       String request = "<xmlBlaster>\n" +
                        "  <connect>" +
