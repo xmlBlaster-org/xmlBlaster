@@ -3,7 +3,7 @@ Name:      Timeout.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Timeout.java,v 1.1 2000/05/26 08:17:47 ruff Exp $
+Version:   $Id: Timeout.java,v 1.2 2000/05/26 08:23:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -65,14 +65,14 @@ public class Timeout extends Thread
 
 
    /**
-    * Starts the Timeout manager thread. 
+    * Starts the Timeout manager thread.
     */
    public void run()
    {
       Log.info(ME, "Starting Timeout thread ...");
       while (running) {
          long delay = 100000; // sleep veeery long
-         if (Log.TRACE) Log.trace(ME, "Looking if there is some timeout listener to notify");
+         // if (Log.TRACE) Log.trace(ME, "Looking if there is some timeout listener to notify");
          synchronized(map) {
             try {
                Long nextWakeup = (Long)map.firstKey();
@@ -93,15 +93,14 @@ public class Timeout extends Thread
                }
             }
             catch (NoSuchElementException e) {
-               if (Log.TRACE) Log.trace(ME, "The listener map is empty, nothing to do.");
+               // if (Log.TRACE) Log.trace(ME, "The listener map is empty, nothing to do.");
             }
          }
 
          try {
-            //theTimeout.sleep(delay);
             synchronized(theTimeout) { theTimeout.wait(delay); }
          } catch(InterruptedException i) {
-            if (Log.TRACE) Log.trace(ME, "Wakeing up, and check if there is something to do");
+            // if (Log.TRACE) Log.trace(ME, "Wakeing up, and check if there is something to do");
          }
       }
    }
@@ -135,7 +134,7 @@ public class Timeout extends Thread
             }
          }
       }
-      if (Log.TRACE) Log.trace(ME, "Added addTimeoutListener(" + delay + ") with key=" + key);
+      // if (Log.TRACE) Log.trace(ME, "Added addTimeoutListener(" + delay + ") with key=" + key);
       synchronized(theTimeout) { theTimeout.notify(); }
       return key;
    }
@@ -172,9 +171,9 @@ public class Timeout extends Thread
       }
    }
 
-   
+
    /**
-    * Helper holding the callback interface an some user data to be looped through. 
+    * Helper holding the callback interface an some user data to be looped through.
     */
    private class Container
    {
@@ -218,7 +217,7 @@ public class Timeout extends Thread
                Log.info(ME, "Timeout occurred for " + userData.toString() + " at " + time + " millis, real time failure=" + diff + " millis.");
             else
                Log.error(ME, "Wrong timeout occurred for " + userData.toString() + " at " + time + " millis, scheduled was " + keyArr[counter] + " , real time failure=" + diff + " millis.");
-            counter++; 
+            counter++;
          }
       }
 
@@ -246,7 +245,7 @@ public class Timeout extends Thread
          {
             if (counter == 0) { Date dd = new Date(); start = dd.getTime(); }
 
-            counter++; 
+            counter++;
 
             if (counter == numTimers) {
                Date dd = new Date();
