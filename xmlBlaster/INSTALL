@@ -333,8 +333,22 @@ One important note:
      java javaclients.ClientSub -iorFile /tmp/Blaster_Ref
 
 
+4. Variant using a naming service and corbaloc to find it.
 
-4. Variant using a naming service and a local web server to publish
+   Edit $HOME/jacorb.properties and set
+
+     ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
+     
+   start the naming service:
+
+     jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
+
+   start xmlBlaster (it will use the port 7608 from jacorb.properties): 
+
+     java -jar lib/xmlBlaster.jar
+
+
+5. Variant using a naming service and a local web server to publish
    the name service IOR.
 
    Assuming the document root of your web server is /usr/local/httpd/htdocs/NS_Ref:
