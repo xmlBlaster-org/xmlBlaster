@@ -26,7 +26,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <vector>
 #include <string>
 #include <util/Log.h>
-#include <util/qos/storage/TopicCacheProperty.h>
+#include <util/qos/storage/MsgUnitStoreProperty.h>
 #include <util/qos/storage/HistoryQueueProperty.h>
 
 using namespace org::xmlBlaster::util;
@@ -56,7 +56,7 @@ private:
    string                ME;
    Global&               global_;
    Log&                  log_;
-   TopicCacheProperty*   topicCacheProperty_;
+   MsgUnitStoreProperty*   msgUnitStoreProperty_;
    HistoryQueueProperty* historyQueueProperty_;
 
    /* If Pub/Sub style update: contains the subscribe ID which caused this topic */
@@ -105,14 +105,14 @@ public:
     */
    void setDestroyDelay(long destroyDelay);
 
-   bool hasTopicCacheProperty();
+   bool hasMsgUnitStoreProperty();
 
    /**
     * @return the configuration of the message store, is never null
     */
-   TopicCacheProperty getTopicCacheProperty();
+   MsgUnitStoreProperty getMsgUnitStoreProperty();
 
-   void setTopicCacheProperty(const TopicCacheProperty& topicCacheProperty);
+   void setMsgUnitStoreProperty(const MsgUnitStoreProperty& msgUnitStoreProperty);
 
    bool hasHistoryQueueProperty();
 

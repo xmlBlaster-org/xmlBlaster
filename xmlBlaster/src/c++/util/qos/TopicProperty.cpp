@@ -51,10 +51,10 @@ Dll_Export const bool DEFAULT_readonly = false;
 
    void TopicProperty::copy(const TopicProperty& prop)
    {
-     topicCacheProperty_ = NULL;
+     msgUnitStoreProperty_ = NULL;
      historyQueueProperty_ = NULL;
-     if (prop.topicCacheProperty_)
-        topicCacheProperty_ = new TopicCacheProperty(*prop.topicCacheProperty_);
+     if (prop.msgUnitStoreProperty_)
+        msgUnitStoreProperty_ = new MsgUnitStoreProperty(*prop.msgUnitStoreProperty_);
      if (prop.historyQueueProperty_)
         historyQueueProperty_ = new HistoryQueueProperty(*prop.historyQueueProperty_);
 
@@ -68,7 +68,7 @@ Dll_Export const bool DEFAULT_readonly = false;
    TopicProperty::TopicProperty(Global& global)
       : ME("TopicProperty"), global_(global), log_(global.getLog("core"))
    {
-      topicCacheProperty_  = NULL;
+      msgUnitStoreProperty_  = NULL;
       historyQueueProperty_= NULL;
       destroyDelay_DEFAULT = global_.getProperty().getLongProperty("topic.destroyDelay", destroyDelay_DEFAULT_DEFAULT);
 
@@ -91,7 +91,7 @@ Dll_Export const bool DEFAULT_readonly = false;
 
    TopicProperty::~TopicProperty()
    {
-      delete topicCacheProperty_;
+      delete msgUnitStoreProperty_;
       delete historyQueueProperty_;
    }
 
@@ -127,29 +127,29 @@ Dll_Export const bool DEFAULT_readonly = false;
       destroyDelay_ = destroyDelay;
    }
 
-   bool TopicProperty::hasTopicCacheProperty()
+   bool TopicProperty::hasMsgUnitStoreProperty()
    {
-      return (topicCacheProperty_ != NULL);
+      return (msgUnitStoreProperty_ != NULL);
    }
 
    /**
     * @return the configuration of the message store, is never null
     */
-   TopicCacheProperty TopicProperty::getTopicCacheProperty()
+   MsgUnitStoreProperty TopicProperty::getMsgUnitStoreProperty()
    {
-      if (topicCacheProperty_ == NULL) {
-         topicCacheProperty_ = new TopicCacheProperty(global_, /*global_.getId()*/ "");
+      if (msgUnitStoreProperty_ == NULL) {
+         msgUnitStoreProperty_ = new MsgUnitStoreProperty(global_, /*global_.getId()*/ "");
       }
-      return *topicCacheProperty_;
+      return *msgUnitStoreProperty_;
    }
 
-   void TopicProperty::setTopicCacheProperty(const TopicCacheProperty& topicCacheProperty)
+   void TopicProperty::setMsgUnitStoreProperty(const MsgUnitStoreProperty& msgUnitStoreProperty)
    {
-      if (topicCacheProperty_) {
-         delete topicCacheProperty_;
-         topicCacheProperty_ = NULL;
+      if (msgUnitStoreProperty_) {
+         delete msgUnitStoreProperty_;
+         msgUnitStoreProperty_ = NULL;
       }
-      topicCacheProperty_ = new TopicCacheProperty(topicCacheProperty);
+      msgUnitStoreProperty_ = new MsgUnitStoreProperty(msgUnitStoreProperty);
    }
 
    bool TopicProperty::hasHistoryQueueProperty()
@@ -194,8 +194,8 @@ Dll_Export const bool DEFAULT_readonly = false;
       ret += ">";
       //string subscriptionId;
 
-      if (hasTopicCacheProperty()) {
-         ret += getTopicCacheProperty().toXml(extraOffset+Constants::INDENT);
+      if (hasMsgUnitStoreProperty()) {
+         ret += getMsgUnitStoreProperty().toXml(extraOffset+Constants::INDENT);
       }
       if (hasHistoryQueueProperty()) {
          ret += getHistoryQueueProperty().toXml(extraOffset+Constants::INDENT);

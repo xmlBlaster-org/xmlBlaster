@@ -104,7 +104,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       queuePropertyFactory_.startElement(name, attrs);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "msgstore") || inMsgstore_) {
+   if (SaxHandlerBase::caseCompare(name, "msgUnitStore") || inMsgstore_) {
       if (!inQos_) return;
       inMsgstore_ = true;
       queuePropertyFactory_.startElement(name, attrs);
@@ -172,7 +172,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       if (getLongAttr(attrs, REMAINING_LIFE, tmpLong)) msgQosData_.setRemainingLifeStatic(tmpLong);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "topic")) {
+   if (SaxHandlerBase::caseCompare(name, "msgUnitStore")) {
       if (!inQos_) return;
       inTopic_ = true;
       TopicProperty tmpProp(global_);
@@ -290,18 +290,18 @@ void MsgQosFactory::endElement(const XMLCh* const name)
             msgQosData_.setTopicProperty(tmpProp);
          }
          else if (relating == Constants::RELATING_TOPICCACHE) {
-            tmpProp.setTopicCacheProperty(tmp);
+            tmpProp.setMsgUnitStoreProperty(tmp);
             msgQosData_.setTopicProperty(tmpProp);
          }
          return;
       }
 
-      if(SaxHandlerBase::caseCompare(name, "msgstore")) {
+      if(SaxHandlerBase::caseCompare(name, "msgUnitStore")) {
          inMsgstore_ = false;
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
          TopicProperty tmpProp = msgQosData_.getTopicProperty();
-         tmpProp.setTopicCacheProperty(tmp);
+         tmpProp.setMsgUnitStoreProperty(tmp);
          msgQosData_.setTopicProperty(tmpProp);
          return;
       }
@@ -345,7 +345,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       character_.erase();
       return;
    }
-   if(SaxHandlerBase::caseCompare(name, "topic")) {
+   if(SaxHandlerBase::caseCompare(name, "msgUnitStore")) {
       inTopic_ = false;
       character_.erase();
       return;
