@@ -15,6 +15,32 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <vector>
 #include <map>
 
+/* The following comment is used by doxygen for the main html page: */
+/*! \mainpage Hints about the C++ client library usage.
+ *
+ * \section intro_sec The C++ client library
+ *
+ * The xmlBlaster C++ client library supports access to xmlBlaster with asynchronous callbacks,
+ * client side queuing and fail safe reconnect using the CORBA or SOCKET protocol plugin.
+ * Details about compilation and its usage can be found in the 
+ * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html requirement.
+ *
+ * As a C++ developer your entry point to use is the class org::xmlBlaster::client::XmlBlasterAccess and
+ * a complete overview demo code is HelloWorld2.cpp
+ *
+ * \section c_sec The C client library
+ * The C client library offers some basic functionality like the SOCKET protocol with
+ * the struct #XmlBlasterAccessUnparsed or persistent queues with struct #I_Queue.
+ * These features are heavily used by the C++ library.
+ * If you need a tiny xmlBlaster access you can choose to use the C client library directly
+ * without any C++ code.
+ *
+ * For details read the
+ * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html requirement and the
+ * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html requirement.
+ * and look at the API documentation at http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/index.html
+ */
+
 // Note: I_ConnectionProblems.h includes I_ConnectionsHandler.h includes I_XmlBlasterConnection.h
 //       which includes all EraseQos, SubscribeKey etc.
 //       -> We could try to avoid this by forward declaration, but all cpp files must
@@ -34,7 +60,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
 namespace org { namespace xmlBlaster { namespace client {
 
-/**
+/*
  * <p>
  * The interface org::xmlBlaster::client::I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
@@ -43,6 +69,9 @@ namespace org { namespace xmlBlaster { namespace client {
 
 typedef std::map<std::string, I_Callback*> CallbackMapType;
 
+/**
+ * This is the main entry point for programmers to the C++ client library. 
+ */
 class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback
 {
 private:
@@ -246,28 +275,28 @@ public:
     */
    long flushQueue();
 
-	/**
-	 * Same as isAlive() || isPolling()
-	 * @return true if connect() call was successful, even if we are polling
-	 */
+   /**
+    * Same as isAlive() || isPolling()
+    * @return true if connect() call was successful, even if we are polling
+    */
    bool isConnected() const;
 
-	/**
-	 * Check if we are 'online'. 
-	 * @return true if connected with server and ready
-	 */
+   /**
+    * Check if we are 'online'. 
+    * @return true if connected with server and ready
+    */
    bool isAlive() const;
 
-	/**
-	 * Check if we are polling for the server. 
-	 * @return true if polling for the server
-	 */
+   /**
+    * Check if we are polling for the server. 
+    * @return true if polling for the server
+    */
    bool isPolling() const;
 
-	/**
-	 * Check if this handle is still useful
-	 * @return true if we have given up
-	 */
+   /**
+    * Check if this handle is still useful
+    * @return true if we have given up
+    */
    bool isDead() const;
 
    /**
