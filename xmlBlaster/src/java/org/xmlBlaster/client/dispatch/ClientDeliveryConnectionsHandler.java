@@ -132,7 +132,9 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
             ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQos().getData());
             if (!connectReturnQos.getSessionName().isPubSessionIdUser()) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
-                  "Please provide a public session ID to support polling for xmlBlaster without an initial connection. " +
+                  "Can't find an xmlBlaster server. Try to provide the server host/port as described in " +
+                  "http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html " +
+                  "or provide a public session ID to support polling for xmlBlaster without an initial connection. " +
                   "See 'http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html' for more details.");
             }
             msgQueueEntry.setReturnObj(connectReturnQos);
