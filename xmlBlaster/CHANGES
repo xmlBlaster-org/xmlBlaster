@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o Added support for OmniORB 4.0.1 (C++ client library)
+
+ o BUGFIX C++ object cleanup by Martin Johnson
+
  o Removed deprecated property scanning precedence, see PropEnv.java
 
  o BUGFIX to report nicer wrong configuration setting
