@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.4 2002/02/13 17:24:30 ruff Exp $
+Version:   $Id: Parser.java,v 1.5 2002/02/13 17:50:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -21,7 +21,52 @@ import java.io.ByteArrayInputStream;
 import java.util.Vector;
 
 /**
- * Parser class for raw socket messages
+ * Parser class for raw socket messages. 
+ * <br />
+ * This class creates and parses raw byte[] messages which can be used
+ * to transfer over a socket connection.
+ * <br />
+ * Please read the requirement specification
+ * <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirement/protocol.socket.html">protocol.socket</a>
+ *
+ * <pre>
+ *  msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkSum[10]
+ *  +---------+-------+------ -*----------*-----------*-----------*-----------+----------+
+ *
+ *
+ *  The 'userData' consists of 0-n of these:
+ *
+ *  qos      key    len   content
+ *  +-----*---------*-----*----------+
+ *
+ *
+ *  Examples, '*' marks a null byte and '|' is just to show the boundary (is not part of the message):
+ *
+ *  Testing qos/key/content
+ *  |        83**I**17711*publish*oxf6hZs**<qos></qos>*<key oid='hello'/>*11*Hello world|
+ *
+ *  Testing qos/key
+ *  |        70**I**17711*get*oxf6hZs**<qos></qos>*<key oid='ooo'></key>*0*|
+ *
+ *  Testing qos
+ *  |        49**I**17711*get*oxf6hZs**<qos></qos>**0*|
+ *
+ *  Testing nothing
+ *  |        38**I**17711*get*oxf6hZs****0*|
+ *
+ *  Testing ping:
+ *  |        29**I**11*ping*****0*|
+ *
+ *  Testing XmlBlasterException
+ *  |        76**E**17711*get*oxf6hZs**Parser*An XmlBlasterException test only*0*|
+ *
+ *  Testing qos/key/content return value
+ *  |        85**R**17711*publish***<qos></qos>*<key oid='hello'/>*20*Hello world response|
+ *
+ *  Testing a QoS return value
+ *  |        59**R**17711*get***<qos><state>OK</state></qos>**0*|
+ *
+ * </pre>
  * @author ruff@swand.lake.de
  */
 public class Parser extends Converter
@@ -187,7 +232,13 @@ public class Parser extends Converter
       msgVec.add(msg);
    }
 
+   public Vector getMessages() {
+      return msgVec;
+   }
+
    /**
+    * This parses the raw message from an InputStream (typically from a socket).
+    * Use the get...() methods to access the data.
     */
    public void parse(InputStream inputStream) throws XmlBlasterException {
 
@@ -454,7 +505,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -462,7 +513,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -483,7 +534,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -491,7 +542,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -513,7 +564,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -521,7 +572,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -541,7 +592,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -549,7 +600,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -561,7 +612,7 @@ public class Parser extends Converter
          {
             rawMsg = "        10".getBytes();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -569,7 +620,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if ("        29**I**11*ping*****0*".equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -593,7 +644,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -601,7 +652,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -624,7 +675,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -632,7 +683,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
@@ -653,7 +704,7 @@ public class Parser extends Converter
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
             Parser receiver = new Parser();
@@ -661,7 +712,7 @@ public class Parser extends Converter
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n>" + receive + "<");
+            System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
