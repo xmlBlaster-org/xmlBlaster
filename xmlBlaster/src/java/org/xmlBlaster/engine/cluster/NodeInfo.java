@@ -29,8 +29,6 @@ public final class NodeInfo
 
    private NodeId nodeId;
 
-   private Address address = new Address(); // ?? current address
-
    private Address tmpAddress = null; // Helper for SAX parsing
    private Map addressMap = null;
 
@@ -79,16 +77,19 @@ public final class NodeInfo
    /**
     * Access the currently used address to access the node
     */
-   public Address getAddress(){
-      return address;
+   public Address getAddress() {
+      if (addressMap == null) return null;
+      return (Address)addressMap.values().iterator().next();
    }
 
    /**
     * Add another address for this cluster node. 
+    * <p />
+    * The map is sorted with the same sequence as the given XML sequence
     */
    public void addAddress(Address address){
       if (addressMap == null) addressMap = new TreeMap();
-      this.addressMap.put(address.getAddress(), address);
+      this.addressMap.put(""+addressMap.size(), address);
    }
 
    /**

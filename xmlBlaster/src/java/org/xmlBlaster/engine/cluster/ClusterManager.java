@@ -68,7 +68,8 @@ public final class ClusterManager
       if (loadBalancer == null) {
          String tmp = "No load balancer plugin type='" + this.pluginLoadBalancerType + "' version='" + this.pluginLoadBalancerVersion + "' found, clustering switched off";
          Log.error(ME, tmp);
-         throw new XmlBlasterException(ME, tmp);
+         //Thread.currentThread().dumpStack();
+         throw new XmlBlasterException("ClusterManager.PluginFailed", tmp); // is caught in RequestBroker.java
       }
 
       this.clusterNodeMap = new HashMap();
@@ -233,6 +234,7 @@ public final class ClusterManager
       return (ClusterNode)this.clusterNodeMap.get(id);
    }
 
+   /*
    public final void addConnection(NodeId nodeId, XmlBlasterConnection connection) throws XmlBlasterException {
       ClusterNode info = getClusterNode(nodeId);
       if (info == null)
@@ -248,6 +250,7 @@ public final class ClusterManager
       }
       info.resetXmlBlasterConnection();
    }
+   */
 
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
@@ -255,18 +258,20 @@ public final class ClusterManager
     */
    public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
 
-      if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + ")");
+      if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
 
       // Search all other cluster nodes to find the masters of this message ...
 
       Set masterSet = new TreeSet(); // Contains the ClusterNode objects which match this message
+      int numRulesFound = 0;         // For nicer logging of warnings
 
       Iterator it = getClusterNodeMap().values().iterator();
       // for each cluster node ...
       while (it.hasNext()) {
          ClusterNode clusterNode = (ClusterNode)it.next();
          Iterator domains = clusterNode.getDomainInfoMap().values().iterator();
-
+         if (log.TRACE) log.trace(ME, "Testing " + clusterNode.getDomainInfoMap().size() + " domains rules of node " + clusterNode.getId());
+         numRulesFound += clusterNode.getDomainInfoMap().size();
          // for each domain mapping rule ...
          while (domains.hasNext()) {
             NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)domains.next();
@@ -289,7 +294,12 @@ public final class ClusterManager
       }
 
       if (masterSet.size() < 1) {
-         Log.warn(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         if (numRulesFound == 0) {
+            if (log.TRACE) log.trace(ME, "Using local node for message, no master mapping rules are known.");
+         }
+         else {
+            Log.warn(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         }
          return null;
       }
       if (masterSet.size() > 1) {

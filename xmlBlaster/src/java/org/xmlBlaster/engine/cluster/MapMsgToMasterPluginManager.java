@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.4 2002/04/23 08:03:38 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.5 2002/04/24 06:50:16 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -29,8 +29,11 @@ import java.util.Collections;
 public class MapMsgToMasterPluginManager extends PluginManagerBase {
 
    private static final String ME = "MapMsgToMasterPluginManager";
-   /** "org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster" */
-   private static final String defaultPluginName = null;
+   /**
+    * The default plugin "org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster" 
+    * is loaded if not otherwise specified.
+    */
+   private static final String defaultPluginName = "org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster";
    /** Entry name for xmlBlaster.properties: "MapMsgToMasterPlugin" */
    public static final String pluginPropertyName = "MapMsgToMasterPlugin";
 

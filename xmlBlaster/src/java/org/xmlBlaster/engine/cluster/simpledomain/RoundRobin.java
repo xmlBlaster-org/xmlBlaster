@@ -107,6 +107,19 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       if (counter >= clusterNodeSet.size()) // counter is our RoundRobin approach
          counter = 0;
 
+      /* !!!
+       TODO: We should sort the set/map after
+       "<available:stratum:nodeId>"
+       available := 0 OK, 1 polling, 2 unavailable
+       stratum   := 0 master, 1 stratum, 2 stratum ...
+
+       So we may choose a slave routing to a master,
+       the chosen stratum must smaller (closer to the master) than our current stratum
+       
+       There must be the possibility to use a slave instead of the master
+       directly (choosing the stratum which is exactly one smaller?)
+      */
+
       Iterator it = clusterNodeSet.iterator();
       int ii=0;
       while (it.hasNext()) {

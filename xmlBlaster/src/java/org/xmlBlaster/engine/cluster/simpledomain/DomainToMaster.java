@@ -152,7 +152,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
 
       // Now check if we are master
       if (preparedQuery.getDomain().equals(msgWrapper.getXmlKey().getDomain())) {
-         log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "', setting local node as master");
+         log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'.");
          return nodeDomainInfo.getClusterNode(); // Found the master
       }
 
