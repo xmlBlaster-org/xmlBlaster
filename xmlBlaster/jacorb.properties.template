@@ -8,49 +8,74 @@
 
 # number of retries if connection cannot directly be established
 jacorb.retries=1
+
+# how many msecs. do we wait between retries
 jacorb.retry_interval=1000
 
 # size of network buffers for outgoing messages
 jacorb.outbuf_size=2048
 
+#
 # URL where IORs are stored (used in orb.resolve_initial_service())
-jacorb.NameServerURL=http://localhost:80/NS_Ref
-jacorb.TradingServiceURL=http://localhost:80/TS_Ref
-jacorb.ImplementationRepositoryURL=http://localhost:80/ImR_Ref
-jacorb.ProxyServerURL=http://localhost:80/Proxy_Ref
+# DO EDIT these!
 
-# client-side caching of object references
+jacorb.NameServerURL=http://localhost/~user/NS_Ref
+jacorb.TradingServiceURL=http://localhost/~user/TS_Ref
+jacorb.ImplementationRepositoryURL=http://localhost/~user/ImR_Ref
+jacorb.ProxyServerURL=http://localhost/~user/Appligator_Ref
+
+# client-side caching of object references can turned off,
+# but it should not normally as it prevents connection multiplexing
 jacorb.reference_caching=off
 
 # amount of diagnostic output, 0 is off
 jacorb.verbosity=1
 
-# standard name for servers if none is specified
-jacorb.implname=StandardImplName
-
 # where does output go? Terminal is default
-#jacorb.logfile=/tmp/JacORB.log
+#jacorb.logfile=/tmp/xmlBlasterOrb.log
+
+# Switch off to avoid contacting the ImR on every server start-up
+jacorb.use_imr=off
 
 #
 # interceptor configuration, interceptors can be
 # configured out for performance
 #
+org.omg.PortableInterceptor.ORBInitializerClass.standard_init=jacorb.orb.standardInterceptors.IORInterceptorInitializer
+
+# leave these turned off if you aren't using them
 jacorb.interceptor.client.Requests=off
 jacorb.interceptor.client.Messages=off
 jacorb.interceptor.server.Messages=off
 jacorb.interceptor.server.Requests=off
 jacorb.interceptor.perObject=off
 
+# the implementation name, should be set to a different 
+# name in the code of persistent servers
+jacorb.implname=StandardImplName
+
 #
 # Implementation Repository Configuration Options
 #
-jacorb.imr.table_file=/home/bwana/brose/table.dat
-jacorb.imr.backup_file=/home/bwana/brose/backup.dat
-jacorb.imr.ior_file=/home/bwana/brose/public_html/ImR_Ref
+jacorb.imr.table_file=/tmp/table.dat
+jacorb.imr.backup_file=/tmp/backup.dat
+jacorb.imr.ior_file=/tmp/public_html/ImR_Ref
 jacorb.imr.timeout=
 jacorb.imr.no_of_poas=
 jacorb.imr.no_of_servers=
-jacorb.imr.SSD.interpreter=jaco
+
+# 
+# SSL Setup options
+# 
+
+jacorb.security.support_ssl=off
+jacorb.security.enforce_ssl=off
+
+# the name of the default key alias to look up in the keystore
+jacorb.security.default_user=brose
+
+# the name and location of the keystore relative to the home directory
+jacorb.security.keystore=.keystore
 
 #
 # POA configuration
@@ -61,14 +86,25 @@ jacorb.poa.monitoring=off
 
 # thread pool configuration for request processing
 jacorb.poa.thread_pool_max=50
-jacorb.poa.thread_pool_min=10
-#jacorb.poa.thread_pool_max=1000
-#jacorb.poa.thread_pool_min=10
+jacorb.poa.thread_pool_min=5
+#jacorb.poa.thread_pool_max=20
+#jacorb.poa.thread_pool_min=5
+
+# if set, request processing threads in thePOA
+# will run at this priority. If not set or invalid,
+# MAX_PRIORITY will be used.
+#jacorb.poa.thread_priority=
 
 # size of the request queue, clients will receive Corba.TRANSIENT
 # exceptions if load exceeds this limit
-#jacorb.poa.queue_max=100
 jacorb.poa.queue_max=1000
+#jacorb.poa.queue_max=100
+
+#
+# Naming Service Configuration
+#
+# where to store persistent naming context state?
+jacorb.naming.db_dir=/tmp/jacorb_naming
 
 #
 # Trader configuration, please see
@@ -85,7 +121,7 @@ jtrader.impl.cache_max=100
 #jtrader.proxy_offers=
 
 jtrader.debug=false
-jtrader.debug_verbosity=0
+jtrader.debug_verbosity=3
 
 #integer values
 jtrader.def_search_card=
