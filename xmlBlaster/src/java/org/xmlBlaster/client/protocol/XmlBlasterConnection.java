@@ -487,20 +487,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Don't forget to authenticate yourself in the qos as well, e.g.
     * with loginName/Password schema:
     * <pre>
-    *    &lt;qos>\n" +
-    *       &lt;callback type='IOR'>\n" +
-    *          &lt;PtP>true&lt;/PtP>\n" +
-    *          IOR:00011200070009990000....\n" +
-    *          &lt;compress type='gzip' minSize='1000' />\n" +
-    *          &lt;burstMode collectTime='400' />\n" +
-    *       &lt;/callback>\n" +
-    *       &lt;securityService type=\"simple\" version=\"1.0\">\n" +
-    *          &lt;![CDATA[\n" +
-    *             &lt;user>aUser&lt;/user>\n" +
-    *             &lt;passwd>theUsersPwd&lt;/passwd>\n" +
-    *          ]]>\n" +
-    *       &lt;/securityService>\n" +
-    *    &lt;/qos>\n";
+    *    &lt;qos>
+    *       &lt;securityService type=\"simple\" version=\"1.0\">
+    *          &lt;![CDATA[
+    *             &lt;user>aUser&lt;/user>
+    *             &lt;passwd>theUsersPwd&lt;/passwd>
+    *          ]]>
+    *       &lt;/securityService>
+    *       &lt;callback type='IOR'>
+    *          &lt;PtP>true&lt;/PtP>
+    *          IOR:00011200070009990000....
+    *          &lt;compress type='gzip' minSize='1000' />
+    *          &lt;burstMode collectTime='400' />
+    *       &lt;/callback>
+    *    &lt;/qos>
     * </pre>
     * @param qos       The Quality of Service for this client,
     *                  you have to pass at least the authentication tags
