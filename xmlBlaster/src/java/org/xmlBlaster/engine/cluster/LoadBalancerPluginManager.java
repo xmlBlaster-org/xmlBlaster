@@ -3,7 +3,7 @@ Name:      LoadBalancerPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for load balancing
-Version:   $Id: LoadBalancerPluginManager.java,v 1.10 2002/06/10 22:36:20 ruff Exp $
+Version:   $Id: LoadBalancerPluginManager.java,v 1.11 2002/08/23 21:29:45 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -43,7 +43,7 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    }
 
    /**
-    * Return a specific MIME based message filter plugin. 
+    * Return a specific plugin. 
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
@@ -69,9 +69,9 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    }
 
    /**
-   * @return The name of the property in xmlBlaster.property "LoadBalancerPlugin"
-   * for "LoadBalancerPlugin[RoundRobin][1.0]"
-   */
+    * @return The name of the property in xmlBlaster.property "LoadBalancerPlugin"
+    * for "LoadBalancerPlugin[RoundRobin][1.0]"
+    */
    protected String getPluginPropertyName() {
       return pluginPropertyName;
    }
