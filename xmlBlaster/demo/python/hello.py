@@ -17,8 +17,18 @@ server = xmlrpclib.Server(server_url)
 
 
 # -----------------------------------------------------
-# Login to xmlBlaster
-sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "")
+# Login to xmlBlaster using a password file:
+#qos = "<qos><securityService type='htpasswd' version='1.0'> \
+#           <![CDATA[ \
+#             <user>michele</user> \
+#             <passwd>secret</passwd> \
+#           ]]> \
+#        </securityService></qos>";
+
+# Login to xmlBlaster using default authentication:
+qos = "<qos></qos>"
+
+sessionId = server.authenticate.login( "ben", "secret", qos, "")
 print "\nLogin success with on ", server_url, " sessionId=", sessionId
 
 
@@ -71,4 +81,3 @@ for msg in messages:
 # Logout from xmlBlaster
 server.authenticate.logout( sessionId ) #server.authenticate.logout( sessionId, "<qos></qos>" )
 print "\nLogout done, bye.\n"
-
