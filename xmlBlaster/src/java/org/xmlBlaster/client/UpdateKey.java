@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.8 1999/12/20 08:52:58 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.9 1999/12/20 18:56:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -222,7 +222,7 @@ public class UpdateKey extends SaxHandlerBase
          sb.append(" contentMime='").append(getContentMime()).append("'");
       if (contentMimeExtended != null)
          sb.append(" contentMimeExtended='").append(getContentMimeExtended()).append("'");
-      sb.append(">");
+      sb.append(">\n");
 
       sb.append(offset + "</key>\n");
       return sb;
