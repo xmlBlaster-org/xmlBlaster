@@ -73,7 +73,7 @@ public:
     * start a thread twice.
     * @return true if the thread could be started, false otherwise.
     */
-   bool start();
+   virtual bool start(bool detached);
 
    /** This is the method which has to be implemented by the user */
    virtual void run() = 0;
@@ -95,7 +95,7 @@ public:
     * Joins the thread to the current thread, in other words, the it will wait until the 
     * thread on which this method is invoked, will terminate, before it continues.
     */
-   void join();
+   virtual void join();
 
 
    bool isRunning() const

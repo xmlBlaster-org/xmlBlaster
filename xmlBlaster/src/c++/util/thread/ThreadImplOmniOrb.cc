@@ -51,6 +51,10 @@ public:
       owner_ = owner;
    }
    
+   /**
+    * The thread will execute the run() or run_undetached() member functions depending on
+    * whether start() or start_undetached() is called respectively.
+    */
    ThreadImpl(Thread* owner, int i /*void* (*fn)(void*)*/) : omni_thread(make_arg(i))
    {
       // std::cerr << "ThreadImpl: constructor invoked" << std::endl;
@@ -71,11 +75,23 @@ public:
       }
    }
 
+   /**
+    * Start depending on constructor used a detached or a joinable thread
+    */
+   void start()
+   {
+      omni_thread::start();
+   }
+
    void start_undetached()
    {
       omni_thread::start_undetached();
    }
 
+   /**
+    * Called by new thread when thread starts running, we delegate the call to our owner. 
+    * You need to call join() to clean up resources. 
+    */
    void* run_undetached(void*)
    { 
       try {
@@ -177,13 +193,16 @@ Thread::~Thread()
 // runner_ = NULL;
 }
 
-bool Thread::start()
+bool Thread::start(bool detached)
 {
    if (isStarted_) return false;
    isStarted_ = true;
 //   if (!runner_) runner_ = new ThreadRunner(*this);
    if (!thread_) thread_ = new ThreadImpl(this, 0);
-   thread_->start_undetached();
+   if (detached)
+      thread_->start();
+   else
+      thread_->start_undetached();
    return true;
 }
 
@@ -378,7 +397,7 @@ int main()
       threads[i] = new SimpleThread();
    }
 */
-   for (int i=0; i<imax; i++) threads[i].start();
+   for (int i=0; i<imax; i++) threads[i].start(false);
    cout << "The simple thread has been started" << endl;
    for (int i = 0; i < imax; i++) threads[i].join();
    cout << "The simple thread is now finished" << endl;
