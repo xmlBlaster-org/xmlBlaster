@@ -304,12 +304,12 @@ SELECT * FROM TEST_POLL ORDER BY CAR;
    <font color="red">&lt;attribute id='changeDetector.class'>
       org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector
    &lt;/attribute>
-   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
+   &lt;attribute id='changeDetector.groupColName'><b>CAR</b>&lt;/attribute>
    &lt;attribute id='changeDetector.detectStatement'>
-      SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL
+      SELECT <b>MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF'))</b> from TEST_POLL
    &lt;/attribute>
    &lt;attribute id='db.queryMeatStatement'>
-      SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR
+      SELECT * FROM TEST_POLL WHERE <b>TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}'</b> <b>ORDER BY CAR</b>
    &lt;/attribute></font>
    &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
               onFail='resource.configuration.pluginFailed'/>
@@ -449,12 +449,12 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
    <font color="red">&lt;attribute id='changeDetector.class'>
       org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector
    &lt;/attribute>
-   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
+   &lt;attribute id='changeDetector.groupColName'><b>CAR</b>&lt;/attribute>
    &lt;attribute id='changeDetector.detectStatement'>
-      SELECT color, car from TEST_POLL order by CAR
+      SELECT color, car from TEST_POLL order by <b>CAR</b>
    &lt;/attribute>
       &lt;attribute id='db.queryMeatStatement'>
-      SELECT * FROM TEST_POLL WHERE CAR = '${groupColValue}'
+      SELECT * FROM TEST_POLL WHERE <b>CAR</b> = '${groupColValue}'
    &lt;/attribute></font>
    &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
               onFail='resource.configuration.pluginFailed'/>
@@ -506,9 +506,9 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
    &lt;/attribute>
    &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
    &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
-   <font color="orange">&lt;attribute id='alertProducer.class'>org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher&lt;/attribute>
+   <font color="orange"><b>&lt;attribute id='alertProducer.class'>org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher&lt;/attribute>
    &lt;attribute id='mom.alertSubscribeKey'>&lt;key oid='checkDb'/>&lt;/attribute>
-   &lt;attribute id='mom.alertSubscribeQos'>&lt;qos/>&lt;/attribute></font>
+   &lt;attribute id='mom.alertSubscribeQos'>&lt;qos/>&lt;/attribute></b></font>
    &lt;attribute id='changeDetector.class'>
       org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector
    &lt;/attribute>
