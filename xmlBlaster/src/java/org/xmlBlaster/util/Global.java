@@ -1069,20 +1069,20 @@ public class Global implements Cloneable
     * You can set "-port 0" to avoid starting the internal HTTP server
     */
    public final Address getBootstrapAddress() {
-      if (bootstrapAddress == null) {
+      if (this.bootstrapAddress == null) {
          synchronized (this) {
-            if (bootstrapAddress == null) {
+            if (this.bootstrapAddress == null) {
                if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
-               bootstrapAddress = new Address(this);
-               bootstrapAddress.setHostname(getBootstrapHostname());
-               bootstrapAddress.setPort(getBootstrapPort());
-               bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
-               if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + bootstrapAddress.getHostname() +
-                              " port=" + bootstrapAddress.getPort() + ": " + bootstrapAddress.getAddress());
+               this.bootstrapAddress = new Address(this);
+               this.bootstrapAddress.setHostname(getBootstrapHostname());
+               this.bootstrapAddress.setPort(getBootstrapPort());
+               this.bootstrapAddress.setAddress("http://" + this.bootstrapAddress.getHostname() + ":" + this.bootstrapAddress.getPort());
+               if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getHostname() +
+                              " port=" + this.bootstrapAddress.getPort() + ": " + this.bootstrapAddress.getAddress());
             }
          }
       }
-      return bootstrapAddress;
+      return this.bootstrapAddress;
    }
 
    /**
@@ -1887,6 +1887,7 @@ public class Global implements Cloneable
     * <p>
     * NOTE: On server side engine.Global.getXmlBlasterAccess() returns the native access handle.
     * </p>
+    * @exception IllegalArgumentException If we are extended by engine.Global (use getClone() to create a util.Global)
     */
    public I_XmlBlasterAccess getXmlBlasterAccess() {
       if (this.xmlBlasterAccess == null) {
