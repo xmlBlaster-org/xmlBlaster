@@ -70,7 +70,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String updateExceptionErrorCode;
    private String updateExceptionMessage;
    private String updateExceptionRuntime;
-        private int maxContentLength;
+   private int maxContentLength;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -91,6 +91,7 @@ public class HelloWorldSubscribe implements I_Callback
          String xpath = glob.getProperty().get("xpath", "");
          boolean multiSubscribe = glob.getProperty().get("multiSubscribe", true);
          boolean persistentSubscribe = glob.getProperty().get("persistentSubscribe", false);
+         boolean notifyOnErase = glob.getProperty().get("notifyOnErase", true);
          boolean local = glob.getProperty().get("local", true);
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
          boolean wantContent = glob.getProperty().get("wantContent", true);
@@ -139,6 +140,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -xpath             " + xpath);
          log.info(ME, "   -multiSubscribe    " + multiSubscribe);
          log.info(ME, "   -persistentSubscribe " + persistentSubscribe);
+         log.info(ME, "   -notifyOnErase     " + notifyOnErase);
          log.info(ME, "   -local             " + local);
          log.info(ME, "   -initialUpdate     " + initialUpdate);
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
@@ -180,6 +182,7 @@ public class HelloWorldSubscribe implements I_Callback
          sq.setWantInitialUpdate(initialUpdate);
          sq.setMultiSubscribe(multiSubscribe);
          sq.setPersistent(persistentSubscribe);
+         sq.setWantNotify(notifyOnErase);
          sq.setWantLocal(local);
          sq.setWantContent(wantContent);
          
@@ -268,12 +271,13 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println("<xmlBlaster>");
       System.out.println(updateKey.toXml());
       System.out.println("");
-      System.out.println("<content>");
-      if (content.length > maxContentLength) {
-         System.out.println("  <length>"+content.length+"</length>");
+      System.out.println("<content size='"+content.length+"'>");
+      if (content.length < maxContentLength) {
+         System.out.println(new String(content));
       }
       else {
-         System.out.println(new String(content));
+         String str = new String(content);
+         System.out.println(str.substring(0,maxContentLength-5) + " ...");
       }
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
