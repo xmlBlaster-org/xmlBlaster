@@ -101,6 +101,45 @@ content="veeerrrrrylongcooontenttttttt"
          embrace your return value with a &lt;![CDATA[ ... ]]&gt; section.
       </p>
    </example>
+
+   <example lang="any" type="HTML">
+      <p>
+      Here are some typical use cases why to write a plugin:
+      </p>
+      <ul>
+         <li>
+          A publish plugin could for example eliminate identical messages.<br />
+          Imagine that multiple radar stations track the same
+          air plane.
+          You could use the plugin to filter them and only pass one radar
+          position of the same air plane further.
+         </li>
+
+         <li>
+            Another use case could be to reject messages which are to big,
+            or you could write a regex plugin and reject messages
+            with unwanted content.
+         </li>
+
+         <li>
+            Use the plugin for mime conversion (1).<br />
+            Imagine you receive documents in different formats like
+            Staroffice, Winword etc.<br />
+            You could write a little plugin for those mime types
+            and convert all messages to PDF or into some XML esperanto
+            format.
+         </li>
+
+         <li>
+            Use the plugin for mime conversion (2).<br />
+            Imagine you receive air pressure values in different units like
+            HPascal, Newton/sqare-millimeter, mbar, mm of mercury.<br />
+            You could write a little plugin for those mime types
+            and convert all messages to standardized HPascal.
+         </li>
+      </ul>
+   </example>
+
    <configuration where="server">
       <p>
       For coding and configuration of plugins please read the
@@ -115,7 +154,7 @@ content="veeerrrrrylongcooontenttttttt"
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
