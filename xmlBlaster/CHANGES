@@ -1,4 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+ 
+ o added setter and getter for subject queue property in ConnectQos
 
  o added a shuffler thread to forward entries from SubjectQueue to
    SessionQueue (to acheave Thread safety).
