@@ -76,11 +76,11 @@
       </p>
       <pre>
       <![CDATA[
-GetQosWrapper qos = new GetQosWrapper();
+   GetQosWrapper qos = new GetQosWrapper();
 
-qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", "a*b"));
+   qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", "a*b"));
 
-MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", qos.toXml());
+   MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", qos.toXml());
       ]]>
       </pre>
 
@@ -90,6 +90,12 @@ MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", q
       (in this case the regex plugin) and the fourth parameter add the query rule for
       the plugin (in this case a regular expression).
       </p>
+      <p>
+      You can play with regular expressions, just invoke (you need xmlBlaster.jar in your CLASSPATH):
+      </p>
+      <pre>
+   java RETest "aaa*b" "aab"
+      </pre>
    </example>
 
    <configuration where="server">
@@ -123,7 +129,7 @@ MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", q
    <see type="REQ">cluster</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
