@@ -824,6 +824,16 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the j2me demo                                              -->
    <!-- =================================================================== -->
+
+   <!--
+   <filelist id="j2me.preverify.cp" 
+             dir="${J2ME_HOME}/lib" 
+	     files="cldcapi11.jar,midpapi20.jar,${build.dir}/j2me/tmpclasses"/>
+   <pathconvert targetos="${os.family}"
+                property="j2me.preverify.cp}"
+		refid="j2me.preverify.cp}" />
+    -->
+
    <target name="j2me" depends="prepare" description="Compile j2me demo and packages it">
 
       <copy todir="${build.dir}/j2me/src/org/xmlBlaster/client/protocol/http/common">
@@ -845,9 +855,20 @@ TODO
             optimize="${optimize}"
             deprecation="${deprecation}"/>
 
-      <exec dir="." executable="${J2ME_HOME}/bin/preverify" vmlauncher="false">
-         <arg line="-classpath ${J2ME_HOME}/lib/cldcapi11.jar:${J2ME_HOME}/lib/midpapi20.jar:${build.dir}/j2me/tmpclasses  -d ${build.dir}/j2me/classes ${build.dir}/j2me/tmpclasses"/>
-      </exec>
+
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="windows">
+            <exec dir="." executable="${J2ME_HOME}/bin/preverify" vmlauncher="false">
+              <arg line="-classpath ${J2ME_HOME}\lib\cldcapi11.jar;${J2ME_HOME}\lib\midpapi20.jar;${build.dir}\j2me\tmpclasses -d ${build.dir}\j2me\classes ${build.dir}\j2me\tmpclasses"/>
+            </exec>
+         </case>
+         <default>
+            <exec dir="." executable="${J2ME_HOME}/bin/preverify" vmlauncher="false">
+              <arg line="-classpath ${J2ME_HOME}/lib/cldcapi11.jar:${J2ME_HOME}/lib/midpapi20.jar:${build.dir}/j2me/tmpclasses -d ${build.dir}/j2me/classes ${build.dir}/j2me/tmpclasses"/>
+            </exec>
+         </default>
+      </switch>
+
 
       <jar destfile="${build.dir}/j2me/lib/SystemInfo.jar" 
            basedir="${build.dir}/j2me/classes" 
