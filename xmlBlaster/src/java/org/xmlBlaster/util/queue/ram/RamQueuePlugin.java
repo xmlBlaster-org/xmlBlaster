@@ -896,11 +896,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#hasQueueSizeListener(I_QueueSizeListener)
     */
    public boolean hasQueueSizeListener(I_QueueSizeListener listener) {
-      synchronized(this.queueSizeListenerSync) {
-         if (listener == null)
-            return this.queueSizeListener != null;
-         else return this.queueSizeListener == listener;
-      }      
+      if (listener == null)
+         return this.queueSizeListener != null;
+      else
+         return this.queueSizeListener == listener;
    }
 }
 
