@@ -194,46 +194,13 @@ var Log = new LogHandler();
 
 
 /*
-   Copyright 1997 Stefan Mintert / Addison-Wesley
-   Use like this:
-   var varA = "Hello, ";
-   var varB = "world!";
-   "http://localhost" + var_encode("varA", "varB");
-   // the variable names are passed as a string
-   // The values are URL-encoded: http://localhost#varA%3DHello%2C%20%3BvarB%3Dworld%21
-   // %21 is hex value for '!'
-   // %3B is hex value for ';'
-   // %3D is hex value for '='
-   // %2C is hex value for ','
-   // %26 is hex value for '&'
-   // %20 is hex value for ' '
-   // http://www.xy.com/?flag=jfl&frame=yes&id=38aa6c5ccece7
+   Encoding example:
+   The values are URL-encoded: http://localhost#varA%3DHello%2C%20%3BvarB%3Dworld%21
+   %21 is hex value for '!'
+   %3B is hex value for ';'
+   %3D is hex value for '='
+   %2C is hex value for ','
+   %26 is hex value for '&'
+   %20 is hex value for ' '
+   http://www.xy.com/?flag=jfl&frame=yes&id=38aa6c5ccece7
 */
-function var_encode()
-{
-   var hashstring ="";
-   var wert
-
-   for (i = 0; i < arguments.length; i++)
-   {
-      hashstring += arguments[i]+"=";
-      wert = eval(arguments[i]);
-      hashstring += wert.toString();
-      if (i < arguments.length-1)
-        hashstring += ";";
-   }
-   return "#"+escape(hashstring);
-}
-
-function var_decode()
-{
-   var hashstring = self.location.hash;
-   var et_Position, name_wert, gleich_Position, name, wert;
-
-
-   if ( hashstring.charAt(0) == "#")
-     hashstring = hashstring.substr(1,hashstring.length);
-
-   eval(unescape(hashstring));
-
-}
