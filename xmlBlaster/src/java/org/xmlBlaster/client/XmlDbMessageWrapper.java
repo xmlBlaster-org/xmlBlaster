@@ -8,7 +8,7 @@ package org.xmlBlaster.client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -113,10 +113,10 @@ public class XmlDbMessageWrapper
     * <p />
     * You will receive the result set wrapped in XML with a asynchronous update().
     */
-   public MessageUnit toMessage() throws XmlBlasterException
+   public MsgUnit toMessage() throws XmlBlasterException
    {
       PublishQos qos = new PublishQos(glob, new Destination(new SessionName(Global.instance(), "__sys__jdbc")));
       PublishKey key = new PublishKey(glob, "", "text/xml", "SQL_QUERY");
-      return new MessageUnit(key.toXml(), toXml().getBytes(), qos.toXml());
+      return new MsgUnit(glob, key.getData(), toXml().getBytes(), qos.getData());
    }
 }

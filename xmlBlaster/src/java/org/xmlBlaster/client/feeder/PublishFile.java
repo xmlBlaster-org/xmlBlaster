@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.25 2002/11/26 12:38:01 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.26 2002/12/18 12:31:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
 import org.jutils.log.LogChannel;
@@ -212,8 +212,8 @@ public class PublishFile
    {
       if (log.TRACE) log.trace(ME, "Publishing the message ...\nKEY:\n" + xmlKey + "\nCONTENT-LENGTH=" + content.length + "\nQOS:\n" + qos);
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content, qos);
       try {
+         MsgUnit msgUnit = new MsgUnit(glob, xmlKey, content, qos);
          StopWatch stop = new StopWatch();
          PublishReturnQos publish = senderConnection.publish(msgUnit);
          log.info(ME, "Success: Publishing done: " + publish.toXml() + "\n" + stop.nice());
