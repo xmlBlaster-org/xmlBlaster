@@ -43,6 +43,24 @@ NOTE: http callbacks are tested with tomcat 3.2.x only.
    http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
 
 
+Configure the servlet
+=====================
+
+You can configure the servlet client parameters in
+
+  WEB-INF/web.xml
+  
+e.g. to find xmlBlaster on another host.
+
+Try
+
+  java HelloWorld3 -help
+
+to get a list of supported parameters and
+use them in web.xml to configure the servlet
+(omit the leading dash '-').
+
+
 Start it in the background on Linux:
 ====================================
 
