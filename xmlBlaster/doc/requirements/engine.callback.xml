@@ -246,6 +246,7 @@
    <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
    <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <see type="API">org.xmlBlaster.client.UpdateQoS</see>
+   <see type="API">testsuite.org.xmlBlaster.TestCallbackConfig</see>
    <see type="REQ">engine.queue</see>
    <see type="REQ">engine.qos.login.callback</see>
    <see type="REQ">util.property</see>
@@ -253,11 +254,16 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Check failure handling</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestCallback</test>
+   </testcase>
    <testcase status="INWORK">
       <name>-</name>
-      <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestCallback</test>
+      <comment>Check different configuration settings</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestCallbackConfig</test>
    </testcase>
 </requirement>
 
