@@ -3,7 +3,7 @@ Name:      PropertyDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: PropertyDef.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: PropertyDef.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #ifndef _UTIL_PROPERTYDEF_H

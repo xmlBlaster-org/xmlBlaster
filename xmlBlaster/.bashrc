@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.67 $
+# $Revision: 1.68 $
 #-----------------------------------------------------------
 
 

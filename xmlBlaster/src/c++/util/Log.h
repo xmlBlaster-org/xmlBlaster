@@ -3,7 +3,7 @@ Name:      Log.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: Log.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #define _TERM_WITH_COLORS_

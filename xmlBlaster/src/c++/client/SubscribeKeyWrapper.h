@@ -3,7 +3,7 @@ Name:      SubscribeKeyWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: SubscribeKeyWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 //  package org.xmlBlaster.client;

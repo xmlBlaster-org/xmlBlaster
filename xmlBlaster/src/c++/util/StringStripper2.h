@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to strip a string containing two kinds of separators into a 
            vector of pairs of strings.
-Version:   $Id: StringStripper2.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: StringStripper2.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 

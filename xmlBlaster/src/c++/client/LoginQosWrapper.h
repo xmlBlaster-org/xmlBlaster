@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: LoginQosWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_LOGINQOSWRAPPER_H

@@ -3,7 +3,7 @@ Name:      StopParseException.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Throw this exception to stop SAX parsing
-Version:   $Id: StopParseException.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: StopParseException.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_STOPPARSEEXCEPTION

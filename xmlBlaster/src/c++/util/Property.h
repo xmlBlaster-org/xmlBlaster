@@ -3,7 +3,7 @@ Name:      Property.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class used to read, store & write (java) properties.
-Version:   $Id: Property.h,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: Property.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_PROPERTY_H

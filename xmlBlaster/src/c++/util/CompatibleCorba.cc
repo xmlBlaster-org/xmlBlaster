@@ -3,7 +3,7 @@ Name:      CompatibleCorba.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cc,v 1.1 2000/07/06 22:55:44 laghi Exp $
+Version:   $Id: CompatibleCorba.cc,v 1.2 2000/07/06 23:42:27 laghi Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 ----------------------------------------------------------------------------*/
 

@@ -3,7 +3,7 @@ Name:      TestGet.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cc,v 1.1 2000/07/06 22:55:45 laghi Exp $
+Version:   $Id: TestGet.cc,v 1.2 2000/07/06 23:42:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <strstream.h>
