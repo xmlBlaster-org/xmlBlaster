@@ -45,6 +45,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 public class FileIO
 {
    private long currReadPos;
+   private long lastReadPos;
    private File f;
    private RandomAccessFile ra;
 
@@ -94,6 +95,7 @@ public class FileIO
     */
    public void initialize() throws IOException {
       currReadPos = -1L;
+      lastReadPos = currReadPos;
       numUnread = 0L;
       numLost = 0L;
 
@@ -160,6 +162,8 @@ public class FileIO
       if (pos > 0L) {
          ra.seek(currReadPos);
          Object data = userDataHandler.readData(ra);
+
+         lastReadPos = currReadPos;
          currReadPos = ra.getFilePointer();
 
          if (autoCommit) saveCurrReadPos();
@@ -172,6 +176,24 @@ public class FileIO
          ra.seek(24L);
          return null;
       }
+   }
+
+   /**
+    * Undo the last read, not that this is not thread save! 
+    * <p />
+    * Only one single undo is supported
+    * @return true if undo was possible
+    */
+   public synchronized boolean undo() {
+      boolean ret = (lastReadPos != currReadPos);
+      currReadPos = lastReadPos;
+      try {
+         saveCurrReadPos();
+      }
+      catch (IOException e) {
+         return false;
+      }
+      return ret;
    }
 
    /**
@@ -233,16 +255,19 @@ public class FileIO
       else if (f.length() > 24L) {
          ra.seek(0);
          currReadPos = ra.readLong(); // on restart
-         if (currReadPos == 0) currReadPos = 24L; // first time
+         if (currReadPos == 0) {
+            currReadPos = 24L; // first time
+            lastReadPos = currReadPos;
+         }
       }
       else {
          currReadPos = -1L;
+         lastReadPos = currReadPos;
       }
 
       if (currReadPos >= f.length()) {
-         currReadPos = -1L;  // EOF
-         f.delete();
-         System.out.println("EOF of '" + fileName + "' reached, all data read, initializing file");
+         f.delete(); // EOF
+         //System.out.println("FileIO: EOF of '" + fileName + "' reached, all data read, initializing file");
          initialize();
       }
 
@@ -315,6 +340,7 @@ public class FileIO
          ra = null;
       }
       currReadPos = -1L;
+      lastReadPos = currReadPos;
       numUnread = 0L;
       numLost = 0L;
    }

@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.4 2002/06/01 12:22:58 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.5 2002/06/02 21:18:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -19,6 +19,7 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
 import java.util.*;
@@ -58,9 +59,11 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    private I_XmlBlaster serverCallback = null;
    private I_CallbackRaw clientCallback = null;
 
-   private MessageUnit[] dummyMArr = new MessageUnit[0];
-   private String[] dummySArr = new String[0];
-   private String dummyS = "";
+   private final MessageUnit[] dummyMArr = new MessageUnit[0];
+   private final String[] dummySArr = new String[0];
+   private final String dummyS = new String();
+   private final PublishRetQos[] dummyPubRetQosArr = new PublishRetQos[0];
+   private PublishRetQos dummyPubRet;
 
 
    /** Empty constructor for plugin manager */
@@ -68,15 +71,13 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    
    /**
     * @param maxEntries The maximum number of invocations to store
-    * @param serverCallback You need to implement I_XmlBlaster to receive the invocations on playback
-    *                       null if you are not interested in those
-    * @param clientCallback You need to implement I_CallbackRaw to receive the invocations on playback
-    *                       null if you are not interested in those
+    * @see org.xmlBlaster.util.recorder.I_InvocationRecorder#initialize
     */
-   public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback,
+   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback,
                              I_CallbackRaw clientCallback)
    {
       this.log = glob.getLog("recorder");
+      this.dummyPubRet = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
       if (log.CALL) log.call(ME, "Initializing new RamRecorder(" + maxEntries + ") ...");
       if (maxEntries >= Integer.MAX_VALUE) {
          log.warn(ME, "Stripping queue size to Integer.MAX_VALUE");
@@ -86,6 +87,11 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
       log.info(ME, "Invocation recorder is initialized to queue max=" + maxEntries + " tail back messages on failure");
+   }
+
+   /** Returns the name of the database file or null if RAM based */
+   public String getFullFileName() {
+      return null;
    }
 
    /**
@@ -205,6 +211,17 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       }
    }
 
+   /**
+    * Playback the stored messages, the are removed from the recorder after the callback. 
+    * <p />
+    * The messages are retrieved with the given rate per second
+    * <p />
+    * NOTE: This is not implemented for this plugin!
+    * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds
+    */
+   public void pullback(float msgPerSec) throws XmlBlasterException {
+      throw new XmlBlasterException(ME, "Sorry, pullback(msgPerSec) is not implemented");
+   }
 
    /**
     * Reset the queue, throw all entries to garbage
@@ -234,7 +251,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
       // !!! implement similar to pullback() but using the iterator to process the queue
-      log.error(ME + ".NoImpl", "Sorry, only pullback is implemented");
+      log.error(ME + ".NoImpl", "Sorry, playback() is not implemented, use pullback() or implement it");
       throw new XmlBlasterException(ME + ".NoImpl", "Sorry, only pullback is implemented");
    }
 
@@ -339,7 +356,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public String publish(MessageUnit msgUnit) throws XmlBlasterException
+   public PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publish";
@@ -351,7 +368,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
-      return dummyS;
+      return dummyPubRet;
    }
 
 
@@ -373,7 +390,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishArr";
@@ -384,7 +401,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
-      return dummySArr;
+      return dummyPubRetQosArr;
    }
 
 

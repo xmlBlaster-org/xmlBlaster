@@ -3,7 +3,7 @@ Name:      RecorderPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for queuing of tail back messages
-Version:   $Id: RecorderPluginManager.java,v 1.3 2002/05/30 16:35:20 ruff Exp $
+Version:   $Id: RecorderPluginManager.java,v 1.4 2002/06/02 21:18:46 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -49,9 +49,10 @@ public class RecorderPluginManager extends PluginManagerBase {
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
+    * @param fn The file name for persistence or null (will be generated or ignored if RAM based)
     * @return The RecorderFilter for this type and version or null if none is specified
     */
-   public I_InvocationRecorder getPlugin(String type, String version, long maxEntries,
+   public I_InvocationRecorder getPlugin(String type, String version, String fn, long maxEntries,
              I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException {
 
       if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
@@ -64,7 +65,7 @@ public class RecorderPluginManager extends PluginManagerBase {
          plugin = (I_InvocationRecorder)managers.get(pluginNameAndParam[0]);
          if (plugin!=null) return plugin;
          plugin = loadPlugin(pluginNameAndParam);
-         plugin.initialize(glob, maxEntries, serverCallback, clientCallback);
+         plugin.initialize(glob, fn, maxEntries, serverCallback, clientCallback);
       }
       else {
          //throw new XmlBlasterException(ME+".notSupported","The requested invocation recorder isn't supported!");

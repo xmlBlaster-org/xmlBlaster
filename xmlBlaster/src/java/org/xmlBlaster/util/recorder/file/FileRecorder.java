@@ -15,6 +15,7 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.I_CallbackRaw;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
 import java.io.IOException;
@@ -50,13 +51,16 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private I_XmlBlaster serverCallback = null;
    private I_CallbackRaw clientCallback = null;
 
-   private MessageUnit[] dummyMArr = new MessageUnit[0];
-   private String[] dummySArr = new String[0];
-   private String dummyS = "";
+   private final MessageUnit[] dummyMArr = new MessageUnit[0];
+   private final String[] dummySArr = new String[0];
+   private final String dummyS = "";
+   private final PublishRetQos[] dummyPubRetQosArr = new PublishRetQos[0];
+   private PublishRetQos dummyPubRet;
 
    private long maxEntries;
 
-   private boolean autoCommit = true;
+   /** Automatically write curr pos to file? */
+   private boolean autoCommit = true; // only true is supported
   
 
    /**
@@ -73,14 +77,15 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    *      /home/michelle/tmp/fileRecorder/tailback-heron.frc
    * </pre>
    */
-   public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
+   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
    {
       this.glob = glob;
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
+      this.dummyPubRet = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
 
-      fileName = createPathString();
+      fileName = createPathString(fn);
 
       boolean useSync = glob.getProperty().get("recorder.useSync", false);
 
@@ -89,16 +94,16 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
          if (rb.getNumUnread() > 0) {
             boolean destroyOld = glob.getProperty().get("recorder.detroyOld", false);
             if (destroyOld) {
-               log.warn(ME, "Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "'.");
+               log.warn(ME, "Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "' as requested with option 'recorder.detroyOld=true'.");
                rb.destroy();
                rb.initialize();
             }
             else {
-               log.warn(ME, "Recovering " + rb.getNumUnread() + " unprocessed tail back messages from '" + fileName + "'.");
+               log.info(ME, "Found " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "'.");
             }
          }
          else {
-            log.info(ME, "Using persistence file '" + fileName + "' for tail back messages.");
+            if (log.TRACE) log.trace(ME, "Using persistence file '" + fileName + "' for tail back messages.");
          }
       }
       catch(IOException ex) {
@@ -108,17 +113,43 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       log.info(ME, "FileRecorder is ready, tail back messages are stored in '" + fileName + "'");
    }
 
-   private String createPathString() {
-      String fn = glob.getProperty().get("recorder.path", (String)null);
-      if (fn == null) {
-         fn = glob.getProperty().get("recorder.path["+glob.getId()+"]", (String)null);
+   /**
+    * Returns the name of the file to store tail back messages. 
+    * <p />
+    * Example:
+    * <pre>
+    *  For an ordinary client 'joe' with public session id 9
+    *
+    *   /home/xmlblast/tmp/fileRecorder/tailback-joe9-to-frodo.frc
+    *
+    *  In a cluster environment (which only logs in once (exactly one session):
+    *
+    *   /home/xmlblast/tmp/fileRecorder/tailback-bilbo-to-heron.frc  (in cluster environment)
+    * </pre>
+    * See the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder</a> requirement
+    * on how to configure.
+    * @param fn The file name, without any path information or null
+    * @return The complete path with filename
+    */
+   private String createPathString(String fn) {
+      String fullName = glob.getProperty().get("recorder.path", (String)null);
+      fullName = glob.getProperty().get("recorder.path["+glob.getId()+"]", fullName);
+      if (fullName == null) {
+         fullName = glob.getProperty().get("Persistence.Path", System.getProperty("user.home") + System.getProperty("file.separator") + "tmp");
+         fullName += System.getProperty("file.separator") + "fileRecorder";
       }
       if (fn == null) {
-         fn = glob.getProperty().get("Persistence.Path", System.getProperty("user.home") + System.getProperty("file.separator") + "tmp");
-         fn += System.getProperty("file.separator") + "fileRecorder";
+         fn = glob.getProperty().get("recorder.fn", (String)null);
+         fn = glob.getProperty().get("recorder.fn["+glob.getId()+"]", fn);
+         if (fn == null)
+            fn = "tailback-" + glob.getStrippedId() + ".frc";
       }
-      fn += System.getProperty("file.separator") + "tailback-" + glob.getStrippedId() + ".frc";
-      return fn;
+      return fullName + System.getProperty("file.separator") + fn;
+   }
+
+   /** Returns the name of the database file or null if RAM based */
+   public String getFullFileName() {
+      return fileName;
    }
 
    /**
@@ -208,7 +239,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
  
     if (cont == null) 
     { log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
-      throw new XmlBlasterException(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+      return;
     }
 
     long startTime = cont.timestamp;
@@ -242,23 +273,98 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   }
 
    /**
+    * Playback the stored messages, the are removed from the recorder after the callback. 
+    * <p />
+    * The messages are retrieved with the given rate per second
+    * <p />
+    * This method is thread save, even for undo on exceptions.
+    * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds
+    */
+   public void pullback(float msgPerSec) throws XmlBlasterException {
+
+      log.info(ME, "Invoking pullback(msgPerSec=" + msgPerSec + ")");
+
+      RequestContainer cont = null;
+
+      while(true) {
+         // woke up after sleeping, sending the next bulk ...
+
+         long startTime = System.currentTimeMillis();
+
+         int numSent = 0;
+         while (true) {
+            // Send for one second messages until msgPerSec is reached ...
+
+            int localCount = 0; // for logging output only
+
+            // to protect undo (if multi thread access) we could pass the currPos with rb
+            // and pass it to undo again if we want to avoid this because of dead lock danger
+            synchronized (rb) {
+               try {
+                  cont = (RequestContainer)rb.readNext(autoCommit);
+
+                  if (cont == null)
+                     return;    // we are done, everything played back
+
+                  // How many messages are sent in a bulk?
+                  localCount = (cont.msgUnitArr != null) ? cont.msgUnitArr.length : 1;
+                  
+                  callback(cont);
+
+                  numSent += localCount;
+               }
+               catch (Exception e) {
+                  String text;
+                  if (rb.undo() == true) {
+                     text = "Playback of tail back messages failed, " + getNumUnread() + " messages are kept savely in '" + fileName + "': " + e.toString();
+                     log.warn(ME, text);
+                  }
+                  else {
+                     text = "Playback of tail back messages failed, " + getNumUnread() + " messages are in queue, " + localCount + " are lost, check '" + fileName + "': " + e.toString();
+                     log.error(ME, text);
+                  }
+                  throw new XmlBlasterException(ME, text);
+               }
+            }
+
+            if (numSent >= msgPerSec)
+               break;     // the desired rate per second is reached
+         }
+
+         long actualElapsed = System.currentTimeMillis() - startTime;
+
+         // We have the actually sent number of messages and can calculate
+         // how long to sleep to fulfill the desired msgPerSec
+         long timeToUse = (long)(1000. * numSent / msgPerSec);
+
+         if (actualElapsed < timeToUse) {
+            try {
+               Thread.currentThread().sleep(timeToUse - actualElapsed);
+            } catch( InterruptedException i) {
+               log.warn(ME, "Unexpected interrupt when sleeping for pullback");
+            }
+         }
+      }
+   }
+
+   /**
     * How many messages are silently lost in 'discard' or 'discardOldest' mode?
     */
-   public long getNumLost()
-   {
+   public long getNumLost() {
       return rb.getNumLost();
    }
 
   /**
    * Not implemented yet
    */
-  public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
-  { //Has to be implemented. Look at InvocationRecorder for further information
+  public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException {
+      //Has to be implemented. Look at InvocationRecorder for further information
+      log.error(ME + ".NoImpl", "Sorry, playback() is not implemented, use pullback() or implement it");
+      throw new XmlBlasterException(ME + ".NoImpl", "Sorry, only pullback is implemented");
   }
 
   //appropriate client function will be called depending on the request method
-  private void callback(RequestContainer cont) throws XmlBlasterException
-  { 
+  private void callback(RequestContainer cont) throws XmlBlasterException { 
     if (serverCallback != null) 
     {
       // This should be faster then reflection
@@ -349,7 +455,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing publish request
    */
-  public String publish(MessageUnit msgUnit) throws XmlBlasterException
+  public PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
     cont.method = "publish";
@@ -360,7 +466,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
     }
-    return dummyS;
+    return dummyPubRet;
   }
 
   /**
@@ -382,7 +488,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing publishArr request
    */
-  public String[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException
+  public PublishRetQos[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
     cont.method = "publishArr";
@@ -393,7 +499,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
     }
-    return dummySArr;
+    return dummyPubRetQosArr;
   }
 
   /**

@@ -3,7 +3,7 @@ Name:      I_InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for storing tail back messages
-Version:   $Id: I_InvocationRecorder.java,v 1.3 2002/06/01 12:22:58 ruff Exp $
+Version:   $Id: I_InvocationRecorder.java,v 1.4 2002/06/02 21:18:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -24,13 +24,14 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
 {
    /**
     * Called by plugin manager. 
+    * @param fn The file name (without path information!) for persistence or null (will be generated or ignored if RAM based)
     * @param maxEntries The maximum number of invocations to store
     * @param serverCallback You need to implement I_XmlBlaster to receive the invocations on playback
     *                       null if you are not interested in those
     * @param clientCallback You need to implement I_CallbackRaw to receive the invocations on playback
     *                       null if you are not interested in those
     */
-   public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback,
+   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback,
                              I_CallbackRaw clientCallback) throws XmlBlasterException;
 
    /**
@@ -56,6 +57,9 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
     */
    public long getNumLost();
 
+   /** Returns the name of the database file or null if RAM based */
+   public String getFullFileName();
+
    /**
     * Playback the stored messages, without removing them form the recorder. 
     * <p />
@@ -80,6 +84,14 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
     *        0. does everything instantly.
     */
    public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException;
+
+   /**
+    * Playback the stored messages, the are removed from the recorder after the callback. 
+    * <p />
+    * The messages are retrieved with the given rate per second
+    * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds
+    */
+   public void pullback(float msgPerSec) throws XmlBlasterException;
 
    /**
     * Reset the queue, throw all entries to garbage. 
