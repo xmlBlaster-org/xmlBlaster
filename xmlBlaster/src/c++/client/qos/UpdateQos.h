@@ -69,15 +69,14 @@ public:
     * Test if Publish/Subscribe style is used.
     *
     * @return true if Publish/Subscribe style is used
-    *         false if addressing of the destination is used
     */
-   bool isPubSubStyle() const;
+   bool isSubscribeable() const;
 
    /**
     * Test if Point to Point addressing style is used.
     *
     * @return true if addressing of the destination is used
-    *         false if Publish/Subscribe style is used
+    *         false if no destination is given
     */
    bool isPtp();
 
