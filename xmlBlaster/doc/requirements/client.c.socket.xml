@@ -921,7 +921,7 @@ Solaris:
        <td>Linux 2.4.20</td>
        <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit applications, Version 7.1</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
-       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>pthread</td>
        <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
        <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
        <td>2003-06-26</td>
@@ -1060,7 +1060,7 @@ Solaris:
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.27 $</revision>
+   <revision>$Revision: 1.28 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
