@@ -35,7 +35,7 @@ public class FilePollerPlugin implements I_Plugin {
       if (log.CALL)
          log.call(ME, "init");
       this.info = pluginInfo;
-      this.publisherClient = new Publisher(global, this.getType(), this.info.getParameters());
+      this.publisherClient = new Publisher(global, this.getType(), this.info);
       this.publisherClient.init();
       if (log.DUMP) {
          log.dump(ME, "init: plugin paramenters: '" + this.info.dumpPluginParameters() + "'");

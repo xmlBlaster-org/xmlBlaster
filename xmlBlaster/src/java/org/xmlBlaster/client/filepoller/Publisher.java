@@ -6,10 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 
 package org.xmlBlaster.client.filepoller;
 
-import java.util.Properties;
 import java.util.Set;
 
-import org.jutils.init.Property;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
@@ -22,6 +20,7 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 
@@ -53,18 +52,21 @@ public class Publisher implements I_Timeout {
    /** only used as a default login name and logging */
    private String name;
    
-   public Publisher(Global global, String name, Properties properties) throws XmlBlasterException {
+   private I_PluginConfig pluginConfig;
+   
+   public Publisher(Global global, String name, I_PluginConfig pluginConfig) throws XmlBlasterException {
       ME += "-" + name;
       this.name = name;
       this.isShutdown = false;
-      this.global = global.getClone(Property.propsToArgs(properties));
+      this.global = global.getClone(null);
+      this.pluginConfig = pluginConfig;
       this.log = this.global.getLog("filepoller");
       if (this.log.CALL) 
          this.log.call(ME, "constructor");
-      // retreive all necessary properties:
+      // retrieve all necessary properties:
       String tmp = null;
-      tmp = this.global.getProperty().get("publishKey", (String)null);
-      String topicName =  this.global.getProperty().get("topicName", (String)null);
+      tmp = this.global.get("publishKey", (String)null, null, pluginConfig);
+      String topicName =  this.global.get("topicName", (String)null, null, pluginConfig);
       if (tmp != null) {
          // this.publishKey = new PublishKey(this.global, new MsgKeyData(this.global, tmp));
          this.publishKey = tmp;
@@ -77,16 +79,16 @@ public class Publisher implements I_Timeout {
          this.publishKey = (new PublishKey(this.global, topicName)).toXml(); 
       }
       
-      this.publishQos = this.global.getProperty().get("publishQos", "<qos/>");
+      this.publishQos = this.global.get("publishQos", "<qos/>", null, pluginConfig);
 
-      tmp  = this.global.getProperty().get("connectQos", (String)null);
+      tmp  = this.global.get("connectQos", (String)null, null, pluginConfig);
       if (tmp != null) {
          ConnectQosData data = this.global.getConnectQosFactory().readObject(tmp);
          this.connectQos = new ConnectQos(this.global, data);
       }
       else {
-         String userId = this.global.getProperty().get("loginName", "_" + this.name);
-         String password = this.global.getProperty().get("password", (String)null);
+         String userId = this.global.get("loginName", "_" + this.name, null, pluginConfig);
+         String password = this.global.get("password", (String)null, null, pluginConfig);
          this.connectQos = new ConnectQos(this.global, userId, password);
          this.connectQos.setMaxSessions(100);
          Address address = this.connectQos.getAddress();
@@ -98,19 +100,19 @@ public class Publisher implements I_Timeout {
          this.connectQos.getClientQueueProperty().setVersion("1.0");
       }
 
-      String fileFilter =  this.global.getProperty().get("fileFilter", (String)null);
-      String directoryName = this.global.getProperty().get("directoryName", (String)null);
+      String fileFilter =  this.global.get("fileFilter", (String)null, null, pluginConfig);
+      String directoryName = this.global.get("directoryName", (String)null, null, pluginConfig);
       if (directoryName == null)
          throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "constructor: 'directoryName' is mandatory");
       
-      this.maximumFileSize = this.global.getProperty().get("maximumFileSize", -1L);
-      long delaySinceLastFileChange = this.global.getProperty().get("delaySinceLastFileChange", 10000L);
-      long warnOnEmptyFileDelay = this.global.getProperty().get("warnOnEmptyFileDelay", 60000L);
-      this.pollInterval = this.global.getProperty().get("pollInterval", 2000L);
+      this.maximumFileSize = this.global.get("maximumFileSize", -1L, null, pluginConfig);
+      long delaySinceLastFileChange = this.global.get("delaySinceLastFileChange", 10000L, null, pluginConfig);
+      long warnOnEmptyFileDelay = this.global.get("warnOnEmptyFileDelay", 60000L, null, pluginConfig);
+      this.pollInterval = this.global.get("pollInterval", 2000L, null, pluginConfig);
 
-      String sent =  this.global.getProperty().get("sent", (String)null);
-      String discarded =  this.global.getProperty().get("discarded", (String)null);
-      String lockExtention =  this.global.getProperty().get("lockExtention", (String)null);
+      String sent =  this.global.get("sent", (String)null, null, pluginConfig);
+      String discarded =  this.global.get("discarded", (String)null, null, pluginConfig);
+      String lockExtention =  this.global.get("lockExtention", (String)null, null, pluginConfig);
       
       this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, warnOnEmptyFileDelay, fileFilter, sent, discarded, lockExtention);
       

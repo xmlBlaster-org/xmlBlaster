@@ -62,7 +62,7 @@ public class DirectoryManager {
       if (this.directory == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".constructor", "the directory '" + directoryName + "' is null");
       this.sentDirectory = initDirectory(this.directory, "sent", sent);
-      this.sentDirectory = initDirectory(this.directory, "discarded", discarded);
+      this.discardedDirectory = initDirectory(this.directory, "discarded", discarded);
       this.lockExtention = lockExtention;
       this.lockFiles = new HashSet();
    }
@@ -337,7 +337,7 @@ public class DirectoryManager {
       
       String relativeName = FileInfo.getRelativeName(file.getName());
       try {
-         file.renameTo(new File(this.directory, relativeName));
+         file.renameTo(new File(destinationDirectory, relativeName));
       }
       catch (Throwable ex) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: ", ex); 
