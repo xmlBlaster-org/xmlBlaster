@@ -168,16 +168,28 @@ public class PreparedQuery {
 
       if (this.isClosed) return;
 
-      try {
-         if (!this.conn.getAutoCommit()) {
-            this.log.trace(ME, "close with autocommit 'false'");
+      if (!this.conn.getAutoCommit()) {
+         if (this.log.TRACE) this.log.trace(ME, "close with autocommit 'false'");
+         try {
             if (this.isException) {
                this.log.warn(ME, "close with autocommit 'false': rollback");
                this.conn.rollback();
             }
             else this.conn.commit();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
+         }
+
+         try {
             this.conn.setAutoCommit(true);
          }
+         catch (Throwable ex) {
+            this.log.warn(ME, "close: exception when setAutoCommit(true): " + ex.toString());
+         }
+      }
+
+     try {
          if (this.st != null) {
             st.close();
             this.st = null;
@@ -188,6 +200,7 @@ public class PreparedQuery {
      }
 
      if (this.conn != null) this.pool.releaseConnection(this.conn);
+     // TODO: if we had an exception: this.pool.destroyConnection(this.conn)
      this.conn = null;
      this.isClosed = true;
    }
