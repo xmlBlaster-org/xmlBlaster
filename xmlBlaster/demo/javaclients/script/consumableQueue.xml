@@ -1,0 +1,20 @@
+<!-- to use invoke
+  java javaclients.script.XmlScript -requestFile consumableQueue.xml
+-->
+<xmlBlaster>
+
+  <connect/>
+  <subscribe><key oid="consumableQueue"/><qos/></subscribe>
+
+  <publish>
+    <key oid="consumableQueue"><airport name="London" /></key>
+    <content>This is a simple consumableQueue demo</content>
+    <qos><topic><msgDistributor typeVersion='ConsumableQueue,1.0'/></topic></qos>
+  </publish>
+
+  <wait delay="1000" />
+    <unSubscribe><key oid="test"/></unSubscribe>
+  <erase><key oid="test"></key><qos/></erase>
+  <disconnect />
+</xmlBlaster>
+
