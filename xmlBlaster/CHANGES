@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Current cvs
 ===========
+
+ o Fixed topic lifecycle: XPATH subscriptions don't
+   prevent a topic from going to dead anymore
+   Thanks to David Kerry <xml@navahonetworks.com>
+
+ o Fixed xml dump to be well formed again
  
  o c++ Global constructors are now public. The user is responsible for
    cleaning up additional Global instances.
