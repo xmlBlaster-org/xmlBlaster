@@ -44,6 +44,11 @@
       <param-value>false</param-value>
       <description>sets the trace</description>
     </init-param>
+    <init-param>
+      <param-name>dump</param-name>
+      <param-value>false</param-value>
+      <description>dumps messages</description>
+    </init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>BlasterHttpProxyServlet</servlet-name>
