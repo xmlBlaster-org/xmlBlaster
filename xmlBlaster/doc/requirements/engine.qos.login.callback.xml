@@ -38,45 +38,60 @@
    <p>
    The login mode is changed to be session based.
    This allows multiple logins for the same client.
-   The logins are distinguished be a unique, random session ID.
+   The logins are distinguished by a unique, random session ID.
    </p>
 
    <p>
-   Only one callback address is active.
+   A callback address corresponds to a callback server created
+   by a client. A client may establish many callback servers,
+   for example one CORBA and another for XML-RPC.
+   Only one callback address is actively used by xmlBlaster.
    If the callback fails, the subsequent callback addresses will be
    tried until the message is delivered.
    If all callback addresses fail, the result will depend on the
    specified login qos.
    </p>
 
+   <p>
+   Below there follows a QoS of a login method,
+   this raw string is delivered to xmlBlaster to control the behavior of this client.
+   All elements/attributes have a default value, so a simple
+      &lt;qos>&lt;/qos>
+   will allow a login as well. In this case no callbacks are possible
+   but synchronous access with get() runs fine.
+   </p>
 
    <![CDATA[
-   <!-- QoS of a login method, this raw string is delivered to xmlBlaster. -->
-   <qos>
-      
+   <qos> <!-- a full example -->
+
       <session timeout='3600000'>
          <!-- The login session will be destroyed after 1 hour (3600000 ms) -->
       </session>
 
       <callbacks retrials='2' delay='10000' ptp='false'>
-            <!-- set ptp attr to false (default='true') if you don't want any ptp messages
-            (prevent spaming...). retrials is the number of times the message has to be sent in case
-            of insuccess.  It defaults to 0. delay is the waiting time in ms between these retries.
+            <!-- set ptp attribute to false (default='true') if you don't want any
+            point to point messages (prevent spaming ...).
+            retrials is the number of times the message has to be sent in case
+            of failure.  It defaults to 0.
+            delay is the waiting time in ms between these retries.
             it defaults to '10000'.-->
 
-         <callback type='IOR' timeout='10000'>     <!-- Use CORBA to deliver messages
-               If the update callback does not return within 10 s (10000 ms) the connection
-               is shut down. -->
+         <callback type='IOR' timeout='10000'>
+              <!-- Use CORBA to deliver messages
+               If the update callback does not return within 10 s (10000 ms)
+               the connection is shut down. -->
             IOR:00011200070009990000....
              <compress type='zip' minSize='1000' />
                 <!-- compress messages bigger than 1000 bytes before sending them to me -->
          </callback>
 
-         <callback type='EMAIL'>   <!-- You get new updates sent with email -->
+         <callback type='EMAIL'>
+            <!-- You get new updates sent with email (not yet implemented) -->
             et@mars.universe
          </callback>
 
-         <callback type='XML-RPC' timeout='40000'> <!-- You must have the xml-rpc driver
+         <callback type='XML-RPC' timeout='40000'>
+               <!-- You must have the xml-rpc driver
                running (see xmlBlaster.properties) to receive the updates -->
                http:/www.mars.universe:8080/RPC2
             <burstmode collecttime='400'/>
@@ -88,10 +103,18 @@
    ]]>
 
    <p>
-   Delegated subscribes: it is possible to subscribe for somebody else to certain messages. This can
-   be handled by logging in again with the callback addresses of that delegated client (kind of gift)
    If the collecttime in 'burstmode' exceeds the delay in callbacks, it is set to the delay value and
    a warning is written in the server log file.
+   </p>
+
+   <p>
+   Delegated subscribes: it is possible to subscribe for somebody else to certain messages. This can
+   be handled by logging in again with the callback addresses of that delegated client (kind of gift)
+   </p>
+
+   <p>
+   All resources are controlled by 'timeout' values (similar to 'leases' in Jini)
+   so that no resource leaks can occur with 'miss behaving' clients.
    </p>
    </changerequest>
 
@@ -144,7 +167,7 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
