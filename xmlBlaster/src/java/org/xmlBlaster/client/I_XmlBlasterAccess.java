@@ -378,6 +378,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Cancel subscription. 
     * @param unSubscribeKey Which messages to cancel
     * @param unSubscribeQos Control the behavior
+    * @return The status of the unSubscribe request, is never null
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">interface.unSubscribe requirement</a>
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
@@ -401,6 +402,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    /**
     * @param eraseKey The topics to erase
     * @param eraseQos Control the erase behavior
+    * @return The status of the erase request, is never null
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">interface.erase requirement</a>
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
