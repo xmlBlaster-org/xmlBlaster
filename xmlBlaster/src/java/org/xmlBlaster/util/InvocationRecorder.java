@@ -3,7 +3,7 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.9 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.10 2000/10/18 20:45:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -25,7 +25,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements I_InvocationRecorder
@@ -223,7 +223,7 @@ public class InvocationRecorder implements I_InvocationRecorder
       if (clientCallback != null) {
          // This should be faster then reflection
          if (cont.method.equals("update")) {
-            clientCallback.update(cont.msgUnitArr);
+            clientCallback.update(cont.clientName, cont.msgUnitArr);
             return;
          }
       }
@@ -366,10 +366,11 @@ public class InvocationRecorder implements I_InvocationRecorder
     * For I_CallbackRaw interface.
     * @see xmlBlaster.idl
     */
-   public void update(MessageUnit [] msgUnitArr)
+   public void update(String loginName, MessageUnit [] msgUnitArr)
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "update";
+      cont.clientName = loginName;
       cont.msgUnitArr = msgUnitArr;
       try {
          queue.push(cont);

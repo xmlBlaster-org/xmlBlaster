@@ -3,13 +3,13 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.11 2000/09/15 17:16:22 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.12 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -115,7 +115,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
          recorder.publish(msgUnit);
          recorder.publishArr(msgUnitArr);
          recorder.erase(xmlKey, qos);
-         recorder.update(msgUnitArr);
+         recorder.update(clientName, msgUnitArr);
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "problems feeding the recorder: " + e.reason);
@@ -220,9 +220,9 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     * <p />
     * @param MessageUnit Container for the Message
     */
-   public void update(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public void update(String clientName, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
    {
-      if (Log.CALL) Log.call(ME, "update() ...");
+      if (Log.CALL) Log.call(ME, "update(" + clientName + ") ...");
       numUpdate++;
    }
 

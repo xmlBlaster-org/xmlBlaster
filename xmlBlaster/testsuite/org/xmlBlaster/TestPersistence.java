@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.13 2000/09/15 17:16:22 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.14 2000/10/18 20:45:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -19,6 +19,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -35,12 +36,11 @@ import test.framework.*;
  */
 public class TestPersistence extends TestCase implements I_Callback
 {
-   private Server senderXmlBlaster = null;
    private final static String ME = "TestPersistence";
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloDurable";
-   private CorbaConnection senderConnection = null;
+   private XmlBlasterConnection senderConnection = null;
    private String senderContent = "Some durable content";
 
    private int numReceived = 0;
@@ -68,9 +68,9 @@ public class TestPersistence extends TestCase implements I_Callback
    {
       try {
          String passwd = "secret";
-         senderConnection = new CorbaConnection();
+         senderConnection = new XmlBlasterConnection();
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         senderXmlBlaster = senderConnection.login(senderName, passwd, qos, this);
+         senderConnection.login(senderName, passwd, qos, this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -92,8 +92,8 @@ public class TestPersistence extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = senderXmlBlaster.erase(xmlKey, qos);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         strArr = senderConnection.erase(xmlKey, qos);
+      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       checkContent(false);
 
@@ -116,13 +116,12 @@ public class TestPersistence extends TestCase implements I_Callback
                    "   <isDurable />" +
                    "</qos>";
 
-      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit =
-            new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(xmlKey, senderContent.getBytes(), qos);
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderXmlBlaster.publish(msgUnit);
+         String returnedOid = senderConnection.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      } catch(XmlBlasterException e) {
          Log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
@@ -182,7 +181,7 @@ public class TestPersistence extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

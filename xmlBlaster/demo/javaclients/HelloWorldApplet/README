@@ -42,7 +42,7 @@ Start applet in netscape:
         at java.lang.SecurityManager.checkPropertyAccess(SecurityManager.java:958)
         at java.lang.System.getProperty(System.java:456)
         at org.omg.CORBA.ORB.init(ORB.java:37)
-      * at org.xmlBlaster.client.CorbaConnection.<init>(CorbaConnection.java:60)
+      * at org.xmlBlaster.client.protocol.corba.XmlBlasterConnection.<init>(XmlBlasterConnection.java:60)
         at javaclients.HelloWorldApplet.HelloWorld.setUp(HelloWorld.java:128)
 
     The JacORB mtclient.html example works well, so it must be possible.
@@ -102,15 +102,15 @@ Sum = 1000
 
 
 =============================================================================
-Subject: 
+Subject:
                   [jacorb-developer] Returning the favor
-           Date: 
+           Date:
                   Fri, 09 Jun 2000 15:14:55 -0600
-          From: 
+          From:
                   Jason Wheeler <jwheeler@accucode.com>
- Organization: 
+ Organization:
                   AccuCode Inc
-             To: 
+             To:
                   jacorb-developer@lists.spline.inf.fu-berlin.de
 
 
@@ -129,7 +129,7 @@ Add:
 
         "-Xbootclasspath/p:c:\jacorb\lib\jacorb.jar" to the plug-in parameters
 (change path to match yours)
-                
+
 This prepends the JacORB classes to the vm.  Even though the 1.1 works
 with Sun's orb running as an application it fails as an applet.  I
 didn't supply the "-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
@@ -204,10 +204,10 @@ I don't know if this is required!
 I hope this helps
 
 
--- 
+--
 Jason Wheeler
 Systems Engineer
 AccuCode Inc
 (801) 798-2544 Office
 (801) 798-2580 Fax
-jwheeler@accucode.com 
+jwheeler@accucode.com

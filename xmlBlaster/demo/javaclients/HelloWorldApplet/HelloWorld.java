@@ -3,11 +3,11 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.11 2000/09/18 06:24:58 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.12 2000/10/18 20:45:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -15,6 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -30,19 +31,20 @@ import java.awt.*;
  * This client does test sending/receiving messages with hello world.<br />
  * <p />
  * Invoke examples:<br />
- * <code>
- *    netscape:     file:/$XMLBLASTER_HOME/demo/javaclients/applet/HelloWorld.html
+ * <pre>
+ *    server:       jaco org.xmlBlaster.Main
+ *    netscape:     file:///home/ruff/xmlBlaster/demo/javaclients/HelloWorldApplet/HelloWorld.html
  *    application:  jaco javaclients.HelloWorldApplet.HelloWorld
- * </code>
+ * </pre>
  */
 public class HelloWorld extends Applet implements I_Callback, ActionListener, org.jutils.log.LogableDevice, WindowListener
 {
    private static String ME = "HelloWorld";
-   public static boolean isApplet = false;     // usually true; but jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
+   public static boolean isApplet = true;      // usually true; but jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
    public static HelloWorld helloWorld = null; // reference to myself (only for main)
 
    private String oid = "HelloWorld-Message";
-   private CorbaConnection corbaConnection;
+   private XmlBlasterConnection corbaConnection;
    private String senderName = "HelloWorld-Applet";
 
    private MessageUnit msgUnit;     // a message to play with
@@ -53,7 +55,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    private Button actionButton;
    private Panel fPanel;
    private TextArea output;
-   private TextField logOutput;
+   private TextField logOutput = null;
 
 
    /**
@@ -61,9 +63,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     */
    public void init()
    {
-      initUI();
-
-      /*
+      /* // Aware: this is netscape specific code:
       try {
          PrivilegeManager MyPrivilegeManager=PrivilegeManager.getPrivilegeManager();
          MyPrivilegeManager.enablePrivilege("UniversalPropertyRead");
@@ -73,12 +73,18 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       }
       */
 
-      setUp();
+      try {
+         XmlBlasterProperty.init(this);
+      } catch(org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
 
-      Log.setDefaultLogLevel();
+      initUI();
+
+      connect();
+
       Log.getLogChannel().addLogDevice(this);
       Log.info(ME, "Connected to xmlBlaster");
-
       validate();
    }
 
@@ -116,15 +122,15 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     * <p />
     * Connect to xmlBlaster and login
     */
-   void setUp()
+   void connect()
    {
       try {
          String passwd = "secret";
 
          if (isApplet)
-            corbaConnection = new CorbaConnection(this); // Find orb
+            corbaConnection = new XmlBlasterConnection(this, "IOR"); // Find orb
          else
-            corbaConnection = new CorbaConnection(); // Find orb
+            corbaConnection = new XmlBlasterConnection(); // Find orb
          corbaConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
 
          // a sample message unit
@@ -197,7 +203,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
@@ -236,7 +242,10 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     */
    public void log(int level, String source, String str)
    {
-      logOutput.setText(str + "\n");
+      if (logOutput != null)
+         logOutput.setText(str + "\n");
+      else
+         System.out.println(str + "\n");
    }
 
 

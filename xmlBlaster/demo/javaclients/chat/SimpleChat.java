@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.13 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.14 2000/10/18 20:45:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateQoS;
 
@@ -47,7 +47,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    private static String qos = "<qos></qos>";
    private String publishOid = "javaclients.chat.SimpleChat";
    private String xmlKey = "";
-   private CorbaConnection corbaConnection = null;
+   private XmlBlasterConnection corbaConnection = null;
 
    // UI elements
    private Button connectButton, actionButton;
@@ -193,7 +193,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          }
 
          //----------- Find orb ----------------------------------
-         corbaConnection = new CorbaConnection(args);
+         corbaConnection = new XmlBlasterConnection(args);
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"

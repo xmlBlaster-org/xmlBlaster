@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.15 2000/09/15 17:16:22 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.16 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,7 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -42,11 +42,11 @@ public class TestLogin extends TestCase implements I_Callback
 
    private String publishOid = "";
    private String oid = "TestLogin";
-   private CorbaConnection senderConnection;
+   private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
 
-   private CorbaConnection secondConnection;
+   private XmlBlasterConnection secondConnection;
    private String secondName;
    private String secondOid = "SecondOid";
 
@@ -79,12 +79,12 @@ public class TestLogin extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
 
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
 
-         secondConnection = new CorbaConnection(); // Find orb
+         secondConnection = new XmlBlasterConnection(); // Find orb
          secondConnection.login(secondName, passwd, null, this); // Login to xmlBlaster
 
          // a sample message unit
@@ -253,7 +253,7 @@ public class TestLogin extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

@@ -3,14 +3,14 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.8 2000/09/15 17:16:22 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.9 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.LoginQosWrapper;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -42,12 +42,10 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
 {
    private static String ME = "TestLoginLogoutEvent";
 
-   private CorbaConnection firstConnection;
-   private Server xmlBlaster = null;
+   private XmlBlasterConnection firstConnection;
    private String firstName;
 
-   private CorbaConnection secondConnection;
-   private Server secondBlaster;
+   private XmlBlasterConnection secondConnection;
    private String secondName;
 
    private String expectedName;
@@ -81,9 +79,9 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         firstConnection = new CorbaConnection(); // Find orb
+         firstConnection = new XmlBlasterConnection(); // Find orb
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         xmlBlaster = firstConnection.login(firstName, passwd, qos, this); // Login to xmlBlaster
+         firstConnection.login(firstName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -104,8 +102,8 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       numReceived = 0;
       try {
-         xmlBlaster.unSubscribe(xmlKey, qos);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         firstConnection.unSubscribe(xmlKey, qos);
+      } catch(XmlBlasterException e) {
          Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assert("unSubscribe - XmlBlasterException: " + e.reason, false);
       }
@@ -125,9 +123,9 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       numReceived = 0;
       String subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = firstConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      } catch(XmlBlasterException e) {
          Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
@@ -154,9 +152,9 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
       try {
-         secondConnection = new CorbaConnection(); // Find orb
+         secondConnection = new XmlBlasterConnection(); // Find orb
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         secondBlaster = secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
+         secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
          waitOnUpdate(1000L, 1);  // login event arrived?
       }
       catch (XmlBlasterException e) {
@@ -173,7 +171,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

@@ -3,14 +3,14 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.4 2000/10/13 07:48:27 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.5 2000/10/18 20:45:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
@@ -26,9 +26,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * This client tests the method subscribe() with a later publish() with XPath query.<br />
  * The subscribe() should be recognized for this later arriving publish().
  * <p>
- * This demo uses the CorbaConnection helper class, which hides the raw CORBA nastiness.<br />
- * CorbaConnections hides how to find the CORBA server (see CorbaConnection API).<br />
- * CorbaConnection installs a callback server (class DefaultCallback) for you and informs
+ * This demo uses the XmlBlasterConnection helper class, which hides the raw CORBA nastiness.<br />
+ * XmlBlasterConnections hides how to find the CORBA server (see XmlBlasterConnection API).<br />
+ * XmlBlasterConnection installs a callback server (class DefaultCallback) for you and informs
  * you about asynchronous callbacks using the I_Callback interface (method update() see below).
  * <p>
  * If you want to know step by step what happens, study the ClientRaw example.
@@ -43,7 +43,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  */
 public class ClientSub implements I_Callback
 {
-   private CorbaConnection corbaConnection = null;
+   private XmlBlasterConnection corbaConnection = null;
    private static String ME = "ClientSub";
    private int numReceived = 0;         // error checking
 
@@ -61,7 +61,7 @@ public class ClientSub implements I_Callback
       if (showUsage) {
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [ClientSub].");
-         CorbaConnection.usage();
+         XmlBlasterConnection.usage();
          Log.usage();
          Log.exit(ME, "Example: jaco javaclients.corba.ClientSub -name Jeff\n");
       }
@@ -72,7 +72,7 @@ public class ClientSub implements I_Callback
          String passwd = Args.getArg(args, "-passwd", "secret");
          LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
 
-         CorbaConnection corbaConnection = new CorbaConnection(args);
+         XmlBlasterConnection corbaConnection = new XmlBlasterConnection(args);
          corbaConnection.login(loginName, passwd, loginQos, this);
          // Now we are connected to xmlBlaster MOM server.
 
@@ -162,7 +162,7 @@ public class ClientSub implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

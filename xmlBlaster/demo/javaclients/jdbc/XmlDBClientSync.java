@@ -5,7 +5,7 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.GetKeyWrapper;
 import org.xmlBlaster.client.GetQosWrapper;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
@@ -21,7 +21,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class XmlDBClientSync
 {
    private static String   ME = "XmlDBClientSync";
-   private CorbaConnection corbaConnection = null;
+   private XmlBlasterConnection corbaConnection = null;
 
    /**
     * Constructor declaration
@@ -45,7 +45,7 @@ public class XmlDBClientSync
    public void initBlaster(String[] args)
    {
       try {
-         corbaConnection = new CorbaConnection(args); // find ORB
+         corbaConnection = new XmlBlasterConnection(args); // find ORB
          String loginName = Args.getArg(args, "-name", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
          corbaConnection.login(loginName, passwd, null);

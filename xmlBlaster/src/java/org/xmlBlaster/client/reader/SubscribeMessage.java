@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.9 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.10 2000/10/18 20:45:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -32,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 public class SubscribeMessage implements I_Callback
 {
    private static final String ME = "SubscribeMessage";
-   private CorbaConnection corbaConnection;
+   private XmlBlasterConnection xmlBlasterConnection;
    private String loginName;
    private String passwd;
    private String subscriptionHandle;
@@ -80,7 +81,9 @@ public class SubscribeMessage implements I_Callback
 
       setUp();  // login
       subscriptionHandle = subscribe(xmlKey, queryType);
-      corbaConnection.getOrb().run();
+
+      try { Thread.currentThread().sleep(10000000L); } catch (Exception e) { }
+      Log.exit(ME, "Bye, time is over.");
    }
 
 
@@ -104,8 +107,8 @@ public class SubscribeMessage implements I_Callback
    private void setUp()
    {
       try {
-         corbaConnection = new CorbaConnection(); // Find orb
-         corbaConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
+         xmlBlasterConnection = new XmlBlasterConnection(); // Find orb
+         xmlBlasterConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -120,7 +123,7 @@ public class SubscribeMessage implements I_Callback
    private void tearDown()
    {
       unSubscribe(subscriptionHandle);
-      corbaConnection.logout();
+      xmlBlasterConnection.logout();
    }
 
 
@@ -129,7 +132,7 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKeyWrapper xmlKeyWr = new SubscribeKeyWrapper(xmlKey, queryType);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-         String subscriptionId = corbaConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
+         String subscriptionId = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
          Log.info(ME, "Subscribed to [" + xmlKey + "], subscriptionId=" + subscriptionId);
          return subscriptionId;
       } catch(XmlBlasterException e) {
@@ -149,7 +152,7 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(subscriptionId);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-         corbaConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
+         xmlBlasterConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
          if (Log.TRACE) Log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
@@ -191,7 +194,7 @@ public class SubscribeMessage implements I_Callback
       Log.plain(ME, "");
       Log.plain(ME, "   -oid <XmlKeyOid>    The unique oid of the message");
       Log.plain(ME, "   -xpath <XPATH>      The XPATH query");
-      //CorbaConnection.usage();
+      //XmlBlasterConnection.usage();
       //Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");

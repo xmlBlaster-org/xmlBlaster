@@ -3,13 +3,13 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.23 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.24 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
@@ -24,9 +24,9 @@ import test.framework.*;
 
 
 /**
- * Tests the fail save behavior of the CorbaConnection client helper class.
+ * Tests the fail save behavior of the XmlBlasterConnection client helper class.
  * <br />For a description of what this fail save mode can do for you, please
- * read the API documentation of CorbaConnection.
+ * read the API documentation of XmlBlasterConnection.
  * <p>
  * This is an interesting example, since it creates a XmlBlaster server instance
  * in the same JVM , but in a separate thread, talking over CORBA with it.
@@ -45,7 +45,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private int serverPort = 7604;
    private ServerThread serverThread;
 
-   private CorbaConnection corbaConnection;
+   private XmlBlasterConnection corbaConnection;
    private String senderName;
 
    private int numReceived = 0;         // error checking
@@ -81,7 +81,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          String[] args = new String[2];
          args[0] = "-iorPort";
          args[1] = "" + serverPort;
-         corbaConnection = new CorbaConnection(args); // Find orb
+         corbaConnection = new XmlBlasterConnection(args); // Find orb
 
          // Setup fail save handling ...
          long retryInterval = 4000L; // XmlBlasterProperty.get("Failsave.retryInterval", 4000L);
@@ -223,7 +223,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
 
    /**
-    * This is the callback method invoked from CorbaConnection
+    * This is the callback method invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode if the connection was established.
     * <p />
     * This method is enforced through interface I_ConnectionProblems
@@ -242,7 +242,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
 
    /**
-    * This is the callback method invoked from CorbaConnection
+    * This is the callback method invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode if the connection was lost.
     * <p />
     * This method is enforced through interface I_ConnectionProblems
@@ -254,7 +254,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

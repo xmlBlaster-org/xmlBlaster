@@ -3,7 +3,7 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.8 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: BlasterCache.java,v 1.9 2000/10/18 20:45:42 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -32,13 +32,11 @@ public class BlasterCache
 
    private Hashtable query2SubId             = null;
    private Hashtable subscriptions           = null;
-   private CorbaConnection corbaConnection   = null;
    private int size                          = 0;
 
 
-   public BlasterCache(CorbaConnection corbaConnection, int size)
+   public BlasterCache(int size)
    {
-      this.corbaConnection = corbaConnection;
       query2SubId = new Hashtable();
       subscriptions = new Hashtable();
       this.size = size;

@@ -1,39 +1,32 @@
 /*------------------------------------------------------------------------------
-Name:      XmlBlasterException.java
+Name:      ConnectionException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.4 2000/10/18 20:45:43 ruff Exp $
+Version:   $Id: ConnectionException.java,v 1.1 2000/10/18 20:45:42 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util;
+package org.xmlBlaster.client.protocol;
 
-import org.xmlBlaster.client.protocol.ConnectionException;
 import org.jutils.JUtilsException;
 
 /**
- * The basic exception handling class for xmlBlaster.
+ * The basic, protocol independent, connection exception handling class for java-xmlBlaster clients.
  * <p />
  * This exception will be thrown in remote RMI calls as well.
  * @author "Marcel Ruff" <ruff@swand.lake.de>
  */
-public class XmlBlasterException extends Exception implements java.io.Serializable
+public class ConnectionException extends Exception implements java.io.Serializable
 {
    public String id;
    public String reason;
 
-   public XmlBlasterException(String id, String reason)
+   public ConnectionException(String id, String reason)
    {
       this.id = id;
       this.reason = reason;
    }
 
-   public XmlBlasterException(JUtilsException e)
-   {
-      this.id = e.id;
-      this.reason = e.reason;
-   }
-
-   public XmlBlasterException(ConnectionException e)
+   public ConnectionException(JUtilsException e)
    {
       this.id = e.id;
       this.reason = e.reason;

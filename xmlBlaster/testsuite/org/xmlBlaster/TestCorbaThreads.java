@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.7 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.8 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,9 +13,10 @@ import org.jutils.time.StopWatch;
 import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
+import org.xmlBlaster.client.protocol.corba.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -41,9 +42,8 @@ import test.framework.*;
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestCorbaThreads
  * </pre>
  */
-public class TestCorbaThreads extends TestCase implements I_Callback
+public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 {
-   private Server xmlBlaster = null;
    private final static String ME = "TestCorbaThreads";
 
    private final String loginName = "Manuel";
@@ -78,8 +78,8 @@ public class TestCorbaThreads extends TestCase implements I_Callback
       try {
          String passwd = "secret";
 
-         corbaConnection = new CorbaConnection();
-         xmlBlaster = corbaConnection.login(loginName, passwd, new LoginQosWrapper(), this);
+         corbaConnection = new CorbaConnection(new String[0]);
+         corbaConnection.login(loginName, passwd, new LoginQosWrapper(), this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -99,7 +99,6 @@ public class TestCorbaThreads extends TestCase implements I_Callback
          Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
          corbaConnection.logout();
          corbaConnection = null;
-         xmlBlaster = null;
          System.gc();
       }
    }
@@ -135,8 +134,17 @@ public class TestCorbaThreads extends TestCase implements I_Callback
 
 
    /**
+    * These update() methods are enforced by I_CallbackExtended. 
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   {
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+   }
+   public void update(String loginName, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   {
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+   }
+   public void update(String loginName, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
    }

@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.19 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.20 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,10 +11,11 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import test.framework.*;
 
@@ -34,14 +35,13 @@ import test.framework.*;
  */
 public class LoadTestSub extends TestCase implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
    private boolean messageArrived = false;
    private StopWatch stopWatch = null;
 
    private String subscribeOid;
    private String publishOid = "";
-   private CorbaConnection senderConnection;
+   private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -73,9 +73,9 @@ public class LoadTestSub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
-         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -105,7 +105,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
+         strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
@@ -130,7 +130,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -165,7 +165,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          for (int ii=0; ii<NUM_PUBLISH; ii++) {
             senderContent = "Yeahh, i'm the new content number " + (ii+1);
             msgUnit.content = senderContent.getBytes();
-            publishOid = xmlBlaster.publish(msgUnit);
+            publishOid = senderConnection.publish(msgUnit);
             /*
             if (((ii+1) % 1) == 0)
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
@@ -200,7 +200,7 @@ public class LoadTestSub extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.4 2000/10/18 20:45:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -12,7 +12,7 @@ import org.jutils.init.Args;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -53,7 +53,7 @@ public class ClientQuery
          else
             usage("Please enter a query string");
 
-         CorbaConnection corbaConnection = new CorbaConnection(args);
+         XmlBlasterConnection corbaConnection = new XmlBlasterConnection(args, "IOR");
          corbaConnection.login(loginName, passwd, null);
 
 
@@ -92,7 +92,7 @@ public class ClientQuery
       Log.plain("   -name               The login name [ClientQuery].");
       Log.plain("   -passwd             The password [secret].");
       Log.plain("   -queryXpath         \"//key\"");
-      CorbaConnection.usage();
+      XmlBlasterConnection.usage();
       Log.usage();
       Log.plain("Example: jaco javaclients.corba.ClientQuery -queryXpath //key\n");
       Log.panic(ME, text);

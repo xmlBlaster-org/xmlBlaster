@@ -51,6 +51,7 @@ All packages allow free use for both commercial and non-commercial applications.
    JUNIT 1.0 testsuite from Kent Beck and Erich Gamma
 
    Download http://members.pingnet.ch/gamma/junit.htm
+   http://www.junit.org/
 
    Please read the
       ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README

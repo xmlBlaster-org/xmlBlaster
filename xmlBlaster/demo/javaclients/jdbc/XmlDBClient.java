@@ -5,7 +5,7 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
 import org.xmlBlaster.client.UpdateKey;
@@ -27,7 +27,7 @@ public class XmlDBClient implements I_Callback
  {
 
    private static String   ME = "XmlDBClient";
-   private CorbaConnection corbaConnection = null;
+   private XmlBlasterConnection corbaConnection = null;
    private String          results;
    private boolean         done = false;
 
@@ -79,7 +79,7 @@ public class XmlDBClient implements I_Callback
    public void initBlaster(String[] args)
    {
       try {
-         corbaConnection = new CorbaConnection(args); // find ORB
+         corbaConnection = new XmlBlasterConnection(args); // find ORB
          String loginName = Args.getArg(args, "-name", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
          corbaConnection.login(loginName, passwd, null, this);

@@ -3,11 +3,11 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.14 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.15 2000/10/18 20:45:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -36,7 +36,7 @@ import java.io.File;
 public class PublishFile
 {
    private static final String ME = "PublishFile";
-   private CorbaConnection senderConnection;
+   private XmlBlasterConnection senderConnection;
    private String loginName;
    private String passwd;
 
@@ -57,13 +57,12 @@ public class PublishFile
    public PublishFile(String[] args) throws JUtilsException
    {
       try {
-         XmlBlasterProperty.init(args);
+         if (XmlBlasterProperty.init(args)) {
+            usage();
+            Log.exit(ME, "Bye");
+         }
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
-      }
-      if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
-         usage();
-         return;
       }
 
       loginName = Args.getArg(args, "-name", ME);
@@ -176,7 +175,7 @@ public class PublishFile
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(); // Find orb
          senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -239,7 +238,7 @@ public class PublishFile
       Log.plain(ME, "   These options only if you didn't specify -k or -xmlKey explicitly");
       Log.plain(ME, "   -m  <MIMEtype>      The MIME type of the message.");
       Log.plain(ME, "   -me <MIMEextendend> The extenden MIME type (for your own use).");
-      //CorbaConnection.usage();
+      //XmlBlasterConnection.usage();
       //Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");

@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.23 2000/09/15 17:16:23 ruff Exp $
+Version:   $Id: TestSub.java,v 1.24 2000/10/18 20:45:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,7 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -43,7 +43,7 @@ public class TestSub extends TestCase implements I_Callback
 
    private String subscribeOid;
    private String publishOid = "dummy";
-   private CorbaConnection senderConnection;
+   private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -74,7 +74,7 @@ public class TestSub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
@@ -182,7 +182,7 @@ public class TestSub extends TestCase implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

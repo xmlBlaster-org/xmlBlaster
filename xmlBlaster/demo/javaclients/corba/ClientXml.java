@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.4 2000/10/18 20:45:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -24,7 +24,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * This client tests the method subscribe()/publish() with XML syntax key
  * and XPath query using the DefaultCallback implementation.
  * <p>
- * It is a nice example using the DefaultCallback implementation from CorbaConnection.java
+ * It is a nice example using the DefaultCallback implementation from XmlBlasterConnection.java
  * which calls the update() method using I_Callback interface when messages arrive.
  * <p>
  * Have a look into the testsuite for other possibilities.
@@ -49,7 +49,7 @@ public class ClientXml implements I_Callback
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [ClientSub].");
          Log.plain("   -passwd             The password [secret].");
-         CorbaConnection.usage();
+         XmlBlasterConnection.usage();
          Log.usage();
          Log.plain("Example: jaco javaclients.corba.ClientXml -name Jeff\n");
          Log.panic(ME, e.toString());
@@ -62,7 +62,7 @@ public class ClientXml implements I_Callback
          String loginName = ME;
 
          //----------- Find orb ----------------------------------
-         CorbaConnection corbaConnection = new CorbaConnection(args);
+         XmlBlasterConnection corbaConnection = new XmlBlasterConnection(args);
 
          //----------- Login to xmlBlaster -----------------------
          String passwd = Args.getArg(args, "-passwd", "secret");
@@ -167,7 +167,7 @@ public class ClientXml implements I_Callback
 
 
    /**
-    * This is the callback method (update() from I_Callback) invoked from class CorbaConnection
+    * This is the callback method (update() from I_Callback) invoked from class XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message

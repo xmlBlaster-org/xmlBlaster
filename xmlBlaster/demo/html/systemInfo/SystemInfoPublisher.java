@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.10 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.11 2000/10/18 20:45:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
@@ -15,7 +15,7 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -39,7 +39,7 @@ import java.util.Random;
 public class SystemInfoPublisher
 {
    private static final String ME = "SystemInfoPublisher";
-   private CorbaConnection corbaConnection;
+   private XmlBlasterConnection corbaConnection;
    private String loginName;
    private String passwd;
    private Random random = new Random();
@@ -130,7 +130,7 @@ public class SystemInfoPublisher
    private void setUp()
    {
       try {
-         corbaConnection = new CorbaConnection(); // Find orb
+         corbaConnection = new XmlBlasterConnection(); // Find orb
          corbaConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -189,7 +189,7 @@ public class SystemInfoPublisher
       Log.plain(ME, "   -name <LoginName>   Your xmlBlaster login name.");
       Log.plain(ME, "   -passwd <Password>  Your xmlBlaster password.");
       Log.plain(ME, "");
-      CorbaConnection.usage();
+      XmlBlasterConnection.usage();
       Log.usage();
       Log.plain(ME, "");
    }

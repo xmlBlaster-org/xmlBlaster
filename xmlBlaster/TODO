@@ -13,14 +13,14 @@ TODO for release 0.79
 (10) Integrate JacOrb 1.2.1                                           [ok]
 (11) SOAP  ?                                                          [--]
 (12) Configure the xmlBlaster by xmlBlaster.xml                       [--]
-(13) CLASSPATH is to long!!                                           [--] 
-(14) xmlBlaster HP support for all browsers                           [ok] 
- 
+(13) CLASSPATH is to long!!                                           [--]
+(14) xmlBlaster HP support for all browsers                           [ok]
+
 
 Some small TODO's for the next release
 --------------------------------------
 (1) Documenation based on XML2PDF
-(2) Journaled Communication (History) 
+(2) Journaled Communication (History)
     For auditing/logging and play back of events (error recovery).
 (3) Allowing compound messages.
 (4) Online demos'
@@ -54,8 +54,8 @@ PERFORMANCE
 (4) Evaluate other query engines for better performance, see
     http://www-db.research.bell-labs.com/user/simeon/xquery.html
 
-TECHNOLOGIE
------------
+TECHNOLOGY
+----------
 (1) XML Schema support. Necessary to use XPATH DTD-ID:
     An element node may have a unique identifier (ID).
     This is the value of the attribute that is declared in the Schema/DTD as type ID
@@ -155,3 +155,7 @@ HOMEPAGE
 
 (3) Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
     http://www.unicorn-enterprises.com/
+
+TESTSUITE:
+----------
+    Move to newer JUnit http://www.junit.org/

@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.12 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: RamTest.java,v 1.13 2000/10/18 20:45:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,9 @@ import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -38,12 +40,11 @@ import test.framework.*;
  */
 public class RamTest extends TestCase
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
    private StopWatch stopWatch = null;
 
    private String publishOid = "";
-   private CorbaConnection senderConnection;
+   private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
 
@@ -72,9 +73,9 @@ public class RamTest extends TestCase
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
-         xmlBlaster = senderConnection.login(senderName, passwd, null); // Login to xmlBlaster without Callback
+         senderConnection.login(senderName, passwd, null); // Login to xmlBlaster without Callback
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -100,7 +101,7 @@ public class RamTest extends TestCase
          String qos = "<qos></qos>";
          String[] strArr = null;
          try {
-            strArr = xmlBlaster.erase(xmlKey, qos);
+            strArr = senderConnection.erase(xmlKey, qos);
             assertNotEquals("returned erased oid array == null", null, strArr);
             assertEquals("num erased messages is wrong", 1, strArr.length);
          } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
@@ -141,7 +142,7 @@ public class RamTest extends TestCase
          // 1. Query the current memory allocated in xmlBlaster
          String xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnit[] msgArr = xmlBlaster.get(xmlKey, qos);
+         MessageUnit[] msgArr = senderConnection.get(xmlKey, qos);
 
          assertNotEquals("returned msgArr == null", null, msgArr);
          assertEquals("msgArr.length!=1", 1, msgArr.length);
@@ -155,7 +156,7 @@ public class RamTest extends TestCase
 
          stopWatch = new StopWatch();
          // 2. publish all the messages
-         String[] publishOidArr = xmlBlaster.publishArr(msgUnitArr);
+         String[] publishOidArr = senderConnection.publishArr(msgUnitArr);
 
          long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
          Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
@@ -165,7 +166,7 @@ public class RamTest extends TestCase
 
 
          // 3. Query the memory allocated in xmlBlaster after publishing all the messages
-         msgArr = xmlBlaster.get(xmlKey, qos);
+         msgArr = senderConnection.get(xmlKey, qos);
          long usedMemAfter = new Long(new String(msgArr[0].content)).longValue();
          Log.info(ME, "xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
          Log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/NUM_PUBLISH));

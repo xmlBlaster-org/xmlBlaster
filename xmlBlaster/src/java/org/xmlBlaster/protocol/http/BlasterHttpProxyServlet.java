@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.47 2000/09/18 06:24:58 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.48 2000/10/18 20:45:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -13,7 +13,7 @@ import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.rmi.RemoteException;
@@ -39,7 +39,7 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.47 $
+ * @version $Revision: 1.48 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
@@ -314,12 +314,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet");
 
       ProxyConnection proxyConnection = null;
-      CorbaConnection xmlBlaster = null;
+      XmlBlasterConnection xmlBlaster = null;
       HttpPushHandler pushHandler = null;
 
       try {
          proxyConnection = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
-         xmlBlaster = proxyConnection.getCorbaConnection();
+         xmlBlaster = proxyConnection.getXmlBlasterConnection();
          pushHandler = proxyConnection.getHttpPushHandler(sessionId);
       }
       catch (XmlBlasterException e) {

@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.2 2000/06/25 18:32:43 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.3 2000/10/18 20:45:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -15,9 +15,8 @@ import java.rmi.RemoteException;
 
 
 /**
- * This is the native interface to xmlBlaster.
- * <p />
- * All protocol drivers access xmlBlaster through these methods.
+ * RMI clients access xmlBlaster through these methods. 
+ *
  * @see xmlBlaster.idl
  * @see org.xmlBlaster.engine.RequestBroker
  * @see org.xmlBlaster.protocol.I_XmlBlaster

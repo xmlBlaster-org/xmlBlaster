@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.24 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.25 2000/10/18 20:45:43 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -11,7 +11,7 @@ package org.xmlBlaster.protocol.http;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -28,7 +28,7 @@ import javax.servlet.http.*;
  * to xmlBlaster using IIOP (CORBA)
  * and remembering the session informations from the browser - servlet connection.
  * <p />
- * There is exactly one CORBA connection to the xmlBlaster (see CorbaConnection instance),
+ * There is exactly one CORBA connection to the xmlBlaster (see XmlBlasterConnection instance),
  * but there may be many browser (see HttpPushHandler instances) using this unique login.
  * <p />
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
@@ -38,7 +38,7 @@ import javax.servlet.http.*;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -46,7 +46,7 @@ public class ProxyConnection implements I_Callback
    private String ME                 = "ProxyConnection";
    private final String loginName;
    private final String passwd;
-   private CorbaConnection corbaConnection = null;
+   private XmlBlasterConnection xmlBlasterConnection = null;
    private Hashtable httpConnections       = new Hashtable(); // must be always != null
    private I_ProxyInterceptor interceptor  = null;
 
@@ -64,12 +64,12 @@ public class ProxyConnection implements I_Callback
       if (loginName == null || loginName.length() < 1 || passwd == null || passwd.length() < 1)
          throw new XmlBlasterException(ME+".AccessDenied", "Please give proper login name and password");
 
-      //establish connection to server
-      corbaConnection = new CorbaConnection();
+      //establish a CORBA based connection to server
+      xmlBlasterConnection = new XmlBlasterConnection(new String[0], "IOR");
 
       // initFailSave() ???
 
-      corbaConnection.login(loginName, passwd, new LoginQosWrapper(), this);
+      xmlBlasterConnection.login(loginName, passwd, new LoginQosWrapper(), this);
    }
 
    /**
@@ -117,11 +117,11 @@ public class ProxyConnection implements I_Callback
 
       synchronized(httpConnections) {
          // Logout from xmlBlaster
-         if (corbaConnection != null) {
-            BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
-            corbaConnection.logout();
-            Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' removed");
-            corbaConnection = null;
+         if (xmlBlasterConnection != null) {
+            BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getLoginName());
+            xmlBlasterConnection.logout();
+            Log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' removed");
+            xmlBlasterConnection = null;
          }
 
          // Disconnect from browsers
@@ -134,7 +134,7 @@ public class ProxyConnection implements I_Callback
 
    /**
     * Clean up if a browser disappears or does a logout.
-    * If this was the last browser using the corbaConnection,
+    * If this was the last browser using the xmlBlasterConnection,
     * the CORBA connection to xmlBlaster is removed as well.
     * @param sessionId The unique browser identifier
     */
@@ -155,11 +155,11 @@ public class ProxyConnection implements I_Callback
 
          if (httpConnections.isEmpty()) {
             // Logout from xmlBlaster if no browser uses this connection anymore
-            if (corbaConnection != null) {
-               BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
-               corbaConnection.logout();
-               Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
-               corbaConnection = null;
+            if (xmlBlasterConnection != null) {
+               BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getLoginName());
+               xmlBlasterConnection.logout();
+               Log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
+               xmlBlasterConnection = null;
             }
          }
       }
@@ -167,9 +167,9 @@ public class ProxyConnection implements I_Callback
    }
 
 
-   public CorbaConnection getCorbaConnection()
+   public XmlBlasterConnection getXmlBlasterConnection()
    {
-      return corbaConnection;
+      return xmlBlasterConnection;
    }
    public String getLoginName()
    {

@@ -3,7 +3,7 @@ Name:      XmlBlasterProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlBlasterProxy.java,v 1.5 2000/10/14 20:12:02 ruff Exp $
+Version:   $Id: XmlBlasterProxy.java,v 1.6 2000/10/18 20:45:43 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -65,10 +65,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
          // similar to -Dsax.driver=com.sun.xml.parser.Parser
          System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
-         
+
          // start the WebServer object here (to receive callbacks)
          webServer = new WebServer(callbackPort);
-         webServer.addHandler("$default", this);
+         webServer.addHandler("$default", this); // register update() method in this class
          Log.info(ME, "Created XmlRpc callback web server on port " + callbackPort);
       }
 
@@ -510,7 +510,8 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
 
    /**
-    * The update method.
+    * The update method. 
+    * Gets invoked from xmlBlaster callback via client WebServer.
     */
    public void update (String loginName, UpdateKey updateKey, byte[] content,
                        UpdateQoS updateQoS)

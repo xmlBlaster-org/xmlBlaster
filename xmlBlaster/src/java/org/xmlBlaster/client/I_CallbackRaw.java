@@ -3,9 +3,11 @@ Name:      I_CallbackRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_CallbackRaw.java,v 1.1 2000/06/25 18:25:18 ruff Exp $
+Version:   $Id: I_CallbackRaw.java,v 1.2 2000/10/18 20:45:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
+
+import org.xmlBlaster.util.XmlBlasterException;
 
 
 /**
@@ -27,6 +29,6 @@ public interface I_CallbackRaw
     * <p />
     * @param msgUnitArr Array of MessageUnit, containing xmlKey,content,qos
     */
-   public void update(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr);
+   public void update(String loginName, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException;
 }
 

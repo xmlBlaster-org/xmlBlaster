@@ -9,6 +9,17 @@ Changes for 0.79 [?, ? 2000]
 
   - NOTE: JDK_HOME is not used anymore, use JAVA_HOME instead.
 
+  - NOTE: You need to replace
+       import org.xmlBlaster.client.CorbaConnection;
+    with
+       import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+    if you have used this class in your java clients.
+    Then replace all occurrences of
+       CorbaConnection
+    with
+       XmlBlasterConnection
+    The login() method has changed to return void.
+
   - The built in http IOR download server is now more close
     to HTTP 1.1 spec RFC 2068
 

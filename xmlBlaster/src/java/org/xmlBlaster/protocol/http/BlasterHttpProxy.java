@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.22 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.23 2000/10/18 20:45:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -14,7 +14,7 @@ import java.util.*;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class BlasterHttpProxy
 {
@@ -141,29 +141,29 @@ public class BlasterHttpProxy
 
 
    /**
-    * gives a corbaConnection by a given loginName
+    * gives a xmlBlasterConnection by a given loginName
     *
     * @param loginName
     */
-   public static CorbaConnection getCorbaConnection( String loginName, String passwd ) throws XmlBlasterException
+   public static XmlBlasterConnection getXmlBlasterConnection( String loginName, String passwd ) throws XmlBlasterException
    {
       synchronized( proxyConnections ) {
          Log.plain(ME,"proxyConnections="+proxyConnections);
          ProxyConnection pc = getNewProxyConnection(loginName, passwd);
-         return pc.getCorbaConnection();
+         return pc.getXmlBlasterConnection();
       }
    }
 
 
    /**
-    * gives a corbaConnection by sessionId.
+    * gives a xmlBlasterConnection by sessionId.
     * <p />
-    * This CorbaConnection holds the CORBA connection to the XmlBlaster server
+    * This XmlBlasterConnection holds the CORBA connection to the XmlBlaster server
     * @param req Servlet request, only for error handling
     * @param sessionId
-    * @return The CorbaConnection object or null if sessionId is unknown
+    * @return The XmlBlasterConnection object or null if sessionId is unknown
     */
-   public static CorbaConnection getCorbaConnection(HttpServletRequest req, String sessionId) throws XmlBlasterException
+   public static XmlBlasterConnection getXmlBlasterConnection(HttpServletRequest req, String sessionId) throws XmlBlasterException
    {
       if (sessionId == null && req != null && !req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
          throw new XmlBlasterException(ME+".NoCookies", "Sorry, your browser\n" +
@@ -177,7 +177,7 @@ public class BlasterHttpProxy
       }
 
       ProxyConnection pc = getProxyConnectionBySessionId(sessionId);
-      return pc.getCorbaConnection();
+      return pc.getXmlBlasterConnection();
    }
 
 

@@ -3,10 +3,10 @@ Name:      TestSub.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cc,v 1.3 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: TestSub.cc,v 1.4 2000/10/18 20:45:44 ruff Exp $
 -----------------------------------------------------------------------------*/
 
-#include <client/CorbaConnection.h>
+#include <client/XmlBlasterConnection.h>
 #include <util/StopWatch.h>
 #include <util/PlatformUtils.hpp>
 
@@ -29,7 +29,7 @@ private:
 
    bool            messageArrived_; // = false;
    int             numReceived_;    //  = 0;         // error checking
-   CorbaConnection *senderConnection_;
+   XmlBlasterConnection *senderConnection_;
    util::Log       log_;
 
    string subscribeOid_;
@@ -64,7 +64,7 @@ private:
     */
    void setUp(int args=0, char *argc[]=0) {
       try {
-         senderConnection_ = new CorbaConnection(args, argc); // Find orb
+         senderConnection_ = new XmlBlasterConnection(args, argc); // Find orb
          string passwd = "secret";
          senderConnection_->login(senderName_, passwd, 0, this);
          // Login to xmlBlaster
@@ -196,7 +196,7 @@ private:
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived
