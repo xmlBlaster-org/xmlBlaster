@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.41 2002/06/20 13:11:12 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.42 2002/06/23 08:40:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -287,8 +287,9 @@ public class CorbaDriver implements I_Driver
     *
     * @param glob Handle to access logging, properties etc.
     * @param forCB true=Initialize for callback server, false=Initialize for xmlBlaster server
+    * @return The used hostname
     */
-   public static void initializeOrbEnv(Global glob, boolean forCB)
+   public static String initializeOrbEnv(Global glob, boolean forCB)
    {
       LogChannel log = glob.getLog("corba");
       final String ME = "CorbaDriver";
@@ -320,6 +321,8 @@ public class CorbaDriver implements I_Driver
          JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", glob.getProperty().get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
       }
          
+      String hostname = null;
+
       if (System.getProperty("org.omg.CORBA.ORBClass").indexOf("jacorb") >= 0) {
          // Set host/port for JacOrb
 
@@ -327,7 +330,9 @@ public class CorbaDriver implements I_Driver
          if (forCB) postfix = "CB";
 
          // We use the IP of the xmlBlaster bootstrap HTTP server as a default ...
-         String hostname = glob.getProperty().get("hostname"+postfix, (String)null);
+         if (forCB)
+            hostname = glob.getCbHostname();
+         hostname = glob.getProperty().get("hostname"+postfix, hostname);
          // ... and overwrite it with a IOR specific hostname if given:
          hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
          if (hostname != null) {
@@ -359,6 +364,8 @@ public class CorbaDriver implements I_Driver
          JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
          log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
       }
+
+      return hostname;
    }
 
    /**
