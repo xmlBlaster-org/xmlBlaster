@@ -292,6 +292,6 @@ public final class ConnectQosServer
    public boolean isInternal() {
       return this.internal;
    }
-   
+
 }
 

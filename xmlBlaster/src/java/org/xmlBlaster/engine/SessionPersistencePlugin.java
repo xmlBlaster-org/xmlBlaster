@@ -118,13 +118,13 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             boolean initialUpdates = qosData.getInitialUpdateProp().getValue();
             if (initialUpdates) {
                qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(this.global, ORIGINAL_INITIAL_UPDATES, "boolean", null, "true"));
-               qosData.setWantInitialUpdate(false);               
             }
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
             String sessionId = (String)sessionIds.get(sessionName.getAbsoluteName());
             if (sessionId == null)
                throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
-      
+            // TODO remove the setting of client properties and invoke directly requestBroker.subscribe with subscribeQosServer.inhibitInitialUpdates(true);
+            // also get the sessionInfo object from authenticate => eliminate sessionIds      
             this.global.getAuthenticate().getXmlBlaster().subscribe(sessionId, entry.getKey(), qosData.toXml());
          }
          else {
@@ -334,9 +334,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          subscriptionInfo.setPersistenceId(uniqueId);
          ClientProperty prop = subscribeQosData.getClientProperty(ORIGINAL_INITIAL_UPDATES);
          if (prop != null) {
-            subscribeQosData.getClientProperties().remove(ORIGINAL_INITIAL_UPDATES);
-            // TODO to do it here is too early since after a runlevel change it does not recognize if coming from recovery 
-            // subscribeQosData.setWantInitialUpdate(true);
+            if (subscriptionInfo.getSubscribeQosServer() != null) { 
+               subscriptionInfo.getSubscribeQosServer().inhibitInitalUpdates(true);
+               subscribeQosData.getClientProperties().remove(ORIGINAL_INITIAL_UPDATES);
+            }
          }
       }
    }

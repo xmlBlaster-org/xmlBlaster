@@ -18,6 +18,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
@@ -938,16 +939,16 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       // will be triggered by ConnectionStatusListener.toAlive() ..
       if (this.subscriptionListener != null) return;  
 
-      QueryQosData queryQos = sub.getQueryQosData();
-      if (queryQos == null) {
+      SubscribeQosServer subscribeQosServer = sub.getSubscribeQosServer();
+      if (subscribeQosServer == null) {
          return;
       }
 
       if (log.TRACE) log.trace(ME, "addSubscriber("+sub.getId()+")");
-      if (queryQos.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
+      if (subscribeQosServer.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
          if (hasHistoryEntries())
-            wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries(), false);
+            wrappers = getMsgUnitWrapperArr(subscribeQosServer.getData().getHistoryQos().getNumEntries(), false);
 
          if (wrappers != null && wrappers.length > 0) {
             int count = 0, currentCount = 0;

@@ -32,6 +32,7 @@ public final class SubscribeQosServer
    private String ME = "SubscribeQosServer";
    private final Global glob;
    private final QueryQosData queryQosData;
+   private boolean doInhibitInitialUpdates = false;
 
    /**
     * Constructor which accepts a raw data struct. 
@@ -72,7 +73,7 @@ public final class SubscribeQosServer
    }
 
    public boolean getWantInitialUpdate() {
-      return this.queryQosData.getWantInitialUpdate();
+      return this.queryQosData.getWantInitialUpdate() && !this.doInhibitInitialUpdates;
    }
 
    public boolean getWantNotify() {
@@ -123,6 +124,15 @@ public final class SubscribeQosServer
       return this.queryQosData.getSubscriptionId();
    }
 
+   /**
+    * Inhibits the initial updates even if the qosData.wantInitialUpdates has been
+    * set.
+    * @param doInhibit
+    */
+   public void inhibitInitalUpdates(boolean doInhibit) {
+      this.doInhibitInitialUpdates = doInhibit; 
+   }
+   
    public String toXml() {
       return toXml((String)null);
    }

@@ -9,6 +9,7 @@ package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.admin.I_AdminSubscription;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -38,7 +39,8 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    /** reference to keyData */
    private KeyData keyData;
    /** reference to 'Quality of Service' of subscribe() / unSubscribe() */
-   private QueryQosData subscribeQos = null;
+   //private QueryQosData subscribeQos = null;
+   private SubscribeQosServer subscribeQos = null;
    /** The unique key of a subscription (subscriptionId), which is a function of f(keyData,xmlQos). <br />
        This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
@@ -67,7 +69,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     * @param keyData     The message meta info
     * @param qos         This may be a SubscribeQosServer or a UnSubscribeQosServer instance
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, KeyData keyData, QueryQosData qos) throws XmlBlasterException {
+   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
       init(glob, sessionInfo, keyData, qos);
    }
 
@@ -79,10 +81,10 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     */
    public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData) throws XmlBlasterException {
       this.querySub = querySub;
-      init(glob, sessionInfo, keyData, querySub.getQueryQosData());
+      init(glob, sessionInfo, keyData, querySub.subscribeQos);
    }
 
-   private void init(Global glob, SessionInfo sessionInfo, KeyData keyData, QueryQosData qos) throws XmlBlasterException {
+   private void init(Global glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("core");
       this.sessionInfo = sessionInfo;
@@ -321,7 +323,12 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     * @return SubscribeQosServer object
     */
    public QueryQosData getQueryQosData() {
-      return subscribeQos;
+      if (this.subscribeQos == null) return null;
+      return this.subscribeQos.getData();
+   }
+
+   public SubscribeQosServer getSubscribeQosServer() {
+      return this.subscribeQos;
    }
 
    /**
@@ -349,7 +356,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
             if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
          }
          else {
-            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos, this.glob.useCluster());
+            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos.getData(), this.glob.useCluster());
             if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
          }
       }
