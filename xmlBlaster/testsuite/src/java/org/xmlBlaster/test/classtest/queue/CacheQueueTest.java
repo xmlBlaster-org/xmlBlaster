@@ -351,6 +351,67 @@ public class CacheQueueTest extends TestCase {
    }
 
 
+   public void testAvailability() {
+      String queueType = "CACHE";
+      try {
+         availability();
+      }
+      catch (XmlBlasterException ex) {
+         fail("Exception when testing availability probably due to failed initialization of the queue of type " + queueType);
+         ex.printStackTrace();
+      }
+   }
+
+
+   public void availability() throws XmlBlasterException {
+
+      // set up the queues ....
+
+      long maxNumOfBytesCache = 10000L;
+      long maxNumOfBytes = 50000L;
+      int numOfTransientEntries = 200;
+      int numOfPersistentEntries =  200;
+
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+      prop.setMaxEntries(2000L);
+      prop.setMaxEntriesCache(1000L);
+      prop.setMaxBytes(maxNumOfBytes);
+      prop.setMaxBytesCache(maxNumOfBytesCache);
+      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes + "/ram" + maxNumOfBytesCache);
+      this.queue.destroy();
+      this.queue.initialize(queueId, prop);
+
+      if (!this.queue.isShutdown()) this.queue.shutdown();
+      this.queue.initialize(queueId, prop);
+      this.queue.clear();
+
+      long maxPersistentNumOfBytes = maxNumOfBytes;
+      long maxTransientNumOfBytes = maxNumOfBytesCache;
+      long transientNumOfBytes  = 0L;
+      long persistentNumOfBytes  = 0L;
+
+      int numOfEntries = 10;
+
+      this.queue.clear();
+      transientNumOfBytes = 100 * numOfTransientEntries;
+      persistentNumOfBytes =100 * numOfPersistentEntries;
+
+      DummyEntry[] entries = new DummyEntry[numOfEntries];
+      PriorityEnum prio = PriorityEnum.toPriorityEnum(4);
+
+      boolean persistent = false;
+      for (int i=0; i < entries.length; i++) {
+         persistent = (i % 2) == 0; // even are persistent uneven are transient
+         DummyEntry entry = new DummyEntry(glob, prio, this.queue.getStorageId(), 80, persistent);
+      }
+
+      // do the test here ....
+      for (int i=0; i < entries.length; i++)
+         this.queue.put(entries[i], false);
+//         assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, queue.getNumOfEntries());
+   }
+
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.queue.CacheQueueTest
@@ -373,6 +434,10 @@ public class CacheQueueTest extends TestCase {
 */
       testSub.setUp();
       testSub.testPutPeekRemove();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testAvailability();
       testSub.tearDown();
 
       long usedTime = System.currentTimeMillis() - startTime;

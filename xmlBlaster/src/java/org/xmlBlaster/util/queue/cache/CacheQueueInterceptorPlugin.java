@@ -105,6 +105,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       catch (XmlBlasterException ex) {
          this.log.error(ME, "exception occured when reconnecting. " + ex.toString());
       }
+      finally {
+         try {
+            loadFromPersistence();
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "storageAvailable: exception when loading from persistence: " + ex.getMessage());
+         }
+      }
    }
 
 
