@@ -7,6 +7,11 @@ package org.xmlBlaster.test.authentication;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -15,42 +20,64 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.UpdateReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.RunlevelManager;
+
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
 
 
 /**
- * This client does test login sessions. 
- * <br />
- * login/logout combinations are checked with subscribe()/publish() calls
- * <p />
+ * This client does test if a subscriber can reconnect to its session and 
+ * its callback queue holded the messages during downtime. 
+ * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
+ * </p>
  * <p>
- * Invoke examples:<br />
+ * Invoke examples:
+ * </p>
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.authentication.TestSessionReconnect
- *    java junit.swingui.TestRunner org.xmlBlaster.test.authentication.TestSessionReconnect
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.authentication.TestSessionReconnect
  * </pre>
  */
-public class TestSessionReconnect extends TestCase implements I_Callback
+public class TestSessionReconnect extends TestCase
 {
    private static String ME = "TestSessionReconnect";
    private final Global glob;
    private final LogChannel log;
-   private String name;
    private String passwd = "secret";
    private int serverPort = 7615;
-   private int numReceived = 0;         // error checking
+   private String oid = "TestSessionReconnect.Msg";
    private EmbeddedXmlBlaster serverThread = null;
-   private XmlBlasterConnection con;
-   private boolean connected = false;
+   private String sessionNameSub = "TestSessionReconnectSubscriber";
+   private XmlBlasterConnection conSub;
+   private boolean connectedSub = false;
+   private MsgInterceptor updateInterceptorSub;
+
+   private String sessionNamePub = "TestSessionReconnectPublisher";
+   private XmlBlasterConnection conPub;
+   private MsgInterceptor updateInterceptorPub;
 
    /** For Junit */
    public TestSessionReconnect() {
@@ -62,12 +89,10 @@ public class TestSessionReconnect extends TestCase implements I_Callback
     * <p />
     * @param testName   The name used in the test suite and to login to xmlBlaster
     */
-   public TestSessionReconnect(Global glob, String testName)
-   {
+   public TestSessionReconnect(Global glob, String testName) {
        super(testName);
        this.glob = glob;
        this.log = glob.getLog(null);
-       this.name = testName;
    }
 
    /**
@@ -75,18 +100,16 @@ public class TestSessionReconnect extends TestCase implements I_Callback
     * <p />
     * Connect to xmlBlaster and login
     */
-   protected void setUp()
-   {
+   protected void setUp() {
       glob.init(Util.getOtherServerPorts(serverPort));
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing a big message");
+      log.info(ME, "XmlBlaster is ready for testing");
    }
 
    /**
     * Cleaning up. 
     */
-   protected void tearDown()
-   {
+   protected void tearDown() {
       try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
       if (serverThread != null)
          serverThread.stopServer(true);
@@ -96,107 +119,116 @@ public class TestSessionReconnect extends TestCase implements I_Callback
 
    /**
     */
-   public void testSessionReconnect()
-   {
-      log.info(ME, "testSessionReconnect() ...");
+   public void testSessionReconnect() {
+      log.info(ME, "testSessionReconnect("+sessionNameSub+") ...");
+
       try {
-         con = new XmlBlasterConnection(glob);
-         con.initFailSave(new I_ConnectionProblems() {
-               
-               public void reConnected() {
-                  connected = true;
-                  ConnectReturnQos conRetQos = con.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
-                  //initClient();    // initialize subscription etc. again
-                  try {
-                     con.flushQueue();    // send all tailback messages
-                     // con.resetQueue(); // or discard them (it is our choice)
-                  } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
-                  }
-               }
+         log.info(ME, "============ STEP 1: Start subscriber");
 
-               public void lostConnection() {
-                  log.warn(ME, "I_ConnectionProblems: No connection to " + glob.getId());
-                  connected = false;
-               }
-            });
-         ConnectQos qos = new ConnectQos(glob, name, passwd);
-         con.connect(qos, this); // Login to xmlBlaster
-         {  
-            MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
-            assertEquals("Get test failed", 1, msgs.length);
+         // A testsuite helper to collect update messages
+         this.updateInterceptorSub = new MsgInterceptor(glob, log, null);
+
+         conSub = new XmlBlasterConnection(glob);
+         
+         ConnectQos qosSub = new ConnectQos(glob, sessionNameSub, passwd);
+
+         CallbackAddress addr = new CallbackAddress(glob);
+         addr.setRetries(-1);
+         String secretCbSessionId = "TrustMeSub";
+         addr.setSecretCbSessionId(secretCbSessionId);
+         qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
+
+         ConnectReturnQos crqSub = conSub.connect(qosSub, this.updateInterceptorSub); // Login to xmlBlaster
+         log.info(ME, "Connect as subscriber '" + crqSub.getSessionName() + "' success");
+
+         SubscribeKey sk = new SubscribeKey(glob, oid);
+         SubscribeQos sq = new SubscribeQos(glob);
+         sq.setWantInitialUpdate(false);
+         sq.setWantLocal(true);
+         sq.setWantContent(true);
+         
+         HistoryQos historyQos = new HistoryQos(glob);
+         historyQos.setNumEntries(1);
+         sq.setHistoryQos(historyQos);
+
+         SubscribeReturnQos srq = conSub.subscribe(sk.toXml(), sq.toXml());
+         log.info(ME, "Subscription to '" + oid + "' done");
+
+         log.info(ME, "============ STEP 2: Start publisher");
+         conPub = new XmlBlasterConnection(glob);
+         ConnectQos qosPub = new ConnectQos(glob);
+         ConnectReturnQos crqPub = conPub.connect(qosPub, null);  // Login to xmlBlaster, no updates
+         log.info(ME, "Connect success as " + crqPub.getSessionName());
+
+         log.info(ME, "============ STEP 3: Stop subscriber callback");
+         conSub.shutdownCb();
+
+         log.info(ME, "============ STEP 4: Stop subscriber callback");
+         int numPub = 8;
+         MsgUnit[] sentArr = new MsgUnit[numPub];
+         PublishReturnQos[] sentQos = new PublishReturnQos[numPub];
+         for(int i=0; i<numPub; i++) {
+            PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
+            pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+            PublishQos pq = new PublishQos(glob);
+            pq.setPriority(PriorityEnum.NORM_PRIORITY);
+            pq.setPersistent(false);
+            pq.setLifeTime(60000L);
+            if (i == 0) {
+               TopicProperty topicProperty = new TopicProperty(glob);
+               topicProperty.setDestroyDelay(60000L);
+               topicProperty.setCreateDomEntry(true);
+               topicProperty.setReadonly(false);
+               topicProperty.getHistoryQueueProperty().setMaxMsg(numPub+5);
+               pq.setTopicProperty(topicProperty);
+               log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
+            }
+
+            byte[] content = "Hello".getBytes();
+            MsgUnit msgUnit = new MsgUnit(glob, pk, content, pq);
+            sentArr[i] = msgUnit;
+            PublishReturnQos prq = conPub.publish(msgUnit);
+            sentQos[i] = prq;
+            log.info(ME, "Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+                        " for published message '" + prq.getKeyOid() + "'");
          }
 
-         int numErrors = serverThread.getMain().getGlobal().getRunlevelManager().changeRunlevel(RunlevelManager.RUNLEVEL_STANDBY, true);
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+         log.info(ME, "============ STEP 5: Start subscriber callback with same public sessionId");
+         MsgInterceptor updateInterceptorSub2 = new MsgInterceptor(glob, log, null);
+         updateInterceptorSub2.setLogPrefix("TrustMeSub2");
 
-         log.error(ME, "TESTCODE IS MISSING !!! ");
-         if (false) {
-            log.info(ME, "Trying to get messages from shutdown server");
-            MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
-            assertEquals("Get test failed", 0, msgs.length);
-         }
+         conSub = new XmlBlasterConnection(glob); // Create a new client
+         String secretCbSessionId2 = "TrustMeSub2";
+         qosSub.getSessionCbQueueProperty().getCurrentCallbackAddress().setSecretCbSessionId(secretCbSessionId2);
+         ConnectReturnQos crqSub2 = conSub.connect(qosSub, updateInterceptorSub2); // Login to xmlBlaster
+         log.info(ME, "Connect as subscriber '" + crqSub2.getSessionName() + "' success");
 
+         assertEquals("", 0, updateInterceptorSub.count()); // The first login session should not receive anything
+
+         assertEquals("", 8, updateInterceptorSub2.waitOnUpdate(2000L, oid, Constants.STATE_OK));
+         updateInterceptorSub2.compareToReceived(sentArr, secretCbSessionId2);
+         updateInterceptorSub2.compareToReceived(sentQos);
+
+         updateInterceptorSub2.clear();
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.toString());
          fail(e.toString());
       }
       finally { // clean up
-         con.disconnect(null);
+         log.info(ME, "Disconnecting '" + sessionNameSub + "'");
+         conSub.disconnect(null);
       }
       log.info(ME, "Success in testSessionReconnect()");
    }
 
    /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid());
-      numReceived++;
-      return "";
-   }
-
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      // check if too few are arriving
-      while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
-         sum += pollingInterval;
-         assertTrue("TestSessionReconnecteout of " + timeout + " occurred without update", sum <= timeout);
-      }
-
-      // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
-      assertEquals("Wrong number of messages arrived", numWait, numReceived);
-
-      numReceived = 0;
-   }
-
-   /**
     * Method is used by TestRunner to load these tests
     */
-   public static Test suite()
-   {
+   public static Test suite() {
        TestSuite suite= new TestSuite();
        String loginName = "TestSessionReconnect";
-       Global glob = new Global();
-       suite.addTest(new TestSessionReconnect(glob, "testSessionReconnect"));
+       suite.addTest(new TestSessionReconnect(Global.instance(), "testSessionReconnect"));
        return suite;
    }
 
@@ -207,8 +239,7 @@ public class TestSessionReconnect extends TestCase implements I_Callback
     *   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.authentication.TestSessionReconnect
     * <pre>
     */
-   public static void main(String args[])
-   {
+   public static void main(String args[]) {
       TestSessionReconnect testSub = new TestSessionReconnect(new Global(args), "TestSessionReconnect");
       testSub.setUp();
       testSub.testSessionReconnect();
