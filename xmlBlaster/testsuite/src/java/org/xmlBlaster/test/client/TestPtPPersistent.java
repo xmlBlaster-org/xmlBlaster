@@ -44,7 +44,7 @@ import junit.framework.*;
  */
 public class TestPtPPersistent extends TestCase  {
    private static String ME = "TestPtPPersistent";
-   
+   private static final long PUB_DELAY=200L;
    private Global glob;
    private LogChannel log;
 
@@ -138,7 +138,7 @@ public class TestPtPPersistent extends TestCase  {
     * 
     * <p />
     */
-   public void doPublish(int counter, String oid, boolean doGc) throws XmlBlasterException {
+   public void doPublish(int counter, String oid, boolean doGc, long sleep) throws XmlBlasterException {
       String content = "" + counter;
       log.info(ME, "Publishing message " + content);
 
@@ -153,6 +153,11 @@ public class TestPtPPersistent extends TestCase  {
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
       if (doGc) Util.gc(2);
+      try {
+         Thread.sleep(sleep);
+      }
+      catch (Exception ex) {
+      }
       log.info(ME, "Success: Publishing of " + content + " done");
    }
 
@@ -198,7 +203,7 @@ public class TestPtPPersistent extends TestCase  {
       
       for (int i=0; i < exLimit; i++) {
          try {
-            doPublish(i, oid, doGc);
+            doPublish(i, oid, doGc, PUB_DELAY);
             Thread.sleep(250L);
          }
          catch (Exception ex) {
@@ -218,7 +223,7 @@ public class TestPtPPersistent extends TestCase  {
 
       for (long i=exLimit; i < 2 * exLimit; i++) {
          try {
-            doPublish((int)i, oid, doGc);
+            doPublish((int)i, oid, doGc, PUB_DELAY);
          }
          catch (XmlBlasterException ex) {
             assertTrue("an exception on publish '" + i + "' should not occur " + ex.getMessage(), false);
@@ -228,7 +233,7 @@ public class TestPtPPersistent extends TestCase  {
       
       for (long i=2*exLimit; i < 2*exLimit + 2; i++) {
          try {
-            doPublish((int)i, oid, doGc);
+            doPublish((int)i, oid, doGc, PUB_DELAY);
             assertTrue("an exception on publish '" + i + "' should have occurred ", false);
          }
          catch (XmlBlasterException ex) {
@@ -258,7 +263,7 @@ public class TestPtPPersistent extends TestCase  {
 
       for (long i=2*exLimit; i < 3*exLimit; i++) {
          try {
-            doPublish((int)i, oid, doGc);
+            doPublish((int)i, oid, doGc, PUB_DELAY);
             Thread.sleep(500L);
          }
          catch (Exception ex) {

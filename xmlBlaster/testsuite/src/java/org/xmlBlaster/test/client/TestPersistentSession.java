@@ -187,6 +187,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          Util.resetPorts(this.glob);
          Util.resetPorts(this.origGlobal);
          this.glob = null;
+         this.serverGlobal = null;
          con = null;
          Global.instance().shutdown();
       }
@@ -420,7 +421,6 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       // to change the configuration on server side (limit the queue sizes)
       tearDown();
       setup(true);
-
       Global[] globals = new Global[5];
       try {
          globals[0] = createConnection(this.origGlobal, "bjoern/1", true , false);

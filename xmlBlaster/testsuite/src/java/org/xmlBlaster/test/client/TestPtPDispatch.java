@@ -8,8 +8,10 @@ package org.xmlBlaster.test.client;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -107,11 +109,22 @@ public class TestPtPDispatch extends TestCase {
     */
    protected void tearDown() {
       log.info(ME, "Entering tearDown(), test is finished");
-      this.glob.getXmlBlasterAccess().disconnect(null);
-      // Global.instance().shutdown();
-      // the unknown destinations must be handled inside the specific tests
-      this.glob.shutdown();
-      this.glob = null;
+      I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
+      try {
+         EraseKey key = new EraseKey(this.glob, "testPtPDispatch"); 
+         EraseQos qos = new EraseQos(this.glob);
+         con.erase(key, qos);
+      }
+      catch(XmlBlasterException ex) {
+         ex.printStackTrace();
+      }
+      finally {
+         con.disconnect(null);
+         // Global.instance().shutdown();
+         // the unknown destinations must be handled inside the specific tests
+         this.glob.shutdown();
+         this.glob = null;
+      }
    }
 
    /**
@@ -132,7 +145,7 @@ public class TestPtPDispatch extends TestCase {
       
       // String oid = "Message" + "-" + counter;
       log.info(ME, "Publishing a message " + toSessionName.getRelativeName() + " ...");
-      PublishKey key = new PublishKey(this.glob);
+      PublishKey key = new PublishKey(this.glob, "testPtPDispatch");
       
       Destination destination = new Destination(this.glob, toSessionName);
       destination.forceQueuing(forceQueuing);
