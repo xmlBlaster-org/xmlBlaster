@@ -1,0 +1,159 @@
+/*------------------------------------------------------------------------------
+Name:      XtOmQueryTest.java
+Project:   xmlBlaster.org
+Copyright: many people
+Comment:   Syntax for Query:
+              XPath: http://www.w3.org/TR/xpath
+
+           XT implementation:
+              http://www.jclark.com/xml/xt.html
+
+           XPath interface (contains everything):
+              http://www.246.ne.jp/~kamiya/pub/omquery.zip
+               
+Compile:   jikes *.java  (put local directory into CLASSPATH)
+Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
+Version:   $Id: XtOmQueryTest.java,v 1.1 1999/11/16 22:05:11 ruff Exp $
+------------------------------------------------------------------------------*/
+
+import com.jclark.xsl.om.*;
+import org.xmlBlaster.util.*;
+
+import java.io.File;
+import java.io.IOException;
+
+import java.util.Enumeration;
+import java.util.Properties;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import com.fujitsu.xml.omquery.XtOmQueryMgr;
+
+class XtOmQueryTest
+{
+   static private final String parser_name = "com.sun.xml.parser.Parser";
+
+   public static void main(String argv[])
+   {
+      final String ME = "XtOmQueryTester";
+
+      if (argv.length < 2)
+         Log.panic(ME, "Usage:\n\n   java XtOmQueryTest <XML-file> <Query-String>\n\nExample:\n   java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
+
+
+      Enumeration iter;
+      int num_nodes;
+      InputSource input;
+
+      Properties prop = System.getProperties();
+      prop.put("org.xml.sax.parser", parser_name);
+      System.setProperties(prop);
+
+      // Query: xmlBlaster/key/AGENT[@id=\"192.168.124.10\"]  xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"]  xmlBlaster/key[@oid=\"2\"]
+      // Time 1: For 7 <key> blocks on 266 MHz AMD Linux, JDK 1.2
+      // Time 2: For 600 <key> blocks on 266 MHz AMD Linux, JDK 1.2
+
+      try
+      {
+         StopWatch inputTime = new StopWatch();
+         input = new InputSource(createURL(argv[0]));           // [ 29 millis ] [ 28 millis ]
+         Log.info(ME, "Read file" + inputTime.nice());
+
+         StopWatch mgrTime = new StopWatch();
+         XtOmQueryMgr query_mgr = new XtOmQueryMgr();           // [ 588 millis ] [ 612 millis ]
+         Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());
+
+         {
+            StopWatch loadTime = new StopWatch();
+            Node node = query_mgr.load(input);                  // [ 738 millis ] [ 1 sec 987 millis ]
+            Log.info(ME, "Load nodes" + loadTime.nice());
+
+            if (argv.length > 1) {
+               StopWatch queryTime = new StopWatch();
+               iter = query_mgr.getNodesByXPath(node, argv[1]); // [ 2 sec 422 millis ] [ 2 sec 577 millis ]
+               Log.info(ME, "Query time" + queryTime.nice());
+
+               num_nodes = getNumNodes(iter);
+               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+            }
+
+            if (argv.length > 2) {
+               StopWatch queryTime2 = new StopWatch();
+               iter = query_mgr.getNodesByXPath(node, argv[2]); // [ 3 millis ] [ 1 millis ]
+               Log.info(ME, "Query time" + queryTime2.nice());
+
+               num_nodes = getNumNodes(iter);
+               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
+            }
+
+            if (argv.length > 3) {
+               StopWatch queryTime2 = new StopWatch();
+               iter = query_mgr.getNodesByXPath(node, argv[3]); // [ 1 millis ] [ 0 millis ]
+               Log.info(ME, "Query time" + queryTime2.nice());
+
+               num_nodes = getNumNodes(iter);
+               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
+            }
+         }
+
+         {
+            StopWatch loadTime = new StopWatch();
+            Node node = query_mgr.load(input);                  // [ 22 millis ] [ 1 sec 211 millis ]
+            Log.info(ME, "Load nodes" + loadTime.nice());
+
+            StopWatch queryTime = new StopWatch();
+            iter = query_mgr.getNodesByXPath(node, argv[1]);    // [ 0 millis ] [ 1 millis ]
+            Log.info(ME, "Query time" + queryTime.nice());
+
+            num_nodes = getNumNodes(iter);
+            System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+         }
+      }
+      catch (IOException e)
+      {
+         System.err.println(e.getMessage());
+         e.printStackTrace();
+      }
+      catch (SAXException e)
+      {
+         System.err.println(e.getMessage());
+         e.printStackTrace();
+      }
+      catch (XSLException e)
+      {
+         System.err.println(e.getMessage());
+         e.printStackTrace();
+      }
+   }
+
+   static private int getNumNodes(Enumeration nodeIter) throws XSLException
+   {
+      int n = 0;
+
+      while (nodeIter.hasMoreElements())
+      {
+         n++;
+         Object obj = nodeIter.nextElement();
+         Node node = (Node)obj;
+         // System.out.println("Processing node " + node.getName() + ": " + node.getData());
+      }
+
+      return n;
+   }
+
+   private static String createURL(String path)
+   {
+      File f = new File(path);
+      String uri = f.getAbsolutePath();
+
+      char sep = System.getProperty("file.separator").charAt(0);
+      uri = uri.replace(sep, '/');
+      if (uri.charAt(0) != '/')
+      uri = '/' + uri;
+
+      uri = "file://" + uri;
+
+      return uri;
+   }
+}
