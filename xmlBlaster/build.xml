@@ -8,10 +8,6 @@ Authors:
  James Birchfield <jmbirchfield@proteustechnologies.com>
  Marcel Ruff <ruff@swand.lake.de>
 
-ToDo:
- Figure out how not to convert idl to java everytime.
- (Luckily it is fast)
-
 Installing the build tools
 ==========================
 
