@@ -144,7 +144,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    private I_PersistenceDriver persistenceDriver = null;
 
    /** Flag for performance reasons only */
-   private boolean usePersistence = true;
+   private boolean useOldStylePersistence;
 
    /** The messageUnit for a login event */
    private boolean publishLoginEvent = true;
@@ -187,6 +187,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
       this.uptime = System.currentTimeMillis();
+
+      this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", true);
 
       glob.getRunlevelManager().addRunlevelListener(this);
 
@@ -467,9 +469,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     */
    private void loadPersistentMessages()
    {
+      if (this.useOldStylePersistence == false) return;
+
       if(log.CALL) log.call(ME,"Loading messages from persistence to Memory ...");
-      persistenceDriver = getPersistenceDriver(); // Load persistence driver
-      if (persistenceDriver == null) return;
+      this.persistenceDriver = getPersistenceDriver(); // Load persistence driver
+      if (this.persistenceDriver == null) return;
       int num=0;
       try {
          boolean lazyRecovery = glob.getProperty().get("Persistence.LazyRecovery", true);
@@ -479,13 +483,13 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          {
             // Recovers all persistent messages from the loaded persistence driver.
             // The RequestBroker must self pulish messages.
-            Enumeration oidContainer = persistenceDriver.fetchAllOids();
+            Enumeration oidContainer = this.persistenceDriver.fetchAllOids();
 
             while(oidContainer.hasMoreElements())
             {
                String oid = (String)oidContainer.nextElement();
                // Fetch the MsgUnit by oid from the persistence
-               MsgUnit msgUnit = persistenceDriver.fetch(oid);
+               MsgUnit msgUnit = this.persistenceDriver.fetch(oid);
 
                // PublishQosServer flag: 'fromPersistenceStore' must be true
                MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
@@ -523,51 +527,26 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     */
    final I_PersistenceDriver getPersistenceDriver()
    {
-      if (usePersistence == false) return (I_PersistenceDriver)null;
+      if (this.useOldStylePersistence == false) return (I_PersistenceDriver)null;
 
-      if (persistenceDriver == null) {
-
-         /*
-         String driverClass = glob.getProperty().get("Persistence.Driver", "org.xmlBlaster.engine.persistence.filestore.FileDriver");
-
-         if (driverClass == null) {
-            log.warn(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
-            usePersistence = false;
-            return (I_PersistenceDriver)null;
-         }
-
-         try {
-            Class cl = java.lang.Class.forName(driverClass);
-            persistenceDriver = (I_PersistenceDriver)cl.newInstance();
-            //persistenceDriver.initialize(driverPath);   // TODO shutdown's missing
-            usePersistence = true;
-         } catch (Exception e) {
-            log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate " + driverClass + ": " + e.toString());
-            usePersistence = false;
-            return (I_PersistenceDriver)null;
-         } catch (NoClassDefFoundError e1) {
-            // log.info(ME, "java.class.path: " +  System.getProperty("java.class.path") );
-            log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate " + driverClass + ": " + e1.toString());
-            usePersistence = false;
-            return (I_PersistenceDriver)null;
-         } */
+      if (this.persistenceDriver == null) {
          String pluginType    = glob.getProperty().get("Persistence.Driver.Type", "filestore");
          String pluginVersion = glob.getProperty().get("Persistence.Driver.Version", "1.0");
 
          try {
-            persistenceDriver = pluginManager.getPlugin(pluginType, pluginVersion);
+            this.persistenceDriver = pluginManager.getPlugin(pluginType, pluginVersion);
          } catch (Exception e) {
             log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate [" + pluginType + "][" + pluginVersion +"]: " + e.toString());
             e.printStackTrace();
-            usePersistence = false;
+            this.useOldStylePersistence = false;
             return (I_PersistenceDriver)null;
          }
 
-         //log.info(ME, "Loaded persistence driver '" + persistenceDriver.getName() + "[" + pluginType + "][" + pluginVersion +"]'");
+         //log.info(ME, "Loaded persistence driver '" + this.persistenceDriver.getName() + "[" + pluginType + "][" + pluginVersion +"]'");
          log.info(ME, "Loaded persistence driver plugin '[" + pluginType + "][" + pluginVersion +"]'");
          //Thread.currentThread().dumpStack();
       }
-      return persistenceDriver;
+      return this.persistenceDriver;
    }
 
 
