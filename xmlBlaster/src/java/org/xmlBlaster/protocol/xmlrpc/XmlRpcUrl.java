@@ -68,7 +68,7 @@ public class XmlRpcUrl
     * Updates the raw address from AddressBase
     */
    public XmlRpcUrl(Global glob, AddressBase address) throws XmlBlasterException {
-      init(glob, address, false, XmlRpcDriver.DEFAULT_HTTP_PORT);
+      this(glob, address, false, XmlRpcDriver.DEFAULT_HTTP_PORT);
    }
 
    /**
@@ -81,18 +81,6 @@ public class XmlRpcUrl
     * @param isLocal If local is set to true "localHostname" and "localPort" will be extracted
     */
    public XmlRpcUrl(Global glob, AddressBase address, boolean isLocal, int defaultServerPort) throws XmlBlasterException {
-      if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
-         this.glob = glob;
-         this.log = this.glob.getLog("xmlrpc");
-         parse(address.getRawAddress());
-         createInetAddress(); // first check
-      }
-      else {
-         init(glob, address, isLocal, defaultServerPort);
-      }
-   }
-
-   private void init(Global glob, AddressBase address, boolean isLocal, int defaultServerPort) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("xmlrpc");
 
@@ -102,6 +90,11 @@ public class XmlRpcUrl
          this.hostname = address.getEnv("localHostname", glob.getLocalIP()).getValue();
       }
       else {
+         if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
+            parse(address.getRawAddress());
+            createInetAddress(); // first check
+            return;
+         }
          this.port = address.getEnv("port", defaultServerPort).getValue();
          this.hostname = address.getEnv("hostname", glob.getLocalIP()).getValue();
          address.setRawAddress(getUrl());

@@ -86,6 +86,11 @@ public class SocketUrl
          this.hostname = address.getEnv("localHostname", glob.getLocalIP()).getValue();
       }
       else {
+         if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
+            parse(address.getRawAddress());
+            createInetAddress(); // first check
+            return;
+         }
          this.port = address.getEnv("port", defaultServerPort).getValue();
          this.hostname = address.getEnv("hostname", glob.getLocalIP()).getValue();
          address.setRawAddress(getUrl());

@@ -68,7 +68,7 @@ public class RmiUrl
     * Updates the raw address from AddressBase
     */
    public RmiUrl(Global glob, AddressBase address) throws XmlBlasterException {
-      init(glob, address, false, RmiDriver.DEFAULT_REGISTRY_PORT);
+      this(glob, address, false, RmiDriver.DEFAULT_REGISTRY_PORT);
    }
 
    /**
@@ -81,18 +81,6 @@ public class RmiUrl
     * @param isLocal If local is set to true "localHostname" and "localPort" will be extracted
     */
    public RmiUrl(Global glob, AddressBase address, boolean isLocal, int defaultServerPort) throws XmlBlasterException {
-      if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
-         this.glob = glob;
-         this.log = this.glob.getLog("rmi");
-         parse(address.getRawAddress());
-         createInetAddress(); // first check
-      }
-      else {
-         init(glob, address, isLocal, defaultServerPort);
-      }
-   }
-
-   private void init(Global glob, AddressBase address, boolean isLocal, int defaultServerPort) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("rmi");
 
@@ -102,6 +90,11 @@ public class RmiUrl
          this.hostname = address.getEnv("localHostname", glob.getLocalIP()).getValue();
       }
       else {
+         if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
+            parse(address.getRawAddress());
+            createInetAddress(); // first check
+            return;
+         }
          this.port = address.getEnv("registryPort", defaultServerPort).getValue();
          this.hostname = address.getEnv("hostname", glob.getLocalIP()).getValue();
          address.setRawAddress(getUrl());
