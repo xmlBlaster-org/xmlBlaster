@@ -38,7 +38,7 @@ private:
    bool         clearSessions_;
    bool         reconnectSameClientOnly_;
    std::string  sessionId_; // secret !
-   SessionNameRef  sessionName_;
+   org::xmlBlaster::util::SessionNameRef  sessionName_;
    org::xmlBlaster::util::Global& global_;
 
    friend class SessionQosFactory;
@@ -103,7 +103,7 @@ public:
     * Your changes outside change the internal sessionName. 
     * @return A reference counted SessionName. 
     */
-   SessionNameRef getSessionName();
+   org::xmlBlaster::util::SessionNameRef getSessionName();
 
    std::string getSecretSessionId() const;
    void setSecretSessionId(const std::string& sessionId);
