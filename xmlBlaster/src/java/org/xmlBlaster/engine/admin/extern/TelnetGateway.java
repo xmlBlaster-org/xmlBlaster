@@ -28,6 +28,9 @@ import remotecons.wttools.ConnectionServer;
 
 import java.util.LinkedList;
 import java.util.StringTokenizer;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.IOException;
 
 /**
@@ -48,11 +51,14 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private RemoteServer rs = null;
    private final String CRLF = "\r\n";
    private static int instanceCounter = 0;
+   private boolean isShutdown = true;
 
    private boolean isLogin = false;
    private ConnectReturnQos connectRetQos = null;
    private String loginName = "";
    private String sessionId = null;
+
+   private Set telnetInstancesSet;
 
    private Timeout expiryTimer = new Timeout("TelnetSessionTimer");
    private Timestamp timerKey = null;
@@ -86,6 +92,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       this.log = this.glob.getLog("admin");
       this.instanceCounter++;
       this.ME = "TelnetGateway" + this.instanceCounter + this.glob.getLogPraefixDashed();
+      this.telnetInstancesSet = new HashSet();
       this.commandManager = commandManager;
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout[" + glob.getId() + "]", sessionTimeout);
@@ -373,9 +380,11 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    public CommandHandlerIfc getInstance() {
-      //if (log.TRACE) log.trace(ME, "getInstance() is returning myself");
+      if (isShutdown) return this; // Called on shutdown, we need to investigate and redesign the whole baby
+
       TelnetGateway telnetGateway = new TelnetGateway();
       telnetGateway.initializeVariables(glob, commandManager, false);
+      telnetInstancesSet.add(telnetGateway); 
       return telnetGateway;
    }
 
@@ -416,6 +425,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    public void shutdown() {
+      if (log.CALL) log.call(ME, "Invoking shutdown()");
       isLogin = false;
       if (this.expiryTimer != null) {
          stopTimer();
@@ -423,11 +433,21 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          this.expiryTimer = null;
       }
       disconnect();
+      if (telnetInstancesSet != null) {
+         Iterator it = telnetInstancesSet.iterator();
+         while(it.hasNext()) {
+            TelnetGateway gw = (TelnetGateway)it.next();
+            gw.shutdown();
+         }
+         telnetInstancesSet.clear();
+         //telnetInstancesSet = null;
+      }
       if (rs != null) {
          rs.disable();
          rs = null;
          if (log.TRACE) log.trace(ME, "Shutdown done, telnet disabled.");
       }
+      isShutdown = true;
    }
 
    /**
