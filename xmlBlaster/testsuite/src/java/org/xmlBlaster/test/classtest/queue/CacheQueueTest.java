@@ -120,7 +120,7 @@ public class CacheQueueTest extends TestCase {
 
          pluginInfo = new PluginInfo(glob, pluginManager, "CACHE", "1.0");
          this.queue = (CacheQueueInterceptorPlugin)pluginManager.getPlugin(pluginInfo, queueId, cbProp);
-         this.queue.shutdown(false); // to allow to initialize again
+         this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
@@ -240,7 +240,7 @@ public class CacheQueueTest extends TestCase {
 
                      log.info(ME, "**** SUB-TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is] +
                                    " -> numOfTransientEntries["+it+"]=" + numOfTransientEntries[it] + " numOfPersistentEntries["+id+"]=" + numOfPersistentEntries[id]);
-                     if (!this.queue.isShutdown()) this.queue.shutdown(true);
+                     if (!this.queue.isShutdown()) this.queue.shutdown();
                      this.queue.initialize(queueId, prop);
                      this.queue.clear();
 
@@ -380,3 +380,4 @@ public class CacheQueueTest extends TestCase {
    }
 }
 
+                                                                       

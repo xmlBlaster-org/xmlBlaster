@@ -97,7 +97,7 @@ public class I_QueueTest extends TestCase {
          pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
          this.queue = pluginManager.getPlugin(pluginInfo, queueId, new CbQueueProperty(this.glob, queueId.getStrippedId(), this.glob.getStrippedId()));
-         this.queue.shutdown(false); // to allow to initialize again
+         this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
@@ -197,12 +197,12 @@ public class I_QueueTest extends TestCase {
          log.info(ME, "usage() test:" + queue.usage());
 
          assertEquals(ME+": should not be shutdown", false, queue.isShutdown());
-         queue.shutdown(true);
+         queue.shutdown();
          assertEquals(ME+": should be shutdown", true, queue.isShutdown());
 
          log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
          System.out.println("***" + ME + " [SUCCESS]");
-         queue.shutdown(true);
+         queue.shutdown();
          queue = null;
       }
       catch(XmlBlasterException e) {
@@ -293,7 +293,7 @@ public class I_QueueTest extends TestCase {
          assertEquals(ME+": Wrong empty size", 0L, queue.getNumOfEntries());
 
          System.out.println("***" + ME + " [SUCCESS]");
-         queue.shutdown(true);
+         queue.shutdown();
          queue = null;
 
       }
@@ -409,7 +409,7 @@ public class I_QueueTest extends TestCase {
          assertEquals(ME+": Wrong empty size", 0L, queue.getNumOfEntries());
 
          System.out.println("***" + ME + " [SUCCESS]");
-         queue.shutdown(true);
+         queue.shutdown();
          queue = null;
 
       }
@@ -588,7 +588,7 @@ public class I_QueueTest extends TestCase {
 
 
          System.out.println("***" + ME + " [SUCCESS]");
-         queue.shutdown(true);
+         queue.shutdown();
       }
       catch(XmlBlasterException e) {
          fail(ME + ": Exception thrown: " + e.getMessage());
@@ -682,7 +682,7 @@ public class I_QueueTest extends TestCase {
 
             log.info(ME, "#2 Success, fill and remove");
          }
-         queue.shutdown(true);
+         queue.shutdown();
       }
       catch(XmlBlasterException e) {
          fail(ME + ": Exception thrown: " + e.getMessage());
@@ -807,7 +807,7 @@ public class I_QueueTest extends TestCase {
             log.info(ME, "#5 Success, fill and random remove");
          }
 
-         queue.shutdown(true);
+         queue.shutdown();
          System.out.println("***" + ME + " [SUCCESS]");
       }
       catch(XmlBlasterException e) {

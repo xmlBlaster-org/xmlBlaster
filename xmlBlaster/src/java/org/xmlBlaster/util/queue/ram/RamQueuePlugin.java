@@ -168,25 +168,21 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       return storageId;
    }
 
-   public final void shutdown(boolean force) {
+   public final void shutdown() {
       if (log.TRACE) log.trace(ME, "Entering shutdown(" + this.storage.size() + ")");
-      //Thread.currentThread().dumpStack();
       synchronized (this) {
          if (this.storage.size() > 0) {
-            if (force) {
-               log.warn(ME, "Shutting down queue forced which contains " + this.storage.size() + " messages, destroying entries");
-               clear();
-            }
-            else {
-               String reason = "Shutting down queue which contains " + this.storage.size() + " messages";
-               log.warn(ME, reason);
-               //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, reason);
-               //handleFailure !!!
-            }
+            String reason = "Shutting down topic cache which contains " + this.storage.size() + " messages";
+            log.warn(ME, reason);
+            //throw new XmlBlasterException(ME, reason);
+            //handleFailure !!!
          }
          isShutdown = true;
       }
-      if (log.CALL) log.call(ME, "shutdown() of queue " + this.getStorageId());
+
+      if (log.CALL) {
+         log.call(ME, "shutdown() of queue " + this.getStorageId() + " which contains " + this.storage.size() + "messages");
+      }
    }
 
    public final boolean isShutdown() {
@@ -724,7 +720,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       synchronized (this) {
          this.storage.clear();
       }
-      this.shutdown(true);
+      this.shutdown();
       this.property = null;
    }
 

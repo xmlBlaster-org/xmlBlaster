@@ -393,9 +393,8 @@ public interface I_Queue extends I_StorageProblemNotifier
 
    /**
     * Shutdown the implementation, sync with data store, free resources
-    * @param true: force shutdown, don't flush everything
     */
-   public void shutdown(boolean force);
+   public void shutdown();
 
 
    /**

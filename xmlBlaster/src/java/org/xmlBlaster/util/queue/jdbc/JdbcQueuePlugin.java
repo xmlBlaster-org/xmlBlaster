@@ -932,9 +932,8 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
 
    /**
     * Shutdown the implementation, sync with data store
-    * @param true: force shutdown, don't flush everything
     */
-   public void shutdown(boolean force) {
+   public void shutdown() {
       this.isDown = true;
       //      clear();
    }
@@ -1020,7 +1019,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
    public void destroy() throws XmlBlasterException {
       try {
          this.clear();
-         this.shutdown(true);
+         this.shutdown();
          long ret = this.manager.releaseTable(this.storageId.getStrippedId(), this.associatedTable);
          this.property = null;
          this.manager.cleanUp(this.storageId.getStrippedId());

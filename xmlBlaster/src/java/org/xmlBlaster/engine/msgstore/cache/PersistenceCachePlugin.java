@@ -620,14 +620,13 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
    /**
     * Shutdown the implementation, sync with data store
-    * @param true: force shutdown, don't flush everything
     */
-   public void shutdown(boolean force) {
+   public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
-      this.transientStore.shutdown(force);
+      this.transientStore.shutdown();
       if (this.persistentStore != null && this.isConnected)
-         this.persistentStore.shutdown(force);
+         this.persistentStore.shutdown();
 
       try {
 //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);

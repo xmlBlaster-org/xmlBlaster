@@ -919,15 +919,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
    /**
     * Shutdown the implementation, sync with data store
-    * @param true: force shutdown, don't flush everything
     */
-   public void shutdown(boolean force) {
+   public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
-      this.transientQueue.shutdown(force);
+      this.transientQueue.shutdown();
       if (this.persistentQueue != null && this.isConnected)
-         this.persistentQueue.shutdown(force);
-
+         this.persistentQueue.shutdown();
       try {
 //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
          this.persistentQueue.unRegisterStorageProblemListener(this);

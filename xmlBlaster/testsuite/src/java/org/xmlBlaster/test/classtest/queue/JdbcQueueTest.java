@@ -111,7 +111,7 @@ public class JdbcQueueTest extends TestCase {
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
          this.queue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
-         this.queue.shutdown(false); // to allow to initialize again
+         this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
@@ -151,7 +151,6 @@ public class JdbcQueueTest extends TestCase {
    }
 
    public void testPutWithBreak() {
-      String queueType = "JDBC";
       if (this.suppressTest) {
          log.error(ME, "JDBC test is not driven as no database was found");
          return;
@@ -160,7 +159,7 @@ public class JdbcQueueTest extends TestCase {
          putWithBreak();
       }
       catch (XmlBlasterException ex) {
-         fail("Exception when testing PutWithBreak probably due to failed initialization of the queue of type " + queueType + " " + ex.getMessage() );
+         fail("Exception when testing PutWithBreak probably due to failed initialization of the queue of type " + PLUGIN_TYPES[this.count] + " " + ex.getMessage() );
          ex.printStackTrace();
       }
    }
@@ -195,6 +194,64 @@ public class JdbcQueueTest extends TestCase {
       }
    }
 
+   public void testInitialEntries() {
+      if (this.suppressTest) {
+         log.error(ME, "JDBC test is not driven as no database was found");
+         return;
+      }
+      try {
+         initialEntries();
+      }
+      catch (XmlBlasterException ex) {
+         fail("Exception when testing InitialEntries probably due to failed initialization of the queue of type " + PLUGIN_TYPES[this.count] + " " + ex.getMessage() );
+         ex.printStackTrace();
+      }
+   }
+
+   public void initialEntries() throws XmlBlasterException {
+      // set up the queues ....
+      this.log.info(ME, "initialEntries test starts");
+      QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+      cbProp.setMaxMsg(10000L);
+      cbProp.setMaxBytes(200000L);
+      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "initialEntries");
+
+      try {
+         String type = PLUGIN_TYPES[this.count];
+         this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         QueuePluginManager pluginManager = new QueuePluginManager(glob);
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
+         java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
+         prop.put("tableNamePrefix", "TEST");
+         prop.put("nodesTableName", "_nodes");
+         prop.put("queuesTableName", "_queues");
+         prop.put("entriesTableName", "_entries");
+         I_Queue tmpQueue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         tmpQueue.clear();
+         // add some persistent entries and then shutdown ...
+         DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), 100, true);
+         tmpQueue.put(entry, false);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), 100, true);
+         tmpQueue.put(entry, false);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), 100, true);
+         tmpQueue.put(entry, false);
+         tmpQueue.shutdown(); // to allow to initialize again
+         I_Queue tmpQueue2 = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         long numOfEntries = tmpQueue2.getNumOfEntries();
+         assertEquals("Wrong number of entries in queue", 3L, numOfEntries);
+         ArrayList lst = tmpQueue2.peek(-1, -1L);
+         assertEquals("Wrong number of entries retrieved from queue", 3, lst.size());
+         queue.shutdown();
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         ex.printStackTrace();
+         assertTrue("exception occured when testing initialEntries", false);
+      }
+      this.log.info(ME, "initialEntries test successfully ended");
+   }
+
+
    /**
     * Method is used by TestRunner to load these tests
     */
@@ -203,6 +260,7 @@ public class JdbcQueueTest extends TestCase {
       Global glob = new Global();
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new JdbcQueueTest(glob, "testPutWithBreak", i));
+         suite.addTest(new JdbcQueueTest(glob, "testInitialEntries", i));
       }
       return suite;
    }
@@ -216,14 +274,17 @@ public class JdbcQueueTest extends TestCase {
       Global glob = new Global(args);
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
-         long startTime = System.currentTimeMillis();
-
          JdbcQueueTest testSub = new JdbcQueueTest(glob, "JdbcQueueTest", i);
          testSub.setUp();
-         testSub.testPutWithBreak();
+         testSub.testInitialEntries();
          testSub.tearDown();
 
+         testSub.setUp();
+         long startTime = System.currentTimeMillis();
+         testSub.testPutWithBreak();
          long usedTime = System.currentTimeMillis() - startTime;
+         testSub.tearDown();
+
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
       }
    }

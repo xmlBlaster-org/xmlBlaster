@@ -62,6 +62,14 @@ public:
    }
 */
 
+   void erase()
+   {
+      EraseKey key(global_);
+      key.setOid("c++-demo");
+      EraseQos qos(global_);
+      connection_.erase(key, qos);
+   }
+   
 };
 
 void PublishDemo::publish(const string& oid, const string&, const string& content)
@@ -75,7 +83,15 @@ void PublishDemo::publish(const string& oid, const string&, const string& conten
    log_.trace(ME, string("publish return qos: ") + tmp.toXml());
 }
 
-
+void usage(Log& log) 
+{
+   log.info("PublishDemo", "usage: all typical xmlBlaster command line arguments");
+   log.info("PublishDemo", "plus the following additional command line arguments:");
+   log.info("PublishDemo", " -h (for help: this command)");
+   log.info("PublishDemo", " -numOfRuns (int): the number of publishes which have to be done");
+   log.info("PublishDemo", " -publishDelay (ms): the delay to wait between each publish. If negative (default) it does not wait");
+   exit(0);
+}
 
 
 /**
@@ -91,13 +107,24 @@ int main(int args, char ** argv)
       XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
+      Log&    log  = glob.getLog("demo");
 
+      for (int i=0; i < args; i++) {
+         string help = argv[i];
+         if ( help == string("-h") || help == string("-help") || help == string("--help") || help == string("-?") ) {
+            usage(log);
+         }
+      }
+
+      int numOfRuns     = glob.getProperty().getIntProperty("numOfRuns", 10);
+      long publishDelay = glob.getProperty().getIntProperty("publishDelay", -1L);
       PublishDemo demo(glob);
       demo.connect();
-      for (int i=0; i < 10; i++) {
+      for (int i=0; i < numOfRuns; i++) {
          demo.publish();
-         org::xmlBlaster::util::thread::Thread::sleepSecs(1);
+         if (publishDelay > 0) org::xmlBlaster::util::thread::Thread::sleep(publishDelay);
       }
+      demo.erase();
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

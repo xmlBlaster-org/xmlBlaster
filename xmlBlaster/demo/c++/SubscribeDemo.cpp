@@ -30,12 +30,15 @@ private:
    XmlBlasterAccess connection_;
 
 public:
+   bool             doContinue_;
+
    SubscribeDemo(Global& glob) 
       : ME("SubscribeDemo"), 
         global_(glob), 
         log_(glob.getLog("demo")),
         connection_(global_)
    {
+      doContinue_ = true;
    }
 
    void connect()
@@ -63,13 +66,21 @@ public:
       if (log_.trace()) log_.trace(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
       if (log_.trace()) log_.trace(ME, "update: content: " + help);
-      if (updateQos.getState() == "ERASED" ) return "";
+      if (updateQos.getState() == "ERASED" ) {
+         doContinue_ = false;
+         return "";
+      }
 
       return "";
    }
-
-
 };
+
+void usage(Log& log) 
+{
+   log.info("SubscribeDemo", "usage: all typical xmlBlaster command line arguments");
+   log.info("SubscribeDemo", "plus the following additional command line arguments:");
+   exit(0);
+}
 
 /**
  * Try
@@ -80,6 +91,10 @@ public:
  */
 int main(int args, char ** argv)
 {
+   TimestampFactory& tsFactory = TimestampFactory::getInstance();
+   Timestamp startStamp = tsFactory.getTimestamp();
+   std::cout << " end time: " << tsFactory.toXml(startStamp, "", true) << std::endl;
+
    try {
       XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
@@ -87,8 +102,17 @@ int main(int args, char ** argv)
 
       SubscribeDemo demo(glob);
       demo.connect();
+
       demo.subscribe();
-      org::xmlBlaster::util::thread::Thread::sleepSecs(12);
+      while (demo.doContinue_) {
+         org::xmlBlaster::util::thread::Thread::sleepSecs(1);
+      }
+
+      Timestamp stopStamp = tsFactory.getTimestamp();
+      std::cout << " end time: " << tsFactory.toXml(stopStamp, "", true) << std::endl;
+      Timestamp diff = stopStamp - startStamp;
+      std::cout << " time used for demo: " << tsFactory.toXml(diff, "", true) << std::endl;
+
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

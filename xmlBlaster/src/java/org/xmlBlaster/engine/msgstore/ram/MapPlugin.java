@@ -237,25 +237,20 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       return this.property.getMaxBytes();
    }
 
-   public final void shutdown(boolean force) {
+   public final void shutdown() {
       if (log.CALL) log.call(ME, "Entering shutdown(" + this.storage.size() + ")");
       //Thread.currentThread().dumpStack();
       synchronized (this.storage) {
          if (this.storage.size() > 0) {
-            if (force) {
-               log.warn(ME, "Shutting down topic cache forced which contains " + this.storage.size() + " messages, destroying entries");
-               clear();
-            }
-            else {
-               String reason = "Shutting down topic cache which contains " + this.storage.size() + " messages";
-               log.warn(ME, reason);
-               //throw new XmlBlasterException(ME, reason);
-               //handleFailure !!!
-            }
+            String reason = "Shutting down topic cache which contains " + this.storage.size() + " messages";
+            log.warn(ME, reason);
+            //throw new XmlBlasterException(ME, reason);
+            //handleFailure !!!
          }
          isShutdown = true;
       }
       if (log.CALL) log.call(ME, "shutdown() of topic cache " + this.getStorageId());
+
    }
 
    public final boolean isShutdown() {

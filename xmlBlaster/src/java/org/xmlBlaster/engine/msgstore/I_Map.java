@@ -135,9 +135,8 @@ public interface I_Map extends I_StorageProblemNotifier
 
    /**
     * Shutdown the implementation, sync with data store, free resources
-    * @param true: force shutdown, don't flush everything
     */
-   void shutdown(boolean force);
+   void shutdown();
 
    /**
     * performs what has to be done when the Map Plugin shuts down.

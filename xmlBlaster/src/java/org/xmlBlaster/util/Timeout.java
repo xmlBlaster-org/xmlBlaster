@@ -9,6 +9,7 @@ package org.xmlBlaster.util;
 import java.lang.ref.WeakReference;
 import java.util.TreeMap;
 import java.util.NoSuchElementException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 /**
  * Allows you be called back after a given delay.
@@ -263,7 +264,9 @@ public class Timeout extends Thread
    {
       if (key == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "The timeout handle is null, no timeout refresh done");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_NULLPOINTER,
+            ME + "addTimeoutListener",
+            "The timeout handle is null, no timeout refresh done");
       }
       Timestamp newKey = null;
       synchronized (map) {

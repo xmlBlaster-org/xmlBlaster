@@ -98,7 +98,7 @@ public class QueueServerEntryTest extends TestCase {
          QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
          this.queue = pluginManager.getPlugin(PLUGIN_TYPES[currImpl], "1.0", queueId, cbProp);
-         this.queue.shutdown(false); // to allow to initialize again
+         this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
@@ -113,7 +113,7 @@ public class QueueServerEntryTest extends TestCase {
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
       }
-      this.queue.shutdown(false);
+      this.queue.shutdown();
    }
 
 
