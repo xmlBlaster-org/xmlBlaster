@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.46 2003/09/24 21:49:36 ruff Exp $
+Version:   $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -15,9 +15,9 @@ Version:   $Id: Global.cpp,v 1.46 2003/09/24 21:49:36 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.46 2003/09/24 21:49:36 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.46 2003/09/24 21:49:36 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -103,7 +103,7 @@ Global& Global::initialize(int args, const char * const argc[])
 
 string &Global::getVersion()
 {
-   static string version = "@version@";  // is replaced by ant / build.xml to e.g. "0.85b"
+   static string version = "@version@";  // is replaced by ant / build.xml to e.g. "0.85c"
    return version;
 }
 

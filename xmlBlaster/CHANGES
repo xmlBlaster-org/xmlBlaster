@@ -1,7 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xxxx-xx-xx] (cvs only)
-=========================================
+Changes for 0.85c (beta) [2003-10-05]
+=====================================
+
  o Bugfix for queueing PtP messages when there are session which have
    set isPtpAllowed==false
 
@@ -14,7 +15,7 @@ Changes for 0.xxx [xxxx-xx-xx] (cvs only)
    is subscribed.
 
  o XmlBlasterException now dumps an online URL with
-   detailed informations
+   detailed informations.
    Please use new xmlBlaster.properties.template
 
  o Protected core authentication against unwanted access by
