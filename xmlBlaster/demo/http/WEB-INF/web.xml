@@ -48,12 +48,16 @@
       <param-name>queue/connection/defaultPlugin</param-name>
       <param-value>RAM,1.0</param-value>
     </init-param>
+    <init-param>
+      <param-name>protocol</param-name>
+      <param-value>SOCKET</param-value>
+    </init-param>
 
     <!-- Example to look for xmlBlaster on another host -->
     <!-- init-param>
-      <param-name>bootstrapHostname</param-name>
+      <param-name>dispatch/connection/plugin/socket/hostname</param-name>
       <param-value>192.168.1.5</param-value>
-      <description>IP where xmlBlaster is running if not on tomcats host (example for CORBA protocol)</description>
+      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
     </init-param -->
 
     <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
@@ -92,12 +96,21 @@
       <param-name>queue/connection/defaultPlugin</param-name>
       <param-value>RAM,1.0</param-value>
     </init-param>
+    <init-param>
+      <param-name>protocol</param-name>
+      <param-value>SOCKET</param-value>
+    </init-param>
 
     <!-- Example to look for xmlBlaster on another host -->
     <!-- init-param>
-      <param-name>bootstrapHostname</param-name>
+      <param-name>dispatch/connection/plugin/socket/hostname</param-name>
       <param-value>192.168.1.5</param-value>
-      <description>IP where xmlBlaster is running if not on tomcats host (example for CORBA protocol)</description>
+      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
+    </init-param -->
+    <!-- init-param>
+      <param-name>dispatch/connection/plugin/socket/port</param-name>
+      <param-value>7607</param-value>
+      <description>Port where xmlBlaster is running if not on default port (example for SOCKET protocol)</description>
     </init-param -->
 
     <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
