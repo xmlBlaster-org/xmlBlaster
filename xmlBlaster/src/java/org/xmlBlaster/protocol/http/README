@@ -20,6 +20,15 @@ IMPORTANT NOTE FOR SERVLET INSTALLATION:
 We need to run the JVM with the jacorb.jar file first in the bootclasspath
 otherwise the JDK-internal CORBA is used.
 
+If you install orb.properties into 'java.home' there will be no problem.
+
+If you run jserv started automatically by Apache, jserv will
+look for jacorb.properties and xmlBlaster.properties in the Apache
+home directory.
+If this is a problem, copy the two property files into 'java.home'
+as well.
+'java.home' is on my machine: /opt/jdk1.2.2/jre/lib/
+
 
 
 Using Suns Web Development Kit (JSWDK):
@@ -92,9 +101,24 @@ Config files setup:
 5) Where are the xmlBlaster servlets lying around: 
    Edit /etc/httpd/conf/jserv/zone.properties
 
+      # List of Repositories
+      #######################
       repositories=/home/ruff/xmlBlaster/classes
+		or:
+      repositories=/home/ruff/xmlBlaster/lib/xmlBlaster.jar
+      
+      
+      # Servlet Aliases
+      ##################
+		servlet.BlasterHttpProxyServlet.code=org.xmlBlaster.protocol.http.BlasterHttpProxyServlet
       servlet.BrowserTest.code=org.xmlBlaster.protocol.http.BrowserTest
-      servlet.Callback.code=org.xmlBlaster.protocol.http.CallbackServletDriver
+      servlet.ReqListServlet.code=org.xmlBlaster.util.servlet.ReqListServlet
+      servlet.ReqItemServlet.code=org.xmlBlaster.util.servlet.ReqItemServlet
+      servlet.PXSLServlet.code=PXSLServlet
+
+	Edit /etc/httpd/conf/jserv/jserv.properties
+
+	   security.authentication=false
 
 6) We need to run the JVM with the jacorb.jar file first in the bootclasspath
    otherwise the JDK-internal CORBA is used.
@@ -104,6 +128,10 @@ Config files setup:
 
       - switch off the automatic starting in jserv.conf:
          ApJServManual on
+
+      - # Apache JServ secret key file relative to Apache root directory.
+        #ApJServSecretKey /etc/httpd/jserv/jserv.secret.key
+        ApJServSecretKey DISABLED
 
       - use this script to start jserv (it is provided in the xmlBlaster/bin directory):
             #!/bin/sh
