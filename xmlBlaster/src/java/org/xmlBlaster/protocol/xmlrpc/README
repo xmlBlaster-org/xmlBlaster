@@ -19,6 +19,16 @@ Install:
     Protocol.CallbackDrivers=...,XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,...
 
   This loads XmlRpc support into xmlBlaster.
+  It should be there already, since it is default.
+
+
+Todo:
+=====
+  Add filter to allow only wanted clients:
+     acceptClient(java.lang.String address)
+     setParanoid(boolean p)
+  See API of helma.xmlrpc.WebServer
+  Make addresses configurable with xmlBlaster.properties
 
 
 Test the driver:
@@ -26,11 +36,16 @@ Test the driver:
 
    $JAVA_WRAP org.xmlBlaster.Main
 
-   java org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy
+   java javaclients.ClientSub -client.protocol XML-RPC
 
    The $JAVA_WRAP is an environment variable which points to the correct java wrapper depending on
    which CORBA implementation you are using (it points to jaco for JacORB and to
    $XMLBLASTER_HOME/config/java_orbacus.sh for ORBACUS).
+
+   If you allways want to use XML-RPC instead of CORBA put this line
+   into xmlBlaster.properties:
+
+      client.protocol=XML-RPC
 
 
 To further Test the driver:
