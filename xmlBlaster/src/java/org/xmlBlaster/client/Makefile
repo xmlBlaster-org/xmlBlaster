@@ -18,7 +18,7 @@ LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 $(CLASS_DIR)/%.class: %.java
-	$(JAVAC) -d $(CLASS_TOP_DIR) $<
+	$(JAVAC) $<
 
 all: 	all_SUB_DIRS precond java
 

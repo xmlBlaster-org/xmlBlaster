@@ -3,11 +3,11 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.24 2000/01/30 20:19:56 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.25 2000/02/01 15:18:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.*;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
@@ -354,7 +354,7 @@ public class MessageUnitHandler
          return;
       }
       ClientInfo clientInfo = sub.getClientInfo();
-      clientInfo.sendUpdate(getMessageUnitWrapper());
+      clientInfo.sendUpdate(getMessageUnitWrapper(), (Destination)null);
    }
 
 

@@ -3,15 +3,11 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.51 2000/01/31 12:00:29 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.52 2000/02/01 15:18:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Property;
-import org.xmlBlaster.util.XmlToDom;
-import org.xmlBlaster.util.XmlKeyBase;
-import org.xmlBlaster.util.XmlQoSBase;
+import org.xmlBlaster.util.*;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.serverIdl.MessageUnitContainer;
@@ -31,7 +27,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.51 $
+ * @version $Revision: 1.52 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -702,14 +698,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          if (Log.DUMP) Log.dump(ME, publishQoS.printOn().toString());
 
          MessageUnitWrapper messageUnitWrapper = new MessageUnitWrapper(this, xmlKey, messageUnit, publishQoS, clientInfo.getLoginName());
-         Vector destinations = publishQoS.getDestinations(); // !!! add XPath client query here !!!
+         Vector destinationVec = publishQoS.getDestinations(); // !!! add XPath client query here !!!
 
          //-----    Send message to every destination client
-         for (int ii = 0; ii<destinations.size(); ii++) {
-            String loginName = (String)destinations.elementAt(ii);
-            if (Log.TRACE) Log.trace(ME, "Delivering message to destination [" + loginName + "]");
-            ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(loginName);
-            destinationClient.sendUpdate(messageUnitWrapper);
+         for (int ii = 0; ii<destinationVec.size(); ii++) {
+            Destination destination = (Destination)destinationVec.elementAt(ii);
+            if (Log.TRACE) Log.trace(ME, "Delivering message to destination [" + destination.getDestination() + "]");
+            ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(destination.getDestination());
+            destinationClient.sendUpdate(messageUnitWrapper, destination);
          }
       }
       else {

@@ -14,22 +14,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine
 
 #------------------------------------------------------------------------------
 SUB_DIRS = persistence
-LOCAL_FILES = \
-			$(CLASS_DIR)/ClientInfo.class \
-			$(CLASS_DIR)/RequestBroker.class \
-			$(CLASS_DIR)/ClientSubscriptions.class \
-			$(CLASS_DIR)/MessageUnitWrapper.class \
-			$(CLASS_DIR)/MessageUnitHandler.class \
-			$(CLASS_DIR)/ClientUpdateQueue.class \
-			$(CLASS_DIR)/CallbackCorbaDriver.class \
-			$(CLASS_DIR)/XmlKey.class \
-			$(CLASS_DIR)/BigXmlKeyDOM.class \
-			$(CLASS_DIR)/SubscriptionInfo.class \
-			$(CLASS_DIR)/SubscribeQoS.class \
-			$(CLASS_DIR)/UnSubscribeQoS.class \
-			$(CLASS_DIR)/EraseQoS.class \
-			$(CLASS_DIR)/GetQoS.class \
-			$(CLASS_DIR)/PublishQoS.class
+LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 

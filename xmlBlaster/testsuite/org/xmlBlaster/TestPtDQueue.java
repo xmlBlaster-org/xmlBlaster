@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.4 2000/01/30 18:42:56 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.5 2000/02/01 15:18:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -103,49 +103,81 @@ public class TestPtDQueue extends TestCase implements I_Callback
     * TEST: Sending a message to a not logged in client, which logs in later.
     * <p />
     * The sent message will be stored in a xmlBlaster queue for this client and than delivered
+    * only if the &lt;qos>&lt;ForceQueuing />&lt;/qos> is set.
     */
    public void testPtUnknownDestination()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing point to a unknown destination ...");
+      {
+         if (Log.TRACE) Log.trace(ME, "Testing point to a unknown destination with NO <ForceQueuing /> set ...");
 
-      // Construct a message and send it to "Martin Unknown"
-      String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
-                      "</key>";
+         // Construct a message and send it to "Martin Unknown"
+         String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
+                         "</key>";
 
-      String qos = "<qos>" +
-                   "   <destination queryType='EXACT'>" +
-                           receiverName +
-                   "   </destination>" +
-                   "</qos>";
+         String qos = "<qos>" +
+                      "   <destination queryType='EXACT'>" +
+                              receiverName +
+                      "   </destination>" +
+                      "</qos>";
 
-      senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-      MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
-      try {
-         publishOid = senderXmlBlaster.publish(messageUnit, qos);
-         Log.info(ME, "Sending done, returned oid=" + publishOid);
-      } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assert("publish - XmlBlasterException: " + e.reason, false);
+         senderContent = "Hi " + receiverName + ", who are you? " + senderName;
+         MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         try {
+            publishOid = senderXmlBlaster.publish(messageUnit, qos);
+            Log.error(ME, "Publishing to a not logged in client should throw an exception");
+            assert("Publishing to a not logged in client should throw an exception", false);
+         } catch(XmlBlasterException e) {
+            Log.info(ME, "Exception is correct, client is not logged in");
+         }
+
+         waitOnUpdate(1000L);
+         assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
+         numReceived = 0;
       }
 
-      waitOnUpdate(1000L);
-      assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
-      numReceived = 0;
+      {
+         if (Log.TRACE) Log.trace(ME, "Testing point to a unknown destination with <ForceQueuing /> set ...");
 
-      // Now the receiver logs in, and should get the message from the xmlBlaster queue ...
-      try {
-         receiverConnection = new CorbaConnection();
-         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
-      } catch (XmlBlasterException e) {
-          Log.error(ME, e.toString());
-          e.printStackTrace();
-          assert("login - XmlBlasterException: " + e.reason, false);
-          return;
+         // Construct a message and send it to "Martin Unknown"
+         String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
+                         "</key>";
+
+         String qos = "<qos>" +
+                      "   <destination queryType='EXACT'>" +
+                              receiverName +
+                      "      <ForceQueuing />" +
+                      "   </destination>" +
+                      "</qos>";
+
+         senderContent = "Hi " + receiverName + ", who are you? " + senderName;
+         MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         try {
+            publishOid = senderXmlBlaster.publish(messageUnit, qos);
+            Log.info(ME, "Sending done, returned oid=" + publishOid);
+         } catch(XmlBlasterException e) {
+            Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+            assert("publish - XmlBlasterException: " + e.reason, false);
+         }
+
+         waitOnUpdate(1000L);
+         assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
+         numReceived = 0;
+
+         // Now the receiver logs in, and should get the message from the xmlBlaster queue ...
+         try {
+            receiverConnection = new CorbaConnection();
+            receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
+         } catch (XmlBlasterException e) {
+             Log.error(ME, e.toString());
+             e.printStackTrace();
+             assert("login - XmlBlasterException: " + e.reason, false);
+             return;
+         }
+
+         waitOnUpdate(1000L);
+         assertEquals("numReceived after '" + receiverName + "' logged in", 1, numReceived); // message arrived?
+         numReceived = 0;
       }
-
-      waitOnUpdate(1000L);
-      assertEquals("numReceived after '" + receiverName + "' logged in", 1, numReceived); // message arrived?
-      numReceived = 0;
    }
 
 

@@ -3,11 +3,12 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.12 2000/01/31 12:00:29 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.13 2000/02/01 15:18:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 import org.xml.sax.*;
@@ -37,12 +38,14 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean isDurable = false;
    private boolean forceUpdate = false;
    private boolean readonly = false;
+   private boolean forceQueuing = false;
 
 
    /**
-    * Vector for loginQoS, holding all destination addresses
+    * Vector for loginQoS, holding all destination addresses (Destination objects)
     */
    protected Vector destinationVec = null;
+   protected Destination destination = null;
 
 
    /**
@@ -178,18 +181,36 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
             return;
          inDestination = true;
          if (destinationVec == null) destinationVec = new Vector();
+         destination = new Destination();
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
                if( attrs.getName(i).equalsIgnoreCase("queryType") ) {
                   String queryType = attrs.getValue(i).trim();
-                  if (queryType.equalsIgnoreCase("XPATH")) {
-                     Log.error(ME, "Sorry, XPath destinations are not yet supported");
-                     usesXPathQuery = false; // !!!
+                  if (queryType.equalsIgnoreCase("EXACT")) {
+                     destination.setQueryType(queryType);
                   }
+                  else if (queryType.equalsIgnoreCase("XPATH")) {
+                     destination.setQueryType(queryType);
+                  }
+                  else
+                     Log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
                }
             }
          }
+         String tmp = character.toString().trim(); // The address or XPath query string
+         if (tmp.length() > 0) {
+            destination.setDestination(tmp); // set address or XPath query string if it is before the ForceQueuing tag
+            character.setLength(0);
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("ForceQueuing")) {
+         if (!inDestination)
+            return;
+         forceQueuing = true;
+         destination.forceQueuing(true);
          return;
       }
 
@@ -228,9 +249,12 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if( name.equalsIgnoreCase("destination") ) {
          inDestination = false;
-         String destination = character.toString().trim();
+         String tmp = character.toString().trim(); // The address or XPath query string
+         if (tmp.length() > 0) {
+            destination.setDestination(tmp); // set address or XPath query string if it is before the ForceQueuing tag
+            character.setLength(0);
+         }
          destinationVec.addElement(destination);
-         character.setLength(0);
          return;
       }
    }
@@ -273,9 +297,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
       }
       else {
          for (int ii=0; ii<destinationVec.size(); ii++) {
-            sb.append(offset + "   <destination>");
-            sb.append(offset + "      " + (String)destinationVec.elementAt(ii));
-            sb.append(offset + "   </destination>");
+            Destination destination = (Destination)destinationVec.elementAt(ii);
+            sb.append(destination.printOn(extraOffset + "   ").toString());
          }
       }
 

@@ -12,19 +12,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/util
 
 
 #------------------------------------------------------------------------------
-LOCAL_FILES = \
-			$(CLASS_DIR)/Log.class \
-			$(CLASS_DIR)/FileUtil.class \
-			$(CLASS_DIR)/Memory.class \
-			$(CLASS_DIR)/XmlKeyBase.class \
-			$(CLASS_DIR)/XmlQoSBase.class \
-			$(CLASS_DIR)/SaxHandlerBase.class \
-			$(CLASS_DIR)/StopWatch.class \
-			$(CLASS_DIR)/XmlProcessor.class \
-			$(CLASS_DIR)/XmlToDom.class \
-			$(CLASS_DIR)/Args.class \
-			$(CLASS_DIR)/Property.class \
-			$(CLASS_DIR)/TimeHelper.class
+LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 

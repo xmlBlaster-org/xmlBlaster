@@ -3,12 +3,13 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.21 2000/01/30 18:50:38 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.22 2000/02/01 15:18:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 
@@ -25,7 +26,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -54,7 +55,7 @@ public class ClientInfo
     */
    public ClientInfo(AuthenticationInfo authInfo) throws XmlBlasterException
    {
-      instanceId = instanceCounter; 
+      instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
       notifyAboutLogin(authInfo);
@@ -68,7 +69,7 @@ public class ClientInfo
     */
    public ClientInfo(String loginName)
    {
-      instanceId = instanceCounter; 
+      instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
       this.loginName = loginName;
@@ -88,9 +89,11 @@ public class ClientInfo
 
 
    /**
-    * This sends the update to the client, or stores it in the client queue.
+    * This sends the update to the client, or stores it in the client queue or throws an exception. 
+    * @param messageUnitWrapper Wraps the messageUnit with some more infos
+    * @param destination The Destination object of the receiver (is null in Pub/Sub mode!)
     */
-   public final void sendUpdate(MessageUnitWrapper messageUnitWrapper) throws XmlBlasterException
+   public final void sendUpdate(MessageUnitWrapper messageUnitWrapper, Destination destination) throws XmlBlasterException
    {
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
@@ -98,6 +101,16 @@ public class ClientInfo
          sentMessages++;
       }
       else {
+         if (destination == null) {
+            Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message: In Pub/Sub mode this should not happen!");
+            throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + messageUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
+         }
+
+         if (!destination.forceQueuing()) {
+            Log.warning(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
+            throw new XmlBlasterException(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver PtP message '" + messageUnitWrapper.getUniqueKey() + "'");
+         }
+
          if (messageQueue == null) {
             messageQueue = new ClientUpdateQueue();
          }
@@ -185,7 +198,7 @@ public class ClientInfo
 
 
    /**
-    * Get notification that the client did a logout. 
+    * Get notification that the client did a logout.
     * <br />
     * Note that the loginName is not reset.
     * @param clearQueue Shall the message queue of the client be destroyed as well?

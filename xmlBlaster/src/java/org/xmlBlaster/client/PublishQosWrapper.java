@@ -3,17 +3,18 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.2 2000/01/22 11:23:55 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.3 2000/02/01 15:18:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import java.util.Vector;
 
 
 /**
- * This class encapsulates the qos of a publish() message. 
+ * This class encapsulates the qos of a publish() message.
  * <p />
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
  * After construction access the ASCCI-XML string with the toXml() method.
@@ -34,7 +35,6 @@ public class PublishQosWrapper extends QosWrapper
 {
    private String ME = "PublishQosWrapper";
    private Vector destVec = null;
-   private Vector xpathVec = null;
    private boolean isDurable = false;
    private boolean forceUpdate = false;
    private boolean readonly = false;
@@ -44,7 +44,7 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
-    * Default constructor for transient messages. 
+    * Default constructor for transient messages.
     */
    public PublishQosWrapper()
    {
@@ -59,9 +59,9 @@ public class PublishQosWrapper extends QosWrapper
       this.isDurable = isDurable;
    }
 
-   
+
    /**
-    * Mark a message to be updated even that the content didn't change. 
+    * Mark a message to be updated even that the content didn't change.
     * <br />
     * Default is that xmlBlaster doesn't send messages to subscribed clients, if the message didn't change.
     */
@@ -72,7 +72,7 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
-    * Mark a message to be readonly. 
+    * Mark a message to be readonly.
     * <br />
     * Only the first publish() will be accepted, followers are denied.
     */
@@ -86,27 +86,13 @@ public class PublishQosWrapper extends QosWrapper
     * Add a destination where to send the message.
     * <p />
     * Note you can invoke this multiple times to send to multiple destinations.
-    * @param destination  The loginName of a receiver
+    * @param destination  The loginName of a receiver or some destination XPath query
     */
-   public void addDestination(String destination)
+   public void addDestination(Destination destination)
    {
       if (destVec == null)
          destVec = new Vector();
       destVec.addElement(destination);
-   }
-
-
-   /**
-    * Add a destination (XPath query syntax) where to send the message.
-    * <p />
-    * Note you can invoke this multiple times to send to multiple destinations.
-    * @param xpath The XPath query over the client meta data
-    */
-   public void addXPathDestination(String xpath)
-   {
-      if (xpathVec == null)
-         xpathVec = new Vector();
-      xpathVec.addElement(xpath);
    }
 
 
@@ -130,16 +116,8 @@ public class PublishQosWrapper extends QosWrapper
       sb.append("<qos>\n");
       if (destVec != null) {
          for (int ii=0; ii<destVec.size(); ii++) {
-            sb.append("   <destination queryType='EXACT'>\n");
-            sb.append("      " + (String)destVec.elementAt(ii) + "\n");
-            sb.append("   </destination>\n");
-         }
-      }
-      if (xpathVec != null) {
-         for (int ii=0; ii<xpathVec.size(); ii++) {
-            sb.append("   <destination queryType='XPATH'>\n");
-            sb.append("      " + (String)xpathVec.elementAt(ii) + "\n");
-            sb.append("   </destination>\n");
+            Destination destination = (Destination)destVec.elementAt(ii);
+            sb.append(destination.printOn("   ").toString());
          }
       }
       if (expires >= 0) {

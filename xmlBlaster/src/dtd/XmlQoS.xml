@@ -20,11 +20,13 @@
       <qos>
          <destination queryType='EXACT'>
             Tim
-         </destination>
+            <ForceQueuing />                 <!-- If the destination client is not logged in, queue the messages ->
+         </destination>                      <!-- Default is no queuing and you get an exception if the client is not reachable -->
 
          <destination queryType='EXACT'>
             Ben
-         </destination>
+            <ForceQueuing timeout='12000' /> <!-- If the destination client is not logged in, queue the messages -->
+         </destination>                      <!-- for a maximum of timeout seconds (timeout is not yet supported!) -->
 
          <destination queryType='XPATH'>
             //[GROUP='Manager']

@@ -1,27 +1,32 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
 
-Changes for 0.72 [Feb. 2000]
+Changes for 0.72 [Feb.1 2000]
 ==============================
 
+   - Support for new QoS tag <ForceQueuing /> in PtP style.
+     * Without this flag, a message published to a client which is not
+       logged in throws an exception.
+     * Using this flag, the message will be queued by xmlBlaster
+       until the client logs in. On login, all queued messages
+       are sent to the client immediately.
+
    - Added some simple console input mode, to control xmlBlaster
-	  Type <?> and <Enter> when xmlBlaster is running to get help.
+     Type <?> and <Enter> when xmlBlaster is running to get help.
 
    - Extended control panel GUI to support
-	  * dumping of xmlBlaster internal state
-	  * clearing the logging window
-
-   - Added support to toggle from control panel GUI to console mode
-	  and back again
+     * dumping of xmlBlaster internal state
+     * clearing the logging window
+     * toggle from control panel GUI to console mode and back again
 
    - Bug fixed for subscribe with oid and later publish of this message.
-	  The BigXmlDom was not updated properly.
+     The BigXmlDom was not updated properly.
 
    - Added support for <qos><Readonly /></qos>,
-	  where only the first publish is accepted.
+     where only the first publish is accepted.
 
    - Added logging redirection to file,
-	  use on command line "-?" to query possible parameters.
+     use on command line "-?" to query possible parameters.
 
    - Bug fixed for multiple login (without logout) and PtP messages.
 
