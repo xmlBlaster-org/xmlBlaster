@@ -2,10 +2,10 @@
 
 Changes for 0.78 [???     2000]
 ==============================
-  - Added new package org.jutil to the xmlBlaster distribution.
+  - Added new package org.jutils to the xmlBlaster distribution.
     This replace org.xmlBlaster.util over the time.
-    You need to set the environment variable JUTIL_HOME to:
-      export JUTIL_HOME=${XMLBLASTER_HOME}
+    You need to set the environment variable JUTILS_HOME to:
+      export JUTILS_HOME=${XMLBLASTER_HOME}
 
   - Added protocol plugin possibility in xmlBlaster.properties
     Default settings are Corba drivers:

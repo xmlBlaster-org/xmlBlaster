@@ -6,7 +6,7 @@
 
 include $(XMLBLASTER_HOME)/Makefile.Include
 
-SUB_DIRS = idl java/org/jutil java/org/xmlBlaster
+SUB_DIRS = idl java/org/jutils java/org/xmlBlaster
 
 all: all_SUB_DIRS
 

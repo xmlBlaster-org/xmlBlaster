@@ -47,7 +47,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
       export JDK_HOME=/usr/local/jdk
       export PATH=${JDK_HOME}/bin:$PATH
       export XMLBLASTER_HOME=${HOME}/xmlBlaster 
-      export JUTIL_HOME=${XMLBLASTER_HOME}
+      export JUTILS_HOME=${XMLBLASTER_HOME}
       . ${XMLBLASTER_HOME}/.bashrc
 
     This is the recommended way, since you will automatically
@@ -64,7 +64,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      setenv PATH ${JDK_HOME}/bin:$PATH
 
      setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
-     setenv JUTIL_HOME ${XMLBLASTER_HOME}
+     setenv JUTILS_HOME ${XMLBLASTER_HOME}
 
      setenv JacORB_HOME ${XMLBLASTER_HOME}
      setenv JacORB_LIB ${JacORB_HOME}/lib

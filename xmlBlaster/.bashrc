@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.55 $
+# $Revision: 1.56 $
 #-----------------------------------------------------------
 
 
@@ -63,8 +63,8 @@ fi
 
 export XMLBLASTER_HOME
 
-JUTIL_HOME=${XMLBLASTER_HOME}
-export JUTIL_HOME
+JUTILS_HOME=${XMLBLASTER_HOME}
+export JUTILS_HOME
 
 if [ -d ${XMLBLASTER_HOME} ]; then
    
@@ -108,7 +108,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxs='cd $XMLBLASTER_HOME/src'
    alias cdxi='cd $XMLBLASTER_HOME/src/idl'
    alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
-   alias cdxu='cd $XMLBLASTER_HOME/src/java/org/jutil'
+   alias cdxu='cd $XMLBLASTER_HOME/src/java/org/jutils'
    alias cdxd='cd $XMLBLASTER_HOME/demo'
    alias cdxt='cd $XMLBLASTER_HOME/testsuite'
    alias cdxr='cd $XMLBLASTER_HOME/doc/requirements'
