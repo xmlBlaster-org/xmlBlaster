@@ -502,7 +502,7 @@ static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, So
 
 static void closeAcceptSocket(CallbackServerUnparsed *cb)
 {
-   if (!cb->reusingConnectionSocket) {
+   if (cb->reusingConnectionSocket) {
       return; /* not our duty, we only have borrowed the socket from the client side connection */
    }
 
@@ -523,13 +523,13 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
  */
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
-   if (!cb->reusingConnectionSocket) {
-      return; /* not our duty, we only have borrowed the socket from the client side connection */
-   }
-
    if (cb->hostCB != 0) {
       free(cb->hostCB);
       cb->hostCB = 0;
+   }
+
+   if (cb->reusingConnectionSocket) {
+      return; /* not our duty, we only have borrowed the socket from the client side connection */
    }
 
    closeAcceptSocket(cb);
