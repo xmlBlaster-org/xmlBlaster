@@ -4,8 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
- o  C client library:
-   - #12780 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
+ o C client library:
+   - #12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
    - #12777 Memory leak fix for Udp return
    - #12778 Memory leak fix for calling connect() multiple times
 
