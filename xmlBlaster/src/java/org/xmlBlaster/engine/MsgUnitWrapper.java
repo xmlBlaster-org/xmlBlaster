@@ -507,15 +507,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             long timeout = getMsgQosData().getRemainingLife();
             if (timeout <= 0L) {
                this.state = PRE_EXPIRED;
-               timeout = 1L;
-               //this.state = PRE_DESTROYED;
-               //timeout = 1L;
+               timeout = 0L;
                //timeout(null); // Will deadlock if called by constructor // switch to EXPIRED or DESTROYED
                // We span the timer to fire later and destroy us from another thread 
             }
-            //else//!!!!!!!!!!!!!!
             this.timerKey = this.destroyTimer.addTimeoutListener(this, timeout, null);
-               //this.glob.getLog("core").info(ME, "Register msg for expiration in " + org.jutils.time.TimeHelper.millisToNice(timeout));
          }
       }
    }
