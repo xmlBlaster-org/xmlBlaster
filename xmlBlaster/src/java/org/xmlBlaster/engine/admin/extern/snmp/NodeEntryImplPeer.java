@@ -3,7 +3,7 @@ package org.xmlBlaster.engine.admin.extern.snmp;
 public class NodeEntryImplPeer
 {
 
-    private String nodeName; 
+    private String nodeName;
     private long nodeUptime;
     private long totalMem;
     private long usedMem;
@@ -22,12 +22,12 @@ public class NodeEntryImplPeer
      * - initializes mib variables.
      */
     public NodeEntryImplPeer(String nodeName, 
-                    String hostname,
-                    long port, 
-                    long maxClients, 
-                    long clientThreshold, 
-                    String errorLogfile, 
-                    int logLevel)
+			     String hostname,
+			     long port,
+			     long maxClients,
+			     long clientThreshold,
+			     String errorLogfile,
+			     int logLevel)
     {
         this.nodeName = nodeName;
         this.hostname = hostname;
@@ -192,6 +192,7 @@ public class NodeEntryImplPeer
     }
 
 }
+
 
 
 

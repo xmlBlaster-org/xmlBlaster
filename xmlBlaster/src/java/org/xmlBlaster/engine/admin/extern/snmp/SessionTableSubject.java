@@ -13,78 +13,81 @@ import java.util.Iterator;
 
 public class SessionTableSubject implements Subject {
 
-      public SessionEntryImplPeer sessionEntryImplPeer;
-      public NodeTableObserver nodeTableObserver;
-      public ClientTableObserver clientTableObserver;
-      public ArrayList observers = new ArrayList();
-      public Integer nodeIndex;
-      public Integer clientIndex;
-      public String nodeName;
-      public String clientName;
-      public int opCode;
-      public static final int INSERT = 0;
-      public static final int REMOVE = 1;
+    public SessionEntryImplPeer sessionEntryImplPeer;
+    public NodeTableObserver nodeTableObserver;
+    public ClientTableObserver clientTableObserver;
+    public ArrayList observers = new ArrayList();
+    public Integer nodeIndex;
+    public Integer clientIndex;
+    public String nodeName;
+    public String clientName;
+    public int opCode;
+    public static final int INSERT = 0;
+    public static final int REMOVE = 1;
 
-      public SessionTableSubject(NodeTableObserver nodeTableObserver,
-                                 ClientTableObserver clientTableObserver) {
-          this.nodeTableObserver = nodeTableObserver;
-          this.clientTableObserver = clientTableObserver;
-      }
+    public SessionTableSubject(NodeTableObserver nodeTableObserver,
+			       ClientTableObserver clientTableObserver) {
+	this.nodeTableObserver = nodeTableObserver;
+	this.clientTableObserver = clientTableObserver;
+    }
 
-      public void addEntry(String nodeName, 
-                           String clientName, 
-                           SessionEntryImplPeer sessionEntryImplPeer) {
+    public void addEntry(String nodeName,
+			 String clientName,
+			 SessionEntryImplPeer sessionEntryImplPeer) {
 
-	  this.sessionEntryImplPeer = sessionEntryImplPeer;
-          nodeIndex = nodeTableObserver.getIndex(nodeName);
-          clientIndex = clientTableObserver.getIndex(nodeName + clientName);
-          this.nodeName = nodeName;
-          this.clientName = clientName;
-          if (nodeIndex != null && clientIndex != null) {
-              opCode = INSERT;
-              notifyObservers();
-	  }
-          else {
-	      System.out.println("Cannot add session entry. Node " + nodeName + 
-                                 " or client " + clientName + " does not exist.");
-          }
-      }
+	this.sessionEntryImplPeer = sessionEntryImplPeer;
+	nodeIndex = nodeTableObserver.getIndex(nodeName);
+	clientIndex = clientTableObserver.getIndex(nodeName + clientName);
+	this.nodeName = nodeName;
+	this.clientName = clientName;
+	if (nodeIndex != null && clientIndex != null) {
+	    opCode = INSERT;
+	    notifyObservers();
+	}
+	else {
+	    System.out.println("Cannot add session entry. Node " + nodeName + 
+                               " or client " + clientName + " does not exist.");
+	}
+    }
  
-      public void removeEntry(String nodeName,
-                              String clientName, 
-                              SessionEntryImplPeer sessionEntryImplPeer) {
-	  this.sessionEntryImplPeer = sessionEntryImplPeer;
-          nodeIndex = nodeTableObserver.getIndex(nodeName);
-          clientIndex = clientTableObserver.getIndex(nodeName + clientName);
-          this.nodeName = nodeName;
-          this.clientName = clientName;
-          if (nodeIndex != null && clientIndex != null) {
-              opCode = REMOVE;
-              notifyObservers();
-	  }
-          else {
-	      System.out.println("Cannot remove session entry. Node " + nodeName + 
-                                 " or client " + clientName + " does not exist.");
-          }
-      }
+    public void removeEntry(String nodeName,
+			    String clientName,
+			    SessionEntryImplPeer sessionEntryImplPeer) {
+	this.sessionEntryImplPeer = sessionEntryImplPeer;
+	nodeIndex = nodeTableObserver.getIndex(nodeName);
+	clientIndex = clientTableObserver.getIndex(nodeName + clientName);
+	this.nodeName = nodeName;
+	this.clientName = clientName;
+	if (nodeIndex != null && clientIndex != null) {
+	    opCode = REMOVE;
+	    notifyObservers();
+	}
+	else {
+	    System.out.println("Cannot remove session entry. Node " + nodeName + 
+                               " or client " + clientName + " does not exist.");
+	}
+    }
 
-      public void addObserver( Observer o ) {
-            observers.add( o );
-      }
+    public void addObserver( Observer o ) {
+	observers.add( o );
+    }
 
-      public void removeObserver( Observer o ) {
-            observers.remove( o );
-      }
+    public void removeObserver( Observer o ) {
+	observers.remove( o );
+    }
 
-      private void notifyObservers() {
-            // loop through and notify each observer
-            Iterator i = observers.iterator();
-            while( i.hasNext() ) {
-                  Observer o = ( Observer ) i.next();
-                  o.update( this );
-            }
-      }
+    private void notifyObservers() {
+        // loop through and notify each observer
+	Iterator i = observers.iterator();
+	while( i.hasNext() ) {
+	    Observer o = ( Observer ) i.next();
+	    o.update( this );
+	}
+    }
 }
+
+
+
 
 
 

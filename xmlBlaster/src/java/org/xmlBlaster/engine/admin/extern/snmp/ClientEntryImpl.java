@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ClientEntryImpl.java,v 1.2 2002/07/08 13:33:03 udo Exp $
+ * $Id: ClientEntryImpl.java,v 1.3 2002/07/17 07:43:14 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -35,8 +35,8 @@ public class ClientEntryImpl extends ClientEntry
      * - builds a reference to ClientEntryImplPeer, which implements ClientEntryImpl methods.
      */
     public ClientEntryImpl(long nodeIndex,
-                       long clientIndex,
-                       ClientEntryImplPeer clientEntryImplPeer)
+			   long clientIndex,
+                           ClientEntryImplPeer clientEntryImplPeer)
     {
         super(nodeIndex, clientIndex);
         clientName = clientEntryImplPeer.get_clientName().getBytes();

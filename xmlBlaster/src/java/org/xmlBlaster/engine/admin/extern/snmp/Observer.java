@@ -7,6 +7,6 @@
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 public interface Observer {
-      public void update( Subject o );
+    public void update( Subject o );
 }
 

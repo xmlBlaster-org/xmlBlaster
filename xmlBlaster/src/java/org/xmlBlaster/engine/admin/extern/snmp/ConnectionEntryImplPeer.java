@@ -9,9 +9,9 @@ public class ConnectionEntryImplPeer
     private int connectionProtocol;
 
     public ConnectionEntryImplPeer(String connectionHost,
-                          long connectionPort,
-                          String connectionAddress,
-                          int connectionProtocol)
+				   long connectionPort,
+				   String connectionAddress,
+				   int connectionProtocol)
     {
         this.connectionHost = connectionHost;
         this.connectionPort = connectionPort;
@@ -65,6 +65,7 @@ public class ConnectionEntryImplPeer
     }
 
 }
+
 
 
 

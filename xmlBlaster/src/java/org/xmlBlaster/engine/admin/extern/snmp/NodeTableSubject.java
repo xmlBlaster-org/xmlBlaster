@@ -12,72 +12,87 @@ import java.util.Iterator;
 
 public class NodeTableSubject implements Subject {
 
-      public NodeEntryImplPeer nodeEntryImplPeer;
-      public ArrayList observers = new ArrayList();
-      public int opCode;
-      public static final int INSERT = 0;
-      public static final int REMOVE = 1;
+    public NodeEntryImplPeer nodeEntryImplPeer;
+    public ArrayList observers = new ArrayList();
+    public int opCode;
+    public static final int INSERT = 0;
+    public static final int REMOVE = 1;
 
-      /**
-       * addEntry
-       * - initializes attributes of a new node table entry.
-       * - sets add-flag to true.
-       * - notifies a NodeTableObserver, in order to add the new node table entry.
-       * @param NodeEntryImplPeer nodeEntryImplPeer: 
-       */
-      public void addEntry(NodeEntryImplPeer nodeEntryImplPeer) {
+    /**
+     * addEntry
+     * - initializes attributes of a new node table entry.
+     * - sets add-flag to true.
+     * - notifies a NodeTableObserver, in order to add the new node table entry.
+     * @param NodeEntryImplPeer nodeEntryImplPeer: 
+     */
+    public void addEntry(NodeEntryImplPeer nodeEntryImplPeer) {
 
-	  this.nodeEntryImplPeer = nodeEntryImplPeer;
-          opCode = INSERT;
-          notifyObservers();
-      }
+	this.nodeEntryImplPeer = nodeEntryImplPeer;
+	opCode = INSERT;
+	notifyObservers();
+    }
  
-      /**
-       * removeEntry
-       * - sets add-flag to false.
-       * - notifies a NodeTableObserver, in order to remove the node table entry.
-       * @param String nodeNameVal:
-       */ 
-      public void removeEntry(NodeEntryImplPeer nodeEntryImplPeer) {
+    /**
+     * removeEntry
+     * - sets add-flag to false.
+     * - notifies a NodeTableObserver, in order to remove the node table entry.
+     * @param String nodeNameVal:
+     */ 
+    public void removeEntry(NodeEntryImplPeer nodeEntryImplPeer) {
 
-	  this.nodeEntryImplPeer = nodeEntryImplPeer;
-          opCode = REMOVE;
-          notifyObservers();
-      }
+	this.nodeEntryImplPeer = nodeEntryImplPeer;
+	opCode = REMOVE;
+	notifyObservers();
+    }
 
-      /**
-       * addObserver
-       * - allows an observer to subscribe in order to be notified 
-       * in case of node table entry updates.
-       * @param Observer o:
-       */
-      public void addObserver( Observer o ) {
-            observers.add( o );
-      }
+    /**
+     * addObserver
+     * - allows an observer to subscribe in order to be notified 
+     * in case of node table entry updates.
+     * @param Observer o:
+     */
+    public void addObserver( Observer o ) {
+	observers.add( o );
+    }
 
-      /**
-       * removeObserver
-       * - allows an observer to unsubscribe in order not to be notified 
-       * in case of node table entry updates.
-       * @param Observer o:
-       */
-      public void removeObserver( Observer o ) {
-            observers.remove( o );
-      }
+    /**
+     * removeObserver
+     * - allows an observer to unsubscribe in order not to be notified 
+     * in case of node table entry updates.
+     * @param Observer o:
+     */
+    public void removeObserver( Observer o ) {
+	observers.remove( o );
+    }
 
-      /**
-       * notifyObservers
-       * - notifies each subscribed observer that node table has changed.
-       */
-      private void notifyObservers() {
-            // loop through and notify each observer
-            Iterator i = observers.iterator();
-            while( i.hasNext() ) {
-                  Observer o = ( Observer ) i.next();
-                  o.update( this );
-            }
-      }
+    /**
+     * notifyObservers
+     * - notifies each subscribed observer that node table has changed.
+     */
+    private void notifyObservers() {
+        // loop through and notify each observer
+	Iterator i = observers.iterator();
+	while( i.hasNext() ) {
+	    Observer o = ( Observer ) i.next();
+	    o.update( this );
+	}
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

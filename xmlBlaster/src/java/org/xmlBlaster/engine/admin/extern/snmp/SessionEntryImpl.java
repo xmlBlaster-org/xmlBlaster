@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: SessionEntryImpl.java,v 1.3 2002/07/08 13:33:03 udo Exp $
+ * $Id: SessionEntryImpl.java,v 1.4 2002/07/17 07:43:14 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -35,9 +35,9 @@ public class SessionEntryImpl extends SessionEntry
      * - builds a reference to SessionEntryImplPeer, which implements SessionEntryImpl methods.
      */
     public SessionEntryImpl(long nodeIndex,
-                        long clientIndex,
-                        long sessionIndex,
-                        SessionEntryImplPeer sessionEntryImplPeer)
+			    long clientIndex,
+			    long sessionIndex,
+			    SessionEntryImplPeer sessionEntryImplPeer)
     {
         super(nodeIndex, clientIndex, sessionIndex);
 
