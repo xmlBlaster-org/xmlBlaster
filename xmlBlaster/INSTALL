@@ -40,6 +40,9 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 | INSTALLATION IN 30 SECONDS |
 +----------------------------+
 
+This is for distributions only, if you have checked out by cvs
+please go to the next INSTALL section.
+
 Start the server without environment settings:
 
 Change to the installed xmlBlaster directory and type:
