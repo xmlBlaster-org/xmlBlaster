@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.13 2002/02/16 18:33:10 ruff Exp $
+Version:   $Id: Parser.java,v 1.14 2002/02/18 21:40:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -25,6 +25,8 @@ import java.util.Vector;
  * <br />
  * This class creates and parses raw byte[] messages which can be used
  * to transfer over a socket connection.
+ * <br />
+ * Parser instances may be reused, but are not reentrant (Convert::index is currently a 'global' variable)
  * <br />
  * Please read the requirement specification
  * <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirement/protocol.socket.html">protocol.socket</a>
@@ -69,6 +71,7 @@ import java.util.Vector;
  *  Testing two qos/key/content
  *  |       100**I**17711*publish*oxf6hZs**<qos/>*<key oid='x1'/>*6*Hello1<qos/>*<key oid='x2'/>*6*Hello2|
  * </pre>
+ *
  * @author ruff@swand.lake.de
  */
 public class Parser extends Converter
@@ -221,7 +224,7 @@ public class Parser extends Converter
     * @return The received request ID
     */
    public String getRequestId() {
-      if (requestId == null) Log.error(ME, "getRequestId returns null");
+      if (requestId == null) throw new IllegalArgumentException(ME + ": getRequestId returns null");
       return this.requestId;
    }
 
@@ -377,8 +380,11 @@ public class Parser extends Converter
     */
    public String getQos() {
       if (msgVec.isEmpty()) {
+         /*
          Log.warn(ME, "getQos() is called without having a response");
          return "<qos></qos>";
+         */
+         throw new IllegalArgumentException(ME + ": getQos() is called without having a response");
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
       return msg.getQos();
@@ -389,10 +395,13 @@ public class Parser extends Converter
     */
    public String[] getQosArr() {
       if (msgVec.isEmpty()) {
+         /*
          Log.warn(ME, "getQosArr() is called without having a response");
          String[] arr = new String[1];
          arr[0] = "<qos></qos>";
          return arr;
+         */
+         throw new IllegalArgumentException(ME + ": getQos() is called without having a response");
       }
       Vector msgs = getMessages();
       String[] strArr = new String[msgs.size()];
@@ -407,8 +416,11 @@ public class Parser extends Converter
     */
    public XmlBlasterException getException() {
       if (msgVec.isEmpty()) {
+         /*
          Log.warn(ME, "getException() is called without having an exception");
          return new XmlBlasterException(ME, "Invalid exception");
+         */
+         throw new IllegalArgumentException(ME + ": getException() is called without having an exception");
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
       return new XmlBlasterException(msg.getQos(), msg.getXmlKey());
@@ -429,7 +441,9 @@ public class Parser extends Converter
       */
       BufferedInputStream in = new BufferedInputStream(inputStream);
 
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Entering wait on inputStream");
       msgLength = toLong(in);
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
 
       if (msgLength == 10) {
          setMethodName(Constants.PING);
@@ -460,24 +474,29 @@ public class Parser extends Converter
       String xmlKey = null;
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
+         //if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Getting messageUnit qos index=" + index);
          qos = toString(in);
          MessageUnit msgUnit = new MessageUnit(null, null, qos);
          addMessage(msgUnit);
          if (index >= msgLength) break;
 
+         //if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Getting messageUnit key index=" + index);
          msgUnit.setKey(toString(in));
          if (index >= msgLength) break;
 
+         if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Getting messageUnit content index=" + index);
          msgUnit.setContent(toByte(in));
          if (index >= msgLength) break;
       }
+      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "messageUnit OK index=" + index);
 
       if (checksum)
          checkSumResult = toLong0(in, -1);
 
+      //if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Got complete messageUnit index=" + index);
+
       if (index != msgLength) {
-         String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength;
-         Log.error(ME, str + " we need to disconnect the client, can't recover.");
+         String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength + " we need to disconnect the client, can't recover.";
          throw new IOException(str);
       }
    }
@@ -538,7 +557,7 @@ public class Parser extends Converter
 
       if (checkMethodName(methodName) == false) {
          String str = "Can't send message, method '" + methodName + " is unknown";
-         Log.error(ME, str);
+         //Log.error(ME, str);
          throw new IllegalArgumentException(ME + ": " + str);
       }
 
