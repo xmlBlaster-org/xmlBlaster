@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.2 1999/11/18 22:12:15 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.3 1999/11/19 17:21:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,12 +17,11 @@ import org.omg.CosNaming.*;
 public class ClientXml
 {
    private org.omg.CORBA.ORB orb = null;
-   private Server xmlServer = null;
+   private Server xmlBlaster = null;
+   private String ME = "Tim";
 
    public ClientXml(String args[]) 
    { 
-      String ME = "Tim";
-
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
@@ -53,6 +52,14 @@ public class ClientXml
 
             authServer = AuthServerHelper.narrow(nc.resolve(name));
          }
+         /*
+         else {
+            String host = localhost;
+            String port = 80;
+            String authIOR = getAuthenticationServiceIOR(host, port);
+            authServer = AuthServerHelper.narrow(authIOR);
+         }
+         */
 
          StopWatch stop = new StopWatch();
 
@@ -73,7 +80,7 @@ public class ClientXml
          String qos = "";
          try {
             String passwd = "some";
-            xmlServer = authServer.login(loginName, passwd, callback, qos);
+            xmlBlaster = authServer.login(loginName, passwd, callback, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -101,7 +108,7 @@ public class ClientXml
             String[] returnArr = new String[0];
             stop.restart();
             try {
-               returnArr = xmlServer.publish(marr, qarr);
+               returnArr = xmlBlaster.publish(marr, qarr);
                for (int ii=0; ii<returnArr.length; ii++) {
                   Log.info(ME, "   Returned oid=" + returnArr[ii]);
                   publishOid = returnArr[ii];
@@ -120,7 +127,7 @@ public class ClientXml
                   "</key>";
          stop.restart();
          try {
-            xmlServer.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -133,7 +140,7 @@ public class ClientXml
          Log.trace(ME, "Unsubscribe ...");
          stop.restart();
          try {
-            xmlServer.unSubscribe(xmlKey, qos);
+            xmlBlaster.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -148,7 +155,7 @@ public class ClientXml
                   "</key>";
          stop.restart();
          try {
-            xmlServer.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -174,7 +181,7 @@ public class ClientXml
                String[] returnArr = new String[0];
                stop.restart();
                try {
-                  returnArr = xmlServer.publish(marr, qarr);
+                  returnArr = xmlBlaster.publish(marr, qarr);
                } catch(XmlBlasterException e) {
                   Log.warning(ME, "XmlBlasterException: " + e.reason);
                }
@@ -186,7 +193,7 @@ public class ClientXml
 
          Log.trace(ME, "Logout ...");
          try {
-            authServer.logout(xmlServer);
+            authServer.logout(xmlBlaster);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -205,6 +212,30 @@ public class ClientXml
       }
       catch( InterruptedException i)
       {}
+   }
+
+
+   /**
+    * To avoid the name service, one can access the Auhtenticate IOR directly
+    */
+   public String getAuthenticationServiceIOR(String host, int port)
+   {
+      try {
+         java.net.URL nsURL = new java.net.URL("http", host, port, "/AuthenticationService.ior");
+         java.io.InputStream nsis = nsURL.openStream();
+         byte[] bytes = new byte[4096];
+         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+         int numbytes;
+         while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
+             bos.write(bytes, 0, numbytes);
+         }
+         nsis.close();
+         return bos.toString();
+      }
+      catch (Exception ex) {
+         Log.panic(ME, "Caught exception: " + ex);
+         return null;
+      }
    }
 
 
