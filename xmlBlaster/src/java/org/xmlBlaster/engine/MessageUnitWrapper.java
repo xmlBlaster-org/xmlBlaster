@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.31 2002/03/13 16:41:11 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.32 2002/03/17 13:39:14 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -16,7 +16,6 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
-import org.xmlBlaster.engine.callback.CbQueue;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -263,11 +262,12 @@ public class MessageUnitWrapper implements I_Timeout
    }
 
    /**
-    *
+    * Priority of a message. 
+    * @see org.xmlBlaster.engine.xml2java.Constants
     */
    public int getPriority()
    {
-      return CbQueue.NORM_PRIORITY;
+      return publishQos.getPriority();
    }
 
    /**
