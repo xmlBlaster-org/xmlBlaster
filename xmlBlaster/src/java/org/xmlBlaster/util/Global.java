@@ -1754,6 +1754,29 @@ public class Global implements Cloneable
       new Exception().printStackTrace(pstr);
       return new String(baos.toByteArray());
    }
+
+   /**
+    * Convenience method which returns the typical environment settings for a LOCAL connection. 
+    * <p>If you write a native plugin you can use these settings as a base.</p>
+    * @return A string array which you can pass to <tt>this.global = glob.getClone(glob.getNativeConnectArgs());</tt>
+    */
+   public final String[] getNativeConnectArgs() {
+      final String[] nativeConnectArgs = {
+              "-protocol", "LOCAL",
+              "-session.timeout", "0",
+              "-dispatch/connection/protocol", "LOCAL",
+              "-dispatch/connection/pingInterval", "0",
+              "-dispatch/connection/burstMode/collectTime", "0",
+              "-dispatch/callback/protocol", "LOCAL",
+              "-dispatch/callback/pingInterval", "0",
+              "-dispatch/callback/burstMode/collectTime", "0",
+              /*"-queue/defaultPlugin", "RAM,1.0",*/
+              "-queue/connection/defaultPlugin", "RAM,1.0",
+              "-queue/callback/defaultPlugin", "RAM,1.0",
+              "-queue/subject/defaultPlugin", "RAM,1.0"
+           };
+      return nativeConnectArgs;
+   }
    
    /**
     * Command line usage.
@@ -1846,7 +1869,7 @@ public class Global implements Cloneable
             return defaultValue;
          }
          String ret = (pluginConfig == null) ? defaultValue : pluginConfig.getParameters().getProperty(shortKey, defaultValue);
-         String prefix = (pluginConfig == null) ? "" : pluginConfig.getPrefix(); 
+         String prefix = (pluginConfig == null) ? "" : pluginConfig.getPrefix();  // "plugin/" + getType() + "/"
          ret = getProperty().get(prefix + shortKey, ret);
          if (map != null)
             ret = map.getProperty(shortKey, ret);
