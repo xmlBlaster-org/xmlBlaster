@@ -98,7 +98,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    /**
     * Constructor for client side. 
     */
-   public ConnectQosData(Global glob) {
+   public ConnectQosData(Global glob) throws XmlBlasterException {
       this(glob, null, null, null);
       initialize(glob);
    }
@@ -112,7 +112,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @param serialData The XML based ASCII string (syntax is described in requirement interface.connect)
     * @param nodeId The node id with stripped special characters (see Global#getStrippedId)
     */
-   public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) {
+   public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) throws XmlBlasterException {
       super(glob, serialData, org.xmlBlaster.util.def.MethodName.CONNECT);
       this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
@@ -124,12 +124,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * <p />
     * @param nodeId The the unique cluster node id, supports configuration per node
     */
-   public ConnectQosData(Global glob, NodeId nodeId) {
+   public ConnectQosData(Global glob, NodeId nodeId) throws XmlBlasterException {
       this(glob, null, null, nodeId);
       initialize(glob);
    }
 
-   private void initialize(Global glob) {
+   private void initialize(Global glob) throws XmlBlasterException {
       this.securityQos = getClientPlugin().createSecurityQos();
       this.securityQos.setCredential(accessPassword(null));
       if (this.sessionQos.getSessionName() != null) {
@@ -242,25 +242,19 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @param type If null, the current plugin is used
     * @return
     */
-   protected I_ClientPlugin getClientPlugin(String type, String version) {
+   protected I_ClientPlugin getClientPlugin(String type, String version) throws XmlBlasterException {
       if (this.clientPlugin==null || !this.clientPlugin.getType().equals(type) || !this.clientPlugin.getVersion().equals(version)) {
          if (pMgr==null) pMgr=glob.getClientSecurityPluginLoader();
-         try {
-            if (type != null)
-               this.clientPlugin=pMgr.getClientPlugin(type, version);
-            else
-               this.clientPlugin=pMgr.getCurrentClientPlugin();
-         }
-         catch (XmlBlasterException e) {
-            log.error(ME+".ConnectQosData", "Security plugin initialization failed. Reason: "+e.toString());
-            log.error(ME+".ConnectQosData", "No plugin. Trying to continue without the plugin.");
-         }
+         if (type != null)
+            this.clientPlugin=pMgr.getClientPlugin(type, version);
+         else
+            this.clientPlugin=pMgr.getCurrentClientPlugin();
       }
 
       return this.clientPlugin;
    }
 
-   private I_ClientPlugin getClientPlugin() {
+   private I_ClientPlugin getClientPlugin() throws XmlBlasterException {
       if (this.clientPlugin == null) {
           getClientPlugin(null, null);  
       }
@@ -552,11 +546,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @return The type or null if not known
     */
    public String getClientPluginType() {
-      I_ClientPlugin c = getClientPlugin();
-      if (c == null) {
+      try {
+         return getClientPlugin().getType();
+      }
+      catch (Exception e) {
          return null;
       }
-      return c.getType();
    }
 
    /**
@@ -565,11 +560,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @return The version or null if not known
     */
    public String getClientPluginVersion() {
-      I_ClientPlugin c = getClientPlugin();
-      if (c == null) {
+      try {
+         return getClientPlugin().getVersion();
+      }
+      catch (Exception e) {
          return null;
       }
-      return c.getVersion();
    }
 
    /**
