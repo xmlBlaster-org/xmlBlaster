@@ -45,6 +45,9 @@ public class PersistentRequest extends Thread {
     */
    public void run(){
       try{
+         this.xmlBlasterAccess.request("?ActionType=dummyToCreateASessionId",
+                           XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
+
          URL url = new URL(xmlBlasterServletUrl+this.request);
          URLConnection conn = url.openConnection();
          conn.setDoInput(true);
@@ -54,20 +57,31 @@ public class PersistentRequest extends Thread {
          BufferedReader dataInput = new BufferedReader(new InputStreamReader(conn.getInputStream()));
          String line;
          while ((line = dataInput.readLine()) != null) {
-            System.out.println("PersistentRequest: Receiving\n" + line);
-            if (line.regionMatches(0,"##ping##",0,8)) {
-               this.xmlBlasterAccess.request("?ActionType=pong",
-                                XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
-            }
+            System.out.println("PersistentRequest: Receiving: " + line);
             
-            if (line.regionMatches(0,"##ping##loginSucceeded##",0,24)) {
+            if (line.indexOf("parent.ping('loginSucceeded')") != -1) {
+               //if (line.regionMatches(0,"##ping##loginSucceeded##",0,24)) {
                // !!!! TODO extract the returned QoS !!!
                this.connectReturnQos = "<qos/>";
                this.xmlBlasterAccess.isConnected(true);
+               this.xmlBlasterAccess.request("?ActionType=pong",
+                                XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
             }
-
-            if (line.regionMatches(0,"##content##",0,11)) {
+            else if (line.indexOf("parent.ping('refresh") != -1) {
+               //if (line.regionMatches(0,"##ping##",0,8)) {
+               if (!this.xmlBlasterAccess.isConnected()) {
+                  // Don't send pong, we have not yet connected and our sessionId would be invalid
+                  continue;
+               }
+               this.xmlBlasterAccess.request("?ActionType=pong",
+                                XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
+            }
+            else if (line.indexOf("##content##") != -1) {
+               //if (line.regionMatches(0,"##content##",0,11)) {
                update(line);
+            }
+            else {
+               //System.out.println("PersistentRequest: Ignoring response");
             }
          }
       }

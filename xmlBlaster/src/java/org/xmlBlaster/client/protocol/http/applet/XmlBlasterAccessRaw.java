@@ -21,7 +21,7 @@ public class XmlBlasterAccessRaw implements I_XmlBlasterAccessRaw
    private I_CallbackRaw callback;
    public static final boolean ONEWAY = true;
    public static final boolean POST = true;
-   public static final boolean GET = true;
+   public static final boolean GET = false;
    private boolean isConnected = false;
 
    /**
@@ -48,6 +48,11 @@ public class XmlBlasterAccessRaw implements I_XmlBlasterAccessRaw
 
    public void isConnected(boolean isConnected) {
       this.isConnected = isConnected;
+      System.out.println("XmlBlasterAccessRaw: isConnected(" + isConnected + ")");
+   }
+
+   public boolean isConnected() {
+      return this.isConnected;
    }
 
    public String connect(String qos, I_CallbackRaw callback) throws Exception {
@@ -60,11 +65,12 @@ public class XmlBlasterAccessRaw implements I_XmlBlasterAccessRaw
       if (passwd == null) passwd = "secret";
 
       this.persistentHttpConnection = new PersistentRequest(this, this.xmlBlasterServletUrl, loginName, passwd);
-
+      this.persistentHttpConnection.start();
       System.out.println("XmlBlasterAccessRaw: Waiting for connect() to establish ...");
 
       int num = 100;
-      for (int i=0; i<num; i++) {
+      int i;
+      for (i=0; i<num; i++) {
          if (this.isConnected) {
             break;
          }
@@ -74,7 +80,7 @@ public class XmlBlasterAccessRaw implements I_XmlBlasterAccessRaw
             System.out.println(e);
          }
       }
-      if (num >= 100) {
+      if (i >= num) {
          throw new Exception("XmlBlasterAccessRaw: Can't login to xmlBlaster, timed out.");
       }
       System.out.println("XmlBlasterAccessRaw: Successfully connected to xmlBlaster as user " + loginName);
@@ -121,6 +127,7 @@ public class XmlBlasterAccessRaw implements I_XmlBlasterAccessRaw
          URL url = (doPost) ? new URL(this.xmlBlasterServletUrl) : new URL(this.xmlBlasterServletUrl + request);
          URLConnection conn = url.openConnection();
 
+         System.out.println("XmlBlasterAccessRaw: doPost=" + doPost + ", sending '" + this.xmlBlasterServletUrl + request + "' ...");
          if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
             conn.setDoOutput(true);
             DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
