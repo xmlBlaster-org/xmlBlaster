@@ -1829,24 +1829,118 @@ public class Global implements Cloneable
     * It first looks into the map (the hardcoded properties). If one is found it is returned.
     * Then it looks into the global. If one is found it is returned. If none is found it is 
     * searched in the plugin
-    * @param shortKey
-    * @param defaultValue
-    * @param map
-    * @param pluginConfig
+    * @param shortKey the key (in its short form without prefix) of the property
+    * @param defaultValue the default value of the property (weakest)
+    * @param map the hardcoded properties (strongest)
+    * @param pluginConfig the pluginConfig used 
     * @return
     */
    public String get(String shortKey, String defaultValue, Properties map, I_PluginConfig pluginConfig) 
       throws XmlBlasterException {
       try {
-         String ret = getProperty().replaceVariableWithException(shortKey,
-               map.getProperty(shortKey, 
-                     getProperty().get(pluginConfig.getPrefix()+shortKey,
-                           pluginConfig.getParameters().getProperty(shortKey, defaultValue))));
-         return ret;
+         String ret = pluginConfig == null ? defaultValue : pluginConfig.getParameters().getProperty(shortKey, defaultValue);
+         String prefix = pluginConfig == null ? "" : pluginConfig.getPrefix(); 
+         ret = getProperty().get(prefix + shortKey, ret);
+         if (map != null)
+            ret = map.getProperty(shortKey, ret);
+         return getProperty().replaceVariableWithException(shortKey, ret);
       }
       catch (JUtilsException ex) {
          throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME + ".get", "exception when getting property '" + shortKey + "'", ex);
       }
    }
    
+   /**
+    * 
+    * @param shortKey
+    * @param defaultValue
+    * @param map
+    * @param pluginConfig
+    * @return
+    * @throws XmlBlasterException
+    * @see get(String, String, map, I_PluginConfig)
+    */
+   public long get(String shortKey, long defaultValue, Properties map, I_PluginConfig pluginConfig) 
+      throws XmlBlasterException {
+      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      if (tmp == null) // should never happen
+         return defaultValue; 
+      try {
+         return Long.parseLong(tmp);
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION, ME + ".get", "wrong type for '" + shortKey + "': should be long but is '" + tmp + "'");
+      }
+   }
+   
+   /**
+    * 
+    * @param shortKey
+    * @param defaultValue
+    * @param map
+    * @param pluginConfig
+    * @return
+    * @throws XmlBlasterException
+    * @see get(String, String, map, I_PluginConfig)
+    */
+   public int get(String shortKey, int defaultValue, Properties map, I_PluginConfig pluginConfig) 
+      throws XmlBlasterException {
+      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      if (tmp == null) // should never happen
+         return defaultValue; 
+      try {
+         return Integer.parseInt(tmp);
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION, ME + ".get", "wrong type for '" + shortKey + "': should be int but is '" + tmp + "'");
+      }
+   }
+
+   /**
+    * 
+    * @param shortKey
+    * @param defaultValue
+    * @param map
+    * @param pluginConfig
+    * @return
+    * @throws XmlBlasterException
+    * @see get(String, String, map, I_PluginConfig)
+    */
+   public boolean get(String shortKey, boolean defaultValue, Properties map, I_PluginConfig pluginConfig) 
+      throws XmlBlasterException {
+      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      if (tmp == null) // should never happen
+         return defaultValue; 
+      try {
+         return new Boolean(tmp).booleanValue();
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION, ME + ".get", "wrong type for '" + shortKey + "': should be boolean but is '" + tmp + "'");
+      }
+   }
+
+   /**
+    * 
+    * @param shortKey
+    * @param defaultValue
+    * @param map
+    * @param pluginConfig
+    * @return
+    * @throws XmlBlasterException
+    * @see get(String, String, map, I_PluginConfig)
+    */
+   public double get(String shortKey, double defaultValue, Properties map, I_PluginConfig pluginConfig) 
+      throws XmlBlasterException {
+      String tmp = get(shortKey, "" + defaultValue, map, pluginConfig);
+      if (tmp == null) // should never happen
+         return defaultValue; 
+      try {
+         return Double.parseDouble(tmp);
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION, ME + ".get", "wrong type for '" + shortKey + "': should be double but is '" + tmp + "'");
+      }
+   }
+
+
 }
