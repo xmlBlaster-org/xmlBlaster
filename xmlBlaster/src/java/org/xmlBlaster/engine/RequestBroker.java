@@ -1208,8 +1208,9 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             // TODO: Only check if it is a new message (XmlKey is immutable)
             checkExistingSubscriptions(sessionInfo, xmlKey, msgUnitHandler, publishQos);
 
-            // We can't do it here, first all callback calls must be successful - the CbWorker does it
-            //eraseVolatile(sessionInfo, msgUnitHandler);
+            // First all callback calls must be successful - the CbWorker checks it as well
+            if (msgUnitHandler.getMessageUnitWrapper().getEnqueueCounter() == 0)
+               eraseVolatile(sessionInfo, msgUnitHandler);
 } // synchronized
          }
          else if (publishQos.isPTP_Style()) {
