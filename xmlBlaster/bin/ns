@@ -6,4 +6,5 @@
 
 # Starts the JacORB name server
 
-jaco org.jacorb.naming.NameServer "$@"
+echo "Running naming service on port 7608:  jaco -DOAPort=7608 org.jacorb.naming.NameServer"
+jaco -DOAPort=7608 org.jacorb.naming.NameServer "$@"
