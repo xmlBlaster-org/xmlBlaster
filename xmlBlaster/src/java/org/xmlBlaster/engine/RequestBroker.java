@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.96 2002/01/13 22:13:35 goetzger Exp $
+Version:   $Id: RequestBroker.java,v 1.97 2002/01/23 08:00:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -33,8 +33,8 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.96 $
- * @author ruff@swand.lake.de
+ * @version $Revision: 1.97 $
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
 {
