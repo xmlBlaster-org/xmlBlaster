@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queuemsg;
 
 import org.jutils.log.LogChannel;
-// import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.PriorityEnum;
@@ -444,5 +443,6 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    final public boolean isStored() {
       return this.stored;
    }
+         
 }
 
