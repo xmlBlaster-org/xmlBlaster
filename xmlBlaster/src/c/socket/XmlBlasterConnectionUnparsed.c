@@ -707,13 +707,17 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
  */
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception)
 {
+   SocketDataHolder responseSocketDataHolder;
+
    if (checkArgs(xb, "disconnect", true, exception) == false ) return 0;
 
    if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),
-                0, exception, SOCKET_TCP) == false) {
+                &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       return false;
    }
+
+   freeBlobHolderContent(&responseSocketDataHolder.blob);
 
    xmlBlasterConnectionShutdown(xb);
    *xb->secretSessionId = 0;

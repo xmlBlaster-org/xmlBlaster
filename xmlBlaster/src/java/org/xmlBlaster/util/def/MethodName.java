@@ -35,7 +35,7 @@ public final class MethodName implements java.io.Serializable
    //private static final int ARG_MSG = 4;
 
    public static final MethodName CONNECT = new MethodName("connect", ARG_QOS, RETURN_STRING);
-   public static final MethodName DISCONNECT = new MethodName("disconnect", ARG_QOS, RETURN_VOID);
+   public static final MethodName DISCONNECT = new MethodName("disconnect", ARG_QOS, RETURN_STRING);
    public static final MethodName GET = new MethodName("get", ARG_KEYQOS, RETURN_MSGARR);
    public static final MethodName ERASE = new MethodName("erase", ARG_KEYQOS, RETURN_STRINGARR);
    public static final MethodName PUBLISH = new MethodName("publish", ARG_MSGARR, RETURN_STRINGARR);
