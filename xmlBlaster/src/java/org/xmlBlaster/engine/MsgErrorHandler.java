@@ -8,7 +8,7 @@ package org.xmlBlaster.engine;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 /**
  * The default error recovery implementation for messages which are lost
  * in time and universe.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 public final class MsgErrorHandler implements I_MsgErrorHandler
@@ -139,7 +139,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          try {
             //if (address == null || address.getOnExhaustKillSession()) {
                log.warn(ME, "Callback server is lost, killing login session of client " +
-                              msgQueue.getQueueId() + ": " + message);
+                              msgQueue.getStorageId() + ": " + message);
                try {
                   glob.getAuthenticate().disconnect(sessionInfo.getSessionId(), null);
                }
