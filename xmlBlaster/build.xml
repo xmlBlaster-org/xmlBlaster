@@ -201,7 +201,7 @@ TODO
    <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
    <!-- property name="CFLAGS" value="-m32"/> Add your own in build.properties -->
-   <!-- property name="LDFLAGS" value="${CLFAGS}"/> Add your own in build.properties -->
+   <!-- property name="LDFLAGS" value="${CFLAGS}"/> Add your own in build.properties -->
    <property name="C_LINK" value="shared"/>  <!-- link a shared/static (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
    <property name="src.c.dir" value="./src/c"/>
    <property name="build.src.c.dir" value="${build.src}/c"/>
