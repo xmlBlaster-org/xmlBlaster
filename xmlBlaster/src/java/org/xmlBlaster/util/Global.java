@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.7 2002/05/02 12:36:40 ruff Exp $
+Version:   $Id: Global.java,v 1.8 2002/05/03 16:38:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -169,13 +169,24 @@ public class Global
     * Currently we only use it for CORBA IOR download. To avoid the name service,
     * one can access the AuthServer IOR directly
     * using a http connection.
-    * @param false Suppress error logging when server not found
+    *
+    * @param address The address we want to connect to or null
     * @param urlPath The part after the host:port, from an URL "http://myhost.com:3412/AuthenticationService.ior"
     *                urlPath is "AuthenticationService.ior"
+    * @param false Suppress error logging when server not found
     */
-   public String accessFromInternalHttpServer(String urlPath, boolean verbose) throws XmlBlasterException
+   public String accessFromInternalHttpServer(Address address, String urlPath, boolean verbose) throws XmlBlasterException
    {
-      Address addr = getBootstrapAddress();
+      Address addr = address;
+      if (addr != null && addr.getPort() > 0) {
+         if (addr.getHostname() == null || addr.getHostname().length() < 1) {
+            addr.setHostname(getLocalIP());
+         }
+      }
+      else {
+         addr = getBootstrapAddress();
+      }
+
       if (Log.CALL) Log.call(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
       try {
          if (urlPath != null && urlPath.startsWith("/") == false)
