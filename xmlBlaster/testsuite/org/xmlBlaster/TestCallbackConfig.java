@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.2 2002/03/18 00:31:22 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.3 2002/04/26 21:34:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -78,8 +78,9 @@ public class TestCallbackConfig extends TestCase implements I_Callback
          cbProps.setRetries(1);
          cbProps.setDelay(1000);
          cbProps.setPtpAllowed(true);
+         qos.addCallbackAddress(cbProps);
 
-         con.connect(qos, this, cbProps);
+         con.connect(qos, this);
       }
       catch (Exception e) {
          Log.error(ME, e.toString());
@@ -138,6 +139,8 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    {
       Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
+      if (!this.cbSessionId.equals(cbSessionId))
+         Log.error(ME, "Invalid cbSessionId");
       assertEquals("Invalid cbSessionId", this.cbSessionId, cbSessionId);
       return "";
    }
