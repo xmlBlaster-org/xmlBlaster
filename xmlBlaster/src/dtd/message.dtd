@@ -1,0 +1,21 @@
+<!ELEMENT message (subscribe+)> <!--, unsubscribe, modify, update, delete)> -->
+
+<!-- SUBSCRIBE
+     Der Client abonniert beliebige Objekte im xmlBlaster. Das Abonnieren
+     kann erfolgt hierarchisch mit Wildcards z.b. "*.Problem-Report.*.SW*"
+     oder einer Query-Language etwa XQL, SQL oder einer sontigen Sprache.
+     Diese Sprache muß noch definiert werden...........
+-->
+<!ELEMENT subscribe (key)>
+<!ELEMENT key (oid,param+)>
+
+<!ATTLIST key oid ID #IMPLIED>
+<!ELEMENT param (#CDATA)>
+
+
+<!--  Undefined (muß noch besprochen werden)
+  <!ELEMENT orders (order_key,content, contentMeta?)>
+  <!ELEMENT id        (#CDATA)>
+  <!ELEMENT param     (#PCDATA)>
+-->
+
