@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.3 2002/09/13 23:35:30 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.4 2002/09/14 23:05:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -32,8 +32,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner org.xmlBlaster.test.qos.LoadTestSub
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.LoadTestSub
+ *    java junit.textui.TestRunner org.xmlBlaster.test.stress.LoadTestSub
+ *    java junit.swingui.TestRunner org.xmlBlaster.test.stress.LoadTestSub
  * </pre>
  */
 public class LoadTestSub extends TestCase implements I_Callback
@@ -60,6 +60,10 @@ public class LoadTestSub extends TestCase implements I_Callback
    private int lastContentNumber = -1;
    private final String someContent = "Yeahh, i'm the new content, my total length is big an bigger but still i want to be longer and longer until i have reached some 180 bytes, here is remaining blahh to fill the last";
 
+   public LoadTestSub() { // JUNIT
+      this(new Global(), "LoadTestSub", "LoadTestSub", "secret", 1000, 1, false);
+   }
+   
    /**
     * Constructs the LoadTestSub object.
     * <p />
@@ -138,7 +142,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     * <p />
     * The returned subscribeOid is checked
     */
-   public void testSubscribeXPath()
+   public void doSubscribeXPath()
    {
       if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
@@ -164,7 +168,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     * <p />
     * The returned publishOid is checked
     */
-   public void testPublish()
+   public void doPublish()
    {
       log.info(ME, "Publishing " + numPublish + " messages ...");
 
@@ -221,8 +225,8 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void testManyPublish()
    {
-      testSubscribeXPath();
-      testPublish();
+      doSubscribeXPath();
+      doPublish();
       waitOnUpdate(60*1000L, numPublish);
       assertEquals("numReceived after publishing", numPublish, numReceived); // message arrived?
    }
@@ -308,12 +312,12 @@ public class LoadTestSub extends TestCase implements I_Callback
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.LoadTestSub
+    * Invoke: java org.xmlBlaster.test.stress.LoadTestSub
     * <br />
     * You can use the command line option -numPublish 5000 to change the number of messages sent.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.LoadTestSub</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.stress.LoadTestSub</pre>
     */
    public static void main(String args[])
    {
