@@ -3,13 +3,12 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.27 1999/11/30 09:29:32 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.28 1999/11/30 10:37:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlToDom;
-import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
@@ -25,7 +24,7 @@ import java.io.*;
  *
  * The interface ClientListener informs about Client login/logout
  */
-public class RequestBroker implements ClientListener, MessageEraseListener, I_MergeDomNode
+public class RequestBroker implements ClientListener, MessageEraseListener
 {
    final private static String ME = "RequestBroker";
 
@@ -51,12 +50,10 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
     */
    final private Set messageEraseListenerSet = Collections.synchronizedSet(new HashSet());
 
-   private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
-   private com.fujitsu.xml.omquery.DomQueryMgr queryMgr;
-
-   private com.sun.xml.tree.XmlDocument xmlKeyDoc = null;// Sun's DOM extensions, no portable
-   //private org.w3c.dom.Document xmlKeyDoc = null;     // Document with the root node
-   private org.w3c.dom.Node xmlKeyRootNode = null;    // Root node <xmlBlaster></xmlBlaster>
+   /**
+    * This is a handle on the big DOM tree with all MessageUnit keys
+    */
+   private MessagesDOM messagesDOM = null;
 
 
    /**
@@ -94,31 +91,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
    {
       this.clientSubscriptions = ClientSubscriptions.getInstance(this, authenticate);
 
-      this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
-
-      /*
-      // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
-      String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                   "<xmlBlaster></xmlBlaster>";
-      java.io.StringReader reader = new java.io.StringReader(xml);
-      org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
-
-      try {
-         xmlKeyDoc = xmlProc.load(input);
-      } catch (java.io.IOException e) {
-         Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-      } catch (org.xml.sax.SAXException e) {
-         Log.error(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
-      }
-      */
-
-      // Using Sun's approach to be able to use  com.sun.xml.tree.XmlDocument::changeNodeOwner(node) later
-      xmlKeyDoc = new com.sun.xml.tree.XmlDocument ();
-      com.sun.xml.tree.ElementNode root = (com.sun.xml.tree.ElementNode) xmlKeyDoc.createElement ("xmlBlaster");
-      xmlKeyDoc.appendChild(root);
-      xmlKeyRootNode = xmlKeyDoc.getDocumentElement();
+      this.messagesDOM = MessagesDOM.getInstance(this, authenticate);
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
@@ -126,63 +99,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
 
    /**
-    * Accessing the  XML to DOM parser
-    */
-   public com.jclark.xsl.dom.XMLProcessorImpl getXMLProcessorImpl()
-   {
-      return this.xmlProc;
-   }
-
-
-   /**
-    * Adding a new node to the xmlBlaster xmlKey tree
-    * @param the node to merge into the DOM tree
-    * @return the node added
-    */
-   public org.w3c.dom.Node mergeNode(org.w3c.dom.Node node) throws XmlBlasterException
-   {
-      try {     // !!! synchronize is missing !!!
-         Log.info(ME, "mergeNode=" + node.toString());
-
-         xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
-
-         // !!! PENDING: If same key oid exists, remove the old and replace with new
-
-         xmlKeyRootNode.appendChild(node);
-
-         if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
-
-         if (Log.DUMP) {  // dump the whole tree
-            Writer out = new OutputStreamWriter (System.out);
-            xmlKeyDoc.write(out);
-         }
-
-         // !!! not performaning, should be instantiate only just before needed
-         //     with stale check
-         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
-
-         return node;
-
-      } catch (Exception e) {
-         Log.error(ME+".mergeNode", "Problems adding new key tree: " + e.toString());
-         e.printStackTrace();
-         throw new XmlBlasterException(ME+".mergeNode", "Problems adding new key tree: " + e.toString());
-      }
-   }
-
-
-   /**
-    * Removing a node from the xmlBlaster xmlKey tree
-    * @param The node removed
-    */
-   public org.w3c.dom.Node removeKeyNode(org.w3c.dom.Node node)
-   {
-      return xmlKeyRootNode.removeChild(node);
-   }
-
-
-   /**
-    * Setting attributes for a client. 
+    * Setting attributes for a client.
     * <p>
     *
     * @param clientName  The client which shall be administered
@@ -211,16 +128,26 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
    /**
     * Invoked by a client, to subscribe to one/many MessageUnit
     */
-   public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, subscribeQoS);
+      String returnOid = "";
+      if (xmlKey.getQueryType() != XmlKey.EXACT_QUERY) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
+         returnOid = xmlKey.getUniqueKey();
+         fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS), true);
+      }
+
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
             xmlKeyExact = xmlKey;
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
          subscribeToOid(subs);                // fires event for subscription
+
+         if (returnOid.equals("")) returnOid = xmlKeyExact.getUniqueKey();
       }
+
+      return returnOid;
    }
 
 
@@ -229,7 +156,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
     */
    public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, subscribeQoS);
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
       MessageUnit[] messageUnitArr = new MessageUnit[xmlKeyVec.size()];
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
@@ -246,53 +173,26 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
 
    /**
-    * This method does the XPath query.
+    * This method does the query (queryType = "XPATH" | "EXACT"). 
     *
     * @param clientName is only needed for nicer logging output
     * @return Array of matching XmlKey objects (may contain null elements)
     *
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
-   private Vector parseKeyOid(org.w3c.dom.Document xmlDoc/*, com.sun.xml.tree.XmlDocument xmlDoc*/,
-                              ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
+   private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
    {
-      Vector xmlKeyVec = new Vector();
+      Vector xmlKeyVec = null;
       String clientName = clientInfo.toString();
 
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
-
-         // fires event for query subscription, this needs to be remembered
-         // for a match check of future published messages
-         fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, qos), true);
-
-         Enumeration nodeIter;
-         try {
-            if (Log.TRACE) Log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
-            nodeIter = queryMgr.getNodesByXPath(xmlDoc, xmlKey.getQueryString());
-         } catch (Exception e) {
-            Log.warning(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
-            throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
-         }
-         int n = 0;
-         while (nodeIter.hasMoreElements()) {
-            n++;
-            Object obj = nodeIter.nextElement();
-            com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
-            try {
-               String uniqueKey = getKeyOid(node);
-               Log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successfull query");
-               xmlKeyVec.addElement(getXmlKeyFromOid(uniqueKey));
-            } catch (Exception e) {
-               e.printStackTrace();
-               Log.error(ME, e.toString());
-            }
-         }
-         Log.info(ME, n + " MessageUnits matched to subscription " + xmlKey.literal());
+         xmlKeyVec = messagesDOM.parseKeyOid(clientInfo, xmlKey, qos);
       }
 
       else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
          Log.info(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
+         xmlKeyVec = new Vector();
          xmlKeyVec.addElement(xmlKeyExact);
       }
 
@@ -301,8 +201,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
          throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
       }
 
-      return xmlKeyVec;
+      return xmlKeyVec == null ? new Vector() : xmlKeyVec;
    }
+
 
    /**
     * @param oid == XmlKey:uniqueKey
@@ -334,52 +235,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
 
    /**
-    */
-   private String getKeyOid(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws XmlBlasterException
-   {
-      if (node == null) {
-         Log.warning(ME+".NoParentNode", "no parent node found");
-         throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
-      }
-
-      String nodeName = node.getNodeName();      // com.sun.xml.tree.ElementNode: getLocalName();
-
-      if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specialy handled
-         Log.warning(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
-         throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
-      }
-
-      if (!nodeName.equals("key")) {
-         return getKeyOid(node.getParentNode()); // w3c: getParentNode() sun: getParentImpl()
-      }
-
-      /* com.sun.xml.tree.ElementNode:
-      org.w3c.dom.Attr keyOIDAttr = node.getAttributeNode("oid");
-      if (keyOIDAttr != null)
-         return keyOIDAttr.getValue();
-      */
-
-      // w3c conforming code:
-      org.w3c.dom.NamedNodeMap attributes = node.getAttributes();
-      if (attributes != null && attributes.getLength() > 0) {
-         int attributeCount = attributes.getLength();
-         for (int i = 0; i < attributeCount; i++) {
-            org.w3c.dom.Attr attribute = (org.w3c.dom.Attr)attributes.item(i);
-            if (attribute.getNodeName().equals("oid")) {
-               String val = attribute.getNodeValue();
-               // Log.trace(ME, "Found key oid=\"" + val + "\"");
-               return val;
-            }
-         }
-      }
-
-      Log.warning(ME+".InternalKeyOid", "Internal getKeyOid() error");
-      throw new XmlBlasterException(ME+".InternalKeyOid", "Internal getKeyOid() error");
-   }
-
-
-   /**
-    * Low level subscribe, is called when the <key oid='...' queryType='EXACT'> to subscribe is exactly known. 
+    * Low level subscribe, is called when the <key oid='...' queryType='EXACT'> to subscribe is exactly known.
     * <p>
     * @param uniqueKey from XmlKey - oid
     * @param subs
@@ -410,11 +266,15 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
 
    /**
-    * SUPPORT FOR QUERY unSubscribe is still missing!!!
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, unSubscribeQoS);
+      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) {
+         fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS), false);
+         Log.warning(ME, "SUPPORT FOR QUERY unSubscribe is not yet tested"); // !!!
+      }
+
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null) {
@@ -473,7 +333,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
                if (queryXmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
 
-                  Vector matchVec = parseKeyOid(newXmlDoc, clientInfo, queryXmlKey, xmlQoS);
+                  Vector matchVec = messagesDOM.parseKeyOid(clientInfo, queryXmlKey, xmlQoS);
 
                   if (matchVec != null && matchVec.size() == 1 && matchVec.elementAt(0) != null) {
                      if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
@@ -563,7 +423,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
       }
       else {
          try {
-            xmlKey.mergeRootNode(this);  // merge the message DOM tree into the big xmlBlaster DOM tree
+            xmlKey.mergeRootNode(messagesDOM);                    // merge the message DOM tree into the big xmlBlaster DOM tree
          } catch (XmlBlasterException e) {
             synchronized(messageContainerMap) {
                messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
@@ -580,7 +440,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
     */
    public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qoS) throws XmlBlasterException
    {
-      Vector xmlKeyVec = parseKeyOid(xmlKeyDoc, clientInfo, xmlKey, qoS);
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
       String[] oidArr = new String[xmlKeyVec.size()];
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
@@ -619,7 +479,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
             throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
          }
       }
-      org.w3c.dom.Node node = removeKeyNode(messageUnitHandler.getRootNode());
    }
 
 
@@ -759,15 +618,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
          MessageUnitHandler messageUnitHandler = (MessageUnitHandler)iterator.next();
          sb.append(messageUnitHandler.printOn(extraOffset + "   ").toString());
       }
-
-      try {
-         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         xmlKeyDoc.write(out);
-         StringTokenizer st = new StringTokenizer(out.toString(), "\n");
-         while (st.hasMoreTokens()) {
-            sb.append(offset + "   " + st.nextToken());
-         }
-      } catch (Exception e) { }
+      sb.append(messagesDOM.printOn(extraOffset + "   ").toString());
       sb.append(offset + "</RequestBroker>\n");
 
       return sb;

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.23 1999/11/30 09:29:32 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.24 1999/11/30 10:37:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -55,7 +55,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * Subscribe to messages
     */
-   public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering subscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + requestBroker.printOn().toString());
@@ -65,10 +65,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.subscribe(clientInfo, xmlKey, xmlQoS);
+      String oid = requestBroker.subscribe(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
       if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + requestBroker.printOn().toString());
+
+      return oid;
    }
 
 
@@ -181,7 +183,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * Setting attributes for a client. 
+    * Setting attributes for a client.
     * <p>
     *
     * @param clientName  The client which shall be administered
