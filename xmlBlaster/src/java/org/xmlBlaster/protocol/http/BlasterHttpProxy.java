@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.19 2000/07/11 13:59:48 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.20 2000/07/11 17:25:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class BlasterHttpProxy
 {
@@ -67,6 +67,16 @@ public class BlasterHttpProxy
    }
 
    /**
+    * Remove the attribute. 
+    *
+    * @param name key name
+    */
+   public static void removeAttribute(String name)
+   {
+      attributes.remove(name);
+   }
+
+   /**
     * Gives a proxy connection by a given loginName and Password.
     * <p />
     * Multiple logins of the same user are possible.
@@ -98,7 +108,8 @@ public class BlasterHttpProxy
     * Gives a proxy connection by a given sessionId.
     * <p />
     * @param sessionId HTTP sessionId
-    * @return valid proxyConnection for valid HTTP sessionId.
+    * @return valid proxyConnection for valid HTTP sessionId (never null)
+    * @exception If sessionId not found.
     */
    public static ProxyConnection getProxyConnectionBySessionId( String sessionId ) throws XmlBlasterException
    {
@@ -113,7 +124,7 @@ public class BlasterHttpProxy
                return pc;
          }
       }
-      return null;
+      throw new XmlBlasterException(ME, "Session not registered yet (sessionId="+sessionId+")");
    }
 
 
@@ -139,8 +150,6 @@ public class BlasterHttpProxy
       synchronized( proxyConnections ) {
          Log.plain(ME,"proxyConnections="+proxyConnections);
          ProxyConnection pc = getNewProxyConnection(loginName, passwd);
-         if( pc == null ) {
-         }
          return pc.getCorbaConnection();
       }
    }
@@ -168,10 +177,6 @@ public class BlasterHttpProxy
       }
 
       ProxyConnection pc = getProxyConnectionBySessionId(sessionId);
-      if( pc == null ) {
-         Log.warning(ME, "getCorbaConnection(sessionId=" + sessionId + ") returned null");
-         return null;
-      }
       return pc.getCorbaConnection();
    }
 
@@ -188,9 +193,6 @@ public class BlasterHttpProxy
          throw new XmlBlasterException(ME+".NoSessionId", "Sorry, no valid session ID, are cookies disabled?");
       }
       ProxyConnection proxyConnection = getProxyConnectionBySessionId(sessionId);
-      if( proxyConnection == null ) {
-         throw new XmlBlasterException(ME+".SessionNotKnown", "Session not registered yet (sessionId="+sessionId+")");
-      }
       return proxyConnection.getHttpPushHandler(sessionId);
    }
 }
