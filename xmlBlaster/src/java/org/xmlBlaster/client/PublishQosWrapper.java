@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.3 2000/02/01 15:18:19 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.4 2000/02/02 18:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -52,6 +52,19 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
+    * Default constructor for transient PtP messages. 
+    * <p />
+    * To make the message persistent, use the 
+    * @param destination The object containing the destination address.<br />
+    *        To add more destinations, us the addDestination() method.
+    */
+   public PublishQosWrapper(Destination destination)
+   {
+      addDestination(destination);
+   }
+
+
+   /**
     * @param isDurable Store the message persistently
     */
    public PublishQosWrapper(boolean isDurable)
@@ -79,6 +92,15 @@ public class PublishQosWrapper extends QosWrapper
    public void setReadonly()
    {
       this.readonly = true;
+   }
+
+
+   /**
+    * Mark a message to be persistent. 
+    */
+   public void setDurable()
+   {
+      this.isDurable = true;
    }
 
 

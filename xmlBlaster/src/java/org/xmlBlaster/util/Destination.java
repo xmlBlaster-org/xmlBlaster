@@ -3,7 +3,7 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.1 2000/02/01 15:18:20 ruff Exp $
+Version:   $Id: Destination.java,v 1.2 2000/02/02 18:54:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -33,6 +33,28 @@ public class Destination
     */
    public Destination()
    {
+   }
+
+
+   /**
+    * Constructs the specialized quality of service destination object.
+    * @param address The destination address (EXACT)
+    */
+   public Destination(String address)
+   {
+      setDestination(address);
+   }
+
+
+   /**
+    * Constructs the specialized quality of service destination object.
+    * @param address The destination address or query string
+    * @param queryType "EXACT" or "XPATH"
+    */
+   public Destination(String address, String queryType)
+   {
+      setQueryType(queryType);
+      setDestination(address);
    }
 
 
