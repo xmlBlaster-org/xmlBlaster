@@ -140,6 +140,7 @@ TODO
    <property name="soaplib.dir" value="lib/soap"/>
    <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}"/>
+   <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
 
    <!-- =================================================================== -->
@@ -1473,7 +1474,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/include" if="ORBIX" />          
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX" />          
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
          <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->                  
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
@@ -1601,7 +1602,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/include" if="ORBIX" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
 
          <sysincludepath location="${XMLCPP_HOME}/include" />             <!-- xerces 1.6.0 -->
@@ -1637,7 +1638,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
 
             <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
@@ -1674,7 +1675,7 @@ TODO
 
          <linker name="CC">
             <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/cxx/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
@@ -1684,7 +1685,7 @@ TODO
 
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
-            <linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/cxx/lib" if="ORBIX" />
+            <linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
             <linkerarg value="-L${XMLCPP_HOME}/lib" />
             <linkerarg value="-L${lib.dir.absolute}" />
             <linkerarg value="-L${CORBACPP_HOME}/shlib/posix" if="ORBIX" />
