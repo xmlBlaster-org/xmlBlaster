@@ -42,6 +42,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 
 This is for distributions only, if you have checked out by cvs
 please go to the next INSTALL section.
+We assume you have a proper JDK installation as described above.
 
 Start the server without environment settings:
 
