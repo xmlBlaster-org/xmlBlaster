@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.10 2001/08/31 15:24:51 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.11 2001/09/01 08:54:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -72,20 +72,37 @@ public class LoginQosWrapper extends QosWrapper
    private I_ClientHelper plugin;
 
    /**
-    * Default constructor for clients without asynchronous callbacks.
+    * Default constructor for clients without asynchronous callbacks
+    * and default security plugin (as specified in xmlBlaster.properties)
     */
    public LoginQosWrapper()
    {
    }
 
-   private I_ClientHelper getPlugin()
+   /**
+    * For clients who whish to use the given security plugin. 
+    * @param String The type of the plugin, e.g. "a2Blaster"
+    * @param String The version of the plugin, e.g. "1.0"
+    */
+   public LoginQosWrapper(String mechanism, String version) throws XmlBlasterException
+   {
+      getPlugin(mechanism, version);
+   }
+
+   /**
+    * @param mechanism If null, the current plugin is used
+    */
+   private I_ClientHelper getPlugin(String mechanism, String version) throws XmlBlasterException
    {
       if (plugin==null) {
          if (pMgr==null) pMgr=PluginLoader.getInstance();
          try {
-            plugin=pMgr.getCurrentClientPlugin();
+            if (mechanism != null)
+               plugin=pMgr.getClientPlugin(mechanism, version);
+            else
+               plugin=pMgr.getCurrentClientPlugin();
          }
-         catch (Exception e) {
+         catch (XmlBlasterException e) {
             Log.error(ME+".LoginQosWrapper", "Security plugin initialization failed. Reason: "+e.toString());
             Log.error(ME+".LoginQosWrapper", "No plugin. Trying to continue without the plugin.");
          }
@@ -160,12 +177,12 @@ public class LoginQosWrapper extends QosWrapper
       addressVec.addElement(callback);
    }
 
-   public I_InitQos getSecurityInitQoSWrapper()
+   public I_InitQos getSecurityInitQoSWrapper() throws XmlBlasterException
    {
-      return getPlugin().getInitQoSWrapper();
+      return getPlugin(null,null).getInitQoSWrapper();
    }
 
-   public String getSecurityPluginType()
+   public String getSecurityPluginType() throws XmlBlasterException
    {
       I_InitQos securityInitQos = getSecurityInitQoSWrapper();
       if (securityInitQos != null)
@@ -173,7 +190,7 @@ public class LoginQosWrapper extends QosWrapper
       return null;
    }
 
-   public String getSecurityPluginVersion()
+   public String getSecurityPluginVersion() throws XmlBlasterException
    {
       I_InitQos securityInitQos = getSecurityInitQoSWrapper();
       if (securityInitQos != null)
@@ -181,7 +198,7 @@ public class LoginQosWrapper extends QosWrapper
       return null;
    }
 
-   public String getUserId()
+   public String getUserId() throws XmlBlasterException
    {
       I_InitQos i=getSecurityInitQoSWrapper();
       if (i==null)
@@ -232,7 +249,11 @@ public class LoginQosWrapper extends QosWrapper
       I_InitQos secInitQoSWrapper = null;
 
       if(plugin!=null) {
-         secInitQoSWrapper = getPlugin().getInitQoSWrapper();
+         try {
+            secInitQoSWrapper = getPlugin(null,null).getInitQoSWrapper();
+         } catch(XmlBlasterException e) {
+            Log.warn(ME+".toXml", e.toString());
+         }
       }
       StringBuffer sb = new StringBuffer(160);
       String offset = "\n   ";
