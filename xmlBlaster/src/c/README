@@ -149,6 +149,10 @@ o Invoking xmlBlaster from within the callback thread (in update() function)
   will deadlock (i believe so).
   Probably we need to add a thread pool
 
+o Add logging redirection (using a configurable function pointer)
+
+o Add extended property support (parsing command line and getenv())
+
 o Add ant task c-lib
 
 o Add some demo in xmlBlaster/demo/c
