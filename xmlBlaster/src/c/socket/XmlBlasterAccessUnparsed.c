@@ -710,7 +710,7 @@ bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *
  * Here we receive the callback messages from xmlBlaster
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
    bool testException = false;
