@@ -25,12 +25,18 @@ Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
 
 static const bool XMLBLASTER_DEBUG = true;
 
+// All member pointers are allocated with malloc(), you need to free() them
 typedef struct MsgUnitStruct {
    char *key;               // XML formatted ASCII string of message key
-   unsigned char *content;  // Raw data
    size_t contentLen;
+   unsigned char *content;  // Raw data
    char *qos;               // XML formatted ASCII string of Quality of Service
 } MsgUnit;
+
+typedef struct MsgUnitStructArr {
+   size_t len;
+   MsgUnit *msgUnitArr;
+} MsgUnitArr;
 
 // See org.xmlBlaster.util.enum.MethodName.java
 //static const char * const CONNECT = "connect";
@@ -115,6 +121,8 @@ typedef char *( * XmlBlasterPublish)(MsgUnit *msgUnit, XmlBlasterException *exce
 typedef char *( * XmlBlasterSubscribe)(const char * const key, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterUnSubscribe)(const char * const key, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterErase)(const char * const key, const char * qos, XmlBlasterException *exception);
+typedef MsgUnitArr *( * XmlBlasterGet)(const char * const key, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterPing)(const char * const qos);
 typedef bool  ( * IsConnected)();
 
 typedef struct XmlBlasterAccessStruct {
@@ -124,13 +132,14 @@ typedef struct XmlBlasterAccessStruct {
    XmlBlasterSubscribe subscribe;
    XmlBlasterUnSubscribe unSubscribe;
    XmlBlasterErase erase;
+   XmlBlasterGet get;
+   XmlBlasterPing ping;
    IsConnected isConnected;
 } XmlBlasterAccess;
 
 
 extern XmlBlasterAccess getXmlBlasterAccess(int argc, char** argv);
 extern int readn(int fd, char *ptr, int nbytes);
-extern bool initConnection(int argc, char** argv);
 extern void initCallbackServer(callbackData *data);
 extern int getLength(char *data);
 extern int isListening();
@@ -138,8 +147,12 @@ extern void shutdownCallbackServer();
 extern char *contentToString(char *content, MsgUnit *msg);
 extern char *messageUnitToXml(MsgUnit *msg);
 
+extern void freeMsgUnitData(MsgUnit *msgUnit);
+extern void freeMsgUnit(MsgUnit *msgUnit);
+extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
 
-char *blobcpy_alloc(const unsigned char *blob, const size_t len);
+
+char *strFromBlobAlloc(const unsigned char *blob, const size_t len);
 char *strcpyAlloc(const char *src);
 extern int strcpy_alloc(char **into_string, const char *from_string);
 char *strncpy0(char * const to, const char * const from, const size_t maxLen);

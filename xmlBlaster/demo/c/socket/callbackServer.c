@@ -27,11 +27,7 @@ int readn(int fd, char *ptr, int nbytes)
    int nleft, nread;
    nleft = nbytes;
    while(nleft > 0) {
-#     ifdef WIN32
       nread = recv(fd, ptr, nleft, 0);
-#     else
-      nread = read(fd, ptr, nleft);
-#     endif
       if (nread < 0)
          return nread; /* error, return < 0 */
       else if (nread == 0)
