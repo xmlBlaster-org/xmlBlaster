@@ -20,9 +20,9 @@
 # If you want to access xmlBlaster using cvs, un comment following line:
 #   export CVSROOT=:pserver:reader@server.xmlBlaster.org:/opt/cvsroot
 #
-# Tested on Linux, HPUX and Solaris with sh, ksh and bash
+# Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.60 $
+# $Revision: 1.61 $
 #-----------------------------------------------------------
 
 
