@@ -857,7 +857,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
       synchronized (this) {
          try {
-         if (isPersistenceAvailable()) {
+           if (isPersistenceAvailable()) {
                ArrayList persistents = new ArrayList();
                for (int i=0; i < queueEntries.length; i++) {
                   if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
