@@ -64,7 +64,7 @@ public:
 
 };
 
-void PublishDemo::publish(const string& oid="c++-demo", const string&, const string& content="simple content")
+void PublishDemo::publish(const string& oid, const string&, const string& content)
 {
    PublishKey key(global_, oid, "text/xml", "1.0");
    key.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
