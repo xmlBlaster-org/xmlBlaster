@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.28 2002/08/10 19:32:34 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.29 2002/08/23 21:26:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -41,19 +41,10 @@ import org.xmlBlaster.protocol.socket.Parser;
  * to setup a callbackserver.
  * <p />
  * This "SOCKET:" driver needs to be registered in xmlBlaster.properties
- * and will be started on xmlBlaster startup, for example:
+ * and will be started on xmlBlaster startup:
  * <pre>
- *Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
- *                 SOCKET:org.xmlBlaster.protocol.socket.SocketDriver,\
- *                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
- *                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
- *                 JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
- *Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
- *                         SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
- *                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
- *                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
- *                         JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,\
- *                         EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ * ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
+ * CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
  * </pre>
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.socket.SocketConnection#usage()}
