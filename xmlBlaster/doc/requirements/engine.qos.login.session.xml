@@ -32,7 +32,7 @@
       </p>
       <p>
       Interested parties can subscribe on Login/Logout events, to find out if
-      a client arrives or disappears (message oid="__sys__Logout" or oid="__sys__Login").
+      a client arrives or disappears (message oid="__sys__Login" or oid="__sys__Logout").
       </p>
    </description>
 
@@ -123,7 +123,7 @@
    <author>ruff@swand.lake.de</author>
    <author>krafft@doubleslash.de</author>
    <date>2002 03 11</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>Marcel Ruff</name>
       <comment>All specified requirements are tested</comment>
