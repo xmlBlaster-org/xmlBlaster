@@ -80,6 +80,8 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    /** manager for sending callback messages */
    private final DeliveryManager deliveryManager;
    private boolean isShutdown = false;
+   /** Protects timerKey refresh */
+   private final Object EXPIRY_TIMER_MONITOR = new Object();
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -234,7 +236,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     */
    public final void refreshSession() throws XmlBlasterException {
       if (connectQos.getSessionTimeout() > 0L) {
-         synchronized (this.expiryTimer) {
+         synchronized (this.EXPIRY_TIMER_MONITOR) {
             this.timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, this.timerKey);
          }
       }

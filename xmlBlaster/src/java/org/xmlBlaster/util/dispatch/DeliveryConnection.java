@@ -59,6 +59,8 @@ abstract public class DeliveryConnection implements I_Timeout
 
    private final Timeout pingTimer;
    private Timestamp timerKey;
+   /** Protects timerKey refresh */
+   private final Object PING_TIMER_MONITOR = new Object();
 
    protected ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
 
@@ -330,7 +332,7 @@ abstract public class DeliveryConnection implements I_Timeout
                // so we respan the timer.
                // Probably this slows down on many updates and seldom pings,
                // should we remove the following two lines?
-               synchronized (this.pingTimer) {
+               synchronized (this.PING_TIMER_MONITOR) {
                   this.timerKey = this.pingTimer.addOrRefreshTimeoutListener(this,
                               this.address.getPingInterval(), null, this.timerKey);
                }
