@@ -52,7 +52,6 @@ public class SimpleJmsDemo implements MessageListener {
          subscriber.setMessageListener(this);
       
          TopicPublisher publisher = session.createPublisher(topic);
-//         connection.start();
       
          TextMessage msg = session.createTextMessage();
          msg.setText("this is a simple jms test message");
@@ -66,12 +65,10 @@ public class SimpleJmsDemo implements MessageListener {
       }
    }
    
-
    public void onMessage(Message message) {
       try {
          if (message instanceof TextMessage) {
             System.out.println(((TextMessage)message).getText());
-            // message.acknowledge();
          }
       }
       catch (JMSException ex) {
