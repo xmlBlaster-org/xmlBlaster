@@ -121,6 +121,7 @@ public class Constants
    public final static String SUBSCRIPTIONID_PRAEFIX = "__subId:";
 
    public final static String INTERNAL_OID_PRAEFIX = "__sys__";
+   public final static String INTERNAL_OID_CLUSTER_PRAEFIX = INTERNAL_OID_PRAEFIX +"cluster";  // "__sys__cluster"
 
    /** JDBC access messages */
    public final static String JDBC_OID = INTERNAL_OID_PRAEFIX + "jdbc";
