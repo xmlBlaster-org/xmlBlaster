@@ -364,8 +364,11 @@ abstract public class DeliveryConnection implements I_Timeout
                timerKey = pingTimer.addTimeoutListener(this, this.address.getDelay(), "poll");
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   resetConnection();
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible, we poll for it every " + this.address.getDelay() + " msec ...");
-                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries());
+                  String str = (throwable != null) ? ": " + throwable.toString() : "";
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() +
+                               " is unaccessible, we poll for it every " + this.address.getDelay() + " msec" + str);
+                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
+                               ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
                }
                if (byDeliveryConnectionsHandler)
@@ -375,8 +378,10 @@ abstract public class DeliveryConnection implements I_Timeout
             else {
                if (oldState == ConnectionStateEnum.ALIVE) {
                   resetConnection();
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible");
-                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries());
+                  String str = (throwable != null) ? ": " + throwable.toString() : "";
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible" + str);
+                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
+                                 ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                }
             }
          }
@@ -388,7 +393,9 @@ abstract public class DeliveryConnection implements I_Timeout
       // error giving up ...
       XmlBlasterException ex = null;
       if (throwable == null) {
-         ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible.");
+         ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME,
+              "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
+              this.address.toString() + " is unaccessible.", throwable);
       }
       else if (throwable instanceof XmlBlasterException) {
          ex = (XmlBlasterException)throwable;
@@ -396,7 +403,8 @@ abstract public class DeliveryConnection implements I_Timeout
       else {
          ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Sending of messge failed", throwable);
       }
-      log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": retryCounter=" + retryCounter + ", maxRetries=" + this.address.getRetries());
+      log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": retryCounter=" + retryCounter +
+                   ", maxRetries=" + this.address.getRetries());
 
       connectionsHandler.toDead(this, ex);
       
