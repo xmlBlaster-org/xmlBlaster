@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.70 $
+# $Revision: 1.71 $
 #-----------------------------------------------------------
 
 
@@ -77,9 +77,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
-   if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
-      CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
-	fi
+	# jutils.jar is now included in xmlBlaster.jar
+   #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
+   #   CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
+	#fi
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
