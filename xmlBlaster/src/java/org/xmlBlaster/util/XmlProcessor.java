@@ -3,7 +3,7 @@ Name:      XmlProcessor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Accessing the XML processor through a singleton
-Version:   $Id: XmlProcessor.java,v 1.2 2002/09/19 09:14:55 antman Exp $
+Version:   $Id: XmlProcessor.java,v 1.3 2003/04/03 09:28:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,35 +12,21 @@ package org.xmlBlaster.util;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 /**
- * Accessing the XML processor through a singleton. 
+ * Accessing the XML processor through a singleton glob.getXmlProcessor(). 
  * <p />
  * Only one instance of this XML processor is used in xmlBlaster to save creation time.
  */
 public class XmlProcessor
 {
    final private static String ME = "XmlProcessor";
-   private static XmlProcessor theXmlProcesser = null;   // Singleton pattern
    private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
    private Global glob;
-
-   /**
-    * Access to XmlProcessor singleton
-    */
-   public static XmlProcessor getInstance(Global glob) throws XmlBlasterException
-   {  
-      synchronized (XmlProcessor.class) {
-         if (theXmlProcesser == null) {
-            theXmlProcesser = new XmlProcessor(glob);
-         }
-      }
-      return theXmlProcesser;
-   }
 
 
    /**
     * private Constructor for Singleton Pattern
     */
-   private XmlProcessor(Global glob) throws XmlBlasterException
+   public XmlProcessor(Global glob) throws XmlBlasterException
    {
       this.glob = glob;
       //this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
@@ -79,4 +65,6 @@ public class XmlProcessor
          return null;
       }
    } 
+
+   public void shutdown() {}
 }

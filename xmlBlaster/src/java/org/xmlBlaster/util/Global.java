@@ -37,6 +37,7 @@ import org.xmlBlaster.util.qos.StatusQosSaxFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.XmlProcessor;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
@@ -141,6 +142,8 @@ public class Global implements Cloneable
    protected RecorderPluginManager recorderPluginManager;
    private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
+   protected XmlProcessor xmlProcessor;
+
    protected Hashtable logChannels = new Hashtable();
    protected LogChannel logDefault;
 
@@ -177,6 +180,8 @@ public class Global implements Cloneable
 
    /** The client handle to access xmlBlaster */
    protected I_XmlBlasterAccess xmlBlasterAccess;
+
+   protected boolean isDoingShutdown = false;
 
    /**
     * Constructs an initial Global object.
@@ -701,6 +706,13 @@ public class Global implements Cloneable
     */
    public final ContextNode getContextNode() {
       return this.contextNode;
+   }
+
+   /**
+    * @return false
+    */
+   public boolean isServerSide() {
+      return false;
    }
 
    /**
@@ -1265,6 +1277,16 @@ public class Global implements Cloneable
       return dispatchPluginManager;
    }
 
+   public final XmlProcessor getXmlProcessor() throws XmlBlasterException {
+      if (this.xmlProcessor == null) {
+         synchronized (XmlProcessor.class) {
+            if (this.xmlProcessor == null)
+               this.xmlProcessor = new XmlProcessor(this);
+         }
+      }
+      return this.xmlProcessor;
+   }
+
    /**
     * Access the xmlBlaster Classloader.
     * Every Global instance may have an own factory instance.
@@ -1775,7 +1797,14 @@ public class Global implements Cloneable
    }
 
    public void shutdown() {
+      if (this.isDoingShutdown) {
+         return;
+      }
+      this.isDoingShutdown = true;
+
       if (log.TRACE) log.trace(ME, "Destroying util.Global handle");
+
+
       //Thread.currentThread().dumpStack();
       if (deliveryWorkerPool != null) {
          deliveryWorkerPool.shutdown();
@@ -1818,6 +1847,19 @@ public class Global implements Cloneable
          this.jdbcQueueManagersCommonTable = null;
       }
 
+      if (this.xmlProcessor != null) {
+         this.xmlProcessor.shutdown();
+         this.xmlProcessor = null;
+      }
+
+      synchronized (Global.class) {
+         if (this.firstInstance != null && this == this.firstInstance) {
+            //System.out.println("###################################First instance of Global destroyed");
+            this.firstInstance = null;
+         }
+      }
+      
+      this.isDoingShutdown = false;
    }
 
    /**
