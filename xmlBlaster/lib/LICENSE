@@ -1,6 +1,7 @@
 Please respect the third party licenses.
 
-All packages allow free use for both commercial and non-commercial applications.
+All packages allow free use for both commercial and non-commercial applications,
+only the SNMP subagent module jax.jar is GPL only!
 
 !Please add new packages to the manifest.xmlBlaster Class-Path section!
 
@@ -232,8 +233,20 @@ All packages allow free use for both commercial and non-commercial applications.
    Version 1.0
    Allows to access xmlBlaster with telnet.
    (CommandHandlerImpl loaded in ConnectionServer.java:160)
-	Switched off CommandHandlerImpl in ConnectionServer.java:160
+   Switched off CommandHandlerImpl in ConnectionServer.java:160
    Switched off show in ConnectionServer.java:342
    Switched off ls in ConnectionServer.java:342
    Switched off exec in CommandHandlerImpl.java:101
-	Added shutdown hook.
+   Added shutdown hook.
+
+
+22) jax.jar
+===========
+   The SNMP subagent is using jax.jar from jax-0.0.15
+   which is under GPL.
+   NOTE: You need to check if you are allowed to use this SNMP
+         subagent library in your application
+
+   ftp://ftp.ibr.cs.tu-bs.de/pub/local/jasmin/
+   http://www.ibr.cs.tu-bs.de/projects/jasmin/jax.html
+  
