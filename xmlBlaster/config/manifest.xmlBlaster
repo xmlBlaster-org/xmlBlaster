@@ -15,6 +15,7 @@ Class-Path: jacorb.jar idl.jar xmlrpc.jar junit.jar omquery.jar
  xpath/jaxen-core.jar xpath/jaxen-dom.jar 
  xpath/saxpath.jar 
  jdbc7.2dev-1.2.jar 
+ jmxtools.jar jmxri.jar 
 
 
 

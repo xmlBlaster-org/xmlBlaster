@@ -85,6 +85,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+
 /**
  * Global variables to avoid singleton.
  *
@@ -92,7 +95,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
  */
 public class Global implements Cloneable
 {
-   private static Global firstInstance = null;
+   private static Global firstInstance;
+   private JmxWrapper jmxWrapper;
 
    /** Version string, please change for new releases (4 digits) */
    private String versionDefault = "0.846";
@@ -292,6 +296,21 @@ public class Global implements Cloneable
          return version;
       return versionDefault;
    }
+
+
+   /**
+    * @return the JmxWrapper used to manage the MBean resources
+    */
+    public JmxWrapper getJmxWrapper() throws XmlBlasterException {
+      if (this.jmxWrapper == null) {
+         synchronized (this) {
+            if (this.jmxWrapper == null) {
+               this.jmxWrapper = new JmxWrapper(this);
+            }
+         }
+      }
+      return this.jmxWrapper;
+    }
 
    /**
     * See @build.timestamp@ which will be replaced by build.xml with the current timestamp
