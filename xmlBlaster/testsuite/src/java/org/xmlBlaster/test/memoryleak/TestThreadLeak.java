@@ -29,7 +29,7 @@ import java.io.BufferedReader;
  * 2. if Jacorb contains a locking bug.
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class TestThreadLeak extends TestCase implements I_Callback {
@@ -60,7 +60,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
    {
       String[] args = {
          "-protocol", 
-         "IOR",
+         "IOR", //"SOCKET",
          "-session.maxSessions",
          "20"
       };
@@ -118,7 +118,10 @@ public class TestThreadLeak extends TestCase implements I_Callback {
          } // end of for ()
          
          // Wait a while
-         Thread.sleep(2000);
+         System.gc();
+         Thread.sleep(1000);
+         System.gc();
+         Thread.sleep(1000);
          
          // Count threads, if more than maxThreadDiff has been created since
          // the first round: fail
