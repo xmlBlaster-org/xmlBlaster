@@ -38,10 +38,17 @@ namespace util {
          }
       }
 
+      const char *envName = "xmlBlaster/logging/configFileName";
       string configFileName = "log4cplus.properties";
-      PropMap::const_iterator pos = propMap.find("xmlBlaster/logging/configFileName");
+      PropMap::const_iterator pos = propMap.find(envName);
       if (pos != propMap.end()) {
          configFileName = (*pos).second;
+      }
+      else {
+         const char* envValue = getenv(envName);
+         if (envValue != 0) {
+            configFileName = envValue;
+         }
       }
       std::ifstream file;
       file.open(configFileName.c_str());
@@ -55,6 +62,8 @@ namespace util {
       }
       else {
          PropertyConfigurator::doConfigure(configFileName);
+         Logger logger = Logger::getInstance("client");
+         LOG4CPLUS_INFO(logger, "Configured log4cplus with configuration file xmlBlaster/logging/configFileName=" + configFileName);
       }
 
       //Logger logger = Logger::getInstance("client");
