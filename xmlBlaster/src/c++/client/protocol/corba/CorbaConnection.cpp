@@ -483,15 +483,14 @@ CorbaConnection::subscribe(const string &xmlKey, const string &qos)
       throw serverIdl::XmlBlasterException("communication.noConnection", 
                                           "client", me().c_str(), "en",
                                           txt.c_str(), "", "", "", "", "", "");
-   }
-   try {
-      CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
-      return static_cast<char *>(ret);
-   } 
-   catch(serverIdl::XmlBlasterException &e) {
-      throw e;
-   }
-   //return "";
+  }
+  try {
+     CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
+     return static_cast<const char *>(ret);
+  } catch(serverIdl::XmlBlasterException &e) {
+     throw e;
+  }
+  //return "";
 }
 
 

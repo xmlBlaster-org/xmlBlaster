@@ -14,7 +14,7 @@ using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-Dll_Export const long DEFAULT_numEntries = 1;
+const long DEFAULT_numEntries = 1;
 
 HistoryQos::HistoryQos(Global& global, long numOfEntries) 
    : ME("HistoryQos"), global_(global), log_(global.getLog("core"))

@@ -60,7 +60,7 @@ public:
     * Constructs an new object.
     * You need to call the init() method to parse the XML string.
     */
-     SaxHandlerBase(int args=0, const char * const argc[]=0);
+    // SaxHandlerBase(int args=0, const char * const argc[]=0);
    SaxHandlerBase(Global& global);
 
    

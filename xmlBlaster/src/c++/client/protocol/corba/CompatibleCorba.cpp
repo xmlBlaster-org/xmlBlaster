@@ -3,7 +3,7 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.1 2002/12/05 00:01:32 laghi Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.2 2003/01/24 01:29:05 johnson Exp $
 Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 #pragma warning(disable:4786)
@@ -49,3 +49,12 @@ const char* to_string(const CORBA::Exception &ex ) {
 }
 
 #endif //ORBIX
+
+#ifdef  TAO
+
+const char* to_string(const CORBA::Exception &ex) {
+   return "Not yet Implemented";
+}
+
+#endif  // TAO
+

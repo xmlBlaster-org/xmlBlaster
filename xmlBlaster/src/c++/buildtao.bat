@@ -11,7 +11,7 @@ if "%ACE_ROOT%" == "" goto noace
 
 if "%XMLCPP_HOME%" == "" goto noxml
 
-set LOCALCLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar;.\..\..\lib\ant\ant.jar;.\..\..\lib\ant\cpptasks.jar;.\..\..\lib\ant\ant-contrib.jar;.\..\..\lib\parser.jar;lib\jaxp-api .jar;.\..\..\lib\idl.jar;.\..\..\lib\jacorb.jar;.\..\..\lib\omquery.jar;.\..\..\lib\xtdash.jar;.\..\..\servlet.jar;.\..\..\lib\junit.jar;.\..\..\lib\xmlrpc.jar;.\..\..\lib\a2Blaster.jar;.\..\..\lib\jutils.jar;.\..\..\lib\mail.jar;.\..\..\lib\activation.jar;.\..\..\lib\batik\batik.jar;.\..\..\lib\batik\js.jar;.\..\..\lib\Xindice\xalan-2.0.1.jar;.\..\..\lib\Xindice\xmldb.jar;.\..\..\lib\Xindice\xindice.jar;.\..\..\lib\ant\xerces.jar;.\..\..\lib\concurrent.jar;.\..\..\lib\gnu-regexp.jar;.\..\..\lib\remotecons.jar
+set LOCALCLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar;.\..\..\lib\ant\ant.jar;.\..\..\lib\ant\cpptasks.jar;.\..\..\lib\ant\ant-contrib.jar;.\..\..\lib\parser.jar;lib\jaxp-api.jar;.\..\..\lib\idl.jar;.\..\..\lib\jacorb.jar;.\..\..\lib\omquery.jar;.\..\..\lib\xtdash.jar;.\..\..\servlet.jar;.\..\..\lib\junit.jar;.\..\..\lib\xmlrpc.jar;.\..\..\lib\a2Blaster.jar;.\..\..\lib\jutils.jar;.\..\..\lib\mail.jar;.\..\..\lib\activation.jar;.\..\..\lib\batik\batik.jar;.\..\..\lib\batik\js.jar;.\..\..\lib\Xindice\xalan-2.0.1.jar;.\..\..\lib\Xindice\xmldb.jar;.\..\..\lib\Xindice\xindice.jar;.\..\..\lib\ant\xerces.jar;.\..\..\lib\concurrent.jar;.\..\..\lib\gnu-regexp.jar;.\..\..\lib\remotecons.jar
 
 echo Building with classpath %LOCALCLASSPATH%
 

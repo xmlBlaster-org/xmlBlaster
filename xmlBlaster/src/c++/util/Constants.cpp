@@ -15,71 +15,71 @@ Comment:   Holding some constants, see Constants.h for a description
 namespace org { namespace xmlBlaster {
   namespace util { namespace Constants {
 
-Dll_Export const char * DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
-Dll_Export const char * DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
+const char * DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
+const char * DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
 
-Dll_Export long XMLBLASTER_OID_ROOT[] = { 1, 3, 6, 1, 4, 1, XMLBLASTER_SNMP }; // 11662
+long XMLBLASTER_OID_ROOT[] = { 1, 3, 6, 1, 4, 1, XMLBLASTER_SNMP }; // 11662
 
-Dll_Export const char * STATE_OK = "OK";
-Dll_Export const char * RET_OK = "<qos><state id='OK'/></qos>";
+const char * STATE_OK = "OK";
+const char * RET_OK = "<qos><state id='OK'/></qos>";
 
-Dll_Export const char * STATE_TIMEOUT = "TIMEOUT";
-Dll_Export const char * STATE_ERASED = "ERASED";
-Dll_Export const char * STATE_FORWARD_ERROR = "FORWARD_ERROR";
+const char * STATE_TIMEOUT = "TIMEOUT";
+const char * STATE_ERASED = "ERASED";
+const char * STATE_FORWARD_ERROR = "FORWARD_ERROR";
 
-Dll_Export const char * INFO_QUEUED = "QUEUED";
+const char * INFO_QUEUED = "QUEUED";
 
-Dll_Export const char * RELATING_CALLBACK   = "callback";
-Dll_Export const char * RELATING_SUBJECT    = "subject";
-Dll_Export const char * RELATING_UNRELATED  = "unrelated";
-Dll_Export const char * RELATING_CLIENT     = "client";
-Dll_Export const char * RELATING_HISTORY    = "history";
-Dll_Export const char * RELATING_MSGUNITSTORE="msgUnitStore";
-Dll_Export const char * RELATING_TOPICSTORE = "topicStore";
+const char * RELATING_CALLBACK   = "callback";
+const char * RELATING_SUBJECT    = "subject";
+const char * RELATING_UNRELATED  = "unrelated";
+const char * RELATING_CLIENT     = "client";
+const char * RELATING_HISTORY    = "history";
+const char * RELATING_MSGUNITSTORE="msgUnitStore";
+const char * RELATING_TOPICSTORE = "topicStore";
 
-Dll_Export const char * ONOVERFLOW_BLOCK = "block";
-Dll_Export const char * ONOVERFLOW_DEADLETTER = "deadLetter";
-Dll_Export const char * ONOVERFLOW_DISCARD = "discard";
-Dll_Export const char * ONOVERFLOW_DISCARDOLDEST = "discardOldest";
-Dll_Export const char * ONOVERFLOW_EXCEPTION = "exception";
-Dll_Export const char * ONOVERFLOW_DEADMESSAGE = "deadMessage";
-Dll_Export const char * ONEXHAUST_KILL_SESSION = "killSession";
+const char * ONOVERFLOW_BLOCK = "block";
+const char * ONOVERFLOW_DEADLETTER = "deadLetter";
+const char * ONOVERFLOW_DISCARD = "discard";
+const char * ONOVERFLOW_DISCARDOLDEST = "discardOldest";
+const char * ONOVERFLOW_EXCEPTION = "exception";
+const char * ONOVERFLOW_DEADMESSAGE = "deadMessage";
+const char * ONEXHAUST_KILL_SESSION = "killSession";
 
 /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
   * see Requirement engine.qos.subscribe.id
   */
-Dll_Export const char* SUBSCRIPTIONID_CLIENT_PREFIX    = "__subId:/node/";
-Dll_Export const char* INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
-Dll_Export const char* INTERNAL_OID_ADMIN_CMD          = "__cmd:";
-Dll_Export const char* INTERNAL_OID_PREFIX_FOR_CORE    = "__";
-Dll_Export const char* INTERNAL_OID_PREFIX             = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
-Dll_Export const char* INTERNAL_OID_CLUSTER_PREFIX     = "__sys__cluster";  // "__sys__cluster"
+const char* SUBSCRIPTIONID_CLIENT_PREFIX    = "__subId:/node/";
+const char* INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
+const char* INTERNAL_OID_ADMIN_CMD          = "__cmd:";
+const char* INTERNAL_OID_PREFIX_FOR_CORE    = "__";
+const char* INTERNAL_OID_PREFIX             = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
+const char* INTERNAL_OID_CLUSTER_PREFIX     = "__sys__cluster";  // "__sys__cluster"
 
-Dll_Export const char * JDBC_OID = "__sys__jdbc";
+const char * JDBC_OID = "__sys__jdbc";
 
-Dll_Export const char * OID_DEAD_LETTER = "__sys__deadLetter";
+const char * OID_DEAD_LETTER = "__sys__deadLetter";
 
-Dll_Export const char * XPATH = "XPATH";
-Dll_Export const char * EXACT = "EXACT";
+const char * XPATH = "XPATH";
+const char * EXACT = "EXACT";
 //const char * const Constants::DOMAIN = "DOMAIN"; // doesn't compile with g++ 3.1.1
-Dll_Export const char * D_O_M_A_I_N = "DOMAIN"; // doesn't compile with g++ 3.1.1
-Dll_Export const char * REGEX       = "REGEX";
+const char * D_O_M_A_I_N = "DOMAIN"; // doesn't compile with g++ 3.1.1
+const char * REGEX       = "REGEX";
 
-Dll_Export const char * IOR     = "IOR";
-Dll_Export const char * EMAIL   = "EMAIL";
-Dll_Export const char * XML_RPC = "XML-RPC";
+const char * IOR     = "IOR";
+const char * EMAIL   = "EMAIL";
+const char * XML_RPC = "XML-RPC";
 
-Dll_Export const char * OFFSET  = "   ";
-Dll_Export const char * INDENT  = "   ";
+const char * OFFSET  = "   ";
+const char * INDENT  = "   ";
 
-Dll_Export const Timestamp THOUSAND = 1000;
-Dll_Export const Timestamp MILLION  = 1000 * THOUSAND;
-Dll_Export const Timestamp BILLION  = 1000 * MILLION;
+const Timestamp THOUSAND = 1000;
+const Timestamp MILLION  = 1000 * THOUSAND;
+const Timestamp BILLION  = 1000 * MILLION;
 
 /** Prefix to create a sessionId */
-Dll_Export const char* SESSIONID_PREFIX = "sessionId:";
-Dll_Export const char* SUBSCRIPTIONID_PREFIX = "__subId:";
-Dll_Export const char* const SUBSCRIPTIONID_PtP = "__subId:PtP";
+const char* SESSIONID_PREFIX = "sessionId:";
+const char* SUBSCRIPTIONID_PREFIX = "__subId:";
+const char* const SUBSCRIPTIONID_PtP = "__subId:PtP";
 
 /*
 const int getPriority(string prio, int defaultPriority)

@@ -16,8 +16,10 @@ Comment:   Allows you be called back after a given delay.
 #include <util/Constants.h>
 #include <util/Global.h>
 
+using namespace std;
 using namespace boost;
 
+/*
 #if defined(_WINDOWS)   
    ostream& operator <<(ostream& target, const __int64& x)
    {
@@ -27,7 +29,7 @@ using namespace boost;
 
    }
 #endif
-
+*/
 namespace org { namespace xmlBlaster { namespace util {
 
 

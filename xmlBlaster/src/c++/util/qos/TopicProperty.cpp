@@ -44,9 +44,9 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
  * Every message can set the destroyDelay value between 1 and destroyDelay_DEFAULT,
  * -1L sets the life cycle on forever.
  */ // TODO: Change to use glob instead of Global singleton! What about performance? Put variable into Global?
-Dll_Export const long destroyDelay_DEFAULT_DEFAULT = 60*1000L;
+const long destroyDelay_DEFAULT_DEFAULT = 60*1000L;
 /** Is readonly allows only one initial message */
-Dll_Export const bool DEFAULT_readonly = false;
+const bool DEFAULT_readonly = false;
 
 
    void TopicProperty::copy(const TopicProperty& prop)

@@ -26,6 +26,9 @@
   <property name="lib.dir"      value="${build.dir}"/>
   <property name="debug"        value="true"/>
 
+  <property name="THREAD_SRC" value="${src.cpp.dir}/libs/thread/src"/> <!-- use the internal boost library -->
+  <property name="THREAD_INC" value="${src.cpp.dir}"/> <!-- use the internal boost library -->
+
   <!-- XML lib -->
   <property name="xerces.home" value="${xmlcpp.home}" />
 
@@ -87,12 +90,27 @@
       <fileset dir="${src.cpp.dir}/generated" includes="*C.cpp"/>
       <fileset dir="${src.cpp.dir}/generated" includes="*S.cpp"/>
       <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/thread" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/key" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/qos" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/qos/storage" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/qos/address" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/queue" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/dispatch" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/util/cluster" includes="*.cpp" />
       <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/client/protocol" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/client/qos" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/client/key" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/client/protocol/corba" includes="*.cpp" />
+      <fileset dir="${src.cpp.dir}/authentication" includes="*.cpp" />
+      <fileset dir="${THREAD_SRC}" includes="*.cpp"/>
                  
       <sysincludepath location="${corba.home}/orbsvcs" />          
       <sysincludepath location="${xerces.home}/src"/>            <!-- xerces win32 -->
       <sysincludepath location="${xerces.home}/include" />       <!-- xerces 1.6.0 -->
       <sysincludepath location="${xerces.home}/src/xercesc" />   <!-- Since xerces 1.7.0 that I have -->                  
+      <sysincludepath location="${THREAD_INC}" />
 
       <includepath location="${ms.path}/include" />   
       <includepath location="${ms.path}/mfc/include" />   

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.10 2003/01/17 13:07:21 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.11 2003/01/24 01:29:06 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -24,28 +24,28 @@ using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-Dll_Export const long DEFAULT_maxMsgDefault = 1000L;
-Dll_Export const long DEFAULT_maxMsgCacheDefault = 1000L;
-Dll_Export const long DEFAULT_bytesDefault = 10485760L; // 10 MB
-Dll_Export const long DEFAULT_bytesCacheDefault = 2097152L; // 2 MB
+const long DEFAULT_maxMsgDefault = 1000L;
+const long DEFAULT_maxMsgCacheDefault = 1000L;
+const long DEFAULT_bytesDefault = 10485760L; // 10 MB
+const long DEFAULT_bytesCacheDefault = 2097152L; // 2 MB
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
-Dll_Export const double DEFAULT_storeSwapLevelRatio = 0.70;
+const double DEFAULT_storeSwapLevelRatio = 0.70;
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
-Dll_Export const double DEFAULT_storeSwapBytesRatio = 0.25;
+const double DEFAULT_storeSwapBytesRatio = 0.25;
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
-Dll_Export const double DEFAULT_reloadSwapLevelRatio = 0.30;
+const double DEFAULT_reloadSwapLevelRatio = 0.30;
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
-Dll_Export const double DEFAULT_reloadSwapBytesRatio = 0.25;
-Dll_Export const Timestamp DEFAULT_minExpires = 1000;
-Dll_Export const Timestamp DEFAULT_maxExpires = 0;
-Dll_Export const string DEFAULT_onOverflow = Constants::ONOVERFLOW_DEADMESSAGE;
-Dll_Export const string DEFAULT_onFailure = Constants::ONOVERFLOW_DEADMESSAGE;
+const double DEFAULT_reloadSwapBytesRatio = 0.25;
+const Timestamp DEFAULT_minExpires = 1000;
+const Timestamp DEFAULT_maxExpires = 0;
+const string DEFAULT_onOverflow = Constants::ONOVERFLOW_DEADMESSAGE;
+const string DEFAULT_onFailure = Constants::ONOVERFLOW_DEADMESSAGE;
 
 // static variables
-Dll_Export string DEFAULT_type = "CACHE";
-Dll_Export string DEFAULT_version = "1.0";
+string DEFAULT_type = "CACHE";
+string DEFAULT_version = "1.0";
 /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
-Dll_Export long DEFAULT_expires;
+long DEFAULT_expires;
 
 
 /**

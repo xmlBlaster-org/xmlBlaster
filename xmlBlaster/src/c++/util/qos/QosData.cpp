@@ -42,11 +42,11 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
                                           
-Dll_Export const bool DEFAULT_isSubscribeable = true;
-Dll_Export const bool DEFAULT_isVolatile   = false;
-Dll_Export const bool DEFAULT_persistent   = false;
-Dll_Export const bool DEFAULT_forceUpdate  = true;
-Dll_Export const bool DEFAULT_forceDestroy = false;
+const bool DEFAULT_isSubscribeable = true;
+const bool DEFAULT_isVolatile   = false;
+const bool DEFAULT_persistent   = false;
+const bool DEFAULT_forceUpdate  = true;
+const bool DEFAULT_forceDestroy = false;
 
 void QosData::init()
 {

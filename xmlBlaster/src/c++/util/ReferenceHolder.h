@@ -3,13 +3,13 @@ Name:      ReferenceHolder.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Entry Holder to use with stl containers as containers of references
-Version:   $Id: ReferenceHolder.h,v 1.7 2003/01/07 20:41:36 laghi Exp $
+Version:   $Id: ReferenceHolder.h,v 1.8 2003/01/24 01:29:05 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCEHOLDER_H
 #define _UTIL_REFERENCEHOLDER_H
 
-using namespace std;
+//using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util {
 

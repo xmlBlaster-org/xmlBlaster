@@ -18,6 +18,6 @@
 #define BOOST_THREADMON_API __declspec(dllimport)
 #endif
 
-extern "C" BOOST_THREADMON_API int on_thread_exit(void (__cdecl * func)(void));
+int on_thread_exit(void (__cdecl * func)(void));
 
 #endif // BOOST_HAS_WINTHREADS

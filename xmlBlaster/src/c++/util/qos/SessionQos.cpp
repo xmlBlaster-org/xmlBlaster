@@ -36,7 +36,11 @@ SessionQosData::SessionQosData(Global& global, const string& absoluteName)
 void SessionQosData::initialize(const string& absoluteName, const string& defaultUserName, long publicSessionId)
 {
    pubSessionId_ = publicSessionId;
+#if defined (_WINDOWS)
+   timeout_ = global_.getProperty().getTimestampProperty("session.timeout", 86400000);
+#else
    timeout_ = global_.getProperty().getTimestampProperty("session.timeout", 86400000ll);
+#endif
    maxSessions_ = global_.getProperty().getIntProperty("session.maxSessions", 10);
    clearSessions_ = global_.getProperty().getBoolProperty("session.clearSessions", false);
    sessionId_ = global_.getProperty().getStringProperty("session.sessionId", "");

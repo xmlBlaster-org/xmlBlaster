@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.4 2003/01/18 17:14:39 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.5 2003/01/24 01:29:06 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -24,18 +24,18 @@ using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
-Dll_Export const int    DEFAULT_port               = 3412;
-Dll_Export const string DEFAULT_type               = "IOR";
-Dll_Export const string DEFAULT_version            = "1.0";
-Dll_Export const long   DEFAULT_collectTime        = 0;
-Dll_Export const long   DEFAULT_collectTimeOneway  = 0;
-Dll_Export const bool   DEFAULT_oneway             = false;
-Dll_Export const string DEFAULT_compressType       = "";
-Dll_Export const long   DEFAULT_minSize            = 0L;
-Dll_Export const bool   DEFAULT_ptpAllowed         = true;
-Dll_Export const string DEFAULT_sessionId          = "unknown";
-Dll_Export const bool   DEFAULT_useForSubjectQueue = true;
-Dll_Export       string DEFAULT_dispatchPlugin     = "";
+const int    DEFAULT_port               = 3412;
+const string DEFAULT_type               = "IOR";
+const string DEFAULT_version            = "1.0";
+const long   DEFAULT_collectTime        = 0;
+const long   DEFAULT_collectTimeOneway  = 0;
+const bool   DEFAULT_oneway             = false;
+const string DEFAULT_compressType       = "";
+const long   DEFAULT_minSize            = 0L;
+const bool   DEFAULT_ptpAllowed         = true;
+const string DEFAULT_sessionId          = "unknown";
+const bool   DEFAULT_useForSubjectQueue = true;
+      string DEFAULT_dispatchPlugin     = "";
 
 
 AddressBase::AddressBase(Global& global, const string& rootTag)
