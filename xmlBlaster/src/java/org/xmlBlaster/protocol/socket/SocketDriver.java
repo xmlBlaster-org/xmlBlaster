@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.42 2004/09/16 19:43:02 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.43 2004/09/17 10:42:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -57,6 +57,8 @@ import java.io.InputStream;
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.protocol.socket.SocketDriver#usage()}
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ * @author <a href="mailto:bpoka@axelero.hu">Balázs Póka</a> (SSL embedding, zlib compression)
+ *
  * @see org.xmlBlaster.protocol.socket.Parser
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
@@ -95,6 +97,9 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    private AddressServer addressServer;
 
    private PluginInfo pluginInfo;
+
+   private boolean startUdpListener = true;
+
    /**
     * Setting by plugin configuration, see xmlBlasterPlugins.xml, for example
     * <br />
@@ -145,7 +150,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
                         "Your -" + getEnvPrefix() + "threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
             }
 
-            log.info(ME, "Started successfully " + getType() + " driver on '" + socketUrl.getUrl() + "'");
+            log.info(ME, "Started successfully " + getType() + " UDP driver on '" + socketUrl.getUrl() + "'");
 
             byte packetBuffer[] = new byte[MAX_PACKET_SIZE];
             DatagramPacket packet = new DatagramPacket(packetBuffer, packetBuffer.length);
@@ -241,6 +246,13 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    }
 
    /**
+    * Switch on/off UDP socket listener
+    */
+   public boolean startUdpListener() {
+      return this.startUdpListener;
+   }
+
+   /**
     * Configuration option to use UDP for updateOneway() calls.
     * <br />
     * Typically a setting from the plugin configuration, see xmlBlasterPlugins.xml, for example
@@ -275,9 +287,10 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          init(glob, new AddressServer(glob, getType(), glob.getId(), pluginInfo.getParameters()), this.authenticate, xmlBlasterImpl);
 
          this.useUdpForOneway = this.addressServer.getEnv("useUdpForOneway", this.useUdpForOneway).getValue();
+         this.startUdpListener = this.addressServer.getEnv("startUdpListener", this.startUdpListener).getValue();
 
          // Now we have logging ...
-         if (log.TRACE) log.trace(ME, "Using pluginInfo=" + this.pluginInfo.toString() + ", useUdpForOneway=" + this.useUdpForOneway);
+         if (log.TRACE) log.trace(ME, "Using pluginInfo=" + this.pluginInfo.toString() + ", startUdpListener=" + this.startUdpListener + ", useUdpForOneway=" + this.useUdpForOneway);
 
          activate();
       }
@@ -349,11 +362,13 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    public synchronized void activate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering activate");
 
-      listenerUDP = new Thread(new UDPListener());
-      listenerUDP.setName("XmlBlaster."+getType()+".udpListener");
-      listenerUDP.start();
-      while (!listenerReadyUDP) {
-         try { Thread.sleep(10); } catch( InterruptedException i) {}
+      if (startUdpListener()) {
+         listenerUDP = new Thread(new UDPListener());
+         listenerUDP.setName("XmlBlaster."+getType()+".udpListener");
+         listenerUDP.start();
+         while (!listenerReadyUDP) {
+            try { Thread.sleep(10); } catch( InterruptedException i) {}
+         }
       }
 
       start(); // Start the listen thread
@@ -475,7 +490,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
              listen = new ServerSocket(this.socketUrl.getPort(), backlog, this.socketUrl.getInetAddress());
          }
          
-         log.info(ME, "Started successfully socket driver on '" + this.socketUrl.getUrl() + "'");
+         log.info(ME, "Started successfully " + getType() + " driver on '" + this.socketUrl.getUrl() + "'");
          listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
@@ -555,6 +570,8 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       text += "   -"+getEnvPrefix()+"hostname\n";
       text += "                       Specify a hostname where the SOCKET server runs.\n";
       text += "                       Default is the localhost.\n";
+      text += "   -"+getEnvPrefix()+"startUdpListener\n";
+      text += "                       Start a UDP datagram listener socket [true].\n";
       text += "   -"+getEnvPrefix()+"useUdpForOneway\n";
       text += "                       Use UDP instead of TCP for updateOneway() calls [false].\n";
       text += "   -"+getEnvPrefix()+"SoTimeout\n";
