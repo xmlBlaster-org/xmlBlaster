@@ -20,6 +20,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 
@@ -42,11 +43,18 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * java javaclients.HelloWorldSubscribe -interactive false -oid Hello -initialUpdate true -unSubscribe true
  *
  * java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -passwd secret -initialUpdate true -dump[HelloWorldSubscribe] true
+ *
+ * java javaclients.HelloWorldSubscribe -xpath //key -filter.type GnuRegexFilter -filter.query "^__sys__jdbc.*"
+ *
+ * java javaclients.HelloWorldSubscribe -xpath //key -filter.type XPathFilter -filter.query "//tomato"
+ *
+ * java javaclients.HelloWorldSubscribe -xpath //key -filter.type ContentLenFilter -filter.query "10"
  * </pre>
  * <p>
  * If unSubscribe=false the message is not unsubscribed at the end, if disconnect=false we don't logout at the end.
  * </p>
  * @see java javaclients.HelloWorldPublish
+ * @see java javaclients.HelloWorldGet
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorldSubscribe implements I_Callback
@@ -66,8 +74,11 @@ public class HelloWorldSubscribe implements I_Callback
          boolean multiSubscribe = glob.getProperty().get("multiSubscribe", true);
          boolean local = glob.getProperty().get("local", true);
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
-         int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
          boolean content = glob.getProperty().get("content", true);
+         int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
+         String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
+         String filterVersion = glob.getProperty().get("filter.version", "1.0");
+         String filterQuery = glob.getProperty().get("filter.query", "");
          boolean unSubscribe = glob.getProperty().get("unSubscribe", true);
          boolean disconnect = glob.getProperty().get("disconnect", true);
 
@@ -95,8 +106,11 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -content           " + content);
          log.info(ME, "   -unSubscribe       " + unSubscribe);
          log.info(ME, "   -disconnect        " + disconnect);
+         log.info(ME, "   -filter.type       " + filterType);
+         log.info(ME, "   -filter.version    " + filterVersion);
+         log.info(ME, "   -filter.query      " + filterQuery);
          log.info(ME, "For more info please read:");
-         log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
+         log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
 
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
@@ -106,11 +120,6 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
-
-         if (interactive) {
-            log.info(ME, "Hit a key to subscribe '" + ((oid.length() > 0) ? oid : xpath) + "'");
-            try { System.in.read(); } catch(java.io.IOException e) {}
-         }
 
          SubscribeKey sk = (oid.length() > 0) ? new SubscribeKey(glob, oid) : new SubscribeKey(glob, xpath, Constants.XPATH);
          SubscribeQos sq = new SubscribeQos(glob);
@@ -122,6 +131,19 @@ public class HelloWorldSubscribe implements I_Callback
          HistoryQos historyQos = new HistoryQos(glob);
          historyQos.setNumEntries(historyNumUpdates);
          sq.setHistoryQos(historyQos);
+
+         if (filterQuery.length() > 0) {
+            AccessFilterQos filter = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
+            sq.addAccessFilter(filter);
+         }
+
+         log.info(ME, "SubscribeKey=\n" + sk.toXml());
+         log.info(ME, "SubscribeQos=\n" + sq.toXml());
+
+         if (interactive) {
+            log.info(ME, "Hit a key to subscribe '" + ((oid.length() > 0) ? oid : xpath) + "'");
+            try { System.in.read(); } catch(java.io.IOException e) {}
+         }
 
          SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
 
@@ -145,8 +167,10 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "Hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
 
-         DisconnectQos dq = new DisconnectQos(glob);
-         con.disconnect(dq);
+         if (disconnect) {
+            DisconnectQos dq = new DisconnectQos(glob);
+            con.disconnect(dq);
+         }
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());
