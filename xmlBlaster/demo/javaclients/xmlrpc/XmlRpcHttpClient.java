@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.2 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.3 2000/10/11 21:51:11 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy;
@@ -115,12 +116,27 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
 
    /**
     * Only for testing purposes.
+    * <pre>
+    * java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml -trace true
+    * </pre>
     */
    public static void main (String args[])
    {
+      final String ME = "XmlRpcHttpClient";
+      boolean showUsage = false;
+
+      try {
+         showUsage = XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         usage();
+         Log.panic(ME, e.toString());
+      }
+
       try {
 
          XmlRpcHttpClient client = new XmlRpcHttpClient("http://localhost:8080", 8081);
+
+         Log.info(ME, "Connected to xmlBlaster using XML-RPC");
 
          // reads from the standard input stream. Ignores the lines until the
          // first comment line containing the word COMMAND
@@ -130,6 +146,7 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
 
          String cmd = "";
          boolean hasStarted = false;
+         Log.info(ME, "Processing data from stdin ...");
          while ( (line = reader.readLine()) != null) {
             if (line.indexOf("COMMAND") == -1) {
                if (hasStarted) cmd += line + "\n";
@@ -148,12 +165,13 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
 
          // and here come the methods to invoke if you want to use the xml-rpc
          // protocol transparently ...
+         Log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterProxy");
 
          String qos = "<qos><callback type='XML-RPC'>http://localhost:8081</callback></qos>";
          String sessionId = "Session1";
 
          String loginAnswer = client.login("LunaMia", "silence", qos, sessionId);
-         System.err.println("The answer from the login is: " + loginAnswer);
+         Log.info(ME, "Login successful, the answer from the login is: " + loginAnswer);
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
@@ -188,6 +206,19 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
 
    }
 
+   /**
+    * Command line usage.
+    */
+   private static void usage()
+   {
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "java -Dsax.driver=com.sun.xml.parser.Parser javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "   -h                  Show the complete usage.");
+      Log.usage();
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "");
+   }
 }
 
 
