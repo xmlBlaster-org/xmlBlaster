@@ -8,6 +8,10 @@ The source code is compiled to a shared library
 
 (the extension is .so on Linux, .sl on HPUX, .dll on Windows)
 
+NOTE:
+  The Makefiles are only tested on Linux!
+  You need to edit Makefile.def on other platforms.
+
 
 HOW TO BUILD THE CLIENT CLASSES:
 
