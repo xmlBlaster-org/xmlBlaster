@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.27 2000/05/16 20:57:35 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.28 2000/06/03 13:28:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -97,8 +97,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    /**
     * Construct the xmlBlaster GUI.
     */
-   public MainGUI(String[] args)
+   public MainGUI(String[] args, org.xmlBlaster.Main main)
    {
+      this.xmlBlasterMain = main;
+
       // set the application icon
       java.net.URL      oUrl;
       oUrl = this.getClass().getResource("AppIcon.gif");
@@ -130,7 +132,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    public void run()
    {
       show();
-      this.xmlBlasterMain = new org.xmlBlaster.Main(args, this);
+      if (this.xmlBlasterMain == null)
+         this.xmlBlasterMain = new org.xmlBlaster.Main(args, this);
    }
 
 
@@ -142,6 +145,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    public void log(String str)
    {
+      if (logOutput == null) {
+         System.err.println(str + "\n");
+         return;
+      }
       if (numLogLines > MAX_LOG_LINES) {
          String text = logOutput.getText();
          text = text.substring(text.length()/2, text.length());
@@ -494,7 +501,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       error.addItemListener(new LogLevelListener());
       container.add(error);
 
-      Checkbox warning = new Checkbox("WARNING", null, true);
+      Checkbox warning = new Checkbox("WARN", null, true);
       warning.addItemListener(new LogLevelListener());
       container.add(warning);
 
@@ -546,7 +553,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    static public void main(String[] args)
    {
-      Main.controlPanel = new MainGUI(args);
+      Main.controlPanel = new MainGUI(args, null);
       Main.controlPanel.run();
    }
 

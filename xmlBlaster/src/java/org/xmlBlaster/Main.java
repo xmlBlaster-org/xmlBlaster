@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.35 2000/05/31 20:47:29 ruff Exp $
+Version:   $Id: Main.java,v 1.36 2000/06/03 13:28:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -279,7 +279,7 @@ public class Main
             if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
                   Log.info(ME, "Invoking control panel GUI ...");
-                  controlPanel = new MainGUI(new String[0]); // the constructor sets the variable controlPanel
+                  controlPanel = new MainGUI(new String[0], this); // the constructor sets the variable controlPanel
                   controlPanel.run();
                }
                else
