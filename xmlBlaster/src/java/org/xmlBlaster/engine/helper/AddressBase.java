@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.2 2002/04/21 10:35:53 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.3 2002/04/22 06:17:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -303,7 +303,7 @@ public abstract class AddressBase
     */
    public final void startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs)
    {
-      Log.info(ME, "startElement(rootTag=" + rootTag + "): name=" + name + " character='" + character.toString() + "'");
+      // Log.info(ME, "startElement(rootTag=" + rootTag + "): name=" + name + " character='" + character.toString() + "'");
 
       String tmp = character.toString().trim(); // The address
       if (tmp.length() > 0) {
