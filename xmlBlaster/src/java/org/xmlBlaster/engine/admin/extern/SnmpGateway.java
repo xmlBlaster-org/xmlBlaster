@@ -46,7 +46,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       this.ME = "SnmpGateway-" + this.glob.getId();
       this.manager = commandManager;
       initSubagent();
-      log.info(ME, "Started SNMP gateway for administration, try 'snmpget -v 1 -c public " + glob.getLocalIP() + " 1.3.6.1.4.1.11662.1.2.1.3' to access it.");
+      log.trace(ME, "Started SNMP gateway for administration, try 'snmpget -v 1 -c public " + glob.getLocalIP() + " 1.3.6.1.4.1.11662.1.2.1.3' to access it.");
       return true;
    }
 
