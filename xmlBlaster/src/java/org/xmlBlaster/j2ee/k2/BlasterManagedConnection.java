@@ -41,7 +41,7 @@ import javax.resource.spi.SecurityException;
 import javax.resource.spi.IllegalStateException;
 import javax.resource.spi.ConnectionEvent;
 
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -83,7 +83,8 @@ public class BlasterManagedConnection implements ManagedConnection {
    boolean isDestroyed = false;
    boolean closed = false;
    String me = null;
-    Vector listeners = new Vector();
+   Vector listeners = new Vector();
+   Global clonedGlob = null;
    /** Holds all current  BlasterConnectionImpl handles. */
    private Set handles = Collections.synchronizedSet(new HashSet());
    
@@ -130,9 +131,11 @@ public class BlasterManagedConnection implements ManagedConnection {
             
         // Set up physical pipe
             // physicalPipe = new I_XmlBlasterAccess(orbEnv);
-            physicalPipe = mcf.getConfig().getXmlBlasterAccess();
-            System.out.println("Physical pipe: " + physicalPipe + " set up");
-            doLogin();
+        // From XmlBlasterAccess: You must use a cloned Global for each XmlBlasterAccess created.
+        clonedGlob = mcf.getConfig().getClone(null);
+        physicalPipe = clonedGlob.getXmlBlasterAccess();
+        System.out.println("Physical pipe: " + physicalPipe + " set up");
+        doLogin();
     }
 
    public String toString() {
@@ -369,11 +372,15 @@ public class BlasterManagedConnection implements ManagedConnection {
         return mcf;
     }
 
+   Global getGlobal() {
+      return clonedGlob;
+   }
+
     // --- internal helper methods ----
 
    private void doLogin() throws CommException {
       try {
-         ConnectQos qos = new ConnectQos(mcf.getConfig(), user,pwd); 
+         ConnectQos qos = new ConnectQos(clonedGlob, user,pwd); 
          qos.setPtpAllowed(false);
          
          System.out.println("Physical pipe: " + physicalPipe+"/CQos:"+qos);

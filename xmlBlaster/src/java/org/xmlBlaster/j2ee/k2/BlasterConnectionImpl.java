@@ -21,6 +21,7 @@ import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 
@@ -46,6 +47,14 @@ public class BlasterConnectionImpl implements BlasterConnection {
     //---- BlasterConnection---
     // Howto do with exceptions, is all exceptions a comm execption in these
     // methods, I think so
+   /**
+    * Get Global from connection
+    */
+   public Global getGlobal() throws XmlBlasterException {
+      checkSanity();
+      return mc.getGlobal();
+      
+   }
 
     /**
      * Fetch a message from server

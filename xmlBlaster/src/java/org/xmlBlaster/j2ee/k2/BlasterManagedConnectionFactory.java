@@ -28,6 +28,8 @@ import javax.security.auth.Subject;
 import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.jutils.init.Property;
 import org.jutils.init.Property.FileInfo;
 import org.jutils.JUtilsException;
@@ -45,23 +47,28 @@ import javax.resource.spi.security.PasswordCredential;
  * Factory for a specific XmlBlaster instance. 
  *
  * <p>Set the configuration up in ra.xml. <b>OBS</b> At least in JBoss this is not possible, you have to configure all properties in the *-service.xml file.</p>
- *
+ * <p>if the protocol used is IOR, a jacorb.properties file will be loaded through the context classloader if found. This is beacuse jacorb tries to load the file from the system classloader, and its not available there when embedding xmlBlaster in JBoss.</p>
  * @author Peter Antman
  */
 
 public class BlasterManagedConnectionFactory implements ManagedConnectionFactory {
    // Id from my global instance.
    public String myName ="Blaster";
-   private final Global glob;
+   private Global glob;
 
-   private String propFile = null;
+   private String propFile = "xmlBlaster.properties";
    private PrintWriter logWriter = null;
 
    private BlasterLogger logger;
     
    public BlasterManagedConnectionFactory() throws ResourceException{
-      Global g = Global.instance(); // TODO: Pass arguments or glob handle from outside
-      this.glob = g.getClone(null);
+      glob = new Global(new String[]{},false,false);
+      try {
+         glob.getProperty().set("classLoaderFactory","org.xmlBlaster.util.classloader.ContextClassLoaderFactory");
+      } catch (JUtilsException e) {
+         throw new ResourceException("Could not set ContextClassLoader factory property " + e);
+      } // end of try-catch
+
       this.myName = this.myName + "[" + glob.getId() + "]";
       // Start logger, will be turned of by default
       logger = new BlasterLogger(glob);
@@ -437,7 +444,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    /**
     * Set the name of a propertyfile to read settings from.
     *
-    * <p>if this option is set, all properties psecifyed in it will <i>overwrite</i> any properties sett on this ra, since the file will be loaded last.</p>
+    * <p>if this option is set, all properties specifyed in it will <i>overwrite</i> any properties sett on this ra, since the file will be loaded last.</p>
     * <p>The context classloader will be searched first, then normal XmlBlaster search algoritm will be used.
     */
    public void setPropertyFileName(String fileName) {
@@ -465,7 +472,22 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
 
 
    private void loadPropertyFile() throws IllegalStateException{
-      //Only of not null
+
+      if ( "IOR".equals(glob.getProperty().get("client.protocol", "IOR")) ) {
+         //Start by loading jacorb.properties, without it corba protocol does
+         // not work well.
+         try {
+            JacorbUtil.loadJacorbProperties("jacorb.properties",glob);
+         } catch (XmlBlasterException e) {
+            IllegalStateException x = new IllegalStateException("Could not load jacorn properties, needed for IOR protocol to work: "+e);
+            x.setLinkedException(e);
+            throw x;
+         } // end of try-catch
+
+      } // end of if ()
+
+
+      //Only if not null
       if (propFile== null ) 
          return;
       try {
@@ -484,18 +506,31 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
             prop.load(is);
             String[] args = Property.propsToArgs(prop);
             p.addArgs2Props( args != null ? args : new String[0] ); 
+
+            // To really be able to effect XmlBlaster we must create a new 
+            // Global
+            glob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false , false );
+            
+            logger = new BlasterLogger(glob);
+            logger.setLogWriter(logWriter);
+
          } // end of if ()
          
       } catch (IOException e) {
-         IllegalStateException x = x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
+         IllegalStateException x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
          x.setLinkedException(e);
          throw x;
          
       } catch (JUtilsException e) {
-         IllegalStateException x = x = new IllegalStateException("Could not load properties into Property: " + e);
+         IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
          x.setLinkedException(e);
          throw x;
-      } // end of try-catch
+      } catch ( ResourceException e) {
+         IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
+         x.setLinkedException(e);
+         throw x;
+      } // end of catch
+      
       
    }
 
