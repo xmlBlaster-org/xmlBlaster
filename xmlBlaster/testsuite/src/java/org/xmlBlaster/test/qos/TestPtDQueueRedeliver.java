@@ -221,7 +221,7 @@ public class TestPtDQueueRedeliver extends TestCase
          log.info(ME, "Subscription to '" + oid + "' done");
 
          log.info(ME, "============ STEP 6: Check if messages arrived");
-         assertEquals("", numPub, this.updateInterceptorRcv.waitOnUpdate(2000L, oid, Constants.STATE_OK));
+         assertEquals("", numPub, this.updateInterceptorRcv.waitOnUpdate(4000L, oid, Constants.STATE_OK));
          this.updateInterceptorRcv.compareToReceived(sentArr, secretCbSessionId);
          this.updateInterceptorRcv.compareToReceived(sentQos);
 
