@@ -109,7 +109,8 @@ There are two property files which you need to copy.
       There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
       to use as a base.
       This file is needed only if you use the CORBA plugin.
-      A default setting is included in xmlBlaster.jar
+      A default setting is included in xmlBlaster.jar which you should remove
+      before you play with the %HOME%/jacorb.properties settings.
 
 
 +----------------------------+
@@ -127,6 +128,9 @@ with xmlBlaster and one to two days if you decide
 to use Oracle.
 
 The details are described in
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
   xmlBlaster/src/java/org/xmlBlaster/util/queue/jdbc/README
 
 
@@ -229,7 +233,7 @@ instructions.
 
 4. Variant using a naming service and corbaloc to find it.
 
-   Edit $HOME/jacorb.properties and set
+   Edit $HOME/jacorb.properties and set (delete jacorb.properties in xmlBlaster.jar first):
 
      ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
      
@@ -373,10 +377,17 @@ You may also use the provided test clients to study the usage of xmlBlaster.
 
 
 
+                            Perl - XmlRpc client
+-------------------------------------------------------------------------
+See xmlBlaster/demo/perl/xmlrpc/README
+-------------------------------------------------------------------------
+
+
                             Perl - Corba client
 -------------------------------------------------------------------------
 Perl clients with COPE 0.50_51 (http://www.lunatech.com/research/corba/cope/)
 You need MICO first (CORBA access)
+-> CORBA is much more complicated, probably you should prefer XmlRpc
 -------------------------------------------------------------------------
 
 
