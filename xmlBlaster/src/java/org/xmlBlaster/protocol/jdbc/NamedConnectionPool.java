@@ -3,8 +3,6 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.13 2002/05/11 09:36:32 ruff Exp $
-           $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
@@ -12,7 +10,7 @@ package org.xmlBlaster.protocol.jdbc;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.jutils.JUtilsException;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.I_Timeout;
@@ -79,7 +77,8 @@ import java.sql.DriverManager;
 public class NamedConnectionPool
 {
    private static final String ME = "NamedConnectionPool";
-   private Global glob;
+   private final Global glob;
+   private final LogChannel log;
    private Hashtable namedPools = new Hashtable();
 
    private final Object meetingPoint = new Object();
@@ -87,6 +86,7 @@ public class NamedConnectionPool
    NamedConnectionPool(Global glob)
    {
       this.glob = glob;
+      this.log = glob.getLog("jdbc");
    }
 
 
@@ -132,11 +132,14 @@ public class NamedConnectionPool
       }
       try {
          Connection con = pool.reserve();
-         if (Log.TRACE) Log.trace(ME, "reserve(" + dbUrl + ", " + dbUser + ") con=" + con);
+         if (log.TRACE) log.trace(ME, "reserve(" + dbUrl + ", " + dbUser + ") con=" + con);
          return con;
       }
-      catch(Exception e) {
-         Log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
+      catch(XmlBlasterException e) {
+         throw e;
+      }
+      catch(Throwable e) {
+         log.error(ME, "Unexpected exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
          throw new XmlBlasterException(ME+".NoOpen", "Couldn't open database connection: " + e.toString());
       }
    }
@@ -149,7 +152,7 @@ public class NamedConnectionPool
       UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
       if (pool != null) {
          pool.release(con);
-         if (Log.TRACE) Log.trace(ME, "release(" + dbUrl + ", " + dbUser + ") con=" + con);
+         if (log.TRACE) log.trace(ME, "release(" + dbUrl + ", " + dbUser + ") con=" + con);
       }
    }
 
@@ -160,16 +163,16 @@ public class NamedConnectionPool
     */
    void destroy(String dbUrl, String dbUser, String dbPasswd) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Entering destroy() ...");
+      if (log.TRACE) log.trace(ME, "Entering destroy() ...");
       try {
          String key = getKey(dbUrl, dbUser, dbPasswd);
          UnnamedConnectionPool pool = (UnnamedConnectionPool)namedPools.remove(key);
          if (pool != null)
             pool.destroy();
-         if (Log.TRACE) Log.trace(ME, "All JDBC connections for '" + dbUrl + "' destroyed");
+         if (log.TRACE) log.trace(ME, "All JDBC connections for '" + dbUrl + "' destroyed");
       }
       catch (Exception e) {
-         Log.error(ME, "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
+         log.error(ME, "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
          throw new XmlBlasterException(ME+".DestroyError", "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
       }
    }
@@ -317,8 +320,8 @@ public class NamedConnectionPool
             return DriverManager.getConnection (dbUrl, dbUser, dbPasswd);
          }
          catch(Exception e) {
-            Log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
-            throw new JUtilsException(ME, "Couldn't open database connection: " + e.toString());
+            //log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
+            throw new JUtilsException(ME, "Couldn't open database connection dbUrl=" + dbUrl + " dbUser=" + dbUser + ": " + e.toString());
          }
       }
 
@@ -331,10 +334,10 @@ public class NamedConnectionPool
          Connection con = (Connection)resource;
          try {
             con.close();
-            if (Log.TRACE) Log.trace(ME, "JDBC connection closed for '" + dbUrl + "', '" + dbUser + "'");
+            if (log.TRACE) log.trace(ME, "JDBC connection closed for '" + dbUrl + "', '" + dbUser + "'");
          }
          catch (Exception e) {
-            Log.error(ME, "System Exception in close JDBC connection: " + e.toString());
+            log.error(ME, "System Exception in close JDBC connection: " + e.toString());
          }
       }
 
@@ -343,7 +346,7 @@ public class NamedConnectionPool
        */
       Connection reserve() throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
-         if (Log.TRACE) Log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
+         if (log.TRACE) log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
          int ii=0;
          while (true) {
             try {
@@ -360,12 +363,12 @@ public class NamedConnectionPool
             }
             catch (JUtilsException e) {
                if (e.id.equals("ResourceExhaust") && ii < maxResourceExhaustRetries) {
-                  if (ii == 0) Log.warn(ME, "Caught exception in reserve(), going to poll " + maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
+                  if (ii == 0) log.warn(ME, "Caught exception in reserve(), going to poll " + maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
                   Sleeper.sleep(resourceExhaustSleepGap);
                   ii++;
                }
                else {
-                  Log.error(ME, "Caught exception in reserve(): " + e.toString() + "\n" + toXml());
+                  //log.error(ME, "Caught exception in reserve(): " + e.toString() + "\n" + toXml());
                   throw new XmlBlasterException(e);
                }
             }
@@ -377,14 +380,14 @@ public class NamedConnectionPool
        */
       void release(Connection con) throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
-         if (Log.TRACE) Log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "' conId=" + con);
+         if (log.TRACE) log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "' conId=" + con);
          try {
             synchronized(meetingPoint) {
                poolManager.release(""+con);
             }
          }
          catch (JUtilsException e) {
-            Log.error(ME, "Caught exception in release(): " + e.toString());
+            log.error(ME, "Caught exception in release(): " + e.toString());
             throw new XmlBlasterException(e);
          }
       }
@@ -394,10 +397,10 @@ public class NamedConnectionPool
        */
       public void timeout(java.lang.Object o)
       {
-         if (Log.TRACE) Log.trace(ME, "Entering pool destroy timeout for '" + dbUrl + "', '" + dbUser + "' ...");
+         if (log.TRACE) log.trace(ME, "Entering pool destroy timeout for '" + dbUrl + "', '" + dbUser + "' ...");
          synchronized(meetingPoint) {
             if (poolManager.getNumBusy() != 0) {
-               Log.warn(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
+               log.warn(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
                synchronized(timeoutHandle) {
                   timeoutHandle = Timeout.getInstance().addTimeoutListener(this, eraseUnusedPoolTimeout, "dummy");
                }
@@ -406,7 +409,7 @@ public class NamedConnectionPool
             try {
                boss.destroy(dbUrl, dbUser, dbPasswd);
             } catch(XmlBlasterException e) {
-               Log.error(ME, "timeout: " + e.toString());
+               log.error(ME, "timeout: " + e.toString());
             }
          }
       }
@@ -452,7 +455,7 @@ public class NamedConnectionPool
       /*
       NamedConnectionPool namedPool = null;
       try {
-         Log.setLogLevel(args); // initialize log level
+         log.setLogLevel(args); // initialize log level
 
          String ME = "TestConnection";
          String dbDriver = Args.getArg(args, "-dbDriver", "oracle.jdbc.driver.OracleDriver");
@@ -466,7 +469,7 @@ public class NamedConnectionPool
          Class cl = Class.forName(dbDriver);
          java.sql.Driver dr = (java.sql.Driver)cl.newInstance();
          java.sql.DriverManager.registerDriver(dr);
-         Log.info(ME, "Jdbc driver '" + dbDriver + "' loaded.");
+         log.info(ME, "Jdbc driver '" + dbDriver + "' loaded.");
 
          namedPool = new NamedConnectionPool();
 
@@ -487,11 +490,11 @@ public class NamedConnectionPool
             public void run() {
                try {
                   for (int ii=0; ii<50; ii++) {
-                     Log.info(ME, " query run=" + ii + "\n");
+                     log.info(ME, " query run=" + ii + "\n");
                      org.jutils.time.StopWatch watch = new org.jutils.time.StopWatch();
                      Connection con = np.reserve(dbUrl, user, pw, timeToDeath, 100, 40*1000L);
-                     Log.info(ME, "Reserved connection id=" + con + watch.toString());
-                     //Log.info(ME, np.toXml());
+                     log.info(ME, "Reserved connection id=" + con + watch.toString());
+                     //log.info(ME, np.toXml());
                      java.sql.Statement stmt = null;
                      java.sql.ResultSet rs = null;
                      try {
@@ -502,18 +505,18 @@ public class NamedConnectionPool
                         if (stmt!=null) stmt.close();
                         watch = new org.jutils.time.StopWatch();
                         if (con!=null) np.release(dbUrl, user, pw, con);
-                        Log.info(ME, "Query successful done, connection released" + watch.toString());
-                        //Log.info(ME, np.toXml());
+                        log.info(ME, "Query successful done, connection released" + watch.toString());
+                        //log.info(ME, np.toXml());
                      }
                   }
-                  Log.info(ME, "Going to sleep " + (timeToDeath+1000L) + " msec");
+                  log.info(ME, "Going to sleep " + (timeToDeath+1000L) + " msec");
                   try { Thread.currentThread().sleep(timeToDeath+1000L); } catch( InterruptedException i) {}
-                  Log.info(ME, "After sleeping " + (timeToDeath+1000L) + " msec, erased connection\n" + np.toXml());
+                  log.info(ME, "After sleeping " + (timeToDeath+1000L) + " msec, erased connection\n" + np.toXml());
                }
                catch(Throwable e) {
                   e.printStackTrace();
                   if (np!=null) { np.destroy(); np = null; } // this error handling is not thread save
-                  Log.panic(ME, "TEST FAILED" + e.toString());
+                  log.panic(ME, "TEST FAILED" + e.toString());
                }
             }
          }
@@ -533,7 +536,7 @@ public class NamedConnectionPool
                p.start();
                vec.addElement(p);
             }
-            Log.info(ME, "Started " + name + " ...");
+            log.info(ME, "Started " + name + " ...");
          }
 
          for (int ii=0; ii<vec.size(); ii++) {
@@ -541,12 +544,12 @@ public class NamedConnectionPool
             p.join();
          }
 
-         Log.info(ME, "All done, destroying ...");
+         log.info(ME, "All done, destroying ...");
 
          namedPool.destroy();
       } catch (Throwable e) {
          namedPool.destroy();
-         Log.panic(ME, "ERROR: Test failed " + e.toString());
+         log.panic(ME, "ERROR: Test failed " + e.toString());
       }
       */
    }

@@ -4,12 +4,13 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.17 2002/05/01 21:40:13 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.18 2002/08/12 13:32:10 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -33,6 +34,8 @@ import java.io.IOException;
 public class XmlDBAdapterWorker extends Thread {
 
    private static final String   ME = "WorkerThread";
+   private final Global          glob;
+   private final LogChannel      log;
    private String                cust;
    private byte[]                content;
    private I_Publish             callback = null;
@@ -45,8 +48,10 @@ public class XmlDBAdapterWorker extends Thread {
     * @param callback   Interface to publish the XML based result set
     * @param namedPool  A pool of JDBC connections for the RDBMS users
     */
-   public XmlDBAdapterWorker(String cust, byte[] content,
+   public XmlDBAdapterWorker(Global glob, String cust, byte[] content,
                              I_Publish callback, NamedConnectionPool namedPool) {
+      this.glob = glob;
+      this.log = glob.getLog("jdbc");
       this.cust = cust;
       this.content = content;
       this.callback = callback;
@@ -58,7 +63,7 @@ public class XmlDBAdapterWorker extends Thread {
     */
    public void run()
    {
-      XmlDBAdapter adap = new XmlDBAdapter(content, namedPool);
+      XmlDBAdapter adap = new XmlDBAdapter(glob, content, namedPool);
       MessageUnit[] msgArr = adap.query();
       try {
          if (msgArr.length > 0) {
@@ -67,17 +72,17 @@ public class XmlDBAdapterWorker extends Thread {
             msgArr[0].xmlKey = key.toXml();
             msgArr[0].qos = qos.toXml();
             String  oid = callback.publish(msgArr[0]);
-            if (Log.DUMP) Log.plain("Delivered Results...\n" + new String(content));
+            if (log.DUMP) log.plain(ME, "Delivered Results...\n" + new String(content));
          }
          else
-            if (Log.TRACE) Log.trace(ME, "No result message returned to client");
+            if (log.TRACE) log.trace(ME, "No result message returned to client");
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Exception in notify: " + e.reason);
+         log.error(ME, "Exception in notify: " + e.reason);
       }
       catch (Exception e) {
          e.printStackTrace();
-         Log.error(ME, "Exception in notify: " + e);
+         log.error(ME, "Exception in notify: " + e);
       }
    }
 }

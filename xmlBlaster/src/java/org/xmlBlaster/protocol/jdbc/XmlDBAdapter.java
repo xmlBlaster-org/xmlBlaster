@@ -3,11 +3,12 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.18 2001/12/08 22:54:53 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.19 2002/08/12 13:32:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -37,6 +38,8 @@ import java.io.IOException;
 public class XmlDBAdapter
 {
    private static final String   ME = "XmlDBAdapter";
+   private final Global          glob;
+   private final LogChannel      log;
    private byte[]                content;
    private NamedConnectionPool   namedPool = null;
 
@@ -46,8 +49,10 @@ public class XmlDBAdapter
     * @param content    The SQL statement
     * @param namedPool  A pool of JDBC connections for the RDBMS users
     */
-   public XmlDBAdapter(byte[] content, NamedConnectionPool namedPool)
+   public XmlDBAdapter(Global glob, byte[] content, NamedConnectionPool namedPool)
    {
+      this.glob = glob;
+      this.log = glob.getLog("jdbc");
       this.content = content;
       this.namedPool = namedPool;
    }
@@ -118,23 +123,23 @@ public class XmlDBAdapter
          document = createDocument();
       }
       catch (Exception e) {
-         Log.exception(ME+".SqlInitError", e);
-         Log.warn(ME+".SqlInitError", new String(content));
+         log.exception(ME+".SqlInitError", e);
+         log.warn(ME+".SqlInitError", new String(content));
          XmlBlasterException ex = new XmlBlasterException(ME+".SqlInitError", e.getMessage());
          return getResponseMessage(ex.toXml().getBytes(), "XmlBlasterException");
       }
 
       ConnectionDescriptor descriptor = null;
 
-      if (Log.TRACE) Log.trace(ME, "Get connection ...");
+      if (log.TRACE) log.trace(ME, "Get connection ...");
       descriptor = new ConnectionDescriptor(document);
 
       try {
-         if (Log.TRACE) Log.trace(ME, "Access DB ...");
+         if (log.TRACE) log.trace(ME, "Access DB ...");
          document = queryDB(descriptor);
       }
       catch (XmlBlasterException e) {
-         Log.error(e.id, e.reason);
+         //log.error(e.id, "query failed: " + e.reason);
          return getResponseMessage(e.toXml().getBytes(), "XmlBlasterException");
       }
 
@@ -157,7 +162,7 @@ public class XmlDBAdapter
       //dbf.setValidating(false);
       //dbf.setIgnoringComments(true);
       DocumentBuilder db = dbf.newDocumentBuilder();
-      //Log.info(ME, "Tracing " + new String(content));
+      //log.info(ME, "Tracing " + new String(content));
       ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
       Document doc = db.parse(inputStream);
       return doc;
@@ -169,7 +174,7 @@ public class XmlDBAdapter
     */
    private Document queryDB(ConnectionDescriptor descriptor) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering queryDB() ...");
+      if (log.CALL) log.call(ME, "Entering queryDB() ...");
       Connection  conn = null;
       Statement   stmt = null;
       ResultSet   rs = null;
@@ -183,21 +188,21 @@ public class XmlDBAdapter
 
          try {
             if (descriptor.getInteraction().equalsIgnoreCase("update")) {
-               if (Log.TRACE) Log.trace(ME, "Trying DB update '" + command + "' ...");
+               if (log.TRACE) log.trace(ME, "Trying DB update '" + command + "' ...");
 
                int   rowsAffected = stmt.executeUpdate(command);
 
                doc = createUpdateDocument(rowsAffected, descriptor);
             }
             else {
-               if (Log.TRACE) Log.trace(ME, "Trying SQL query '" + command + "' ...");
+               if (log.TRACE) log.trace(ME, "Trying SQL query '" + command + "' ...");
                rs = stmt.executeQuery(command);
                doc =
                   DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
                                                 descriptor.getRowrootnode(),
                                                 descriptor.getRowlimit(), rs);
             }
-            if (Log.TRACE) Log.trace(ME, "Query successful done, connection released");
+            if (log.TRACE) log.trace(ME, "Query successful done, connection released");
          } finally {
             if (rs!=null) rs.close();
             if (stmt!=null) stmt.close();
@@ -206,13 +211,13 @@ public class XmlDBAdapter
       }
       catch (SQLException e) {
          String str = "SQLException in query '" + descriptor.getCommand() + "' : " + e;
-         Log.warn(ME, str);
+         log.warn(ME, str);
          throw new XmlBlasterException(ME, str);
       }
       catch (Throwable e) {
          e.printStackTrace();
          String str = "Exception in query '" + descriptor.getCommand() + "' : " + e;
-         Log.warn(ME, str);
+         log.warn(ME, str);
          throw new XmlBlasterException(ME, str);
       }
 
@@ -234,7 +239,7 @@ public class XmlDBAdapter
       try {
          return factory.newDocumentBuilder().newDocument();
       } catch (ParserConfigurationException e) {
-         Log.error(ME, "Can't create xml document: " + e.toString());
+         log.error(ME, "Can't create xml document: " + e.toString());
          throw new XmlBlasterException(ME, "Can't create xml document: " + e.toString());
       }
    }
@@ -264,7 +269,7 @@ public class XmlDBAdapter
    private MessageUnit[] getResponseMessage(Document doc)
    {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
-      try { out = XmlNotPortable.write(doc); } catch(IOException e) { Log.error(ME, e.getMessage()); }
+      try { out = XmlNotPortable.write(doc); } catch(IOException e) { log.error(ME, "getResponseMessage failed: " + e.getMessage()); }
       return getResponseMessage(out.toByteArray(), "QueryResults");
    }
 
@@ -283,7 +288,7 @@ public class XmlDBAdapter
 
       MessageUnit mu = new MessageUnit(key.toXml(), content, "<qos></qos>");
 
-      if (Log.DUMP) Log.plain("SQL Results...\n" + new String(content));
+      if (log.DUMP) log.plain(ME, "SQL Results...\n" + new String(content));
       MessageUnit[] msgArr = new MessageUnit[1];
       msgArr[0] = mu;
       return msgArr;

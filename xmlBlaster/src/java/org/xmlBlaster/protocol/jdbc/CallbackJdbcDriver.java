@@ -3,12 +3,12 @@ Name:      CallbackJdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using jdbc interface.
-Version:   $Id: CallbackJdbcDriver.java,v 1.8 2002/05/30 09:53:28 ruff Exp $
+Version:   $Id: CallbackJdbcDriver.java,v 1.9 2002/08/12 13:32:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -30,6 +30,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
 {
    private String ME = "CallbackJdbcDriver";
    private Global glob = null;
+   private LogChannel log = null;
    private CallbackAddress callbackAddress = null;
 
 
@@ -54,7 +55,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
     */
    public String getRawAddress()
    {
-      if (Log.TRACE) Log.trace(ME+".getRawAddress()", "No external access address available");
+      if (log.TRACE) log.trace(ME+".getRawAddress()", "No external access address available");
       return null;
    }
 
@@ -69,6 +70,8 @@ public class CallbackJdbcDriver implements I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("jdbc");
+      if (log.CALL) log.call(ME, "Entering init");
       this.callbackAddress = callbackAddress;
    }
 
@@ -82,11 +85,11 @@ public class CallbackJdbcDriver implements I_CallbackDriver
    public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
 
       JdbcDriver driver = (JdbcDriver)glob.getObjectEntry("JdbcDriver-"+glob.getId());
       if (driver == null) {
-         Log.error(ME, "Can't find JdbcDriver instance");
+         log.error(ME, "Can't find JdbcDriver instance");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal error, can't find JdbcDriver instance");
       }
@@ -106,11 +109,11 @@ public class CallbackJdbcDriver implements I_CallbackDriver
    public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
 
       JdbcDriver driver = (JdbcDriver)glob.getObjectEntry("JdbcDriver-"+glob.getId());
       if (driver == null) {
-         Log.error(ME, "Can't find JdbcDriver instance");
+         log.error(ME, "Can't find JdbcDriver instance");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal error, can't find JdbcDriver instance");
       }

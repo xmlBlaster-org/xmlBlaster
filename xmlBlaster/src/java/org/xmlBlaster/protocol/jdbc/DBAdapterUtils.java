@@ -4,19 +4,19 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.8 2002/05/19 12:55:49 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.9 2002/08/12 13:32:10 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
 
 import java.sql.*;
 import java.io.*;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Text;
-import org.xmlBlaster.util.Log;
 
 /**
  * Class declaration
@@ -48,6 +48,7 @@ public class DBAdapterUtils {
    public static Document createDocument(String rootnode, String rownode,
                     int rowlimit, ResultSet rs) throws XmlBlasterException {
 
+      LogChannel log = org.xmlBlaster.util.Global.instance().getLog("jdbc");
       int rows = 0;
       Document doc = new org.apache.crimson.tree.XmlDocument();
 
@@ -84,7 +85,7 @@ public class DBAdapterUtils {
          desc.appendChild(columnNames);
 
          while (rs.next()) {
-            if (Log.TRACE) Log.trace(ME, "Scanning SQL result with rowlimit=" + rowlimit + ", rows=" + rows);
+            if (log.TRACE) log.trace(ME, "Scanning SQL result with rowlimit=" + rowlimit + ", rows=" + rows);
             if (rowlimit < 0) {
                continue;
             }
@@ -139,7 +140,7 @@ public class DBAdapterUtils {
                   break;
                }
 
-               if (Log.TRACE) Log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", columnValue='" + columnValue + "'");
+               if (log.TRACE) log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", columnValue='" + columnValue + "'");
                Element col = (Element) doc.createElement(columnName);
                CDATASection cvalue = (CDATASection) doc.createCDATASection(columnValue);
 
@@ -150,7 +151,7 @@ public class DBAdapterUtils {
          }
       }
       catch (Exception e) {
-         Log.error(ME, "Error in scanning result set for '" + columnName + "': " + e.toString());
+         log.error(ME, "Error in scanning result set for '" + columnName + "': " + e.toString());
          throw new XmlBlasterException(ME+".DomResultSetError", "Error in scanning result set for '" + columnName + "': " + e.getMessage());
       }
 

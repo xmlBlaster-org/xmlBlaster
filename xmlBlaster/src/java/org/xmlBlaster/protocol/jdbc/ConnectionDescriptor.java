@@ -3,11 +3,9 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides a wrapper defining a database connection
- * Version:   $Id: ConnectionDescriptor.java,v 1.9 2002/05/19 12:55:49 ruff Exp $
+ * Version:   $Id: ConnectionDescriptor.java,v 1.10 2002/08/12 13:32:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
-
-import org.xmlBlaster.util.Log;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
