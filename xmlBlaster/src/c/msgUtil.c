@@ -27,6 +27,38 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <errno.h>  /* gethostbyname_re() */
 #endif
 
+static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
+
+#define ESC "\033[0m"; /* Reset color to original values */
+#define BOLD "\033[1m"
+
+#define RED_BLACK "\033[31;40m"
+#define GREEN_BLACK "\033[32;40m"
+#define YELLOW_BLACK "\033[33;40m"
+#define BLUE_BLACK "\033[34;40m"
+#define PINK_BLACK "\033[35;40m"
+#define LTGREEN_BLACK "\033[36;40m"
+#define WHITE_BLACK "\033[37;40m"
+
+#define WHITE_RED "\033[37;41m"
+#define BLACK_RED "\033[30;41m"
+#define BLACK_GREEN "\033[40;42m"
+#define BLACK_PINK "\033[40;45m"
+#define BLACK_LTGREEN "\033[40;46m"
+
+/* To support colored logging output in xterminals */
+static const char *LOG_TEXT_ESCAPE[] = {
+       "NOLOG",
+        "\033[31;40mERROR\033[0m",
+        "\033[33;40mWARN\033[0m",
+        "\033[32;40mINFO\033[0m",
+        "\033[34;40mCALL\033[0m",
+        "\033[36;40mTIME\033[0m",
+        "\033[37;40mTRACE\033[0m",
+        "\033[35;40mDUMP\033[0m",
+        "\033[37;40mPLAIN\033[0m"
+        };
+
 /**
  * @return e.g. "0.848"
  */
@@ -41,12 +73,12 @@ const char *getXmlBlasterVersion()
  * @return The stack trace, you need to free() it.
  *         Returns NULL if out of memory.
  */
-const char *getStackTrace(int maxNumOfLines)
+char *getStackTrace(int maxNumOfLines)
 {
 #ifdef _ENABLE_STACK_TRACE_
    int i;
    void** arr = (void **)calloc(maxNumOfLines, sizeof(void *));
-   if (arr == 0) return (const char *)0;
+   if (arr == 0) return (char *)0;
    {
       /*
       > +Currently, the function name and offset can only be obtained on systems
@@ -76,12 +108,12 @@ const char *getStackTrace(int maxNumOfLines)
       free(list);
       free(arr);
       if (strlen(ret) < 1) {
-         strcatAlloc(&ret, "Creation of stackTrace failed");
+         strcatAlloc(&ret, ""); /* Creation of stackTrace failed */
       }
       return ret;
    }
 #else
-   return strcpyAlloc("No stack trace provided in this system");
+   return strcpyAlloc(""); /* No stack trace provided in this system */
 #endif
 }
 
@@ -591,6 +623,11 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
  * <pre>
  * xa->log = myXmlBlasterLoggingHandler;
  * </pre>
+ * @param currLevel The actual log level of the client
+ * @param level The level of this log entry
+ * @param location A string describing the code place
+ * @param fmt The formatting string
+ * @param ... Other variables to log, corresponds to 'fmt'
  */
 void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
@@ -598,15 +635,25 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
 {
    /* Guess we need no more than 100 bytes. */
    int n, size = 100;
-   char *p;
+   char *p = 0;
    va_list ap;
-   static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
+   char *stackTrace = 0;
+#  ifdef _WINDOWS
+   const char * const * logText = LOG_TEXT;
+#  else
+   const char * const * logText = LOG_TEXT_ESCAPE;
+#  endif
 
    if (level > currLevel) {
       return;
    }
    if ((p = (char *)malloc (size)) == NULL)
       return;
+
+   if (level <= LOG_ERROR) {
+      stackTrace = getStackTrace(10);
+   }
+
    for (;;) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
@@ -629,8 +676,10 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
             ctime_r(&t1, (char *)timeStr);
 #        endif
          *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
-         printf("[%s %s %s] %s", timeStr, LOG_TEXT[level], location, p);
+         printf("[%s %s %s] %s %s\n", timeStr, logText[level], location, p,
+                                    (stackTrace != 0) ? stackTrace : "");
          free(p);
+         free(stackTrace);
          return;
       }
       /* Else try again with more space. */
@@ -638,9 +687,53 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
          size = n+1; /* precisely what is needed */
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
-      if ((p = (char *)realloc (p, size)) == NULL)
+      if ((p = (char *)realloc (p, size)) == NULL) {
+         free(stackTrace);
          return;
+      }
    }
+}
+
+/**
+ * Parses the given string and returns the enum for it.
+ * If logLevelStr is NULL or empty or unknown we return the default log level.
+ * @param logLevelStr The level e.g. "WARN" or "warn" or "2"
+ * @return The enum, e.g. LOG_WARN
+ */
+XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
+{
+   int i;
+   int len = sizeof(LOG_TEXT);
+   if (logLevelStr == 0 || *logLevelStr == '\0' ) {
+      return LOG_WARN;
+   }
+   for (i=0; i<len; i++) {
+      if (!strcasecmp(LOG_TEXT[i], logLevelStr)) {
+         return (XMLBLASTER_LOG_LEVEL)i;
+      }
+   }
+   if (sscanf(logLevelStr, "%d", &i) == 1)
+      return (XMLBLASTER_LOG_LEVEL)i;
+   return LOG_WARN;
+}
+
+/**
+ * @return A human readable log level, e.g. "ERROR"
+ */
+const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel)
+{
+   return LOG_TEXT[logLevel];
+}
+
+/**
+ * Check if logging is necessary. 
+ * @param currLevel The actual log level of the client
+ * @param level The level of this log entry
+ * @return true If logging is desired
+ */
+inline bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level)
+{
+   return (currLevel <= level) ? true : false;
 }
 
 # ifdef MSG_UTIL_MAIN

@@ -36,6 +36,7 @@ typedef bool  ( * XmlBlasterConnectionUnparsedIsConnected)(XmlBlasterConnectionU
 typedef void  ( * XmlBlasterConnectionUnparsedShutdown)(XmlBlasterConnectionUnparsed *xb);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
+typedef void  ( * XmlBlasterConnectionUnparsedLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
@@ -61,7 +62,8 @@ struct XmlBlasterConnectionUnparsedStruct {
    void *preSendEvent_userP;
    XmlBlasterConnectionUnparsedPostSendEvent postSendEvent; /* If a callback function pointer is registered it will be called just after sending a message */
    void *postSendEvent_userP;
-   bool debug;
+   XMLBLASTER_LOG_LEVEL logLevel;
+   XmlBlasterConnectionUnparsedLogging log;
 };
 
 

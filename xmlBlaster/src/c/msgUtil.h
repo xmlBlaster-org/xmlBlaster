@@ -45,16 +45,19 @@ typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    LOG_NOLOG=0,/* don't use */
    LOG_ERROR,  /* supported, use for programming errors */
    LOG_WARN,   /* supported, use for user errors and wrong configurations */
-   LOG_INFO,   /* don't use */
+   LOG_INFO,   /* supported, use for success information only */
    LOG_CALL,   /* don't use */
    LOG_TIME,   /* don't use */
    LOG_TRACE,  /* supported, use for debugging purposes */
-   LOG_DUMP,   /* don't use */
+   LOG_DUMP,   /* supported, use for debugging purposes */
    LOG_PLAIN   /* don't use */
 } XMLBLASTER_LOG_LEVEL;
 extern void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...);
+extern XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr);
+extern const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel);
+extern bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level);
 
 /**
  * Holds arbitrary raw data and its length
@@ -101,8 +104,8 @@ extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterExcepti
 extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
 extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
 
-const char *getXmlBlasterVersion();
-extern const char *getStackTrace(int maxNumOfLines);
+extern const char *getXmlBlasterVersion();
+extern char *getStackTrace(int maxNumOfLines);
 extern void freeMsgUnitData(MsgUnit *msgUnit);
 extern void freeMsgUnit(MsgUnit *msgUnit);
 extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);

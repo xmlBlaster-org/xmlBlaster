@@ -52,7 +52,6 @@ typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_
  */
 struct XmlBlasterAccessUnparsedStruct {
    int argc;
-   const char * ME;
    char **argv;
    XmlBlasterConnectionUnparsed *connectionP;
    CallbackServerUnparsed *callbackP;
@@ -69,7 +68,6 @@ struct XmlBlasterAccessUnparsedStruct {
    XmlBlasterAccessUnparsedIsConnected isConnected;
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterLogging log;
-   bool debug;
    long responseTimeout;
    XmlBlasterBlob responseBlob;
    char responseType;             /* XMLBLASTER_MSG_TYPE_ENUM */
