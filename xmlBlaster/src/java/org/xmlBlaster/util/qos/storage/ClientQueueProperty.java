@@ -28,6 +28,12 @@ public class ClientQueueProperty extends QueuePropertyBase
       super(glob, nodeId);
       setRelating(Constants.RELATING_CLIENT);
       super.initialize(Constants.RELATING_CLIENT);
+
+      // On client side we store the complete messages in the queue, therefor increase max settings here:
+      //super.maxEntriesCache.setDefaultValue(2000);
+      super.maxEntries.setDefaultValue(Integer.MAX_VALUE);
+      //super.maxBytesCache.setDefaultValue(Integer.MAX_VALUE);
+      super.maxBytes.setDefaultValue(Integer.MAX_VALUE);
    }
 
    /**
