@@ -2,8 +2,11 @@
 Name:      util.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript utility objects
+           - a Logging class, showing the log output in a separate window
+           - browser detection
 Author:    ruff@swand.lake.de konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
+
 
 /**
  * Check the browser version
@@ -21,18 +24,79 @@ if (navigator.appVersion.substring(0,1) < "4") {
  */
 function getBrowserInfo()
 {
-   var appName     = "browser name: <i>" + navigator.appName + "</i><br>";
-   var appVersion  = "browser version: <i>" + navigator.appVersion + "</i><br>";
-   var platform    = "operating system: <i>" + navigator.platform + "</i><br>";
-   return "<hr>" + appName + appVersion + platform;
+   var appName     = "Browser name: <i>" + navigator.appName + "</i><br>";
+   var appVersion  = "Browser version: <i>" + navigator.appVersion + "</i><br>";
+   var platform    = "Operating system: <i>" + navigator.platform + "</i><br>";
+   return appName + appVersion + platform;
+}
+
+
+/**
+ * Parse for a key in URL, for example:
+ *    index.html?loginName=martin&passwd=xyz&callUrl=myApp.html
+ *
+ * @param  urlParams - The parameters from the url,
+ *         e.g. "?loginName=martin&passwd=xyz&callUrl=myApp.html"
+ *         You can obtain this with e.g. 'top.location.search'
+ * @param  key - The key to search, e.g. 'loginName'
+ * @return The value, e.g. 'martin' or null if not found
+ */
+function getFromUrlParam(urlParams, key, defaultValue)
+{
+   Log.trace("Looking for key='" + key + "' in URL params=" + urlParams);
+   if (urlParams == null || urlParams.length < 5) {
+      Log.warning("Your URL parameters are empty");
+      return defaultValue;
+   }
+
+   urlParams = unescape(urlParams);
+   if (urlParams.indexOf("?") == 0)
+      urlParams.substring(1, urlParams.length);  // strip '?'
+
+   paramArr = urlParams.split("&");
+   for (var ii=0; ii<paramArr.length; ii++) {
+      var param = paramArr[ii];
+      var pos = param.indexOf(key);
+      if (pos != -1) {
+         value = param.substring(pos + key.length + 1); // strip the '=' as well
+         Log.trace("URL parameter " + key + " found, value = '" + value + "'");
+         return value;
+      }
+   }
+   Log.trace("Your URL parameter " + key + " is missing, returning " + defaultValue);
+   return defaultValue;
 }
 
 /**
- * Logging of errors/warnings/infos
+ * Walk recursively through all frames and list them. 
+ * Not yet tested!
+ */
+function debugFrames()
+{
+   var str = top.name +"<br />";
+   var level = 0;
+   return debugF(level+1, str, top.name);
+}
+function debugF(level, str, currentFrame)
+{
+   for (ii=0; ii<currentFrame.length; ii++) {
+      var indent = "";
+      if (level == 2) indent = "&nbsp;"
+      var fr = currentFrame[ii];
+      str += (indent + fr.name + "<br />");
+      //str += debugF(level+1, str, fr);
+   }
+   return str;
+}
+
+
+/**
+ * Logging of errors/warnings/infos.
  * Example:
  *    Log.error("The variable listenerList is empty.");
  *    Log.warning("Performance over internet is slow.");
  *    Log.info("Login granted.");
+ *    Log.trace("Entering ping() method.");
 */
 var logWindow = null;         // the window handle - a popup with the log output table
 var MAX_LOG_ENTRIES = 60;     // max number of rows in window
@@ -40,8 +104,11 @@ var levelColor = new Array(); // every log level is displayed in a characteristi
 levelColor["ERROR"] = "red";
 levelColor["WARNING"] = "yellow";
 levelColor["INFO"] = "green";
+levelColor["TRACE"] = "white";
 
-// The log object, containing infos about one logging output
+/**
+ * The log object, containing infos about one logging output. 
+ */
 function logObject(level_, codePos_, text_)
 {
    this.level = level_;
@@ -57,22 +124,46 @@ function internal_(codePos, str)
 
 function error_(str)
 {
-   var codePos = error_.caller.toString().substring(10, error_.caller.toString().indexOf(")") + 1);
-   logToWindow("ERROR", codePos, str);
-   // alert("ERROR in " + codePos + ": " + str);
+   if (Log.ERROR) {
+      var codePos = "";
+      if (error_.caller != null)
+         codePos = error_.caller.toString().substring(10, error_.caller.toString().indexOf(")") + 1);
+      logToWindow("ERROR", codePos, str);
+   }
+   else
+      alert("ERROR in " + codePos + ": " + str);
 }
 function warning_(str)
 {
-   var codePos = warning_.caller.toString().substring(10, warning_.caller.toString().indexOf(")") + 1);
-   logToWindow("WARN", codePos, str);
+   if (Log.WARNING) {
+      var codePos = "";
+      if (warning_.caller != null)
+         codePos = warning_.caller.toString().substring(10, warning_.caller.toString().indexOf(")") + 1);
+      logToWindow("WARNING", codePos, str);
+   }
 }
 function info_(str)
 {
-   var codePos = info_.caller.toString().substring(10, info_.caller.toString().indexOf(")") + 1);
-   logToWindow("INFO", codePos, str);
+   if (Log.INFO) {
+      var codePos = "";
+      if (info_.caller != null)
+         codePos = info_.caller.toString().substring(10, info_.caller.toString().indexOf(")") + 1);
+      logToWindow("INFO", codePos, str);
+   }
+}
+function trace_(str)
+{
+   if (Log.TRACE) {
+      var codePos = "";
+      if (trace_.caller != null)
+         codePos = trace_.caller.toString().substring(10, trace_.caller.toString().indexOf(")") + 1);
+      logToWindow("TRACE", codePos, str);
+   }
 }
 
-// Catch and handle browser errors
+/**
+ * Catch and handle browser errors (internal errors)
+ */
 function catchError(text, url, row)
 {
    if (url.indexOf("http://") != -1) { // shorten the URL string
@@ -109,8 +200,10 @@ function __logToWindow__(level, codePos, text)
    alert("Level: "+level+"\ncodePos: "+codePos+"\ntext: "+text);
 }
 
-// This function logs to a pop up window
-// Every logging output is a colored row in a table.
+/**
+ * This function logs to a pop up window
+ * Every logging output is a colored row in a table.
+ */
 function logToWindow(level, codePos, text)
 {
    if (text.length <= 0)
@@ -200,18 +293,27 @@ function logToWindow(level, codePos, text)
    return;
 }
 
-// The log handler, use this to invoke your logging output
+/**
+ * The log handler object, containing the necessary variables. 
+ */
 function LogHandler()
 {
    this.internal = internal_; // errors from browser are caught
    this.error = error_;       // Log.error() output
    this.warning = warning_;
    this.info = info_;
-   this.DEBUG = false;
+   this.trace = trace_;
+   this.ERROR = true;         // Set in your code Log.ERROR=false; to switch off
+   this.WARNING = true;       // Set in your code Log.WARNING=false; to switch off
+   this.INFO = true;          // Set in your code Log.INFO=false; to switch off
+   this.TRACE = false;        // Set in your code Log.TRACE=true; to switch on
+   //alert("Leaving logHandler in util.js");
 }
 
-// The log handler, use this to invoke your logging output
-// Example:
-//    Log.warning("Performance over internet is slow.");
+/**
+ * The log handler, use this to invoke your logging output. 
+ * Example:
+ *    Log.warning("Performance over internet is slow.");
+ */
 var Log = new LogHandler();
 
