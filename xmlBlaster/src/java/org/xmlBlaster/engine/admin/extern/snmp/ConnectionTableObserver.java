@@ -32,11 +32,13 @@ public class ConnectionTableObserver implements Observer {
       }
 
       public void update( Subject o ) {
+          String connectionHost;
+          long connectionPort;
 	  switch(connectionTableSubject.opCode) {
 	  case ConnectionTableSubject.INSERT:   
             if( o == connectionTableSubject ) {
-		String connectionHost = connectionTableSubject.connectionEntryImplPeer.get_connectionHost();
-		long connectionPort = connectionTableSubject.connectionEntryImplPeer.get_connectionPort();
+		  connectionHost = connectionTableSubject.connectionEntryImplPeer.get_connectionHost();
+		  connectionPort = connectionTableSubject.connectionEntryImplPeer.get_connectionPort();
                   if (connectionHashtable.containsKey(connectionHost + connectionPort)) {
                      System.out.println("A connection to " + connectionHost + connectionPort + " already exists.");
                   }
@@ -74,6 +76,29 @@ public class ConnectionTableObserver implements Observer {
 	  case ConnectionTableSubject.REMOVE:
             if( o == connectionTableSubject ) {
                   System.out.println("Remove a connection table entry.");
+		  connectionHost = connectionTableSubject.connectionEntryImplPeer.get_connectionHost();
+		  connectionPort = connectionTableSubject.connectionEntryImplPeer.get_connectionPort();
+                  if (!connectionHashtable.containsKey(connectionHost + connectionPort)) {
+                     System.out.println("A connection to " + connectionHost + connectionPort + " does not exist.");
+                  }
+                  else {
+                      System.out.println("Remove connection = " + connectionHost + connectionPort);
+                      // remove node from connectionHashtable
+                      int remConInd = ((Integer)connectionHashtable.get(connectionHost + connectionPort)).intValue();
+                      connectionHashtable.remove(connectionHost + connectionPort);
+
+                      // remove connection from connectionTable
+                      for (Enumeration ct=connectionTable.elements(); ct.hasMoreElements();) {
+                         connectionEntryImpl = (ConnectionEntryImpl)ct.nextElement();
+                         long nodeIndex = connectionEntryImpl.nodeIndex;
+                         long connectionIndex = connectionEntryImpl.connectionIndex;
+                         if ((connectionIndex == remConInd) && 
+                             (nodeIndex == connectionTableSubject.nodeIndex.intValue())) {
+                             connectionTable.removeEntry(connectionEntryImpl);
+			     break;
+                         }
+                      }
+                  } // end else
             }
 	    break;
 

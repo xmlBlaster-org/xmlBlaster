@@ -102,7 +102,7 @@ public class XmlBlasterTest
         // create concrete subjects and observers (observer pattern)
         nodeTableSubject = new NodeTableSubject();
         nodeTableObserver = new NodeTableObserver(nodeTableSubject, session);
-        connectionTableSubject = new ConnectionTableSubject();
+        connectionTableSubject = new ConnectionTableSubject(nodeTableObserver);
         connectionTableObserver = new ConnectionTableObserver(connectionTableSubject, session);
 
         nodeEntryImplPeer1 = new NodeEntryImplPeer("node11", "host11", 111, 1161, 80, "err1.log", 1);
@@ -118,12 +118,13 @@ public class XmlBlasterTest
         nodeTableSubject.addEntry(nodeEntryImplPeer2);
         nodeTableSubject.addEntry(nodeEntryImplPeer3);
         nodeTableSubject.addEntry(nodeEntryImplPeer4);
-        connectionTableSubject.addEntry(nodeTableObserver, nodeEntryImplPeer1.get_nodeName(), connectionEntryImplPeer1);
-        connectionTableSubject.addEntry(nodeTableObserver, nodeEntryImplPeer2.get_nodeName(), connectionEntryImplPeer2);
+        connectionTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), connectionEntryImplPeer1);
+        connectionTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), connectionEntryImplPeer2);
 
         // remove entries
         nodeTableSubject.removeEntry(nodeEntryImplPeer3);
         nodeTableSubject.removeEntry(nodeEntryImplPeer1);
+        connectionTableSubject.removeEntry(nodeEntryImplPeer1.get_nodeName(), connectionEntryImplPeer1);
 
         if (sleep) {
            try {

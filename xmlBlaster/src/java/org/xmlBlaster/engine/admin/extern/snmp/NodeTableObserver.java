@@ -117,10 +117,11 @@ public class NodeTableObserver implements Observer {
       }
 
       public void update( Subject o ) {
+          String nodeName;
 	  switch(nodeTableSubject.opCode) {
 	  case NodeTableSubject.INSERT:   
             if( o == nodeTableSubject ) {
-		  String nodeName = nodeTableSubject.nodeEntryImplPeer.get_nodeName();
+		  nodeName = nodeTableSubject.nodeEntryImplPeer.get_nodeName();
                   System.out.println("Insert a node with nodename = " + nodeName);
                   if (nodeHashtable.containsKey(nodeName)) {
                      System.out.println("A node with nodename = " + nodeName + " already exists.");
@@ -153,7 +154,7 @@ public class NodeTableObserver implements Observer {
          
 	  case NodeTableSubject.REMOVE:
             if( o == nodeTableSubject ) {
-		  String nodeName = nodeTableSubject.nodeEntryImplPeer.get_nodeName();
+		  nodeName = nodeTableSubject.nodeEntryImplPeer.get_nodeName();
                   System.out.println("Remove a node with nodename = " + nodeName);
                   if (!nodeHashtable.containsKey(nodeName)) {
                      System.out.println("A node with nodename = " + nodeName + " does not exists.");

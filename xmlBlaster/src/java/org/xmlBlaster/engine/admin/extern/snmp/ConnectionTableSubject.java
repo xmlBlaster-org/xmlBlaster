@@ -21,12 +21,13 @@ public class ConnectionTableSubject implements Subject {
       public static final int INSERT = 0;
       public static final int REMOVE = 1;
 
-      public void addEntry(NodeTableObserver nodeTableObserver,
-                         String nodeName,
-                         ConnectionEntryImplPeer connectionEntryImplPeer) {
+      public ConnectionTableSubject(NodeTableObserver nodeTableObserver) {
+          this.nodeTableObserver = nodeTableObserver;
+      }
+
+      public void addEntry(String nodeName, ConnectionEntryImplPeer connectionEntryImplPeer) {
 
 	  this.connectionEntryImplPeer = connectionEntryImplPeer;
-          this.nodeTableObserver = nodeTableObserver;
           nodeIndex = nodeTableObserver.getIndex(nodeName);
           if (nodeIndex != null) {
               opCode = INSERT;
@@ -37,9 +38,16 @@ public class ConnectionTableSubject implements Subject {
           }
       }
  
-      public Integer removeEntry( int index ) {
-            opCode = REMOVE;
-            return null;
+      public void removeEntry(String nodeName, ConnectionEntryImplPeer connectionEntryImplPeer) {
+	  this.connectionEntryImplPeer = connectionEntryImplPeer;
+          nodeIndex = nodeTableObserver.getIndex(nodeName);
+          if (nodeIndex != null) {
+              opCode = REMOVE;
+              notifyObservers();
+	  }
+          else {
+	      System.out.println("Cannot remove connection entry. Node entry " + nodeName + " does not exist.");
+          }
       }
 
       public void addObserver( Observer o ) {
