@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.19 2000/05/08 11:46:03 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.20 2000/05/09 16:42:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -31,12 +31,11 @@ import org.xmlBlaster.util.*;
  */
 public class HttpPushHandler
 {
-
-   private final String ME                      = "HttpPushHandler";
-   private final long PING_INTERVAL             = 10000L;
+   static private final String ME  = "HttpPushHandler";
+   private final long PING_INTERVAL = 10000L;
    private final HttpServletRequest req;
    private final HttpServletResponse res;
-   private boolean closed                                                               = false;
+   private boolean closed = false;
    private ServletOutputStream outMulti;
    private PrintWriter outPlain;
    /** The header of the HTML page */
@@ -371,6 +370,28 @@ public class HttpPushHandler
       catch(Exception e) {
          Log.error(ME,e.toString());
       }
+   }
+
+
+   /**
+    * Display a popup alert message containing the error text. 
+    * <p />
+    * This method wraps your text into javascript/alert code
+    * and escapes "\n" and "'" characters
+    *
+    * @param text The error text
+    */
+   static public final String alert(String text)
+   {
+      StringBuffer retStr = new StringBuffer();
+      retStr.append("<html><body>\n");
+      retStr.append("<script language='JavaScript1.2'>\n");
+      String tmp = StringHelper.replaceAll(text, "'", "\\'");
+      retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
+      retStr.append("</script>\n");
+      retStr.append("</body></html>\n");
+      Log.warning(ME, "Sending alert to browser: " + text);
+      return retStr.toString();
    }
 
 
