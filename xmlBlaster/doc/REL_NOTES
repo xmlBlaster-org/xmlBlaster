@@ -3,6 +3,15 @@
 
 Changes for 0.76 [?, 2000]
 ===============================
+   - Added demo for http browser callback without closing the http
+	  connection.
+	  see xmlBlaster/demo/html/systemInfo
+	  and online:
+	  http://www.xmlBlaster.org/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret
+
+	- Bugfixes (especially memory leak fixed) in browser
+	  callback framework.
+
    - Logging output can now be customized.
      You can choose the Date and Time formatting and the
      language and country.
