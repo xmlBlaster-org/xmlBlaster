@@ -73,12 +73,27 @@ EmailDriver.from=xmlblast@localhost
 
 
 #------------------------------------------------------------------------------
-# Customize queue implementation
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
-QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
-#QueuePlugin[NATIV][1.0]=org.xmlBlaster.util.queue.nativ.NativeQueuePlugin
-QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
-QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin
+# Customize queue properties
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
+
+# The property with appended 'Cache' is in RAM, the second property is swap space on harddisk
+
+# How many history messages of same key oid (topic) to hold in xmlBlaster (holds references only)
+history.queue.maxMsgCache = 10
+history.queue.maxMsg = ${history.queue.maxMsgCache}
+
+# How big is a callback queue for each client (holds references only)
+cb.queue.maxMsgCache = 1000
+cb.queue.maxMsg = ${cb.queue.maxMsgCache}
+
+# How big is the topic cache for messages of same oid (here your message content occupies the memory)
+msgstore.maxMsgCache = 10000
+msgstore.maxMsg = 100000000
+
+
+# Tail back queue on client side (contains the real data of all message types)
+cb.queue.maxMsgCache = 1000
+cb.queue.maxMsg = 10000000
 #------------------------------------------------------------------------------
 
 
@@ -102,6 +117,35 @@ PriorizedDeliveryPlugin.config=<msgDispatch defaultStatus='64k' defaultAction='s
    </onStatus> \
  </msgDispatch>
  
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Declare existing queue implementation plugins
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
+MsgStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+MsgStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+MsgStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgStoreCachePlugin
+
+# Choose the plugin (each publisher can overwrite this in its publish topic-QoS)
+msgstore.defaultPlugin=CACHE,1.0
+msgstore.cache.persistentQueue=JDBC,1.0
+msgstore.cache.transientQueue=RAM,1.0
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Declare existing queue implementation plugins
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
+QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+#QueuePlugin[NATIV][1.0]=org.xmlBlaster.util.queue.nativ.NativeQueuePlugin
+QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
+QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin
+
+# Choose the plugin (each client can overwrite this in its connect/publish QoS)
+queue.defaultPlugin=CACHE,1.0
+queue.cache.persistentQueue=JDBC,1.0
+queue.cache.transientQueue=RAM,1.0
 #------------------------------------------------------------------------------
 
 
@@ -141,7 +185,6 @@ queue.persistent.password=
 queue.persistent.connectionPoolSize=1
 queue.persistent.connectionBusyTimeout=90000
 queue.persistent.maxWaitingThreads=300
-queue.defaultPlugin=RAM,1.0
 queue.persistent.tablePrefix=xmlBlaster
 queue.persistent.tableAllocationIncrement=2
 #------------------------------------------------------------------------------
