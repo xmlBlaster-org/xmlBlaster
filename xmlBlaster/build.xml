@@ -455,15 +455,15 @@ TODO
       <!-- residing in the path where they belong to regarding to their packet instruction. -->
       <copy todir="${build.src}/demo">
          <fileset dir="${demo.java.dir}">
-            <include name="javaclients/HelloWorld.java"/>
-            <include name="javaclients/HelloWorld2.java"/>
-            <include name="javaclients/HelloWorld3.java"/>
-            <include name="javaclients/HelloWorld4.java"/>
-            <include name="javaclients/HelloWorld5.java"/>
-            <include name="javaclients/HelloWorld6.java"/>
-            <include name="javaclients/HelloWorldMime.java"/>
-            <include name="javaclients/HelloWorldVolatile.java"/>
-            <include name="javaclients/HelloWorldVolatile2.java"/>
+            <include name="HelloWorld.java"/>
+            <include name="HelloWorld2.java"/>
+            <include name="HelloWorld3.java"/>
+            <include name="HelloWorld4.java"/>
+            <include name="HelloWorld5.java"/>
+            <include name="HelloWorld6.java"/>
+            <include name="HelloWorldMime.java"/>
+            <include name="HelloWorldVolatile.java"/>
+            <include name="HelloWorldVolatile2.java"/>
             <include name="Latency.java"/>
             <include name="PtpReceive.java"/>
             <include name="PtpSend.java"/>
