@@ -7,8 +7,8 @@
 
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
-CLASS_DIR = $(CLASS_TOP_DIR)/http/dhtml/systemInfo
-SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/http/dhtml/systemInfo
+CLASS_DIR = $(CLASS_TOP_DIR)/http/svg/systemInfo
+SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/http/svg/systemInfo
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------

@@ -3,10 +3,10 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.1 2001/12/15 22:28:19 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.2 2001/12/16 02:58:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
-package http.dhtml.systemInfo;
+package http.svg.systemInfo;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
@@ -71,7 +71,7 @@ public class SystemInfo extends HttpServlet
     * <p />
     * Invoking example:
     * <br />
-    * "/servlet/SystemInfo?ActionType=cpuinfo"
+    * "/servlet/SystemInfo?methodName=cpuinfo"
     * @param request
     * @param response
     */
@@ -81,12 +81,12 @@ public class SystemInfo extends HttpServlet
       StopWatch stop = new StopWatch();
 
       String sessionId = request.getRequestedSessionId();
-      String actionType = Util.getParameter(request, "ActionType", null);
-      String output = "Subscribing to " + actionType + " message ...";
+      String methodName = Util.getParameter(request, "methodName", null);
+      String output = "Invoking " + methodName + " ...";
 
       try {
-         if (actionType == null) {
-            String str = "Please call servlet with some ActionType e.g. xmlBlaster/dhtml/systemInfo?ActionType=cpuinfo";
+         if (methodName == null) {
+            String str = "Please call servlet with some methodName e.g. xmlBlaster/svg/systemInfo?methodName=subscribe&key.oid=MyMessage";
             Log.error(ME, str);
             htmlOutput(str, response);
             return;
@@ -100,15 +100,20 @@ public class SystemInfo extends HttpServlet
             return;
          }
 
-         // Expecting actionType = "cpuinfo" or "meminfo" but it could be
+         // Expecting methodName = "cpuinfo" or "meminfo" but it could be
          // any valid key oid.
-         Log.info(ME,"Got request for " + actionType + ", sessionId=" + sessionId + " ...");
+         Log.info(ME,"Got request for " + methodName + ", sessionId=" + sessionId + " ...");
 
-         SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(actionType);
-         SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
+         if ("subscribe".equalsIgnoreCase(methodName)) {
+            String oid = Util.getParameter(request, "key.oid", null);
+            SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(oid);
+            SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
 
-         String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml());
-         Log.info(ME, "Subscribed to " + actionType + "=" + ret);
+            String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml());
+            Log.info(ME, "Subscribed to " + oid + ": " + ret);
+         }
+         else
+            Log.error(ME, "Unknown methodName=" + methodName);
       }
       catch (XmlBlasterException e) {
          String text = "Error from xmlBlaster: " + e.reason;

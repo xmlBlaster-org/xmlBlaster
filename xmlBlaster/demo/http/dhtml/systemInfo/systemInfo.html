@@ -3,12 +3,12 @@
 COMMENT:
    This page contains a frameset, the 'northFrame' receives the
    data (system infos from our web server) and draws the
-   'cpuinfo' and 'meminfo' frames.
+   'svginfo' frame.
 
    We receive instant callbacks over the persistent http connection.
 
 INVOKE:
-   http://localhost/systemInfo/systemInfo.html?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
+   http://127.0.0.1:8080/xmlBlaster/svg/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
 
 PRECONDITION:
    Before invoking any other servlets, the persistent http connection
@@ -17,6 +17,7 @@ PRECONDITION:
    This login generates a unique session ID which are reused by the other frames.
 
 AUTHOR:
+   laghi@swissinfo.org
    ruff@swand.lake.de
 -->
 
@@ -52,24 +53,19 @@ AUTHOR:
          {
             Log = top.xmlBlasterWindow.Log;
             // Switch debugging on/off
-            Log.INFO = false;
-            Log.TRACE = false;
+            Log.INFO = true;
+            Log.TRACE = true;
             Log.trace("Login succeeded, loading application ...");
-
-            // use absolute name, since this method is called from persistentWindow servlet?
-            //top.systemInfoWindow.northFrame.location.href = "/xmlBlaster/dhtml/systemInfo/northFrame.html";
 
             isExplorer = (navigator.appVersion.indexOf("MSIE") != -1);
             if (isExplorer) { // With MSIE 5 the replace() seems to be more reliable!
                //alert("Explorer");
-               northFrame.location.replace("/xmlBlaster/dhtml/systemInfo/northFrame.html");
-               cpuinfoFrame.location.replace("/xmlBlaster/dhtml/systemInfo?ActionType=cpuinfo");
-               meminfoFrame.location.replace("/xmlBlaster/dhtml/systemInfo?ActionType=meminfo");
+               northFrame.location.replace("/xmlBlaster/svg/systemInfo/northFrame.html");
+               svgFrame.location.replace("/xmlBlaster/svg/systemInfo/systemInfo.svg");
             }
             else {
-               northFrame.location.href = "/xmlBlaster/dhtml/systemInfo/northFrame.html";
-               cpuinfoFrame.location.href = "/xmlBlaster/dhtml/systemInfo?ActionType=cpuinfo";
-               meminfoFrame.location.href = "/xmlBlaster/dhtml/systemInfo?ActionType=meminfo";
+               northFrame.location.href = "/xmlBlaster/svg/systemInfo/northFrame.html";
+               svgFrame.location.href = "/xmlBlaster/svg/systemInfo/systemInfo.svg";
             }
          }
 
@@ -81,23 +77,16 @@ AUTHOR:
          function cleanup()
          {
             if ((typeof top.xmlBlasterWindow) != "undefined" &&
-                (typeof top.xmlBlasterWindow.location) != "undefined")
+                (typeof top.xmlBlasterWindow.location) != "undefined" &&
+                (typeof top.xmlBlasterWindow.location.href) != "undefined")
                top.xmlBlasterWindow.location.href = "/xmlBlaster/BlasterHttpProxyServlet?ActionType=logout";
          }
       </script>
 
 
-      <frameset onUnload="cleanup()" rows="150,70,70,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
+      <frameset onUnload="cleanup()" rows="150,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
          <frame name="northFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin="0" frameborder="0" framespacing="0">
-         <frame name="cpuinfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
-         <frame name="meminfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
-         <!-- Calling of servlets not yet possible, we first need to do a successful login
-         <frame name="cpuinfoFrame" src="/xmlBlaster/dhtml/systemInfo?ActionType=cpuinfo" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
-         -->
-         <!--
-         <frame name="meminfoFrame" src="/xmlBlaster/dhtml/systemInfo?ActionType=meminfo" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
-         -->
-         <frame name="southFrame" src="../systemInfo/southFrame.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         <frame name="svgFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
       </frameset>
 
    </head>
