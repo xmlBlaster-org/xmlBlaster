@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='admin.errorcodes' type='NEW' prio='LOW' status="INWORK">
+<requirement id='admin.errorcodes' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster supports well defined error codes</topic>
    <description>
     <p>
@@ -306,7 +306,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

@@ -9,19 +9,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 /**
- * This class simulates an enumeration for queue priorities, 
- * it ensures that only valid priorities are used. 
+ * This class holds an enumeration error codes. 
  * <p>
- * Note that this implementation has a fixed number of priorities, namely from 0 (lowest) to 9 (highest).
- * For performance reasons we have not used an interface in the queue implementation to hide
- * this errorCode implementation (calling a method through an interface takes 20 CPU cycles instead of 2).
+ * If you need new error code add it here following the same schema.
  * </p>
  * <p>
- * If you need a different set of priorities, replace this implementation or change it to
- * support an adjustable amount of priorities.
- * </p>
- * <p>
- * NOTE: You need to add here new error codes!
+ * The documentation is created by examining this class with it links.
  * </p>
  * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
