@@ -94,7 +94,7 @@ import java.io.Serializable;
  *
  *   &lt;!-- The server side callback queue: -->
  *   &lt;queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
- *      &lt;callback type='XML-RPC' hostname='192.168.1.4' dispatchPlugin='4e56890ghdFzj0'>
+ *      &lt;callback type='XML-RPC' hostname='192.168.1.4' sessionId='4e56890ghdFzj0'>
  *         http://192.168.1.4:8081/
  *         &lt;burstMode collectTime='400' />
  *      &lt;/callback>
