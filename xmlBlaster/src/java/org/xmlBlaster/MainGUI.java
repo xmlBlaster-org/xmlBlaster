@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.35 2000/09/15 17:16:12 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.36 2000/10/24 17:22:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -104,9 +104,11 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       this.xmlBlasterMain = main;
 
       // set the application icon
-      java.net.URL      oUrl;
+      java.net.URL oUrl;
       oUrl = this.getClass().getResource("AppIcon.gif");
-      Image img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
+      Image img = null;
+      if (oUrl != null)
+         img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
       if(img != null)
       {
         this.setIconImage(img);
