@@ -58,7 +58,12 @@ public class WorkerThread extends Thread
       }
       catch (Throwable e) {
          if (!(e instanceof IOException)) e.printStackTrace();
-         log.error(ME, e.toString());
+         if (e instanceof java.net.SocketException) { // : Socket closed
+            if (log.TRACE) log.trace(ME, "Shutting down because of: " + e.toString());
+         }
+         else {
+            log.error(ME, "Shutting down because of: " + e.toString());
+         }
          cbHandler.getSocketConnection().shutdown();
       }
    }
