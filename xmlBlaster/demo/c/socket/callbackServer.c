@@ -12,7 +12,7 @@ Compile:   gcc -Wall -DUSE_MAIN -o callbackServer callbackServer.c
 
 #define NSTRS       3           /* no. of strings  */
 
-static int sock_fd = -1;
+static SOCKET sock_fd = -1;
 
 /**
  * Read the given amount of bytes
@@ -23,7 +23,11 @@ int readn(int fd, char *ptr, int nbytes)
    int nleft, nread;
    nleft = nbytes;
    while(nleft > 0) {
+#		ifdef WIN32
+		nread = recv(fd, ptr, nleft, 0);
+#		else
       nread = read(fd, ptr, nleft);
+#		endif
       if (nread < 0)
          return nread; /* error, return < 0 */
       else if (nread == 0)
@@ -40,7 +44,9 @@ int readn(int fd, char *ptr, int nbytes)
  */
 void initCallbackServer(callbackData *cbArgs)
 {
-   int ns, cli_len, keyLen, qosLen;
+   SOCKET ns;
+	int keyLen, qosLen;
+   int cli_len;
    char *pp;
    char *rawData = NULL;
    struct hostent *hostP = NULL;
@@ -97,7 +103,7 @@ void initCallbackServer(callbackData *cbArgs)
     * will be connected to the client.  cli_addr will
     * contain the address of the client.
     */
-   cli_len = sizeof(cli_addr);
+   cli_len = (int)sizeof(cli_addr);
    if ((ns = accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
        perror("callbackServer: accept");
        return;
@@ -109,7 +115,11 @@ void initCallbackServer(callbackData *cbArgs)
        * Then we read callback messages ...
        * The first 10 bytes are the message length (as a string)
        */
+#	   ifdef WIN32
+      numRead = recv(ns, msgLengthP, MSG_LEN_FIELD_LEN, 0);
+#     else
       numRead = readn(ns, msgLengthP, MSG_LEN_FIELD_LEN);
+#     endif
       if (numRead != MSG_LEN_FIELD_LEN) {
          if (XMLBLASTER_DEBUG) printf("callbackServer: ERROR Callback data 'length' from xmlBlaster is corrupted");
          return;
@@ -119,7 +129,11 @@ void initCallbackServer(callbackData *cbArgs)
       if (XMLBLASTER_DEBUG) printf("callbackServer: Callback data from xmlBlaster arrived, message length %d bytes\n", msgLength);
 
       /* ignore flag bits (pos 10-13) */
+#	   ifdef WIN32
+		numRead = recv(ns, msgFlagP, MSG_FLAG_FIELD_LEN, 0);
+#     else
       numRead = readn(ns, msgFlagP, MSG_FLAG_FIELD_LEN);
+#     endif
       if (numRead != MSG_FLAG_FIELD_LEN) {
          if (XMLBLASTER_DEBUG) printf("callbackServer: ERROR Callback data 'flag' from xmlBlaster is corrupted");
          return;
@@ -127,7 +141,11 @@ void initCallbackServer(callbackData *cbArgs)
 
       /* read the message itself ... */
       rawData = (char *)malloc((msgLength+1)*sizeof(char));
+#	   ifdef WIN32
+		numRead = recv(ns, rawData, msgLength, 0);
+#     else
       numRead = readn(ns, rawData, msgLength);
+#     endif
       *(rawData + msgLength) = 0;
       if (XMLBLASTER_DEBUG) printf("callbackServer: Callback data from xmlBlaster arrived:\n%s\n", rawData);
 
@@ -175,8 +193,13 @@ int isListening()
 
 void shutdownCallbackServer()
 {
-   if (isListening())
-      close(sock_fd);
+   if (isListening()) {
+#	   ifdef WIN32
+		   closesocket(sock_fd);
+#		else
+	      close(sock_fd);
+#		endif
+	}
 }
 
 /**
@@ -188,7 +211,7 @@ char *messageUnitToXml(MsgUnit *msg)
 {
         //char content[msg->contentLen+1];
    char *content = malloc(msg->contentLen+1);
-   int len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
+   size_t len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
    char *xml = (char *)malloc(len*sizeof(char));
    sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
                       msg->key,

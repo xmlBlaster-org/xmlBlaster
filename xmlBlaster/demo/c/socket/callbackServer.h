@@ -28,7 +28,7 @@ static const bool XMLBLASTER_DEBUG = true;
 typedef struct MsgUnitStruct {
    char *key;               // XML formatted ASCII string of message key
    unsigned char *content;  // Raw data
-   int contentLen;
+   size_t contentLen;
    char *qos;               // XML formatted ASCII string of Quality of Service
 } MsgUnit;
 
@@ -50,7 +50,7 @@ typedef struct MsgUnitStruct {
 #define  MAX_METHODNAME_LEN 20
 #define  MAX_SESSIONID_LEN 256
 typedef struct ResponseHolderStruct {
-   long msgLen;
+   size_t msgLen;
    bool checksum;
    bool compressed;
    char type;
@@ -58,8 +58,8 @@ typedef struct ResponseHolderStruct {
    long requestId;
    char methodName[MAX_METHODNAME_LEN];
    char secretSessionId[MAX_SESSIONID_LEN];
-   long dataLenUncompressed;
-   long dataLen;
+   size_t dataLenUncompressed;
+   size_t dataLen;
    unsigned char *data; // allocated with malloc, you need to free() it yourself, is compressed if marked as such
 } ResponseHolder;
 
@@ -130,7 +130,7 @@ typedef struct XmlBlasterAccessStruct {
 
 extern XmlBlasterAccess getXmlBlasterAccess(int argc, char** argv);
 extern int readn(int fd, char *ptr, int nbytes);
-extern void initConnection(int argc, char** argv);
+extern bool initConnection(int argc, char** argv);
 extern void initCallbackServer(callbackData *data);
 extern int getLength(char *data);
 extern int isListening();
@@ -139,10 +139,10 @@ extern char *contentToString(char *content, MsgUnit *msg);
 extern char *messageUnitToXml(MsgUnit *msg);
 
 
-char *blobcpy_alloc(const unsigned char *blob, const int len);
+char *blobcpy_alloc(const unsigned char *blob, const size_t len);
 char *strcpyAlloc(const char *src);
 extern int strcpy_alloc(char **into_string, const char *from_string);
-char *strncpy0(char * const to, const char * const from, const int maxLen);
+char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 void trim(unsigned char *s);
-void toReadableDump(unsigned char *data, int len, unsigned char *readable);
+unsigned char *toReadableDump(unsigned char *data, size_t len);
 
