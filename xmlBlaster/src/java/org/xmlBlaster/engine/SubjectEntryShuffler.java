@@ -35,7 +35,7 @@ public class SubjectEntryShuffler implements Runnable {
       this.log = this.global.getLog("core");
       if (this.log.CALL) this.log.call(ME, "constructor");
       this.channel = new LinkedQueue();
-      Thread thread = new Thread(this, ME);
+      Thread thread = new Thread(this, "XmlBlaster."+ME);
       thread.setDaemon(true);
       thread.start(); 
    }
