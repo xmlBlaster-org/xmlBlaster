@@ -94,13 +94,6 @@ namespace org {
       string getCbAddress() const;
 
       /**
-       * Accessing the orb handle.
-       * @return org.omg.CORBA.ORB
-       */
-      CORBA::ORB_ptr getOrb();
-
-      
-      /**
        * Is used to perform work on the orb (if necessary).
        * @return true if some work was done
        */
@@ -131,19 +124,18 @@ namespace org {
       serverIdl::Server_ptr getXmlBlaster();
        */
       
-
+private:
       /**
        * Locate the CORBA Name Service.
        * <p />
        * The found name service is cached, for better performance in 
        * subsequent calls
-       * @return NamingContext, reference on name service
        * @exception XmlBlasterException
        *                    CORBA error handling if no naming service is found
        */
-      CosNaming::NamingContext_ptr getNamingService();
+      void initNamingService();
 
-
+public:
       /**
        * Access the authentication service.
        * <p />
@@ -167,7 +159,7 @@ namespace org {
        * @return a handle on the AuthServer IDL interface
        *
        */
-      authenticateIdl::AuthServer_ptr getAuthenticationService();
+      void initAuthenticationService();
 
 
       /**
@@ -218,8 +210,7 @@ namespace org {
        * Building a Callback server.
        * @return the BlasterCallback server
        */
-      clientIdl::BlasterCallback_ptr 
-      createCallbackServer(POA_clientIdl::BlasterCallback *implObj);
+      void createCallbackServer(POA_clientIdl::BlasterCallback *implObj);
 
 
       /**
@@ -253,7 +244,7 @@ namespace org {
        * @return true if you are logged in
        */
       bool isLoggedIn() {
-         if (CORBA::is_nil(authServer_)) getAuthenticationService();
+         if (CORBA::is_nil(authServer_)) initAuthenticationService();
          return (!CORBA::is_nil(xmlBlaster_ /*.in()*/ ));
       }
       
