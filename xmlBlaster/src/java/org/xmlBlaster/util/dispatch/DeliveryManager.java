@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
@@ -100,6 +100,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (log.TRACE && this.msgInterceptor != null) log.trace(ME, "Activated dispatcher plugin '" + this.typeVersion + "'");
    }
 
+   public final void updateProperty(CbQueueProperty cbQueueProperty) throws XmlBlasterException {
+      this.deliveryConnectionsHandler.initialize(cbQueueProperty.getCallbackAddresses());
+   }
+
    public void finalize() {
       removeBurstModeTimer();
       if (log.TRACE) log.trace(ME, "finalize - garbage collected");
@@ -124,6 +128,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       return this.securityInterceptor;
    }
 
+   /**
+    * @return The handler of all callback plugins, is never null
+    */
    public DeliveryConnectionsHandler getDeliveryConnectionsHandler() {
       return this.deliveryConnectionsHandler;
    }
