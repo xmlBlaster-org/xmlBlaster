@@ -6,7 +6,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 //import org.xmlBlaster.authentication.plugins.ReversibleCrypt;
 
 /**
@@ -112,16 +112,17 @@ public class Session implements I_Session {
    /**
     * decrypt, check, unseal ... an incomming message
     * <p/>
-    * @param MessageUnit The the received message
-    * @return MessageUnit The original message
+    * @param MsgUnitRaw The the received message
+    * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MessageUnit)
+    * @see #importMessage(MsgUnitRaw)
     */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
       // dummy implementation
-      msg = new MessageUnit(importMessage(msg.getKey()),
-                            importMessage(msg.getContent()),
-                            importMessage(msg.getQos()));
+      msg = new MsgUnitRaw(msg.getMsgUnit(),
+                           importMessage(msg.getKey()),
+                           importMessage(msg.getContent()),
+                           importMessage(msg.getQos()));
 
       //secMgr.getGUI().printKey(msg.getKey());
       secMgr.getGUI().printQoS(msg.getQos());
@@ -153,16 +154,17 @@ public class Session implements I_Session {
    /**
     * encrypt, sign, seal ... an outgoing message
     * <p/>
-    * @param MessageUnit The source message
-    * @return MessageUnit
+    * @param MsgUnitRaw The source message
+    * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MessageUnit)
+    * @see #importMessage(MsgUnitRaw)
     */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException {
       // dummy implementation
-      msg = new MessageUnit(exportMessage(msg.getKey()),
-                            exportMessage(msg.getContent()),
-                            exportMessage(msg.getQos()));
+      msg = new MsgUnitRaw(msg.getMsgUnit(),
+                           exportMessage(msg.getKey()),
+                           exportMessage(msg.getContent()),
+                           exportMessage(msg.getQos()));
 
       return msg;
 

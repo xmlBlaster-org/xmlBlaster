@@ -5,7 +5,6 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.helper.MessageUnit;
 import org.jutils.log.LogChannel;
 
 import javax.naming.*;
@@ -53,7 +52,7 @@ import java.util.Enumeration;
  *   }
  * </pre>
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class LdapGateway
 {

@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.a2Blaster;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -181,13 +181,13 @@ public class Session implements I_Session, I_Subject {
     * decrypt, check, unseal ... an incomming message
     * <p/>
     * @author wolfgang.kleinertz@epost.de
-    * @param MessageUnit The the received message
-    * @return MessageUnit The original message
+    * @param MsgUnitRaw The the received message
+    * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MessageUnit)
-    * implements: I_Session.importMessage(MessageUnit);<br>
+    * @see #importMessage(MsgUnitRaw)
+    * implements: I_Session.importMessage(MsgUnitRaw);<br>
     */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
       // dummy implementation
       if (log.CALL) log.call(ME+".importMessage(...)", "-------START-----\n");
       if (log.DUMP) log.dump(ME+".importMessage(...)", "in: "+msg.toXml());
@@ -205,13 +205,13 @@ public class Session implements I_Session, I_Subject {
    /**
     * encrypt, sign, seal ... an outgoing message
     * <p/>
-    * @param MessageUnit The source message
-    * @return MessageUnit
+    * @param MsgUnitRaw The source message
+    * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MessageUnit)
-    * implements: I_Session.exportMessage(MessageUnit);<br>
+    * @see #importMessage(MsgUnitRaw)
+    * implements: I_Session.exportMessage(MsgUnitRaw);<br>
     */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException {
       // dummy implementation
       if (log.CALL) log.call(ME+".exportMessage(...)", "-------START-----\n");
       if (log.DUMP) log.dump(ME+".exportMessage(...)", "in "+msg.toXml());

@@ -13,7 +13,7 @@ import java.util.Hashtable;
  * Authorization is not implemented, please read javadoc of LdapGateway
  * if you need LDAP authorization. 
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.authentication.plugins.ldap.LdapGateway
  */
 

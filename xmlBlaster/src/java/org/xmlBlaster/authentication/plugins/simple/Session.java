@@ -5,7 +5,7 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.jutils.log.LogChannel;
 
 /**
@@ -111,12 +111,12 @@ public class Session implements I_Session {
    /**
     * decrypt, check, unseal ... an incomming message
     * <p/>
-    * @param MessageUnit The the received message
-    * @return MessageUnit The original message
+    * @param MsgUnitRaw The the received message
+    * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MessageUnit)
+    * @see #importMessage(MsgUnitRaw)
     */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
       // dummy implementation
       return msg;
    }
@@ -132,12 +132,12 @@ public class Session implements I_Session {
    /**
     * encrypt, sign, seal ... an outgoing message
     * <p/>
-    * @param MessageUnit The source message
-    * @return MessageUnit
+    * @param MsgUnitRaw The source message
+    * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MessageUnit)
+    * @see #importMessage(MsgUnitRaw)
     */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException {
       // dummy implementation
       return msg;
 

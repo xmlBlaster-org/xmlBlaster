@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.ldap;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.ldap.SecurityQos;
@@ -21,7 +21,7 @@ import org.xmlBlaster.authentication.plugins.ldap.SecurityQos;
  *    the importMessage() and exportMessage() methods do nothing.
  *
  * @see org.xmlBlaster.authentication.plugins.ldap.SecurityQos
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class ClientPlugin implements I_ClientPlugin {
    public static final String ME = "ClientPlugin";
@@ -63,12 +63,12 @@ public class ClientPlugin implements I_ClientPlugin {
    /**
     * decrypt, check, unseal ... an incomming message
     * <p/>
-    * @param MessageUnit The the received message
-    * @return MessageUnit The original message
+    * @param MsgUnitRaw The the received message
+    * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     * @see #importMessage(String)
     */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException
+   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException
    {
       return msg;
    }
@@ -80,7 +80,7 @@ public class ClientPlugin implements I_ClientPlugin {
     * @param String The the received message
     * @return String The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MessageUnit)
+    * @see #importMessage(MsgUnitRaw)
     */
    public String importMessage(String xmlMsg) throws XmlBlasterException
    {
@@ -96,12 +96,12 @@ public class ClientPlugin implements I_ClientPlugin {
     * encrypt, sign, seal ... an outgoing message
     * <p/>
     * We do noting in this simple case.
-    * @param MessageUnit The source message
-    * @return MessageUnit
+    * @param MsgUnitRaw The source message
+    * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MessageUnit)
+    * @see #importMessage(MsgUnitRaw)
     */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException
    {
       return msg;
    }

@@ -1,4 +1,4 @@
-   XMLBLASTER LDAP HOWTO  09/2001 ruff@swand.lake.de
+   XMLBLASTER LDAP HOWTO  09/2001 xmlBlaster@marcelruff.info
 
 To get started with ldap authentication please
 setup an ldap server first.

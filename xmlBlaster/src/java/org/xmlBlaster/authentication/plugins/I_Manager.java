@@ -2,11 +2,10 @@ package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * @author  kleinerz
- * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/08/26 09:10:04 $)
+ * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2002/12/18 11:38:07 $)
  */
 
 public interface I_Manager extends I_Plugin

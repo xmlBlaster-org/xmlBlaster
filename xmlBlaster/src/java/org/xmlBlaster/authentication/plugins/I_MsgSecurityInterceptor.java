@@ -1,7 +1,7 @@
 package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 /**
  * Interface declaring methods to intercept messages in the security layer
@@ -30,8 +30,8 @@ public interface I_MsgSecurityInterceptor {
    public String importMessage(String str) throws XmlBlasterException;
    /** Use this to import (decrypt) the content */
    public byte[] importMessage(byte[] content) throws XmlBlasterException;
-   /** Use this to import (decrypt) separately the xmlKey,content,qos of MessageUnit */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException;
+   /** Use this to import (decrypt) separately the xmlKey,content,qos of MsgUnitRaw */
+   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException;
 
    /**
     * encrypt, sign, seal ... an outgoing message. 
@@ -45,6 +45,6 @@ public interface I_MsgSecurityInterceptor {
    public String exportMessage(String xmlMsg) throws XmlBlasterException;
    /** Use this to export (encrypt) the content */
    public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException;
-   /** Use this to export (encrypt) separately the xmlKey,content,qos of MessageUnit */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException;
+   /** Use this to export (encrypt) separately the xmlKey,content,qos of MsgUnitRaw */
+   public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException;
 }

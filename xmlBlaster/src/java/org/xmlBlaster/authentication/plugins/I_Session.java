@@ -1,7 +1,6 @@
 package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * @author  W. Kleinertz

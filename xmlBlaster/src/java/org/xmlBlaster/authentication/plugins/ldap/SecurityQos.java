@@ -17,7 +17,7 @@ import org.jutils.text.StringHelper;
  *  &lt;/securityService>
  * </pre>
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.authentication.plugins.ldap.LdapGateway
  */
 public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
