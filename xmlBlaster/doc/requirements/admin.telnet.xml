@@ -19,6 +19,9 @@
     The default port to access xmlBlaster is 2702, configuring the port to 0 switches
     telnet access off (see below).
     </p>
+    <p>
+    The query syntax is described in the <a href="admin.commands.html">admin.commands</a> requirement.
+    </p>
 
       <h3>
       How does the return value look like?
@@ -256,7 +259,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
