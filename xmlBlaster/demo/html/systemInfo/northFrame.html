@@ -44,6 +44,14 @@ COMMENT:
          function updateFrame(frameName, content)
          {
             top.xmlBlasterWindow.Log.trace("Drawing to frame " + frameName + ": " + content);
+            
+            if (content < 1) content = 1;
+            if (content > 100) content = 100;
+            
+            var label = frameName;
+            if (frameName=="cpuinfoFrame") label = "CPU";
+            if (frameName=="meminfoFrame") label = "MEM";
+
             var doc = parent.frames[frameName].document;
             doc.open();
             var str = 
@@ -58,9 +66,9 @@ COMMENT:
                "   <table class='SystemLoad' border='1' width='400' cellpadding='2' cellspacing='2' bgcolor='#EEEEEE'>\n" +
                "      <tr>\n" +
                "         <td width='50'>\n" +
-               "            <font size='+1'>CPU</font>\n" +
+               "            <font size='+1'>" + label + "</font>\n" +
                "         </td>\n" +
-               "         <td width='50'>\n" +
+               "         <td width='60'>\n" +
                "            <font size='-1'>" + content + "%</font>\n" +
                "         </td>\n" +
                "         <td width='300' valign='center'>\n" +
