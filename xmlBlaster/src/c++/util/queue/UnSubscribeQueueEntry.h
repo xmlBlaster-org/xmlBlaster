@@ -32,23 +32,13 @@ public:
    UnSubscribeQueueEntry(org::xmlBlaster::util::Global& global,
                          const org::xmlBlaster::client::key::UnSubscribeKey& unSubscribeKey,
                          const org::xmlBlaster::client::qos::UnSubscribeQos& unSubscribeQos,
-                         const std::string& type=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::UNSUBSCRIBE,
-                         int priority=MAX_PRIORITY,
-                         bool persistent=false,
+                         int priority=NORM_PRIORITY,
                          org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
    MsgQueueEntry *getClone() const;
    
-   /**
-    * gets the content of this queue entry (the embedded object). In
-    * persistent queues this is the data which is stored as a blob.
-    */
-   const void* getEmbeddedObject() const;
-
    // this should actually be in another interface but since it is an only method we put it here.
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;
-
-   size_t getSizeInBytes() const;
 
    org::xmlBlaster::client::qos::UnSubscribeQos getUnSubscribeQos() const;
 

@@ -12,40 +12,38 @@ Comment:   Holding a message
 #include <vector>
 #include <client/qos/PublishQos.h>
 #include <client/key/PublishKey.h>
-#include <util/qos/MsgQosData.h>
-#include <util/key/MsgKeyData.h>
+#include <util/qos/QosData.h>
+#include <util/key/KeyData.h>
 
 
 
 
 namespace org { namespace xmlBlaster { namespace util {
    
-   /**
-    * Holding a message. 
-    * <p />
-    * This class corresponds to the CORBA serverIdl::MessageUnit struct
-    * but uses standard STL only.
-    * @since 0.79e
-    * @author xmlBlaster@marcelruff.info
-    * @author laghi@swissinfo.org
-    */
-   class Dll_Export MessageUnit 
-   {
+/**
+ * Holding a message. 
+ * <p />
+ * This class corresponds to the CORBA serverIdl::MessageUnit struct
+ * but uses standard STL only.
+ * @since 0.79e
+ * @author xmlBlaster@marcelruff.info
+ * @author laghi@swissinfo.org
+ */
+class Dll_Export MessageUnit 
+{
 
    private:
       std::string me() {
          return "MessageUnit";
       }
 
-//      std::string key_;
-      org::xmlBlaster::util::key::MsgKeyData key_;
+      org::xmlBlaster::util::key::KeyDataRef key_;
 
       //std::vector<unsigned char> contentVec_;
       unsigned long len_;
       unsigned char *content_;
 
-//      std::string qos_;
-      org::xmlBlaster::util::qos::MsgQosData qos_;
+      org::xmlBlaster::util::qos::QosDataRef qos_;
 
       /** Remembers the size of this message, needed e.g. for persistent storage calculation */
       mutable size_t immutableSizeInBytes_;
@@ -54,17 +52,17 @@ namespace org { namespace xmlBlaster { namespace util {
       /**
        * Constructs with a 'char *' and its length 'len'. 
        */
-      MessageUnit(const org::xmlBlaster::util::key::MsgKeyData &key,
+      MessageUnit(const org::xmlBlaster::util::key::KeyData &key,
                   unsigned long len,
                   const unsigned char * content, 
-                  const org::xmlBlaster::util::qos::MsgQosData &qos);
+                  const org::xmlBlaster::util::qos::QosData &qos);
 
       /**
        * Constructs a MessageUnit with a std::string. 
        */
-      MessageUnit(const org::xmlBlaster::util::key::MsgKeyData &key,
+      MessageUnit(const org::xmlBlaster::util::key::KeyData &key,
                   const std::string &content, 
-                  const org::xmlBlaster::util::qos::MsgQosData &qos);
+                  const org::xmlBlaster::util::qos::QosData &qos);
 
       /**
        * Constructs a MessageUnit with a std::string and a org::xmlBlaster::client::qos::PublishQos object
@@ -76,9 +74,9 @@ namespace org { namespace xmlBlaster { namespace util {
       /**
        * Constructs the message unit. 
        */
-      MessageUnit(const org::xmlBlaster::util::key::MsgKeyData &xmlKey,
+      MessageUnit(const org::xmlBlaster::util::key::KeyData &xmlKey,
                   const std::vector<unsigned char> &contentVec, 
-                  const org::xmlBlaster::util::qos::MsgQosData &qos);
+                  const org::xmlBlaster::util::qos::QosData &qos);
 
       /**
        * Constructs the message unit by taking a org::xmlBlaster::client::qos::PublishQos object.
@@ -88,12 +86,16 @@ namespace org { namespace xmlBlaster { namespace util {
                   org::xmlBlaster::client::qos::PublishQos& publishQos);
 
       /**
-       * Copy constructor
+       * Copy constructor. 
+       * <p />
+       * The content is cloned but the KeyData and QosData is referenced.
        */
       MessageUnit(const MessageUnit& rhs);
 
       /**
        * Assignment constructor
+       * <p />
+       * The content is cloned but the KeyData and QosData is referenced.
        */
       MessageUnit& operator=(const MessageUnit& rhs);
 
@@ -103,11 +105,15 @@ namespace org { namespace xmlBlaster { namespace util {
       virtual ~MessageUnit();
 
       /**
+       * @return The xml based key, reference counted
+       */
+      const org::xmlBlaster::util::key::KeyDataRef getKeyRef() const;
+
+      /**
+       * The life cycle of the returned object is limited to this MessageUnit. 
        * @return The xml based key
        */
-      const org::xmlBlaster::util::key::MsgKeyData& getKey() const {
-         return key_;
-      }
+      const org::xmlBlaster::util::key::KeyData& getKey() const;
 
       /**
        * @return The user data carried with this message
@@ -134,17 +140,18 @@ namespace org { namespace xmlBlaster { namespace util {
       /**
        * @return The user data carried with this message as a std::string
        */
-      std::string getContentStr() const {
-         //return std::string(contentVec_.begin(), contentVec_.end());
-         return std::string(reinterpret_cast<const char * const>(content_), static_cast<unsigned int>(len_));
-      }
+      std::string getContentStr() const;
 
       /**
+       * @return The xml based QoS, reference counted
+       */
+      const org::xmlBlaster::util::qos::QosDataRef getQosRef() const;
+
+      /**
+       * The life cycle of the returned object is limited to this MessageUnit. 
        * @return The quality of service of this message. 
        */
-      const org::xmlBlaster::util::qos::MsgQosData& getQos() const {
-         return qos_;
-      }
+      const org::xmlBlaster::util::qos::QosData& getQos() const;
 
       /**
        * Get the immutable size of this message. 
@@ -158,7 +165,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * @return The MessageUnit as a XML ASCII std::string
        */
       std::string toXml(const std::string &extraOffset="") const;
-   };
+};
 }}} // namespace
 
 #endif

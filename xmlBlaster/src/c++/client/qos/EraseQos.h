@@ -35,6 +35,8 @@ class Dll_Export EraseQos : public org::xmlBlaster::client::qos::UnSubscribeQos
 public:
    EraseQos(org::xmlBlaster::util::Global& global);
 
+   EraseQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::QueryQosData& data);
+
    EraseQos(const EraseQos& qos);
 
    EraseQos& operator =(const EraseQos& qos);

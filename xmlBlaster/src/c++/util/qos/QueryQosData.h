@@ -201,6 +201,12 @@ public:
     * @return internal state of the query as a XML ASCII std::string
     */
    std::string toXml(const std::string& extraOffset="") const;
+
+   /**
+    * Allocate a clone. 
+    * @return The caller needs to free it with 'delete'.
+    */
+   QueryQosData* getClone() const;
 };
 
 }}}} // namespace

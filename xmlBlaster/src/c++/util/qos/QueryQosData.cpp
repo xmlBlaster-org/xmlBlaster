@@ -287,7 +287,7 @@ string QueryQosData::toXml(const string& extraOffset) const
       iter++;
    }
    ret += historyQos_.toXml(extraOffset + Constants::INDENT);
-	bool clearText = false;
+        bool clearText = false;
    ret += dumpClientProperties(extraOffset + Constants::INDENT, clearText);
    ret += offset + "</qos>";
 
@@ -297,6 +297,10 @@ string QueryQosData::toXml(const string& extraOffset) const
    return ret;
 }
 
+QueryQosData* QueryQosData::getClone() const
+{
+   return new QueryQosData(*this);
+}
 
 }}}} // namespace
 

@@ -37,6 +37,12 @@ EraseQos::EraseQos(Global& global) : UnSubscribeQos(global)
    ME = "EraseQos";
 }
 
+EraseQos::EraseQos(Global& global, const QueryQosData& data)
+   : UnSubscribeQos(global, data)
+{
+   ME = "EraseQos";
+}
+
 EraseQos::EraseQos(const EraseQos& qos) : UnSubscribeQos(qos)
 {
 }

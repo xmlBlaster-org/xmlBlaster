@@ -164,6 +164,21 @@ int KeyData::size() const
    return toXml().length();
 }
 
+KeyData* KeyData::getClone() const
+{
+   return new KeyData(*this);
+}
+
+string KeyData::toXml() const
+{
+   return toXml("");
+}
+
+std::string KeyData::toXml(const std::string& /*extraOffset*/) const
+{
+   return "<error>KeyData::toXml: PLEASE IMPLEMENT IN_BASE CLASS</error>";
+}
+
 string KeyData::generateOid(const string& uniquePrefix) const
 {
    string ret;

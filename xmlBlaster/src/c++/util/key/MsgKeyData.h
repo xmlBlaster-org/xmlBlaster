@@ -88,8 +88,14 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the query as a XML ASCII std::string
     */
-   std::string toXml(const std::string& extraOffset="") const;
+   std::string toXml(const std::string& extraOffset) const;
+   std::string toXml() const;
 
+   /**
+    * Allocate a clone. 
+    * @return The caller needs to free it with 'delete'. 
+    */
+   MsgKeyData* getClone() const;
 };
 
 }}}} // namespace

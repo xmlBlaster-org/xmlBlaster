@@ -15,7 +15,6 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/queue/PublishQueueEntry.h>
 #include <util/queue/ConnectQueueEntry.h>
 #include <util/queue/SubscribeQueueEntry.h>
-#include <util/queue/UnSubscribeQueueEntry.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
@@ -533,8 +532,6 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
       queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
       if (log_.trace()) log_.trace(ME+":queueSubscribe", "created a client queue");
    }
-   if (log_.trace()) 
-      log_.trace(ME, string("queueSubscribe: entry '") + key.getOid() + "' has been queued");
    SubscribeReturnQos retQos(global_);
    std::string subscriptionId;
    {
@@ -546,10 +543,12 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
    }
    retQos.getData().setSubscriptionId(subscriptionId);
    retQos.getData().setState("QUEUED");
-   log_.error(ME, string("Creating subscriptionId on client side queued messages is missing"));
    qos.setSubscriptionId(subscriptionId);
    SubscribeQueueEntry entry(global_, key, qos, qos.getData().getPriority());
    queue_->put(entry);
+   if (log_.trace()) 
+      log_.trace(ME, string("queueSubscribe: entry '") + key.getOid() +
+                     "' has been queued with subscriptionId=" + subscriptionId);
    return retQos;
 }
 

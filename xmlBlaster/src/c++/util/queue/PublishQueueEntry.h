@@ -22,12 +22,6 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 class Dll_Export PublishQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
-   /**
-    * Holds the serialized information which is returned by getEmbeddedObject(),
-    * encoded according to embeddedType
-    */
-   mutable BlobHolder blobHolder_;
-
 public:
 
    /**
@@ -55,12 +49,6 @@ public:
    PublishQueueEntry& operator =(const PublishQueueEntry& entry);
 
    MsgQueueEntry *getClone() const;
-
-   /**
-    * gets the content of this queue entry (the embedded object). In
-    * persistent queues this is the data which is stored as a blob.
-    */
-   const void* getEmbeddedObject() const;
 
    /**
     * @param type "MSG_RAW|publish"

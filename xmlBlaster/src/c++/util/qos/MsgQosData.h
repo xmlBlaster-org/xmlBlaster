@@ -35,7 +35,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/QosData.h>
 
 #include <util/Destination.h>
-#include <util/SessionName.h>
 #include <util/qos/TopicProperty.h>
 #include <util/cluster/RouteInfo.h>
 #include <util/cluster/NodeId.h>
@@ -95,9 +94,6 @@ private:
    long lifeTime_; // = -1;
 
    long remainingLifeStatic_; // = -1;
-
-   /** the sender (publisher) of this message (unique loginName) */
-   mutable org::xmlBlaster::util::SessionNameRef sender_;
 
    void init();
 
@@ -197,18 +193,6 @@ public:
     * @return true/false
     */
    bool isReadonly() const;
-
-   /**
-    * Access sender unified naming object.
-    * @return sessionName of sender or null if not known
-    */
-   org::xmlBlaster::util::SessionNameRef getSender() const;
-
-   /**
-    * Access sender name.
-    * @param loginName of sender
-    */
-   void setSender(org::xmlBlaster::util::SessionNameRef sender) const;
 
    /**
     * Set > 0 if the message probably is redelivered (number of retries). 
@@ -323,11 +307,15 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII std::string
     */
-   std::string toXml(bool clearText, const std::string& extraOffset="") const;
+   virtual std::string toXml(bool clearText, const std::string& extraOffset="") const;
 
-   std::string toXml(const std::string& extraOffset="") const {
-      return toXml(false, extraOffset);
-   }
+   virtual std::string toXml(const std::string& extraOffset="") const;
+
+   /**
+    * Allocate a clone, the derived classes need to implement this method. 
+    * @return The caller needs to free it with 'delete'.
+    */
+   virtual MsgQosData* getClone() const;
 
    void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& prop);
 

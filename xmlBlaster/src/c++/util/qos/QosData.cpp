@@ -61,6 +61,10 @@ void QosData::init()
 
 void QosData::copy(const QosData& data)
 {
+   SessionName *p = new SessionName(global_, data.getSender()->getAbsoluteName());
+   SessionNameRef r(p);
+   sender_ = r;
+
    clientProperties_ = data.clientProperties_;
    state_ = data.state_;
    stateInfo_ = data.stateInfo_;
@@ -78,11 +82,11 @@ QosData::QosData(Global& global, const string& serialData)
      global_(global),
      log_(global.getLog("org.xmlBlaster.util.qos")),
      routeNodeList_(),
-     clientProperties_()     
+     clientProperties_(),
+     sender_(new SessionName(global))
 {
    init();
    serialData_ = serialData;
-
 }
 
 
@@ -91,7 +95,8 @@ QosData::QosData(const QosData& data)
      global_(data.global_),
      log_(data.log_),
      routeNodeList_(data.routeNodeList_),
-     clientProperties_()
+     clientProperties_(),
+     sender_(0)
 {
    copy(data);
 }
@@ -289,6 +294,16 @@ bool QosData::isPersistent() const
    return persistent_;
 }
 
+SessionNameRef QosData::getSender() const
+{
+   return sender_;
+}
+
+void QosData::setSender(org::xmlBlaster::util::SessionNameRef sender) const
+{
+   sender_ = sender;
+}
+
 string QosData::dumpClientProperties(const string& extraOffset, bool clearText) const
 {
    string ret = "";
@@ -301,6 +316,15 @@ string QosData::dumpClientProperties(const string& extraOffset, bool clearText) 
    return ret;
 }
 
+QosData* QosData::getClone() const
+{
+   return new QosData(*this);
+}
+
+std::string QosData::toXml(const std::string& /*extraOffset*/) const
+{
+   return "<error>QosData::toXml: PLEASE IMPLEMENT IN_BASE CLASS</error>";
+}
 
 }}}}
 

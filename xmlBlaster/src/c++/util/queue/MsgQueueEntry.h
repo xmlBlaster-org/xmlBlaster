@@ -17,6 +17,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/StatusQosData.h>
 #include <util/qos/QueryQosData.h>
 #include <util/key/QueryKeyData.h>
+//#include <util/msgUtil.h> // from xmlBlaster C library
+//#include <socket/xmlBlasterSocket.h> // from xmlBlaster C library ::encodeMsgUnit(&msgUnit, debug);
 
 // circular dependency I_ConnectionsHandler -> Queue -> MsgQueueEntry
 #ifndef _UTIL_DISPATCH_ICONNECTIONSHANDLER_H
@@ -59,13 +61,25 @@ protected:
    org::xmlBlaster::util::MessageUnit* msgUnit_;
    /* TODO: Change that connectQos, queryQos all derive from QosData and are transported inside msgUnit */
    org::xmlBlaster::util::qos::ConnectQos* connectQos_;
-   org::xmlBlaster::util::qos::QueryQosData* queryQosData_;
-   org::xmlBlaster::util::key::QueryKeyData* queryKeyData_;
 
-   // specific return values
+   /**
+    * Specific return value for connect(). 
+    */
    mutable org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
+   /**
+    * Specific return value for publish(). 
+    */
    mutable org::xmlBlaster::client::qos::PublishReturnQos* publishReturnQos_;
+   /**
+    * Return status for subscribe() etc. 
+    */
    mutable org::xmlBlaster::util::qos::StatusQosData* statusQosData_;
+
+   /**
+    * Holds the serialized information which is returned by getEmbeddedObject(),
+    * encoded according to embeddedType
+    */
+   mutable BlobHolder blobHolder_;
 
 public:
 
@@ -140,20 +154,6 @@ public:
        if (entry.publishReturnQos_ != NULL) 
           publishReturnQos_ = new org::xmlBlaster::client::qos::PublishReturnQos(*entry.publishReturnQos_);
 
-       if (queryQosData_ != NULL) {
-          delete queryQosData_;
-          queryQosData_ = NULL; 
-       }
-       if (entry.queryQosData_ != NULL)
-          queryQosData_ = new org::xmlBlaster::util::qos::QueryQosData(*entry.queryQosData_);
-
-       if (queryKeyData_ != NULL) {
-          delete queryKeyData_;
-          queryKeyData_ = NULL; 
-       }
-       if (entry.queryKeyData_ != NULL) 
-          queryKeyData_ = new org::xmlBlaster::util::key::QueryKeyData(*entry.queryKeyData_);
-
        if (statusQosData_ != NULL) {
           delete statusQosData_;
           statusQosData_ = NULL; 
@@ -222,10 +222,13 @@ public:
    org::xmlBlaster::util::Timestamp getUniqueId() const;
 
    /**
-    * gets the content of this queue entry (the embedded object). In
+    * The serialized data with MSG_RAW (identical to the SOCKET protocol serialization). 
+    * @return The content of this queue entry (the embedded object). In
     * persistent queues this is the data which is stored as a blob.
+    * Returns a BlobHolder instance containing the serialized message (identical serialization as in SOCKET protocol)
+    * May return 0.
     */
-   virtual const void* getEmbeddedObject() const = 0;
+   virtual const void* getEmbeddedObject() const;
 
    /**
     * gets the embeddedType of the object embedded in this entry.
@@ -245,9 +248,18 @@ public:
    /**
     * returns the size in bytes of this entry.
     */
-   virtual size_t getSizeInBytes() const = 0;
+   virtual size_t getSizeInBytes() const;
 
+   /**
+    * Access the MessageUnit in case it is a Publish.
+    * @return NULL if not publish
+    */
    org::xmlBlaster::util::MessageUnit& getMsgUnit() const;
+
+   //org::xmlBlaster::util::qos::QueryQosData& getQueryQosData() const;
+   //org::xmlBlaster::util::key::QueryKeyData& getQueryKeyData() const;
+
+
 
    // this should actually be in another interface but since it is an only method we put it here.
    virtual const MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&) const; // = 0;

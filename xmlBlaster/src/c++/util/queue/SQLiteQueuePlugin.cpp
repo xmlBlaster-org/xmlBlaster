@@ -236,6 +236,19 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
             ret.insert(ret.end(), EntryType(*pq));
             if (log_.trace()) log_.trace(ME, "ConnectQueueEntry is reference countet");
          }
+         /* TODO: queryKeyFactory and queryQosFactory!
+         else if (methodName == MethodName::SUBSCRIBE) {
+            QueryKeyData queryKeyData = queryKeyFactory_.readObject(string(msgUnit.key));
+            SubscribeKey subscribeKey(global_, queryKeyData);
+            QueryQosData queryQosData = queryQosFactory_.readObject(string(msgUnit.qos));
+            SubscribeQos subscribeQos(global_, queryQosData);
+            SubscribeQueueEntry *pq = new SubscribeQueueEntry(global_, subscribeKey, subscribeQos,
+                                           queueEntryC.priority, queueEntryC.uniqueId);
+            if (log_.trace()) log_.trace(ME, "Got SubscribeQueueEntry from queue");
+            ret.insert(ret.end(), EntryType(*pq));
+            if (log_.trace()) log_.trace(ME, "SubscribeQueueEntry is reference countet");
+         }
+         */
          else {  // TODO: How to handle: throw exception or remove the buggy entry?
             log_.error(ME + "::peekWithSamePriority", string("The queue entry embeddedType '") + queueEntryC.embeddedType + "' methodName='" + methodName + "' is not supported, we ignore it.");
          }

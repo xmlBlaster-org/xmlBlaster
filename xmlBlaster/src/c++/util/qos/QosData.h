@@ -33,8 +33,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/cluster/RouteInfo.h>
+#include <util/SessionName.h>
 #include <util/qos/ClientProperty.h>
 #include <util/PriorityEnum.h>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -51,7 +54,7 @@ extern Dll_Export const bool DEFAULT_forceDestroy;
 
 typedef std::vector<org::xmlBlaster::util::cluster::RouteInfo> RouteVector;
 
-class Dll_Export QosData
+class Dll_Export QosData : public org::xmlBlaster::util::ReferenceCounterBase
 {
 
 private:
@@ -93,6 +96,9 @@ public:   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProper
 protected:
 
    ClientPropertyMap clientProperties_; 
+
+   /** the sender (publisher) of this message (unique loginName) */
+   mutable org::xmlBlaster::util::SessionNameRef sender_;
 
    void copy(const QosData& data);
 
@@ -237,12 +243,31 @@ public:
    void setClientProperties(const ClientPropertyMap& cm);
 
    /**
+    * Access sender unified naming object.
+    * @return sessionName of sender or null if not known
+    */
+   org::xmlBlaster::util::SessionNameRef getSender() const;
+
+   /**
+    * Access sender name.
+    * @param loginName of sender
+    */
+   void setSender(org::xmlBlaster::util::SessionNameRef sender) const;
+
+   /**
     * Dump state of this object into a XML ASCII std::string.
     * <br>
+    * Needs to be implemented by derived classes.
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII std::string
     */
-   virtual std::string toXml(const std::string& extraOffset="") const = 0;
+   virtual std::string toXml(const std::string& extraOffset="") const;
+
+   /**
+    * Allocate a clone, the derived classes need to implement this method. 
+    * @return The caller needs to free it with 'delete'.
+    */
+   virtual QosData* getClone() const;
 
     // the following where not present before ...
    RouteVector getRouteNodes() const;
@@ -287,10 +312,9 @@ public:
     * @return true/false
     */
    bool isPersistent() const;
-
-   // copy constructor plus assignment operator ...
-
 };
+
+typedef org::xmlBlaster::util::ReferenceHolder<org::xmlBlaster::util::qos::QosData> QosDataRef;
 
 template <typename T_VALUE> void QosData::addClientProperty(
              const std::string& name, const T_VALUE& value,

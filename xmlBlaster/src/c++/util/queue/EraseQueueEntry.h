@@ -1,17 +1,17 @@
 /*------------------------------------------------------------------------------
-Name:      SubscribeQueueEntry.h
+Name:      EraseQueueEntry.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-#ifndef _UTIL_QUEUE_SUBSCRIBEQUEUEENRY_H
-#define _UTIL_QUEUE_SUBSCRIBEQUEUEENRY_H
+#ifndef _UTIL_QUEUE_ERASEQUEUEENRY_H
+#define _UTIL_QUEUE_ERASEQUEUEENRY_H
 
 #include <util/MethodName.h>
 #include <util/queue/MsgQueueEntry.h>
-#include <client/qos/SubscribeQos.h>
-#include <client/qos/SubscribeReturnQos.h>
-#include <client/key/SubscribeKey.h>
+#include <client/qos/EraseQos.h>
+#include <client/qos/EraseReturnQos.h>
+#include <client/key/EraseKey.h>
 
 
 /**
@@ -24,30 +24,30 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class Dll_Export SubscribeQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
+class Dll_Export EraseQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
 public:
 
    /**
-    * Constructor suited for operations like subscribe and unSubscribe
+    * Constructor for erase operations. 
     */
-   SubscribeQueueEntry(org::xmlBlaster::util::Global& global,
-                       const org::xmlBlaster::client::key::SubscribeKey& subscribeKey,
-                       const org::xmlBlaster::client::qos::SubscribeQos& subscribeQos,
+   EraseQueueEntry(org::xmlBlaster::util::Global& global,
+                       const org::xmlBlaster::client::key::EraseKey& eraseKey,
+                       const org::xmlBlaster::client::qos::EraseQos& eraseQos,
                        int priority=NORM_PRIORITY,
                        org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
-   ~SubscribeQueueEntry();
+   ~EraseQueueEntry();
 
    /**
     * copy constructor
     */
-   SubscribeQueueEntry(const SubscribeQueueEntry& entry);
+   EraseQueueEntry(const EraseQueueEntry& entry);
 
    /**
     * assignment constructor
     */
-   SubscribeQueueEntry& operator =(const SubscribeQueueEntry& entry);
+   EraseQueueEntry& operator =(const EraseQueueEntry& entry);
 
    MsgQueueEntry *getClone() const;
 
@@ -55,16 +55,16 @@ public:
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;
 
    /**
-    * @return A copy of the subscribe QoS
+    * @return A copy of the erase QoS
     */
-   org::xmlBlaster::client::qos::SubscribeQos getSubscribeQos() const;
+   org::xmlBlaster::client::qos::EraseQos getEraseQos() const;
 
    /**
-    * @return A copy of the subscribe Key
+    * @return A copy of the erase Key
     */
-   org::xmlBlaster::client::key::SubscribeKey getSubscribeKey() const;
+   org::xmlBlaster::client::key::EraseKey getEraseKey() const;
  
-   org::xmlBlaster::client::qos::SubscribeReturnQos getSubscribeReturnQos() const;
+   org::xmlBlaster::client::qos::EraseReturnQos getEraseReturnQos() const;
 
    std::string toXml(const std::string& indent="") const;
 

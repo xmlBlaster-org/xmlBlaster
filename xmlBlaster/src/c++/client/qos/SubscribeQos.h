@@ -4,6 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
+#ifndef _CLIENT_QOS_SUBSCRIBEQOS_H
+#define _CLIENT_QOS_SUBSCRIBEQOS_H
+
+#include <util/xmlBlasterDef.h>
+#include <client/qos/GetQos.h>
+
+namespace org { namespace xmlBlaster { namespace client { namespace qos {
+
 /**
  * This class encapsulates the QoS (quality of service) of a subscribe() request. 
  * <p />
@@ -28,15 +36,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">subscribe interface</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">MIME access filter requirement</a>
  */
-
-#ifndef _CLIENT_QOS_SUBSCRIBEQOS_H
-#define _CLIENT_QOS_SUBSCRIBEQOS_H
-
-#include <util/xmlBlasterDef.h>
-#include <client/qos/GetQos.h>
-
-namespace org { namespace xmlBlaster { namespace client { namespace qos {
-
 class Dll_Export SubscribeQos : public GetQos
 {
 public:

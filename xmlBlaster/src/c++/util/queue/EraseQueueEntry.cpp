@@ -1,10 +1,10 @@
 /*------------------------------------------------------------------------------
-Name:      SubscribeQueueEntry.cpp
+Name:      EraseQueueEntry.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-#include <util/queue/SubscribeQueueEntry.h>
+#include <util/queue/EraseQueueEntry.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
@@ -16,22 +16,22 @@ using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey,
-     const SubscribeQos& subscribeQos, int priority, Timestamp uniqueId)
-   : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), 
-     org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::SUBSCRIBE,
+EraseQueueEntry::EraseQueueEntry(Global& global, const EraseKey& eraseKey,
+     const EraseQos& eraseQos, int priority, Timestamp uniqueId)
+   : MsgQueueEntry(global, eraseKey.getData(), eraseQos.getData(), 
+     org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::ERASE,
      priority,
-     subscribeQos.getData().isPersistent(),
+     eraseQos.getData().isPersistent(),
      uniqueId)
 {
-   ME = "SubscribeQueueEntry";
+   ME = "EraseQueueEntry";
 }
 
-SubscribeQueueEntry::~SubscribeQueueEntry() {
+EraseQueueEntry::~EraseQueueEntry() {
 }
 
 /** copy constructor */
-SubscribeQueueEntry::SubscribeQueueEntry(const SubscribeQueueEntry& rhs)
+EraseQueueEntry::EraseQueueEntry(const EraseQueueEntry& rhs)
     //: MsgQueueEntry((MsgQueueEntry)rhs)
     : MsgQueueEntry(rhs.getGlobal(), rhs.getMsgUnit(), rhs.getEmbeddedType(), rhs.getPriority(), rhs.isPersistent(), rhs.getUniqueId())
 {
@@ -39,7 +39,7 @@ SubscribeQueueEntry::SubscribeQueueEntry(const SubscribeQueueEntry& rhs)
 }
 
 /** assignment constructor */
-SubscribeQueueEntry& SubscribeQueueEntry::operator=(const SubscribeQueueEntry& rhs)
+EraseQueueEntry& EraseQueueEntry::operator=(const EraseQueueEntry& rhs)
 {
    if (this == &rhs)
       return *this;
@@ -47,51 +47,56 @@ SubscribeQueueEntry& SubscribeQueueEntry::operator=(const SubscribeQueueEntry& r
    return *this;
 }
 
-MsgQueueEntry *SubscribeQueueEntry::getClone() const
+MsgQueueEntry *EraseQueueEntry::getClone() const
 {
-   return new SubscribeQueueEntry(*this);
+   return new EraseQueueEntry(*this);
 }
 
 // this should actually be in another interface but since it is an only method we put it here.
-const MsgQueueEntry& SubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
+const MsgQueueEntry& EraseQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {
    if (log_.call()) log_.call(ME, "send");
    if (statusQosData_) {
       delete statusQosData_;
       statusQosData_ = NULL;
    }
-   if (log_.dump()) log_.dump(ME, string("send: ") + SubscribeQueueEntry::toXml());
-   statusQosData_ = new StatusQosData(
-        connectionsHandler.getConnection().subscribe(
-            getSubscribeKey(), getSubscribeQos()).getData());
+
+   log_.error(ME, string("send() return is not implemented: ") + EraseQueueEntry::toXml());
+   /*
+   // ??? TODO:
+   vector<EraseReturnQos> 
+   */
+  //statusQosData_ = new StatusQosData(
+        connectionsHandler.getConnection().erase(getEraseKey(), getEraseQos());
+    //.getData());
    return *this;
 }
 
-SubscribeQos SubscribeQueueEntry::getSubscribeQos() const
+EraseQos EraseQueueEntry::getEraseQos() const
 {
    const QueryQosData *qos = dynamic_cast<const QueryQosData *>(&msgUnit_->getQos());
-   return SubscribeQos(global_, *qos);
+   return EraseQos(global_, *qos);
 }
 
-SubscribeKey SubscribeQueueEntry::getSubscribeKey() const
+EraseKey EraseQueueEntry::getEraseKey() const
 {
    const QueryKeyData *key = dynamic_cast<const QueryKeyData *>(&msgUnit_->getKey());
-   return SubscribeKey(global_, *key);
+   return EraseKey(global_, *key);
 }
 
-SubscribeReturnQos SubscribeQueueEntry::getSubscribeReturnQos() const
+EraseReturnQos EraseQueueEntry::getEraseReturnQos() const
 {
-   return SubscribeReturnQos(global_, *statusQosData_);
+   return EraseReturnQos(global_, *statusQosData_);
 }
 
-string SubscribeQueueEntry::toXml(const string& indent) const
+string EraseQueueEntry::toXml(const string& indent) const
 {
    string extraOffset = "   " + indent;
-   string ret = indent + "<subscribeQueueEntry>\n";
+   string ret = indent + "<eraseQueueEntry>\n";
    if (msgUnit_) {
       ret += extraOffset + msgUnit_->toXml(indent);
    }
-   ret += indent + "</subscribeQueueEntry>\n";
+   ret += indent + "</eraseQueueEntry>\n";
    return ret;
 }
 

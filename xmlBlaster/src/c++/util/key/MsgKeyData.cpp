@@ -47,6 +47,11 @@ string MsgKeyData::getClientTags() const
    return clientTags_;
 }
 
+string MsgKeyData::toXml() const
+{
+   return toXml("");
+}
+
 string MsgKeyData::toXml(const string& extraOffset) const
 {
    string ret;
@@ -67,6 +72,11 @@ string MsgKeyData::toXml(const string& extraOffset) const
    else
       ret += "/>";
   return ret;
+}
+
+MsgKeyData* MsgKeyData::getClone() const
+{
+   return new MsgKeyData(*this);
 }
 
 }}}} // namespace

@@ -11,11 +11,17 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-UnSubscribeQueueEntry::UnSubscribeQueueEntry(Global& global, const UnSubscribeKey& unSubscribeKey, const UnSubscribeQos& unSubscribeQos, const string& type, int priority, bool persistent, Timestamp uniqueId)
-   : MsgQueueEntry(global, unSubscribeKey.getData(), unSubscribeQos.getData(), type, priority, persistent, uniqueId)
+UnSubscribeQueueEntry::UnSubscribeQueueEntry(Global& global, const UnSubscribeKey& unSubscribeKey, const UnSubscribeQos& unSubscribeQos, int priority, Timestamp uniqueId)
+   : MsgQueueEntry(global, unSubscribeKey.getData(), unSubscribeQos.getData(),
+                   org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::UNSUBSCRIBE,
+                   priority,
+                   unSubscribeQos.getData().isPersistent(),
+                   uniqueId)
 {
    ME = "UnSubscribeQueueEntry";
 }
@@ -23,11 +29,6 @@ UnSubscribeQueueEntry::UnSubscribeQueueEntry(Global& global, const UnSubscribeKe
 MsgQueueEntry *UnSubscribeQueueEntry::getClone() const
 {
    return new UnSubscribeQueueEntry(*this);
-}
-
-const void* UnSubscribeQueueEntry::getEmbeddedObject() const
-{
-   return queryKeyData_; // actually not used now otherwise we would need to return also the qos
 }
 
 // this should actually be in another interface but since it is an only method we put it here.
@@ -40,27 +41,21 @@ const MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectio
    }
    if (log_.dump()) log_.dump(ME, string("send: ") + toXml());
    // the return value is not stored ...
-   connectionsHandler.getConnection().unSubscribe(UnSubscribeKey(global_, *queryKeyData_), UnSubscribeQos(global_, *queryQosData_));
+   connectionsHandler.getConnection().unSubscribe(getUnSubscribeKey(), getUnSubscribeQos());
 
    return *this;
 }
 
-size_t UnSubscribeQueueEntry::getSizeInBytes() const
-{
-   size_t sum = 0;
-   if (queryQosData_     != NULL) sum += sizeof(*queryQosData_);
-   if (queryKeyData_     != NULL) sum += sizeof(*queryKeyData_);
-   return sum;
-}
-
 UnSubscribeQos UnSubscribeQueueEntry::getUnSubscribeQos() const
 {
-   return UnSubscribeQos(global_, *queryQosData_);
+   const QueryQosData *qos = dynamic_cast<const QueryQosData *>(&msgUnit_->getQos());
+   return UnSubscribeQos(global_, *qos);
 }
 
 UnSubscribeKey UnSubscribeQueueEntry::getUnSubscribeKey() const
 {
-   return UnSubscribeKey(global_, *queryKeyData_);
+   const QueryKeyData *key = dynamic_cast<const QueryKeyData *>(&msgUnit_->getKey());
+   return UnSubscribeKey(global_, *key);
 }
 
 UnSubscribeReturnQos UnSubscribeQueueEntry::getUnSubscribeReturnQos() const
@@ -72,10 +67,11 @@ UnSubscribeReturnQos UnSubscribeQueueEntry::getUnSubscribeReturnQos() const
 string UnSubscribeQueueEntry::toXml(const string& indent) const
 {
    string extraOffset = "   " + indent;
-   string ret = indent + "<unSubscribeQueueEntry>\n" + 
-                extraOffset + queryKeyData_->toXml("  ") +
-                extraOffset + queryQosData_->toXml("  ") +
-                indent + "</unSubscribeQueueEntry>\n";
+   string ret = indent + "<unSubscribeQueueEntry>\n";
+   if (msgUnit_) {
+      ret += extraOffset + msgUnit_->toXml(indent);
+   }
+   ret += indent + "</unSubscribeQueueEntry>\n";
    return ret;
 }
 

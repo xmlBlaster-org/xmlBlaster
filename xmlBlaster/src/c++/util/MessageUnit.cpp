@@ -26,50 +26,36 @@ using namespace org::xmlBlaster::client::key;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-/**
- * Holding a message. 
- * <p />
- * This class corresponds to the CORBA serverIdl::MessageUnit struct
- * but uses standard STL only.
- * @since 0.79e
- * @author xmlBlaster@marcelruff.info
- */
-
-/**
- * Constructs with a 'char *' and its length 'len'. 
- */
-MessageUnit::MessageUnit(const MsgKeyData &key,
+MessageUnit::MessageUnit(const KeyData &key,
                          unsigned long len,
                          const unsigned char * content, 
-                         const MsgQosData &qos)
-:key_(key), len_(len), qos_(qos), immutableSizeInBytes_(0)
+                         const QosData &qos)
+   : key_(key.getClone()),
+     len_(len), content_(0),
+     qos_(qos.getClone()),
+     immutableSizeInBytes_(0)
 {
-   
-  content_ = new unsigned char[len_];
-  memcpy(content_, content, len_);
-
-  //contentVec_.reserve(len);
-  //for (unsigned int ii=0; ii<len; ii++) {
-  //   contentVec_.push_back(content[ii]);
-  //}
+  if (len_ > 0) {
+     content_ = new unsigned char[len_];
+     memcpy(content_, content, len_);
+  }
 }
 
 /**
  * Constructs a MessageUnit with a string. 
  */
-MessageUnit::MessageUnit(const MsgKeyData &key,
+MessageUnit::MessageUnit(const KeyData &key,
                          const string &content, 
-                         const MsgQosData &qos)
-:key_(key), len_(content.size()), qos_(qos), immutableSizeInBytes_(0)
+                         const QosData &qos)
+   : key_(key.getClone()),
+     len_(content.size()), content_(0),
+     qos_(qos.getClone()),
+     immutableSizeInBytes_(0)
 {
-   
-  content_ = new unsigned char[len_];
-  memcpy(content_, content.c_str(), len_);
-
-  //contentVec_.reserve(len_);
-  //for (unsigned int ii=0; ii<len_; ii++) {
-  //   contentVec_.push_back(content[ii]);
-  //}
+   if (len_ > 0) {
+      content_ = new unsigned char[len_];
+      memcpy(content_, content.c_str(), len_);
+   }
 }
 
 
@@ -79,25 +65,36 @@ MessageUnit::MessageUnit(const MsgKeyData &key,
 MessageUnit::MessageUnit(const PublishKey& xmlKey,
                          const string &content, 
                          PublishQos& publishQos)
-   : key_(xmlKey.getData()), len_(content.size()), qos_(publishQos.getData()), immutableSizeInBytes_(0)
+   : key_(xmlKey.getData().getClone()),
+     len_(content.size()),
+     content_(0),
+     qos_(publishQos.getData().getClone()),
+     immutableSizeInBytes_(0)
 {
-  content_ = new unsigned char[len_];
-  memcpy(content_, content.c_str(), len_);
+   if (len_ > 0) {
+      content_ = new unsigned char[len_];
+      memcpy(content_, content.c_str(), len_);
+   }
 }
 
 
 /**
  * Constructs the message unit. 
  */
-MessageUnit::MessageUnit(const MsgKeyData &xmlKey,
+MessageUnit::MessageUnit(const KeyData &xmlKey,
                          const vector<unsigned char> &contentVec, 
-                         const MsgQosData &qos)
-:key_(xmlKey), /*contentVec_(contentVec),*/ len_(contentVec.size()), qos_(qos), immutableSizeInBytes_(0)
+                         const QosData &qos)
+     : key_(xmlKey.getClone()),
+       len_(contentVec.size()), content_(0),
+       qos_(qos.getClone()),
+       immutableSizeInBytes_(0)
 {
-  content_ = new unsigned char[len_];
-  for (unsigned int ii=0; ii<len_; ii++) {
-    content_[ii] = contentVec[ii];
-  }
+   if (len_ > 0) {
+      content_ = new unsigned char[len_];
+      for (unsigned int ii=0; ii<len_; ii++) {
+         content_[ii] = contentVec[ii];
+      }
+   }
 }
 
 
@@ -107,65 +104,77 @@ MessageUnit::MessageUnit(const MsgKeyData &xmlKey,
 MessageUnit::MessageUnit(const PublishKey &xmlKey,
                          const vector<unsigned char> &contentVec, 
                          PublishQos& publishQos)
-   : key_(xmlKey.getData()), len_(contentVec.size()), qos_(publishQos.getData()), immutableSizeInBytes_(0)
+   : key_(xmlKey.getData().getClone()),
+     len_(contentVec.size()), content_(0),
+     qos_(publishQos.getData().getClone()),
+     immutableSizeInBytes_(0)
 {
-  content_ = new unsigned char[len_];
-  for (unsigned int ii=0; ii<len_; ii++) {
-    content_[ii] = contentVec[ii];
-  }
+   if (len_ > 0) {
+      content_ = new unsigned char[len_];
+      for (unsigned int ii=0; ii<len_; ii++) {
+         content_[ii] = contentVec[ii];
+      }
+   }
 }
 
 /**
  * Copy constructor
  */
 MessageUnit::MessageUnit(const MessageUnit& rhs) 
-   : key_(rhs.getKey()), qos_(rhs.getQos()), immutableSizeInBytes_(rhs.getSizeInBytes())
+   : key_(rhs.getKeyRef()),
+     len_(rhs.getContentLen()),
+     content_(0),
+     qos_(rhs.getQosRef()),
+     immutableSizeInBytes_(rhs.getSizeInBytes())
 {
-  //contentVec = rhs.getContentVec();
-  len_ = rhs.getContentLen();
-  content_ = new unsigned char[len_];
-  memcpy(content_, rhs.getContent(), len_);
+   if (len_ > 0) {
+      content_ = new unsigned char[len_];
+      memcpy(content_, rhs.getContent(), len_);
+   }
 }
 
 /**
  * Assignment constructor
  */
-MessageUnit& 
-MessageUnit::operator=(const MessageUnit& rhs) 
+MessageUnit& MessageUnit::operator=(const MessageUnit& rhs) 
 {
-  if (this != &rhs) {
-    key_ = rhs.getKey();
-    //contentVec = rhs.getContentVec();
-    len_ = rhs.getContentLen();
-    content_ = new unsigned char[len_];
-    memcpy(content_, rhs.getContent(), len_);
-    qos_ = rhs.getQos();
-    immutableSizeInBytes_ = rhs.getSizeInBytes();
-  }
-  return *this;
+   if (this != &rhs) {
+      key_ = rhs.getKeyRef();
+      len_ = rhs.getContentLen();
+      if (len_ > 0) {
+         content_ = new unsigned char[len_];
+         memcpy(content_, rhs.getContent(), len_);
+      }
+      qos_ = rhs.getQosRef();
+      immutableSizeInBytes_ = rhs.getSizeInBytes();
+   }
+   return *this;
 }
 
-/**
- * Destructor
- */
 MessageUnit::~MessageUnit() 
 {
-  delete [] content_;
+  if (content_ != 0)
+     delete [] content_;
 }
 
+const KeyData& MessageUnit::getKey() const
+{
+   return *key_;
+}
 
-/**
- * @return The user data carried with this message
- *         This is created for each invocation so 
- *         use it sparingly
- */
+const KeyDataRef MessageUnit::getKeyRef() const
+{
+   return key_;
+}
+
 vector<unsigned char> MessageUnit::getContentVec() const 
 {
-  //return contentVec_;
   vector<unsigned char> vec;
-  vec.reserve(len_);
-  for (unsigned int ii=0; ii<len_; ii++) {
-    vec.push_back(content_[ii]);
+  if (len_ > 0) {
+     vec.reserve(len_);
+     for (unsigned int ii=0; ii<len_; ii++) {
+       vec.push_back(content_[ii]);
+     }
   }
   return vec;
 }
@@ -174,26 +183,37 @@ size_t MessageUnit::getSizeInBytes() const
 {
    if (immutableSizeInBytes_ > 0) return immutableSizeInBytes_;
    // See org.xmlBlaster.engine.MsgUnitWrapper.java
-   immutableSizeInBytes_ = 306 + len_ + key_.toXml().size() + qos_.toXml().size();
+   immutableSizeInBytes_ = 306 + len_ + key_->toXml().size() + qos_->toXml().size();
    return immutableSizeInBytes_;
 }
 
-/**
- * Dump state of this object into a XML ASCII string.
- * <br>
- * @param extraOffset indenting of tags for nice output
- * @return The MessageUnit as a XML ASCII string
- */
+std::string MessageUnit::getContentStr() const {
+   if (len_ < 1) {
+      return "";
+   }
+   return std::string(reinterpret_cast<const char *>(content_), static_cast<unsigned int>(len_));
+}
+
+const QosData& MessageUnit::getQos() const
+{
+   return *qos_;
+}
+
+const QosDataRef MessageUnit::getQosRef() const
+{
+   return qos_;
+}
+
 string MessageUnit::toXml(const string &extraOffset) const
 {
    string ret;
    string offset = Constants::OFFSET + extraOffset;
 
    ret += offset + "<MessageUnit>";
-//   ret += offset + "  <key>" + getKey() + "</key>";
    ret += getKey().toXml(Constants::INDENT+extraOffset);
-   ret += offset + " <content>" + getContentStr() + "</content>";
-//   ret += offset + "  <qos>" + getQos() + "</qos>";
+   if (len_ > 0) {
+      ret += offset + " <content>" + getContentStr() + "</content>";
+   }
    ret += getQos().toXml(Constants::INDENT+extraOffset);
    ret += offset + "</MessageUnit>";
    return ret;

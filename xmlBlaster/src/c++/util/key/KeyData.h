@@ -3,6 +3,24 @@ Name:      KeyData.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
+#ifndef _UTIL_KEY_KEYDATA_H
+#define _UTIL_KEY_KEYDATA_H
+
+#include <util/xmlBlasterDef.h>
+#include <util/I_Log.h>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
+
+namespace org { namespace xmlBlaster { namespace util { namespace key {
+
+/** The default content MIME type is null */
+extern Dll_Export const char* CONTENTMIME_DEFAULT;
+
+/** is "" */
+extern Dll_Export const char* DEFAULT_DOMAIN;
+
+/** The default queryType is "EXACT" */
+extern Dll_Export const char* QUERYTYPE_DEFAULT;
 
 /**
  * This class encapsulates the Message meta data and unique identifier (key)
@@ -29,25 +47,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * NOTE: Message oid starting with "_" is reserved for xmlBlaster plugins.
  * </p>
  */
-
-#ifndef _UTIL_KEY_KEYDATA_H
-#define _UTIL_KEY_KEYDATA_H
-
-#include <util/xmlBlasterDef.h>
-#include <util/I_Log.h>
-
-namespace org { namespace xmlBlaster { namespace util { namespace key {
-
-/** The default content MIME type is null */
-extern Dll_Export const char* CONTENTMIME_DEFAULT;
-
-/** is "" */
-extern Dll_Export const char* DEFAULT_DOMAIN;
-
-/** The default queryType is "EXACT" */
-extern Dll_Export const char* QUERYTYPE_DEFAULT;
-
-class Dll_Export KeyData
+class Dll_Export KeyData : public org::xmlBlaster::util::ReferenceCounterBase
 {
 protected:
    std::string ME;
@@ -85,8 +85,14 @@ public:
     */
    KeyData(org::xmlBlaster::util::Global& global);
 
+   /**
+    * Copy constructor.
+    */
    KeyData(const KeyData& key);
 
+   /**
+    * Assignement constructor.
+    */
    KeyData& operator =(const KeyData& key);
 
    virtual ~KeyData();
@@ -202,12 +208,20 @@ public:
    int size() const;
 
    /**
-    * Dump state of this object into a XML ASCII std::string.
+    * Dump state of this object into a XML ASCII std::string. 
     * <br>
+    * Needs to be implemented by derived classes.
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the query as a XML ASCII std::string
     */
-   virtual std::string toXml(const std::string& extraOffset="") const = 0;
+   virtual std::string toXml(const std::string& extraOffset) const;
+   virtual std::string toXml() const;
+
+   /**
+    * Allocate a clone, the derived classes need to implement this method. 
+    * @return The caller needs to free it with 'delete'.
+    */
+   virtual KeyData* getClone() const;
 
    /**
     * Generates a unique key oid in scope of a cluster node (on server or on client side).
@@ -220,6 +234,8 @@ public:
     */
    bool isGeneratedOid() const;
 };
+
+typedef org::xmlBlaster::util::ReferenceHolder<org::xmlBlaster::util::key::KeyData> KeyDataRef;
 
 }}}} // namespaces
 

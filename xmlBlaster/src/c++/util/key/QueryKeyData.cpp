@@ -110,6 +110,11 @@ void QueryKeyData::addFilter(const AccessFilterQos& qos)
    accessFilterVector_.insert(accessFilterVector_.end(), qos);
 }
 
+string QueryKeyData::toXml() const
+{
+   return toXml("");
+}
+
 string QueryKeyData::toXml(const string& extraOffset) const
 {
    string ret;
@@ -137,6 +142,11 @@ string QueryKeyData::toXml(const string& extraOffset) const
    }
    ret += "</key>";
   return ret;
+}
+
+QueryKeyData* QueryKeyData::getClone() const
+{
+   return new QueryKeyData(*this);
 }
 
 }}}} // namespace
