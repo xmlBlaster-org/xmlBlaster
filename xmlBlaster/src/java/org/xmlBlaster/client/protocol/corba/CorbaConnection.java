@@ -33,9 +33,13 @@ import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
+import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.CosNaming.BindingHolder;
+import org.omg.CosNaming.BindingListHolder;
+import org.omg.CosNaming.BindingIteratorHolder;
 
 import java.applet.Applet;
 
@@ -360,10 +364,20 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       }
       if (log.TRACE) log.trace(ME, "No -hostname / port for " + connectQos.getAddress() + " ...");
 
+      String contextId = glob.getProperty().get("NameService.context.id", "xmlBlaster");
+      if (contextId == null) contextId = "";
+      String contextKind = glob.getProperty().get("NameService.context.kind", "MOM");
+      if (contextKind == null) contextKind = "";
+      String clusterId = glob.getProperty().get("NameService.node.id", glob.getStrippedId());
+      if (clusterId == null) clusterId = "";
+      String clusterKind = glob.getProperty().get("NameService.node.kind", "MOM");
+      if (clusterKind == null) clusterKind = "";
+
       String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
                   " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
                   " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
-                  " - or start a naming service";
+                  " - or start a naming service '" + contextId + "." + contextKind + "/" +
+                           clusterId + "." + clusterKind + "'";
 
       // 3) asking Name Service CORBA compliant
       boolean useNameService = glob.getProperty().get("ns", true);  // -ns default is to ask the naming service
@@ -371,17 +385,108 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
          if (verbose) log.info(ME, "Trying to find a CORBA naming service ...");
          try {
-            NamingContextExt nc = getNamingService(verbose);
-            NameComponent [] name = new NameComponent[1];
-            name[0] = new NameComponent();
-            name[0].id = "xmlBlaster-Authenticate";
-            name[0].kind = "MOM";
-            authServer = AuthServerHelper.narrow(nc.resolve(name));
-            log.info(ME, "Accessing xmlBlaster using a naming service.");
+            
+            // NameService entry is e.g. "xmlBlaster.MOM/heron.MOM"
+            // where "xmlBlaster.MOM" is a context node and
+            // "heron.MOM" is a subnode for each running server (containing the AuthServer POA reference)
+
+            NamingContextExt namingContextExt = getNamingService(verbose);
+            NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
+            if (log.TRACE) log.trace(ME, "Query NameServer ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService") +
+                          " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
+            org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
+            NamingContext relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
+
+            if (relativeContext == null) {
+               throw new Exception("Can't resolve CORBA NameService");
+            }
+
+            NameComponent [] nameNode = new NameComponent[] { new NameComponent(clusterId, clusterKind) };
+
+            AuthServer authServerFirst = null;
+            String tmpId = "";           // for logging only
+            String tmpServerName = "";   // for logging only
+            String firstServerName = ""; // for logging only
+            int countServerFound = 0;    // for logging only
+            String serverNameList = "";  // for logging only
+            try {
+               authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNode));
+            }
+            catch (Exception ex) {
+               if (log.TRACE) log.trace(ME, "Query NameServer to find a suitable xmlBlaster server for " + CorbaDriver.getString(nameXmlBlaster) + "/" + CorbaDriver.getString(nameNode));
+               BindingListHolder bl = new BindingListHolder();
+               BindingIteratorHolder bi = new BindingIteratorHolder();
+               relativeContext.list(0, bl, bi);
+               //for (int i=0; i<bl.value.length; i++) { // bl.value.length should be 0
+               //   String id = bl.value[i].binding_name[0].id;
+               //   String kind = bl.value[i].binding_name[0].kind;
+
+               // process the remaining bindings if an iterator exists:
+               if (authServer == null && bi.value != null) {
+                  BindingHolder bh = new BindingHolder();
+                  int i = 0;
+                  while ( bi.value.next_one(bh) ) {
+                     String id = bh.value.binding_name[0].id;
+                     String kind = bh.value.binding_name[0].kind;
+                     NameComponent [] nameNodeTmp = new NameComponent[] { new NameComponent(id, kind) };
+
+                     tmpId = id;
+                     countServerFound++;
+                     tmpServerName = CorbaDriver.getString(nameXmlBlaster)+"/"+CorbaDriver.getString(nameNodeTmp);
+                     if (i>0) serverNameList += ", ";
+                     i++;
+                     serverNameList += tmpServerName;
+
+                     if (clusterId.equals(id) && clusterKind.equals(kind)) {
+                        try {
+                           if (log.TRACE) log.trace(ME, "Trying to resolve NameService entry '"+CorbaDriver.getString(nameNodeTmp)+"'");
+                           authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
+                           break; // found a matching server
+                        }
+                        catch (Exception exc) {
+                           log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
+                        }
+                     }
+
+                     if (authServerFirst == null) {
+                        if (log.TRACE) log.trace(ME, "Remember the first server");
+                        try {
+                           firstServerName = tmpServerName;
+                           if (log.TRACE) log.trace(ME, "Remember the first reachable xmlBlaster server from NameService entry '"+firstServerName+"'");
+                           authServerFirst = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
+                        }
+                        catch (Exception exc) {
+                           log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
+                        }
+                     }
+                  }
+               }
+            }
+
+            if (authServer == null) {
+               if (authServerFirst != null) {
+                  if (countServerFound > 1) {
+                     String str = "Can't choose one of " + countServerFound +
+                                  " avalailable server in CORBA NameService: " + serverNameList +
+                                  ". Please choose one with e.g. -NameService.node.id " + tmpId;
+                     log.error(ME, str);
+                     throw new Exception(str);
+                  }
+                  log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService ORBInitRef.NameService=" +
+                               System.getProperty("ORBInitRef.NameService"));
+                  return authServerFirst;
+               }
+               else {
+                  throw new Exception("No xmlBlaster server found in NameService");
+               }
+            }
+
+            log.info(ME, "Accessing xmlBlaster using a naming service '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
+                           nameNode[0].id + "." + nameNode[0].kind + "' on " + System.getProperty("ORBInitRef.NameService"));
             return authServer;
          }
          catch(Throwable e) {
-            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text, e);
          }
       }
       if (log.TRACE) log.trace(ME, "No -ns ...");
