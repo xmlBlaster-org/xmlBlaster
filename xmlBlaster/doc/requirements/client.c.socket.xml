@@ -1065,12 +1065,14 @@ build reportShow
 
       <li> Add client persistent queue with <a href="http://www.sqlite.org" target='others'>SQLite</a></li>
 
-      <li> Use it as a SOCKET protocol plugin for our C++ client library to 
-           get all the nice fail safe features for the C lib and to
-           make the C++ lib smaller (the CORBA plugin is quite big).</li>
-
+      <li> The methods <code>publishArr()</code> and <code>publishOneway()</code> are not yet implemented,
+           please use the <code>publish()</code> method in the meantime.</li>
       </ul>
       </p>
+      <h2>C++ remark</h2>
+      This C SOCKET client library is used as a SOCKET protocol plugin for our
+      C++ client library. With this C++ client library you get all the nice
+      additional fail safe features and XML parsing.
    </todo>
 
    <see type="CODE" lang="C">HelloWorld.c</see>
@@ -1079,13 +1081,15 @@ build reportShow
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
    <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
    <see type="REQ">protocol.socket</see>
+   <see type="REQ">client.cpp.socket</see>
+   <see type="REQ">client.cpp</see>
    <see type="REQ">interface</see>
    <see type="REQ">interface.connect</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.40 $</revision>
+   <revision>$Revision: 1.41 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

@@ -34,7 +34,8 @@
      Below you find an example for a typical C++ client connecting to xmlBlaster.
      In the <i>configuration</i> section there is a list of operating systems and
      CORBA libraries which are tested with xmlBlaster. Other combinations should
-     work out of the box or with minor changes.
+     work out of the box or with minor changes. Optionally you can use our native
+     SOCKET protocol instead of CORBA to access the server.
      </p>
    </description>
    <example lang="CPP">
@@ -404,6 +405,18 @@ int main(int args, char ** argv)
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
 
+       <tr>
+       <td>14</td>
+       <td>Linux 2.4.21</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.3.1</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.85e+</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
+       <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
+       <td>2004-01-14</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
 
       </table>
       <p>
@@ -459,13 +472,17 @@ cvs log Global.cpp
    <see type="API" lang="CPP">org::xmlBlaster::client::XmlBlasterAccess</see>
    <see type="OTHER">http://www.xmlBlaster.org/xmlBlaster/doc/doxygen/c++/namespaces.html</see>
    <see type="REQ">client.cpp.compile</see>
+   <see type="REQ">client.c.socket</see>
+   <see type="REQ">protocol.socket</see>
+   <see type="REQ">client.cpp.mico</see>
    <see type="REQ">client.cpp.tao</see>
+   <see type="REQ">client.cpp.orbix</see>
    <see type="REQ">client.cpp.failsafe</see>
    <see type="REQ">client.cpp.protocol</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.24 $</revision>
+   <revision>$Revision: 1.25 $</revision>
 </requirement>
 

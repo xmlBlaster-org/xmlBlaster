@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.cpp.socket' type='NEW' prio='LOW' status="CLOSED">
+   <topic>C++ clients can access xmlBlaster with the native SOCKET protocol</topic>
+
+   <description>
+     <p>
+     Our C++ client library has a protocol plugin 
+     which uses our native xmlBlaster SOCKET protocol
+     to talk to the Java xmlBlaster server.
+     </p>
+     <p>
+     This plugin avoids the need to download a CORBA library and compile
+     it to get xmlBlaster access from C++ clients.
+     The <a href="http://xml.apache.org/xerces-c/index.html">Xerces XML parser</a>
+     is the only needed additional library, xerces 1.7 up to 2.2 are known to run fine,
+     xerces 2.4 seems to have some memory leaks.
+     </p>
+     <p>
+     You can compile the C++ client library to contain
+     the SOCKET and the CORBA plugin coexistent 
+     or only one of them. The C client SOCKET library is automatically
+     compiled when requested by the C++ compilation task.
+     </p>
+   </description>
+
+   <example type="HTML" lang="CPP">
+      <p><a NAME="example"></a></p>
+      <p>
+      Try (<code>xmlBlaster/demo/c++/bin</code>)
+      </p>
+   <pre>
+HelloWorld2 -help
+   </pre>
+       <p>
+      for a list of command line arguments.
+       </p>
+
+       <p>
+      If you have compiled for example the CORBA and SOCKET plugin
+      you can switch the protocol used on the fly:
+      </p>
+      <pre>
+HelloWorld2 -protocol IOR
+
+HelloWorld2 -protocol SOCKET
+   </pre>
+   </example>
+
+   <configuration where="client">
+      <p>
+         To compile you can use the xmlBlaster/build.xml file.
+         Alle compiler/library/OS combinations listed in the <i>client.cpp</i> and
+         <i>client.c.socket</i> requirements are supported.
+      </p>
+      <p>
+         Please take a copy from xmlBlaster/build.properties into
+         your home directory (it has precedence there) and adjust
+         the path settings to compile the SOCKET plugin and bind
+         to the XML parser.<br />
+         Her is an example (CORBA is switched off):
+      </p>
+      <pre>
+#------------------------------------------------------------------------------
+# C++ Unix/Linux example with SOCKET plugin and xerces 2.2
+XMLCPP_HOME   = /usr/local/xerces-c
+XMLCPP_VER    = 
+COMPILE_SOCKET_PLUGIN=1
+
+COMPILE_CORBA_PLUGIN=0
+corba.product = NONE
+#------------------------------------------------------------------------------
+      </pre>
+      <p>
+         Compile it with ant:
+      </p>
+      <pre>
+cd xmlBlaster
+build cpp
+
+(build -verbose cpp)
+
+This creates:
+   xmlBlaster/lib/libmlBlasterClientC.so  (The C SOCKET implementation)
+   xmlBlaster/lib/libmlBlasterClient.so   (The C++ client code)
+and some test clients in
+   xmlBlaster/demo/c++/bin
+   xmlBlaster/testsuite/src/c++/bin
+      </pre>
+      <p>
+      The <code>verbose</code> setting is really verbose, you should
+      only use it when you encounter problems during compilation.
+      </p>
+     <p>
+     On Windows you should add all directories containing dll libraries to your path setting.
+     </p>
+     <p>
+     On Solaris and Linux the shared library path is burned into the executable
+     so you need to set LD_LIBRARY_PATH only when you move libraries to
+     other locations (try <i>ldd TestGet</i>).
+     </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>Please see the client.c.socket settings</td>
+            <td> </td>
+            <td> </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+     <p>The plugin has the limitations as described in the above
+        <i>client.c.socket</i> requirement.</p>
+   </todo>
+
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c++/namespaces.html</see>
+   <see type="REQ">protocol.socket</see>
+   <see type="REQ">client.c.socket</see>
+   <see type="REQ">client.cpp</see>
+   <see type="REQ">client.cpp.compile</see>
+
+   <author>xmlBlaster@marcelruff.info</author>
+
+   <date>2004 01 14</date>
+
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment></comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
