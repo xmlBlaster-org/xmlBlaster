@@ -786,7 +786,7 @@ public final class TopicHandler implements I_Timeout
          else if (hasHistoryEntries())
             wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries(), false);
 
-         if (wrappers != null) {
+         if (wrappers != null && wrappers.length > 0) {
             if (invokeCallback(null, sub, wrappers) == 0) {
                Set removeSet = new HashSet();
                removeSet.add(sub);
@@ -942,8 +942,11 @@ public final class TopicHandler implements I_Timeout
       }
 
       if (msgUnitWrapperArr == null || msgUnitWrapperArr.length < 1) {
+         log.error(ME, "invokeCallback() MsgUnitWrapper is null: " +
+                       ((publisherSessionInfo != null) ? publisherSessionInfo.toXml() + "\n" : "") +
+                       ((sub != null) ? sub.toXml() + "\n" : "") +
+                       ((this.historyQueue != null) ? this.historyQueue.toXml("") : ""));
          Thread.currentThread().dumpStack();
-         log.error(ME, "invokeCallback() MsgUnitWrapper is null");
          //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
 
@@ -1153,6 +1156,14 @@ public final class TopicHandler implements I_Timeout
                   if (historyDestroyList == null) historyDestroyList = new ArrayList();
                   historyDestroyList.add(entry);
                }
+            }
+            else {
+               log.error(ME, "getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, this could be a serious bug, please report it to xmlBlaster@xmlBlaster.org mailing list: " +
+                  entry.toXml() + "\n" + // toXml() not possible as it call recursive getMsgUnitWrapperArr());
+                  ((this.msgUnitCache != null) ? this.msgUnitCache.toXml("") + "\n" : "") +
+                  ((this.historyQueue != null) ? this.historyQueue.toXml("") : "")
+                  );
+               Thread.currentThread().dumpStack();
             }
          }
       }
@@ -1733,13 +1744,7 @@ public final class TopicHandler implements I_Timeout
       if (hasSubscribers()) {
          SubscriptionInfo[] subscriptionInfoArr = getSubscriptionInfoArr();
          for(int i=0; i<subscriptionInfoArr.length; i++) {
-            try {
-               sb.append(offset).append(" <SubscriptionInfo id='").append(subscriptionInfoArr[i].getSubscriptionId()).append("'/>");
-            }
-            catch (XmlBlasterException e) {
-               log.error(ME, e.getMessage());
-            }
-            //sb.append(subscriptionInfoArr[i].toXml(extraOffset + "   "));
+            sb.append(offset).append(" <SubscriptionInfo id='").append(subscriptionInfoArr[i].getSubscriptionId()).append("'/>");
          }
       }
       else {
