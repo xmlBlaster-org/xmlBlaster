@@ -3,6 +3,17 @@
 
 Changes for 0.75 [???, 2000]
 ==============================
+
+   - Konrad completed the fabulous Browser callback framework!
+	  And it works incredible well.
+	  Browsers get instant callback updates from xmlBlaster messages
+	  through a persistent http connection.
+	  It supports many feature like browser pinging, slow
+	  browser queuing etc.
+	  Konrad will write a little tutorial in the next week.
+	  See xmlBlaster/src/java/org/xmlBlaster/protocol/http
+	  See xmlBlaster/doc/http/BlasterHttpProxy.gif
+
    - Added little tool which allows to subscribe
 	  from command line for a message (for testing/debugging).
 	  See xmlBlaster/src/java/org/xmlBlaster/client/reader/README
@@ -25,12 +36,12 @@ Changes for 0.75 [???, 2000]
 
    - Allow clients to ping xmlBlaster, to test reliable the connection.
      The xmlBlaster.idl was extended with a ping() method.
-     Java clients may use CorbaConnection.java to automatically test ping
-     the connection.
+     Java clients may use CorbaConnection.java to automatically test
+	  ping the connection.
 
    - Added <qos> tag <subscriptionId> for update messages.
-     This allows the client to find out which of his subscriptions caused this
-     update.
+     This allows the client to find out which of his subscriptions
+	  caused this update.
 
    - Added <qos> tag <state> for update messages.
      This is not finished, it always shows OK for the moment.
