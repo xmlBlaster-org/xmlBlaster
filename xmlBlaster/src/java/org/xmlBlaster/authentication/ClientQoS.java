@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.11 2001/02/12 00:06:19 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.12 2001/02/14 00:52:59 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -87,7 +87,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      //if (Log.TRACE) Log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
 
       if (inCallback && !inBurstMode && !inCompress && !inPtpAllowed) {
          String tmp = character.toString().trim(); // The address
@@ -209,7 +209,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       if (super.endElementBase(uri, localName, name) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      //if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
 
       if (name.equalsIgnoreCase("callback")) {
          inCallback = false;
