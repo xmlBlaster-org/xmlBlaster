@@ -14,11 +14,7 @@
       all queued messages are flushed to the recevier.
       </p>
       <p>
-      NOTE 1: The qualifier attributes from 'engine.qos.subscribe.OfflineQueuing' may be appropriate
-      here as well (should we rename this tag to &lt;OfflineQueing> as well?)
-      </p>
-      <p>
-      NOTE 2: The login qos may disallow PtP messages, ForceQueing will be ignored then.
+      NOTE: The login qos may disallow PtP messages, ForceQueing will be ignored then.
       </p>
    </description>
    <example lang="XML">
@@ -32,13 +28,11 @@
    </example>
    <see type="REQ">engine.qos.publish.destination.PtP</see>
    <see type="REQ">engine.qos.publish.destination.offline</see>
-   <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
-   <see type="REQ">engine.qos.login.OfflineQueuing</see>
    <see type="REQ">interface.publish</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
