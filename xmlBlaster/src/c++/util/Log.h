@@ -9,6 +9,7 @@ Comment:   Handling the Client data
 #define _UTIL_LOG_H
 
 #include <util/xmlBlasterDef.h>
+#include <util/PropertyDef.h>
 #include <util/Property.h>
 
 /**
@@ -24,6 +25,8 @@ namespace org { namespace xmlBlaster { namespace util {
    class Dll_Export Log {
       
    private:
+
+      bool withXtermColor_;
       
       /**
        * Produce logging output on important method calls.
@@ -89,17 +92,15 @@ namespace org { namespace xmlBlaster { namespace util {
       std::string   ME;
       std::string   name_;
 
-#if   _TERM_WITH_COLORS_
       std::string timeE, callE, traceE, plainE, infoE;
       std::string warnE, errorE, panicE, exitE;
-#else
+
       /**
        * Output text for different logging levels
        * The DOS box does not know any colors
        */
       std::string timeX, callX, traceX, plainX, infoX;
       std::string warnX, errorX, panicX, exitX;
-#endif // _TERM_WITH_COLORS_
 
    private:
       /**
@@ -156,6 +157,12 @@ namespace org { namespace xmlBlaster { namespace util {
 
 
       ~Log();
+
+      /**
+       * Switch the colored logging output on or off. 
+       * Defaults on UNIX to 'on' and on Windows to 'off'
+       */
+      void setWithXtermColor(bool val=true);
 
       /**
        * Sets the default loglevel L_PANIC | L_ERROR | L_WARN | L_INFO
@@ -292,7 +299,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * These variables may be set in xmlBlaster.properties as well.
        * Don't use the "-" or "+" prefix there.
        */
-      std::string usage();
+      static std::string usage();
 
       /**
        * Display some statistic on exit

@@ -9,6 +9,7 @@ Comment:   Handling the Client data
 #include <ctime>   //<time.h>
 #include <cstdlib> //<stdlib.h>
 #include <util/lexical_cast.h>
+#include <util/PropertyDef.h>
 
 using namespace std;
 
@@ -36,9 +37,12 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
     * Initializes logging and Properties
     */
    Log::Log(Property& properties, int /*args*/, const char * const /*argc*/[], const string& name) 
-      : properties_(properties), name_(name)
+      : withXtermColor_(true), properties_(properties), name_(name)
    {
       ME     = "Log";
+#     ifdef _WIN32
+         withXtermColor_ = false;
+#     endif
       call_  = true;
       time_  = true;
       trace_ = true;
@@ -48,31 +52,34 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       currentLogFormat       = "{0} {1} {2}: {3}";
       logFormatPropertyRead  = false;
       logLevel_ = L_PANIC | L_ERROR | L_WARN | L_INFO;
-#          ifdef _TERM_WITH_COLORS_
-         timeE   = string(LTGREEN_BLACK) + "TIME " + ESC;
-         callE   = string(BLACK_LTGREEN) + "CALL " + ESC;
-         traceE  = string(WHITE_BLACK  ) + "TRACE" + ESC;
-         plainE  = string(WHITE_BLACK  ) + "     " + ESC;
-         infoE   = string(GREEN_BLACK  ) + "INFO " + ESC;
-         warnE   = string(YELLOW_BLACK ) + "WARN " + ESC;
-         errorE  = string(RED_BLACK    ) + "ERROR" + ESC;
-         panicE  = string(BLACK_RED    ) + "PANIC" + ESC;
-         exitE   = string(GREEN_BLACK  ) + "EXIT " + ESC;
-#     else
-         timeX   = "TIME ";
-         callX   = "CALL ";
-         traceX  = "TRACE";
-         plainX  = "     ";
-         infoX   = "INFO ";
-         warnX   = "WARN ";
-         errorX  = "ERROR";
-         panicX  = "PANIC";
-         exitX   = "EXIT ";
-#     endif // _TERM_WITH_COLORS_
+
+      timeE   = string(LTGREEN_BLACK) + "TIME " + ESC;
+      callE   = string(BLACK_LTGREEN) + "CALL " + ESC;
+      traceE  = string(WHITE_BLACK  ) + "TRACE" + ESC;
+      plainE  = string(WHITE_BLACK  ) + "     " + ESC;
+      infoE   = string(GREEN_BLACK  ) + "INFO " + ESC;
+      warnE   = string(YELLOW_BLACK ) + "WARN " + ESC;
+      errorE  = string(RED_BLACK    ) + "ERROR" + ESC;
+      panicE  = string(BLACK_RED    ) + "PANIC" + ESC;
+      exitE   = string(GREEN_BLACK  ) + "EXIT " + ESC;
+
+      timeX   = "TIME ";
+      callX   = "CALL ";
+      traceX  = "TRACE";
+      plainX  = "     ";
+      infoX   = "INFO ";
+      warnX   = "WARN ";
+      errorX  = "ERROR";
+      panicX  = "PANIC";
+      exitX   = "EXIT ";
    }
 
 
    Log::~Log() {
+   }
+
+   void Log::setWithXtermColor(bool val /* = true */) {
+      withXtermColor_ = val;
    }
 
    void Log::setDefaultLogLevel() {
@@ -135,11 +142,10 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
    void Log::panic(const string &instance, const string &text) {
       if (logLevel_ & L_PANIC) {
-#ifdef _TERM_WITH_COLORS_
-         log(panicE, L_PANIC, instance, text);
-#else
-         log(panicX, L_PANIC, instance, text);
-#endif
+         if (withXtermColor_)
+            log(panicE, L_PANIC, instance, text);
+         else
+            log(panicX, L_PANIC, instance, text);
          cerr << text << endl;
          numErrorInvocations++;
          // displayStatistics();
@@ -149,11 +155,10 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
 
    void Log::exit(const string &instance, const string &text) {
-#ifdef _TERM_WITH_COLORS_
-      log(exitE, L_EXIT, instance, text);
-#else
-      log(exitX, L_EXIT, instance, text);
-#endif
+      if (withXtermColor_)
+         log(exitE, L_EXIT, instance, text);
+      else
+         log(exitX, L_EXIT, instance, text);
       displayStatistics();
       exitLow(0);
    }
@@ -161,11 +166,10 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
    void Log::info(const string &instance, const string &text) {
       if (logLevel_ & L_INFO) {
-#ifdef _TERM_WITH_COLORS_
-         log(infoE, L_INFO, instance, text);
-#else
-         log(infoX, L_INFO, instance, text);
-#endif
+         if (withXtermColor_)
+            log(infoE, L_INFO, instance, text);
+         else
+            log(infoX, L_INFO, instance, text);
       }
    }
 
@@ -173,11 +177,10 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    void Log::warn(const string &instance, const string &text) {
       if(logLevel_ & L_WARN) {
          numWarnInvocations++;
-#ifdef _TERM_WITH_COLORS_
-         log(warnE, L_WARN, instance, text);
-#else
-         log(warnX, L_WARN, instance, text);
-#endif
+         if (withXtermColor_)
+            log(warnE, L_WARN, instance, text);
+         else
+            log(warnX, L_WARN, instance, text);
       }
    }
 
@@ -185,11 +188,10 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    void Log::error(const string &instance, const string &text) {
       if(logLevel_ & L_PANIC) {
          numErrorInvocations++;
-#ifdef _TERM_WITH_COLORS_
-         log(errorE, L_ERROR, instance, text);
-#else
-         log(errorX, L_ERROR, instance, text);
-#endif
+         if (withXtermColor_)
+            log(errorE, L_ERROR, instance, text);
+         else
+            log(errorX, L_ERROR, instance, text);
       }
    }
 
@@ -209,33 +211,30 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
    void Log::trace(const string &instance, const string &text) {
       if(logLevel_ & L_TRACE) {
-#ifdef _TERM_WITH_COLORS_
-         log(traceE, L_TRACE, instance, text);
-#else
-         log(traceX, L_TRACE, instance, text);
-#endif
+         if (withXtermColor_)
+            log(traceE, L_TRACE, instance, text);
+         else
+            log(traceX, L_TRACE, instance, text);
       }
    }
 
 
    void Log::call(const string &instance, const string &text) {
       if(logLevel_ & L_CALL) {
-#ifdef _TERM_WITH_COLORS_
-         log(callE, L_CALL, instance, text);
-#else
-         log(callX, L_CALL, instance, text);
-#endif
+         if (withXtermColor_)
+            log(callE, L_CALL, instance, text);
+         else
+            log(callX, L_CALL, instance, text);
       }
    }
 
 
    void Log::time(const string &instance, const string &text) {
          if(logLevel_ & L_TIME) {
-#ifdef _TERM_WITH_COLORS_
-            log(timeE, L_TIME, instance, text);
-#else
-            log(timeX, L_TIME, instance, text);
-#endif
+            if (withXtermColor_)
+               log(timeE, L_TIME, instance, text);
+            else
+               log(timeX, L_TIME, instance, text);
          }
       }
 
@@ -260,39 +259,39 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
     }
 
    std::string Log::usage() {
-      std::string text = string("\n");
-      text += string("Logging options:");
-      text += string("  -trace true         Show code trace.");
-      text += string("  -dump true          Dump internal state.");
-      text += string("  -call true          Show important method entries");
-      text += string("  -time true          Display some performance data.");
-      //text += string("  -logFile <fileName> Log to given file instead to console.");
-      text += string("");
+      std::string text = string("");
+      text += string("\nLogging options:");
+      text += string("\n   -trace true         Show code trace.");
+      text += string("\n   -dump true          Dump internal state.");
+      text += string("\n   -call true          Show important method entries");
+      text += string("\n   -time true          Display some performance data.");
+      //text += string("\n  -logFile <fileName> Log to given file instead to console.");
       return text;
    }
 
 
    void Log::displayStatistics() {
       //       Log.info(ME, Memory.getStatistic());
-#ifdef _TERM_WITH_COLORS_
-      if (numErrorInvocations>0) {
-         info(ME, string(BLACK_RED) + "There were " + lexical_cast<std::string>(numErrorInvocations) +
-                  " ERRORS and " + lexical_cast<std::string>(numWarnInvocations) + " WARNINGS" + ESC);
-      }
-      else if (numWarnInvocations>0) {
-         info(ME, string(BLACK_PINK) + "There were " + lexical_cast<std::string>(numErrorInvocations) +
-                  " ERRORS and " + lexical_cast<std::string>(numWarnInvocations) + " WARNINGS" + ESC);
+      if (withXtermColor_) {
+         if (numErrorInvocations>0) {
+            info(ME, string(BLACK_RED) + "There were " + lexical_cast<std::string>(numErrorInvocations) +
+                     " ERRORS and " + lexical_cast<std::string>(numWarnInvocations) + " WARNINGS" + ESC);
+         }
+         else if (numWarnInvocations>0) {
+            info(ME, string(BLACK_PINK) + "There were " + lexical_cast<std::string>(numErrorInvocations) +
+                     " ERRORS and " + lexical_cast<std::string>(numWarnInvocations) + " WARNINGS" + ESC);
+         }
+         else {
+            info(ME, string(BLACK_GREEN) + "No errors/warnings were reported" + ESC);
+         }
       }
       else {
-         info(ME, string(BLACK_GREEN) + "No errors/warnings were reported" + ESC);
+         if (numErrorInvocations>0 || numWarnInvocations>0) {
+            info(ME, string("There were ") + lexical_cast<std::string>(numErrorInvocations) + " ERRORS and " + (lexical_cast<std::string>(numWarnInvocations)) + " WARNINGS");
+         }
+         else
+            info(ME, "No errors/warnings were reported");
       }
-#else
-      if (numErrorInvocations>0 || numWarnInvocations>0) {
-         info(ME, string("There were ") + lexical_cast<std::string>(numErrorInvocations) + " ERRORS and " + (lexical_cast<std::string>(numWarnInvocations)) + " WARNINGS");
-      }
-      else
-         info(ME, "No errors/warnings were reported");
-#endif
    }
 
 
