@@ -44,6 +44,7 @@
 
 #------------------------------------------------------------------------------
 # Authentication and Authorization
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html
 Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.Manager
 Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
 Security.Server.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.Manager
