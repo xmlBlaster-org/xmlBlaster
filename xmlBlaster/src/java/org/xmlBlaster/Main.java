@@ -153,7 +153,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             System.exit(0);
       }
 
-      boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
+      boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", false);
       if (jdk14loggingCapture) {
          try {
             // Use reflection to be JDK 1.3 runtime compatible:
@@ -162,7 +162,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             paramCls[0] = org.xmlBlaster.util.Global.class;
             Object[] params = new Object[1];
             params[0] = this.glob;
-           java.lang.reflect.Method method = clazz.getMethod("initLogManager", paramCls);
+            java.lang.reflect.Method method = clazz.getMethod("initLogManager", paramCls);
             method.invoke(clazz, params);
          }
          catch (Throwable e) {
@@ -539,7 +539,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
       log.plain(ME, "                              true: Allows user 'joe' to send wrong sender address in PublishQos");
       log.plain(ME, "   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
-      log.plain(ME, "   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [true]");
+      log.plain(ME, "   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [false]");
       log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning.");
       log.plain(ME, "   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702].");
