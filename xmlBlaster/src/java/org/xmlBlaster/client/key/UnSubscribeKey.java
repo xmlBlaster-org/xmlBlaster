@@ -90,6 +90,21 @@ public class UnSubscribeKey
    }
 
    /**
+    * Give a hint to which cluster domain this Key belongs.
+    */
+   public void setDomain(String domain) {
+      this.queryKeyData.setDomain(domain);
+   }
+
+   /**
+    * Access the domain setting
+    * @return A domain string or null
+    */
+   public String getDomain() {
+      return this.queryKeyData.getDomain();
+   }
+
+   /**
     * Converts the data in XML ASCII string.
     * @return An XML ASCII string
     */
