@@ -3,7 +3,7 @@ Name:      GetKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: GetKeyWrapper.java,v 1.2 2000/11/12 13:20:33 ruff Exp $
+Version:   $Id: GetKeyWrapper.java,v 1.3 2002/04/19 11:07:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -24,6 +24,10 @@ public class GetKeyWrapper extends SubscribeKeyWrapper
    {
       super(oid);
    }
+   /**
+    * @param queryString e.g. "//key"
+    * @param queryType e.g. "XPATH"
+    */
    public GetKeyWrapper(String queryString, String queryType) throws XmlBlasterException
    {
       super(queryString, queryType);
