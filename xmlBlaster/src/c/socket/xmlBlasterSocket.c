@@ -65,10 +65,10 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
 
 /**
  * Creates a raw blob to push over a socket as described in protocol.socket
+ * @param msgUnit The message which we need to send
  * @param totalLen is returned
- * @param rawMsg is returned
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- * @return The raw MsgUnit, the caller needs to free() it.
+ * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
  */
 char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
 {
@@ -79,6 +79,7 @@ char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
 
    if (msgUnit == 0) {
       if (debug) printf("[xmlBlasterSocket] ERROR Invalid msgUnit=NULL in encodeMsgUnit()\n");
+      *totalLen = 0;
       return (char *)0;
    }
    if (msgUnit->content == 0)
@@ -114,6 +115,83 @@ char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
       memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
    /* currpos += msgUnit->contentLen; */
 
+   return data;
+}
+
+/**
+ * Creates a raw blob to push over a socket as described in protocol.socket
+ * @param msgUnitArr An array of messages
+ * @param totalLen is returned (outparameter)
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
+ */
+char *encodeMsgUnitArr(MsgUnitArr *msgUnitArr, size_t *totalLen, bool debug)
+{
+   size_t i;
+   char *data;
+   size_t currpos = 0;
+
+   *totalLen = 0;
+
+   if (msgUnitArr == 0) {
+      if (debug) printf("[xmlBlasterSocket] ERROR Invalid msgUnitArr=NULL in encodeMsgUnitArr()\n");
+      return (char *)0;
+   }
+
+   /* First calculate total length to allocate */
+   for (i=0; i<msgUnitArr->len; i++) {
+      MsgUnit* msgUnit = &msgUnitArr->msgUnitArr[i];
+      size_t qosLen=0, keyLen=0;
+      char contentLenStr[126];
+
+      if (msgUnit->content == 0)
+         msgUnit->contentLen = 0;
+      sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+
+      if (msgUnit->qos != 0)
+         qosLen = strlen(msgUnit->qos);
+      
+      if (msgUnit->key != 0)
+         keyLen = strlen(msgUnit->key);
+   
+      *totalLen += qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
+   }
+
+   data = (char *)malloc(*totalLen);
+
+   /* Now dump the message ... */
+   for (i=0; i<msgUnitArr->len; i++) {
+      MsgUnit* msgUnit = &msgUnitArr->msgUnitArr[i];
+      size_t qosLen=0, keyLen=0;
+      char contentLenStr[126];
+
+      if (msgUnit->content == 0)
+         msgUnit->contentLen = 0;
+      sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+
+      if (msgUnit->qos != 0) {
+         qosLen = strlen(msgUnit->qos);
+         memcpy(data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
+      }
+      else
+         *(data+currpos) = 0;
+      currpos += qosLen+1;
+
+      if (msgUnit->key != 0) {
+         keyLen = strlen(msgUnit->key);
+         memcpy(data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
+      }
+      else
+         *(data+currpos) = 0;
+      currpos += keyLen+1;
+
+      memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
+      currpos += strlen(contentLenStr)+1;
+
+      if (msgUnit->content != 0)
+         memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
+      currpos += msgUnit->contentLen;
+   }
    return data;
 }
 

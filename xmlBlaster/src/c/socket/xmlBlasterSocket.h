@@ -67,6 +67,7 @@ extern char *encodeSocketMessage(
               bool debug,
               size_t *rawMsgLen);
 extern char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug);
+extern char *encodeMsgUnitArr(MsgUnitArr *msgUnitArr, size_t *totalLen, bool debug);
 extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug);
 extern void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
 extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
