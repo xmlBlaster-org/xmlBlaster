@@ -59,8 +59,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    private Set telnetInstancesSet;
 
-   private Timeout expiryTimer = new Timeout("XmlBlaster.TelnetSessionTimer");
-   private Timestamp timerKey = null;
+   private Timestamp timerKey;
    private long sessionTimeout = 3600000L; // autologout after 1 hour
 
    private ConnectionServer connectionServer = null;
@@ -72,11 +71,15 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
     */
    public static final int TELNET_PORT = 2702;
 
+   public TelnetGateway() {
+      this.instanceCounter++;
+   }
 
    /**
     * Creates the remote console server. 
     * <p />
     * Is called by CommandManager on startup
+    * @return true if started and active
     */
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
       initializeVariables(glob, commandManager, true);
@@ -85,25 +88,33 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    /**
     * @param isBootstrap The first instance has no timer set
+    * @return true if started and active
     */
-   private void initializeVariables(Global glob, CommandManager commandManager, boolean isBootstrap) {
+   private boolean initializeVariables(Global glob, CommandManager commandManager, boolean isBootstrap) {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
-      this.instanceCounter++;
       this.ME = "TelnetGateway" + this.instanceCounter + this.glob.getLogPrefixDashed();
       this.telnetInstancesSet = new HashSet();
       this.commandManager = commandManager;
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout[" + glob.getId() + "]", sessionTimeout);
+      this.port = glob.getProperty().get("admin.remoteconsole.port", TELNET_PORT); // 0 == off
+      this.port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", this.port);
+      if (this.port <= 1000) {
+         if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
+         return false;
+      }
+      log.error(ME, "DEBUG ony: Entering initializeVariables()");
 
       if (!isBootstrap) { // Ignore the first bootstrap instance
          if (sessionTimeout > 0L) {
             log.info(ME, "New connection from telnet client accepted, session timeout is " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
-            timerKey = this.expiryTimer.addTimeoutListener(this, sessionTimeout, null);
+            timerKey = glob.getTelnetSessionTimer().addTimeoutListener(this, sessionTimeout, null);
          }
          else
             log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
       }
+      return true;
    }
 
    // Hack into remotecons to allow shutdown (marcel)
@@ -112,15 +123,14 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    private void stopTimer() {
-      if (timerKey != null && this.expiryTimer != null) {
-         this.expiryTimer.removeTimeoutListener(timerKey);
-         timerKey = null;
+      if (this.timerKey != null && glob.hasTelnetSessionTimer()) {
+         this.glob.getTelnetSessionTimer().removeTimeoutListener(this.timerKey);
+         this.timerKey = null;
       }
    }
 
    protected void finalize() {
       stopTimer();
-      if (expiryTimer != null) expiryTimer.shutdown();
       disconnect();
    }
 
@@ -163,13 +173,12 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    private boolean initListener() throws XmlBlasterException { 
-      port = glob.getProperty().get("admin.remoteconsole.port", TELNET_PORT); // 0 == off
-      port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", port);
-      if (port > 1000) {
+      if (this.port > 1000) {
          createRemoteConsole(port);
          log.info(ME, "Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
          return true;
       }
+
       if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
       return false;
    }
@@ -269,7 +278,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             }
             String passwd = (String)st.nextToken();
             connect(loginName, passwd); // throws Exception or sets isLogin=true  
-            log.info(ME, "Successful login for telnet client " + loginName + "', session timeout is " +
+            log.info(ME, "Successful login for telnet client '" + loginName + "', session timeout is " +
                      org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
             lastCommand = cmd;
             return "Successful login for user " + loginName + ", session timeout is " +
@@ -379,11 +388,18 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    public CommandHandlerIfc getInstance() {
+      log.error(ME, "DEBUG ony: Entering getInstance(isShutdown="+isShutdown+", port="+this.port+")");
       if (isShutdown) return this; // Called on shutdown, we need to investigate and redesign the whole baby
+
+      if (this.port <= 1000) {
+         return null;
+      }
+
+      //!!!! register to CommandManager as it needs to destroy the timer?? what in cluster env?
 
       TelnetGateway telnetGateway = new TelnetGateway();
       telnetGateway.initializeVariables(glob, commandManager, false);
-      telnetInstancesSet.add(telnetGateway); 
+      this.telnetInstancesSet.add(telnetGateway); 
       return telnetGateway;
    }
 
@@ -413,28 +429,28 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       if (connectQos.getSessionTimeout() > 0L) {
          stopTimer();
          if (log.TRACE) log.trace(ME, "Setting expiry timer for " + loginName + " to " + connectQos.getSessionTimeout() + " msec");
-         timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
+         timerKey = this.glob.getTelnetSessionTimer().addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else
          log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
    }
 
    public void shutdown() {
+      //Thread.currentThread().dumpStack();
       if (log.CALL) log.call(ME, "Invoking shutdown()");
       isLogin = false;
-      if (this.expiryTimer != null) {
+      if (this.glob.hasTelnetSessionTimer()) {
          stopTimer();
-         this.expiryTimer.shutdown();
-         this.expiryTimer = null;
+         this.glob.removeTelnetSessionTimer();
       }
       disconnect();
-      if (telnetInstancesSet != null) {
+      if (this.telnetInstancesSet != null) {
          Iterator it = telnetInstancesSet.iterator();
          while(it.hasNext()) {
             TelnetGateway gw = (TelnetGateway)it.next();
             gw.shutdown();
          }
-         telnetInstancesSet.clear();
+         this.telnetInstancesSet.clear();
          //telnetInstancesSet = null;
       }
       if (rs != null) {
@@ -458,11 +474,18 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
     */
    public synchronized final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(1024);
-      String offset = "\n   ";
+      String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<telnetGateway>");
+      sb.append(offset).append("<telnetGateway");
+      sb.append(" port='").append(this.port).append("'");
+      sb.append(" loginName='").append(this.loginName).append("'");
+      sb.append(" numInstances='").append((this.telnetInstancesSet != null)?this.telnetInstancesSet.size():0).append("'");
+      sb.append(">");
+      if (this.glob.hasTelnetSessionTimer()) {
+         sb.append(offset).append(" <hasTimer/>");
+      }
       sb.append(offset).append("</telnetGateway>");
 
       return sb.toString();
