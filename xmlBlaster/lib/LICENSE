@@ -169,11 +169,9 @@ only the SNMP subagent module jax.jar is GPL only!
 
 15) cpptasks.jar & ant-contrib.jar
 =========================================================
-  cpptasks.jar     cpptasks CVS snapshot from Jan,5 2003
-  with removed exception
-    ./src/net/sf/antcontrib/cpptasks/types/LibrarySet.java:
-    throw new BuildException("Library names should not contain periods: "+libnames[i]);
-
+  cpptasks.jar to compile C and C++ code with ant, cpptasks CVS snapshot from Feb,03 2005
+    cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/ant-contrib login
+    cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/ant-contrib co -P cpptasks 
   See:  http://ant-contrib.sourceforge.net/cc.html
 
   ant-contrib.jar  cvs from Feb 12, 2003
