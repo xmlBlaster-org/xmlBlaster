@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.91 2002/01/15 17:41:52 ruff Exp $
+# $Id: .bashrc,v 1.92 2002/01/15 20:52:28 goetzger Exp $
 #-----------------------------------------------------------
 
 
@@ -55,15 +55,15 @@ fi
 
 #-------- Checking xmlBlaster --------
 if [ "${XMLBLASTER_HOME}" = "" ] ; then
-	export XMLBLASTER_HOME=`pwd`
+   export XMLBLASTER_HOME=`pwd`
    if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
-		export XMLBLASTER_HOME=${HOME}/xmlBlaster
-	   if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
-		   ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
-   		${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
-		   return
-		fi
-	fi
+      export XMLBLASTER_HOME=${HOME}/xmlBlaster
+      if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
+         ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+         ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
+         return
+      fi
+   fi
 fi
 
 if [ ! -d ${XMLBLASTER_HOME} ] ; then
@@ -77,18 +77,18 @@ JUTILS_HOME=${XMLBLASTER_HOME}
 export JUTILS_HOME
 
 if [ -d ${XMLBLASTER_HOME} ]; then
-   
+
    # OK, know we know where xmlBlaster is installed ...
 
    ${ECHO} "${BLACK_LTGREEN}Welcome to xmlBlaster.org   ${ESC}"
    ${ECHO} "${BLACK_LTGREEN}   XMLBLASTER_HOME=${XMLBLASTER_HOME}  ${ESC}"
 
-   #a2Blaster - authentication and authorisation service 
-   CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}   
-   
+   #a2Blaster - authentication and authorisation service
+   CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
+
    #jdbc
    #CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.0-1.2.jar:${CLASSPATH}
-   #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH} 
+   #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
    #CLASSPATH=${XMLBLASTER_HOME}/lib/xerces.jar:${CLASSPATH}
    # jutils.jar is now included in xmlBlaster.jar
    #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
@@ -133,6 +133,16 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-dom.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-gvt.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-svggen.jar:${CLASSPATH}
+   # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
+   # using release 1.04b; from http://www.dbxml.org
+   CLASSPATH=${DBXML_HOME}/java/lib/dbXML.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/xmldb.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/juggernaut-1.0.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/openorb-1.2.0.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/xerces-1.4.3.jar:${CLASSPATH}
+   CLASSPATH=${DBXML_HOME}/java/lib/xalan-2.0.1.jar:${CLASSPATH}
+
+
 
    if [ "${USE_ANT}" = "true" ] ; then
       ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
@@ -229,9 +239,9 @@ fi
 
 # !!! Why don't we add jacorb.sh and orbacus.sh and mico.sh as procedures to this shell? It would be less complicated IMHO
 if [ ${#} -eq 0 ]; then
-  if [ "${CORBA_CPP}" != "orbacus" ]; then  
+  if [ "${CORBA_CPP}" != "orbacus" ]; then
     . ${XMLBLASTER_HOME}/config/jacorb.sh
-  else 
+  else
     . ${XMLBLASTER_HOME}/config/orbacus.sh
   fi
 else
@@ -240,7 +250,7 @@ else
     . ${XMLBLASTER_HOME}/config/orbacus.sh
     ${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
     ${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
-  else 
+  else
 #   ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
     . ${XMLBLASTER_HOME}/config/jacorb.sh
     ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
@@ -257,14 +267,14 @@ fi # end of if [ ${#} -eq 0 ]
 # stuff fot the c++ classes
 if [ "${USE_CPP}" = "" ] ; then
   ${ECHO} "$BLACK_LTGREEN   C++ classes not activated. To activate set USE_CPP=true$ESC"
-  export USE_CPP=false  
+  export USE_CPP=false
 else
   if [ "${USE_CPP}" = "true" ] ; then
     ${ECHO} "$BLACK_LTGREEN   USE_CPP        =true  C++ classes activated    $ESC"
-  else 
+  else
     ${ECHO} "$BLACK_LTGREEN   USE_CPP is not set to true. C++ not activated  $ESC"
     export USE_CPP=false
-  fi  
+  fi
 fi
 
 if [ "${USE_CPP}" = "true" ] ; then
@@ -278,9 +288,9 @@ if [ "${USE_CPP}" = "true" ] ; then
   else
       ${ECHO} "$BLACK_LTGREEN   XMLCPP_VER     =${XMLCPP_VER} $ESC"
       export LD_LIBRARY_PATH=$XMLCPP_HOME/lib:$LD_LIBRARY_PATH
-  fi  
+  fi
   if [ "${XMLCPP_HOME}" = "" ] ; then
-    if [ -d /opt/local/xerces-c-src${XMLCPP_VER} ] ; then  
+    if [ -d /opt/local/xerces-c-src${XMLCPP_VER} ] ; then
        export XMLCPP_HOME=/opt/local/xerces-c-src${XMLCPP_VER}
        ${ECHO} "${BLACK_YELLOW}   XMLCPP_HOME is not set. I will set it to ${XMLCPP_HOME}${ESC}"
        CPP_ERROR=true
@@ -288,12 +298,12 @@ if [ "${USE_CPP}" = "true" ] ; then
        ${ECHO} "${BLACK_RED}   Set XMLCPP_HOME to the directory where the c++ XML is installed $ESC"
     fi
   else
-    if [ ! -d ${XMLCPP_HOME} ] ; then 
+    if [ ! -d ${XMLCPP_HOME} ] ; then
       ${ECHO} "$BLACK_RED   XMLCPP_HOME: ${XMLCPP_HOME} is not a valid directory $ESC"
     else
       ${ECHO} "$BLACK_LTGREEN   XMLCPP_HOME set to ${XMLCPP_HOME} $ESC"
-    fi  
-  fi  
+    fi
+  fi
 
   #check if the correct corba is installed
   if [ "${CORBA_CPP}" = "" ] ; then
@@ -301,14 +311,14 @@ if [ "${USE_CPP}" = "true" ] ; then
     ${ECHO} "$BLACK_YELLOW   CORBA_CPP is not set. I will set it to ${CORBA_CPP} ('orbacus' is valid as well) $ESC"
     CPP_ERROR=true
   fi
-  if [ "${CORBACPP_VER}" = "" ] ; then 
+  if [ "${CORBACPP_VER}" = "" ] ; then
     export CORBACPP_VER="2.3.6"
-    ${ECHO} "$BLACK_YELLOW   CORBACPP_VER is not set. I will set it to ${CORBACPP_VER} $ESC" 
+    ${ECHO} "$BLACK_YELLOW   CORBACPP_VER is not set. I will set it to ${CORBACPP_VER} $ESC"
     CPP_ERROR=true
   fi
   #home directory of the corba implementation
-  if [ "${CORBACPP_HOME}" = "" ] ; then  
-    if [ -d /opt/mico ] ; then  
+  if [ "${CORBACPP_HOME}" = "" ] ; then
+    if [ -d /opt/mico ] ; then
        export CORBACPP_HOME=/opt/mico
        ${ECHO} "$BLACK_YELLOW   CORBACPP_HOME is not set. I will set it to ${CORBACPP_HOME}. $ESC"
     else
@@ -319,9 +329,9 @@ if [ "${USE_CPP}" = "true" ] ; then
   if [ ! -d ${CORBACPP_HOME} ] ; then
     ${ECHO} "$BLACK_RED CORBACPP_HOME: ${CORBACPP_HOME} is not a valid directory. $ESC"
     CPP_ERROR=true
-  fi    
+  fi
 
-  if [ "${CPP_ERROR}" = "true" ] ; then 
+  if [ "${CPP_ERROR}" = "true" ] ; then
     ${ECHO} "${BLACK_LTGREEN}   Please read the file ${XMLBLASTER_HOME}/src/c++/README $ESC"
   fi
 
@@ -339,8 +349,8 @@ if [ "${JIKES_HOME}" != "" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
-	if [ "${JDK_1_1}" != "" ] ; then
-	 JIKESPATH=${CLASSPATH}
+   if [ "${JDK_1_1}" != "" ] ; then
+    JIKESPATH=${CLASSPATH}
    	   export JIKESPATH
       else
          JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar
