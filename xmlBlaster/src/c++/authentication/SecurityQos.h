@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+Name:      SecurityQos.h
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   The qos for the security (a subelement of connect qos)
+------------------------------------------------------------------------------*/
+
 /**
  * Parse the default security handling with loginName and password
  * from the login qos xml string:
@@ -34,9 +41,12 @@ namespace org { namespace xmlBlaster { namespace authentication {
       string version_;
       string user_;
       string passwd_;
+      int args_;
+      char **argc_;
+
       util::StringTrim<char> trim_;
 
-      void prep()
+      void prep(int args, char *argc[])
       {
          inSecurityService_ = false;
          inUser_            = false;
@@ -45,6 +55,22 @@ namespace org { namespace xmlBlaster { namespace authentication {
          version_           = "1.0";
          user_              = "";
          passwd_            = "";
+         args_              = args;
+         argc_              = argc;
+
+      }
+
+      void copy(const SecurityQos& securityQos)
+      {
+         inSecurityService_ = securityQos.inSecurityService_;
+         inUser_            = securityQos.inUser_;
+         inPasswd_          = securityQos.inPasswd_;
+         type_              = securityQos.type_;
+         version_           = securityQos.version_;
+         user_              = securityQos.user_;
+         passwd_            = securityQos.passwd_;
+         args_              = securityQos.args_;
+         argc_              = securityQos.argc_;
       }
 
    public:
@@ -81,6 +107,10 @@ namespace org { namespace xmlBlaster { namespace authentication {
                   const string& password,
                   int args=0,
                   char *argc[]=0);
+
+      SecurityQos(const SecurityQos& securityQos);
+      SecurityQos& operator =(const SecurityQos& securityQos);
+
 
       string getPluginVersion() const;
 

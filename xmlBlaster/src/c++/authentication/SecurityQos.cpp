@@ -1,3 +1,9 @@
+/*------------------------------------------------------------------------------
+Name:      SecurityQos.cpp
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   The qos for the security (a subelement of connect qos)
+------------------------------------------------------------------------------*/
 #include <authentication/SecurityQos.h>
 #include <string>
 
@@ -11,7 +17,7 @@ SecurityQos::SecurityQos(int args, char *argc[])
      trim_()
 {
    log_.call(ME, "first constructor");
-   prep();
+   prep(args, argc);
 }
 
 SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, char *argc[]=0)
@@ -20,7 +26,7 @@ SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, char *argc[]=
      trim_()
 {
    log_.call(ME, "second constructor");
-   prep();
+   prep(args, argc);
    parse(xmlQoS_literal);
 }
 
@@ -31,11 +37,22 @@ SecurityQos::SecurityQos(const string& loginName,
    : SaxHandlerBase(args, argc), ME("SecurityQos-simple"), trim_()
 {
    log_.call(ME, "third constructor");
-   prep();
+   prep(args, argc);
    user_   = loginName;
    passwd_ = password;
 }
 
+SecurityQos::SecurityQos(const SecurityQos& securityQos)
+   : SaxHandlerBase(securityQos.args_, argc_), ME("SecurityQos-simple"), trim_()
+{
+   copy(securityQos);
+}
+
+SecurityQos& SecurityQos::operator =(const SecurityQos& securityQos)
+{
+   copy(securityQos);
+   return *this;
+}
 
 string SecurityQos::getPluginVersion() const
 {
@@ -179,7 +196,7 @@ string SecurityQos::toXml(const string& extraOffset)
 }}} // namespaces
 
 
-#ifndef _XMLBLASTER_CLASSTEST
+#ifdef _XMLBLASTER_CLASSTEST
 using namespace std;
 
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
@@ -189,7 +206,7 @@ int main(int args, char* argv[])
     // Init the XML platform
     try
     {
-  XMLPlatformUtils::Initialize();
+       XMLPlatformUtils::Initialize();
     }
 
     catch(const XMLException& toCatch)
