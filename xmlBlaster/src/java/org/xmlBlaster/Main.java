@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.68 2001/09/04 15:32:42 ruff Exp $
+Version:   $Id: Main.java,v 1.69 2001/09/05 13:20:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -315,7 +315,7 @@ public class Main
          // orbacus needs this !!! Michele?
          // if (orb.work_pending()) orb.perform_work();
          try {
-            String line = in.readLine().trim(); // Blocking in I/O
+            String line = in.readLine(); // Blocking in I/O
             if (line == null) continue;
             line = line.trim();
             if (line.toLowerCase().equals("g")) {
