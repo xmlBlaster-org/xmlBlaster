@@ -4,6 +4,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.901 [2004-04-27]
 ==============================
 
+ o Added persistent session and persistent subscriptions for
+   revovery after server crash or server restart:
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.session.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.subscription.html
+
  o Changed synchronization of disconnecting a client which could be
    a portential dead lock if a shutdown and a client disconnect comes
    simultaneously
