@@ -31,10 +31,19 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class HelloWorldNative implements I_Plugin
 {
    private Global glob;
-   private static final String[] nativeConnect = { "-protocol", "LOCAL" };
-  
+   private static final String[] nativeConnectArgs = {
+          "-protocol", "LOCAL",
+          "-dispatch/connection/pingInterval", "0",
+          "-dispatch/connection/burstMode/collectTime", "0",
+          //"-queue/callback/defaultPlugin", "RAM,1.0",
+          //"-queue/connection/defaultPlugin", "RAM,1.0",
+          //"-queue/subject/defaultPlugin", "RAM,1.0",
+          "-queue/defaultPlugin", "RAM,1.0"
+          };
+
    private final void queryServerMemory() {
       try {
+         System.err.println("HelloWorldNative: Connecting with protocol 'LOCAL' to xmlBlaster\n");
          I_XmlBlasterAccess con = new XmlBlasterAccess(glob);
 
          ConnectQos qos = new ConnectQos(this.glob); /* Client side object */
@@ -54,9 +63,9 @@ public class HelloWorldNative implements I_Plugin
    }
 
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.glob = glob.getClone(nativeConnect);
+      this.glob = glob.getClone(nativeConnectArgs);
       this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
-      System.err.println("HelloWorldNative: init()");
+      System.out.println("\nHelloWorldNative: init(): The plugin is loaded");
       queryServerMemory();
    }
 
@@ -69,7 +78,16 @@ public class HelloWorldNative implements I_Plugin
    }
 
    public void shutdown() throws XmlBlasterException {
-      System.err.println("HelloWorldNative: shutdown()");
+      System.err.println("\nHelloWorldNative: shutdown()\n");
+   }
+
+   public HelloWorldNative(String args[]) {
+      this.glob = new Global(args);
+      queryServerMemory();
+   }
+
+   public static void main(String args[]) {
+      new HelloWorldNative(args);
    }
 }
 
