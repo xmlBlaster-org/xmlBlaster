@@ -285,7 +285,7 @@ Solaris:
 <a name="line43" href="#line43">43</a>                   <font color="#008000">&quot; &lt;/securityService&gt;&quot;</font>
 <a name="line44" href="#line44">44</a>                   <font color="#008000">&quot;&lt;/qos&gt;&quot;</font><font color="4444FF">;</font>
 <a name="line45" href="#line45">45</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xb</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">connect</font><font color="4444FF">(</font><font color="#2040a0">xb</font>, <font color="#2040a0">connectQos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">exception</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line46" href="#line46">46</a>    <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line46" href="#line46">46</a>    <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line47" href="#line47">47</a>    <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">exception</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#008000">'<font color="#77dd77">\0</font>'</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
 <a name="line48" href="#line48">48</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception during connect, errorCode=%s, message=%s&quot;</font>,
 <a name="line49" href="#line49">49</a>              <font color="#2040a0">exception</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">exception</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
@@ -306,7 +306,7 @@ Solaris:
 <a name="line64" href="#line64">64</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">contentStr</font> <font color="4444FF">=</font> <font color="#2040a0">strFromBlobAlloc</font><font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font>.<font color="#2040a0">content</font>,
 <a name="line65" href="#line65">65</a>                                           <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font>.<font color="#2040a0">contentLen</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line66" href="#line66">66</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[HelloWorld] xmlBlaster has %s bytes of free memory<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">contentStr</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line67" href="#line67">67</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">contentStr</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line67" href="#line67">67</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">contentStr</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line68" href="#line68">68</a>    <font color="4444FF"><strong>}</strong></font>
 <a name="line69" href="#line69">69</a>    <font color="#2040a0">freeMsgUnitArr</font><font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line70" href="#line70">70</a>    
@@ -379,7 +379,7 @@ Solaris:
 <a name="line29" href="#line29"> 29</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">xml</font> <font color="4444FF">=</font> <font color="#2040a0">messageUnitToXml</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line30" href="#line30"> 30</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] CALLBACK update(): Asynchronous message update arrived:%s<font color="#77dd77">\n</font>&quot;</font>,
 <a name="line31" href="#line31"> 31</a>              <font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line32" href="#line32"> 32</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line32" href="#line32"> 32</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line33" href="#line33"> 33</a>       <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">responseQos</font> <font color="4444FF">=</font> 
 <a name="line34" href="#line34"> 34</a>                   <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line35" href="#line35"> 35</a>       <font color="#444444">/* Return QoS: Everything is OK */</font>
@@ -636,7 +636,7 @@ Solaris:
    <p>
    The rest is straight forward, we subscribe to a message, we publish a message we retrieve
    messages in synchronous mode and clean up at the end.
-   Take care to free() resources on the way and to check the exception struct after every invocation
+   Take care to xmlBlasterfree() resources on the way and to check the exception struct after every invocation
    to avoid memory leaks.
    </p>
    <p>
@@ -828,7 +828,7 @@ Solaris:
 <a name="line167" href="#line167">167</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">xml</font> <font color="4444FF">=</font> <font color="#2040a0">messageUnitToXml</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line168" href="#line168">168</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] CALLBACK update(): Asynchronous message update arrived:%s<font color="#77dd77">\n</font>&quot;</font>,
 <a name="line169" href="#line169">169</a>              <font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line170" href="#line170">170</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line170" href="#line170">170</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line171" href="#line171">171</a>       <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">responseQos</font> <font color="4444FF">=</font>
 <a name="line172" href="#line172">172</a>              <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line173" href="#line173">173</a>       <font color="#444444">/* Return QoS: Everything is OK */</font>
@@ -1112,7 +1112,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.48 $</revision>
+   <revision>$Revision: 1.49 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
