@@ -11,6 +11,10 @@ CLASS_DIR = $(CLASS_TOP_DIR)/javaclients
 SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+SUB_DIRS = chat
+#------------------------------------------------------------------------------
+
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
@@ -22,7 +26,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/ClientSub.class \
 			$(CLASS_DIR)/ClientRaw.class \
 			$(CLASS_DIR)/ClientErase.class \
-			$(CLASS_DIR)/ClientPubDestination.class
+			$(CLASS_DIR)/ClientPubDestination.class 
 #------------------------------------------------------------------------------
 
 
