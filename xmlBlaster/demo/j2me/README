@@ -3,7 +3,7 @@
 
 2) build the servlet (the applet proxy). It will install itself into tomcat:
 
-build  -DTOMCAT_HOME=/home/michele/jakarta/jakarta-tomcat-5.0.19 deploy_war
+build  -DTOMCAT_HOME=/home/michele/jakarta/jakarta-tomcat deploy_war
 
 3) start an xmlBlaster instance (keep 8080 clear for tomcat):
 
@@ -17,14 +17,27 @@ java http.dhtml.systemInfo.SystemInfoPublisher
 5) Download the j2me wireless toolkit 2.1 (you will find it at the url
 http://java.sun.com/products/j2mewtoolkit/download-2_1.html)
 
-6) install it in let's say $WTK21 then
+6) install it in let's say ${J2ME_HOME} then
 
-7) cd $WTK21/bin
+7) build the embedded application:
+   build -DJ2ME_HOME=${J2ME_HOME} j2me
+this will create a SystemInfo.jar file in ${XMLBLASTER_HOME}/demo/j2me
+don't forget to update the size of the jar file in the SystemInfo.jad file
+which resides in the same directory
+
+8) Add ${J2ME_HOME}/bin to the path (on bash: export PATH=$PATH:${J2ME_HOME}
 
 8) and start the emulator and a cellular phone will pop up in your screen:
 
 emulator -Xdescriptor:${XMLBLASTER_HOME}/demo/j2me/SystemInfo.jad
 
 Start to play with the xmlBlaster client.
+
+
+Additional Notes:
+in the SystemInfo.jad file there is a property called 'serlvetUrl'. You 
+can change that to point to the address where your servlet resides. Per
+default it points to the xmlBlaster server. If you omit it, it will point
+to the localhost.
 
 
