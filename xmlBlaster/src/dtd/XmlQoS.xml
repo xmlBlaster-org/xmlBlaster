@@ -132,7 +132,9 @@
                    <!-- compress messages bigger 1000 bytes before sending them to me -->
 
          <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
-                    them in one callback (burst mode) -->
+                    them in one callback (burst mode)
+                    This update mode is a 'transaction' for all collected messages -->
+                    <!-- other attributes like numMsg or maxSize could allow other 'transaction' ranges -->
 
 
          <NoPtP /> <!-- Set this flag if you don't want to receive any PtP messages -->
