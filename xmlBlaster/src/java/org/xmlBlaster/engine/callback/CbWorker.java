@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.10 2002/06/19 10:27:39 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.11 2002/06/27 11:11:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -45,7 +45,7 @@ public class CbWorker implements Runnable
             entries = this.msgQueue.takeMsgs();
          }
          if (entries == null || entries.length < 1) {
-            log.warn(ME, "Got zero messages from queue, expected at least one");
+            if (log.TRACE) log.trace(ME, "Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time.");
             return;
          }
          
