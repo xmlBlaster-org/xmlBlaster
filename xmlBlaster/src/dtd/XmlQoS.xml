@@ -49,6 +49,7 @@
          </erase>
 
          <IsDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
+                          <!-- If you use this feature, you normally give the message a well known key oid -->
                           <!-- Default is transient -->
 
          <ForceUpdate />  <!-- An update is forced even when the content and meta data didn't change -->
