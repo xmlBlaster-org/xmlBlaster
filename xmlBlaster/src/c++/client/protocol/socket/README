@@ -1,0 +1,22 @@
+This plugin shall communicate with the SOCKET protocol to xmlBlaster.
+It uses the C SOCKET client library and wraps it for our C++ code.
+
+The implementation is not finished!
+
+COMPILE:
+
+Add
+  
+  COMPILE_SOCKET_PLUGIN=1
+
+to build.properties and do
+
+  build.sh cpp
+
+Setting COMPILE_SOCKET_PLUGIN=0 will not include any SOCKET
+specific code.
+(To switch on/off the CORBA plugin compilation use COMPILE_CORBA_PLUGIN=1 or 0)
+
+
+
+Marcel 07/2003

@@ -1,0 +1,117 @@
+/*------------------------------------------------------------------------------
+Name:      SocketDriver.h
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   The client driver for the socket protocol
+------------------------------------------------------------------------------*/
+#ifndef _CLIENT_PROTOCOL_SOCKET_SOCKET_DRIVER
+#define _CLIENT_PROTOCOL_SOCKET_SOCKET_DRIVER
+
+#include <util/xmlBlasterDef.h>
+#include <string>
+#include <vector>
+#include <util/MessageUnit.h>
+#include <client/I_Callback.h>
+#include <client/protocol/I_CallbackServer.h>
+#include <client/protocol/I_XmlBlasterConnection.h>
+#include <util/XmlBlasterException.h>
+//#include <client/xmlBlasterClient.h>
+#include <util/qos/StatusQosFactory.h>
+#include <util/qos/MsgQosFactory.h>
+#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
+
+namespace org {
+ namespace xmlBlaster {
+  namespace client {
+   namespace protocol {
+    namespace socket {
+
+   class Dll_Export SocketDriver 
+      : public virtual org::xmlBlaster::client::protocol::I_CallbackServer, 
+        public virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection
+   {
+   friend class SocketDriverFactory; // To be able to create a SocketDriver instance
+
+   private:
+      org::xmlBlaster::util::thread::Mutex&           mutex_;
+      std::string           instanceName_;
+      ::XmlBlasterAccessUnparsed* connection_;
+      const std::string     ME;
+      org::xmlBlaster::util::Global&          global_;
+      org::xmlBlaster::util::Log&             log_;
+      org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
+      std::string           secretSessionId_;
+      std::string           loginName_;
+
+      /**
+       * frees the resources used. It only frees the resource specified with
+       * 'true'.
+       */
+      void freeResources(bool deleteConnection=true);
+
+      /**
+       * Only used by getInstance()
+       * @param global
+       * @param mutex   org::xmlBlaster::util::Global thread synchronization (to avoid static variable)
+       *                
+       * @param isRunning    Feedback is doRun has stopped
+       * @param instanceName
+       */
+      SocketDriver(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::thread::Mutex& mutex, const std::string instanceName);
+
+      SocketDriver(const SocketDriver& socketDriver);
+
+      SocketDriver& operator =(const SocketDriver& socketDriver);
+
+      virtual ~SocketDriver();
+
+   public:
+
+      // methods inherited from org::xmlBlaster::client::protocol::I_CallbackServer
+      void initialize(const std::string& name, org::xmlBlaster::client::I_Callback &client);
+      std::string getCbProtocol();
+      std::string getCbAddress();
+      bool shutdownCb();
+
+      //bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
+      //               ::XmlBlasterException *exception);
+
+      // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
+      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+      bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
+      std::string getProtocol();
+      bool shutdown();
+      void resetConnection();
+      std::string getLoginName();
+      bool isLoggedIn();
+
+      std::string ping(const std::string& qos);
+
+      org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
+
+      std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos);
+
+      std::vector<org::xmlBlaster::client::qos::UnSubscribeReturnQos> unSubscribe(const org::xmlBlaster::client::key::UnSubscribeKey& key, const org::xmlBlaster::client::qos::UnSubscribeQos& qos);
+
+      org::xmlBlaster::client::qos::PublishReturnQos publish(const org::xmlBlaster::util::MessageUnit& msgUnit);
+
+      void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
+
+      std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
+
+      std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
+
+
+
+      // following methods are not defined in any parent class
+      static std::string usage();
+      // Exception conversion ....
+      static org::xmlBlaster::util::XmlBlasterException
+        convertFromSocketException(const ::XmlBlasterException & ex);
+      static ::XmlBlasterException
+        convertToSocketException(org::xmlBlaster::util::XmlBlasterException& ex);
+   };
+
+}}}}} // namespaces
+
+#endif
