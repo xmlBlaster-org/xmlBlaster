@@ -2,9 +2,16 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
+  - Added a message receive timestamp in update QoS, see:
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.update.rcvTimestamp.html
+
+  - Bugfix when interpreting command line option -xmlrpc.hostname
+
   - The C++ client helper classes are now collected into a
     shared library, on Linux e.g.
        xmlBlaster/lib/libxmlBlasterClient.so
+    The new C++ namespace is
+       org::xmlBlaster
 
   - Added an email callback plugin.
     This allows callbacks to be send using email instead e.g. CORBA
