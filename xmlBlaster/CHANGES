@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes in current subversion repository (svn)
 ==============================================
+ o C++ client library:
+	- #12799 Added leaveServer(), still buggy under certain mutli threading states
 
  o C client library:
    - #12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
