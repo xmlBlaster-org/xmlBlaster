@@ -3,7 +3,7 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.3 2002/06/25 18:01:46 ruff Exp $
+Version:   $Id: TestSession.java,v 1.4 2002/06/27 12:50:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -32,7 +32,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner authentication.TestSession
- *    java junit.ui.TestRunner authentication.TestSession
+ *    java junit.swingui.TestRunner authentication.TestSession
  * </pre>
  */
 public class TestSession extends TestCase implements I_Callback

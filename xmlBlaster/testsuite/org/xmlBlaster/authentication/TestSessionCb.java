@@ -3,7 +3,7 @@ Name:      TestSessionCb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSessionCb.java,v 1.2 2002/06/18 13:51:57 ruff Exp $
+Version:   $Id: TestSessionCb.java,v 1.3 2002/06/27 12:50:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -38,7 +38,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner authentication.TestSessionCb
- *    java junit.ui.TestRunner authentication.TestSessionCb
+ *    java junit.swingui.TestRunner authentication.TestSessionCb
  * </pre>
  */
 public class TestSessionCb extends TestCase

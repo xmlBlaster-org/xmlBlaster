@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.2 2002/06/25 18:01:46 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.3 2002/06/27 12:50:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -40,7 +40,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner authentication.TestLoginLogoutEvent
- *    java junit.ui.TestRunner authentication.TestLoginLogoutEvent
+ *    java junit.swingui.TestRunner authentication.TestLoginLogoutEvent
  * </pre>
  */
 public class TestLoginLogoutEvent extends TestCase implements I_Callback

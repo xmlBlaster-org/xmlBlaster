@@ -45,7 +45,7 @@ public class TestLogout extends TestCase implements I_Callback
     */
    public TestLogout(String name) {
       super(name);
-      this.glob = Global.instance();
+      this.glob = new Global();
       this.log = glob.getLog(null);
    }
 
@@ -111,11 +111,7 @@ public class TestLogout extends TestCase implements I_Callback
    /**
     * Invoke: java authentication.TestLogout
     * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
-    * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner -noloading authentication.TestLogout</pre>
+    * <pre>java -Djava.compiler= junit.textui.TestRunner -noloading authentication.TestLogout</pre>
     */
    public static void main(String args[]) {
       Global glob = new Global();
