@@ -586,7 +586,7 @@ public abstract class Executor implements ExecutorBase
    }
 
    void sendMessage(byte[] msg, boolean udp) throws IOException {
-      if (udp) {
+      if (udp && this.sockUDP!=null) {
          java.net.InetAddress ia = sock.getInetAddress();
          int port = sock.getPort();
          DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
