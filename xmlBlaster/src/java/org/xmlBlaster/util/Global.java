@@ -387,11 +387,14 @@ public class Global implements Cloneable
                   try {
                      I_LogDeviceFactory fac = logDevicePluginManager.getFactory(devices[i],"1.0");
                      LogableDevice dev = fac.getLogDevice(lc);
-                     if (log.TRACE) log.trace(ME,"Setting logDevice " +key+"[" + devices[i]+"]="+dev.getClass().getName());
+                     if (log != null && log.TRACE) log.trace(ME,"Setting logDevice " +key+"[" + devices[i]+"]="+((dev!=null && dev.getClass()!=null)?dev.getClass().getName():"null"));
                      if (dev != null)
                         lc.addLogDevice(dev);
                   }catch(XmlBlasterException ex) {
-                     log.error(ME,"Global: error in getting LogDeviceFactory for " + key);
+                     if (log != null)
+                        log.error(ME,"initLog(): Error in getting LogDeviceFactory for " + key);
+                     else
+                        System.out.println(ME+".initLog(): Error in getting LogDeviceFactory for " + key);
                      continue;
                   }
                   //If we ever reach here, we have some logging device set up
