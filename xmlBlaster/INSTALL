@@ -1,6 +1,6 @@
            _____________________________________________________
   ________|                                                     |________
-  \       |   xmlBlaster 0.848        http://www.xmlBlaster.org |       /
+  \       |   xmlBlaster 0.849        http://www.xmlBlaster.org |       /
    \      |        Free Message-oriented Middleware (MOM)       |      /
    /      |_____________________________________________________|      \
   /___________)                                              (__________\
@@ -58,14 +58,14 @@ Use -help if you want usage infos.
 
 Now start a client:
 
-  java -classpath lib/xmlBlaster.jar javaclients.ClientSub
+  java -classpath lib/xmlBlaster.jar HelloWorld3
 
 You should see some output on your terminal telling
 that a message is published and subscribed.
 
 Find out what command line options you have:
 
-  java -classpath lib/xmlBlaster.jar javaclients.ClientSub -help
+  java -classpath lib/xmlBlaster.jar HelloWorld3 -help
 
 
 To simplify usage, set your CLASSAPTH:

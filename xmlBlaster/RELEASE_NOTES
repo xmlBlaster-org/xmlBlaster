@@ -1,45 +1,27 @@
 Bom dia,
 
-the new release 0.848 is out (May, 23. 2003).
+the new release 0.849 is out (Jul, 15 2003).
 
-We wait with the stable release 0.85 until we got feedback about 0.848
+We wait with the stable release 0.85 until we got feedback about 0.849
 
 
 IMPORTANT NOTE:
 ---------------
 
-1. Many property names changed!
-   Please read accurate xmlBlaster/CHANGES and search & replace all
-   your outdated environment settings!
+1. This update is mostly backward compatible to 0.848.
+   Please read accurate xmlBlaster/CHANGES for details.
 
 2. Remove your old xmlBlaster.properties, xmlBlasterPlugins.xml
    and jacorb.properties files.
    Use the new files from directory xmlBlaster/config.
   
-3. Backward compatibility:
-  * XmlRpc client and server is not backward compatible to 0.847
-    as the XML-RPC protocol was renamed to XMLPRC
-
-4. The default setup of xmlBlaster runs RAM based only,
-   there is no persistence for crash recovery.
-   To switch it on you need Postgres or Oracle installed, see
-    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
-    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
-    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
-   and read the NOTE in xmlBlaster.properties.
-   This way you get swapping support for huge message amount
-   and persistence messages to survive server crashes.
-
 
 NEW FEATURES:
 -------------
 
-o  Properties renamed to match the new hierarchical syntax.
+o  We use now HSQLDB as our default embedded database.
 
 o  Bug fixes.
-
-o  A C bases SOCKET client with only 25 kByte of size
-   (currently for synchronous access only).
 
 o  Please read the CHANGES file for more informations.
 
@@ -53,18 +35,18 @@ KNOWN BUGS:
 2. On some JDK 1.2x variants there is a delay of 10 seconds on client login.
    The reason is not known.
 
-3. C++ clients with MICO 2.37 and 2.3.8: If you invoke XmlBlasterAccess::shutdown on one XmlBlasterAccess
-   instance, you will not receive any callbacks anymore from any other instance of that class. This problem
-   does NOT exist with TAO or ORBIX.
 
 NEXT RELEASES:
 --------------
 
-The next release is 0.85 and we strive to have these additional changes:
+0.849 is already considered stable for production use.
 
-  o Bug fixes
+As we have reached the minor version number '9' the next
+release is the long waited stable release 0.85.
 
-  o Cleanup of obsolete packages
+For 0.85 we probably will finish the native plugin example and
+add C++ SOCKET protocol support, if possible the JMX support
+will be finished as well.
 
 
 The planned features of release 0.9 are an open issue.

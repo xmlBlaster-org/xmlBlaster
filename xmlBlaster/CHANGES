@@ -1,7 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xx, xxx 2003]
-================================
+Changes for 0.xxx [xxxxxxxxxx]
+==============================
+
+Changes for 0.849 [2003-07-15]
+==============================
+
  o BUGFIX Java client library: Fixed memory leak for reconnecting clients with
   subscribes using specific callbacks. 
 
