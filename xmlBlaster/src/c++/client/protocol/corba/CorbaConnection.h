@@ -59,6 +59,7 @@ namespace org {
       int                             args_;
       const char * const*             argc_;
       string                          sessionId_;
+      string                          xmlBlasterIOR_;
 
    public:
       /**
@@ -94,6 +95,8 @@ namespace org {
       CorbaConnection(int args=0, const char * const argc[]=0, bool orbOwner = false);
 
       ~CorbaConnection();
+
+      string getAddress() const;
 
       /**
        * Accessing the orb handle.
@@ -208,7 +211,9 @@ namespace org {
         */
        bool disconnect(const string& qos="");
 
-       void shutdown();
+       bool shutdown();
+
+       bool shutdownCb();
 
       /**
        * Building a Callback server.

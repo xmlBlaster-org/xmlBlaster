@@ -50,6 +50,7 @@ CorbaConnection::CorbaConnection(int args, const char * const argc[], bool orbOw
   orbOwner_          = orbOwner;
   args_              = args;
   argc_              = argc;
+  xmlBlasterIOR_     = "";
 }
 
 
@@ -72,6 +73,12 @@ CorbaConnection::~CorbaConnection()
      poa_ = 0;
   }
   if (defaultCallback_) delete defaultCallback_;
+}
+
+string
+CorbaConnection::getAddress() const
+{
+   return xmlBlasterIOR_;
 }
 
 CORBA::ORB_ptr 
@@ -337,9 +344,9 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       ConnectQosFactory factory(args_, argc_);
       connectReturnQos_ = factory.readObject(retQos);
       sessionId_ = connectReturnQos_.getSessionId();
-      string xmlBlasterIOR = connectReturnQos_.getServerRef().getAddress();
+      xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();
 
-      CORBA::Object_var obj = orb_->string_to_object(xmlBlasterIOR.c_str());
+      CORBA::Object_var obj = orb_->string_to_object(xmlBlasterIOR_.c_str());
       xmlBlaster_ = serverIdl::Server::_narrow(obj);
 
       numLogins_++;
@@ -381,18 +388,35 @@ CorbaConnection::logout()
   return false;
 }
 
-void
+bool
 CorbaConnection::shutdown()
 {
+   bool ret = false;
    if (!CORBA::is_nil(xmlBlaster_)) {
       CORBA::release(xmlBlaster_);
       xmlBlaster_ = NULL;
+      ret = true;
    }
    if (!CORBA::is_nil(authServer_)) {
       CORBA::release(authServer_);
       authServer_ = NULL;
+      ret = true;
    }
+   return ret;
 }
+
+bool
+CorbaConnection::shutdownCb()
+{
+   if (!CORBA::is_nil(callback_)) {
+      CORBA::release(callback_);
+      callback_ = NULL;
+      return true;
+   }
+   return false;
+}
+
+
 
 bool
 CorbaConnection::disconnect(const string& qos)
