@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.76 2000/06/26 07:12:36 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.77 2000/07/11 08:51:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.76 $
+ * @version $Revision: 1.77 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -296,6 +296,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (Log.CALLS) Log.calls(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
+
+      if (xmlKey.getKeyOid().equals("__sys__jdbc")) { // Query RDBMS !!! hack, we need a general service interface
+         String query = xmlKey.toXml();
+         String content = query.substring(query.indexOf(">")+1, query.lastIndexOf("<"));
+         org.xmlBlaster.protocol.jdbc.XmlDBAdapter adap = new org.xmlBlaster.protocol.jdbc.XmlDBAdapter(
+                     content.getBytes(), org.xmlBlaster.protocol.jdbc.JdbcDriver.getNamedPool());
+         return adap.query();
+      }
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qos);
       MessageUnit[] msgUnitArr = new MessageUnit[xmlKeyVec.size()];
