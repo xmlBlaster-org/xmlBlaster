@@ -12,7 +12,8 @@ Compile:   Compiles at least on Windows, Linux, Solaris. Further porting should 
 
             export LD_LIBRARY_PATH=/opt/sqlite-bin/lib
             gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c ../helper.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite
-            (use optionally  -ansi -pedantic)
+            (use optionally  -ansi -pedantic -Wno-long-long
+            (Intel C: icc -wd981 ...)
 
            Compile inside xmlBlaster:
             build -DXMLBLASTER_PERSISTENT_QUEUE=true c-delete c
@@ -34,14 +35,18 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 #include "sqlite.h"
 
 static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
+static const QueueProperties *getProperties(I_Queue *queueP);
 static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
 static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception);
 static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
 static bool persistentQueueClear(I_Queue *queueP, ExceptionStruct *exception);
-static bool persistentQueueEmpty(I_Queue *queueP, ExceptionStruct *exception);
+static int32_t getNumOfEntries(I_Queue *queueP);
+static int32_t getMaxNumOfEntries(I_Queue *queueP);
+static int64_t getNumOfBytes(I_Queue *queueP);
+static int64_t getMaxNumOfBytes(I_Queue *queueP);
+static bool persistentQueueEmpty(I_Queue *queueP);
 static void persistentQueueShutdown(I_Queue *queueP, ExceptionStruct *exception);
 static bool checkArgs(I_Queue *queueP, const char *methodName, bool checkIsConnected, ExceptionStruct *exception);
-static _INLINE_FUNC void initializeExceptionStruct(ExceptionStruct *exception);
 static bool createTables(I_Queue *queueP, ExceptionStruct *exception);
 static bool execSilent(I_Queue *queueP, const char *sqlStatement, const char *comment, ExceptionStruct *exception);
 static bool compilePreparedQuery(I_Queue *queueP, const char *methodName, sqlite_vm **ppVm, const char *queryString, ExceptionStruct *exception);
@@ -82,13 +87,19 @@ typedef struct DbInfoStruct {
    sqlite_vm *pVm_fillCache;
 } DbInfo;
 
+/**
+ * Used temporary for peekWithSamePriority(). 
+ */
 typedef struct {
    QueueEntryArr **queueEntryArrPP;
    int32_t currEntries;
    int64_t currBytes;
-   int32_t maxNumOfEntries;
-   int64_t maxNumOfBytes;
+   int32_t maxNumOfEntries; /** The max wanted number of entries for this peek() */
+   int64_t maxNumOfBytes;   /** The max wanted bytes during peek() */
 } TmpHelper;
+
+static char int64Str_[32];
+static char * const int64Str = int64Str_;   /* to make the pointer address const */
 
 /**
  * Create a new persistent queue instance. 
@@ -110,10 +121,15 @@ Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
    if (queueP == 0) return queueP;
    queueP->isInitialized = false;
    queueP->initialize = persistentQueueInitialize;
+   queueP->getProperties = getProperties;
    queueP->put = persistentQueuePut;
    queueP->peekWithSamePriority = persistentQueuePeekWithSamePriority;
    queueP->randomRemove = persistentQueueRandomRemove;
    queueP->clear = persistentQueueClear;
+   queueP->getNumOfEntries = getNumOfEntries;
+   queueP->getMaxNumOfEntries = getMaxNumOfEntries;
+   queueP->getNumOfBytes = getNumOfBytes;
+   queueP->getMaxNumOfBytes = getMaxNumOfBytes;
    queueP->empty = persistentQueueEmpty;
    queueP->shutdown = persistentQueueShutdown;
    queueP->log = logFp;
@@ -151,6 +167,17 @@ static sqlite_vm *getVmFillCache(I_Queue *queueP) {
 }
 */
 
+/**
+ * Access the queue configuration. 
+ * @return Read only access, 0 on error
+ */
+static const QueueProperties *getProperties(I_Queue *queueP)
+{
+   ExceptionStruct exception;
+   if (checkArgs(queueP, "getProperties", false, &exception) == false ) return 0;
+   return &getDbInfo(queueP)->prop;
+}
+
 Dll_Export void freeQueue(I_Queue *queueP)
 {
    if (queueP == 0) {
@@ -173,6 +200,9 @@ Dll_Export void freeQueue(I_Queue *queueP)
    queueP = 0;
 }
 
+/**
+ * Called internally by createQueue(). 
+ */
 static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception)
 {
    char *errMsg = 0;
@@ -232,8 +262,9 @@ static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
    if (retOk) {
       char queryString[256+2*ID_MAX];
       const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->prop.tablePrefix;
-      sprintf(queryString, "INSERT INTO %.20sQUEUES VALUES ('%s','%s',%d,%lld);",
-              tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId, dbInfo->prop.maxNumOfEntries, dbInfo->prop.maxNumOfBytes);
+      sprintf(queryString, "INSERT INTO %.20sQUEUES VALUES ('%s','%s',%d,%s);",
+              tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId, dbInfo->prop.maxNumOfEntries, 
+              int64ToStr(int64Str, dbInfo->prop.maxNumOfBytes));
       retOk = execSilent(queueP, queryString, "Insert queue", exception);
    }
 
@@ -356,7 +387,7 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, Exceptio
    if (dbInfo->numOfBytes >= dbInfo->prop.maxNumOfBytes) {
       strncpy0(exception->errorCode, "resource.overflow.queue.bytes", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
-               "[%.100s:%d] The maximum size of %lld bytes of a queue is exhausted", __FILE__, __LINE__, dbInfo->prop.maxNumOfBytes);
+               "[%.100s:%d] The maximum size of %s bytes of a queue is exhausted", __FILE__, __LINE__, int64ToStr(int64Str, dbInfo->prop.maxNumOfBytes));
       return;
    }
 
@@ -373,7 +404,7 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, Exceptio
       const int len = -1; /* Calculated by sqlite_bind */
       rc = SQLITE_OK;
 
-      sprintf(tmp, "%lld", queueEntry->uniqueId);
+      int64ToStr(tmp, queueEntry->uniqueId);
       /*LOG __FILE__, "put uniqueId as string '%s'", tmp);*/
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, tmp, len, true);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->prop.nodeId, len, false);
@@ -395,10 +426,10 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, Exceptio
       }
 
       if (rc != SQLITE_OK) {
-         LOG __FILE__, "put(%lld) SQL error: %d %s", queueEntry->uniqueId, rc, sqlite_error_string(rc));
+         LOG __FILE__, "put(%s) SQL error: %d %s", int64ToStr(int64Str, queueEntry->uniqueId), rc, sqlite_error_string(rc));
          strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
          SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
-                  "[%.100s:%d] put(%lld) SQL error: %d %s", __FILE__, __LINE__, queueEntry->uniqueId, rc, sqlite_error_string(rc));
+                  "[%.100s:%d] put(%s) SQL error: %d %s", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc, sqlite_error_string(rc));
          stateOk = false;
       }
    }
@@ -413,7 +444,7 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, Exceptio
       dbInfo->numOfBytes += queueEntry->embeddedBlob.dataLen;
    }
 
-   LOG __FILE__, "put(%lld) %s", queueEntry->uniqueId, stateOk ? "done" : "failed");
+   LOG __FILE__, "put(%s) %s", int64ToStr(int64Str, queueEntry->uniqueId), stateOk ? "done" : "failed");
 }
 
 
@@ -481,6 +512,7 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
 {
    bool doContinue = true;
    int numAssigned;
+   bool stateOk = true;
    int decodeSize = 0;
    QueueEntry *queueEntry = 0;
    QueueEntryArr *queueEntryArr;
@@ -508,8 +540,8 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
    queueEntry = &queueEntryArr->queueEntryArr[currIndex];
    memset(queueEntry, 0, sizeof(QueueEntry));
 
-   numAssigned = sscanf(pazValue[0], "%lld", &queueEntry->uniqueId);  /* TODO: handle error */
-   if (numAssigned != 1) {
+   stateOk = strToInt64(&queueEntry->uniqueId, pazValue[0]);
+   if (!stateOk) {
       LOG __FILE__, "peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' to uniqueId, ignoring entry.", pazValue[0]);
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
@@ -518,19 +550,19 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
       return doContinue;
    }
 
-   LOG __FILE__, "peekWithSamePriority(%lld) currIndex=%d", queueEntry->uniqueId, currIndex);
+   LOG __FILE__, "peekWithSamePriority(%s) currIndex=%d", int64ToStr(int64Str, queueEntry->uniqueId), currIndex);
    /* strncpy0(dbInfo->prop.nodeId, pazValue[1], ID_MAX); TODO: assert() */
    /* strncpy0(dbInfo->prop.queueName, pazValue[2], ID_MAX); */
    numAssigned = sscanf(pazValue[3], "%hd", &queueEntry->priority);
    if (numAssigned != 1) {
-      LOG __FILE__, "peekWithSamePriority(%lld) ERROR: Can't parse pazValue[3] '%.20s' to priority, setting it to NORM", queueEntry->uniqueId, pazValue[3]);
+      LOG __FILE__, "peekWithSamePriority(%s) ERROR: Can't parse pazValue[3] '%.20s' to priority, setting it to NORM", int64ToStr(int64Str, queueEntry->uniqueId), pazValue[3]);
       queueEntry->priority = 4;
    }
    strncpy0(queueEntry->embeddedType, pazValue[4], QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
    queueEntry->isPersistent = *pazValue[5] == 'T' ? true : false;
    {
       int64_t ival = 0;
-      numAssigned = sscanf(pazValue[6], "%lld", &ival);
+      stateOk = strToInt64(&ival, pazValue[6]);
       queueEntry->embeddedBlob.dataLen = (size_t)ival;
    }
 
@@ -540,9 +572,10 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
    decodeSize = sqlite_decode_binary((const unsigned char *)pazValue[7], (unsigned char *)queueEntry->embeddedBlob.data);
    if (decodeSize == -1 || (size_t)decodeSize != queueEntry->embeddedBlob.dataLen) {
       *(queueEntry->embeddedBlob.data + strlen(pazValue[7]) - 1) = 0; 
-      LOG __FILE__, "peekWithSamePriority(%lld) ERROR: Returned blob encoded='%s', decodeSize=%d"
+      LOG __FILE__, "peekWithSamePriority(%s) ERROR: Returned blob encoded='%s', decodeSize=%d"
                         " but expected decoded len=%d: '%s'",
-                        queueEntry->uniqueId, pazValue[7], decodeSize, queueEntry->embeddedBlob.dataLen, queueEntry->embeddedBlob.data);
+                    int64ToStr(int64Str, queueEntry->uniqueId), pazValue[7], decodeSize,
+                    queueEntry->embeddedBlob.dataLen, queueEntry->embeddedBlob.data);
    }
 
    helper->currEntries += 1;
@@ -659,7 +692,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
 
    if (checkArgs(queueP, "peekWithSamePriority", true, exception) == false ) return 0;
 
-   LOG __FILE__, "peekWithSamePriority(maxNumOfEntries=%d, maxNumOfBytes=%lld) ...", (int)maxNumOfEntries, maxNumOfBytes);
+   LOG __FILE__, "peekWithSamePriority(maxNumOfEntries=%d, maxNumOfBytes=%s) ...", (int)maxNumOfEntries, int64ToStr(int64Str, maxNumOfBytes));
 
    dbInfo = getDbInfo(queueP);
 
@@ -753,7 +786,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
            dbInfo->prop.tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId);
 
       for (i=0; i<queueEntryArr->len; i++) {
-         sprintf(tmpStr, "%lld", queueEntryArr->queueEntryArr[i].uniqueId);
+         sprintf(tmpStr, "%s", int64ToStr(int64Str, queueEntryArr->queueEntryArr[i].uniqueId));
          strcat(queryString, tmpStr);
          if (i<(queueEntryArr->len-1)) strcat(queryString, ",");
          numOfBytes += queueEntryArr->queueEntryArr[i].embeddedBlob.dataLen;
@@ -820,11 +853,11 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
                            const char **pazValue, const char **pazColName, ExceptionStruct *exception)
 {
    int64_t ival = 0;
-   int numAssigned;
+   bool stateOk;
    DbInfo *dbInfo = getDbInfo(queueP);
 
-   numAssigned = sscanf(pazValue[0], "%lld", &ival);
-   if (numAssigned != 1) {
+   stateOk = strToInt64(&ival, pazValue[0]);
+   if (!stateOk) {
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfEntries, ignoring entry.", __FILE__, __LINE__, pazColName[0], pazValue[0]);
@@ -832,8 +865,8 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
    }
    dbInfo->numOfEntries = (int32_t)ival;
 
-   numAssigned = sscanf(pazValue[1], "%lld", &dbInfo->numOfBytes);
-   if (numAssigned != 1) {
+   stateOk = strToInt64(&dbInfo->numOfBytes, pazValue[1]);
+   if (!stateOk) {
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfBytes, ignoring entry.", __FILE__, __LINE__, pazColName[1], pazValue[0]);
@@ -864,19 +897,57 @@ static bool fillCache(I_Queue *queueP, ExceptionStruct *exception)
       stateOk = currIndex > 0;
    }
 
-   LOG __FILE__, "fillCache() numOfEntries=%d numOfBytes=%lld", dbInfo->numOfEntries, dbInfo->numOfBytes);
+   LOG __FILE__, "fillCache() numOfEntries=%d numOfBytes=%s", dbInfo->numOfEntries, int64ToStr(int64Str, dbInfo->numOfBytes));
    return stateOk;
 }
 
-static bool persistentQueueEmpty(I_Queue *queueP, ExceptionStruct *exception)
+static bool persistentQueueEmpty(I_Queue *queueP)
+{
+   return getNumOfEntries(queueP) <= 0;
+}
+
+static int32_t getNumOfEntries(I_Queue *queueP)
 {
    DbInfo *dbInfo;
-   if (checkArgs(queueP, "empty", true, exception) == false ) return true;
+   bool stateOk = true;
+   ExceptionStruct exception;
+   if (checkArgs(queueP, "getNumOfEntries", true, &exception) == false ) return true;
    dbInfo = getDbInfo(queueP);
    if (dbInfo->numOfEntries == -1) {
-      fillCache(queueP, exception);
+      stateOk = fillCache(queueP, &exception);
    }
-   return dbInfo->numOfEntries == 0;
+   return (stateOk) ? dbInfo->numOfEntries : -1;
+}
+
+static int32_t getMaxNumOfEntries(I_Queue *queueP)
+{
+   DbInfo *dbInfo;
+   ExceptionStruct exception;
+   if (checkArgs(queueP, "getMaxNumOfEntries", false, &exception) == false ) return true;
+   dbInfo = getDbInfo(queueP);
+   return dbInfo->prop.maxNumOfEntries;
+}
+
+static int64_t getNumOfBytes(I_Queue *queueP)
+{
+   DbInfo *dbInfo;
+   ExceptionStruct exception;
+   bool stateOk = true;
+   if (checkArgs(queueP, "getNumOfBytes", true, &exception) == false ) return true;
+   dbInfo = getDbInfo(queueP);
+   if (dbInfo->numOfBytes == -1) {
+      stateOk = fillCache(queueP, &exception);
+   }
+   return (stateOk) ? dbInfo->numOfBytes : -1;
+}
+
+static int64_t getMaxNumOfBytes(I_Queue *queueP)
+{
+   DbInfo *dbInfo;
+   ExceptionStruct exception;
+   if (checkArgs(queueP, "getMaxNumOfBytes", false, &exception) == false ) return true;
+   dbInfo = getDbInfo(queueP);
+   return dbInfo->prop.maxNumOfBytes;
 }
 
 /**
@@ -911,6 +982,7 @@ static void persistentQueueShutdown(I_Queue *queueP, ExceptionStruct *exception)
          dbInfo->db = 0;
          LOG __FILE__, "shutdown() done");
       }
+      queueP->isInitialized = false;
    }
 }
 
@@ -988,10 +1060,10 @@ Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDu
             (size_t)maxContentDumpLen < (queueEntry->embeddedBlob.dataLen-5))
       strcpy(contentStr+maxContentDumpLen, " ...");
 
-   SNPRINTF(xml, len, "\n <QueueEntry id='%lld' priority='%hd' persistent='%s' type='%s'>"
+   SNPRINTF(xml, len, "\n <QueueEntry id='%s' priority='%hd' persistent='%s' type='%s'>"
                       "\n  <content size='%lu'><![CDATA[%s]]></content>"
                       "\n <QueueEntry>",
-                        queueEntry->uniqueId, queueEntry->priority,
+                        int64ToStr(int64Str, queueEntry->uniqueId), queueEntry->priority,
                         queueEntry->isPersistent?"true":"false",
                         queueEntry->embeddedType,
                         (unsigned long)queueEntry->embeddedBlob.dataLen, contentStr);
@@ -1060,25 +1132,15 @@ static bool checkArgs(I_Queue *queueP, const char *methodName,
    return true;
 }
 
-/**
- * Should be called on any ExceptionStruct before using it. 
- */
-Dll_Export _INLINE_FUNC void initializeExceptionStruct(ExceptionStruct *exception)
-{
-   exception->remote = false;
-   *exception->errorCode = (char)0;
-   *exception->message = (char)0;
-}
-
-
 /*=================== TESTCODE =======================*/
 # ifdef QUEUE_MAIN
 #include <stdio.h>
-
 static void testRun(int argc, char **argv) {
    ExceptionStruct exception;
    QueueEntryArr *entries = 0;
    QueueProperties queueProperties;
+   I_Queue *queueP = 0;
+
    strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
@@ -1086,11 +1148,11 @@ static void testRun(int argc, char **argv) {
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
 
-   I_Queue *queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
-   DbInfo *dbInfo = (DbInfo *)queueP->privateObject;
+   queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
+   /* DbInfo *dbInfo = (DbInfo *)queueP->privateObject; */
    if (argc || argv) {} /* to avoid compiler warning */
 
-   printf("Queue numOfEntries=%d, numOfBytes=%lld, empty=%s\n", dbInfo->numOfEntries, dbInfo->numOfBytes, queueP->empty(queueP, &exception) ? "true" : "false");
+   printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
 
    {
       int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll };
@@ -1129,17 +1191,17 @@ static void testRun(int argc, char **argv) {
       }
    }
 
-   printf("Queue numOfEntries=%d, numOfBytes=%lld, empty=%s\n", dbInfo->numOfEntries, dbInfo->numOfBytes, queueP->empty(queueP, &exception) ? "true" : "false");
+   printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
    queueP->randomRemove(queueP, entries, &exception);
    if (*exception.errorCode != 0) {
       LOG __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
    }
 
    freeQueueEntryArr(entries);
-   printf("Queue numOfEntries=%d, numOfBytes=%lld, empty=%s\n", dbInfo->numOfEntries, dbInfo->numOfBytes, queueP->empty(queueP, &exception) ? "true" : "false");
+   printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
    
    queueP->clear(queueP, &exception);
-   printf("Queue numOfEntries=%d, numOfBytes=%lld, empty=%s\n", dbInfo->numOfEntries, dbInfo->numOfBytes, queueP->empty(queueP, &exception) ? "true" : "false");
+   printf("Queue numOfEntries=%d, numOfBytes=%s, empty=%s\n", queueP->getNumOfEntries(queueP), int64ToStr(int64Str, queueP->getNumOfBytes(queueP)), queueP->empty(queueP) ? "true" : "false");
 
    queueP->shutdown(queueP, &exception);
    freeQueue(queueP);

@@ -57,12 +57,17 @@ typedef struct I_QueueStruct I_Queue;
 /** Declare function pointers to use in struct to simulate object oriented access */
 typedef void  ( * I_QueueInitialize)(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
 typedef void  ( * I_QueueShutdown)(I_Queue *queueP, ExceptionStruct *exception);
+typedef const QueueProperties *( * I_QueueGetProperties)(I_Queue *queueP);
 typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
 typedef QueueEntryArr *( * I_QueuePeekWithSamePriority)(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception);
 typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
 typedef bool  ( * I_QueueClear)(I_Queue *queueP, ExceptionStruct *exception);
-typedef bool  ( * I_QueueEmpty)(I_Queue *queueP, ExceptionStruct *exception);
+typedef bool  ( * I_QueueEmpty)(I_Queue *queueP);
 /*typedef void  ( * I_QueueLogging)(I_Queue *queueP, const char *location, const char *fmt, ...);*/
+typedef int32_t ( * I_QueueNumOfEntries)(I_Queue *queueP);
+typedef int32_t ( * I_QueueMaxNumOfEntries)(I_Queue *queueP);
+typedef int64_t ( * I_QueueNumOfBytes)(I_Queue *queueP);
+typedef int64_t ( * I_QueueMaxNumOfBytes)(I_Queue *queueP);
 
 /**
  * Interface for a queue implementation. 
@@ -72,6 +77,11 @@ typedef bool  ( * I_QueueEmpty)(I_Queue *queueP, ExceptionStruct *exception);
 struct I_QueueStruct {
   /* public: */
    void *userObject; /* A client can use this pointer to point to any client specific information */
+
+   /**
+    * Access the configuration properties (readonly). 
+    */
+   I_QueueGetProperties getProperties;
 
    /**
     * Shutdown the queue, no entries are destroyed. 
@@ -112,6 +122,33 @@ struct I_QueueStruct {
     * @return true on success, if false *exception.errorCode is not 0
     */
    I_QueueClear clear;
+
+   /**
+    * Access the current number of entries. 
+    * @return The number of entries in the queue
+    */                                  
+   I_QueueNumOfEntries getNumOfEntries;
+
+   /**
+    * Access the configured maximum number of elements for this queue. 
+    * @return The maximum number of elements in the queue
+    */
+   I_QueueMaxNumOfEntries getMaxNumOfEntries;
+
+   /**
+    * Returns the amount of bytes currently in the queue
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return The amount of bytes currently in the queue
+    */
+   I_QueueNumOfBytes getNumOfBytes;
+
+   /**
+    * Access the configured capacity (maximum bytes) for this queue
+    * @return The maximum capacity for the queue in bytes
+    */
+   I_QueueMaxNumOfBytes getMaxNumOfBytes;
 
    /**
     * returns true if the queue is empty, false otherwise
