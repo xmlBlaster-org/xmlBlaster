@@ -111,6 +111,30 @@ public class Global implements Cloneable
 
    /**
     * Constructs an initial Global object which is initialized
+    * by your properties array (usually the command line args). 
+    */
+   public Global(Properties props) {
+     this(propsToArgs(props));
+   }
+
+   public static String[] propsToArgs(Properties props) {
+     if (props == null) return new String[0];
+     String[] args = new String[props.size()*2];
+     Enumeration e = props.keys();
+     int ii=0;
+     while (e.hasMoreElements()) {
+       String key = (String)e.nextElement();
+       args[ii] = "-"+key;
+       ii++;
+       args[ii] = props.getProperty(key);
+       //System.out.println("ii=" + ii + ": " + args[ii] + " key=" + key);
+       ii++;
+     }
+     return args;
+   }
+
+   /**
+    * Constructs an initial Global object which is initialized
     * by your args array (usually the command line args). 
     */
    public Global(String[] args)
@@ -433,6 +457,13 @@ public class Global implements Cloneable
          }
       }
       return 0;
+   }
+
+   /**
+    * @return 1 Show usage, 0 OK, -1 error
+    */
+   public int init(Properties props) {
+      return init(propsToArgs(props));
    }
 
    /**
