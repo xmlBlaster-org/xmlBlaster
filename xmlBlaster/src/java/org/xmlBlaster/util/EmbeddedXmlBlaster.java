@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.4 2003/01/16 17:22:10 goetzger Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.5 2003/01/19 21:57:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -207,6 +207,31 @@ public class EmbeddedXmlBlaster
       }
    }
 
+   /**
+    * Change the run level to the given newRunlevel. 
+    * <p />
+    * See RUNLEVEL_HALTED etc.
+    * <p />
+    * Note that there are four main run levels:
+    * <ul>
+    *   <li>RUNLEVEL_HALTED</li>
+    *   <li>RUNLEVEL_STANDBY</li>
+    *   <li>RUNLEVEL_CLEANUP</li>
+    *   <li>RUNLEVEL_RUNNING</li>
+    * </ul>
+    * and every RUNLEVEL sends a pre and a post run level event, to allow
+    * the listeners to prepare or log before or after successfully changing levels.<br />
+    * NOTE that the pre/post events are <b>no</b> run level states - they are just events.
+    * @param newRunlevel The new run level we want to switch to
+    * @param force Ignore exceptions during change, currently only force == true is supported
+    * @return numErrors
+    * @exception XmlBlasterException for invalid run level
+    * @see org.xmlBlaster.engine.RunlevelManager#changeRunlevel(int, boolean)
+    */
+   public int changeRunlevel(String newRunlevel, boolean force) throws XmlBlasterException {
+      int numErrors = getMain().getGlobal().getRunlevelManager().changeRunlevel(org.xmlBlaster.engine.RunlevelManager.RUNLEVEL_STANDBY, force);
+      return numErrors;
+   }
 
    /**
     * Invoke: java org.xmlBlaster.util.EmbeddedXmlBlaster
