@@ -65,6 +65,16 @@ private:
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log&    log_;
    std::string  instanceName_;
+
+	/**
+	 * Private copy constructor, clones are not supported
+	 */
+   XmlBlasterAccess(const XmlBlasterAccess &global);
+
+	/**
+	 * Private assignement operator, clones are not supported
+	 */
+   XmlBlasterAccess& operator =(const XmlBlasterAccess &);
    
 public:
    /**
@@ -85,7 +95,7 @@ public:
     * @param qos Your configuration desire
     * @param client If not null callback messages will be routed to client.update()
     */
-   org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos, org::xmlBlaster::client::I_Callback *clientAddr);
+   org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos, org::xmlBlaster::client::I_Callback *clientCb);
 
    /**
     * Extracts address data from org::xmlBlaster::util::qos::ConnectQos (or adds default if missing)
