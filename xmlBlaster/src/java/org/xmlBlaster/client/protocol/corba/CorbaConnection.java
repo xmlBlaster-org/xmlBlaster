@@ -676,7 +676,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Publishing ...");
+      if (log.CALL) log.call(ME, "Publishing ...");
       try {
          return getXmlBlaster().publish(CorbaDriver.convert(msgUnit));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
