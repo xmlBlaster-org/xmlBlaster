@@ -37,9 +37,9 @@ COMMENT:
             top.xmlBlasterWindow.Log.trace("Registering '" + self.name + "' for updates in initialize()");
             top.xmlBlasterWindow.addUpdateListener( self );
             top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("cpuinfo"), " ");
-            top.xmlBlasterWindow.Log.info("OK, subscribed to cpuinfo");
+            top.xmlBlasterWindow.Log.trace("OK, subscribed to cpuinfo");
             top.xmlBlasterWindow.setReady( self, true );
-            top.xmlBlasterWindow.Log.info("OK, i am ready");
+            top.xmlBlasterWindow.Log.trace("OK, i am ready");
          }
 
          /**
@@ -54,11 +54,8 @@ COMMENT:
 
             top.xmlBlasterWindow.Log.trace("Drawing to SVG in frame '" + frameName + "': '" + value + "'");
 
-            //var svgdoc=evt.getTarget().getOwnerDocument();
-            //var svgdoc=self.parent.svgFrame;
-            alert("self.parent.svgFrame.document="+self.parent.svgFrame.document);
-            //alert("top.frames['svgFrame']="+top.frames['svgFrame']);
-            var objet=top.xmlBlasterWindow.svgdoc.getElementById('rectangle');
+            var svgdoc = document.embeds["svgFrame"].getSVGDocument();
+            var objet=svgdoc.getElementById('rectangle');
             objet.setAttribute('width', value);
             if (value > 80)
                objet.getStyle().setProperty('fill','red')
