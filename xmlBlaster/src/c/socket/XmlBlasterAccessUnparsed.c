@@ -111,27 +111,14 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
                                 getLogLevelStr(xa->logLevel), xa->responseTimeout);
 
-
-#  ifdef _WINDOWS
-   xa->writenMutex = PTHREAD_MUTEX_INITIALIZER;
-#  else
-   /* On Linux gcc & SUN CC:
-        "parse error before '{' token"
-      when initializing directly, so we do a hack here:
-      (NOTE: using pthread_cond_init() would be the choice to
-      initialize but this only works with dynamic conds)
-   */
-   {
-      pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-      xa->writenMutex = mutex;
-   }
-#  endif
+	pthread_mutex_init(&xa->writenMutex, NULL); /* returns always 0 */
+	pthread_mutex_init(&xa->readnMutex, NULL);
    return xa;
 }
 
 Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 {
-   int retVal;
+   int retVal, rc;
 
    if (xa == 0) {
       char *stack = getStackTrace(10);
@@ -140,6 +127,14 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       free(stack);
       return;
    }
+
+   rc = pthread_mutex_destroy(&xa->writenMutex); /* On Linux this does nothing, but returns an error code EBUSY if the mutex was locked */
+   if (rc != 0) /* EBUSY */
+      xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "pthread_mutex_destroy(writenMutex) returned %d, we ignore it", rc);
+
+   rc = pthread_mutex_destroy(&xa->readnMutex);
+   if (rc != 0) /* EBUSY */
+      xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "pthread_mutex_destroy(readnMutex) returned %d, we ignore it", rc);
 
    freeProperties(xa->props);
 
