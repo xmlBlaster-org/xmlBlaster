@@ -301,7 +301,7 @@ TODO
       <echo message=""/>
       <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
       <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
-      <echo message="   cpp-tests   --> generates C++ test clients"/>
+      <echo message="   cpp-test    --> generates C++ test clients"/>
       <echo message="   cpp-demo    --> generates C++ demo clients"/>
       <echo message="   cpp         --> builds cpp-lib, cpp-test and cpp-demo"/>
       <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
@@ -309,7 +309,7 @@ TODO
       <echo message=""/>
       <echo message="   c-lib       --> generates the C client library libxmlBlasterClientC.sl (shared library .so .sl .dll)"/>
       <echo message="                   which uses the SOCKET protocol"/>
-      <echo message="   c-tests     --> generates C test clients"/>
+      <echo message="   c-test      --> generates C test clients"/>
       <echo message="   c-demo      --> generates C demo clients"/>
       <echo message="   c           --> builds c-lib, c-test and c-demo"/>
       <echo message="   c-clean     --> cleans up C generated files (object files etc)"/>
@@ -1994,7 +1994,7 @@ TODO
    </target>  <!-- C lib -->
 
    <target name="c-test" depends="prepare-cpp" description="Create C test clients">
-      <foreach list=""
+      <foreach list="TestMethods"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${testsuite.dir}/src/c" />
       </foreach>
