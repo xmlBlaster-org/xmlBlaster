@@ -16,7 +16,7 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
@@ -238,7 +238,7 @@ public final class ConnectQos
     * The configuration of the local client side queue. 
     * @return never null
     */
-   public QueueProperty getClientQueueProperty() {
+   public ClientQueueProperty getClientQueueProperty() {
       return this.connectQosData.getClientQueueProperty();
    }
 

@@ -11,7 +11,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -436,7 +436,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
     */
    public void setAddress(Address address) {
-      QueueProperty prop = new QueueProperty(glob, this.nodeId.toString()); // Use default queue properties for this xmlBlaster access address
+      ClientQueueProperty prop = new ClientQueueProperty(glob, this.nodeId.toString()); // Use default queue properties for this xmlBlaster access address
       prop.setAddress(address);
       addClientQueueProperty(prop);
       //clientQueuePropertyArr = null; // reset to be recalculated on demand
@@ -471,7 +471,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @param prop The property object of the client side queue which shall be established. 
     * @see org.xmlBlaster.util.qos.address.Address
     */
-   public void addClientQueueProperty(QueueProperty prop) {
+   public void addClientQueueProperty(ClientQueueProperty prop) {
       if (prop == null) return;
       // We use a list to allow in future mutliple addresses
       this.clientQueuePropertyList.add(prop);
@@ -480,7 +480,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    /**
     * @return never null
     */
-   public QueueProperty getClientQueueProperty() {
+   public ClientQueueProperty getClientQueueProperty() {
       if (this.clientQueuePropertyList.size() < 1) {
          if (log.TRACE) log.trace(ME, "Creating default server address instance");
          setAddress(glob.getBootstrapAddress());
@@ -489,14 +489,14 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
          log.error(ME, "Internal error, can't access address instance");
          throw new IllegalArgumentException(ME + ": Internal error, can't access address instance");
       }
-      return (QueueProperty)this.clientQueuePropertyList.get(0);
+      return (ClientQueueProperty)this.clientQueuePropertyList.get(0);
    }
 
-   public QueueProperty[] getClientQueuePropertyArr() {
+   public ClientQueueProperty[] getClientQueuePropertyArr() {
       if (this.clientQueuePropertyList.size() < 1) {
          getClientQueueProperty(); // force creation
       }
-      return (QueueProperty[])this.clientQueuePropertyList.toArray(new QueueProperty[this.clientQueuePropertyList.size()]);
+      return (ClientQueueProperty[])this.clientQueuePropertyList.toArray(new ClientQueueProperty[this.clientQueuePropertyList.size()]);
    }
 
    /**

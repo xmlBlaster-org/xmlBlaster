@@ -13,7 +13,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -154,7 +154,7 @@ public class ConnectQosTest extends TestCase {
          ServerRef ref = qos.getServerRef();
          assertTrue("", ref != null);
          /*
-         public QueueProperty getClientQueueProperty() {
+         public ClientQueueProperty getClientQueueProperty() {
          public final I_SecurityQos getSecurityQos() throws XmlBlasterException
          public final String getSecurityPluginType() throws XmlBlasterException
          public final String getSecurityPluginVersion() throws XmlBlasterException

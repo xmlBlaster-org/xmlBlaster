@@ -12,7 +12,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -124,7 +124,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private ServerRef tmpServerRef;
    private CbQueueProperty tmpCbProp;
    private CallbackAddress tmpCbAddr;
-   private QueueProperty tmpProp;
+   private ClientQueueProperty tmpProp;
    private Address tmpAddr;
    protected String tmpSecurityPluginType;
    protected String tmpSecurityPluginVersion;
@@ -212,7 +212,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("address")) {
          inAddress = true;
          if (!inQueue) {
-            tmpProp = new QueueProperty(glob, null); // Use default queue properties for this connection address
+            tmpProp = new ClientQueueProperty(glob, null); // Use default queue properties for this connection address
             this.connectQosData.addClientQueueProperty(tmpProp);
          }
          tmpAddr = new Address(glob);
@@ -235,7 +235,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
          String related = attrs.getValue("relating");
          if (Constants.RELATING_CLIENT.equalsIgnoreCase(related)) {
-            tmpProp = new QueueProperty(glob, null);
+            tmpProp = new ClientQueueProperty(glob, null);
             tmpProp.startElement(uri, localName, name, attrs);
             this.connectQosData.addClientQueueProperty(tmpProp);
          }
@@ -509,7 +509,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       sb.append(data.getSessionQos().toXml(extraOffset+Constants.INDENT));
 
       {
-         QueueProperty[] arr = data.getClientQueuePropertyArr();
+         ClientQueueProperty[] arr = data.getClientQueuePropertyArr();
          for (int ii=0; arr!=null && ii<arr.length; ii++) {
             sb.append(arr[ii].toXml(extraOffset+Constants.INDENT));
          }

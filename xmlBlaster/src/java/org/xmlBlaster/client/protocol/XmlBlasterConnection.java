@@ -44,7 +44,7 @@ import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -2237,7 +2237,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          log.plain("",new ConnectQos(glob).usage());
       //} catch (XmlBlasterException e) {}
       log.plain("",new Address(glob).usage());
-      log.plain("",new QueueProperty(glob,null).usage());
+      log.plain("",new ClientQueueProperty(glob,null).usage());
       log.plain("",new CallbackAddress(glob).usage());
       log.plain("",new CbQueueProperty(glob,null,null).usage());
       log.plain("",SocketConnection.usage());

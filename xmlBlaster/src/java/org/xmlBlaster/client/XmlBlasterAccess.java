@@ -31,7 +31,7 @@ import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -78,8 +78,6 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    private ConnectQos connectQos;
    /** The return from connect() */
    private ConnectReturnQos connectReturnQos;
-   /** The client queue configuration */
-   private QueueProperty queueProperty;
    /** Client side queue during connection failure */
    private I_Queue clientQueue;
    /** The dispatcher framework **/
@@ -179,9 +177,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       this.ME = "XmlBlasterAccess-" + getId();
 
       try {
-         String typeVersion = glob.getProperty().get("queue.defaultPlugin", "CACHE,1.0");
+         ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
          StorageId queueId = new StorageId("client", getId());
-         this.clientQueue = glob.getQueuePluginManager().getPlugin(typeVersion, queueId,
+         this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                                                 this.connectQos.getClientQueueProperty());
 
          this.msgErrorHandler = new ClientErrorHandler(glob, this);
@@ -358,22 +356,30 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          }
          this.updateDispatcher.clear();
 
-         try {
-            MsgQueueDisconnectEntry entry = new MsgQueueDisconnectEntry(this.glob, this.clientQueue.getStorageId(), disconnectQos);
-            queueMessage(entry);
-            log.info(ME, "Successful disconnect from " + getServerNodeId());
-         } catch(Throwable e) {
-            e.printStackTrace();
-            log.warn(ME+".disconnect()", e.toString());
+         if (this.clientQueue != null) {
+            try {
+               MsgQueueDisconnectEntry entry = new MsgQueueDisconnectEntry(this.glob, this.clientQueue.getStorageId(), disconnectQos);
+               queueMessage(entry);
+               log.info(ME, "Successful disconnect from " + getServerNodeId());
+            } catch(Throwable e) {
+               e.printStackTrace();
+               log.warn(ME+".disconnect()", e.toString());
+            }
          }
       }
 
-      this.clientQueue.clear();
-      this.clientQueue = null;
+      if (this.clientQueue != null) {
+         this.clientQueue.clear();
+      }
 
       if (shutdown) {
-         this.deliveryManager.shutdown();
-         this.deliveryManager = null;
+         if (this.deliveryManager != null) {
+            this.deliveryManager.shutdown();
+            this.deliveryManager = null;
+         }
+         if (this.clientQueue != null) {
+            this.clientQueue = null;
+         }
       }
 
       if (shutdownCb && this.cbServer != null) {
@@ -802,7 +808,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       sb.append("                       Clients can overwrite this with ConnectQos.java\n");
       sb.append(new org.xmlBlaster.client.qos.ConnectQos(glob).usage());
       sb.append(new org.xmlBlaster.util.qos.address.Address(glob).usage());
-      sb.append(new org.xmlBlaster.util.qos.storage.QueueProperty(glob,null).usage());
+      sb.append(new org.xmlBlaster.util.qos.storage.ClientQueueProperty(glob,null).usage());
       sb.append(new org.xmlBlaster.util.qos.address.CallbackAddress(glob).usage());
       sb.append(new org.xmlBlaster.util.qos.storage.CbQueueProperty(glob,null,null).usage());
       sb.append(org.xmlBlaster.client.protocol.socket.SocketConnection.usage());

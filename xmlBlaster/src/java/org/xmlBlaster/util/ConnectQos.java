@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.41 2003/01/21 13:20:32 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.42 2003/03/24 23:22:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -113,7 +113,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** Holding queue properties for the client side invocation queue */
    protected transient ArrayList clientQueuePropertyList = new ArrayList();
    /** Helper for SAX parsing */
-   private transient QueueProperty tmpProp = null;
+   private transient ClientQueueProperty tmpProp = null;
    /** Helper for SAX parsing */
    private transient Address tmpAddr = null;
 
@@ -700,7 +700,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
     */
    public final void setAddress(Address address) {
-      QueueProperty prop = new QueueProperty(glob, nodeId); // Use default queue properties for this xmlBlaster access address
+      ClientQueueProperty prop = new ClientQueueProperty(glob, nodeId); // Use default queue properties for this xmlBlaster access address
       prop.setAddress(address);
       addClientQueueProperty(prop);
       //clientQueuePropertyArr = null; // reset to be recalculated on demand
@@ -735,7 +735,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param prop The property object of the client side queue which shall be established. 
     * @see org.xmlBlaster.util.qos.address.Address
     */
-   public final void addClientQueueProperty(QueueProperty prop) {
+   public final void addClientQueueProperty(ClientQueueProperty prop) {
       if (prop == null) return;
       clientQueuePropertyList.add(prop);
    }
@@ -743,7 +743,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * @return never null
     */
-   public QueueProperty getClientQueueProperty() {
+   public ClientQueueProperty getClientQueueProperty() {
       if (clientQueuePropertyList.size() < 1) {
          if (log.TRACE) log.trace(ME, "Creating default server address instance");
          setAddress(glob.getBootstrapAddress());
@@ -752,7 +752,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          log.error(ME, "Internal error, can't access address instance");
          throw new IllegalArgumentException(ME + ": Internal error, can't access address instance");
       }
-      return (QueueProperty)clientQueuePropertyList.get(0);
+      return (ClientQueueProperty)clientQueuePropertyList.get(0);
    }
 
    /**
@@ -892,7 +892,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (name.equalsIgnoreCase("address")) {
          inAddress = true;
          if (!inQueue) {
-            tmpProp = new QueueProperty(glob, null); // Use default queue properties for this connection address
+            tmpProp = new ClientQueueProperty(glob, null); // Use default queue properties for this connection address
             addClientQueueProperty(tmpProp);
          }
          tmpAddr = new Address(glob);
@@ -915,7 +915,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          }
          String related = attrs.getValue("relating");
          if ("client".equalsIgnoreCase(related)) {
-            tmpProp = new QueueProperty(glob, null);
+            tmpProp = new ClientQueueProperty(glob, null);
             tmpProp.startElement(uri, localName, name, attrs);
             addClientQueueProperty(tmpProp);
          }
@@ -1176,7 +1176,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append("/>");
 
       for (int ii=0; ii<clientQueuePropertyList.size(); ii++) {
-         QueueProperty ad = (QueueProperty)clientQueuePropertyList.get(ii);
+         ClientQueueProperty ad = (ClientQueueProperty)clientQueuePropertyList.get(ii);
          sb.append(ad.toXml(extraOffset+Constants.INDENT));
       }
       
