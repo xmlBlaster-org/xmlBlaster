@@ -284,10 +284,7 @@ int main(int args, char* argv[])
        log.info("", "Successfully connect to xmlBlaster");
 
        if (log.TRACE) log.trace("main", "Subscribing using XPath syntax ...");
-       SubscribeKey subKey(glob);
-       subKey.setOid("HelloWorld");
-       subKey.setQueryType("XPATH");
-       subKey.setQueryString("//test");
+       SubscribeKey subKey(glob,"//test","XPATH");
        log.info("main", string("subscribe key: ") + subKey.toXml());
        SubscribeQos subQos(glob);
        log.info("main", string("subscribe qos: ")  + subQos.toXml());

@@ -109,7 +109,6 @@ public:
    void tearDown() {
       EraseKey eraseKey(global_);
       eraseKey.setOid(publishOid_);
-      eraseKey.setQueryType("EXACT");
 
       EraseQos eraseQos(global_);
 
@@ -142,9 +141,8 @@ public:
       if (log_.TRACE) log_.trace(me(), "1. Get a not existing message " + publishOid_ + " ...");
       try {
          GetKey getKey(global_);
-	 getKey.setOid(publishOid_);
-	 getKey.setQueryType("EXACT");
-	 GetQos getQos(global_);
+         getKey.setOid(publishOid_);
+         GetQos getQos(global_);
          vector<util::MessageUnit> msgVec = connection_->get(getKey, getQos);
          log_.info(me(), "Success, got array of size " + lexical_cast<string>(msgVec.size()) +
                          " for trying to get unknown message");
@@ -160,8 +158,8 @@ public:
 
       try {
          PublishKey publishKey(global_);
-	 publishKey.setOid(publishOid_);
-	 publishKey.setContentMime("text/plain");
+         publishKey.setOid(publishOid_);
+         publishKey.setContentMime("text/plain");
 
          PublishQos publishQos(global_);
          MessageUnit msgUnit(publishKey, senderContent_, publishQos);
@@ -177,9 +175,8 @@ public:
       if (log_.TRACE) log_.trace(me(), "3. Get an existing message ...");
       try {
          GetKey getKey(global_);
-	 getKey.setOid(publishOid_);
-	 getKey.setQueryType("EXACT");
-	 GetQos getQos(global_);
+         getKey.setOid(publishOid_);
+         GetQos getQos(global_);
          vector<MessageUnit> msgVec = connection_->get(getKey, getQos);
          log_.info(me(), "Success, got " + lexical_cast<string>(msgVec.size()) + " message");
          assert(msgVec.size() == 1);
@@ -210,7 +207,6 @@ public:
       log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages ...");
       GetKey getKey(global_);
       getKey.setOid("NotExistingMessage");
-      getKey.setQueryType("EXACT");
       GetQos getQos(global_);
       for (int i=0; i < num; i++) {
          try {

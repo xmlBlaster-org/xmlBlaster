@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.8 2002/12/31 11:29:03 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.9 2003/01/07 21:02:25 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
@@ -132,7 +132,6 @@ private:
 
       EraseKey eraseKey(global_);
       eraseKey.setOid(publishOid_);
-      eraseKey.setQueryType("EXACT");
       EraseQos eraseQos(global_);
 
       vector<EraseReturnQos> retArr;
@@ -157,7 +156,6 @@ private:
    void testSubscribeXPath() {
       if (log_.TRACE) log_.trace(me(), "Subscribing using XPath syntax ...");
       SubscribeKey subKey(global_);
-      subKey.setQueryType("XPATH");
       subKey.setQueryString("//TestSub-AGENT");
       SubscribeQos subQos(global_);
       numReceived_ = 0;
