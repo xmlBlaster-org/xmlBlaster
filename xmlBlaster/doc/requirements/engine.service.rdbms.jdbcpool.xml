@@ -77,8 +77,9 @@
          <tr>
             <td>JdbcPool.idleToEraseTimeout</td>
             <td>10*60*1000L [msec]</td>
-            <td>An unused connection is shutdown after 10 min, freeing resources after peak usage<br />
+            <td>
                Max. idle time span of this resource in milli seconds<br />
+               An unused connection is shutdown after 10 min, freeing resources after peak usage<br />
                On timeout it changes state from 'idle' to 'undef' (it is deleted).<br />
                You can overwrite this value for each resource instance<br />
                0 switches it off<br />
@@ -115,7 +116,7 @@
    <hacker>ruff@swand.lake.de</hacker>
    <effort>2</effort>
    <date>2000 07 07</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="DONE">
       <name>-</name>
       <comment>The test is included in NamedConnectionPool.java main()</comment>
