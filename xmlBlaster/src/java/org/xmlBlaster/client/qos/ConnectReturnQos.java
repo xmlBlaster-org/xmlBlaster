@@ -5,6 +5,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 
 /**
@@ -72,16 +73,25 @@ public class ConnectReturnQos {
 
    /**
     * The secret sessionId which you need to use for further communication
+    * @see SessionQos#getSecretSessionId()
     */
    public String getSecretSessionId() {
       return this.connectQosData.getSessionQos().getSecretSessionId();
    }
 
    /**
-    * The object holding the unique connection name of the client
+    * The object holding the unique connection name of the client. 
+    * @see SessionQos#getSessionName()
     */
    public SessionName getSessionName() {
       return this.connectQosData.getSessionQos().getSessionName();
+   }
+
+   /**
+    * The object holding alll session specific information. 
+    */
+   public SessionQos getSessionQos() {
+      return this.connectQosData.getSessionQos();
    }
 
    /**
