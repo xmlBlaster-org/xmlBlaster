@@ -106,6 +106,6 @@ objects := $(patsubst %.java,%.html,$(wildcard *.java))
 $(objects): %.html: %.java
 	code2html -ljava $< $@
 
-html: $(objects)
+html: html_SUB_DIRS $(objects)
 	@echo "Generated syntax highlighted html files from java files"
 

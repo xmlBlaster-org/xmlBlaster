@@ -37,3 +37,14 @@ clean: clean_SUB_DIRS
 
 #doc:
 #	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java
+
+
+#------- Generate syntax highlighted html files from java files for reference manual
+objects := $(patsubst %.java,%.html,$(wildcard *.java))
+
+$(objects): %.html: %.java
+	code2html -ljava $< $@
+
+html: $(objects)
+	@echo "Generated syntax highlighted html files from java files"
+
