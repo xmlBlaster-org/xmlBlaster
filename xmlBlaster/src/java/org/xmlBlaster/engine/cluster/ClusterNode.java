@@ -168,7 +168,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // We cache this update and distribute to all our clients:
          qos.setDuplicateUpdates(false);
 
-         qos.setUserId(this.remoteGlob.getId()); // the login name
+         qos.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
          // The password is from the environment -passwd or more specific -passwd[heron]
 
          qos.setAddress(addr);      // use the configured access properties
