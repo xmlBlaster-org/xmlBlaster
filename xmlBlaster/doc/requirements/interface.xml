@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='interface.publish' type='NEW' prio='HIGH' status="CLOSED">
+<requirement id='interface' type='NEW' prio='HIGH' status="CLOSED">
    <topic>XmlBlaster supports a small number of generic methods for remote access</topic>
    <description>
       <p>
@@ -110,7 +110,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>See testsuite</comment>
