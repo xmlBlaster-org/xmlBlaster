@@ -48,7 +48,7 @@ import org.xml.sax.helpers.*;
  *     &lt;route>
  *        &lt;node id='heron'/>
  *     &lt;/route>
- *     &lt;topic readonly='false' destroyDelay='60000'>
+ *     &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
  *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
  *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='exception'/>
  *     &lt;/topic>
@@ -286,6 +286,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          tmp = attrs.getValue("destroyDelay");
          if (tmp != null) {
             try { tmpProp.setDestroyDelay(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.warn(ME, "Invalid topic destroyDelay - millis =" + tmp); };
+         }
+         
+         tmp = attrs.getValue("createDomEntry");
+         if (tmp != null) {
+            tmpProp.setCreateDomEntry(new Boolean(tmp.trim()).booleanValue());
          }
          
          msgQosData.setTopicProperty(tmpProp);
@@ -678,7 +683,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       else {
          for (int ii=0; ii<list.size(); ii++) {
             Destination destination = (Destination)list.get(ii);
-            sb.append(destination.toXml(extraOffset));
+            sb.append(destination.toXml(extraOffset+Constants.INDENT));
          }
       }
       if (msgQosData.getSender() != null) {
@@ -702,7 +707,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (msgQosData.getLifeTimeProp().isModified() || msgQosData.getForceDestroyProp().isModified()) {
          sb.append(offset).append(" <expiration");
          if (msgQosData.getLifeTimeProp().isModified())
-            sb.append(offset).append(" lifeTime='").append(msgQosData.getLifeTime()).append("'");
+            sb.append(" lifeTime='").append(msgQosData.getLifeTime()).append("'");
          if (sendRemainingLife()) {
             long remainCached = msgQosData.getRemainingLife();
             if (remainCached > 0)
