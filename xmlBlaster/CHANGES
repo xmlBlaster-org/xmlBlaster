@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes in current subversion repository (svn)
-==============================================
+Changes for 1.0 [2004-12-23] #13076 "Xmas release"
+==================================================
 
  o #13070 Added compilation property 'build -Dneed.JDK.14=true ...' to activate
    code snippets which are not JDK 1.3 compatible.
