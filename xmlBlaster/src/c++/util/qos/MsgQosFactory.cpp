@@ -40,7 +40,7 @@ MsgQosFactory::MsgQosFactory(Global& global)
    INDEX              = XMLString::transcode("index");
    SIZE               = XMLString::transcode("size");
    inState_           = false;
-   inSubscriptionId_  = false;
+   inSubscribe_       = false;
    inRedeliver_       = false;
    inTopic_           = false;
    inQueue_           = false;
@@ -73,7 +73,7 @@ MsgQosFactory::~MsgQosFactory()
    delete DIRTY_READ;
    delete INDEX;
    delete SIZE;
-}		 
+}                
 
 MsgQosData MsgQosFactory::readObject(const string& xmlQos)
 {
@@ -178,7 +178,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       TopicProperty tmpProp(global_);
       if (getBoolAttr(attrs, READ_ONLY, tmpBool)) tmpProp.setReadonly(tmpBool);
       if (getLongAttr(attrs, DESTROY_DELAY, tmpLong)) tmpProp.setDestroyDelay(tmpLong);
-//	 if (getBoolAttr(attrs, CREATE_DOM_ENTRY, tmpBool)) tmpProp.setCreateDomEntry(tmpBool);
+//       if (getBoolAttr(attrs, CREATE_DOM_ENTRY, tmpBool)) tmpProp.setCreateDomEntry(tmpBool);
       msgQosData_.setTopicProperty(tmpProp);
       return;
    }
@@ -218,18 +218,26 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
          if (!getTimestampAttr(attrs, TIMESTAMP, timestamp)) {
             log_.warn(ME, "QoS <route><node> misses receive timestamp attribute, setting to 0");
          }
-    //	    bool dirtyRead = org::xmlBlaster::util::cluster::DEFAULT_dirtyRead;
+    //      bool dirtyRead = org::xmlBlaster::util::cluster::DEFAULT_dirtyRead;
          if (log_.TRACE) log_.trace(ME, "Found node tag");
          routeInfo_ = RouteInfo(nodeId, stratum, timestamp);
          if (getBoolAttr(attrs, DIRTY_READ, tmpBool)) routeInfo_.setDirtyRead(tmpBool);
       }
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "subscriptionId")) {
+   if (SaxHandlerBase::caseCompare(name, "subscribe")) {
       if (!inQos_) return;
-      inSubscriptionId_ = true;
+      inSubscribe_ = true;
+
+      int len = attrs.getLength();
+      for (int i = 0; i < len; i++) {
+         if (SaxHandlerBase::caseCompare(attrs.getName(i), "id")) {
+            msgQosData_.setSubscriptionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+         }
+      }
       return;
    }
+
    if (SaxHandlerBase::caseCompare(name, "isVolatile")) { // deprecated
       if (!inQos_) return;
       inIsVolatile_ = true;
@@ -361,10 +369,8 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "subscriptionId")) {
-      inSubscriptionId_ = false;
-      msgQosData_.setSubscriptionId(stringTrim(character_));
-      // if (log.TRACE) log.trace(ME, "Found message subscriptionId = " + msgQosData.getSubscriptionId());
+   if (SaxHandlerBase::caseCompare(name, "subscribe")) {
+      inSubscribe_ = false;
       character_.erase();
       return;
    }
@@ -484,7 +490,7 @@ int main(int args, char* argv[])
     <state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
     <sender>Tim</sender>
     <priority>5</priority>
-    <subscriptionId>subId:1</subscriptionId> <!-- Only for updates -->
+    <subscribe id='__subId:1'/>     <!-- Only for updates, id='__subId:PtP' for point to point messages -->
     <rcvTimestamp nanos='1007764305862000002'> <!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
           2001-12-07 23:31:45.862000002   <!-- The nanos from above but human readable -->
     </rcvTimestamp>

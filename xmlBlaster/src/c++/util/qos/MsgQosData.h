@@ -80,6 +80,8 @@ private:
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    string subscriptionId_;
 
+   Prop<bool> isSubscribeable_;
+
    /** the number of resend tries on failure */
    int redeliver_;
    long queueIndex_; //  = -1L;
@@ -144,19 +146,20 @@ public:
 
    virtual ~MsgQosData();
 
+   void setIsSubscribeable(const bool isSubcribeable);
+
    /**
-    * Test if Publish/Subscribe style is used.
+    * Test if Publish/Subscribe style is used for PtP messages.
     *
-    * @return true if Publish/Subscribe style is used
-    *         false if addressing of the destination is used
+    * @return false if PtP message is invisible for subscribes
     */
-   bool isPubSubStyle() const;
+   bool isSubscribeable() const;
 
    /**
     * Test if Point to Point addressing style is used.
     *
     * @return true if addressing of the destination is used
-    *         false if Publish/Subscribe style is used
+    *         false No destinations given
     */
    bool isPtp() const;
 

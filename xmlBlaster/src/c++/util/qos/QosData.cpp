@@ -41,7 +41,8 @@ using namespace org::xmlBlaster::util::cluster;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
-					  
+                                          
+Dll_Export const bool DEFAULT_isSubscribeable = true;
 Dll_Export const bool DEFAULT_isVolatile   = false;
 Dll_Export const bool DEFAULT_isDurable    = false;
 Dll_Export const bool DEFAULT_forceUpdate  = true;

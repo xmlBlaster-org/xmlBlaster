@@ -13,7 +13,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  *     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;priority>5&lt;/priority>
- *     &lt;subscriptionId>subId:1&lt;/subscriptionId> <!-- Only for updates -->
+ *     &lt;subscribe id='__subId:1'/> <!-- Only for updates -->
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>
@@ -34,6 +34,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Example for PtP addressing style:&lt;p />
  * <pre>
  *  &lt;qos>
+ *     &lt;subscribeable>false&lt;/subscribeable>  &lt;!-- false to make PtP message invisible for subscribes -->
  *     &lt;destination queryType='EXACT' forceQueuing='true'>
  *        Tim
  *     &lt;/destination>
@@ -102,7 +103,7 @@ private:
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    bool inState_; // = false;
-   bool inSubscriptionId_; // = false;
+   bool inSubscribe_; // = false;
    bool inRedeliver_; // = false;
    bool inTopic_; // false;
    bool inQueue_; // =  false;

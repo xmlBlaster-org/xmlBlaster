@@ -46,6 +46,7 @@ void MsgQosData::init()
 {
    ME = "MsgQosData";
    subscriptionId_ = "";
+   isSubscribeable_.setValue(global_.getProperty(), "isSubscribeable"); // true;
    redeliver_ = 0;
    queueIndex_ = -1;
    queueSize_ = -1;
@@ -66,6 +67,7 @@ void MsgQosData::init()
 void MsgQosData::copy(const MsgQosData& data)
 {
    subscriptionId_ = data.subscriptionId_;
+   isSubscribeable_ = data.isSubscribeable_;
    redeliver_ = data.redeliver_;
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
@@ -88,6 +90,7 @@ void MsgQosData::copy(const MsgQosData& data)
 
 MsgQosData::MsgQosData(Global& global, const string& serialData)
    : QosData(global, serialData),
+     isSubscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
      sender_(SessionQos(global)),
      destinationList_(),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
@@ -98,6 +101,7 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
 
 MsgQosData::MsgQosData(const MsgQosData& data)
    : QosData(data),
+     isSubscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
      sender_(data.sender_),
      destinationList_(data.destinationList_),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
@@ -118,14 +122,22 @@ MsgQosData::~MsgQosData()
    delete topicProperty_;
 }
 
-bool MsgQosData::isPubSubStyle() const
+/**
+ * @param isSubscribeable if false PtP messages are invisible for subscriptions
+ */
+void MsgQosData::setIsSubscribeable(const bool isSubscribeable)
 {
-   return (destinationList_.empty());
+   isSubscribeable_ = isSubscribeable;
+}
+
+bool MsgQosData::isSubscribeable() const
+{
+   return isSubscribeable_.getValue();
 }
 
 bool MsgQosData::isPtp() const
 {
-   return !isPubSubStyle();
+   return !destinationList_.empty();
 }
 
 
@@ -458,6 +470,9 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += "'/>";
    }
 
+   if (isSubscribeable_.isModified())
+      ret += offset + " <subscribeable>" + Global::getBoolAsString(isSubscribeable_.getValue()) + "</subscribeable>";
+
    vector<Destination>::const_iterator iter = destinationList_.begin();
    while (iter != destinationList_.end()) {
       ret += (*iter).toXml(extraOffset1);
@@ -497,7 +512,7 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += offset + " <isDurable/>";
    if (!isForceUpdateDefault())
       ret += offset + " <forceUpdate>" + Global::getBoolAsString(isForceUpdate()) + "</forceUpdate>";
-   if (!forceDestroy_.getOrigin() > CREATED_BY_DEFAULT)
+   if (forceDestroy_.isModified())
       ret += offset + " <forceDestroy>" + Global::getBoolAsString(forceDestroy_.getValue()) + "</forceDestroy>";
    if (isReadonly())
       ret += offset + " <readonly/>";
