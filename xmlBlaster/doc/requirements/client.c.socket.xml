@@ -119,8 +119,7 @@
      </p>
      <pre>
 cd xmlBlaster
-build.sh c-lib    (on UNIX)
-build.bat c-lib   (on Windows)
+build c-lib  (UNIX or Windows)
      </pre>
      <p>
      This creates a shared C library <i>xmlBlaster/lib/libxmlBlasterClientC.so</i> on
@@ -132,8 +131,7 @@ build.bat c-lib   (on Windows)
      </p>
      <pre>
 cd xmlBlaster
-build.sh c    (on UNIX)
-build.bat c   (on Windows)
+build c
      </pre>
      </p>
      <p>
@@ -141,14 +139,14 @@ build.bat c   (on Windows)
      try (the -verbose option is to dump the compilation command line only):
      </p>
      <pre>
-build.sh -Dc.debug=false -verbose c
+build -Dc.debug=false -verbose c
      </pre>
      <p>
      You can force using the <a href="http://www.intel.com/software/products/compilers/clin/" target="others">INTEL C++ compiler</a>
      by setting <i>use-icc</i> to true:
      </p>
      <pre>
-build.sh -Duse-icc=true c
+build -Duse-icc=true c
      </pre>
      <h2>Compilation manually</h2>
      <p>
@@ -347,7 +345,7 @@ Solaris:
 <a name="line4" href="#line4">  4</a> Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 <a name="line5" href="#line5">  5</a> Comment:   Example for all remote method invocations.
 <a name="line6" href="#line6">  6</a> Author:    &quot;Marcel Ruff&quot; &lt;xmlBlaster@marcelruff.info&gt;
-<a name="line7" href="#line7">  7</a> Compile:   cd xmlBlaster; build.sh c
+<a name="line7" href="#line7">  7</a> Compile:   cd xmlBlaster; build c
 <a name="line8" href="#line8">  8</a>            (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
 <a name="line9" href="#line9">  9</a> Invoke:    HelloWorld3 -help
 <a name="line10" href="#line10"> 10</a> See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
@@ -921,7 +919,7 @@ Solaris:
        <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
        <td>2003-06-26</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build.sh -Duse-icc=true c</i></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build -Duse-icc=true c</i></td>
        </tr>
 
        <tr>
@@ -934,7 +932,7 @@ Solaris:
        <td>Unparsed access with raw XML strings</td>
        <td>2003-10-26</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build.sh c</i></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build c</i></td>
        </tr>
 
        <tr>
@@ -947,7 +945,7 @@ Solaris:
        <td>Unparsed access with raw XML strings</td>
        <td>2003-10-31</td>
        <td><a href="mailto:FdGiglio@naples.sema.slb.com">Federico GIGLIO</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build.sh c</i></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build c</i></td>
        </tr>
 
       </table>
@@ -1033,14 +1031,14 @@ Solaris:
          </p>
          <pre>
 cd xmlBlaster
-build.sh c-test
+build c-test
          </pre>
         <p>
         To run the testsuite invoke
         </p>
         <pre>
-build.sh runTests
-build.sh reportShow
+build runTests
+build reportShow
         </pre>
         <p>
         And go for a cup of coffee as the complete testsuite will run.
@@ -1087,7 +1085,7 @@ build.sh reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.39 $</revision>
+   <revision>$Revision: 1.40 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

@@ -9,7 +9,7 @@
 <body>
 
 <!--   <p class=sideend>
-      Last updated $Date: 2003/06/19 20:44:59 $ $Author: ruff $
+      Last updated $Date: 2003/12/16 20:49:52 $ $Author: ruff $
    </p>-->
    <p class=sitetitel>Guidelines for XmlBlaster core developers</p>
 
@@ -74,15 +74,15 @@
             <p></b>
             <pre>
    cd xmlBlaster
-   build.sh delete
-   build.sh all        (compile the server and the Java clients)
-   build.sh c          (compile the C client library for testing)
+   build delete
+   build all        (compile the server and the Java clients)
+   build c          (compile the C client library for testing)
 
-   build.sh runTests
+   build runTests
             </pre>
             <p>To get a HTML based test report please invoke after <i>runTests</i>:
             <pre>
-   build.sh report
+   build report
 
    Open in your browser:
 
@@ -91,7 +91,7 @@
             <p>
             <b>NOTE:</b> During development you often want to run only some specific
             tests manually. Here is an example to run the <i>topic</i> specific tests
-            manually (after compiling everything with <i>build.sh all</i>):
+            manually (after compiling everything with <i>build all</i>):
             </p>
             <pre>
    cd xmlBlaster/testsuite/src/java/org/xmlBlaster/test/topic
@@ -163,7 +163,7 @@
             </p>
             <pre>
    cd xmlBlaster
-   build.sh requirements
+   build requirements
             </pre>
             <p>
             Now for every <i>.xml</i> requirement file a <i>.html</i> counterpart is generated in directory

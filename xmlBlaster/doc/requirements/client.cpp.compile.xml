@@ -43,7 +43,7 @@
 
      <h2>The C++ threading abstraction library</h2>
         <b>Note: The omnithread library is included in the xmlBlaster distribution
-        and is automatically compiled with our build.bat task. For details how
+        and is automatically compiled with our <code>xmlBlaster/build</code> task. For details how
         to switch the threading library please read the next paragraphs.
         </b>
         <p>In order to have multi threading support on all different operating systems
@@ -105,13 +105,11 @@
 <pre>
   cd xmlBlaster
 
-  build.sh  cpp   (UNIX)
-  build.bat cpp   (Windows)
+  build  cpp
 
 Get help with
 
-  build.sh  usage
-  build.bat usage
+  build  usage
 
 Supported tasks are
   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)
@@ -212,7 +210,7 @@ thread.impl   = OMNITHREAD
 
 #
 # Purify cannot produce shared objects.
-# build.sh -DCPP_LINK=static -verbose cpp > build.log
+# build -DCPP_LINK=static -verbose cpp > build.log
 #
 
 PATH=$PATH:/opt/rational/releases/PurifyPlusFamily.2003.06.00/sun4_solaris2/bin
@@ -227,7 +225,7 @@ purify CC.ORIG $*
    Now we are ready to compile the code with purify:
    </p>
 <pre>
-build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
+build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
 </pre>
    </configuration>
 
@@ -237,6 +235,6 @@ build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
 </requirement>
 

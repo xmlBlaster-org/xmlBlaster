@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   cd xmlBlaster; build.sh c
+Compile:   cd xmlBlaster; build c
            (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
 Invoke:    HelloWorld3 -help
 See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html

@@ -1,5 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Renamed build.sh to build. Now on UNIX and Windows the build command is the same,
+   for example 'build all'
+
  o Fixed dead messages "__sys__deadMessage" to contain the complete key and qos
    of its embedded message.
    The clientProperty keys are "__key", "__qos", "__oid" and "__rcvTimestamp".

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Test C client library
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   cd xmlBlaster; build.sh c
+Compile:   cd xmlBlaster; build c
 Invoke:    'TestUtil'
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/c.client.socket.html
 -----------------------------------------------------------------------------*/

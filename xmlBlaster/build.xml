@@ -35,8 +35,8 @@ Building instructions
 Ok, let's build the baby. First, make sure your current working directory is
 where this very file is located. Then type
 
-  ./build.sh all (unix)    (-debug -verbose -buildfile <file>)
-  .\build.bat all (win32)
+  ./build all (unix)    (-debug -verbose -buildfile <file>)
+  build.bat all (win32)
 
 if everything is right and all the required packages are visible, this action
 will generate a file called "xmlBlaster.jar" in the "./lib" directory.
@@ -280,7 +280,7 @@ TODO
    <target name="usage" depends="prepare" description="show help">
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
-            <property name="script" value="build.sh" />
+            <property name="script" value="build" />
          </case>
          <default>
             <property name="script" value="build.bat" />
@@ -712,7 +712,7 @@ TODO
    <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
    <!-- =================================================================== -->
    <target name="deploy_war" depends="prepare, all, appletLib_jar, appletDemo_jar" description="Creates a web archive (.war) to deploy to a modern servlet engine">
-      <echo message="Please run 'build.sh all' before if you have changed some code"/>
+      <echo message="Please run 'build all' before if you have changed some code"/>
       <mkdir dir="${build.war}"/>
       <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
       <copy file="${WEB-INF}/web.xml" tofile="${build.war}/WEB-INF/web.xml"/>
@@ -824,7 +824,7 @@ TODO
          <test name="org.xmlBlaster.test.j2ee.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.stress.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.jmx.AllTests" fork="yes" todir="${report.dir}"/>
-         <!-- build.sh -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
+         <!-- build -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
          <!-- test name="${test.class}" fork="yes" todir="${report.dir}"/ -->
       </junit>
       <echo message="See ${report.dir} for results"/>
@@ -1935,7 +1935,7 @@ TODO
 
    <!--
       Here an example on how to compile a single test application ...
-      ./build.sh -DexeName=TestGet cpp-test-single
+      ./build -DexeName=TestGet cpp-test-single
    -->
    <target name="cpp-test-single" depends="prepare-cpp" description="Create single C++ test client">
       <foreach list="${cppToCompile}"
@@ -1946,7 +1946,7 @@ TODO
 
    <!--
       Here an example on how to compile a single test application ...
-      ./build.sh -DexeName=HelloWorld2 cpp-demo-single
+      ./build -DexeName=HelloWorld2 cpp-demo-single
    -->
    <target name="cpp-demo-single" depends="prepare-cpp" description="Create single C++ demo client">
       <foreach list="${cppToCompile}"
@@ -2129,7 +2129,7 @@ TODO
          <linker name="bcc"  if="use-bcc" />
 
          <linker name="CC"> <!-- SunOS -->
-            <!-- build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp -->
+            <!-- build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp -->
             <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
             <syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" /> <!-- ORBIX only? -->
 
