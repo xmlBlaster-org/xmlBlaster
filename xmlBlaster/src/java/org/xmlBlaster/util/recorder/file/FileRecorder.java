@@ -95,7 +95,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       boolean useSync = glob.getProperty().get("recorder.useSync", false);
 
       try {
-         this.rb = new FileIO(fileName, new MsgDataHandler(glob), maxEntries, useSync);
+         this.rb = new FileIO(glob, fileName, new MsgDataHandler(glob), maxEntries, useSync);
          if (rb.getNumUnread() > 0) {
             boolean destroyOld = glob.getProperty().get("recorder.detroyOld", false);
             if (destroyOld) {
@@ -277,7 +277,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       }
 
       long elaps = System.currentTimeMillis()-startOfPullback;
-      log.info(ME, "Pullback of messages done - elapsed " +
+      log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) + " messages done - elapsed " +
             org.jutils.time.TimeHelper.millisToNice(elaps) +
             " average rate was " + (numAtBeginning*1000L/elaps) + 
             " msg/sec, numUnread=" + getNumUnread());
@@ -320,7 +320,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
 
                   if (cont == null) {
                      long elaps = System.currentTimeMillis()-startOfPullback;
-                     log.info(ME, "Pullback of messages done - elapsed " +
+                     log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) +
+                         " messages done - elapsed " +
                          org.jutils.time.TimeHelper.millisToNice(elaps) +
                          " average rate was " + (numAtBeginning*1000L/elaps) + 
                          " msg/sec, numUnread=" + getNumUnread());
@@ -450,8 +451,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
     return dummySubRet;
   }
@@ -468,8 +469,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
   }
 
@@ -484,8 +485,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyPubRet;
   }
@@ -501,8 +502,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       log.error(ME, cont.method + " invocation failed: " + ex.toString());
     }
   }
 
@@ -517,8 +518,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyPubRetQosArr;
   }
@@ -535,8 +536,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyEraseRetQosArr;
   }
@@ -553,8 +554,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(IOException ex)
-    { throw new XmlBlasterException(ME,ex.toString());
+    catch(IOException ex) {
+       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyMArr;
   }
@@ -576,7 +577,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
          rb.writeNext(cont);
       }
       catch(IOException ex) {
-         throw new XmlBlasterException(ME,ex.toString());
+         throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
       }
       String[] ret=new String[msgUnitArr.length];
       for (int i=0; i<ret.length; i++) ret[i] = "";
@@ -586,7 +587,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing updateOneway request
    */
-  public void updateOneway(String cbSessionId, MessageUnit[] msgUnitArr)
+  public void updateOneway(String cbSessionId, MessageUnit[] msgUnitArr) // throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
     cont.method = "updateOneway";
@@ -595,8 +596,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeNext(cont);
     }
-    catch(Exception ex)
-    { log.error(ME,"Can't push updateOneway(): "+ex.toString());
+    catch(IOException ex) {
+       log.error(ME, cont.method + " invocation failed: " + ex.toString());
+    }
+    catch(XmlBlasterException ex) {
+       log.error(ME, cont.method + " invocation failed: " + ex.toString());
     }
   }
 
