@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.6 1999/12/12 13:29:08 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.7 1999/12/12 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -33,7 +33,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -387,7 +387,7 @@ public class CorbaConnection
    {
       org.omg.PortableServer.POA poa;
       BlasterCallbackPOATie callbackTie;
-      
+
       // Getting the default POA implementation "RootPOA"
       try {
          poa = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -433,7 +433,7 @@ public class CorbaConnection
          return bos.toString();
       }
       catch (Exception ex) {
-         Log.panic(ME, "Caught exception, is xmlBlaster up and running? " + ex);
+         Log.panic(ME, "Is xmlBlaster up and running? \n" + ex);
          return null;
       }
    }
