@@ -166,7 +166,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @param volatile true/false
+    * @param volatile true sets lifeTime=0 and forceDestroy=false<br />
+    *        false: does nothing
     */
    public void setVolatile(boolean volatileFlag) {
       if (volatileFlag) {
@@ -174,8 +175,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
          setForceDestroy(false);
       }
       else {
-         setLifeTime(maxLifeTime);
-         setForceDestroy(false);
+         //setLifeTime(maxLifeTime);
+         //setForceDestroy(false);
       }
       //this.volatileFlag = volatileFlag;
    }

@@ -190,7 +190,6 @@ public class QueueServerEntryTest extends TestCase {
          ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
          msgQosData.setState("state");
-         msgQosData.setVolatile(true);
          msgQosData.setSubscriptionId("someId");
          msgQosData.setDurable(true);
          msgQosData.setForceUpdate(false);
@@ -253,7 +252,6 @@ public class QueueServerEntryTest extends TestCase {
          String newXml = retMsgUnit.getQosData().toXml().trim();
          assertEquals("The qos of the message unit is different OLD="+oldXml+" NEW="+newXml, oldXml, newXml);
 
-//         assertEquals("msgQosData check failure: getVolatile            ", msgQosData.getVolatile(), retMsgQosData.getVolatile());
          assertEquals("msgQosData check failure: getSubscriptionId      ", msgQosData.getSubscriptionId(), retMsgQosData.getSubscriptionId());
 //         assertEquals("msgQosData check failure: getDurable             ", msgQosData.getDurable(), retMsgQosData.getDurable());
 //         assertEquals("msgQosData check failure: getForceUpdate         ", msgQosData.getForceUpdate(), retMsgQosData.getForceUpdate());
@@ -328,7 +326,6 @@ public class QueueServerEntryTest extends TestCase {
          ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
          msgQosData.setState("state");
-         msgQosData.setVolatile(true);
          msgQosData.setSubscriptionId("someId");
          msgQosData.setDurable(true);
          msgQosData.setForceUpdate(false);

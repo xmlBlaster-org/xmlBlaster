@@ -265,9 +265,6 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             
             tmp = attrs.getValue("remainingLife");
             if (tmp != null) {
-               try { 
-                 long l = Long.parseLong(tmp.trim());
-                 log.error(ME, "ReminaingLife long=" + l + " str=" + tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
                try { msgQosData.setRemainingLifeStatic(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
             }
          }
@@ -599,9 +596,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if(name.equalsIgnoreCase("isVolatile")) { // deprecated
          inIsVolatile = false;
          String tmp = character.toString().trim();
-         if (tmp.length() > 0)
+         if (tmp.length() > 0) {
             msgQosData.setVolatile(new Boolean(tmp).booleanValue());
-         log.warn(ME, "Found isVolatile = " + msgQosData.isVolatile() + " which is deprecated, use lifeTime==0&&forceDestroy==false instead");
+            if (msgQosData.isVolatile()) {
+               log.warn(ME, "Found 'isVolatile=" + msgQosData.isVolatile() + "' which is deprecated, use lifeTime==0&&forceDestroy==false instead");
+            }
+         }
          character.setLength(0);
          return;
       }

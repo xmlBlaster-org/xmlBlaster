@@ -127,6 +127,7 @@ public final class PublishQos
     * A non-volatile messages stays in memory as long as the server runs<br />
     * A volatile messages exists only during publish and processing it (doing the updates).<br />
     * Defaults to false.
+    * @deprecated Use setLifeTime(0L) and setForceDestroy(false) instead
     */
    public void setVolatile(boolean volatileFlag) {
       msgQosData.setVolatile(volatileFlag);

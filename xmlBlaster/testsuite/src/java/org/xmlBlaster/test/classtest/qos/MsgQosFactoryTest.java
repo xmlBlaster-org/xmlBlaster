@@ -72,7 +72,7 @@ public class MsgQosFactoryTest extends TestCase {
             "      Gesa\n" +
             "   </sender>\n" +
             "   <priority>MIN</priority>\n" +
-            "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
+            //"   <expiration lifeTime='2400' remainingLife='12000'/>\n" + // uncomment as it is in concurrence to isVolatile
             "   <isVolatile>true</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
@@ -96,8 +96,8 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
-         assertEquals("", 2400L, qos.getLifeTime());
-         assertEquals("", 12000L, qos.getRemainingLifeStatic());
+         assertEquals("", 0L, qos.getLifeTime()); // isVolatile=true
+         assertEquals("", 0L, qos.getRemainingLifeStatic());
 
          assertEquals("", 3, qos.getRouteNodes().length);
          assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
