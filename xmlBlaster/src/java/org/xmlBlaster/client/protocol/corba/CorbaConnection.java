@@ -229,13 +229,14 @@ public class CorbaConnection implements I_XmlBlasterConnection
                        " - try to specify '-ior.file <fileName>' if server is running on same host (not using any naming service)\n" +
                        " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact the server administrator to start a naming service";
-         Log.warn(ME + ".NoNameService", text);
+         if (verbose)
+            Log.warn(ME + ".NoNameService", text);
          throw new XmlBlasterException("NoNameService", text);
       }
       if (nameServiceObj == null) {
          throw new XmlBlasterException("NoNameService", "Can't access naming service (null), is there any running?");
       }
-      if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
+      // if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
       try {
          nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
@@ -248,7 +249,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
                              // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
-         if (verbose || Log.TRACE) Log.warn(ME + ".NoNameService", "Can't access naming service");
+         if (verbose) Log.warn(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException("NoNameService", e.toString());
       }
    }
