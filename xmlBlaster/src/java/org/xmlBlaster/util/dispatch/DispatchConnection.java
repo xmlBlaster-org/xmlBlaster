@@ -291,10 +291,10 @@ abstract public class DispatchConnection implements I_Timeout
     *                 with Timeout.addTimeoutListener()
     */
    public final void timeout(Object userData) {
+      this.timerKey = null;
+
       if (isDead())
          return;
-
-      this.timerKey = null;
 
       boolean isPing = (userData == null);
 
