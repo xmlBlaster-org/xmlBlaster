@@ -30,7 +30,7 @@ public class PersistentRequest extends Thread {
    public PersistentRequest(XmlBlasterAccessRaw xmlBlasterAccess, String xmlBlasterServletUrl, String loginName, String passwd) {
       this.xmlBlasterAccess = xmlBlasterAccess;
       this.xmlBlasterServletUrl = this.xmlBlasterAccess.getXmlBlasterServletUrl();
-      this.request = "?ActionType=login&xmlBlaster.loginName=" + loginName + "&xmlBlaster.passwd=" + passwd;
+      this.request = "?ActionType=login&xmlBlaster.isApplet=true&xmlBlaster.loginName=" + loginName + "&xmlBlaster.passwd=" + passwd;
    }
 
    public String getConnectReturnQos() {
