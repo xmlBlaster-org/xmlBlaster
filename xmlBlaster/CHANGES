@@ -32,6 +32,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
      This allows pluggin in your own logging framework
 
  o C++ client library:
+   - xmlBlaster.properties is read (-propertyFile ... or in $HOME or in $XMLBLASTER_HOME)
    - Added native SOCKET protocol plugin based on the C-client library
    - Added logging abstraction interface to support different logging implementations
    - Added log4cplus 1.0.1 logging library to xmlBlaster distribution
