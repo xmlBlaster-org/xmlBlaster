@@ -60,12 +60,14 @@ public class ConnectQosTest extends TestCase {
          "   <duplicateUpdates>false</duplicateUpdates>\n" +
          "   <session name='/node/avalon/client/joe/2' timeout='" + sessionTimeout + "' maxSessions='27' clearSessions='true' sessionId='xyz'/>\n" +
          "   <queue relating='subject' type='XY' version='7.0' maxEntries='1009' maxBytes='4009' maxEntriesCache='509' maxBytesCache='777' storeSwapLevel='20009' storeSwapBytes='10000' reloadSwapLevel='20000' reloadSwapBytes='30000' onOverflow='deadMessage'>\n" +
+         /*
          "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
          "         <ptp>true</ptp>\n" +
          "         IOR:00011200070009990000....\n" +
          "         <compress type='gzip' minSize='1000' />\n" +
-         "         <burstMode collectTime='400' />\n" +
+         "         <burstMode collectTime='400' maxEntries='12' maxBytes='24' />\n" +
          "      </callback>\n" +
+         */
          "   </queue>\n" +
          /*
          "   <callback type='IOR'>\n" +
@@ -85,6 +87,8 @@ public class ConnectQosTest extends TestCase {
          "      <callback type='XMLRPC'>\n" +
          "         <ptp>true</ptp>\n" +
          "         http:/www.mars.universe:8080/RPC2\n" +
+         "         <compress type='gzip' minSize='1000' />\n" +
+         "         <burstMode collectTime='400' maxEntries='12' maxBytes='24' />\n" +
          "      </callback>\n" +
          "   </queue>\n" +
          "   <serverRef type='IOR'>\n" +
@@ -154,6 +158,12 @@ public class ConnectQosTest extends TestCase {
          {
             CbQueueProperty prop = qos.getSessionCbQueueProperty();
             assertEquals("", 1600L, prop.getMaxEntries());
+            AddressBase[] addrArr = prop.getAddresses();
+            assertEquals("Address array", 1, addrArr.length);
+            AddressBase addr = addrArr[0];
+            assertEquals("", 400, addr.getCollectTime());
+            assertEquals("", 12, addr.getBurstModeMaxEntries());
+            assertEquals("", 24, addr.getBurstModeMaxBytes());
          }
 
          assertEquals("Wrong number of clientProperties", 2, qos.getClientProperties().size());
