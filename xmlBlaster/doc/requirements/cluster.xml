@@ -79,7 +79,7 @@
       air traffic radar tracks or rugby news) simultaneously. Consequently a client interested
       in all informations only needs to connect to one xmlBlaster server instance.
       <p>
-      <img src="cluster.topic.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
+      <img src="cluster.domain.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
       <p>
       As we can see the node <i>golan</i> is master of messages of the domain "STOCK_EXCHANGE" but
@@ -257,7 +257,7 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
