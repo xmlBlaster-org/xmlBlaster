@@ -691,6 +691,10 @@ public class Global implements Cloneable
    /**
     * Utility method to strip any string, all characters which prevent
     * to be used for e.g. file names are replaced. 
+    * <p>
+    * This conversion is used for file names and for the administrative
+    * hierarchy e.g. "/node/heron/client/joe" is OK but 'http://xy:8080' instead of 'heron' is not 
+    * </p>
     * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
     * @return e.g. "http_www_xmlBlaster_org_homex"
     */
@@ -698,6 +702,8 @@ public class Global implements Cloneable
       String strippedId = StringHelper.replaceAll(text, "/", "");
       strippedId = StringHelper.replaceAll(strippedId, ".", "_");
       strippedId = StringHelper.replaceAll(strippedId, ":", "_");
+      strippedId = StringHelper.replaceAll(strippedId, "[", "_");
+      strippedId = StringHelper.replaceAll(strippedId, "]", "_");
       return StringHelper.replaceAll(strippedId, "\\", "");
    }
 
