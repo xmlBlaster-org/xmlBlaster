@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.15 2000/04/14 12:38:09 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.16 2000/05/03 17:12:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -137,7 +137,7 @@ public class HttpPushHandler
       }
    }
 
-      /**
+   /**
     */
    public void deinitialize()
    {
@@ -158,7 +158,7 @@ public class HttpPushHandler
    public void startPing() throws ServletException, IOException
    {
       pingThread.start();
-      ping();
+      ping("refresh");
    }
 
 
@@ -231,14 +231,14 @@ public class HttpPushHandler
    /**
     * Updating data to the browser (callback/push mode).
     * The data must be Javascript code
-    * @param
+    * @param str
     * @param confirm true - There will be append an Javascript code
-    *                                               [if (parent.browserReady != null) parent.browserReady();].
-    *                       This shows, that the browser had processed the whole message.
-    *                       If the Browser implements this javascript function, it could send
-    *                       a browserReady signal back to the  BlasterHttpProxyServlet.
-    *                       This feature solves the problem, that the browser got messages too fast
-    *                       and could not process all content of the message.
+    *        [if (parent.browserReady != null) parent.browserReady();].
+    *        This shows, that the browser had processed the whole message.
+    *        If the Browser implements this javascript function, it could send
+    *        a browserReady signal back to the  BlasterHttpProxyServlet.
+    *        This feature solves the problem, that the browser got messages too fast
+    *        and could not process all content of the message.
     */
    public void push(String str, boolean confirm) throws ServletException, IOException
    {
@@ -275,7 +275,7 @@ public class HttpPushHandler
                StringBuffer buf = new StringBuffer(head);
 
                for( int i = 0; i < pushQueue.size(); i++ )
-                buf.append((String)pushQueue.elementAt(i));
+                  buf.append((String)pushQueue.elementAt(i));
 
                if( confirm ) {
                   buf.append(readyStr);
@@ -360,13 +360,15 @@ public class HttpPushHandler
 
 
    /**
-    * calls the message method in the parentframe of the callback frame
-    * The data must be Javascript code
+    * Calls the message method in the parentframe of the callback frame. 
+    * <p />
+    * See callback.js message() method.
+    * @param text This must be Javascript code (usually a message string)
     */
    public void message( String text )
    {
       try {
-         String codedText = URLEncoder.encode( text );
+         String codedText = URLEncoder.encode(text);
          push("if (parent.message != null) parent.message('"+codedText+"');\n");
       }
       catch(Exception e) {
@@ -374,17 +376,39 @@ public class HttpPushHandler
       }
    }
 
-      /**
-    * calls the ping method in the parentframe of the callback frame
-    * The data must be Javascript code
+
+   /**
+    * Calls the error method in the parentframe of the callback frame. 
+    * <p />
+    * See callback.js error() method, which shows an alert window.
+    * @param text This must be Javascript code (usually an error string)
     */
-   public void ping() throws ServletException, IOException
+   public void error(String text)
    {
-      push("if (parent.ping != null) parent.ping();\n",false);
+      try {
+         String codedText = URLEncoder.encode(text);
+         push("if (parent.error != null) parent.error('"+codedText+"');\n");
+      }
+      catch(Exception e) {
+         Log.error(ME,e.toString());
+      }
    }
 
 
-      /**
+   /**
+    * calls the ping method in the parentframe of the callback frame
+    * The data must be Javascript code
+    * @param state The string "refresh"<br />
+    *              When login is done successfully, state="loginSucceeded" is sent
+    *              one time
+    */
+   public void ping(String state) throws ServletException, IOException
+   {
+      push("if (parent.ping != null) parent.ping('" + state + "');\n",false);
+   }
+
+
+   /**
     * Ping the xmlBlaster server, to test if connection is alive
     */
    private class HttpPingThread extends Thread
@@ -413,7 +437,7 @@ public class HttpPushHandler
 
             try {
                if(Log.TRACE) Log.trace(ME,"pinging the Browser ...");
-               pushHandler.ping();
+               pushHandler.ping("refresh");
             } catch(Exception e) {
                //error handling: browser closed connection.
                Log.warning(ME,"You tried to ping a browser who is not interested. Close HttpPushHandler.");
