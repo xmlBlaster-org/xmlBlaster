@@ -16,7 +16,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $version$
+# $Revision: 1.32 $
 #-----------------------------------------------------------
 
 
