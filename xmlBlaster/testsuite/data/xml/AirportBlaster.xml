@@ -9,27 +9,33 @@
 <!-- java DomQueryTest AirportBlaster.xml xmlBlaster/Airport[@icao=\"IAAD\"or@icao=\"FDDI\"] -->
 <!-- java DomQueryTest AirportBlaster.xml \(xmlBlaster/Airport[@icao=\"IAAD\"]\|xmlBlaster/Airport[@icao=\"FDDI\"]\) -->
 <xmlBlaster>
-   <Airport icao="EDDI">
-      <Runway id="1">
-         <WindVeloc w_id="1" oid_reference="EDDI-A"></WindVeloc>
-         <WindVeloc w_id="2" oid_reference="EDDI-B"></WindVeloc>
-         <WindVeloc w_id="3" oid_reference="EDDI-C"></WindVeloc>
-      </Runway>
-      <Runway id="2">
-         <WindVeloc w_id="1" oid_reference="EDDI-D"></WindVeloc>
-      </Runway>
-   </Airport>
+   <key oid='123'>
+      <Airport icao="EDDI">
+         <Runway id="1">
+            <WindVeloc w_id="1" oid_reference="EDDI-A"></WindVeloc>
+            <WindVeloc w_id="2" oid_reference="EDDI-B"></WindVeloc>
+            <WindVeloc w_id="3" oid_reference="EDDI-C"></WindVeloc>
+         </Runway>
+         <Runway id="2">
+            <WindVeloc w_id="1" oid_reference="EDDI-D"></WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
 
-   <Airport icao="IAAD">
-      <Runway id="2">
-         <WindVeloc w_id="1" oid_reference="IAAD_A"></WindVeloc>
-      </Runway>
-   </Airport>
+   <key oid='123'>
+      <Airport icao="IAAD">
+         <Runway id="2">
+            <WindVeloc w_id="1" oid_reference="IAAD_A"></WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
 
-   <Airport icao="FDDI">
-      <Runway id="2">
-         <WindVeloc w_id="1" oid_reference="FDDI_A"></WindVeloc>
-      </Runway>
-   </Airport>
+   <key oid='123'>
+      <Airport icao="FDDI">
+         <Runway id="2">
+            <WindVeloc w_id="1" oid_reference="FDDI_A"></WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
 </xmlBlaster>
 
