@@ -54,7 +54,7 @@ public final class MsgTopicErrorHandler implements I_MsgErrorHandler
       String message = xmlBlasterException.getMessage();
       MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
 
-      log.error(ME, "PANIC: MESSAGE ERROR HANDLING IS NOT IMPLELEMENTED , message are lost: " + msgErrorInfo.toString());
+      log.error(ME, "PANIC: MESSAGE ERROR HANDLING IS NOT IMPLELEMENTED , messages are lost: " + msgErrorInfo.toString());
    }
 
    public void shutdown() {
