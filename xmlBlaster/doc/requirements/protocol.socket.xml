@@ -269,6 +269,38 @@ The '"' is just to show the boundary, '"' is not part of the message.
       <pre>
 java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
       </pre>
+      <br />
+      <p>
+      Here we start the xmlBlaster server and it will offer its SOCKET service on host <i>myHost.com</i> and on port <i>7766</i>:
+      </p>
+      <pre>
+java -jar lib/xmlBlaster.jar -socket.hostname myHost.com -socket.port 7766
+      </pre>
+      <p>
+      This client tries to find an xmlBlaster server instance at host <i>myHost.com</i> and on port <i>7766</i>:
+      </p>
+      <pre>
+java HelloWorld3 -protocol SOCKET -socket.hostname myHost.com -socket.port 7766
+      </pre>
+
+      <br />
+      <p>
+      Here we do the same hard coded in Java:
+      </p>
+      <pre>
+...
+
+String[] args = { "-protocol", "SOCKET",
+                "-socket.hostname", "myHost.com",
+                "-socket.port", "7766",
+                "-socket.localHostname", "myHost.com",
+                "-socket.localPort", "8888" };
+glob.init(args);
+
+ConnectQos qos = new ConnectQos(glob);
+
+...
+      </pre>
    </example>
 
    <configuration where="server">
@@ -421,7 +453,7 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.28 $</revision>
+   <revision>$Revision: 1.29 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
