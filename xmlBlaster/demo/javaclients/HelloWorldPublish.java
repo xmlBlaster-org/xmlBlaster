@@ -81,7 +81,7 @@ public class HelloWorldPublish
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 1);
          String oid = glob.getProperty().get("oid", "Hello");
-         String content = glob.getProperty().get("content", "Hi");
+         byte[] content = glob.getProperty().get("content", "Hi").getBytes();
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
          long lifeTime = glob.getProperty().get("lifeTime", -1L);
@@ -93,6 +93,7 @@ public class HelloWorldPublish
          String destination = glob.getProperty().get("destination", (String)null);
          boolean erase = glob.getProperty().get("erase", true);
          boolean disconnect = glob.getProperty().get("disconnect", true);
+         int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
 
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive    " + interactive);
@@ -102,7 +103,10 @@ public class HelloWorldPublish
          log.info(ME, " Pub/Sub settings");
          log.info(ME, "   -numPublish     " + numPublish);
          log.info(ME, "   -oid            " + oid);
-         log.info(ME, "   -content        " + content);
+         if (contentSize >= 0)
+            log.info(ME, "   -contentSize    " + contentSize);
+         else
+            log.info(ME, "   -content        " + content);
          log.info(ME, "   -priority       " + priority.toString());
          log.info(ME, "   -persistent     " + persistent);
          log.info(ME, "   -lifeTime       " + lifeTime);
@@ -158,6 +162,12 @@ public class HelloWorldPublish
                Destination dest = new Destination(glob, new SessionName(glob, destination));
                dest.forceQueuing(forceQueuing);
                pq.addDestination(dest);
+            }
+
+            if (contentSize >= 0) {
+               content = new byte[contentSize];
+               for (int j=0; j<content.length; j++)
+                  content[j] = (byte)(j % 255);
             }
 
             MsgUnit msgUnit = new MsgUnit(glob, pk, content, pq);
