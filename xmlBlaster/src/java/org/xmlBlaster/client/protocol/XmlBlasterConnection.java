@@ -112,7 +112,7 @@ import java.util.Collections;
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see org.xmlBlaster.test.qos.TestFailSave
  *
- * @author $Author: ruff $
+ * @author $Author: laghi $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_XmlBlaster, I_CallbackServer, I_Timeout
 {
@@ -935,6 +935,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (log.CALL) log.call(ME, "loginRaw(firstConnect=" + firstConnect + ") ...");
       try {
          if (firstConnect) {
+            if (log.TRACE) log.trace(ME, "loginRaw: connectQos=" + connectQos.toXml());
             this.connectReturnQos = driver.connect(connectQos);
             firstConnect = false;
             if (log.DUMP) log.dump(ME, "connectReturnQos=" + connectReturnQos.toXml());

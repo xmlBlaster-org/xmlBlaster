@@ -167,6 +167,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
              CbQueueProperty prop = help;
              connectQos_.addCbQueueProperty(prop);
          }
+         subFactory_ = NULL;
       }
       return;
    }
@@ -266,7 +267,6 @@ int main(int args, char* argv[])
        string("      <sessionId>4e56890ghdFzj0</sessionId>\n") +
        string("   </session>\n") +
        string("   <ptp>true</ptp>\n") +
-       string("   <serverRef type='IOR'>IOR:100000100332...</serverRef>\n") +
        string("   <!-- The client side queue: -->\n") +
        string("   <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>\n") +
        string("      <address type='IOR' sessionId='4e56890ghdFzj0'>\n") +
@@ -280,6 +280,7 @@ int main(int args, char* argv[])
        string("         <burstMode collectTime='400' />\n") +
        string("      </callback>\n") +
        string("   </queue>\n") +
+       string("   <serverRef type='IOR'>IOR:100000100332...</serverRef>\n") +
        string("</qos>\n");
 
        Global& glob = Global::getInstance();
@@ -293,6 +294,9 @@ int main(int args, char* argv[])
 //       cout << "server ref   : " << data.getServerRef().toXml() << endl;
        cout << "securityQos  : " << data.getSecurityQos().toXml() << endl;
        cout << "sessionQos   : " << data.getSessionQos().toXml() << endl;
+
+       ServerRef ref = data.getServerRef();
+       cout << "server reference:  " << ref.toXml() << endl;
 
     }
 

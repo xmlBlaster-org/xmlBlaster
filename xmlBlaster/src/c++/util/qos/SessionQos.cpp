@@ -62,6 +62,9 @@ void SessionQosData::setAbsoluteName(const string& name)
    StringStripper stripper("/");
    vector<string> help = stripper.strip(name);
 
+   if (help.size() < 3) subjectId_ = name;
+   return;
+
    string clusterNode = "";
 
    unsigned int i = 2;
@@ -168,12 +171,18 @@ void SessionQosData::setSessionId(const string& sessionId)
    sessionId_ = sessionId;
 }
 
-string SessionQosData::toXml(const string& extraOffset) const
+string SessionQosData::toXml(const string& extraOffset, bool isClient) const
 {
    string offset = extraOffset; // currently unused.
-   return SessionQosFactory::writeObject(*this);
+   string ret = string("<session timeout='") + lexical_cast<string>(getTimeout()) +
+                string("' maxSessions='") + lexical_cast<string>(getMaxSessions()) +
+                string("' clearSessions='") + lexical_cast<string>(getClearSessions());
+   if (isClient) ret += string("' name='")  + getSubjectId() + "'>\n";
+   else ret += string("' name='")  + getAbsoluteName() + "'>\n";
+   ret += string("  <sessionId>") + getSessionId() + string("</sessionId>\n");
+   ret += string("</session>\n");
+   return ret;
 }
-
 
 
 /*-------------------------- SessionQosFactory -------------------------------*/
@@ -273,19 +282,6 @@ SessionQosData SessionQosFactory::readObject(const string& qos)
    init(qos);
    return *sessionQos_;
 }
-
-
-string SessionQosFactory::writeObject(const SessionQosData& qos)
-{
-   string ret = string("<session timeout='") + lexical_cast<string>(qos.getTimeout()) +
-                string("' maxSessions='") + lexical_cast<string>(qos.getMaxSessions()) +
-                string("' clearSessions='") + lexical_cast<string>(qos.getClearSessions()) +
-                string("' name='")  + qos.getAbsoluteName() + "'>\n";
-   ret += string("  <sessionId>") + qos.getSessionId() + string("</sessionId>\n");
-   ret += string("</session>\n");
-   return ret;
-}
-
 
 }}}} // namespaces
 

@@ -167,6 +167,13 @@ class XmlBlasterException
     */
    string toXml();
 
+   /**
+    * Returns a string containing the stack trace if the system and the
+    * compilation permit it (_ENABLE_STACK_TRACE must be set: which is set
+    * in xmlBlasterDef.h in case of the gnu compiler.
+    */
+   static string getStackTrace(int maxNumOfLines=20);
+
 };
 
 }}}; // namespaces

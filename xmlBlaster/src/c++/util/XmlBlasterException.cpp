@@ -38,6 +38,7 @@ namespace org { namespace xmlBlaster { namespace util {
       if (embeddedMessage_ == "") {
          embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
       }
+      if (stackTrace_ == "") stackTrace_ = getStackTrace();
    }
 
 
@@ -64,6 +65,7 @@ namespace org { namespace xmlBlaster { namespace util {
       if (embeddedMessage_ == "") {
          embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
       }
+      if (stackTrace_ == "") stackTrace_ = getStackTrace();
    }
 
    string XmlBlasterException::getErrorCodeStr() const
@@ -255,6 +257,25 @@ namespace org { namespace xmlBlaster { namespace util {
       "</exception>";
       return buf;
    }
+
+   string XmlBlasterException::getStackTrace(int maxNumOfLines)
+   {
+#ifdef _ENABLE_STACK_TRACE_
+      void** arr = new void*[maxNumOfLines];
+      int bt = backtrace(arr, maxNumOfLines);
+      char** list = backtrace_symbols(arr, bt);
+      string ret;
+      for (int i=0; i<bt; i++) {
+          if (list[i] != NULL) ret += list[i] + string("\n");
+      }
+      delete list;
+      delete[] arr;
+      return ret;
+#else
+      return "no stack trace provided in this system";
+#endif
+   }
+
 
 }}}; // namespaces
 

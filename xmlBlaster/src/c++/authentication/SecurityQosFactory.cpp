@@ -110,8 +110,11 @@ void SecurityQosFactory::startElement(const XMLCh* const name, AttributeList& at
    if (SaxHandlerBase::caseCompare(name, "passwd")) {
       inPasswd_ = false;
       char *help = charTrimmer_.trim(character_.c_str());
-      securityQos_.setCredential(string(help));
-      delete help;
+      if (help != NULL) {
+         securityQos_.setCredential(string(help));
+         delete help;
+      }
+      else securityQos_.setCredential("");
       character_.erase();
       return;
    }

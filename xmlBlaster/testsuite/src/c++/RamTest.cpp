@@ -3,17 +3,26 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.5 2002/12/10 18:45:43 laghi Exp $
+Version:   $Id: RamTest.cpp,v 1.6 2002/12/13 12:23:58 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <client/protocol/corba/CorbaConnection.h>
+#include <client/XmlBlasterAccess.h>
+#include <util/qos/ConnectQos.h>
+#include <authentication/SecurityQos.h>
+#include <util/XmlBlasterException.h>
+#include <util/PlatformUtils.hpp>
+
 #include <util/StopWatch.h>
 #include <util/Global.h>
 
 using namespace std;
-using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+using org::xmlBlaster::client::XmlBlasterAccess;
+using org::xmlBlaster::util::qos::ConnectQos;
+using org::xmlBlaster::util::XmlBlasterException;
+using org::xmlBlaster::authentication::SecurityQos;
+
 using boost::lexical_cast;
 
 /**
@@ -45,15 +54,15 @@ private:
    }
 
    static const string::size_type NUM_PUBLISH = 1000;
-   util::StopWatch  stopWatch_;
-   CorbaConnection* senderConnection_;
-   string           publishOid_;
-   string           senderName_;
-   string           senderContent_;
-   string           contentMime_;
-   string           contentMimeExtended_;
-   util::Global&    global_;
-   util::Log&       log_;
+   util::StopWatch   stopWatch_;
+   XmlBlasterAccess* senderConnection_;
+   string            publishOid_;
+   string            senderName_;
+   string            senderContent_;
+   string            contentMime_;
+   string            contentMimeExtended_;
+   util::Global&     global_;
+   util::Log&        log_;
 
 public:
    RamTest(Global& global, const string &loginName) :
@@ -83,13 +92,16 @@ public:
          }
       }
       try {
-         senderConnection_ = new CorbaConnection(global_); // Find orb
+         senderConnection_ = new XmlBlasterAccess(global_); // Find server
          string passwd = "secret";
-         senderConnection_->login(senderName_, passwd, 0);
-          // Login to xmlBlaster without Callback
+         SecurityQos secQos(global_, senderName_, passwd);
+         ConnectQos connQos(global_);
+         connQos.setSecurityQos(secQos);
+         senderConnection_->connect(connQos, 0);
+          // Connect to xmlBlaster without Callback
       }
-      catch (CORBA::Exception &e) {
-          log_.error(me(), to_string(e));
+      catch (XmlBlasterException &e) {
+          log_.error(me(), e.toXml());
           usage();
       }
    }
@@ -102,7 +114,6 @@ public:
     */
    void tearDown() {
       log_.info(me(), "tearDown() ...");
-//      stopWatch = new StopWatch();
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          string xmlKey = "<key oid='RamTest-" + lexical_cast<string>(i+1) + "'/>";
@@ -115,17 +126,13 @@ public:
                assert(0);
             }
          }
-         catch(serverIdl::XmlBlasterException &e) {
-            log_.error(me(), string("XmlBlasterException: ")
-                    + string(e.errorCodeStr) + ": " + string(e.message));
+         catch(XmlBlasterException &e) {
+            log_.error(me(), string("XmlBlasterException: ") + e.toXml());
          }
       }
       log_.info(me(), "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
 
-//        long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
-//        Log.info(ME, "Success: Erasing done, " + NUM_PUBLISH + " messages erased, average messages/second = " + avg);
-
-      senderConnection_->logout();
+      senderConnection_->disconnect("<qos></qos>");
    }
 
 
@@ -193,13 +200,8 @@ public:
                    "publishing = " + usedMemAfter);
          log_.info(me(), lexical_cast<string>((usedAfter-usedBefore)/NUM_PUBLISH) + " bytes/message");
       }
-
-      catch(serverIdl::XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ") + string(e.errorCodeStr) + ": "+string(e.message));
-         assert(0);
-      }
-      catch(CORBA::Exception &e) {
-         log_.warn(me(), string("Exception: ") + to_string(e));
+      catch(XmlBlasterException &e) {
+         log_.warn(me(), string("Exception: ") + e.toXml());
          assert(0);
       }
    }
@@ -217,7 +219,7 @@ public:
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
       log_.plain(me(), "Usage:");
-      CorbaConnection::usage();
+      XmlBlasterAccess::usage();
       log_.usage();
       log_.plain(me(), "Example:");
       log_.plain(me(), "   RamTest -hostname myHostName");
@@ -230,6 +232,17 @@ public:
 using org::xmlBlaster::util::Global;
 
 int main(int args, char *argc[]) {
+   // Init the XML platform
+   try {
+      XMLPlatformUtils::Initialize();
+   }
+
+   catch(const XMLException& toCatch) {
+      cout << "Error during platform init! Message:\n"
+           << endl;
+      return 1;
+   }
+
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
    org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest(glob, "Tim");

@@ -84,7 +84,13 @@ CorbaConnection::getAddress() const
    return xmlBlasterIOR_;
 }
 
-CORBA::ORB_ptr 
+string
+CorbaConnection::getCbAddress() const
+{
+   return callbackIOR_;
+}
+
+CORBA::ORB_ptr
 CorbaConnection::getOrb() 
 {
    return CORBA::ORB::_duplicate(orb_);
@@ -275,8 +281,9 @@ CorbaConnection::login(const string &loginName, const string &passwd,
      if (defaultCallback_) delete defaultCallback_;
      defaultCallback_ =  new DefaultCallback(global_, loginName_, client, 0);
      callback_ = createCallbackServer(defaultCallback_);
+     callbackIOR_ = orb_->object_to_string(callback_);
      util::cfg::CallbackAddress addr(global_, "IOR");
-     addr.setAddress(orb_->object_to_string(callback_));
+     addr.setAddress(callbackIOR_);
      loginQos_.addCallbackAddress(addr);
      if (log_.TRACE) log_.trace(me(), string("Success, exported ") +
                                 "BlasterCallback Server interface for "+
@@ -291,11 +298,11 @@ clientIdl::BlasterCallback_ptr
 CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj) 
 {
   if (implObj) {
-     CORBA::Object_var obj =
-        orb_->resolve_initial_references("RootPOA");
+     CORBA::Object_var obj = orb_->resolve_initial_references("RootPOA");
      poa_ = PortableServer::POA::_narrow(obj);
      PortableServer::POAManager_var poa_mgr = poa_->the_POAManager();
      callback_ = implObj->_this();
+     callbackIOR_ = orb_->object_to_string(callback_);
      poa_mgr->activate();
      while (orb_->work_pending()) orb_->perform_work();
      return clientIdl::BlasterCallback::_duplicate(callback_);

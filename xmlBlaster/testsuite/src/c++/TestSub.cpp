@@ -3,14 +3,20 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.5 2002/12/10 18:45:44 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.6 2002/12/13 12:23:58 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
-#include <client/protocol/corba/CorbaConnection.h>
-#include <util/StopWatch.h>
+#include <client/XmlBlasterAccess.h>
+#include <util/qos/ConnectQos.h>
+#include <authentication/SecurityQos.h>
+#include <util/XmlBlasterException.h>
+#include <util/Timestamp.h>
 #include <util/PlatformUtils.hpp>
+
+#include <util/StopWatch.h>
 #include <util/Global.h>
+#include <util/MessageUnit.h>
 #include <client/I_Callback.h>
 
 /**
@@ -24,8 +30,13 @@ Version:   $Id: TestSub.cpp,v 1.5 2002/12/10 18:45:44 laghi Exp $
 
 using namespace std;
 using boost::lexical_cast;
-using org::xmlBlaster::client::protocol::corba::CorbaConnection;
 using org::xmlBlaster::util::Global;
+using org::xmlBlaster::client::XmlBlasterAccess;
+using org::xmlBlaster::util::MessageUnit;
+using org::xmlBlaster::util::qos::ConnectQos;
+using org::xmlBlaster::util::qos::ConnectReturnQos;
+using org::xmlBlaster::util::XmlBlasterException;
+using org::xmlBlaster::authentication::SecurityQos;
 
 namespace org { namespace xmlBlaster {
 
@@ -41,9 +52,9 @@ private:
                    publishOid_);
    }
 
-   bool            messageArrived_; // = false;
-   int             numReceived_;    //  = 0;         // error checking
-   CorbaConnection *senderConnection_;
+   bool             messageArrived_; // = false;
+   int              numReceived_;    //  = 0;         // error checking
+   XmlBlasterAccess *senderConnection_;
 
    string subscribeOid_;
    string publishOid_; // = "dummy";
@@ -55,6 +66,7 @@ private:
    string contentMimeExtended_; //  = "1.0";
    Global&          global_;
    util::Log&       log_;
+   ConnectReturnQos returnQos_;
 
    /** Publish tests */
    enum TestType {
@@ -69,7 +81,7 @@ private:
     */
  public:
    TestSub(Global& global, const string &loginName)
-      : global_(global), log_(global.getLog("test"))
+      : global_(global), log_(global.getLog("test")), returnQos_(global)
    {
       senderName_          = loginName;
       receiverName_        = loginName;
@@ -97,13 +109,16 @@ private:
          }
       }
       try {
-         senderConnection_ = new CorbaConnection(global_); // Find orb
+         senderConnection_ = new XmlBlasterAccess(global_); // Find orb
          string passwd = "secret";
-         senderConnection_->login(senderName_, passwd, 0, this);
+         SecurityQos secQos(global_, senderName_, passwd);
+         ConnectQos connQos(global_);
+         connQos.setSecurityQos(secQos);
+         returnQos_ = senderConnection_->connect(connQos, this);
          // Login to xmlBlaster
       }
-      catch (CORBA::Exception &e) {
-         log_.error(me(), string("Login failed: ") + to_string(e));
+      catch (XmlBlasterException &e) {
+         log_.error(me(), string("Login failed: ") + e.toXml());
          usage();
          assert(0);
       }
@@ -125,13 +140,13 @@ private:
       try {
          strArr = senderConnection_->erase(xmlKey, qos);
       }
-      catch(serverIdl::XmlBlasterException &e) {
-         log_.error(me(), string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
+      catch(XmlBlasterException &e) {
+         log_.error(me(), string("XmlBlasterException: ") + e.toXml());
       }
       if (strArr.size() != 1) {
          log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
       }
-      senderConnection_->logout();
+      senderConnection_->disconnect("<qos/>");
    }
 
 
@@ -151,11 +166,10 @@ private:
          log_.info(me(), string("Success: Subscribe subscription-id=") +
                    subscribeOid_ + " done");
       }
-      catch(serverIdl::XmlBlasterException &e) {
+      catch(XmlBlasterException &e) {
          log_.warn(me(), string("XmlBlasterException: ")
-                      + string(e.errorCodeStr) + ": " + string(e.message));
-         cerr << "subscribe - XmlBlasterException: " << string(e.errorCodeStr) + ": " + string(e.message)
-              << endl;
+                      + e.toXml());
+         cerr << "subscribe - XmlBlasterException: " << e.toXml() << endl;
          assert(0);
       }
       if (subscribeOid_ == "") {
@@ -184,19 +198,13 @@ private:
          "      </TestSub-DRIVER>"+
          "   </TestSub-AGENT>" +
          "</key>";
-      serverIdl::MessageUnit msgUnit;
-      msgUnit.xmlKey  = xmlKey.c_str();
-      serverIdl::ContentType content(senderContent_.length(),
-                                     senderContent_.length(),
-                                     (CORBA::Octet*)senderContent_.c_str());
-      msgUnit.content = content;
+
+      MessageUnit msgUnit(xmlKey, senderContent_, "<qos></qos>");
       try {
-         msgUnit.qos = "<qos></qos>";
 
          if (testType == TEST_ONEWAY) {
-            serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
-            msgUnitArr->length(1);
-            msgUnitArr[0u] = msgUnit;
+            vector<MessageUnit> msgUnitArr;
+            msgUnitArr.insert(msgUnitArr.begin(), msgUnit);
             senderConnection_->publishOneway(msgUnitArr);
             //delete msgUnitArr;
             log_.info(me(), string("Success: Publishing oneway done (old style)"));
@@ -211,16 +219,15 @@ private:
                       publishOid_);
          }
          else {
-            serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
-            msgUnitArr->length(1);
-            msgUnitArr[0u] = msgUnit;
+            vector<MessageUnit> msgUnitArr;
+            msgUnitArr.insert(msgUnitArr.begin(), msgUnit);
             senderConnection_->publishArr(msgUnitArr);
             //delete msgUnitArr;
             log_.info(me(), string("Success: Publishing array done (old style)"));
          }
       }
-      catch(serverIdl::XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+string(e.errorCodeStr) + ": " + string(e.message));
+      catch(XmlBlasterException &e) {
+         log_.warn(me(), string("XmlBlasterException: ")+e.toXml());
          assert(0);
       }
    }
@@ -241,10 +248,10 @@ private:
          "      </TestSub-DRIVER>"+
          "   </TestSub-AGENT>" +
          "</key>";
-      util::MessageUnit msgUnit(xmlKey, senderContent_);
+      MessageUnit msgUnit(xmlKey, senderContent_);
       try {
          if (testType == TEST_ONEWAY) {
-            vector<util::MessageUnit> msgVec;
+            vector<MessageUnit> msgVec;
             msgVec.push_back(msgUnit);
             senderConnection_->publishOneway(msgVec);
             log_.info(me(), string("Success: Publishing oneway done (the STL way)"));
@@ -259,15 +266,15 @@ private:
                       publishOid_);
          }
          else {
-            vector<util::MessageUnit> msgVec;
+            vector<MessageUnit> msgVec;
             msgVec.push_back(msgUnit);
             vector<string> retArr = senderConnection_->publishArr(msgVec);
             log_.info(me(), string("Success: Publishing array of size " + lexical_cast<string>(retArr.size())
                                    + " done (the STL way)"));
          }
       }
-      catch(serverIdl::XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+string(e.errorCodeStr) + ": " + string(e.message));
+      catch(XmlBlasterException &e) {
+         log_.warn(me(), string("XmlBlasterException: ")+e.toXml());
          assert(0);
       }
    }
@@ -285,7 +292,7 @@ private:
          log_.error(me(), "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-
+/*
       testPublishCorbaMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
@@ -306,32 +313,34 @@ private:
          log_.error(me(),"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-
+*/
+/*
       testPublishSTLMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(me(),"numReceived after publishing STL oneway = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-
+*/
       testPublishSTLMethods(TEST_PUBLISH);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(me(),"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-    
+/*
       testPublishSTLMethods(TEST_ARRAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(me(),"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
+*/
    }
 
 
    /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
+    * This is the callback method (I_Callback) invoked from XmlBlasterAccess
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived
@@ -361,8 +370,9 @@ private:
          assert(0);
       }
 
-      if (senderName_ != updateQos.getSender()) {
-         log_.error(me(), "Wrong Sender");
+      string name = returnQos_.getSessionQos().getAbsoluteName();
+      if (/*senderName_*/ name != updateQos.getSender()) {
+         log_.error(me(), string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender());
          assert(0);
       }
       if (subscribeOid_.find(updateQos.getSubscriptionId()) == string::npos) {
@@ -403,6 +413,9 @@ private:
     */
 private:
    void waitOnUpdate(long timeout) {
+      Timestamp delay = 1000000ll * timeout;
+      TimestampFactory::getInstance().sleep(delay);
+/*
       util::StopWatch stopWatch(timeout);
       while (stopWatch.isRunning()) {
          senderConnection_->orbPerformWork();
@@ -411,14 +424,16 @@ private:
             return;
          }
       }
+*/
       log_.warn(me(), "Timeout of " + lexical_cast<string>(timeout) + " milliseconds occured");
    }
+
    void usage()
    {
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster with subscribe()");
       log_.plain(me(), "Usage:");
-      CorbaConnection::usage();
+      XmlBlasterAccess::usage();
       log_.usage();
       log_.plain(me(), "Example:");
       log_.plain(me(), "   TestSub -hostname myHost.myCompany.com -port 3412 -trace true");

@@ -77,7 +77,7 @@ public:
 
    string getSessionId() const;
    void setSessionId(const string& sessionId);
-   string toXml(const string& extraOffset="") const;
+   string toXml(const string& extraOffset="", bool isClient=true) const;
 };
 
 class Dll_Export SessionQosFactory: public util::XmlQoSBase
@@ -117,8 +117,6 @@ public:
    SessionQosData getData() const;
 
    SessionQosData readObject(const string& qos);
-
-   static string writeObject(const SessionQosData& qos);
 
 };
 

@@ -18,10 +18,10 @@ using boost::lexical_cast;
 
 /*---------------------------- ConnectQosData --------------------------------*/
 
-ConnectQosData::ConnectQosData(Global& global)
+ConnectQosData::ConnectQosData(Global& global, const string& user, const string& passwd)
     : global_(global),
       log_(global.getLog("core")),
-      securityQos_(global),
+      securityQos_(global, user, passwd),
       sessionQos_(global),
       addresses_(),
       cbAddresses_(),
@@ -145,7 +145,7 @@ bool ConnectQosData::isDuplicateUpdates() const
 
 void ConnectQosData::addServerRef(const ServerRef& serverRef)
 {
-   serverReferences_.insert(serverReferences_.end(), serverRef);
+   serverReferences_.insert(serverReferences_.begin(), serverRef);
 }
 
 vector<ServerRef> ConnectQosData::getServerReferences() const
@@ -202,7 +202,8 @@ void ConnectQosData::addCbQueueProperty(const CbQueueProperty& prop)
 
 void ConnectQosData::setCbQueueProperty(const CbQueueProperty& prop)
 {
-   cbQueueProperties_.erase(cbQueueProperties_.begin());
+   if (!cbQueueProperties_.empty())
+      cbQueueProperties_.erase(cbQueueProperties_.begin());
    cbQueueProperties_.insert(cbQueueProperties_.begin(), prop);
 }
 

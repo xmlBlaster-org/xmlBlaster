@@ -33,12 +33,9 @@ CbServerPluginManager::CbServerPluginManager(Global& global)
 
 CbServerPluginManager::~CbServerPluginManager()
 {
-   if (log_.CALL) log_.call(ME, "::destructor");
    // should be synchronized ...
    ServerMap::iterator iter = serverMap_.begin();
    while (iter != serverMap_.end()) {
-      if (log_.TRACE)
-         log_.trace(ME, string("destructor: deleting type: '") + (*iter).first + string("'"));
       I_CallbackServer* el = (*iter).second;
       serverMap_.erase(iter);
       delete el;

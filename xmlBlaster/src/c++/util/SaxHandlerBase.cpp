@@ -14,6 +14,7 @@ Comment:   Default handling of Sax callbacks
 
 #include <util/SaxHandlerBase.h>
 #include <sax/SAXException.hpp>
+#include <util/XmlBlasterException.h>
 
 using namespace std;
 
@@ -64,17 +65,22 @@ SaxHandlerBase::parse(const string &xmlData)
                                xmlData.size(), "xmlBlaster", false);
     parser.parse(inSource);
   }
-  catch (StopParseException &) { 
+  catch (StopParseException&) {
     // If it does not work, it could be wrapped into SAXParseException
     log_.error(me(), string("StopParseException: ") +
-                            "Parsing execution stopped half the way");
+                            "Parsing execution stopped half the way ");
+    if (log_.TRACE) {
+       string help = XmlBlasterException::getStackTrace();
+       log_.plain(me(), help);
+    }
     return;
   }
-
   catch (SAXException &err) {
     if (log_.TRACE) {
        char *msg = XMLString::transcode(err.getMessage());
        log_.error(me(), string("parse: SAXException. message:") + string(msg));
+       log_.error(me(), string("parse: SAXException. stack trace:") + XmlBlasterException::getStackTrace());
+
        delete msg;
     }
     return;

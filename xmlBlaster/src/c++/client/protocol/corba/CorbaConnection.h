@@ -60,6 +60,7 @@ namespace org {
       ConnectReturnQos                connectReturnQos_;
       string                          sessionId_;
       string                          xmlBlasterIOR_;
+      string                          callbackIOR_;
       Global&                         global_;
       //mutable util::Log               log_;
       util::Log&                      log_;
@@ -100,6 +101,8 @@ namespace org {
       ~CorbaConnection();
 
       string getAddress() const;
+
+      string getCbAddress() const;
 
       /**
        * Accessing the orb handle.

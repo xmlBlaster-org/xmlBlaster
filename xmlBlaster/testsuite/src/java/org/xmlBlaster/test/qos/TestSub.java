@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
+Version:   $Id: TestSub.java,v 1.4 2002/12/13 12:23:59 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -89,6 +89,8 @@ public class TestSub extends TestCase implements I_Callback
 
          String passwd = "secret";
          ConnectQos qos = new ConnectQos(glob, senderName, passwd);
+         if (log.TRACE)
+           log.trace(ME, "the connect qos is: " + qos.toXml());
          senderConnection.connect(qos, this, cbSessionId); // Login to xmlBlaster
       }
       catch (Exception e) {

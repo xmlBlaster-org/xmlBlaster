@@ -22,6 +22,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      serverNodeId_("xmlBlaster"), connectQos_(global), connectReturnQos_(global),
      global_(global), log_(global.getLog("client"))
 {
+   log_.call(ME, "::constructor");
    cbServer_        = NULL;
    updateClient_    = NULL;
    connection_      = NULL;
@@ -35,43 +36,47 @@ XmlBlasterAccess::~XmlBlasterAccess()
 
 ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientAddr)
 {
+   log_.call(ME, "::connect");
    connectQos_ = qos;
    SecurityQos securityQos = connectQos_.getSecurityQos();
-   initSecuritySettings(securityQos.getPluginType(), securityQos.getPluginVersion());
+//   initSecuritySettings(securityQos.getPluginType(), securityQos.getPluginVersion());
    ME = string("XmlBlasterAccess-") + getId();
    string typeVersion = global_.getProperty().getStringProperty("queue.defaultPlugin", "CACHE,1.0");
    string queueId = string("client:") + getId();
-   if (clientAddr != NULL) { // Start a default callback server using same protocol
+//   if (clientAddr != NULL) { // Start a default callback server using same protocol
       updateClient_ = clientAddr;
       createDefaultCbServer();
-   }
+//   }
 
    // currently the simple version will do it ...
    deliveryManager_ = &(global_.getDeliveryManager());
    string type = connectQos_.getServerRef().getType();
    string version = "1.0";
    connection_ = &(deliveryManager_->getPlugin(type, version));
+   if (log_.TRACE) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
    return connection_->connect(connectQos_);
 }
 
 void XmlBlasterAccess::createDefaultCbServer()
 {
+   log_.call(ME, "::createDefaultCbServer");
+
    CbQueueProperty prop = connectQos_.getCbQueueProperty(); // Creates a default property for us if none is available
    CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
-
    cbServer_ = initCbServer(getLoginName(), addr.getType(), addr.getVersion());
 
    addr.setAddress(cbServer_->getCbAddress());
    addr.setType(cbServer_->getCbProtocol());
    prop.setCallbackAddress(addr);
    connectQos_.setCbQueueProperty(prop);
+   if (log_.TRACE) log_.trace(ME, string("::createDefaultCbServer: connectQos: ") + connectQos_.toXml());
    log_.info(ME, "Callback settings: " + prop.getSettings());
 }
 
 I_CallbackServer*
 XmlBlasterAccess::initCbServer(const string& loginName, const string& type, const string& version)
 {
-   log_.error(ME, "initCbServer not implemented yet");
+   log_.call(ME, "::initCbServer");
    if (log_.TRACE) log_.trace(ME, string("Using 'client.cbProtocol=") + type + string("' to be used by ") + getServerNodeId() + string(", trying to create the callback server ..."));
    I_CallbackServer* server = &(global_.getCbServerPluginManager().getPlugin(type, version));
    server->initialize(loginName, *this);
@@ -182,6 +187,7 @@ vector<string> XmlBlasterAccess::erase(const string& xmlKey, const string& qos)
 string
 XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, void *content, long contentSize, UpdateQos &updateQos)
 {
+   if (log_.CALL) log_.call(ME, "::update");
    if (updateClient_)
       return updateClient_->update(sessionId, updateKey, content, contentSize, updateQos);
    std::cout << "UPDATE INVOCATION" << std::endl;
@@ -193,7 +199,7 @@ void XmlBlasterAccess::usage()
    string text = string("\n");
    text += string("Choose a connection protocol:\n");
    text += string("   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n");
-   text += string("                       Current setting is '") + global_.getProperty().getStringProperty("client.protocol", "IOR") + string("'. See below for protocol settings.\n");
+   text += string("                       Current setting is '") + Global::getInstance().getProperty().getStringProperty("client.protocol", "IOR") + string("'. See below for protocol settings.\n");
    text += string("                       Example: java MyApp -client.protocol RMI -rmi.hostname 192.168.10.34\n");
    text += string("\n");
    text += string("Security features:\n");
@@ -227,14 +233,35 @@ int main(int args, char* argv[])
 
        XmlBlasterAccess xmlBlasterAccess(glob);
        ConnectQos qos(glob);
+
+       log.info("main", string("the connect qos is: ") + qos.toXml());
+
        ConnectReturnQos retQos = xmlBlasterAccess.connect(qos, NULL);
        log.info("", "Successfully connect to xmlBlaster");
-       MessageUnit msgUnit(string("<key oid='HelloWorld'/>"), string("Hi"), string("<qos/>"));
+
+       if (log.TRACE) log.trace("main", "Subscribing using XPath syntax ...");
+       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
+           + "<key oid='HelloWorld' queryType='XPATH'>//test</key>";
+       string subQos = "<qos></qos>";
+       string subReturnQos;
+       try {
+          subReturnQos = xmlBlasterAccess.subscribe(xmlKey, subQos);
+          log.info("main", string("Success: Subscribe return qos=") +
+                   subReturnQos + " done");
+       }
+       catch (XmlBlasterException &ex) {
+          log.error("main", ex.toXml());
+       }
+
+
+
+       MessageUnit msgUnit(string("<key oid='HelloWorld'><test></test></key>"), string("Hi"), string("<qos/>"));
 
        string pubRetQos = xmlBlasterAccess.publish(msgUnit);
+       log.info("main", string("successfully published, publish return qos: ") + pubRetQos);
+
        log.info("", "Successfully published a message to xmlBlaster");
        log.info("", "Sleeping");
-
        Timestamp delay = 10000000000ll; // 10 seconds
        TimestampFactory::getInstance().sleep(delay);
    }

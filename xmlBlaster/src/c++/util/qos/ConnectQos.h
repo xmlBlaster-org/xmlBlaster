@@ -100,7 +100,7 @@ private:
    }
 
 public:
-   ConnectQosData(Global& global);
+   ConnectQosData(Global& global, const string& user="", const string& passwd="");
    ConnectQosData(const ConnectQosData& data);
    ConnectQosData& operator =(const ConnectQosData& data);
    bool getPtp() const;

@@ -200,7 +200,7 @@ public:
    /**
     * Command line usage.
     */
-   void usage();
+   static void usage();
 };
 
 }}} // namespaces

@@ -9,15 +9,23 @@ Comment:   Testing get()
 #include <boost/lexical_cast.hpp>
 #include <util/Constants.h>
 #include <util/StopWatch.h>
-#include <client/protocol/corba/CorbaConnection.h>
-#include <client/LoginQosWrapper.h>
+#include <client/XmlBlasterAccess.h>
+#include <util/qos/ConnectQos.h>
+#include <authentication/SecurityQos.h>
+#include <util/XmlBlasterException.h>
+#include <util/PlatformUtils.hpp>
+
 #include <client/PublishQosWrapper.h>
 #include <util/Global.h>
 
 using namespace std;
 using org::xmlBlaster::util::Global;
 using boost::lexical_cast;
-using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+using org::xmlBlaster::client::XmlBlasterAccess;
+using org::xmlBlaster::util::MessageUnit;
+using org::xmlBlaster::util::qos::ConnectQos;
+using org::xmlBlaster::util::XmlBlasterException;
+using org::xmlBlaster::authentication::SecurityQos;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -35,7 +43,8 @@ private:
       return "Tim";
    }
 
-   CorbaConnection* corbaConnection_;
+//   CorbaConnection* corbaConnection_;
+   XmlBlasterAccess* connection_;
    string           publishOid_;
    string           loginName_;
    string           senderContent_;
@@ -60,12 +69,12 @@ public:
       contentMime_         = "text/xml";
       contentMimeExtended_ = "1.0";
       numReceived_         = 0;
-      corbaConnection_     = 0;
+      connection_          = 0;
    }
 
 
    ~TestGet() {
-      delete corbaConnection_;
+      delete connection_;
    }
 
 
@@ -83,21 +92,17 @@ public:
       }
 
       try {
-         corbaConnection_ = new CorbaConnection(global_); // Find orb
+         connection_ = new XmlBlasterAccess(global_); // Find orb
          string passwd = "secret";
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         corbaConnection_->login(loginName_, passwd, qos);
-         log_.info(me(), "Successful login");
+         SecurityQos secQos(global_, loginName_, passwd);
+         ConnectQos connQos(global_);
+         connQos.setSecurityQos(secQos);
+         connection_->connect(connQos, NULL);
+         log_.info(me(), "Successful connection");
       }
-      catch (serverIdl::XmlBlasterException &ex) {
-         log_.error(me(), string(ex.errorCodeStr) + ": " + string(ex.message));
+      catch (XmlBlasterException &ex) {
+         log_.error(me(), ex.toXml());
          usage();
-         assert(0);
-      }
-      catch (CORBA::Exception &e) {
-         log_.error(me(), to_string(e));
-         usage();
-         // e.printStackTrace();
          assert(0);
       }
    }
@@ -114,16 +119,16 @@ public:
       string qos = "<qos></qos>";
       vector<string> strArr;
       try {
-         strArr = corbaConnection_->erase(xmlKey, qos);
+         strArr = connection_->erase(xmlKey, qos);
          log_.info(me(), "Success, erased a message");
       }
-      catch(serverIdl::XmlBlasterException &e) {
-         log_.error(me(), "XmlBlasterException: " + string(e.errorCodeStr) + ": " + string(e.message));
+      catch(XmlBlasterException &e) {
+         log_.error(me(), "XmlBlasterException: " + e.toXml());
       }
       if (strArr.size() != 1) {
          log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
       }
-      corbaConnection_->logout();
+      connection_->disconnect("<qos/>");
       // Give the server some millis to finish the iiop handshake ...
       util::StopWatch stopWatch;
       stopWatch.wait(200);
@@ -142,12 +147,12 @@ public:
          string xmlKey = string("<key oid='") + publishOid_
             + "' queryType='EXACT'></key>";
          string qos = "<qos></qos>";
-         vector<util::MessageUnit> msgVec = corbaConnection_->get(xmlKey, qos);
+         vector<util::MessageUnit> msgVec = connection_->get(xmlKey, qos);
          log_.info(me(), "Success, got array of size " + lexical_cast<string>(msgVec.size()) +
                          " for trying to get unknown message");
          assert(msgVec.size() == 0);
       }
-      catch(serverIdl::XmlBlasterException &e) {
+      catch(XmlBlasterException &e) {
          log_.error(me(), "get of not existing message " + publishOid_);
          usage();
          assert(0);
@@ -158,21 +163,15 @@ public:
       try {
          string xmlKey = string("<key oid='") + publishOid_
             + "' contentMime='text/plain'>\n</key>";
-         serverIdl::MessageUnit msgUnit;
-         msgUnit.xmlKey  = xmlKey.c_str();
-         serverIdl::ContentType content(senderContent_.length(),
-                                        senderContent_.length(),
-                                        (CORBA::Octet*)senderContent_.c_str());
-         msgUnit.content = content;
+//         serverIdl::MessageUnit msgUnit;
 
          PublishQosWrapper qosWrapper = new PublishQosWrapper();
-         // the same as "<qos></qos>"
-         msgUnit.qos = qosWrapper.toXml().c_str();
-         corbaConnection_->publish(msgUnit);
+         MessageUnit msgUnit(xmlKey, senderContent_, qosWrapper.toXml());
+         connection_->publish(msgUnit);
          log_.info(me(), "Success, published a message");
       }
-      catch(serverIdl::XmlBlasterException &e) {
-         log_.error(me(), "publish - XmlBlasterException: " + string(e.errorCodeStr) + ": " + string(e.message));
+      catch(XmlBlasterException &e) {
+         log_.error(me(), "publish - XmlBlasterException: " + e.toXml());
          usage();
          assert(0);
       }
@@ -182,7 +181,7 @@ public:
          string xmlKey = string("<key oid='") + publishOid_
             + "' queryType='EXACT'></key>";
          string qos = "<qos></qos>";
-         vector<util::MessageUnit> msgVec = corbaConnection_->get(xmlKey, qos);
+         vector<MessageUnit> msgVec = connection_->get(xmlKey, qos);
          log_.info(me(), "Success, got " + lexical_cast<string>(msgVec.size()) + " message");
          assert(msgVec.size() == 1);
          string str = msgVec[0].getContentStr();
@@ -195,9 +194,9 @@ public:
             assert(0);
          }
       }
-      catch(serverIdl::XmlBlasterException &e) {
+      catch(XmlBlasterException &e) {
          log_.error(me(), string("XmlBlasterException for trying to get ")
-                    + "a message: " + string(e.errorCodeStr) + ": "+ string(e.message));
+                    + "a message: " + e.toXml());
          usage();
          assert(0);
       }
@@ -214,12 +213,12 @@ public:
       string qos    = "<qos></qos>";
       for (int i=0; i < num; i++) {
          try {
-            vector<util::MessageUnit> msgVec = corbaConnection_->get(xmlKey, qos);
+            vector<MessageUnit> msgVec = connection_->get(xmlKey, qos);
             assert(msgVec.size() == 0);
             log_.info(me(), string("Success"));
          }
-         catch(serverIdl::XmlBlasterException &e) {
-            log_.error(me(), "Exception for a not existing message: " + string(e.errorCodeStr) + ": "+ string(e.message));
+         catch(XmlBlasterException &e) {
+            log_.error(me(), "Exception for a not existing message: " + e.toXml());
             assert(0);
          }
       }
@@ -231,7 +230,7 @@ public:
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster with a synchronous get()");
       log_.plain(me(), "Usage:");
-      CorbaConnection::usage();
+      XmlBlasterAccess::usage();
       log_.usage();
       log_.plain(me(), "Example:");
       log_.plain(me(), "   TestGet -hostname serverHost.myCompany.com");
@@ -244,6 +243,17 @@ public:
 
 
 int main(int args, char *argc[]) {
+
+   // Init the XML platform
+   try {
+      XMLPlatformUtils::Initialize();
+   }
+
+   catch(const XMLException& toCatch) {
+      cout << "Error during platform init! Message:\n"
+           << endl;
+      return 1;
+   }
 
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);

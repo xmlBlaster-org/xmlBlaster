@@ -84,8 +84,8 @@ void CorbaDriver::initialize(const string& name, I_Callback &client)
       if (defaultCallback_ != NULL) delete defaultCallback_;
       defaultCallback_ = NULL;
       defaultCallback_ =  new DefaultCallback(global_, name, &client, 0);
-      if (connection_ != NULL) delete connection_;
-      connection_ = NULL;
+//      if (connection_ != NULL) delete connection_;
+//      connection_ = NULL;
       connection_->createCallbackServer(defaultCallback_);
    _COMM_CATCH("::initialize", true, true)
 }
@@ -98,7 +98,7 @@ string CorbaDriver::getCbProtocol()
 string CorbaDriver::getCbAddress()
 {
    _COMM_TRY
-      return connection_->getAddress();
+      return connection_->getCbAddress();
    _COMM_CATCH("::getCbAddress", false, false)
 }
 
