@@ -1,0 +1,19 @@
+/*----------------------------------------------------------------------------------------------
+Name:      xmlBlaster.css
+<body bgcolor="#FFFFFF" link="#901B1B" vlink="#4D0F0F" alink="#F1C101" background="xmlBlasterBanner.gif">
+----------------------------------------------------------------------------------------------*/
+
+BODY {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; BACKGROUND-COLOR: #FFFFFF; }
+TABLE { width: "100%"; BORDER-WIDTH: 0; CELL-PADDING: 10; CELL-SPACING: 10; }
+TD {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:10pt;}
+TH {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:10pt;}
+p,i,li,ul,ol {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; font-size:10pt;}
+a {FONT-FAMILY: verdana,arial,helvetica,sans-serif; font-size:10pt; color: #901B1B;}
+
+a:visited {color: #4D0F0F;}
+a:active {color: #F1C101;}
+
+.sitetitel {font-size: 18pt; font-weight: bold; text-align : center;}
+.celltitel {font-weight: bold;}
+.small {font-size: 8pt;}
+.sideend {color: #aaaaaa}
