@@ -213,11 +213,26 @@ One important note:
 | START XMLBLASTER AS A RMI SERVER  |
 +-----------------------------------+
 
-1. Start the server, you need to specify at least a security policy file:
+1. Add the driver to xmlBlaster.properties, this example starts
+   the CORBA and the RMI server
 
-     java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.MainGUI
+   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,RMI:org.xmlBlaster.protocol.rmi.RmiDriver
+   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 
-   another variant could be:
+2. Adjust the security policy file if you like to (it is currently totaly relaxed):
+
+   xmlBlaster/config/xmlBlaster.policy
+
+3. Start the server:
+
+   java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy  org.xmlBlaster.Main
+
+4. And the demo client:
+
+   java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy  javaclients.rmi.ClientGet
+
+Note:
+   Another variant could be:
 
      java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/
           -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy
@@ -227,6 +242,8 @@ One important note:
    Consult the SUN RMI documentation about 'codebase' and 'policy' settings.
    Especially 'codebase' should be used with a web server,
    to test if your code runs in a distributed environment.
+     http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html
+     http://archives.java.sun.com/archives/rmi-users.html
 
 
 +--------------------+
