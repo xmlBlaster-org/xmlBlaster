@@ -4,10 +4,15 @@
 
 - get for OID request
 
+- xmlBlaster.idl
+  * declare oneway for nonblocking Callback (Method update())
+	* rename AuthServer to AuthenticationService
+	* rename Server to xmlBlaster
+
 Clients
 -------
 - Perl (ORB für Perl www.lunatech.com/research/corba/cope)
-- C++ (mico)
+- C++ (mico)  OK
 - Tcl/Tk
 - Java
 - Phyton

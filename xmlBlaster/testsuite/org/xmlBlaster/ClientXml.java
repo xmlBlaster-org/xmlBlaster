@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.4 1999/11/19 17:22:20 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.5 1999/11/20 22:42:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -98,21 +98,13 @@ public class ClientXml
 
          //----------- Construct a message and publish it ---------
          {
-            String str = "Yeahh, i'm the new content";
-            MessageUnit[] marr = new MessageUnit[1];
-            marr[0] = new MessageUnit(xmlKey, str.getBytes());
-            String[] qarr = new String[1];
-            qarr[0] = "";
-
+            String content = "Yeahh, i'm the new content";
+            MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
             Log.trace(ME, "Publishing ...");
-            String[] returnArr = new String[0];
             stop.restart();
             try {
-               returnArr = xmlBlaster.publish(marr, qarr);
-               for (int ii=0; ii<returnArr.length; ii++) {
-                  Log.info(ME, "   Returned oid=" + returnArr[ii]);
-                  publishOid = returnArr[ii];
-               }
+               publishOid = xmlBlaster.publish(messageUnit, "QOS:");
+               Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
@@ -168,20 +160,15 @@ public class ClientXml
          {
             for (int ii=0; ii<10; ii++) {
                //----------- Construct a message and publish it ---------
-               String str = "Yeahh, i'm the new content " + ii + ", ";
-               MessageUnit[] marr = new MessageUnit[1];
+               String content = "Yeahh, i'm the new content " + ii + ", ";
                xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                            "<key oid='" + publishOid + "'>\n" +
                            "</key>";
-               marr[0] = new MessageUnit(xmlKey, str.getBytes());
-               String[] qarr = new String[1];
-               qarr[0] = "";
-
+               MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
                Log.trace(ME, "Publishing ...");
-               String[] returnArr = new String[0];
                stop.restart();
                try {
-                  returnArr = xmlBlaster.publish(marr, qarr);
+                  String str = xmlBlaster.publish(messageUnit, "");
                } catch(XmlBlasterException e) {
                   Log.warning(ME, "XmlBlasterException: " + e.reason);
                }

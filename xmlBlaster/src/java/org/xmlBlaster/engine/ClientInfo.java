@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.7 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.8 1999/11/20 22:42:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 /**
  * ClientInfo stores all known data about a client
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Name:  $
  */
 public class ClientInfo
@@ -69,6 +69,9 @@ public class ClientInfo
 
    public String getCallbackIOR() throws XmlBlasterException
    {
+      if (this.callbackIOR == null) {
+         throw new XmlBlasterException(ME+"NoCallback", "Sorry, no CallbackIOR for " + loginName);
+      }
       return callbackIOR;
    }
 }

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.15 1999/11/18 18:50:44 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.16 1999/11/20 22:42:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -91,7 +91,19 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public String[] publish(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      ClientInfo clientInfo = authenticate.check();
+
+      return requestBroker.publish(messageUnit, qos_literal);
+   }
+
+
+   /**
+    * @see xmlBlaster.idl
+    */
+   public String[] publishArr(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
       ClientInfo clientInfo = authenticate.check();
@@ -110,7 +122,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public int erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering erase(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       ClientInfo clientInfo = authenticate.check();
@@ -139,7 +151,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       Log.error(ME+".NotImplemented", "Sorry, get() is not yet implemented");
       //throw new XmlBlasterException(ME+".NotImplemented", "Sorry, get() is not yet implemented");
-      
+
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
       return messageUnitArr;
    }

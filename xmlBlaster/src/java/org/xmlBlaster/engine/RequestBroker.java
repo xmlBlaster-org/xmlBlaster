@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.16 1999/11/18 22:12:14 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.17 1999/11/20 22:42:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -191,6 +191,7 @@ public class RequestBroker implements ClientListener
          try {
             nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
          } catch (Exception e) {
+            Log.warning(ME + ".InvalidQuery", "Sorry, can't subscribe, query snytax is wrong");
             throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't subscribe, query snytax is wrong");
          }
          int n = 0;
@@ -357,43 +358,72 @@ public class RequestBroker implements ClientListener
     *
     * @see xmlBlaster.idl for comments
     */
+   public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.calls(ME, "Entering publish() one message ...");
+
+      if (messageUnit == null || qos_literal==null) {
+         Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
+         throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
+      }
+
+      // !!! TODO: handling of qos
+
+      XmlKey xmlKey = new XmlKey(messageUnit.xmlKey, true);
+
+      String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
+
+      //----- 1. set new value or create the new message:
+      MessageUnitHandler messageHandler = setMessageUnit(xmlKey, messageUnit);
+
+      // this gap is not 100% thread save
+
+      //----- 2. check all known query subscriptions if the new message fits as well
+      if (!messageHandler.isNewCreated()) {
+         messageHandler.setNewCreatedFalse();
+         Log.warning(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
+         Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
+         synchronized (set) {
+            Iterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+               // reuse CODE from subscribe() ...
+            }
+         }
+      }
+
+      //----- 3. now we can send updates to all interested clients:
+      messageHandler.invokeCallback();
+
+      return retVal;
+   }
+
+
+   /**
+    * if MessageUnit is created from subscribe or MessageUnit is new, we need to add the
+    * DOM here once; XmlKeyBase takes care of that
+    *
+    * @see xmlBlaster.idl for comments
+    */
    public String[] publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+
+      if (messageUnitArr == null || qos_literal_Arr==null || messageUnitArr.length != qos_literal_Arr.length) {
+         Log.error(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
+         throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
+      }
+
       // !!! TODO: handling of qos
 
       String[] returnArr = new String[messageUnitArr.length];
+      /*
       for (int kk=0; kk<returnArr.length; kk++)
-         returnArr[kk] = "";
+         returnArr[kk] = ""; // initialize
+      */
 
       for (int ii=0; ii<messageUnitArr.length; ii++) {
-
-         MessageUnit messageUnit = messageUnitArr[ii];
-         XmlKey xmlKey = new XmlKey(messageUnit.xmlKey, true);
-
-         returnArr[ii] = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
-
-         //----- 1. set new value or create the new message:
-         MessageUnitHandler messageHandler = setMessageUnit(xmlKey, messageUnit);
-
-         // this gap is not 100% thread save
-
-         //----- 2. check all known query subscriptions if the new message fits as well
-         if (!messageHandler.isNewCreated()) {
-            messageHandler.setNewCreatedFalse();
-            Log.warning(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
-            Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
-            synchronized (set) {
-               Iterator iterator = set.iterator();
-               while (iterator.hasNext()) {
-                  SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-                  // reuse CODE from subscribe() ...
-               }
-            }
-         }
-
-         //----- 3. now we can send updates to all interested clients:
-         messageHandler.invokeCallback();
+         returnArr[ii] = publish(messageUnitArr[ii], qos_literal_Arr[ii]);
       }
 
       return returnArr;
@@ -444,21 +474,23 @@ public class RequestBroker implements ClientListener
 
    /**
     */
-   public int erase(XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
+   public String[] erase(XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
       String uniqueKey = xmlKey.getUniqueKey();
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.remove(uniqueKey);
          if (obj == null) {
             Log.warning(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
-            return 0;
+            return new String[0];
             // throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
          }
          else {
             MessageUnitHandler msg = (MessageUnitHandler)obj;
             org.w3c.dom.Node node = RequestBroker.getInstance().removeKeyNode(msg.getRootNode());
             obj = null;
-            return 1;
+            String[] arr = new String[1];
+            arr[0] = uniqueKey;
+            return arr;
          }
       }
    }

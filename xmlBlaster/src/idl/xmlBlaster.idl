@@ -5,13 +5,15 @@ Task:      Serverinterface
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
-Compile:   JacORB:
-             /usr/local/JacORB/bin/idl -p org.xmlBlaster -d ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
-           VisiBroker:
-             /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
-           Mico:
-             /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.20 1999/11/18 16:59:43 ruff Exp $
+Compile:   JacORB Java 1.2:
+              $JacORB_HOME/bin/idl -p org.xmlBlaster -d ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
+           VisiBroker (no JacORB should be in CLASSPATH) Java 1.2:
+              ${VBROKER_PATH}/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
+           Mico C++:
+              $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
+           COPE Perl:
+              idl2perl -imp xmlBlaster.idl
+Version:   $Id: xmlBlaster.idl,v 1.21 1999/11/20 22:42:04 ruff Exp $
 ================================================================================
 */
 
@@ -52,6 +54,16 @@ module serverIdl
    };
    typedef sequence<MessageUnit> MessageUnitArr;
 
+
+   /**
+    * Exception class for xmlBlaster interface
+    */
+   exception XmlBlasterException
+   {
+      ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
+      string reason;       // in english
+   };
+
 }; // org::xmlBlaster::serverIdl
 
 
@@ -86,11 +98,15 @@ module clientIdl
        *
        *  - better performance
        *  - server doesn't block (decoupling of server dependency on clients)
+       * <p>
+       * Note: MICO Orb (C++) and Cope Orb (Perl) don't like the combination
+       * of 'oneway' and 'raises Exception' simultanously,<br>
+       * where as Visigenic and JacORB have no problems with it.
        *
        * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
        * @param qos         Qualitiy of Service for each MessageUnit
        */
-     oneway void update(in serverIdl::MessageUnitArr messageUnitArr,
+     /*oneway*/ void update(in serverIdl::MessageUnitArr messageUnitArr,
                         in serverIdl::XmlTypeArr qosArr)
                                 raises(serverIdl::XmlBlasterException);
    };
@@ -104,16 +120,6 @@ module clientIdl
  */
 module serverIdl
 {
-   /**
-    * Exception class for xmlBlaster interface
-    */
-   exception XmlBlasterException
-   {
-      ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
-      string reason;       // in english
-   };
-
-
    /**
     * This is an easy to use, message based, non adressing communication
     * middleware interface.
@@ -189,8 +195,7 @@ module serverIdl
        * @see addListener in Java event model
        * @see addObserver in Java observer pattern
        */
-      //oneway
-      void subscribe(in XmlType xmlKey, in XmlType qos)
+      /*oneway*/ void subscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -219,9 +224,27 @@ module serverIdl
        * @param qos       Quality of Service, flags to control unsubscritpion<br>
        *                  See qosSubscribe.dtd for a description
        */
-      //oneway
-      void unSubscribe(in XmlType xmlKey, in XmlType qos)
+      /*oneway*/ void unSubscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
+
+
+      /**
+       * Write-Access Method
+       * This triggers the method update() if observed by somebody
+       * If the given key doesn't exist, it will be automatically added, <br>
+       * so this covers the SQL'ish INSERT and UPDATE.<p>
+       *
+       * @param messageUnit Contains a MessageUnit struct
+       * @param qos         Qualitiy of Service for MessageUnit
+       *
+       * @return String with the key oid of the messageUnit
+       *         If you let the oid be generated, you need this information
+       *         for further publishing to the same MessageUnit<br>
+       *         Rejected Messages will contain an empty string ""
+       */
+      string publish(in MessageUnit messageUnit, in XmlType qos)
+                                          raises(XmlBlasterException);
+
 
 
       /**
@@ -242,16 +265,15 @@ module serverIdl
        *         for further publishing to the same MessageUnits<br>
        *         Rejected Messages will contain an empty string ""
        */
-      //oneway
-      StringArr publish(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
+      StringArr publishArr(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
                                           raises(XmlBlasterException);
 
 
       /**
        * erase a MessageUnit
-       * @return number of entries removed
+       * @return String array with the key oid's which are deleted
        */
-      long erase(in XmlType xmlKey, in XmlType qos)
+      StringArr erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
    };
 

@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.2 1999/11/18 22:12:15 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.3 1999/11/20 22:42:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -111,7 +111,7 @@ public class ClientOid
 
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
-            xmlServer.publish(marr, qarr);
+            xmlServer.publishArr(marr, qarr);
 
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -131,10 +131,10 @@ public class ClientOid
          Log.info(ME, "Unsubscribe done" + stop.nice());
 
 
-         Log.trace(ME, "Trying publish ...");
+         Log.trace(ME, "Trying publishArr ...");
          try {
             marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
-            String[] returnArr = xmlServer.publish(marr, qarr);
+            String[] returnArr = xmlServer.publishArr(marr, qarr);
             for (int ii=0; ii<returnArr.length; ii++) {
                Log.info(ME, "   Returned oid=" + returnArr[ii]);
             }
@@ -153,7 +153,7 @@ public class ClientOid
 
          Log.trace(ME, "Sending some new Smiley data after logout ...");
          try {
-            xmlServer.publish(marr, qarr);
+            xmlServer.publishArr(marr, qarr);
 
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
