@@ -1,5 +1,16 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.841 [Jan, 23 2003]
+================================
+
+ o Bugfix: Java server returned wrong cluster node id under
+   some circumstances
+
+ o Bugfix: C++ testsuite runs now again
+
+ o Other small changes
+
+
 Changes for 0.84 [Jan, 22 2003]
 ===============================
  o Renamed <isClusterNode/> to <clusterNode/> in connect Qos
