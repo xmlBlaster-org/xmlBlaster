@@ -139,7 +139,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          ConnectQos qos = new ConnectQos(getId(), glob);
 
-         qos.setSecurityPluginData(null, null, glob.getId(), "secret"); // !!! Password null?
+         qos.setUserId(glob.getId()); // the login name
+         // The password is from the environment -passwd or more specific -passwd[heron]
 
          Address addr = getNodeInfo().getAddress();
          if (addr == null) {
@@ -229,6 +230,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /**
     * Check if we have currently a functional connection to this node. 
+    * <p />
+    * Note: A call to this check does try to login if the connection
+    *       was not initialized before. This is sometimes an unwanted behavior.
+    *       On the other hand, without trying to login it is difficult to
+    *       determine the connection state.
     */
    public boolean isLoggedIn() throws XmlBlasterException {
       if (isLocalNode())
@@ -239,6 +245,14 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       return false;
    }
 
+   /**
+    * Check if we are currently polling for a connection to this node. 
+    * <p />
+    * Note: A call to this check does try to login if the connection
+    *       was not initialized before. This is sometimes an unwanted behavior.
+    *       On the other hand, without trying to login it is difficult to
+    *       determine the connection state.
+    */
    public boolean isPolling() throws XmlBlasterException {
       if (isLocalNode())
          return false;
