@@ -52,3 +52,25 @@ Howto start the xmlBlaster server:
   Other options:
 
      java javaclients.ClientSub -help
+
+
+CORBA ports:
+============
+ From: http://www.iana.org/assignments/port-numbers
+
+
+corba-iiop      683/tcp    CORBA IIOP 
+corba-iiop      683/udp    CORBA IIOP 
+corba-iiop-ssl  684/tcp    CORBA IIOP SSL
+corba-iiop-ssl  684/udp    CORBA IIOP SSL
+#                          Henry Lowe <lowe@omg.org>
+
+cma             1050/tcp   CORBA Management Agent
+cma             1050/udp   CORBA Management Agent
+#                          Ramy Zaarour <ramy@lumos.com>
+
+corbaloc        2809/tcp   CORBA LOC
+corbaloc        2809/udp   CORBA LOC
+#                          Ted McFadden <mcfadden@dstc.edu.au>
+
+
