@@ -57,7 +57,7 @@ public final class PropBoolean extends PropEntry implements java.io.Serializable
     */
    public void setValue(String value, int creationOrigin) {
       if (value == null) return;
-      setValue(Boolean.getBoolean(value), creationOrigin);
+      setValue(((value != null) && value.equalsIgnoreCase("true")), creationOrigin);
    }
 
    /**
