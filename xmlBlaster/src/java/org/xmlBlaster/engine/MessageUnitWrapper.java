@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.43 2002/06/19 12:36:12 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.44 2002/07/07 19:23:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -117,7 +117,8 @@ public final class MessageUnitWrapper implements I_Timeout
          timerKey = this.messageTimer.addTimeoutListener(this, publishQos.getRemainingLife(), null);
       }
 
-      if (log.TRACE) log.trace(ME(), "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
+      if (log.TRACE) log.trace(ME(), "Creating new MessageUnitWrapper for published message");
+      //Thread.currentThread().dumpStack();
    }
 
    /** For performance reasons we create it only if logging is requested */
