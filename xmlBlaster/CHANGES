@@ -2,6 +2,15 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for x.xxx [xxx, xx xxxx]
 ================================
+  - Heinrich has made the plugin interface more generic and has
+    has added the persistence drivers to this framework
+
+  - build.sh and build.bat have new targets:
+       build.sh dist          (collect xmlblaster server files)
+       build.sh dist-client   (collects java client classes)
+       build.sh cpp-lib       (builds a C++ client shared library or dll)
+       build.sh cpp-test      (compiles/links C++ CORBA clients)
+
   - Behavior change [Juergen Freidling]:
     xmlBlaster now respects multiple subscriptions
     on the same message, and will deliver this message multiple times
