@@ -166,6 +166,8 @@ public:
 
 };
 
+#include <iostream>
+
 /**
  * Try
  * <pre>
@@ -175,27 +177,35 @@ public:
  */
 int main(int args, char ** argv)
 {
-   org::xmlBlaster::util::Object_Lifetime_Manager::init();
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argv);
-   
-   string intro = "XmlBlaster C++ client " + glob.getVersion() +
-                  ", try option '-help' if you need usage informations.";
-   glob.getLog().info("HelloWorld2", intro);
+   try {
+      org::xmlBlaster::util::Object_Lifetime_Manager::init();
+      Global& glob = Global::getInstance();
+      glob.initialize(args, argv);
+      
+      string intro = "XmlBlaster C++ client " + glob.getVersion() +
+                     ", try option '-help' if you need usage informations.";
+      glob.getLog().info("HelloWorld2", intro);
 
-   if (glob.wantsHelp()) {
-      cout << Global::usage() << endl;
-      cout << endl << "HelloWorld2";
-      cout << endl << "   -sleep              Sleep after publishing [1000 millisec]" << endl;
-      cout << endl << "Example:" << endl;
-      cout << endl << "HelloWorld2 -trace true -sleep 2000";
-      cout << endl << "HelloWorld2 -dispatch/connection/delay 10000 -sleep 2000000" << endl << endl;
-      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
-      return 1;
+      if (glob.wantsHelp()) {
+         cout << Global::usage() << endl;
+         cout << endl << "HelloWorld2";
+         cout << endl << "   -sleep              Sleep after publishing [1000 millisec]" << endl;
+         cout << endl << "Example:" << endl;
+         cout << endl << "HelloWorld2 -trace true -sleep 2000";
+         cout << endl << "HelloWorld2 -dispatch/connection/delay 10000 -sleep 2000000" << endl << endl;
+         org::xmlBlaster::util::Object_Lifetime_Manager::fini();
+         return 1;
+      }
+
+      HelloWorld2 hello(glob);
+      hello.execute();
    }
-
-   HelloWorld2 hello(glob);
-   hello.execute();
+   catch (XmlBlasterException &e) {
+      std::cerr << "Caught exception: " << e.getMessage() << std::endl;
+   }
+   catch (...) {
+      std::cerr << "Caught exception, exit" << std::endl;
+   }
    org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
