@@ -6,7 +6,7 @@
 
 include $(XMLBLASTER_HOME)/Makefile.Include
 
-SUB_DIRS = dom org/xmlBlaster c++
+SUB_DIRS = dom org/xmlBlaster
 
 all: all_SUB_DIRS
 
