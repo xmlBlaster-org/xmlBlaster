@@ -33,6 +33,10 @@ Compile:
   Linux with shared lib:
         gcc -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I.
             -Wl,-rpath=../../lib -lpthread
+
+  HP-UX 11 with gcc. 2.8.1:
+        gcc -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Properties.c
+                                socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterZlib.c
 Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
