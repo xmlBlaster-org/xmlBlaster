@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.64 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.65 2000/10/13 07:51:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -78,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.64 $
+ * @version $Revision: 1.65 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -422,7 +422,7 @@ public class CorbaConnection implements I_InvocationRecorder
          }
          catch(Exception e) {
             if (!isReconnectPolling)
-               Log.warn(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
+               Log.warn(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ".");
          }
       }
       if (Log.TRACE) Log.trace(ME, "No -iorHost / iorPort ...");
@@ -436,6 +436,7 @@ public class CorbaConnection implements I_InvocationRecorder
       boolean useNameService = XmlBlasterProperty.get("ns", true);  // -ns default is to ask the naming service
       if (useNameService) {
 
+         Log.info(ME, "Trying to find a naming service ...");
          try {
             NamingContext nc = getNamingService();
             NameComponent [] name = new NameComponent[1];
