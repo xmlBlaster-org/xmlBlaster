@@ -1,0 +1,125 @@
+<!-- COMMAND: call to authenticate.login (LoginName, password, qos, sessionId) -->
+<?xml version='1.0'?>
+<methodCall>
+  <methodName>authenticate.login</methodName>
+  <params>
+    <param><value><string>Michele</string></value></param>
+    <param><value><string>silence</string></value></param>
+    <param>
+      <value>
+        <string>
+          &lt;qos>&lt;callback type='XML-RPC'>http://localhost:8081&lt;/callback>&lt;/qos>
+        </string>
+      </value>
+    </param>
+    <param><value><string>Session 1</string></value></param>
+  </params>
+</methodCall>
+
+<!-- COMMAND: call to xmlBlaster.publish (sessionId, key, msgUnit, qos) -->
+<?xml version='1.0'?>
+<methodCall>
+  <methodName>xmlBlaster.publish</methodName>
+  <params>
+    <param><value><string>Session 1</string></value></param>
+    <param>   
+       <value>
+          <string>
+             &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+             &lt;key oid=''>
+               &lt;airport id='London'>
+                 &lt;runway id='1'>
+                   &lt;windspeed id='south'>
+                   &lt;/windspeed>
+                 &lt;/runway>
+               &lt;/airport>
+             &lt;/key>
+          </string> 
+       </value>  
+    </param>
+    <param>
+      <value>
+        <array>
+           <data>
+              <value>
+                <string>
+                  &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+                  &lt;key oid=''>
+                    &lt;airport id='London'>
+                      &lt;runway id='1'>
+                        &lt;windspeed id='south'>
+                        &lt;/windspeed>
+                      &lt;/runway>
+                    &lt;/airport>
+                  &lt;/key>
+                </string> 
+              </value>  
+              <value><base64>aAbBcCdDeEfFgGhHiIlLmMnNoOpPqQrRsStTuUvVzZ</base64></value>
+              <value><string>&lt;qos>&lt;/qos></string></value>  
+           </data>   
+        </array>
+      </value>
+    </param>
+    <param><value><string>&lt;qos>&lt;/qos></string></value></param>
+  </params>
+</methodCall>
+
+<!-- COMMAND: call to xmlBlaster.publish (String sessionId, MessageUnit msgUnit) -->
+<?xml version='1.0'?>
+<methodCall>
+  <methodName>xmlBlaster.publish</methodName>
+  <params>
+    <param><value><string>Session 1</string></value></param>
+    <param>
+      <value>
+        <array>
+           <data>
+              <value>
+                <string>
+                  &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+                  &lt;key oid=''>
+                    &lt;airport id='London'>
+                      &lt;runway id='1'>
+                        &lt;windspeed id='south'>
+                        &lt;/windspeed>
+                      &lt;/runway>
+                    &lt;/airport>
+                  &lt;/key>
+                </string> 
+              </value>  
+              <value><base64>abcdefg</base64></value>
+              <value><string>&lt;qos>&lt;/qos></string></value>  
+           </data>   
+        </array>
+      </value>
+    </param>
+  </params>
+</methodCall>
+
+
+<!-- COMMAND: call to xmlBlaster.get(String sessionId, String xmlKey_literal, String qos_literal) -->
+<?xml version='1.0'?>
+<methodCall>
+  <methodName>xmlBlaster.get</methodName>
+  <params>
+    <param><value>Session 1</value></param>
+    <param>
+       <value>&lt;key oid='' queryType='XPATH'>//airport[@id='London']//windspeed&lt;/key></value>
+    </param>
+    <param><value>&lt;qos>&lt;/qos></value></param>
+  </params>
+</methodCall>
+
+<!-- COMMAND: call to xmlBlaster.erase(String sessionId, String xmlKey_literal, String qos_literal) -->
+<?xml version='1.0'?>
+<methodCall>
+  <methodName>xmlBlaster.erase</methodName>
+  <params>
+    <param><value>Session 1</value></param>
+    <param>
+       <value>&lt;key oid='' queryType='XPATH'>//airport[@id='London']//windspeed&lt;/key></value>
+    </param>
+    <param><value>&lt;qos>&lt;/qos></value></param>
+  </params>
+</methodCall>
+<!-- COMMAND -->
