@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.8 2002/05/16 18:34:42 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.9 2002/06/08 23:00:21 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -15,8 +15,8 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
 
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
+import java.util.TreeMap;
+import java.util.Iterator;
 
 /**
  * Loads publish() filter plugin depending on message MIME type. 
@@ -34,37 +34,132 @@ public class PublishPluginManager extends PluginManagerBase {
    private final Global glob;
    private final LogChannel log;
 
-   public PublishPluginManager(Global glob)
-   {
+   /** Map holds the known plugins */
+   private final Map pluginMap = new TreeMap();
+   /** Cache for up to now arrived message mime types */
+   private final Map mimeCache = new TreeMap();
+   /** A dummy object which we put into the mimeCache if no plugins are found */
+   private final Object dummyObject = new Object();
+   /** To avoid huge caches if every message sends crazy different mime types */
+   private final int maxMimeCacheSize;
+
+   public PublishPluginManager(Global glob) throws XmlBlasterException {
       super(glob);
       this.glob = glob;
       this.log = this.glob.getLog("mime");
+      this.maxMimeCacheSize = glob.getProperty().get("MimePublishPlugin.maxMimeCacheSize", 1000);
+      initializePlugins();
    }
 
    /**
-    * Return a specific MIME based message filter plugin. 
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return The PublishFilter for this type and version or null if none is specified
+    * Instantiate all given plugins from xmlBlaster.properties. 
+    * <p />
+    * E.g.
+    * <code>MimePublishPlugin[PublishLenChecker][1.0]=org.xmlBlaster.engine.mime.demo.PublishLenChecker,DEFAULT_MAX_LEN=200</code>
+    * <p />
+    * If invoked again, the loaded plugins are reset and reloaded with the current property settings
     */
-   public I_PublishFilter getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
-      I_PublishFilter filterPlugin = null;
-      String[] pluginNameAndParam = null;
-
-      pluginNameAndParam = choosePlugin(type, version);
-
-      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
-         filterPlugin = (I_PublishFilter)managers.get(pluginNameAndParam[0]);
-         if (filterPlugin!=null) return filterPlugin;
-         filterPlugin = loadPlugin(pluginNameAndParam);
+   public synchronized void initializePlugins() throws XmlBlasterException {
+      pluginMap.clear();
+      mimeCache.clear();
+      Map map = glob.getProperty().get(pluginPropertyName, (Map)null);
+      if (map != null) {
+         Iterator iterator = map.keySet().iterator();
+         while (iterator.hasNext()) {
+            String key = (String)iterator.next(); // contains "PublishFilterLen:1.0", the type and version are separated by a ":"
+            String type = key.substring(0, key.indexOf(":"));
+            String version = key.substring(key.indexOf(":")+1);
+            I_PublishFilter plugin = (I_PublishFilter)getPluginObject(type, version);
+            if (plugin != null) {
+               if (pluginMap.get(plugin.getName()) != null)
+                  log.warn(ME, "Instantiating publish filter plugin '" + plugin.getName() + "' again, have you configured it twice?");
+                  
+               pluginMap.put(plugin.getName(), getPluginObject(type, version));
+               if (log.TRACE) log.trace(ME, "Instantiated publish filter plugin '" + plugin.getName() + "'");
+            }
+            else {
+               log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            }
+         }
+         log.info(ME, "Instantiated " + pluginMap.size() + " publish filter plugins");
       }
       else {
-         //throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
+         log.info(ME, "No plugins configured with 'MimePublishPlugin'");
+      }
+   }
+
+   /**
+    * Are there any plugins?
+    */
+   public final boolean hasPlugins() {
+      return pluginMap.size() > 0;
+   }
+
+   /**
+    * @return null if no plugin for this mime type found, otherwise a map with I_PublishFilter
+    * objects (= matching plugins) is returned
+    */
+   public synchronized Map findMimePlugins(String mime, String mimeExtended) {
+      if (pluginMap.size() == 0)
+         return null;
+
+      if (mime == null || mimeExtended == null) {
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException("You must pass a valid contentMime and contentMimeExtended type");
+      }
+      String key = mime + mimeExtended;
+
+      // First we check the cache ...
+      Object ret = mimeCache.get(key);
+      if (ret != null && ret instanceof Map)
+         return (Map)ret;
+      else if (ret != null && ret instanceof Object)
+         return null;  // dummy object to indicate that such messages have no plugin
+
+      if (log.TRACE) log.trace(ME, "mime=" + mime + " mimeExtended=" + mimeExtended + " not found in cache, searching the plugin ...");
+      
+      if (mimeCache.size() > maxMimeCacheSize) {
+         log.warn(ME, "Cache has reached max size of " + maxMimeCacheSize + " entries, erasing entries");
+         mimeCache.clear(); // This way we avoid very old entries and memory exhaust
       }
 
-      return filterPlugin;
+      // This is the first message of this mime type, add to cache ...
+      
+      Iterator iterator = pluginMap.values().iterator();
+      while (iterator.hasNext()) {
+         I_PublishFilter plugin = (I_PublishFilter)iterator.next();
+         String[] mimes = plugin.getMimeTypes();
+         String[] extended = plugin.getMimeExtended();
+         if (mimes == null || extended == null || mimes.length != extended.length) {
+            String text = "Your plugin '" + plugin.getName() + "' must pass a valid mime type with a corresponding mimeExtended type, plugin ignored.";
+            log.error(ME, text);
+            Thread.currentThread().dumpStack();
+            throw new IllegalArgumentException(text);
+         }
+         for (int ii=0; ii<mimes.length; ii++) {
+            if (mimes[ii].equals("*") || mimes[ii].equals(mime) && (extended[ii].equals("*") || extended[ii].equals(mimeExtended))) {
+               // Ok, found a plugin, add it to cache
+               Map plugins = (Map)mimeCache.get(key);
+               if (plugins == null) { // we need a multimap, sadly JDK does not offer it, so we use a map in the map.
+                  plugins = new TreeMap();
+                  mimeCache.put(key, plugins);
+               }
+               plugins.put(plugin.getName(), plugin);
+               log.info(ME, "mime=" + mime + " mimeExtended=" + mimeExtended + " added to cache with plugin=" + plugin.getName());
+               break;
+            }
+         }
+      }
+
+      Object plugins = mimeCache.get(key);
+      if (plugins == null) {
+         mimeCache.put(key, dummyObject);
+         log.info(ME, "mime=" + mime + " mimeExtended=" + mimeExtended + " added to cache, no plugin is available");
+         return null;
+      }
+      if (plugins instanceof Map)
+         return (Map)plugins;
+      return null;
    }
 
    /**
@@ -80,121 +175,5 @@ public class PublishPluginManager extends PluginManagerBase {
     */
    public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
-   }
-
-   /**
-    * Resolve type and version to the plugins name. 
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return String The name of the requested plugin.
-    */
-   protected String[] choosePlugin(String type, String version) throws XmlBlasterException
-   {
-      /*if (type == null || type.equals("simple")) {
-         if (glob.getProperty().get("Security.Server.allowSimpleDriver", true) == false){
-            throw new XmlBlasterException(ME+".NoPublish","It's not allowed to use the standard security manager!");
-         }
-      }*/
-
-      return super.choosePlugin(type, version);
-   }
-
-
-   /**
-    * Loads a persistence plugin. 
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.engine.mime.demo.DemoFilter<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_PublishFilter
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
-    */
-   protected I_PublishFilter loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
-   {
-      return (I_PublishFilter)super.instantiatePlugin(pluginNameAndParam);
-   }
-
-
-// here are extensions for MIME based plugin selection:
-
-   private final Map publishFilterMap = Collections.synchronizedMap(new HashMap());
-
-   /**
-    * Get publish filter object from cache, based on MIME type. 
-    */
-   public final I_PublishFilter getPublishFilter(String type, String version, String mime, String mimeExtended)
-   {
-      try {
-         StringBuffer key = new StringBuffer(80);
-         key.append(type).append(version).append(mime).append(mimeExtended);
-         Object obj = publishFilterMap.get(key.toString());
-         if (obj != null)
-            return (I_PublishFilter)obj;
-
-         // Check if the plugin is for all mime types
-         key.setLength(0);
-         key.append(type).append(version).append("*");
-         obj = publishFilterMap.get(key.toString());
-         if (obj != null)
-            return (I_PublishFilter)obj;
-
-         return addPublishFilterPlugin(type, version); // try to load it
-
-      } catch (Exception e) {
-         log.error(ME, "Problems accessing publish filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
-         e.printStackTrace();
-         return (I_PublishFilter)null;
-      }
-   }
-
-   /**
-    * Invoked on new subscription or get() invocation, loads plugin. 
-    * @return null if not found
-    */
-   public final I_PublishFilter addPublishFilterPlugin(String type, String version)
-   {
-      StringBuffer key = new StringBuffer(80);
-      key.append(type).append(version);
-      Object obj = publishFilterMap.get(key.toString());
-      if (obj != null) {
-         log.info(ME, "Publish filter '" + key.toString() + "' is loaded already");
-         return (I_PublishFilter)obj;
-      }
-
-      try {
-         I_PublishFilter filter = getPlugin(type, version);
-         if (filter == null) {
-            log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
-            return null;
-         }
-
-         publishFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
-         key.setLength(0);
-
-         String[] mime = filter.getMimeTypes();
-         String[] mimeExtended = filter.getMimeExtended();
-         // check plugin code:
-         if (mimeExtended == null || mimeExtended.length != mime.length) {
-            if (mimeExtended.length != mime.length)
-               log.error(ME, "Publish plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
-            mimeExtended = new String[mime.length];
-            for (int ii=0; ii < mime.length; ii++)
-               mimeExtended[ii] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
-         }
-
-         for (int ii = 0; ii < mime.length; ii++) {
-            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
-            publishFilterMap.put(key.toString(), filter);
-            log.info(ME, "Loaded publish filter '" + key.toString() + "'");
-            key.setLength(0);
-         }
-
-         return filter;
-      } catch (Throwable e) {
-         log.error(ME, "Problems accessing publish plugin manager, can't instantiate " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
-         e.printStackTrace();
-      }
-      return null;
    }
 }
