@@ -31,6 +31,7 @@ import org.xmlBlaster.util.qos.StatusQosSaxFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
@@ -47,7 +48,8 @@ import org.jutils.log.LogableDevice;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntryFactory;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 
 import java.util.Properties;
 
@@ -285,7 +287,7 @@ public class Global implements Cloneable
    /**
     * Our identifier, the cluster node we want connect to
     */
-   private void initId() {
+   protected void initId() {
       this.id = getProperty().get("server.node.id", (String)null);
       if (this.id == null)
          this.id = getProperty().get("cluster.node.id", "xmlBlaster");  // fallback
@@ -354,7 +356,7 @@ public class Global implements Cloneable
                   try {
                      I_LogDeviceFactory fac = logDevicePluginManager.getFactory(devices[i],"1.0");
                      LogableDevice dev = fac.getLogDevice(lc);
-                     log.info(ME,"Setting logDevice " +key+"[" + devices[i]+"]="+dev.getClass().getName());
+                     if (log.TRACE) log.trace(ME,"Setting logDevice " +key+"[" + devices[i]+"]="+dev.getClass().getName());
                      if (dev != null)
                         lc.addLogDevice(dev);
                   }catch(XmlBlasterException ex) {
@@ -464,7 +466,7 @@ public class Global implements Cloneable
          return b;
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e.id, e.getMessage());
+         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "changeLogLevel failed", e);
       }
    }
 
@@ -482,12 +484,12 @@ public class Global implements Cloneable
          if (start != -1) { // Syntax is for example "info[core]"
             int end = logLevel.indexOf("]");
             if (start < 1 || end == -1 || end <= (start+1)) {
-               throw new XmlBlasterException(ME, "Illegal loglevel syntax '" + logLevel + "'");
+               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
             }
             String key = logLevel.substring(start+1, end);
             Object obj = logChannels.get(key);
             if (obj == null)
-               throw new XmlBlasterException(ME, "LogChannel '" + key + "' is not known");
+               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "LogChannel '" + key + "' is not known");
             LogChannel log = (LogChannel)obj;
             if (value == true)
                log.addLogLevelChecked(logLevel.substring(0, start));
@@ -518,7 +520,7 @@ public class Global implements Cloneable
          }
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e.id, e.getMessage());
+         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
       }
    }
 
@@ -530,7 +532,7 @@ public class Global implements Cloneable
    */
    public boolean getLogLevel(String logLevel) throws XmlBlasterException {
       if (logLevel == null || logLevel.length() < 1)
-         throw new XmlBlasterException(ME, "Illegal loglevel syntax '" + logLevel + "'");
+         throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
 
       try {
          int start = logLevel.indexOf("[");
@@ -538,12 +540,12 @@ public class Global implements Cloneable
          if (start != -1) { // Syntax is for example "info[core]"
             int end = logLevel.indexOf("]");
             if (start < 1 || end == -1 || end <= (start+1)) {
-               throw new XmlBlasterException(ME, "Illegal loglevel syntax '" + logLevel + "'");
+               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
             }
             String key = logLevel.substring(start+1, end);
             Object obj = logChannels.get(key);
             if (obj == null)
-               throw new XmlBlasterException(ME, "LogChannel '" + key + "' is not known");
+               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "LogChannel '" + key + "' is not known");
             LogChannel log = (LogChannel)obj;
             return log.isLoglevelEnabled(logLevel.substring(0, start));
          }
@@ -551,7 +553,7 @@ public class Global implements Cloneable
          return logDefault.isLoglevelEnabled(logLevel);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e.id, e.getMessage());
+         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
       }
    }
 
@@ -669,16 +671,7 @@ public class Global implements Cloneable
     * @return ""
     */
    public String getId() {
-      return id;
-   }
-
-   /**
-    * Same as getId() but all slashes '/' are stripped
-    * so you can use it for cluster node id (see requirement admin.command).
-    * @return ""
-    */
-   public String getAdminId() {
-      return StringHelper.replaceAll(getId(), "/", "");
+      return this.id;
    }
 
    /**
@@ -690,11 +683,13 @@ public class Global implements Cloneable
       return getStrippedString(getId());
    }
 
-
    /**
-    * Utility method to strip any string
+    * Utility method to strip any string, all characters which prevent
+    * to be used for e.g. file names are replaced. 
+    * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
+    * @return e.g. "http_www_xmlBlaster_org_homex"
     */
-   public final static String getStrippedString(String text) {
+   public static final String getStrippedString(String text) {
       String strippedId = StringHelper.replaceAll(text, "/", "");
       strippedId = StringHelper.replaceAll(strippedId, ".", "_");
       strippedId = StringHelper.replaceAll(strippedId, ":", "_");
@@ -1118,7 +1113,7 @@ public class Global implements Cloneable
          String text = "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".";
          logDefault.error(ME, text + e.toString());
          e.printStackTrace();
-         throw new XmlBlasterException(ME+"NoHttpServer", text);
+         throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME+"NoHttpServer", text, e);
       }
       catch(IOException e) {
          if (verbose) logDefault.warn(ME, "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ": " + e.toString());
@@ -1252,7 +1247,7 @@ public class Global implements Cloneable
                   "org.apache.crimson.jaxp.SAXParserFactoryImpl")
                );
          } catch (FactoryConfigurationError e) {
-            throw new XmlBlasterException(ME+"SAXParserFactoryError",e.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "SAXParserFactoryError", e);
          } // end of try-catch
 
       } // end of if ()
@@ -1273,7 +1268,7 @@ public class Global implements Cloneable
                   "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl")
                );
          } catch (FactoryConfigurationError e) {
-            throw new XmlBlasterException(ME+"DocumentBuilderFactoryError",e.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "DocumentBuilderFactoryError", e);
          } // end of try-catch
       } // end of if ()
       return docBuilderFactory;
@@ -1292,13 +1287,22 @@ public class Global implements Cloneable
                   "org.apache.xalan.processor.TransformerFactoryImpl")
                );
          } catch (TransformerFactoryConfigurationError e) {
-            throw new XmlBlasterException(ME+"TransformerFactoryError",e.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "TransformerFactoryError", e);
          } // end of try-catch
       } // end of if ()
       return transformerFactory;
    }
 
-
+   /**
+    * The factory creating queue or msgstore entries from persistent store. 
+    * Is overwritten in engine.Global
+    * @param name A name identifying this plugin.
+    */
+   public I_EntryFactory getEntryFactory(String name) {
+      ClientEntryFactory factory = new ClientEntryFactory();
+      factory.initialize(this, name);
+      return factory;
+   }
 
    /**
     * Returns a JdbcManager for a specific queue. It strips the queueId to
@@ -1309,39 +1313,33 @@ public class Global implements Cloneable
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     */
-   public synchronized JdbcManager getJdbcQueueManager(String queueId)
+   public synchronized JdbcManager getJdbcQueueManager(StorageId queueId)
       throws XmlBlasterException {
 
       String location = ME + "/Queue '" + queueId + "'";
 
       if (this.jdbcQueueManagers == null) this.jdbcQueueManagers = new Hashtable();
 
-      int pos = queueId.indexOf(":");
-      if (pos < 0)
-         throw new XmlBlasterException(location, "getJdbcQueueManager: separator ':' not found in the queueId '" + queueId + "' please change it to a correct queueId");
-
-      String managerName = queueId.substring(0, pos);
+      String managerName = queueId.getPrefix();
 
       Object obj = this.jdbcQueueManagers.get(managerName);
       JdbcManager manager = null;
       if (obj == null) {
 
-         MsgQueueEntryFactory factory = new MsgQueueEntryFactory();
-         factory.initialize(this, managerName);
          JdbcConnectionPool pool = new JdbcConnectionPool();
          try {
             pool.initialize(this, managerName + ".queue.persistent");
-            manager = new JdbcManager(pool, factory);
+            manager = new JdbcManager(pool, getEntryFactory(managerName));
             pool.setConnectionListener(manager);
             manager.setUp();
          }
          catch (ClassNotFoundException ex) {
             this.log.error(location, "getJdbcQueueManager class not found: " + ex.getMessage());
-            throw new XmlBlasterException(location, "getJdbcQueueManager class not found: " + ex.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager class not found", ex);
          }
          catch (SQLException ex) {
             this.log.error(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
-            throw new XmlBlasterException(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager SQL exception", ex);
          }
 
          this.jdbcQueueManagers.put(managerName, manager);
@@ -1353,10 +1351,10 @@ public class Global implements Cloneable
             manager.getPool().initialize(this, managerName + ".queue.persistent");
       }
       catch (ClassNotFoundException ex) {
-         throw new XmlBlasterException(location, "getJdbcQueueManager: class not found when initializing the connection pool" + ex.getMessage());
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: class not found when initializing the connection pool", ex);
       }
       catch (SQLException ex) {
-         throw new XmlBlasterException(location, "getJdbcQueueManager: sql exception when initializing the connection pool: " + ex.getMessage());
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: sql exception when initializing the connection pool", ex);
       }
       return manager;
    }
@@ -1440,13 +1438,17 @@ public class Global implements Cloneable
 
    /**
     * Access the handle of the message expiry timer thread. 
+    * NOTE: This holds only weak references to its callback I_Timeout
+    * So there is no need to clear the timer registration
     * @return The Timeout instance
     */
    public final Timeout getMessageTimer() {
       if (this.messageTimer == null) {
          synchronized(this) {
-            if (this.messageTimer == null)
-               this.messageTimer = new Timeout("XmlBlaster.MessageTimer");
+            if (this.messageTimer == null) {
+               boolean useWeakReferences = true;
+               this.messageTimer = new Timeout("XmlBlaster.MessageTimer", useWeakReferences);
+            }
          }
       }
       return this.messageTimer;
@@ -1536,7 +1538,7 @@ public class Global implements Cloneable
       sb.append("   -call  true         Show important method entries\n");
       sb.append("   -time true          Display some performance data.\n");
       sb.append("   -logFile <fileName> Log to given file.\n");
-      sb.append("   -logConsole false   Supress logging to console.\n");
+      sb.append("   -logDevice file,console  Log to console and above file.\n");
       sb.append("\n");
       sb.append("Control properties framework:\n");
       sb.append("   -propertyFile <file> Specify an xmlBlaster property file to load.\n");
