@@ -36,8 +36,8 @@
      To use the persistent queue you need to download SQLite and compile it for
      your platform, our C compilation needs <code>sqlite.h</code> for compilation
      and <code>libsqlite.so</code> for linking (on Windows it is a dll).
-     SQLite version 2.8.14 or higher is needed to have
-     the blob encoding feature.
+     SQLite version 2.8.14 up to 2.8.16 is needed to have the blob encoding feature.
+     <b>Note that it will not work with version 3.x.x</b>
      </p>
 
      <h2>Compilation with ant</h2>
