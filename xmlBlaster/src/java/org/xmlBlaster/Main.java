@@ -94,7 +94,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
    /**
     * Start xmlBlaster using the properties from utilGlob
     * without loading xmlBlaster.properties again
-    * @param args The command line parameters
+    * @param utilGlob The environment for this server instance
     */
    public Main(org.xmlBlaster.util.Global utilGlob) {
       init(utilGlob);
@@ -115,7 +115,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 
    /*
     * Start xmlBlaster using the properties from utilGlob
-    * without loading xmlBlaster.properties again
+    * without loading <tt>xmlBlaster.properties</tt> again
+    * @param utilGlob The environment for this server instance
     */
    public void init(org.xmlBlaster.util.Global utilGlob) {
       org.xmlBlaster.engine.Global gg = 
@@ -126,7 +127,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 
    /*
     * Start xmlBlaster using the given properties
-    * and load xmlBlaster.properties.
+    * and load <tt>xmlBlaster.properties</tt>.
+    * @param props The environment for this server instance
     */
    public void init(java.util.Properties props) {
       this.init(new org.xmlBlaster.engine.Global(props, true));
