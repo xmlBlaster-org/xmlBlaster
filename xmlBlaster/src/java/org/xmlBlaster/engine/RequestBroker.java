@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.60 2000/03/04 21:36:28 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.61 2000/03/18 19:46:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.60 $
+ * @version $Revision: 1.61 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -505,8 +505,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null) {
-            Log.error(ME + ".OidUnknown", "Internal problem, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-            throw new XmlBlasterException(ME + ".OidUnknown", "Internal problem, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+            Log.warning(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + clientInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+            throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
 
          }
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
