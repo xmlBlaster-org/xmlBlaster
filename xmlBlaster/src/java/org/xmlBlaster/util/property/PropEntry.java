@@ -121,6 +121,17 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
    public final String setFromEnv(org.xmlBlaster.util.Global glob,
                              String nodeId, String context, String className,
                              String instanceName, String propName) {
+      return setFromEnv(glob, nodeId, context, className, instanceName, propName, true);
+   }
+
+   /**
+    * @param simpleLookup If false the given propName is not checked directly but
+    *                     only in its context (e.g. to avoid naming conflicts for simple
+    *                     properties like 'version'
+    */
+   public final String setFromEnv(org.xmlBlaster.util.Global glob,
+                             String nodeId, String context, String className,
+                             String instanceName, String propName, boolean simpleLookup) {
       if (propName == null) {
          propName = this.propName;
          if (propName == null)
@@ -132,12 +143,14 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       StringBuffer name = new StringBuffer(100);
       String usedName = name.toString();
 
-      // check propName="maxEntries" or propName="plugin/socket/port" variant
-      name.append(propName);
-      //System.out.println("Checking prop=" + name.toString());
-      if (props.propertyExists(name.toString())) {
-         setValue(props.get(name.toString(), getValueString()), CREATED_BY_PROPFILE);
-         usedName = name.toString();
+      if (simpleLookup) {
+         // check propName="maxEntries" or propName="plugin/socket/port" variant
+         name.append(propName);
+         //System.out.println("Checking prop=" + name.toString());
+         if (props.propertyExists(name.toString())) {
+            setValue(props.get(name.toString(), getValueString()), CREATED_BY_PROPFILE);
+            usedName = name.toString();
+         }
       }
 
       // check "/node/heron/maxEntries" or "/node/heron/plugin/socket/port" variant

@@ -185,8 +185,8 @@ public abstract class QueuePropertyBase implements Cloneable
       this.maxEntriesCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxEntriesCache");
       this.maxBytes.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytes");
       this.maxBytesCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytesCache");
-      this.type.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "type");
-      this.version.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "version");
+      this.type.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "type", false);
+      this.version.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "version", false);
       this.onOverflow.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onOverflow");
       this.onFailure.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onFailure");
       this.debug.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "debug");
