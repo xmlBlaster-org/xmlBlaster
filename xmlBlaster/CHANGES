@@ -2,10 +2,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for xxx [xxx, xx 2003]
 ================================
+
  o Bugfix of cursor leak in jdbc persistence
+
+ o Bugfix with missing ResultSet in return of JDBC service driver
+
  o Bugfix of deadlock in JDBC protocol driver which used
    the buggy org.jutils.time.Timeout
    Ported org.jutils.pool to org.xmlBlaster.util.pool
+   Reported by Sebastian Sturm
  
  o Administrative access to subscriptions of clients, e.g. with telnet:
     get client/joe/-2/?subscribeList
