@@ -192,6 +192,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     */
    public void finalize() {
       if (this.destroyTimer != null && this.timerKey != null) {
+         if (log.TRACE) log.trace(ME, "finalize timerKey=" + this.timerKey);
          this.destroyTimer.removeTimeoutListener(this.timerKey);
       }
    }
