@@ -32,7 +32,12 @@ public class PluginClassLoader extends URLClassLoader {
       super(urls);
       log = glob.getLog("classloader");
       this.pluginName = pluginInfo.getClassName();
-      this.pluginPackage = pluginName.substring(0, pluginName.lastIndexOf("."));
+      int pos = pluginName.lastIndexOf(".");
+      if (pos >= 0) {
+         this.pluginPackage = pluginName.substring(0, pos);
+      }
+      else
+         this.pluginPackage = "";
       this.ME = "PluginClassLoader-" + pluginName.substring(pluginName.lastIndexOf('.') + 1);
    }
 
@@ -43,7 +48,7 @@ public class PluginClassLoader extends URLClassLoader {
          return parent.loadClass(name);
       }
       if (name.startsWith("org.xmlBlaster") || name.startsWith("org.jutils") || name.startsWith("org.omg")) {
-         if (!name.startsWith(pluginPackage)) {
+         if (!name.startsWith(pluginPackage)) { // matches for empty packages "" as well
             if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name);
             return parent.loadClass(name);
          }
