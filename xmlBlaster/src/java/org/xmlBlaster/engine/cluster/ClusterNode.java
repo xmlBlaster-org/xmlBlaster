@@ -371,7 +371,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       String ret = glob.getRequestBroker().update(sessionInfo, updateKey, content, updateQos);
       if (ret == null || ret.length() < 1)
-         return Constants.RET_FORWARD_ERROR;
+         return Constants.RET_FORWARD_ERROR;   // OK like this?
       return Constants.RET_OK;
    }
 
