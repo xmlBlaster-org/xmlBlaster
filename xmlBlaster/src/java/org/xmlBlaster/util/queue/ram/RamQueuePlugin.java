@@ -242,12 +242,12 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
          // count the durable entries (and the durable sizes)
          for (int i=0; i < elementsToDelete.size(); i++) {
             I_QueueEntry entry = (I_QueueEntry)elementsToDelete.get(i);
-            if (this.notifiedAboutAddOrRemove) {
-               entry.removed(this.storageId);
-            }
             if (entry.isDurable()) {
                this.numOfDurableEntries--;
                this.durableSizeInBytes -= entry.getSizeInBytes();
+            }
+            if (this.notifiedAboutAddOrRemove) {
+               entry.removed(this.storageId);
             }
          }
 
@@ -689,8 +689,12 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<RamQueuePlugin id='").append(getStorageId());
-      sb.append("' currMsgs='").append(getNumOfEntries()).append("' maxNumOfEntries='").append(getMaxNumOfEntries()).append("'>");
+      sb.append(offset).append("<RamQueuePlugin id='").append(getStorageId().getId());
+      sb.append("' type='").append(getType());
+      sb.append("' version='").append(getVersion());
+      sb.append("' numOfEntries='").append(getNumOfEntries());
+      sb.append("' numOfBytes='").append(getNumOfBytes());
+      sb.append("'>");
       sb.append(property.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</RamQueuePlugin>");
 
