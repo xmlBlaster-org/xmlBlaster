@@ -805,6 +805,8 @@ public class Global implements Cloneable
     * Get a cloned instance.
     * Note that instance() will return the original instance
     * even if called on the cloned object (it's a static variable).
+    *
+    * @param args Additional configuration parameters
     */
    public final Global getClone(String[] args) {
       Global g = (Global)clone();
@@ -1007,9 +1009,9 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get an object in the scope of an XmlBlasterConnection or of one cluster node.
+    * Get an object in the scope of an xmlBlaster client connection or of one cluster node.
     * <p />
-    * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
+    * This is helpful if you have more than one I_XmlBlasterAccess or cluster nodes
     * running in the same JVM
     *
     * @param key  e.g. <i>"SOCKET192.168.2.2:7604"</i> from 'cbAddr.getType() + cbAddr.getAddress()'<br />
@@ -1022,9 +1024,9 @@ public class Global implements Cloneable
    }
 
    /**
-    * Add an object in the scope of an XmlBlasterConnection or of one cluster node.
+    * Add an object in the scope of an I_XmlBlasterAccess or of one cluster node.
     * <p />
-    * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
+    * This is helpful if you have more than one I_XmlBlasterAccess or cluster nodes
     * running in the same JVM
     *
     * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
@@ -1036,9 +1038,9 @@ public class Global implements Cloneable
    }
 
    /**
-    * Remove an object from the scope of an XmlBlasterConnection or of one cluster node.
+    * Remove an object from the scope of an I_XmlBlasterAccess or of one cluster node.
     * <p />
-    * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
+    * This is helpful if you have more than one I_XmlBlasterAccess or cluster nodes
     * running in the same JVM
     *
     * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
@@ -1878,6 +1880,9 @@ public class Global implements Cloneable
     * Access your client side handle with this method only, it
     * is the with this Global instance configured client connection to xmlBlaster
     * (a singleton regarding this Global).
+    * </p>
+    * <p>
+    * Multiple invocations return the same instance.
     * </p>
     * <p>
     * NOTE: On server side engine.Global.getXmlBlasterAccess() returns the native access handle.

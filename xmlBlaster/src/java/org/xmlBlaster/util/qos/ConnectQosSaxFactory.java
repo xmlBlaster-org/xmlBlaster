@@ -69,9 +69,9 @@ import java.io.Serializable;
  *   &lt;queue>
  *&lt;/qos>
  * </pre>
- * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
+ * NOTE: As a user of the Java client helper classes (client.I_XmlBlasterAccess)
  * you don't need to create the <pre>&lt;callback></pre> element.
- * This is generated automatically from the XmlBlasterConnection class when instantiating
+ * This is generated automatically from I_XmlBlasterAccess when instantiating
  * the callback driver.
  *
  * <p />
