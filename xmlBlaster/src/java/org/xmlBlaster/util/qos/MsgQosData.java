@@ -80,8 +80,6 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    //public transient final static boolean DEFAULT_isVolatile = false;
    //private boolean volatileFlag = DEFAULT_isVolatile;
 
-   public transient final static boolean DEFAULT_persistent = false;
-   private PropBoolean persistent = new PropBoolean(DEFAULT_persistent);
 
    /**
     * Send message to subscriber even the content is the same as the previous?
@@ -695,9 +693,9 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * Returns a shallow clone, you can change safely all basic or immutable types
+    * Returns a partly deep clone, you can change safely all basic or immutable types
     * like boolean, String, int.
-    * Currently TopicProperty and RouteInfo is not cloned (so don't change it)
+    * Currently TopicProperty is not cloned (so don't change it)
     */
    public Object clone() {
       MsgQosData newOne = null;
@@ -705,7 +703,6 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
          newOne = (MsgQosData)super.clone();
          synchronized(this) {
             newOne.subscribable = (PropBoolean)this.subscribable.clone();
-            newOne.persistent = (PropBoolean)this.persistent.clone();
             newOne.forceUpdate = (PropBoolean)this.forceUpdate.clone();
             newOne.lifeTime = (PropLong)this.lifeTime.clone();
             newOne.administrative = (PropBoolean)this.administrative.clone();
