@@ -42,7 +42,7 @@ import java.io.IOException;
  * useful for example if you want to store such entries in persitent storage
  * like a database or a file system. It might however be used even for other
  * purposes.
- * @author laghi@swissinfo.org	  
+ * @author laghi@swissinfo.org    
  * @author xmlBlaster@marcelruff.info
  */
 public class ServerEntryFactory implements I_EntryFactory
@@ -95,7 +95,7 @@ public class ServerEntryFactory implements I_EntryFactory
             ByteArrayInputStream bais = new ByteArrayInputStream(blob);
             ObjectInputStream objStream = new ObjectInputStream(bais);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 6) {
+            if (obj.length < 6) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                   "Expected 6 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
@@ -105,6 +105,20 @@ public class ServerEntryFactory implements I_EntryFactory
             String subscriptionId = (String)obj[3];
             String state = (String)obj[4];
             Integer redeliverCount = (Integer)obj[5];
+
+            // We read the message content as well but don't parse it yet:
+            String qos = null;
+            String key = null;
+            byte[] content = null;
+            if (obj.length >= 9) {
+               // see ENTRY_TYPE_MSG_XML !
+               qos = (String)obj[6];
+               key = (String)obj[7];
+               content = (byte[])obj[8];
+               //Integer referenceCounter = (Integer)obj[9];
+               //Integer historyReferenceCounter = (Integer)obj[10];
+            }
+
             log.info(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
                          " msgUnitWrapperUniqueId=" + msgUnitWrapperUniqueId + " receiverStr=" + receiverStr +
                          " subscriptionId=" + subscriptionId + " state=" + state + " redeliverCount=" + redeliverCount);
@@ -113,7 +127,8 @@ public class ServerEntryFactory implements I_EntryFactory
             return new MsgQueueUpdateEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
                                            keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes, 
-                                           receiver, subscriptionId, state, redeliverCount.intValue());
+                                           receiver, subscriptionId, state, redeliverCount.intValue(),
+                                           qos, key, content);
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry", ex);

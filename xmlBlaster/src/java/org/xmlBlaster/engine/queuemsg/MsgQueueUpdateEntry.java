@@ -40,12 +40,16 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
 
    /**
     * For persistence recovery
+    * The params qos, key, content can be null (the unparsed raw message)
     */
    public MsgQueueUpdateEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
                               String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes,
-                              SessionName receiver, String subscriptionId, String state, int redeliverCount) {
+                              SessionName receiver, String subscriptionId, String state,
+                              int redeliverCount,
+                              String qos, String key, byte[] content) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
-            updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, receiver);
+            updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, receiver,
+            qos, key, content);
       this.subscriptionId = subscriptionId;
       this.state = state;
       super.redeliverCounter = redeliverCount;
@@ -70,10 +74,33 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    }
 
    /**
-    * The embeddded object for this implementing class is an Object[6]
+    * The embeddded object for this implementing class is an Object[6] for transient
+    * messages and Object[9] for persistent messages.
+    * <p>
+    * We need to store the 'meat' for persistent messages as well
+    * After a recovery the 'meat's reference counter is not valid so
+    * we need to have all informations duplicated in each callback queue.
+    * </p>
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { 
+      MsgUnitWrapper w = null;
+      if (isPersistent() && ((w = getMsgUnitWrapper()) != null)) {
+         Object[] meat = (Object[])w.getEmbeddedObject();
+         Object[] obj = { 
+                          this.keyOid,
+                          new Long(this.msgUnitWrapperUniqueId),
+                          this.receiver.getAbsoluteName(),
+                          this.subscriptionId,
+                          this.state,
+                          new Integer(getRedeliverCounter()),
+                          meat[0],   // QoS
+                          meat[1],   // key
+                          meat[2]    // content
+                           };
+         return obj;
+      }
+      else {
+         Object[] obj = { 
                        this.keyOid,
                        new Long(this.msgUnitWrapperUniqueId),
                        this.receiver.getAbsoluteName(),
@@ -81,7 +108,8 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
                        this.state,
                        new Integer(getRedeliverCounter())
                         };
-      return obj;
+         return obj;
+      }
    }
 
    /**
@@ -112,15 +140,17 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       Timestamp ts = new Timestamp(msgUnitWrapperUniqueId);
 
       sb.append(offset).append("<MsgQueueUpdateEntry");
+      sb.append(" id='").append(uniqueIdTimestamp.getTimestamp()).append("'");
       sb.append(" storageId='").append(getStorageId()).append("'");
-      sb.append(" keyOid='").append(getKeyOid()).append("'");
-      sb.append(" msgUnitRcvTimestamp='").append(ts.toString()).append("'");
-      sb.append(" sender='").append(getSender()).append("'");
+      sb.append(offset).append(" keyOid='").append(getKeyOid()).append("'");
+      sb.append(" msgUnitRcvTimestamp='").append(msgUnitWrapperUniqueId).append("'");
+      sb.append(" msgUnitRcvTimestampStr='").append(ts.toString()).append("'");
+      sb.append(offset).append(" sender='").append(getSender()).append("'");
       sb.append(" receiver='").append(getReceiver().getAbsoluteName()).append("'");
-      sb.append(" persistent='").append(isPersistent()).append("'");
+      sb.append(offset).append(" persistent='").append(isPersistent()).append("'");
       sb.append(" subscriptionId='").append(getSubscriptionId()).append("'");
       sb.append(" redeliverCounter='").append(getRedeliverCounter()).append("'");
-      sb.append(" isExpired='").append(isExpired()).append("'");
+      sb.append(offset).append(" isExpired='").append(isExpired()).append("'");
       sb.append(" isDestroyed='").append(isDestroyed()).append("'");
       sb.append(" state='").append(getState()).append("'");
       sb.append("/>");
