@@ -66,14 +66,12 @@ public class TestAuthenticationHtPassWd extends TestCase
               break;  
     }
     serverThread = ServerThread.startXmlBlaster(new Global(args));
-    try { Thread.currentThread().sleep(4000);} catch(Exception ex) {}
   }
 
   protected void tearDown()
-  { try { Thread.currentThread().sleep(4000);} catch(Exception ex) {} 
+  { try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
     if (serverThread != null)
       serverThread.stopServer(true);
-    try { Thread.currentThread().sleep(4000);} catch(Exception ex) {} 
   }
 
   public void testAuthHtPassWordCase1()
@@ -90,7 +88,6 @@ public class TestAuthenticationHtPassWd extends TestCase
     try
     { ConnectQos qos = new ConnectQos(glob,START_WITH_USERNAME, RIGHT_PASSWORD);
       ConnectReturnQos conRetQos = con.connect(qos, null);
-      Thread.currentThread().sleep(4000);
       con.disconnect(null);
     }
     catch(Exception ex)
