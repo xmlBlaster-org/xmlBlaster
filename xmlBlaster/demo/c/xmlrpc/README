@@ -6,7 +6,7 @@ Installation
 ============
 
 Download XmlRpc lib from:
-	http://xmlrpc-c.sourceforge.net/
+        http://xmlrpc-c.sourceforge.net/
 
 This XmlRpc implementation needs the W3C HTTP client library
 (download from http://www.w3.org/Library/)
@@ -60,7 +60,7 @@ Start xmlBlaster server
 
 Start this client:
 
-   testLogin  http://myHost:8080
+   testLogin  -xmlrpc.serverUrl http://MY_HOST:8080/
 
 
 01/2002 marcel
