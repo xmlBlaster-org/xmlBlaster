@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.33 2004/05/04 16:01:54 ruff Exp $
+Version:   $Id: detail.xsl,v 1.34 2004/10/02 20:24:15 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -92,7 +92,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2004/05/04 16:01:54 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2004/10/02 20:24:15 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -206,7 +206,7 @@ Author:    xmlBlaster@marcelruff.info
                   <td>
                     <xsl:call-template name="tokenize">
                       <xsl:with-param name="pat" select="."/>
-                      <xsl:with-param name="prefix" select="'../doxygen/c++/class'"/>
+                      <xsl:with-param name="prefix" select="'../doxygen/cpp/html/class'"/>
                       <xsl:with-param name="postfix" select="'.html'"/>
                       <xsl:with-param name="withNamespace" select="'true'"/>
                     </xsl:call-template>
@@ -277,7 +277,7 @@ Author:    xmlBlaster@marcelruff.info
                  <xsl:if test="@lang='CPP'">
                     <xsl:call-template name="tokenize">
                       <xsl:with-param name="pat" select="."/>
-                      <xsl:with-param name="prefix" select="'../doxygen/c++/'"/>
+                      <xsl:with-param name="prefix" select="'../doxygen/cpp/html/'"/>
                       <xsl:with-param name="postfix" select="'_8cpp-source.html'"/>
                       <xsl:with-param name="withNamespace" select="'false'"/>
                     </xsl:call-template>
