@@ -28,7 +28,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.authentication.plugins \
 			org.xmlBlaster.authentication.plugins.simple \
 			org.xmlBlaster.authentication.plugins.a2Blaster \
-			org.xmlBlaster.authentication.plugins.gui \
+			org.xmlBlaster.authentication.plugins.demo \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.protocol \
 			org.xmlBlaster.client.protocol.corba \
