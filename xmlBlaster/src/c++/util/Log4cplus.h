@@ -28,7 +28,14 @@ namespace org { namespace xmlBlaster { namespace util {
  * <pre>
  * build -DXMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1 cpp
  * </pre>
- *
+ * <p>
+ *  We are forwarding all <tt>xmlBlaster.properties</tt> and command line settings to log4cplus,
+ *  so you could configure everything in <tt>xmlBlaster.properties</tt> instead of a
+ *  separate <tt>log4cplus.properties</tt>
+ *  (see the example file <tt>xmlBlaster/config/log4cplus.properties</tt>).<br />
+ *  Log4cplus is extended to do ${xy} variable replacement not only from environment
+ *  but from itself as well (recursion depth is one).
+ * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see http://log4cplus.sourceforge.net/
  * @see http://logging.apache.org/log4j/docs/manual.html
