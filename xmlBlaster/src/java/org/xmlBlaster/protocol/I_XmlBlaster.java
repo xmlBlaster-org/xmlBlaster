@@ -6,7 +6,6 @@ Comment:   Native Interface to xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
-import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -27,6 +26,7 @@ public interface I_XmlBlaster
     * <p />
     * @param xmlKey_literal Depending on the security plugin this key is encrypted
     * @param subscribeQoS_literal Depending on the security plugin this qos is encrypted
+    * @param isInternal true if the subscription is internal, i.e. from a recovery
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */

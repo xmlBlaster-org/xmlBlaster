@@ -413,6 +413,7 @@ final public class Authenticate implements I_RunlevelListener
          DisconnectQosServer disconnectQos = new DisconnectQosServer(glob, qos_literal);
 
          boolean forceShutdownEvenIfEntriesExist = false;
+         
          resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue(), forceShutdownEvenIfEntriesExist);
 
          if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
@@ -828,6 +829,35 @@ final public class Authenticate implements I_RunlevelListener
       }
    }
 
+
+
+/*
+   private I_SessionPersistencePlugin getSessionPersistencePlugin() {
+      return ((I_SessionPersistencePlugin)this.glob.getPluginRegistry().getPlugin(I_SessionPersistencePlugin.ID));
+   }
+
+   private void persistenceConnect(SessionInfo info) throws XmlBlasterException {
+      I_SessionPersistencePlugin plugin = getSessionPersistencePlugin();
+      if (plugin == null) {
+         this.log.error(ME, "persistenceConnect: the session persistence plugin is not registered (yet): can't make connection persitent");
+         Thread.dumpStack();
+         return;
+      }
+      ClientEvent event = new ClientEvent(info);
+      plugin.sessionAdded(event);
+   }
+
+   private void persistenceDisConnect(SessionInfo info) throws XmlBlasterException {
+      I_SessionPersistencePlugin plugin = getSessionPersistencePlugin();
+      if (plugin == null) {
+         this.log.error(ME, "persistenceConnect: the session persistence plugin is not registered (yet): can't make connection persitent");
+         Thread.dumpStack();
+         return;
+      }
+      ClientEvent event = new ClientEvent(info);
+      plugin.sessionRemoved(event);
+   }
+*/
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>

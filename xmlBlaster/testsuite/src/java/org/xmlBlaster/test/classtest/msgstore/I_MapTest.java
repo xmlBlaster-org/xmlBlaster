@@ -5,25 +5,19 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.ram.MapPlugin;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import junit.framework.*;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 
 /**
  * Test I_Map e.g. MapPlugin which allows to store randomly messages. 

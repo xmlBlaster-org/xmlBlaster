@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.24 2003/03/31 14:22:00 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.25 2004/02/02 14:48:25 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -13,9 +13,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import java.util.*;
 
 
 /**

@@ -8,14 +8,11 @@ package org.xmlBlaster.engine.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
-import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 
@@ -31,17 +28,23 @@ public final class ConnectQosServer
    private String ME = "ConnectQosServer";
    private final Global glob;
    private final ConnectQosData connectQosData;
+   private final boolean internal; // if the connection is generated internally i.e. no need to notify clients 
 
-   public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
+   public ConnectQosServer(Global glob, ConnectQosData connectQosData, boolean internal) {
       this.glob = (glob==null) ? Global.instance() : glob;
+      this.internal = internal;
       this.connectQosData = connectQosData;
-
       // better keep it for forwarding etc.
       //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
+   public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
+      this(glob, connectQosData, false);
+   }
+
    public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
+      this.internal = false;
       this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
       
       // better keep it for forwarding etc.
@@ -264,5 +267,15 @@ public final class ConnectQosServer
    public String toXml() {
       return this.connectQosData.toXml();
    }
+
+   /**
+    * tells whether the connection is internal, i.e. has been done from
+    * a recovery from persitence
+    * @return true if internal, false if it comes from the client
+    */   
+   public boolean isInternal() {
+      return this.internal;
+   }
+   
 }
 

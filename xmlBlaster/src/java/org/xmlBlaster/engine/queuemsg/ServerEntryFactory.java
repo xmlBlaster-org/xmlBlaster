@@ -46,7 +46,6 @@ public class ServerEntryFactory implements I_EntryFactory
 {
    private final static String ME = "ServerEntryFactory";
    private Global glob = null;
-   private String name = null;
    private LogChannel log = null;
 
    public static final String ENTRY_TYPE_MSG_SERIAL = "MSG_SER"; // msgUnit was serialized with java.io.Serializable
@@ -55,8 +54,9 @@ public class ServerEntryFactory implements I_EntryFactory
    public static final String ENTRY_TYPE_HISTORY_REF = "HISTORY_REF";
    public static final String ENTRY_TYPE_TOPIC_SERIAL = "TOPIC_SER";
    public static final String ENTRY_TYPE_TOPIC_XML = "TOPIC_XML";
+   public static final String ENTRY_TYPE_SESSION = "SESSION";
+   public static final String ENTRY_TYPE_SUBSCRIBE = "SUBSCRIBE";
    public static final String ENTRY_TYPE_DUMMY = DummyEntry.ENTRY_TYPE;
-
 
    /**
     * Parses the specified entry to a byte array (serializing).
@@ -233,7 +233,40 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-
+      else if (ENTRY_TYPE_SESSION.equals(type)) {
+         try {
+            ObjectInputStream objStream = new ObjectInputStream(is);
+            Object[] obj = (Object[])objStream.readObject();
+            if (obj.length != 1) {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                         "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+            }
+            String xmlLiteral = (String)obj[0];
+            SessionEntry sessionEntry = new SessionEntry(xmlLiteral, timestamp, sizeInBytes);
+            return sessionEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+      else if (ENTRY_TYPE_SUBSCRIBE.equals(type)) {
+         try {
+            ObjectInputStream objStream = new ObjectInputStream(is);
+            Object[] obj = (Object[])objStream.readObject();
+            if (obj.length != 3) {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                         "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+            }
+            String keyLiteral = (String)obj[0];
+            String qosLiteral = (String)obj[1];
+            String sessionId = (String)obj[2];
+            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionId, timestamp, sizeInBytes);
+            return subscribeEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
 
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, persistent);
@@ -244,26 +277,12 @@ public class ServerEntryFactory implements I_EntryFactory
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Persistent object '" + type + "' is not implemented");
    }
 
-
-
-
-
-
-   /**
-    * Returns the name of this plugin
-    */
-   public String getName() {
-      return this.name;
-   }
-
-
    /**
     * Is called after the instance is created.
     * @param name A name identifying this plugin.
     */
-   public void initialize(org.xmlBlaster.util.Global glob, String name) {
+   public void initialize(org.xmlBlaster.util.Global glob) {
       this.glob = (org.xmlBlaster.engine.Global)glob;
-      this.name = name;
       this.log = glob.getLog("queue");
       if (this.log.TRACE) this.log.trace(ME, "Successfully initialized");
    }
@@ -305,7 +324,7 @@ public class ServerEntryFactory implements I_EntryFactory
                StorageId storageId = new StorageId("mystore", "someid");
                MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, 0, 0, persistType[jj], -1);
 
-               I_EntryFactory factory = glob.getEntryFactory(storageId.getStrippedId());
+               I_EntryFactory factory = glob.getEntryFactory();
 
                int priority = msgUnitWrapper.getPriority();
                long timestamp = msgUnitWrapper.getUniqueId();

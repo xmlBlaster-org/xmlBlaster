@@ -11,7 +11,6 @@ package org.xmlBlaster.authentication;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.SessionQos;
@@ -21,19 +20,15 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterNode;
-import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
@@ -45,8 +40,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Collection;
-import java.util.Collections;
 
 
 /**
@@ -139,7 +132,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
       if (this.subjectName.isSession()) {
          log.error(ME, "Didn't expect a session name for a subject: " + this.subjectName.toXml());
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
@@ -715,6 +708,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, try to login again");
       }
+      // only notify if connect/disconnect comes from client
+      if (sessionInfo.getConnectQos().isInternal()) return;
+      
       if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
       synchronized (this.sessionMap) {
          this.sessionMap.put(sessionInfo.getId(), sessionInfo);

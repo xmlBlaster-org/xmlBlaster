@@ -149,7 +149,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                JdbcConnectionPool pool = new JdbcConnectionPool();
                try {
                   pool.initialize(this.glob, pluginInfo.getParameters());
-                  manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(managerName));
+                  manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName);
                   pool.registerStorageProblemListener(manager);
                   manager.setUp();
                   if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");

@@ -176,6 +176,24 @@ public final class SubscribeQos
    }
 
    /**
+    * sets the persitent flag for this subscription. If this flag is
+    * set, the subscription will persit a server crash.
+    * @param persitent
+    */
+   public void setPersitent(boolean persitent) {
+      this.queryQosData.setPersistent(persitent);
+   }
+   
+   /**
+    * Gets the persitent flag for this subscription. If this flag is
+    * set, the subscription will persit a server crash.
+    * @return true if persitent false otherwise.
+    */
+   public boolean getPersitent() {
+      return this.queryQosData.getPersistentProp().getValue();
+   }
+   
+   /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */

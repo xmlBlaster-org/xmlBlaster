@@ -50,15 +50,9 @@ public interface I_EntryFactory
       throws XmlBlasterException;
 
    /**
-    * Returns the name of this plugin
-    */
-   String getName();
-
-   /**
     * Is called after the instance is created.
-    * @param name A name identifying this plugin.
     */
-   public void initialize(Global glob, String name);
+   public void initialize(Global glob);
 
    /**
     * Allows to overwrite properties which where passed on initialize()

@@ -9,21 +9,12 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_EntryFactory;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.ram.MapPlugin;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.client.key.PublishKey;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import junit.framework.*;
 
@@ -90,7 +81,7 @@ public class MsgUnitWrapperTest extends TestCase {
          StorageId storageId = new StorageId("mystore", "someid");
          MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
 
-         I_EntryFactory factory = glob.getEntryFactory(storageId.getStrippedId());
+         I_EntryFactory factory = glob.getEntryFactory(); // storageId.getStrippedId()
 
          /* MsgUnitWrapper.getOwnerCache() fails with this test as RequestBroker is unknown
          msgUnitWrapper.incrementReferenceCounter(4);

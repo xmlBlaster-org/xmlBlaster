@@ -5,24 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.local;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import org.jutils.text.StringHelper;
-
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
 

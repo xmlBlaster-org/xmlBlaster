@@ -184,6 +184,10 @@ public class Global implements Cloneable
    
    /** set to allow wipe out the persistence on restarts */
    protected boolean wipeOutDB = false;
+   
+   //** the entry factory to be used */
+   protected I_EntryFactory entryFactory;
+
 
    /**
     * Constructs an initial Global object,
@@ -1370,12 +1374,14 @@ public class Global implements Cloneable
     * Is overwritten in engine.Global
     * @param name A name identifying this plugin.
     */
-   public I_EntryFactory getEntryFactory(String name) {
-      ClientEntryFactory factory = new ClientEntryFactory();
-      factory.initialize(this, name);
-      return factory;
+   public I_EntryFactory getEntryFactory() {
+      if (this.entryFactory != null) return this.entryFactory;
+      synchronized(this) {
+         this.entryFactory = new ClientEntryFactory();
+         this.entryFactory.initialize(this);
+         return this.entryFactory;
+      }
    }
-
 
    public synchronized void detachJdbcManagerCommonTable(String managerName) {
       if (this.jdbcQueueManagersCommonTable != null) 

@@ -17,7 +17,6 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 
 
@@ -385,6 +384,24 @@ public final class ConnectQos
       return this.connectQosData.getClientProperty(key);
    }
 
+   /**
+    * sets the persitent flag for this subscription. If this flag is
+    * set, the subscription will persit a server crash.
+    * @param persitent
+    */
+   public void setPersitent(boolean persitent) {
+      this.connectQosData.setPersistent(persitent);
+   }
+   
+   /**
+    * Gets the persitent flag for this subscription. If this flag is
+    * set, the subscription will persit a server crash.
+    * @return true if persitent false otherwise.
+    */
+   public boolean getPersitent() {
+      return this.connectQosData.getPersistentProp().getValue();
+   }
+   
    /**
     * Get a usage string for the connection parameters
     */

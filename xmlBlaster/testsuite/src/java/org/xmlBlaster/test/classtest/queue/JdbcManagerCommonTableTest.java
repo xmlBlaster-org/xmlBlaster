@@ -4,14 +4,12 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
-import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 import junit.framework.*;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-import java.util.Properties;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 // import java.sql.SQLException;
@@ -51,7 +49,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          JdbcConnectionPool pool = new JdbcConnectionPool();
          pool.initialize(this.glob, prop);
 
-         this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(pluginInfo.getTypeVersion()));
+         this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), pluginInfo.getTypeVersion());
          this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {

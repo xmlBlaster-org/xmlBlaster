@@ -66,6 +66,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    /** Query history messages */
    private HistoryQos historyQos;
 
+   /** true if query has to be 
+
    /**
     * Constructs the specialized quality of service object for query informations. 
     * E.g. for a subscribe() call

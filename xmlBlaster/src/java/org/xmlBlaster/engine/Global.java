@@ -417,10 +417,13 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * Is derived from util.Global
     * @param name A name identifying this plugin.
     */
-   public I_EntryFactory getEntryFactory(String name) {
-      ServerEntryFactory factory = new ServerEntryFactory();
-      factory.initialize(this, name);
-      return factory;
+   public I_EntryFactory getEntryFactory() {
+      if (this.entryFactory != null) return this.entryFactory;
+      synchronized(this) {
+         this.entryFactory = new ServerEntryFactory();
+         this.entryFactory.initialize(this);
+         return this.entryFactory;
+      }
    }
 
    /**

@@ -98,6 +98,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String keyAttr;
 
    private final boolean AUTO_COMMIT = true;
+   private final String managerName;
 
    /**
     * Counts the queues using this manager.
@@ -117,8 +118,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *        the database. IMPORTANT: The pool must have been previously
     *        initialized.
     */
-   public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory)
+   public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory, String managerName)
       throws XmlBlasterException {
+      this.managerName = managerName;
       this.pool = pool;
       this.glob = this.pool.getGlobal();
       this.log = glob.getLog("jdbc");
@@ -2498,7 +2500,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
          // then it is a JdbcManagerCommontTable
          // then it is a JdbcManager
-         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null);
+         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null, "cleaner");
          pool.registerStorageProblemListener(manager);
          manager.setUp();
          manager.wipeOutDB(setupNewTables);
@@ -2539,7 +2541,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //      if (this.pool != null) this.pool.shutdown();
       if (this.log.CALL) this.log.call(ME, "shutdown");
       if (this.pool != null) {
-         this.glob.detachJdbcManagerCommonTable(this.factory.getName());
+         this.glob.detachJdbcManagerCommonTable(this.managerName);
          this.pool.unregisterManager(this);
       }
    }

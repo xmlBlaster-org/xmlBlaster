@@ -48,7 +48,6 @@ public class ClientEntryFactory implements I_EntryFactory
 {
    private final static String ME = "ClientEntryFactory";
    private Global glob = null;
-   private String name = null;
    private LogChannel log = null;
 
    /**
@@ -173,33 +172,12 @@ public class ClientEntryFactory implements I_EntryFactory
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Object '" + type + "' not implemented");
    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-   /**
-    * Returns the name of this plugin
-    */
-   public String getName() {
-      return this.name;
-   }
-
    /**
     * Is called after the instance is created.
     * @param name A name identifying this plugin.
     */
-   public void initialize(Global glob, String name) {
+   public void initialize(Global glob) {
       this.glob = glob;
-      this.name = name;
       this.log = glob.getLog("queue");
       this.log.info(ME, "successfully initialized");
    }
