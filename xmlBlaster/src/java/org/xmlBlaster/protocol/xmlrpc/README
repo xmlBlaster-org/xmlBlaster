@@ -6,6 +6,7 @@ See http://www.xmlrpc.com
    Copyright (c) 1999 Hannes Wallnoefer, hannes@helma.at
    http://helma.at/hannes/xmlrpc/
 
+and http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
 
 Install:
 ========
@@ -80,7 +81,7 @@ http://java.sun.com/products/jsse/install.html to our JVM.
 4. Modify the URL we POST to use https instead of http, of course :-)
 
 With XmlRpcClientLite, the modification are more complex and involve
-changing the XmlRpcClientLite 
+changing the XmlRpcClientLite
 constructor to use a Secure Socket, i.e.:
 ...
 SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
