@@ -48,7 +48,7 @@ Queue& Queue::operator =(const Queue& queue)
 
 Queue::~Queue()
 {
-   if (log_.CALL) log_.call(ME, "destructor");
+   if (log_.call()) log_.call(ME, "destructor");
    if (!storage_.empty()) {
       Lock lock(accessMutex_);
       storage_.erase(storage_.begin(), storage_.end());
@@ -57,8 +57,8 @@ Queue::~Queue()
 
 void Queue::put(MsgQueueEntry *entry)
 {
-   if (log_.CALL) log_.call(ME, "::put");
-   if (log_.DUMP) log_.dump(ME, string("::put, the entry is: ")  + entry->toXml());
+   if (log_.call()) log_.call(ME, "::put");
+   if (log_.dump()) log_.dump(ME, string("::put, the entry is: ")  + entry->toXml());
 
    Lock lock(accessMutex_);
    if (!entry) throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::put", "the entry is NULL");

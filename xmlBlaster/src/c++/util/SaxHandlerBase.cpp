@@ -34,7 +34,7 @@ SaxHandlerBase::SaxHandlerBase(Global& global)
   log_(global.getLog("util"))
 {
 //  log_.initialize();
-  if (log_.CALL) log_.trace(me(), "Creating new SaxHandlerBase");
+  if (log_.call()) log_.trace(me(), "Creating new SaxHandlerBase");
 }
 
 void
@@ -55,7 +55,7 @@ void
 SaxHandlerBase::parse(const string &xmlData) 
 {
   log_.call(me(), "parse");
-  if (log_.TRACE) {
+  if (log_.trace()) {
      log_.trace(me(), string("parse content:'") + xmlData + string("'"));
   }
   try {
@@ -74,7 +74,7 @@ SaxHandlerBase::parse(const string &xmlData)
     // If it does not work, it could be wrapped into SAXParseException
     log_.error(me(), string("StopParseException: ") +
                             "Parsing execution stopped half the way ");
-    if (log_.TRACE) {
+    if (log_.trace()) {
        string help = XmlBlasterException::getStackTrace();
        log_.plain(me(), help);
     }
@@ -119,7 +119,7 @@ SaxHandlerBase::characters(const XMLCh* const ch, const unsigned int start,
 {
   char *chHelper = XMLString::transcode(ch);
   character_.assign(string(chHelper), start, length);
-  if (log_.TRACE)
+  if (log_.trace())
      log_.trace(me(), string("characters, character:'") + character_ + string("'"));
   delete chHelper;
 }
@@ -172,7 +172,7 @@ SaxHandlerBase::notationDecl(const XMLCh* const name, const XMLCh* const publicI
 
    txt += string(nameHelper) + ", publicId=" + publicIdHelper 
       + ", systemId=" + systemIdHelper + ")";
-   if (log_.TRACE) log_.trace(me(), txt);
+   if (log_.trace()) log_.trace(me(), txt);
    delete nameHelper;
    delete publicIdHelper;
    delete systemIdHelper;
@@ -191,7 +191,7 @@ SaxHandlerBase::unparsedEntityDecl(const XMLCh* const name,
   char *systemIdHelper     = XMLString::transcode(systemId);
   char *notationNameHelper = XMLString::transcode(notationName); 
 
-  if (log_.TRACE) log_.trace(me(), string("unparsedEntityDecl(name=") +
+  if (log_.trace()) log_.trace(me(), string("unparsedEntityDecl(name=") +
                             nameHelper + ", publicId="+publicIdHelper+
                             ", systemId=" + systemIdHelper + 
                             ", notationName=" + notationNameHelper +

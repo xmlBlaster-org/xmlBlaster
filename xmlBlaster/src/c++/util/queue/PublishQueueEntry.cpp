@@ -24,12 +24,12 @@ void* PublishQueueEntry::getEmbeddedObject()
 
 MsgQueueEntry& PublishQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
-   if (log_.CALL) log_.call(ME, "send");
+   if (log_.call()) log_.call(ME, "send");
    if (publishReturnQos_) {
       delete publishReturnQos_;
       publishReturnQos_ = NULL;
    }
-   if (log_.DUMP) log_.dump(ME, string("send: ") + PublishQueueEntry::toXml());
+   if (log_.dump()) log_.dump(ME, string("send: ") + PublishQueueEntry::toXml());
    publishReturnQos_ = new PublishReturnQos(connectionsHandler.getConnection().publish(*msgUnit_));
    return *this;
 }

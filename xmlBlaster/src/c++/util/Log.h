@@ -38,7 +38,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * or switch it to <code>true</code> for debugging reasons.
        * <p />
        * Setting to false:<br />
-       * <code>if (Log.TRACE) Log.trace(....); </code> -> dead code 
+       * <code>if (Log.trace()) Log.trace(....); </code> -> dead code 
        * elimination<br />
        * Note that you need to uncomment the final declaration, set all booleans 
        * to false and comment out the code in method setPreLogLevelCheck(). 
@@ -144,12 +144,16 @@ namespace org { namespace xmlBlaster { namespace util {
 #        endif
       }
       
+      bool call_;
+      bool time_;
+      bool trace_;
+      bool dump_;
             
      public:
-      bool CALL;
-      bool TIME;
-      bool TRACE;
-      bool DUMP;
+      inline bool call() { return call_; }
+      inline bool time() { return time_; }
+      inline bool trace() { return trace_; }
+      inline bool dump() { return dump_; }
       
       
       Log(Property& properties, int args=0, const char * const argc[]=0, const string& name="default");
@@ -196,7 +200,7 @@ namespace org { namespace xmlBlaster { namespace util {
       /**
        * Set the boolean values of CALL, TIME, TRACE, DUMP accordingly.
        * <p />
-       * This allows to use 'if (Log.TRACE)' in your code, so that the 
+       * This allows to use 'if (Log.trace())' in your code, so that the 
        * following Log.trace(...) is not executed if not needed (performance 
        * gain).
        */

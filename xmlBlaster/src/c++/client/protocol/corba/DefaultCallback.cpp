@@ -21,7 +21,7 @@ DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback 
    boss_         = boss;
    loginName_    = name;
    // cache_ = cache;
-   if (log_.CALL) log_.trace(me(),"Entering constructor with argument");
+   if (log_.call()) log_.trace(me(),"Entering constructor with argument");
 }
 
 /**
@@ -55,7 +55,7 @@ DefaultCallback::update(const char* sessionId,
    serverIdl::XmlTypeArr *res = new serverIdl::XmlTypeArr(msgUnitArr.length());
    res->length(msgUnitArr.length());
 
-   if (log_.CALL) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
+   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
    
    if (msgUnitArr.length() == 0) {
       log_.warn(me(), "Entering update() with 0 messages");
@@ -66,7 +66,7 @@ DefaultCallback::update(const char* sessionId,
       UpdateKey *updateKey = 0;
       UpdateQos *updateQos = 0;
       try {
-         if (log_.DUMP) {
+         if (log_.dump()) {
             log_.dump(me(), string("update: the key: ") + string(msgUnit.xmlKey));
             log_.dump(me(), string("update: the qos: ") + string(msgUnit.qos));
          }
@@ -74,15 +74,15 @@ DefaultCallback::update(const char* sessionId,
          updateQos = new UpdateQos(global_, msgQosFactory_.readObject(string(msgUnit.qos)));
          // Now we know all about the received msg, dump it or do 
          // some checks
-         if (log_.DUMP) log_.dump("UpdateKey", string("\n") + updateKey->toXml());
-         if (log_.DUMP) {
+         if (log_.dump()) log_.dump("UpdateKey", string("\n") + updateKey->toXml());
+         if (log_.dump()) {
             string msg = "\n";
             for (string::size_type j=0; j < msgUnit.content.length(); j++) 
                msg += (char)msgUnit.content[j];
             log_.dump("content", "Message received '" + msg + "' with size=" + lexical_cast<string>(msgUnit.content.length()));
          }
-         if (log_.DUMP) log_.dump("UpdateQos", "\n" + updateQos->toXml());
-         if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
+         if (log_.dump()) log_.dump("UpdateQos", "\n" + updateQos->toXml());
+         if (log_.trace()) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
 
          //Checking whether the Update is for the Cache or for the boss
          //The boss should not be interested in cache updates
@@ -137,7 +137,7 @@ DefaultCallback::updateOneway(const char* sessionId,
             IT_THROW_DECL ((CORBA::SystemException))
 #endif
 {
-   if (log_.CALL) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
+   if (log_.call()) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
    
    if (msgUnitArr.length() == 0) {
       log_.warn(me(), "Entering update() with 0 messages");
@@ -157,7 +157,7 @@ DefaultCallback::updateOneway(const char* sessionId,
             log_.error(me(), string(e.message) );
          }
 
-         if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
+         if (log_.trace()) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
 
          if (boss_) {
             boss_->update(sessionId, *updateKey,
@@ -190,7 +190,7 @@ DefaultCallback::ping(const char *qos)
             IT_THROW_DECL ((CORBA::SystemException))
 #endif
 {
-   if (log_.CALL) log_.call(me(), "ping(" + string(qos) + ") ...");
+   if (log_.call()) log_.call(me(), "ping(" + string(qos) + ") ...");
    return CORBA::string_dup("");
 } // ping
 

@@ -23,12 +23,12 @@ void* UnSubscribeQueueEntry::getEmbeddedObject()
 // this should actually be in another interface but since it is an only method we put it here.
 MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
-   if (log_.CALL) log_.call(ME, "send");
+   if (log_.call()) log_.call(ME, "send");
    if (statusQosData_) {
       delete statusQosData_;
       statusQosData_ = NULL;
    }
-   if (log_.DUMP) log_.dump(ME, string("send: ") + toXml());
+   if (log_.dump()) log_.dump(ME, string("send: ") + toXml());
    // the return value is not stored ...
    connectionsHandler.getConnection().unSubscribe(UnSubscribeKey(global_, *queryKeyData_), UnSubscribeQos(global_, *queryQosData_));
 

@@ -121,19 +121,19 @@ CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName
    static bool  doRun     = false;
 //       Lock lock(mutex);
    Log& log = global.getLog("corba");
-   if (log.CALL) log.call("CorbaDriver", string("getInstance for ") + instanceName);
+   if (log.call()) log.call("CorbaDriver", string("getInstance for ") + instanceName);
    CorbaDriver*  driver = NULL;
    DriverMap& driverMap = CorbaDriver::getDrivers();
    DriverMap::iterator iter = driverMap.find(instanceName);
    if (iter == driverMap.end()) {
-      if (log.TRACE) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
+      if (log.trace()) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
       driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, isOrbOwner, orb);
       driverMap.insert(DriverMap::value_type(instanceName, driver));
       if (!isRunning && (orb == NULL)) driver->start(); // check if this is really what it should be ...
    }
    else driver = (*iter).second;
    int count = driver->count_++;
-   if (log.TRACE) log.trace("CorbaDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<string>(count));
+   if (log.trace()) log.trace("CorbaDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<string>(count));
    return *driver;
 }
 
@@ -178,7 +178,7 @@ void CorbaDriver::run()
    while (doRun_) {
       {
          Lock lock(mutex_);
-//         if (log_.TRACE) log_.trace(ME, "sweep in running thread");
+//         if (log_.trace()) log_.trace(ME, "sweep in running thread");
          connection_->orbPerformWork();
       }
       sleep(20); // sleep 20 milliseconds
@@ -351,9 +351,9 @@ PublishReturnQos CorbaDriver::publish(const MessageUnit& msgUnit)
 {
    Lock lock(mutex_);
    _COMM_TRY
-      if (log_.CALL) log_.call(ME, "publish");
+      if (log_.call()) log_.call(ME, "publish");
       string ret = connection_->publish(msgUnit);
-      if (log_.TRACE) log_.trace(ME, "successfully published");
+      if (log_.trace()) log_.trace(ME, "successfully published");
       return PublishReturnQos(global_, statusQosFactory_.readObject(ret));
    _COMM_CATCH("::publish", false, false)
 }

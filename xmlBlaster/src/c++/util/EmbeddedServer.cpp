@@ -34,7 +34,7 @@ EmbeddedServer::~EmbeddedServer()
 
 void EmbeddedServer::run()
 {  
-   if (log_.CALL) log_.call(ME, "::run");
+   if (log_.call()) log_.call(ME, "::run");
    if (isRunning_) {
       log_.warn(ME, "the current server is already running. ignoring the start command.");
       return;

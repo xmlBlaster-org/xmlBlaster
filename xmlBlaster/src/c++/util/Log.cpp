@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.14 2003/01/22 11:54:17 laghi Exp $
+Version:   $Id: Log.cpp,v 1.15 2003/02/07 11:41:41 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -39,11 +39,11 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    Log::Log(Property& properties, int args, const char * const argc[], const string& name) 
       : properties_(properties), name_(name)
    {
-      ME    = "Log";
-      CALL  = true;
-      TIME  = true;
-      TRACE = true;
-      DUMP  = true;
+      ME     = "Log";
+      call_  = true;
+      time_  = true;
+      trace_ = true;
+      dump_  = true;
       numWarnInvocations     = 0;
       numErrorInvocations    = 0;
       currentLogFormat       = "{0} {1} {2}: {3}";
@@ -112,11 +112,11 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
 
    void Log::setPreLogLevelCheck() {
-      CALL = TIME = TRACE = DUMP = false;
-      if (logLevel_ & L_CALL) CALL = true;
-      if (logLevel_ & L_TIME ) TIME  = true;
-      if (logLevel_ & L_TRACE) TRACE = true;
-      if (logLevel_ & L_DUMP ) DUMP  = true;
+      call_ = time_ = trace_ = dump_  = false;
+      if (logLevel_ & L_CALL)  call_  = true;
+      if (logLevel_ & L_TIME ) time_  = true;
+      if (logLevel_ & L_TRACE) trace_ = true;
+      if (logLevel_ & L_DUMP ) dump_  = true;
    }
 
 

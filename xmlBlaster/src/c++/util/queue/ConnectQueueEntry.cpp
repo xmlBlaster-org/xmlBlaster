@@ -22,12 +22,12 @@ void* ConnectQueueEntry::getEmbeddedObject()
 
 MsgQueueEntry& ConnectQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
-   if (log_.CALL) log_.call(ME, "send");
+   if (log_.call()) log_.call(ME, "send");
    if (connectReturnQos_) {
       delete connectReturnQos_;
       connectReturnQos_ = NULL;
    }
-   if (log_.DUMP) log_.dump(ME, string("send: ") + toXml());
+   if (log_.dump()) log_.dump(ME, string("send: ") + toXml());
    connectReturnQos_ = new ConnectReturnQos(connectionsHandler.connectRaw(*connectQos_));
 //   connectionsHandler.setConnectReturnQos(*connectReturnQos_);
    return *this;

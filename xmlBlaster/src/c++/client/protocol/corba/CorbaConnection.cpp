@@ -47,7 +47,7 @@ CorbaConnection::CorbaConnection(Global& global, bool orbOwner, CORBA::ORB_ptr o
 {
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
-  if (log_.CALL) log_.call(me(), "CorbaConnection constructor ...");
+  if (log_.call()) log_.call(me(), "CorbaConnection constructor ...");
   if (numOfSessions_ == 0) {
      if (orb) orb_ = orb;
      else {
@@ -76,7 +76,7 @@ CorbaConnection::CorbaConnection(Global& global, bool orbOwner, CORBA::ORB_ptr o
 
 CorbaConnection::~CorbaConnection() 
 {
-  if (log_.CALL) log_.call(me(), "CorbaConnection destructor ...");
+  if (log_.call()) log_.call(me(), "CorbaConnection destructor ...");
   numOfSessions_--;
 //  if (isLoggedIn()) logout();
   disconnect();
@@ -134,7 +134,7 @@ CorbaConnection::getXmlBlaster()
 CosNaming::NamingContext_ptr 
 CorbaConnection::getNamingService() 
 {
-  if (log_.CALL) log_.call(me(), "getNamingService() ...");
+  if (log_.call()) log_.call(me(), "getNamingService() ...");
   if (orb_ == 0) log_.panic(me(), "orb==null, internal problem");
   if (nameServerControl_ == 0)
      nameServerControl_ = new NameServerControl(orb_);
@@ -145,7 +145,7 @@ CorbaConnection::getNamingService()
 authenticateIdl::AuthServer_ptr 
 CorbaConnection::getAuthenticationService() 
 {
-  if (log_.CALL) log_.call(me(), "getAuthenticationService() ...");
+  if (log_.call()) log_.call(me(), "getAuthenticationService() ...");
   if (!CORBA::is_nil(authServer_ /*.in()*/ ))
      return authenticateIdl::AuthServer::_duplicate(authServer_);
 
@@ -159,7 +159,7 @@ CorbaConnection::getAuthenticationService()
      log_.info(me(),"Accessing xmlBlaster using your given IOR string");
      return authenticateIdl::AuthServer::_duplicate(authServer_);
   }
-  if (log_.TRACE) log_.trace(me(), "No -ior ...");
+  if (log_.trace()) log_.trace(me(), "No -ior ...");
 
   string authServerIORFile =
      log_.getProperties().getStringProperty("ior.file","");
@@ -178,7 +178,7 @@ CorbaConnection::getAuthenticationService()
      log_.info(me(), msg);
      return authenticateIdl::AuthServer::_duplicate(authServer_);
   }
-  if (log_.TRACE) log_.trace(me(), "No -ior.file ...");
+  if (log_.trace()) log_.trace(me(), "No -ior.file ...");
 
   // 3) Using builtin http IOR download ...
   {
@@ -188,7 +188,7 @@ CorbaConnection::getAuthenticationService()
      string iorHost = log_.getProperties().getStringProperty("hostname",myHostName);
      // Port may be a name from /etc/services: "xmlBlaster 3412/tcp"
      string iorPortStr = log_.getProperties().getStringProperty("port","3412"); // default port=3412 (xmlblaster)
-     if (log_.TRACE) log_.trace(me(), "Trying -hostname=" + iorHost + " and -port=" + iorPortStr + " ...");
+     if (log_.trace()) log_.trace(me(), "Trying -hostname=" + iorHost + " and -port=" + iorPortStr + " ...");
      struct sockaddr_in xmlBlasterAddr;
      memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
      xmlBlasterAddr.sin_family=AF_INET;
@@ -219,7 +219,7 @@ CorbaConnection::getAuthenticationService()
               while ((numRead = recv(s, buf, 10, 0)) > 0) {
                 authServerIOR.append(buf, numRead); 
               }
-              if (log_.DUMP) log_.dump(me(), "Received IOR data: '" + authServerIOR + "'");
+              if (log_.dump()) log_.dump(me(), "Received IOR data: '" + authServerIOR + "'");
               size_t pos = authServerIOR.find("IOR:");
 //              if (pos > 0)
               if (pos != authServerIOR.npos) authServerIOR = authServerIOR.substr(pos);
@@ -229,7 +229,7 @@ CorbaConnection::getAuthenticationService()
                                                       "can't access authentication Service", "", "", "", "", 
                                                       "", "");
               }
-              if (log_.TRACE) log_.trace(me(), "Received IOR data: '" + authServerIOR + "'");
+              if (log_.trace()) log_.trace(me(), "Received IOR data: '" + authServerIOR + "'");
            }
            else {
               log_.warn(me(), "Connecting to -hostname=" + iorHost + " failed"); // errno
@@ -245,7 +245,7 @@ CorbaConnection::getAuthenticationService()
         return authenticateIdl::AuthServer::_duplicate(authServer_);
      }
   }
-  if (log_.TRACE) log_.trace(me(), "No -hostname and -port ...");
+  if (log_.trace()) log_.trace(me(), "No -hostname and -port ...");
 
 
   // 4) asking Name Service CORBA compliant
@@ -277,7 +277,7 @@ CorbaConnection::getAuthenticationService()
                                              "", "");
      }
   }
-  if (log_.TRACE) log_.trace(me(), "No -ns ...");
+  if (log_.trace()) log_.trace(me(), "No -ns ...");
   throw serverIdl::XmlBlasterException("communication.noConnection", "client",
                                        me().c_str(), "en", text.c_str(), "", 
                                        "", "", "", "", "");
@@ -289,7 +289,7 @@ CorbaConnection::login(const string &loginName, const string &passwd,
                        const LoginQosWrapper &qos, I_Callback *client) 
 {
 
-  if (log_.CALL) log_.call(me(), "login(" + loginName + ") ...");
+  if (log_.call()) log_.call(me(), "login(" + loginName + ") ...");
   if ( !CORBA::is_nil(xmlBlaster_)) {
      string msg = "You are already logged in, returning cached handle";
      msg += " on xmlBlaster";
@@ -308,7 +308,7 @@ CorbaConnection::login(const string &loginName, const string &passwd,
      util::qos::address::CallbackAddress addr(global_, "IOR");
      addr.setAddress(callbackIOR_);
      loginQos_.addCallbackAddress(addr);
-     if (log_.TRACE) log_.trace(me(), string("Success, exported ") +
+     if (log_.trace()) log_.trace(me(), string("Success, exported ") +
                                 "BlasterCallback Server interface for "+
                                 loginName);
   }
@@ -338,20 +338,20 @@ CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj)
 void 
 CorbaConnection::loginRaw() 
 {
-  if (log_.CALL) log_.call(me(),"loginRaw(" + loginName_ + ") ...");
+  if (log_.call()) log_.call(me(),"loginRaw(" + loginName_ + ") ...");
   try {
      if (CORBA::is_nil(authServer_)) getAuthenticationService();
      xmlBlaster_ = authServer_->login(loginName_.c_str(),
                                       passwd_.c_str(),
                                       loginQos_.toXml().c_str());
      numLogins_++;
-     if (log_.TRACE) log_.trace(me(),"Success, login for "+loginName_);
-     if (log_.DUMP ) log_.dump(me() ,loginQos_.toXml());
+     if (log_.trace()) log_.trace(me(),"Success, login for "+loginName_);
+     if (log_.dump() ) log_.dump(me() ,loginQos_.toXml());
   }
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "Login failed for ";
      msg +=  loginName_; //  + ", numLogins=" + numLogins_;
-     if (log_.TRACE) log_.trace(me(), msg);
+     if (log_.trace()) log_.trace(me(), msg);
      throw e;
   }
 }
@@ -367,16 +367,16 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
    }
 
    loginName_ = connectQos.getUserId();
-   if (log_.CALL) log_.call(me(),"connect(" + loginName_ + ") ...");
+   if (log_.call()) log_.call(me(),"connect(" + loginName_ + ") ...");
    try {
       if (CORBA::is_nil(authServer_)) getAuthenticationService();
       ConnectQos help = connectQos; // since it is a const
       string reqQos = help.toXml();
-      if (log_.TRACE) log_.trace(me(), string("connect req: ") + reqQos);
+      if (log_.trace()) log_.trace(me(), string("connect req: ") + reqQos);
       string retQos = authServer_->connect(reqQos.c_str());
-      if (log_.TRACE) log_.trace(me(), string("connect ret: ") + retQos);
+      if (log_.trace()) log_.trace(me(), string("connect ret: ") + retQos);
       ConnectQosFactory factory(global_);
-      if (log_.DUMP) log_.dump(me(), "connect: the connect return qos before parsing: " + retQos);
+      if (log_.dump()) log_.dump(me(), "connect: the connect return qos before parsing: " + retQos);
       connectReturnQos_ = factory.readObject(retQos);
       sessionId_ = connectReturnQos_.getSecretSessionId();
       xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();
@@ -385,13 +385,13 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       xmlBlaster_ = serverIdl::Server::_narrow(obj);
 
       numLogins_++;
-      if (log_.TRACE) log_.trace(me(),"Success, connect for "+loginName_);
+      if (log_.trace()) log_.trace(me(),"Success, connect for "+loginName_);
       return connectReturnQos_;
    }
    catch(serverIdl::XmlBlasterException &e) {
       string msg = "Connect failed for ";
       msg +=  loginName_; //  + ", numLogins=" + numLogins_;
-      if (log_.TRACE) log_.trace(me(), msg);
+      if (log_.trace()) log_.trace(me(), msg);
       throw e;
    }
 }
@@ -400,7 +400,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
 bool
 CorbaConnection::logout() 
 {
-  if (log_.CALL) log_.call(me(), "logout() ...");
+  if (log_.call()) log_.call(me(), "logout() ...");
 
   if ( CORBA::is_nil(xmlBlaster_)) {
      log_.warn(me(), "No logout, you are not logged in");
@@ -456,8 +456,8 @@ CorbaConnection::shutdownCb()
 bool
 CorbaConnection::disconnect(const string& qos)
 {
-   if (log_.CALL) log_.call(me(), "disconnect() ...");
-   if (log_.DUMP) log_.dump(me(), string("disconnect: the qos: ") + qos);
+   if (log_.call()) log_.call(me(), "disconnect() ...");
+   if (log_.dump()) log_.dump(me(), string("disconnect: the qos: ") + qos);
 
    if (CORBA::is_nil(xmlBlaster_)) {
       shutdown();
@@ -489,8 +489,8 @@ CorbaConnection::disconnect(const string& qos)
 string 
 CorbaConnection::subscribe(const string &xmlKey, const string &qos) 
 {
-   if (log_.CALL) log_.call(me(), "subscribe() ...");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(me(), "subscribe() ...");
+   if (log_.dump()) {
       log_.dump(me(), string("subscribe: the key: ") + xmlKey);
       log_.dump(me(), string("subscribe: the qos: ") + qos);
    }
@@ -513,8 +513,8 @@ CorbaConnection::subscribe(const string &xmlKey, const string &qos)
 vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
                                   const string &qos) 
 {
-  if (log_.CALL) log_.call(me(), "unSubscribe() ...");
-  if (log_.DUMP) {
+  if (log_.call()) log_.call(me(), "unSubscribe() ...");
+  if (log_.dump()) {
      log_.dump(me(), string("unSubscribe: the key: ") + xmlKey);
      log_.dump(me(), string("unSubscribe: the qos: ") + qos);
   }
@@ -550,8 +550,8 @@ vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
 * @return The xml based QoS
 */
 string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
-  if (log_.TRACE) log_.trace(me(), "Publishing the STL way ...");
-  if (log_.DUMP) {
+  if (log_.trace()) log_.trace(me(), "Publishing the STL way ...");
+  if (log_.dump()) {
      log_.dump(me(), string("publish: the msgUnit: ") + msgUnitUtil.toXml());
   }
 
@@ -572,7 +572,7 @@ string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
      msg += e.message;
-     if (log_.TRACE) log_.trace(me(), msg);
+     if (log_.trace()) log_.trace(me(), msg);
      throw e;
   }
 //        catch(CORBA::Exception &ex1) {
@@ -586,7 +586,7 @@ string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
 string 
 CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit) 
 {
-  if (log_.TRACE) log_.trace(me(), "Publishing ...");
+  if (log_.trace()) log_.trace(me(), "Publishing ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -602,7 +602,7 @@ CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit)
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
      msg += e.message;
-     if (log_.TRACE) log_.trace(me(), msg);
+     if (log_.trace()) log_.trace(me(), msg);
      throw e;
   }
 //        catch(CORBA::Exception &ex1) {
@@ -622,7 +622,7 @@ CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit)
 vector<string> 
 CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec) 
 {
-  if (log_.CALL) log_.call(me(), "publishArr() ...");
+  if (log_.call()) log_.call(me(), "publishArr() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -642,7 +642,7 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
      return vecArr;
   }
   catch(serverIdl::XmlBlasterException &e) {
-     if (log_.TRACE) log_.trace(me(), "XmlBlasterException: "
+     if (log_.trace()) log_.trace(me(), "XmlBlasterException: "
                                 + string(e.message) );
      throw e;
   }
@@ -654,7 +654,7 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
 serverIdl::XmlTypeArr* 
 CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr)
 {
-  if (log_.CALL) log_.call(me(), "publishArr() ...");
+  if (log_.call()) log_.call(me(), "publishArr() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -667,7 +667,7 @@ CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr)
      return xmlBlaster_->publishArr(msgUnitArr);
   }
   catch(serverIdl::XmlBlasterException &e) {
-     if (log_.TRACE) log_.trace(me(), "XmlBlasterException: "
+     if (log_.trace()) log_.trace(me(), "XmlBlasterException: "
                                 + string(e.message) );
      throw e;
   }
@@ -685,7 +685,7 @@ CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr)
 void 
 CorbaConnection::publishOneway(const vector<util::MessageUnit>& msgVec)
 {
-  if (log_.CALL) log_.call(me(), "publishOneway() ...");
+  if (log_.call()) log_.call(me(), "publishOneway() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -715,7 +715,7 @@ CorbaConnection::publishOneway(const vector<util::MessageUnit>& msgVec)
 void 
 CorbaConnection::publishOneway(const serverIdl::MessageUnitArr& msgUnitArr)
 {
-  if (log_.CALL) log_.call(me(), "publishOneway() ...");
+  if (log_.call()) log_.call(me(), "publishOneway() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -743,8 +743,8 @@ CorbaConnection::publishOneway(const serverIdl::MessageUnitArr& msgUnitArr)
 vector<string> 
 CorbaConnection::erase(const string &xmlKey, const string &qos) 
 {
-  if (log_.CALL) log_.call(me(), "erase() ...");
-  if (log_.DUMP) {
+  if (log_.call()) log_.call(me(), "erase() ...");
+  if (log_.dump()) {
      log_.dump(me(), string("erase: the key: ") + xmlKey);
      log_.dump(me(), string("erase: the qos: ") + qos);
   }
@@ -782,8 +782,8 @@ CorbaConnection::get(const string &xmlKey, const string &qos)
 {
 
   serverIdl::MessageUnitArr_var units;
-  if (log_.CALL) log_.call(me(), "get() ...");
-  if (log_.DUMP) {
+  if (log_.call()) log_.call(me(), "get() ...");
+  if (log_.dump()) {
      log_.dump(me(), string("get: the key: ") + xmlKey);
      log_.dump(me(), string("get: the qos: ") + qos);
   }
@@ -818,7 +818,7 @@ CorbaConnection::get(const string &xmlKey, const string &qos)
 serverIdl::MessageUnitArr* CorbaConnection::get(const string &xmlKey, const string &qos) {
 
   serverIdl::MessageUnitArr* units;
-  if (log_.CALL) log_.call(me(), "get() ...");
+  if (log_.call()) log_.call(me(), "get() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -840,7 +840,7 @@ serverIdl::MessageUnitArr* CorbaConnection::get(const string &xmlKey, const stri
 string 
 CorbaConnection::ping(const string &qos) 
 {
-  if (log_.CALL) log_.call(me(), "ping(" + qos + ") ...");
+  if (log_.call()) log_.call(me(), "ping(" + qos + ") ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
@@ -906,7 +906,7 @@ CorbaConnection::copyFromCorba(vector<util::MessageUnit> &msgVec,
      const serverIdl::MessageUnit &msgUnit = static_cast<const serverIdl::MessageUnit>(units[ii]);
      unsigned long len = static_cast<unsigned long>(msgUnit.content.length());
      const unsigned char * blob = static_cast<const unsigned char *>(&msgUnit.content[0]);
-     if (log_.TRACE) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<string>(len));
+     if (log_.trace()) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<string>(len));
      MsgKeyData key = msgKeyFactory_.readObject(string(msgUnit.xmlKey));
      MsgQosData qos = msgQosFactory_.readObject(string(msgUnit.qos)); 
      const util::MessageUnit msg(key, len, blob, qos);

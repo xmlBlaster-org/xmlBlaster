@@ -18,7 +18,7 @@ namespace org { namespace xmlBlaster { namespace util {
 XmlQoSBase::XmlQoSBase(Global& global) : SaxHandlerBase(global)
 {
    inQos_ = false;
-   if (log_.CALL) log_.trace(me(), "Creating new XmlQoSBase");
+   if (log_.call()) log_.trace(me(), "Creating new XmlQoSBase");
 }
 
 bool XmlQoSBase::isEmpty(const string &qos) 

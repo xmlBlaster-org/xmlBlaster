@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.3 2003/01/18 17:14:39 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.4 2003/02/07 11:41:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -50,8 +50,8 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 //   log_.info(ME, string("startElement(rootTag=") + address_->rootTag_ +
 //    string("): name=") + name + " character='" + character_ + "'");
 
-   if (log_.CALL) log_.call(ME, "::startElement");
-   if (log_.TRACE) {
+   if (log_.call()) log_.call(ME, "::startElement");
+   if (log_.trace()) {
      char* txt = XMLString::transcode(name);
      log_.trace(ME, string("::startElement: '") + string(txt) + string("'"));
      delete txt;
@@ -178,8 +178,8 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 // public final void endElement(String uri, String localName, String name, StringBuffer character) {
 void AddressFactory::endElement(const XMLCh* const name)
 {
-   if (log_.CALL) log_.call(ME, "::endElement");
-   if (log_.TRACE) {
+   if (log_.call()) log_.call(ME, "::endElement");
+   if (log_.trace()) {
      char* txt = XMLString::transcode(name);
      log_.trace(ME, string("::endElement: '") + string(txt) + string("'"));
      delete txt;

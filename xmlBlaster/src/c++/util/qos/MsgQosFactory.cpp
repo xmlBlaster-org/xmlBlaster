@@ -210,7 +210,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
             log_.warn(ME, "QoS <route><node> misses receive timestamp attribute, setting to 0");
          }
     //      bool dirtyRead = org::xmlBlaster::util::cluster::DEFAULT_dirtyRead;
-         if (log_.TRACE) log_.trace(ME, "Found node tag");
+         if (log_.trace()) log_.trace(ME, "Found node tag");
          routeInfo_ = RouteInfo(nodeId, stratum, timestamp);
          if (getBoolAttr(attrs, DIRTY_READ, tmpBool)) routeInfo_.setDirtyRead(tmpBool);
       }
@@ -312,7 +312,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
    if(SaxHandlerBase::caseCompare(name, "sender")) {
       inSender_ = false;
       msgQosData_.setSender(SessionQos(global_, stringTrim(character_)));
-      // if (log.TRACE) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
+      // if (log.trace()) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
       character_.erase();
       return;
    }
@@ -344,7 +344,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
          if (tmp == "true") msgQosData_.setForceUpdate(true);
          else msgQosData_.setForceUpdate(false);
       }
-      // if (log.TRACE) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
+      // if (log.trace()) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
       character_.erase();
       return;
    }
@@ -361,7 +361,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       if (!tmp.empty())
          if (tmp == "true") msgQosData_.setPersistent(true);
          else  msgQosData_.setPersistent(false);
-      // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
+      // if (log.trace()) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
       character_.erase();
       return;
    }
@@ -372,7 +372,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       if (!tmp.empty())
          if (tmp == "true") msgQosData_.setReadonly(true);
          else  msgQosData_.setReadonly(false);
-      // if (log.TRACE) log.trace(ME, "Found readonly = " + msgQosData.readonly());
+      // if (log.trace()) log.trace(ME, "Found readonly = " + msgQosData.readonly());
       character_.erase();
       return;
    }

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.12 2003/01/24 21:45:54 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.13 2003/02/07 11:41:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -54,37 +54,37 @@ long DEFAULT_expires;
  */
 void QueuePropertyBase::initialize(const string& propertyPrefix)
 {
-   if (log_.CALL) log_.call(ME, string("::initialize with property prefix '") + propertyPrefix + "'");
+   if (log_.call()) log_.call(ME, string("::initialize with property prefix '") + propertyPrefix + "'");
    propertyPrefix_ = propertyPrefix;
    string prefix = getPrefix();
-   if (log_.TRACE) log_.trace(ME, "::initialize: got the prefix");
+   if (log_.trace()) log_.trace(ME, "::initialize: got the prefix");
 
    // Do we need this range settings?
    setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
    setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
-   if (log_.TRACE) log_.trace(ME, "::initialize: expires set");
+   if (log_.trace()) log_.trace(ME, "::initialize: expires set");
    if (nodeId_ != "") {
       setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min["+nodeId_+"]", getMinExpires()));
       setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max["+nodeId_+"]", getMaxExpires())); // Long.MAX_VALUE);
    }
-   if (log_.TRACE) log_.trace(ME, "::initialize: expires for the specific node set");
+   if (log_.trace()) log_.trace(ME, "::initialize: expires for the specific node set");
 
    // prefix is e.g. "queue/history/" or "persistence/topicStore/"
    setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg", DEFAULT_maxMsgDefault));
-   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxMsg OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxMsg OK");
    setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
-   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxMsgCache OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxMsgCache OK");
    setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes", DEFAULT_bytesDefault));
-   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxBytes OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytes OK");
    setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
-   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxBytesCache OK");
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytesCache OK");
 
    setStoreSwapLevel(global_.getProperty().getLongProperty(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*maxBytesCache_)));
    setStoreSwapBytes(global_.getProperty().getLongProperty(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*maxBytesCache_)));
    setReloadSwapLevel(global_.getProperty().getLongProperty(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*maxBytesCache_)));
    setReloadSwapBytes(global_.getProperty().getLongProperty(prefix+"reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio*maxBytesCache_)));
 
-   if (log_.TRACE) log_.trace(ME, "::initialize: values for the swap control set");
+   if (log_.trace()) log_.trace(ME, "::initialize: values for the swap control set");
 
    setExpires(global_.getProperty().getTimestampProperty(prefix+"expires", DEFAULT_maxExpires));
    setOnOverflow(global_.getProperty().getStringProperty(prefix+"onOverflow", DEFAULT_onOverflow));
@@ -92,7 +92,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    setType(global_.getProperty().getStringProperty(prefix+"type", DEFAULT_type));
    setVersion(global_.getProperty().getStringProperty(prefix+"version", DEFAULT_version));
 
-   if (log_.TRACE) log_.trace(ME, "::initialize: going to set specific node properties");
+   if (log_.trace()) log_.trace(ME, "::initialize: going to set specific node properties");
 
    if (nodeId_ != "") {
       setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg["+nodeId_+"]", getMaxMsg()));

@@ -55,8 +55,8 @@ SecurityQos SecurityQosFactory::parse(const string& xmlQoS_literal)
  */
 void SecurityQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 {
-   if (log_.CALL) log_.call(ME, "startElement");
-   if (log_.TRACE) {
+   if (log_.call()) log_.call(ME, "startElement");
+   if (log_.trace()) {
       string txt = SaxHandlerBase::getStartElementAsString(name, attrs);
       log_.trace(ME, string("startElement: ") + txt);
    }

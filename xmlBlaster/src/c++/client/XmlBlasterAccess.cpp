@@ -36,14 +36,14 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
 
 XmlBlasterAccess::~XmlBlasterAccess()
 {
-   if (log_.CALL) log_.call(ME, "destructor");
+   if (log_.call()) log_.call(ME, "destructor");
    if (cbServer_) {
       CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
       CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
       global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
       cbServer_ = NULL;
    }
-   if (log_.TRACE) log_.trace(ME, "destructor: going to delete the connection");
+   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
    if (connection_) {
       connection_->shutdown();
       delete connection_;
@@ -52,7 +52,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
    deliveryManager_    = NULL;
    updateClient_       = NULL;
    connectionProblems_ = NULL;
-   if (log_.TRACE) log_.trace(ME, "destructor ended");
+   if (log_.trace()) log_.trace(ME, "destructor ended");
 }
 
 
@@ -84,7 +84,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
       connection_->initFailsafe(connectionProblems_);
       connectionProblems_ = NULL;
    }
-   if (log_.TRACE) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
+   if (log_.trace()) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
    connectReturnQos_ = connection_->connect(connectQos_);
    return connectReturnQos_;
 }
@@ -101,7 +101,7 @@ void XmlBlasterAccess::createDefaultCbServer()
    addr.setType(cbServer_->getCbProtocol());
    prop.setCallbackAddress(addr);
    connectQos_.setSessionCbQueueProperty(prop);
-   if (log_.TRACE) log_.trace(ME, string("::createDefaultCbServer: connectQos: ") + connectQos_.toXml());
+   if (log_.trace()) log_.trace(ME, string("::createDefaultCbServer: connectQos: ") + connectQos_.toXml());
    log_.info(ME, "Callback settings: " + prop.getSettings());
 }
 
@@ -109,7 +109,7 @@ I_CallbackServer*
 XmlBlasterAccess::initCbServer(const string& loginName, const string& type, const string& version)
 {
    log_.call(ME, "::initCbServer");
-   if (log_.TRACE) log_.trace(ME, string("Using 'client.cbProtocol=") + type + string("' to be used by ") + getServerNodeId() + string(", trying to create the callback server ..."));
+   if (log_.trace()) log_.trace(ME, string("Using 'client.cbProtocol=") + type + string("' to be used by ") + getServerNodeId() + string(", trying to create the callback server ..."));
    I_CallbackServer* server = &(global_.getCbServerPluginManager().getPlugin(instanceName_, type, version));
    server->initialize(loginName, *this);
    return server;
@@ -127,14 +127,14 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
    bool ret1 = true;
    bool ret2 = true;
    bool ret3 = true;
-   if (log_.CALL) {
+   if (log_.call()) {
       log_.call(ME, string("disconnect called with flush='") + Global::getBoolAsString(flush) + 
                               "' shutdown='" + Global::getBoolAsString(shutdown) + 
                     "' shutdownCb='" + Global::getBoolAsString(shutdownCb) + "'");
    }
 
-   if (log_.TRACE) log_.trace(ME, "disconnecting the client connection");
-   if (log_.DUMP) log_.dump(ME, string("disconnect: the qos is:\n") + qos.toXml());
+   if (log_.trace()) log_.trace(ME, "disconnecting the client connection");
+   if (log_.dump()) log_.dump(ME, string("disconnect: the qos is:\n") + qos.toXml());
    if (connection_ != NULL) {
       ret1  = connection_->disconnect(qos);
             if (shutdown) ret2 = connection_->shutdown();
@@ -205,8 +205,8 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 
 SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "subscribe");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "subscribe");
+   if (log_.dump()) {
       log_.dump(ME, string("subscribe. The key:\n") + key.toXml());
       log_.dump(ME, string("subscribe. The Qos:\n") + qos.toXml());
    }
@@ -215,8 +215,8 @@ SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const Su
 
 vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "get");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "get");
+   if (log_.dump()) {
       log_.dump(ME, string("get. The key:\n") + key.toXml());
       log_.dump(ME, string("get. The Qos:\n") + qos.toXml());
    }
@@ -226,8 +226,8 @@ vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 vector<UnSubscribeReturnQos> 
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "unSubscribe");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "unSubscribe");
+   if (log_.dump()) {
       log_.dump(ME, string("unSubscribe. The key:\n") + key.toXml());
       log_.dump(ME, string("unSubscribe. The Qos:\n") + qos.toXml());
    }
@@ -236,8 +236,8 @@ XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& q
 
 PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
 {
-   if (log_.CALL) log_.call(ME, "publish");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "publish");
+   if (log_.dump()) {
       log_.dump(ME, string("publish. The msgUnit:\n") + msgUnit.toXml());
    }
    return connection_->publish(msgUnit);
@@ -245,8 +245,8 @@ PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
 
 void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
 {
-   if (log_.CALL) log_.call(ME, "publishOneway");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "publishOneway");
+   if (log_.dump()) {
       for (int i=0; i < msgUnitArr.size(); i++) {
              log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
@@ -256,8 +256,8 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
 
 vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUnitArr)
 {
-   if (log_.CALL) log_.call(ME, "publishArr");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "publishArr");
+   if (log_.dump()) {
       for (int i=0; i < msgUnitArr.size(); i++) {
              log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
@@ -267,8 +267,8 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUni
 
 vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "erase");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "erase");
+   if (log_.dump()) {
       log_.dump(ME, string("erase. The key:\n") + key.toXml());
       log_.dump(ME, string("erase. The Qos:\n") + qos.toXml());
    }
@@ -278,9 +278,9 @@ vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQ
 string
 XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, void *content, long contentSize, UpdateQos &updateQos)
 {
-   if (log_.CALL) log_.call(ME, "::update");
-   if (log_.TRACE) log_.trace(ME, string("update. The sessionId is '") + sessionId + "'");
-   if (log_.DUMP) {
+   if (log_.call()) log_.call(ME, "::update");
+   if (log_.trace()) log_.trace(ME, string("update. The sessionId is '") + sessionId + "'");
+   if (log_.dump()) {
       log_.dump(ME, string("update. The key:\n") + updateKey.toXml());
       log_.dump(ME, string("update. The Qos:\n") + updateQos.toXml());
    }
@@ -363,7 +363,7 @@ int main(int args, char* argv[])
        ConnectReturnQos retQos = xmlBlasterAccess.connect(connectQos, NULL);
        log.info("", "Successfully connect to xmlBlaster");
 
-       if (log.TRACE) log.trace("main", "Subscribing using XPath syntax ...");
+       if (log.trace()) log.trace("main", "Subscribing using XPath syntax ...");
        SubscribeKey subKey(glob,"//test","XPATH");
        log.info("main", string("subscribe key: ") + subKey.toXml());
        SubscribeQos subQos(glob);

@@ -44,7 +44,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
 
 ConnectionsHandler::~ConnectionsHandler()
 {
-   if (log_.CALL) log_.call(ME, "destructor");
+   if (log_.call()) log_.call(ME, "destructor");
    doStopPing_ = true;
    while (pingIsStarted_) {
       Thread::sleep(200);
@@ -67,18 +67,18 @@ ConnectionsHandler::~ConnectionsHandler()
    }
    delete adminQueue_;
    adminQueue_ = NULL;
-   if (log_.TRACE) log_.trace(ME, "destructor: going to delete the connectQos");
+   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connectQos");
    delete connectQos_;
    delete connectReturnQos_;
    status_ = END;
-   if (log_.TRACE) log_.trace(ME, "destructor ended");
+   if (log_.trace()) log_.trace(ME, "destructor ended");
 } 
 
 
 ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 {
-   if (log_.CALL) log_.call(ME, string("::connect status is '") + lexical_cast<string>(status_) + "'");
-   if (log_.DUMP) log_.dump(ME, string("::connect, the qos is: ") + qos.toXml());
+   if (log_.call()) log_.call(ME, string("::connect status is '") + lexical_cast<string>(status_) + "'");
+   if (log_.dump()) log_.dump(ME, string("::connect, the qos is: ") + qos.toXml());
    Lock lock(connectMutex_);
    if (isConnected()) {
       log_.warn(ME, "connect: you are already connected");
@@ -92,7 +92,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    connectQos_ = new ConnectQos(qos);
    retries_ = connectQos_->getAddress().getRetries();
    long pingInterval = connectQos_->getAddress().getPingInterval();
-   if (log_.TRACE) {
+   if (log_.trace()) {
       log_.trace(ME, string("connect: number of retries during communication failure: ") + lexical_cast<string>(retries_));
       log_.trace(ME, string("connect: Ping Interval: ") + lexical_cast<string>(pingInterval));
    }
@@ -111,10 +111,10 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
       connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
    }
    catch (XmlBlasterException &ex) {
-      if (log_.TRACE) log_.trace(ME, "exception occured when connecting");
+      if (log_.trace()) log_.trace(ME, "exception occured when connecting");
       if ( ex.isCommunication() ) return queueConnect();
       else {
-         if (log_.TRACE) log_.trace(ME, string("the exception in connect is ") + ex.toXml());
+         if (log_.trace()) log_.trace(ME, string("the exception in connect is ") + ex.toXml());
          throw ex;
       }
    }                                                                                                                                                                                                                                                                                    
@@ -129,7 +129,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    */
    connectQos_->getSessionQos().setSecretSessionId(lastSessionId_);
 
-   if (log_.TRACE) {
+   if (log_.trace()) {
       log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
    }
    enum States oldState = status_;
@@ -137,15 +137,15 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    if (connectionProblems_) connectionProblems_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
-   if (log_.DUMP) log_.dump(ME, string("::connect, the return qos is: ") + connectReturnQos_->toXml());
+   if (log_.dump()) log_.dump(ME, string("::connect, the return qos is: ") + connectReturnQos_->toXml());
    return *connectReturnQos_;
 }
 
 bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
 {
    Lock lock(connectMutex_);
-   if (log_.CALL) log_.call(ME, "disconnect");
-   if (log_.DUMP) log_.dump(ME, string("::disconnect, the qos is: ") + qos.toXml());
+   if (log_.call()) log_.call(ME, "disconnect");
+   if (log_.dump()) log_.dump(ME, string("::disconnect, the qos is: ") + qos.toXml());
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "disconnect");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "disconnect");
@@ -199,9 +199,9 @@ string ConnectionsHandler::ping(const string& qos)
 
 SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "subscribe");
-   if (log_.DUMP) log_.dump(ME, string("::subscribe, the key is: ") + key.toXml());
-   if (log_.DUMP) log_.dump(ME, string("::subscribe, the qos is: ") + qos.toXml());
+   if (log_.call()) log_.call(ME, "subscribe");
+   if (log_.dump()) log_.dump(ME, string("::subscribe, the key is: ") + key.toXml());
+   if (log_.dump()) log_.dump(ME, string("::subscribe, the qos is: ") + qos.toXml());
 
 //   Lock lock(connectionMutex_);
 
@@ -223,9 +223,9 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
 
 vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "get");
-   if (log_.DUMP) log_.dump(ME, string("::get, the key is: ") + key.toXml());
-   if (log_.DUMP) log_.dump(ME, string("::get, the qos is: ") + qos.toXml());
+   if (log_.call()) log_.call(ME, "get");
+   if (log_.dump()) log_.dump(ME, string("::get, the key is: ") + key.toXml());
+   if (log_.dump()) log_.dump(ME, string("::get, the qos is: ") + qos.toXml());
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "get");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "get");
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "get");
@@ -242,9 +242,9 @@ vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos
 vector<UnSubscribeReturnQos> 
    ConnectionsHandler::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "unSubscribe");
-   if (log_.DUMP) log_.dump(ME, string("::unSubscribe, the key is: ") + key.toXml());
-   if (log_.DUMP) log_.dump(ME, string("::unSubscribe, the qos is: ") + qos.toXml());
+   if (log_.call()) log_.call(ME, "unSubscribe");
+   if (log_.dump()) log_.dump(ME, string("::unSubscribe, the key is: ") + key.toXml());
+   if (log_.dump()) log_.dump(ME, string("::unSubscribe, the qos is: ") + qos.toXml());
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "unSubscribe");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "unSubscribe");
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "unSubscribe");
@@ -263,8 +263,8 @@ vector<UnSubscribeReturnQos>
 
 PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 {
-   if (log_.CALL) log_.call(ME, "publish");
-   if (log_.DUMP) log_.dump(ME, string("::publish, the msgUnit is: ") + msgUnit.toXml());
+   if (log_.call()) log_.call(ME, "publish");
+   if (log_.dump()) log_.dump(ME, string("::publish, the msgUnit is: ") + msgUnit.toXml());
    Lock lock(publishMutex_);
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publish");
    if (status_ == POLLING) return queuePublish(msgUnit);
@@ -275,7 +275,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
          msgUnit.getQos().setSender(connectReturnQos_->getSessionQos());
       }
       return connection_->publish(msgUnit);
-      if (log_.TRACE) log_.trace(ME, "publish successful");
+      if (log_.trace()) log_.trace(ME, "publish successful");
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
@@ -289,7 +289,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 
 void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 {
-   if (log_.CALL) log_.call(ME, "publishOneway");
+   if (log_.call()) log_.call(ME, "publishOneway");
    Lock lock(publishMutex_);
 
    // fill in the sender absolute name
@@ -320,7 +320,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 
 vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgUnitArr)
 {
-   if (log_.CALL) log_.call(ME, "publishArr");
+   if (log_.call()) log_.call(ME, "publishArr");
    Lock lock(publishMutex_);
 
    // fill in the sender absolute name
@@ -358,9 +358,9 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 
 vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const EraseQos& qos)
 {
-   if (log_.CALL) log_.call(ME, "erase");
-   if (log_.DUMP) log_.dump(ME, string("::erase, the key is: ") + key.toXml());
-   if (log_.DUMP) log_.dump(ME, string("::erase, the qos is: ") + qos.toXml());
+   if (log_.call()) log_.call(ME, "erase");
+   if (log_.dump()) log_.dump(ME, string("::erase, the key is: ") + key.toXml());
+   if (log_.dump()) log_.dump(ME, string("::erase, the qos is: ") + qos.toXml());
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "erase");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "erase");
@@ -417,9 +417,9 @@ void ConnectionsHandler::timeout(void *userData)
    pingIsStarted_ = false;
    timestamp_ = 0;
    if (doStopPing_) return; // then it must stop
-   if ( log_.CALL ) log_.call(ME, "ping timeout occured");
+   if ( log_.call() ) log_.call(ME, "ping timeout occured");
    if (status_ == CONNECTED) { // then I am pinging
-      if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
+      if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
       try {
          if (connection_) {
             connection_->ping("<qos/>");
@@ -433,10 +433,10 @@ void ConnectionsHandler::timeout(void *userData)
    }
  
    if (status_ == POLLING) {
-      if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'POLLING'");
+      if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'POLLING'");
       try {
          if ((connection_) && (connectQos_)) {
-            if ( log_.TRACE ) log_.trace(ME, "ping timeout: going to retry a connection");
+            if ( log_.trace() ) log_.trace(ME, "ping timeout: going to retry a connection");
  
             ConnectReturnQos retQos = connection_->connect(*connectQos_);
             if (connectReturnQos_) delete connectReturnQos_;
@@ -444,7 +444,7 @@ void ConnectionsHandler::timeout(void *userData)
             string sessionId = connectReturnQos_->getSessionQos().getSecretSessionId();
             log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
  
-            if ( log_.TRACE ) {
+            if ( log_.trace() ) {
                log_.trace(ME, "ping timeout: re-connection was successful");
                log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
             }
@@ -505,7 +505,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
       queue_ = new MsgQueue(global_, connectQos_->getClientQueueProperty());
 
    }
-   if (log_.TRACE) 
+   if (log_.trace()) 
       log_.trace(ME, string("queuePublish: entry '") + msgUnit.getKey().getOid() + "' has been queued");
    PublishReturnQos retQos(global_);
    retQos.setKeyOid(msgUnit.getKey().getOid());
@@ -517,10 +517,10 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
 
 ConnectReturnQos& ConnectionsHandler::queueConnect()
 {
-   if (log_.CALL) log_.call(ME, string("::queueConnect with sessionQos: '") + connectQos_->getSessionQos().getAbsoluteName() + "'");
+   if (log_.call()) log_.call(ME, string("::queueConnect with sessionQos: '") + connectQos_->getSessionQos().getAbsoluteName() + "'");
    long tmp = connectQos_->getSessionQos().getPubSessionId(); 
    if ( tmp <= 0) {
-      if (log_.TRACE) log_.trace(ME, string("::queueConnect, the public session id is '") + lexical_cast<string>(tmp));
+      if (log_.trace()) log_.trace(ME, string("::queueConnect, the public session id is '") + lexical_cast<string>(tmp));
       throw XmlBlasterException(USER_CONNECT, ME + "::queueConnect", "queueing connection request not possible because you did not specify a positive public sessionId");
    }
 
@@ -528,7 +528,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
       log_.info(ME, "::queueConnect: created a client queue");
       queue_ = new MsgQueue(global_, connectQos_->getClientQueueProperty());
    }
-   if (log_.TRACE) 
+   if (log_.trace()) 
       log_.trace(ME, string("queueConnect: entry '") + connectQos_->getSessionQos().getAbsoluteName() + "' has been queued");
 
    connectReturnQos_ = new ConnectReturnQos(*connectQos_);
@@ -555,7 +555,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
  */
 long ConnectionsHandler::flushQueue()
 {
-   if (log_.CALL) log_.call(ME, "flushQueue");
+   if (log_.call()) log_.call(ME, "flushQueue");
 //   Lock lock(connectionMutex_);
    return flushQueueUnlocked(queue_, true);
 }  
@@ -563,7 +563,7 @@ long ConnectionsHandler::flushQueue()
    
 long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove)
 {
-   if ( log_.CALL ) log_.call(ME, "flushQueueUnlocked");
+   if ( log_.call() ) log_.call(ME, "flushQueueUnlocked");
            if (!queueToFlush || queueToFlush->empty()) return 0;
    if (status_ != CONNECTED || connection_ == NULL) return -1;
 
@@ -574,9 +574,9 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
       vector<EntryType>::const_iterator iter = entries.begin();
       while (iter != entries.end()) {
          try {
-            if (log_.TRACE) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
+            if (log_.trace()) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
             (*iter)->send(*this);
-            if (log_.TRACE) log_.trace(ME, "content to xmlBlaster successfully sent");
+            if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
          }
          catch (XmlBlasterException &ex) {
            if (ex.isCommunication()) toPollingOrDead();
@@ -622,7 +622,7 @@ bool ConnectionsHandler::startPinger()
       delay        = tmp.getAddress().getDelay();
       pingInterval = tmp.getAddress().getPingInterval();
    }
-   if (log_.TRACE) {
+   if (log_.trace()) {
       log_.trace(ME, string("startPinger: parameters are: delay '") + lexical_cast<string>(delay)  + "' and pingInterval '" + lexical_cast<string>(pingInterval));
    }
    if (delay > 0 && pingInterval > 0) {
@@ -642,7 +642,7 @@ bool ConnectionsHandler::isConnected() const
 
 ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
 {
-   if (log_.CALL) log_.call(ME, "::connectRaw");
+   if (log_.call()) log_.call(ME, "::connectRaw");
    ConnectReturnQos retQos = connection_->connect(connectQos);
    if (connectQos_) {
       delete connectQos_;

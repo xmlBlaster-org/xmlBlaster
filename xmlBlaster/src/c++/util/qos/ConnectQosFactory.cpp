@@ -75,7 +75,7 @@ void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int len
       delete chHelper;
       if (trimmedCh != NULL) {
          character_ += string(trimmedCh);
-         if (log_.TRACE)
+         if (log_.trace())
             log_.trace(ME, string("characters, character:'") + character_ + string("'"));
          delete trimmedCh;
       }
@@ -84,7 +84,7 @@ void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int len
 
 void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& attrs) {
    log_.call(ME, "startElement");
-   if (log_.TRACE) {
+   if (log_.trace()) {
       char *help = XMLString::transcode(name);
       log_.trace(ME, string("startElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
       delete help;
@@ -151,7 +151,7 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
 
 void ConnectQosFactory::endElement(const XMLCh* const name) {
    log_.trace(ME, "endElement");
-   if (log_.TRACE) {
+   if (log_.trace()) {
       char *help = XMLString::transcode(name);
       log_.trace(ME, string("endElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
       delete help;

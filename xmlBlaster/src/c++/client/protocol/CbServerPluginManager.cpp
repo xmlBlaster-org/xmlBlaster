@@ -28,7 +28,7 @@ CbServerPluginManager::CbServerPluginManager(Global& global)
      log_(global.getLog("client"))
 //     serverMap_()
 {
-   if (log_.CALL) log_.call(ME, "::constructor");
+   if (log_.call()) log_.call(ME, "::constructor");
 }
 
 
@@ -48,8 +48,8 @@ CbServerPluginManager::~CbServerPluginManager()
 
 I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, const string& type, const string& version)
 {
-   if (log_.CALL) log_.call(ME, "::getPlugin");
-   if (log_.TRACE)
+   if (log_.call()) log_.call(ME, "::getPlugin");
+   if (log_.trace())
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
 //   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
    if (type == "IOR") {
@@ -84,8 +84,8 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
 
 void CbServerPluginManager::releasePlugin(const string& instanceName, const string& type, const string& version)
 {
-   if (log_.CALL) log_.call(ME, "::releasePlugin");
-   if (log_.TRACE)
+   if (log_.call()) log_.call(ME, "::releasePlugin");
+   if (log_.trace())
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
       corba::CorbaDriver::killInstance(instanceName);

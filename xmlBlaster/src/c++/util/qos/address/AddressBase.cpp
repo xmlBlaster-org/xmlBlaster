@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.6 2003/01/24 21:45:53 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.7 2003/02/07 11:41:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -476,7 +476,7 @@ string AddressBase::getDispatchPlugin() const
  */
 string AddressBase::toXml(const string& extraOffset) const
 {
-   if (log_.CALL) log_.call(ME, "::toXml");
+   if (log_.call()) log_.call(ME, "::toXml");
    string ret;
    string offset = string("\n   ");
    offset += extraOffset;

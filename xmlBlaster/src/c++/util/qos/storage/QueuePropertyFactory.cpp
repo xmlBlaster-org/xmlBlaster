@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.4 2003/01/17 13:07:21 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.5 2003/02/07 11:41:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -52,7 +52,7 @@ QueuePropertyBase QueuePropertyFactory::getQueueProperty()
 // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
 void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 {
-   if (log_.CALL) {
+   if (log_.call()) {
       char* help = XMLString::transcode(name);
       log_.call(ME, string("startElement: ") + help);
       delete help;
@@ -83,19 +83,19 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
 
    // not inside any of the sub-elements (the root element)
    prop_ = QueuePropertyBase(global_, "");
-   if (log_.TRACE) log_.trace(ME, "queue properties are created");
+   if (log_.trace()) log_.trace(ME, "queue properties are created");
    int len = attrs.getLength();
-   if (log_.TRACE) log_.trace(ME, string("length retrieved: ") + lexical_cast<string>(len));
+   if (log_.trace()) log_.trace(ME, string("length retrieved: ") + lexical_cast<string>(len));
    if (len > 0) {
       int i=0;
 
       string relating;
       if (getStringAttr(attrs, RELATING, relating)) {
-         if (log_.TRACE) log_.trace(ME, "attribute 'relating' found. it is '" + relating + "'");
+         if (log_.trace()) log_.trace(ME, "attribute 'relating' found. it is '" + relating + "'");
          if (relating == "callback") prop_.initialize("callback");
          else prop_.initialize("");
          prop_.setRelating(relating);
-         if (log_.TRACE) log_.trace(ME, string("the queue is relating to ") + relating);
+         if (log_.trace()) log_.trace(ME, string("the queue is relating to ") + relating);
       }
 
       for (i = 0; i < len; i++) {
