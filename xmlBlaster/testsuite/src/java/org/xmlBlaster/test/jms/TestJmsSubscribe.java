@@ -48,6 +48,8 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    private ConnectionFactory factory;
    private Destination topic;
    private Connection connection;
+   
+   /** used for waiting for responses */
    private Object latch = new Object();
    private long[] timestamps;
    private String[] args;
