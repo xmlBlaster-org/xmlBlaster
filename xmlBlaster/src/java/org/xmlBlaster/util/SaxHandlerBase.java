@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.24 2003/10/03 19:32:18 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.25 2003/12/07 11:57:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -35,7 +35,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 {
    private String ME = "SaxHandlerBase";
 
-   private final Global glob;
+   protected final Global glob;
    private final LogChannel log;
 
    // The current location

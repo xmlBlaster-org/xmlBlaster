@@ -3,13 +3,14 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.18 2002/11/26 12:39:33 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.19 2003/12/07 11:57:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 
 /**
@@ -27,6 +28,7 @@ public class XmlQoSBase extends SaxHandlerBase
 {
    private String ME = "XmlQoSBase";
    protected boolean inQos = false;     // parsing inside <qos> ? </qos>
+   protected ClientProperty clientProperty;
 
 
    /**
@@ -88,6 +90,11 @@ public class XmlQoSBase extends SaxHandlerBase
          Thread.currentThread().dumpStack();
          return true;
       }
+      if (name.equalsIgnoreCase("clientProperty")) {
+         this.clientProperty = new ClientProperty(this.glob, attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
+         character.setLength(0);
+         return true;
+      }
       return false;
    }
 
@@ -120,6 +127,15 @@ public class XmlQoSBase extends SaxHandlerBase
          character.setLength(0);
          return true;
       }
+
+      if (name.equalsIgnoreCase("clientProperty")) {
+         String tmp = character.toString().trim();
+         if (this.clientProperty != null) {
+            this.clientProperty.setValueRaw(tmp);
+         }
+         return true;
+      }
+
       return false;
    }
 

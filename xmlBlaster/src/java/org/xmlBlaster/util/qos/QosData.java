@@ -354,131 +354,240 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 
    /**
     * Sets the client property to the given value
-    * @param key
-    * @param value
     */   
-   public final void setClientProperty(Object key, Object value) {
-      this.clientProperties.put(key, value);
+   public final void addClientProperty(ClientProperty clientProperty) {
+      this.clientProperties.put(clientProperty.getName(), clientProperty);
    }
-   
+
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param type For example Constants.TYPE_FLOAT
+    * @param value Of any type, it will be forced to the given <code>type</code>
+    */   
+   public final void addClientProperty(String key, String type, Object value) {
+      String encoding = null;
+      String str = (value == null) ? null : value.toString();
+      ClientProperty clientProperty = new ClientProperty(this.glob, key, type, encoding, str);
+      this.clientProperties.put(clientProperty.getName(), clientProperty);
+   }
+
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value for example a Float or Integer value
+    */   
+   public final void addClientProperty(String key, Object value) {
+      addClientProperty(key, ClientProperty.getPropertyType(value), value);
+   }
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, boolean value) {
-      this.clientProperties.put(key, new Boolean(value));
+   public final void addClientProperty(String key, boolean value) {
+      addClientProperty(key, Constants.TYPE_BOOLEAN, ""+value);
    }
-   
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, byte value) {
-      this.clientProperties.put(key, new Byte(value));
+   public final void addClientProperty(String key, int value) {
+      addClientProperty(key, Constants.TYPE_INT, ""+value);
    }
-   
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, double value) {
-      this.clientProperties.put(key, new Double(value));
+   public final void addClientProperty(String key, byte value) {
+      addClientProperty(key, Constants.TYPE_BYTE, ""+value);
    }
-   
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, float value) {
-      this.clientProperties.put(key, new Float(value));
+   public final void addClientProperty(String key, long value) {
+      addClientProperty(key, Constants.TYPE_LONG, ""+value);
    }
-   
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, int value) {
-      this.clientProperties.put(key, new Integer(value));
+   public final void addClientProperty(String key, short value) {
+      addClientProperty(key, Constants.TYPE_SHORT, ""+value);
    }
-   
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, long value) {
-      this.clientProperties.put(key, new Long(value));
+   public final void addClientProperty(String key, double value) {
+      addClientProperty(key, Constants.TYPE_DOUBLE, ""+value);
    }
-   
+
    /**
     * Sets the client property to the given value
     * @param key
     * @param value
     */   
-   public final void setClientProperty(Object key, short value) {
-      this.clientProperties.put(key, new Short(value));
+   public final void addClientProperty(String key, float value) {
+      addClientProperty(key, Constants.TYPE_FLOAT, ""+value);
+   }
+
+   /**
+    * Access the client property. 
+    * @param name The property key
+    * @return The ClientProperty instance or null if not found
+    */
+   public final ClientProperty getClientProperty(String name) {
+      if (name == null) return null;
+      return (ClientProperty)this.clientProperties.get(name);
    }
    
    /**
-    * @return a map containing all client properties. The return is 
-    * unordered.
+    * Check for client property. 
+    * @param name The property key
+    * @return true if the property exists
+    */
+   public final boolean propertyExists(String name) {
+      if (name == null) return false;
+      return (this.clientProperties.get(name) != null);
+   }
+   
+   /**
+    * Access the String client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final String getClientProperty(String name, String defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getStringValue();
+   }
+   
+   /**
+    * Access the integer client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final int getClientProperty(String name, int defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getIntValue();
+   }
+   
+   /**
+    * Access the boolean client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final boolean getClientProperty(String name, boolean defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getBooleanValue();
+   }
+   
+   /**
+    * Access the double client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final double getClientProperty(String name, double defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getDoubleValue();
+   }
+   
+   /**
+    * Access the float client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final float getClientProperty(String name, float defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getFloatValue();
+   }
+   
+   /**
+    * Access the byte client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final byte getClientProperty(String name, byte defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getByteValue();
+   }
+   
+   /**
+    * Access the byte[] client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final byte[] getClientProperty(String name, byte[] defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getBlobValue();
+   }
+   
+   /**
+    * Access the long client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final long getClientProperty(String name, long defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getLongValue();
+   }
+   
+   /**
+    * Access the short client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final short getClientProperty(String name, short defaultValue) {
+      if (name == null) return defaultValue;
+      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+      if (p == null) return defaultValue;
+      return p.getShortValue();
+   }
+   
+   /**
+    * Access all client properties. 
+    * @return a map The return is unordered and the map values are of type ClientProperty. 
+    * @see org.xmlBlaster.util.qos.ClientProperty
     */
    public final Map getClientProperties() {
       return this.clientProperties;
    }
 
-   /**
-    * Returns the type of the object as a string
-    * @param val
-    * @return
-    */
-   public final static String getPropertyType(Object val) {
-      if (val instanceof String) return null; // default
-      if (val instanceof Boolean) return "boolean";
-      if (val instanceof Byte) return "byte";
-      if (val instanceof Double) return "double";
-      if (val instanceof Float) return "float";
-      if (val instanceof Integer) return "int";
-      if (val instanceof Long) return "long";
-      if (val instanceof Short) return "short";
-      return null; 
-   }
-
-   /**
-    * 
-    * @param type the type of the object
-    * @param val the object itself
-    * @return null if the type is unrecognized, a String object if the
-    * type is null (implicitly String) or the correct type if a mapping has been found.
-    */
-   public final static Object getPropertyObject(String type, String val) {
-      if (type == null) return val;
-      if ("boolean".equalsIgnoreCase(type)) return new Boolean(val);
-      if ("byte".equalsIgnoreCase(type)) return new Byte(val);
-      if ("double".equalsIgnoreCase(type)) return new Double(val);
-      if ("float".equalsIgnoreCase(type)) return new Float(val);
-      if ("int".equalsIgnoreCase(type)) return new Integer(val);
-      if ("short".equalsIgnoreCase(type)) return new Short(val);
-      if ("long".equalsIgnoreCase(type)) return new Long(val);
-      return null; 
-   }
-
-   
    public final String writePropertiesXml(String offset) {
       if (this.clientProperties.size() > 0) {
-         Object[] keys = this.clientProperties.keySet().toArray();
-         StringBuffer sb = new StringBuffer();
-         for (int i=0; i < keys.length; i++) {
-            Object value = this.clientProperties.get(keys[i]);
-            String type = getPropertyType(value);
-            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]);
-            if (type != null) sb.append("' type='").append(type);
-            sb.append("'>").append(value).append("</clientProperty>");
+         Object[] arr = this.clientProperties.keySet().toArray();
+         StringBuffer sb = new StringBuffer(arr.length*256);
+         for (int i=0; i < arr.length; i++) {
+            ClientProperty p = (ClientProperty)this.clientProperties.get(arr[i]);
+            sb.append(p.toXml(offset));
          }
          return sb.toString();
       }

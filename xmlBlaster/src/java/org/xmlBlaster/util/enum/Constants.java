@@ -28,6 +28,19 @@ public class Constants
    public final static long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
    public final static long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
 
+   public final static String ENCODING_BASE64 = "base64";
+   public final static String ENCODING_NONE = null;
+
+   public final static String TYPE_BLOB = "byte[]";
+   /* See JMS types */
+   public final static String TYPE_BOOLEAN = "boolean";
+   public final static String TYPE_BYTE = "byte";
+   public final static String TYPE_DOUBLE = "double";
+   public final static String TYPE_FLOAT = "float";
+   public final static String TYPE_INT = "int";
+   public final static String TYPE_SHORT = "short";
+   public final static String TYPE_LONG = "long";
+
    /**
     * The native authentication instance of the xmlBlaster server is available
     * under this key in Global.instance().getProperties(). 
@@ -148,8 +161,13 @@ public class Constants
    /** JDBC access messages */
    public final static String JDBC_OID = INTERNAL_OID_PREFIX + "jdbc";
 
-   /** message queue onOverflow handling */
+   /** message queue onOverflow handling "__sys__deadMessage */
    public final static String OID_DEAD_LETTER = INTERNAL_OID_PREFIX + "deadMessage";
+
+   /** Dead messages transport in their QoS clientProperty the original message key in '__key' */
+   public final static String CLIENTPROPERTY_DEADMSGKEY = INTERNAL_OID_PREFIX_FOR_CORE + "key";
+   /** Dead messages transport in their QoS clientProperty the original message QoS in '__qos' */
+   public final static String CLIENTPROPERTY_DEADMSGQOS = INTERNAL_OID_PREFIX_FOR_CORE + "qos";
 
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";

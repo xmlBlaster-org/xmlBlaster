@@ -57,8 +57,6 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 
    private AccessFilterQos tmpFilter = null;
    private HistoryQos tmpHistory = null;
-   private String clientPropertyKey;
-   private String clientPropertyType;
    
    /**
     * Can be used as singleton. 
@@ -250,13 +248,6 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          queryQosData.setMethod(MethodName.UNSUBSCRIBE);
          return;
       }
-
-      if (name.equalsIgnoreCase("clientProperty")) {
-         this.clientPropertyKey = attrs.getValue("name");
-         this.clientPropertyType = attrs.getType("type");
-         character.setLength(0);
-         return;
-      }
    }
 
    /**
@@ -265,8 +256,12 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) {
-      if (super.endElementBase(uri, localName, name) == true)
+      if (super.endElementBase(uri, localName, name) == true) {
+         if (name.equalsIgnoreCase("clientProperty")) {
+            this.queryQosData.addClientProperty(this.clientProperty);
+         }
          return;
+      }
 
       if (name.equalsIgnoreCase("subscribe")) {
          character.setLength(0);
@@ -354,15 +349,6 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
       if (name.equalsIgnoreCase("isUnSubscribe")) {
          character.setLength(0);
-         return;
-      }
-      if (name.equalsIgnoreCase("clientProperty")) {
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0 || this.clientPropertyKey != null) {
-            this.queryQosData.setClientProperty(this.clientPropertyKey, QueryQosData.getPropertyObject(this.clientPropertyType, tmp));
-         }
-         this.clientPropertyKey = null;
-         this.clientPropertyType = null;   
          return;
       }
 
@@ -457,7 +443,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          sb.append(offset).append(" <isUnSubscribe/>");
       }
 
-      sb.append(queryQosData.writePropertiesXml(offset + " "));
+      sb.append(queryQosData.writePropertiesXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)

@@ -135,9 +135,6 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
    private boolean sendRemainingLife = true;
 
-   private String clientPropertyKey;
-   private String clientPropertyType;
-   
    /**
     * Can be used as singleton. 
     */
@@ -554,13 +551,6 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("clientProperty")) {
-         this.clientPropertyKey = attrs.getValue("name");
-         this.clientPropertyType = attrs.getValue("type");
-         character.setLength(0);
-         return;
-      }
-      
       if (name.equalsIgnoreCase("msgDistributor")) {
          if (!this.inTopic) return;
          String typeVersion = attrs.getValue("typeVersion");
@@ -576,8 +566,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) {
-      if (super.endElementBase(uri, localName, name) == true)
+      if (super.endElementBase(uri, localName, name) == true) {
+         if (name.equalsIgnoreCase("clientProperty")) {
+            this.msgQosData.addClientProperty(this.clientProperty);
+         }
          return;
+      }
 
       if(name.equalsIgnoreCase("state")) {
          inState = false;
@@ -749,15 +743,6 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          this.character.setLength(0);
          return;
       }
-      if (name.equalsIgnoreCase("clientProperty")) {
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0 || this.clientPropertyKey != null) {
-            this.msgQosData.setClientProperty(this.clientPropertyKey, MsgQosData.getPropertyObject(this.clientPropertyType, tmp));
-         }
-         this.clientPropertyKey = null;
-         this.clientPropertyType = null;   
-         return;
-      }
 
       character.setLength(0); // reset data from unknown tags
    }
@@ -894,7 +879,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
       }
 
-      sb.append(msgQosData.writePropertiesXml(offset + " "));
+      sb.append(msgQosData.writePropertiesXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)

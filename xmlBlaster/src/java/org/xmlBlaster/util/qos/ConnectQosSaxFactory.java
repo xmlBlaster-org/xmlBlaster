@@ -58,7 +58,7 @@ import org.xml.sax.Attributes;
  *         IOR:10000010033200000099000010....
  *         &lt;burstMode collectTime='400' />
  *      &lt;/callback>
- *   &lt;queue>
+ *   &lt;/queue>
  *&lt;/qos>
  * </pre>
  * NOTE: As a user of the Java client helper classes (client.I_XmlBlasterAccess)
@@ -118,8 +118,6 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private CallbackAddress tmpCbAddr;
    private ClientQueueProperty tmpProp;
    private Address tmpAddr;
-   private String clientPropertyKey;
-   private String clientPropertyType;
    protected String tmpSecurityPluginType;
    protected String tmpSecurityPluginVersion;
 
@@ -332,13 +330,6 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
-      if (name.equalsIgnoreCase("clientProperty")) {
-         this.clientPropertyKey = attrs.getValue("name");
-         this.clientPropertyType = attrs.getValue("type");
-         character.setLength(0);
-         return;
-      }
-
       if (inSecurityService) {
          //Collect everything in character buffer
          character.append("<").append(name);
@@ -361,8 +352,12 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) {
-      if (super.endElementBase(uri, localName, name) == true)
+      if (super.endElementBase(uri, localName, name) == true) {
+         if (name.equalsIgnoreCase("clientProperty")) {
+            this.connectQosData.addClientProperty(this.clientProperty);
+         }
          return;
+      }
 
       //if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
@@ -420,16 +415,6 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setReconnected(new Boolean(tmp).booleanValue());
-         return;
-      }
-
-      if (name.equalsIgnoreCase("clientProperty")) {
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0 || this.clientPropertyKey != null) {
-            this.connectQosData.setClientProperty(this.clientPropertyKey, ConnectQosData.getPropertyObject(this.clientPropertyType, tmp));
-         }
-         this.clientPropertyKey = null;
-         this.clientPropertyType = null;   
          return;
       }
 
@@ -546,7 +531,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
       }
 
-      sb.append(data.writePropertiesXml(offset + " "));
+      sb.append(data.writePropertiesXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</qos>");
 
       return sb.toString();

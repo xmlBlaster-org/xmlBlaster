@@ -9,6 +9,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.Constants;
 
 import org.xml.sax.Attributes;
 
@@ -35,8 +36,6 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
    private final LogChannel log;
 
    private DisconnectQosData disconnectQosData;
-   private String clientPropertyKey;
-   private String clientPropertyType;
    
    /**
     */
@@ -85,14 +84,6 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
          character.setLength(0);
          return;
       }
-
-      if (name.equalsIgnoreCase("clientProperty")) {
-         this.clientPropertyKey = attrs.getValue("name");
-         this.clientPropertyType = attrs.getValue("type");
-         character.setLength(0);
-         return;
-      }
-
    }
 
 
@@ -102,8 +93,12 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) {
-      if (super.endElementBase(uri, localName, name) == true)
+      if (super.endElementBase(uri, localName, name) == true) {
+         if (name.equalsIgnoreCase("clientProperty")) {
+            this.disconnectQosData.addClientProperty(this.clientProperty);
+         }
          return;
+      }
 
       if (name.equalsIgnoreCase("deleteSubjectQueue")) {
          String tmp = character.toString().trim();
@@ -120,17 +115,6 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
          character.setLength(0);
          return;
       }
-
-      if (name.equalsIgnoreCase("clientProperty")) {
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0 || this.clientPropertyKey != null) {
-            this.disconnectQosData.setClientProperty(this.clientPropertyKey, ConnectQosData.getPropertyObject(this.clientPropertyType, tmp));
-         }
-         this.clientPropertyKey = null;   
-         this.clientPropertyType = null;
-         return;
-      }
-
    }
 
    /**
@@ -169,7 +153,7 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
             sb.append(offset).append(" <clearSessions>").append(data.clearSessions()).append("</clearSessions>");
       }
 
-      sb.append(data.writePropertiesXml(offset + " "));
+      sb.append(data.writePropertiesXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</qos>");
 
       return sb.toString();

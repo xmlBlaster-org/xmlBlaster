@@ -16,13 +16,12 @@ import org.apache.commons.codec.binary.Base64;
  * <p/>
  * Examples:
  * <pre>
- *&lt;clientProperty name='transactionId' type='int' encoding=''>
-     120001
- *&lt;/clientProperty>
- *&lt;clientProperty name='transactionId' type='String' encoding='base64'>
-     OKFKAL==
- *&lt;/clientProperty>
+ *&lt;clientProperty name='transactionId' type='int'>120001&lt;/clientProperty>
+ *&lt;clientProperty name='myKey'>Hello World&lt;/clientProperty>
+ *&lt;clientProperty name='myBlob' type='byte[]' encoding='base64'>OKFKAL==&lt;/clientProperty>
  * </pre>
+ * If the attribute <code>type</code> is missing we assume a 'String' property
+ *
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.clientProperty.html">The client.qos.clientProperty requirement</a>
  * @see org.xmlBlaster.test.classtest.ClientPropertyTest
  * @see org.xmlBlaster.test.qos.TestClientProperty
@@ -32,9 +31,10 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
    private final String ME = "ClientProperty";
    private final transient Global glob;
    private final String name;
-   private final String type;
+   private String type;
    private String value;
    private String encoding;
+   public static final boolean isChunked = false;
 
    /**
     * @param name  The unique property key
@@ -48,12 +48,40 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
       this.encoding = encoding;
    }
 
+   /**
+    * @param name  The unique property key
+    * @param type The data type of the value
+    * @param encoding null or Constants.ENCODING_BASE64="base64"
+    */
+   public ClientProperty(Global glob, String name, String type, String encoding, String value) {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.name = name;
+      this.type = type;
+      this.encoding = encoding;
+      setValue(value);
+   }
+
+   /**
+    * Set binary data, will be of type "byte[]" and base64 encoded
+    * @param name  The unique property key
+    * @param value The binary data
+    */
+   public ClientProperty(Global glob, String name, byte[] value) {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.name = name;
+      setValue(value);
+   }
+
    public String getName() {
       return this.name;
    }
 
    public String getType() {
       return this.type;
+   }
+
+   public boolean isBase64() {
+      return Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding);
    }
 
    /**
@@ -64,7 +92,7 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
    }
 
    /**
-    * @return Can be null
+    * @return The value which is decoded (readable) in case it was base64 encoded, can be null
     */
    public String getStringValue() {
       if (this.value == null) return null;
@@ -75,25 +103,71 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
       return this.value;
    }
 
-   /*
-   public String getStringValue() {
-      Object tmp = this.value;
+   /**
+    * @return Can be null
+    */
+   public byte[] getBlobValue() {
+      if (this.value == null) return null;
       if (Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
-         byte[] content = null;
-         if (value instanceof byte[])
-            content = Base64.decodeBase64((byte[])this.value);
-         else
-            content = Base64.decodeBase64(this.value.toString().getBytes());
-         tmp = convertPropertyObject(this.type, new String(content));
+         byte[] content = Base64.decodeBase64(this.value.getBytes());
+         return content;
       }
-      return tmp.toString();
+      return this.value.getBytes();
    }
-   */
 
+   /**
+    * @exception NumberFormatException
+    */
    public int getIntValue() {
-      return ((Integer)convertPropertyObject(Constants.TYPE_INT, getStringValue())).intValue();
+      return (new Integer(getStringValue())).intValue();
    }
 
+   public boolean getBooleanValue() {
+      return (new Boolean(getStringValue())).booleanValue();
+   }
+
+   /**
+    * @exception NumberFormatException
+    */
+   public double getDoubleValue() {
+      return (new Double(getStringValue())).doubleValue();
+   }
+
+   /**
+    * @exception NumberFormatException
+    */
+   public float getFloatValue() {
+      return (new Float(getStringValue())).floatValue();
+   }
+
+   public byte getByteValue() {
+      return (new Byte(getStringValue())).byteValue();
+   }
+
+   /**
+    * @exception NumberFormatException
+    */
+   public long getLongValue() {
+      return (new Long(getStringValue())).longValue();
+   }
+
+   /**
+    * @exception NumberFormatException
+    */
+   public short getShortValue() {
+      return (new Short(getStringValue())).shortValue();
+   }
+
+   /**
+    * Depending on the type we return a Float, Long, Integer, ...
+    */
+   public Object getObjectValue() {
+      return convertPropertyObject(this.type, getStringValue());
+   }
+
+   /**
+    * @return For example Constants.TYPE_INTEGER="int" or Constants.TYPE_BLOB="byte[]"
+    */
    public String getEncoding() {
       return this.encoding;
    }
@@ -103,6 +177,16 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
     */
    public void setValue(String value) {
       setValue(value, this.encoding);
+   }
+
+   /**
+    * Set binary data, will be of type "byte[]" and base64 encoded
+    */
+   public void setValue(byte[] value) {
+      this.type = Constants.TYPE_BLOB;
+      this.encoding = Constants.ENCODING_BASE64;
+      byte[] content = Base64.encodeBase64(value, isChunked);
+      this.value = new String(content);
    }
 
    /**
@@ -126,12 +210,13 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
       }
       if (Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
          this.encoding = Constants.ENCODING_BASE64; // correct case sensitive
-         boolean isChunked = false;
          byte[] content = Base64.encodeBase64(value.getBytes(), isChunked);
          this.value = new String(content);
       }
-      else
+      else {
          this.value = value;
+         getValidatedValueForXml();
+      }
    }
 
    private String getValidatedValueForXml() {
@@ -161,6 +246,7 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
       if (val instanceof Integer) return Constants.TYPE_INT;
       if (val instanceof Long) return Constants.TYPE_LONG;
       if (val instanceof Short) return Constants.TYPE_SHORT;
+      if (val instanceof byte[]) return Constants.TYPE_BLOB;
       return null; 
    }
 
@@ -168,11 +254,14 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
     * Helper to convert 'val' to the given object of type 'type'. 
     * @param type the type of the object
     * @param val the object itself
-    * @return null if the type is unrecognized, a String object if the
-    * type is null (implicitly String) or the correct type if a mapping has been found.
+    * @return null if the type is unrecognized or the value is null; 
+    *         A String object if the type is null (implicitly String)
+    *         or the correct type (for example Float) 
+    *         if a mapping has been found.
     */
    public final static Object convertPropertyObject(String type, String val) {
       if (type == null) return val;
+      if (val == null) return null;
       if (Constants.TYPE_BOOLEAN.equalsIgnoreCase(type)) return new Boolean(val);
       if (Constants.TYPE_BYTE.equalsIgnoreCase(type)) return new Byte(val);
       if (Constants.TYPE_DOUBLE.equalsIgnoreCase(type)) return new Double(val);
@@ -180,6 +269,7 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
       if (Constants.TYPE_INT.equalsIgnoreCase(type)) return new Integer(val);
       if (Constants.TYPE_SHORT.equalsIgnoreCase(type)) return new Short(val);
       if (Constants.TYPE_LONG.equalsIgnoreCase(type)) return new Long(val);
+      if (Constants.TYPE_BLOB.equalsIgnoreCase(type)) return val.getBytes();
       return null; 
    }
    
@@ -211,9 +301,16 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
       if (getEncoding() != null) {
          sb.append(" encoding='").append(getEncoding()).append("'");
       }
-      sb.append(">");
-      sb.append(getValidatedValueForXml());
-      sb.append("</clientProperty>");
+
+      //sb.append(getValidatedValueForXml());
+      String val = getValueRaw();
+      if (val == null)
+         sb.append("/>");
+      else {
+         sb.append(">");
+         sb.append(val);
+         sb.append("</clientProperty>");
+      }
 
       return sb.toString();
    }
