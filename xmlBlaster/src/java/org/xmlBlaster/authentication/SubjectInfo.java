@@ -152,7 +152,8 @@ public class SubjectInfo implements I_AdminSubject
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
       String type = prop.getType();
       String version = prop.getVersion();
-      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.subjectName.getAbsoluteName()), prop);
+      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version,
+                          new StorageId(Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
       this.subjectQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
@@ -328,6 +329,7 @@ public class SubjectInfo implements I_AdminSubject
 
       long numMsgs = 0;
       MsgQueueUpdateEntry entry = null;
+      if (log.TRACE) log.trace(ME, "Forwarding " + this.subjectQueue.getNumOfEntries() + " messages in subcject queue to session queue");
       while (true) {
          try {
             entry = (MsgQueueUpdateEntry)this.subjectQueue.peek(); // none blocking
