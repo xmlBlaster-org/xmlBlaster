@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.26 2002/12/18 12:31:46 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.27 2002/12/19 18:25:39 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -71,7 +71,7 @@ public class PublishFile
       }
       log = glob.getLog("client");
 
-      loginName = glob.getProperty().get("name", ME);
+      loginName = glob.getProperty().get("loginName", ME);
       passwd = glob.getProperty().get("passwd", "secret");
 
       String contentMime = glob.getProperty().get("m", (String)null);
