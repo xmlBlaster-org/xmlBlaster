@@ -18,6 +18,10 @@ DONE:
     Renamed SubscribePluginManager to AccessPluginManager
     Added filter support to get() QoS
 
+  - Changed C++ client to use as a default the newest
+    mico 2.3.7 and xerces 1.7.0
+    Removed 'loginName' parameter in update() method
+
 
 Changes for 0.79e [Mar, 27 2002]
 ================================
