@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.22 2000/05/13 22:45:20 www Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.23 2000/05/14 11:13:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -150,6 +150,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
                pushHandler.setBrowserIsReady( true );
 
+               Log.warning(ME, "Received 'browserReady'");
+
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
                out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='browserReady' " + System.currentTimeMillis() + "</body></html>");
@@ -177,6 +179,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
                // state is only for debugging
                if (Log.TRACE) Log.trace(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
+               Log.warning(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
