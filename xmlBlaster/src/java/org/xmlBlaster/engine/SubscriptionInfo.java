@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-           $Revision: 1.1 $  $Date: 1999/11/11 12:03:46 $
+           $Revision: 1.2 $  $Date: 1999/11/11 12:17:52 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 /**
  * SubscriptionInfo
  * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MessageContainer of exactly one Client
+ * concerning a subscription of exactly one MessageUnitHandler of exactly one Client
  */
 public class SubscriptionInfo implements Comparable
 {

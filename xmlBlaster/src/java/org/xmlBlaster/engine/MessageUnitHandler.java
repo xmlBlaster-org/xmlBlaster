@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      MessageContainer.java
+Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling exactly one message content
-           $Revision: 1.1 $  $Date: 1999/11/11 12:03:46 $
+           $Revision: 1.1 $  $Date: 1999/11/11 12:17:52 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -13,11 +13,11 @@ import java.util.*;
 
 
 /**
- * MessageContainer
+ * Handles a MessageUnit and its subscribers. 
  */
-public class MessageContainer
+public class MessageUnitHandler
 {
-   private String ME = "MessageContainer";
+   private String ME = "MessageUnitHandler";
 
    /**
     * The broker which manages me
@@ -48,13 +48,13 @@ public class MessageContainer
    /**
     * Constructor if a subscription is made on a yet unknown object
     */
-   public MessageContainer(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
+   public MessageUnitHandler(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
    {
       this.uniqueKey = sub.getUniqueKey();
       this.xmlKey = sub.getXmlKey();
       this.content = new byte[0];
 
-      if (Log.CALLS) Log.trace(ME, "Creating new MessageContainer because of subscription. Key=" + uniqueKey);
+      if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
 
       addSubscriber(sub);
    }
@@ -63,7 +63,7 @@ public class MessageContainer
    /**
     * Constructor if a yet unknown object is fed by method set()
     */
-   public MessageContainer(RequestBroker requestBroker, XmlKey xmlKey, byte[] content)
+   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey, byte[] content)
    {
       this.xmlKey = xmlKey;
       this.uniqueKey = xmlKey.getUniqueKey();
@@ -71,7 +71,7 @@ public class MessageContainer
       if (content == null)
          content = new byte[0];
 
-      if (Log.CALLS) Log.trace(ME, "Creating new MessageContainer setting new data. Key=" + uniqueKey);
+      if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
 
       this.content = content;
 

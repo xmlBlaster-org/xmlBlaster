@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.1 $
-           $Date: 1999/11/11 12:03:46 $
+           $Revision: 1.2 $
+           $Date: 1999/11/11 12:17:52 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -78,7 +78,7 @@ public class RequestBroker
 
    /**
     */
-   public MessageContainer getMessageContainer(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   public MessageUnitHandler getMessageUnitHandler(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
       String uniqueKey = xmlKey.getUniqueKey();
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
@@ -86,16 +86,16 @@ public class RequestBroker
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
          if (obj == null) {
-            MessageContainer msg = new MessageContainer(this, subs);
+            MessageUnitHandler msg = new MessageUnitHandler(this, subs);
             messageContainerMap.put(uniqueKey, msg);
             return msg;
          }
          else {
-            MessageContainer msg = (MessageContainer)obj;
+            MessageUnitHandler msg = (MessageUnitHandler)obj;
             msg.addSubscriber(subs);
          }
       }
-      return (MessageContainer)null;
+      return (MessageUnitHandler)null;
    }
 
 
@@ -104,7 +104,7 @@ public class RequestBroker
    public void subscribe(XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
       ClientInfo cl = getClientInfo(xmlKey, subscribeQoS);
-      MessageContainer msg = getMessageContainer(cl, xmlKey, subscribeQoS);
+      MessageUnitHandler msg = getMessageUnitHandler(cl, xmlKey, subscribeQoS);
    }
 
 
@@ -113,16 +113,16 @@ public class RequestBroker
    public int set(XmlKey xmlKey, byte[] content) throws XmlBlasterException
    {
 
-      MessageContainer msg;
+      MessageUnitHandler msg;
 
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
          if (obj == null) {
-            msg = new MessageContainer(requestBroker, xmlKey, content);
+            msg = new MessageUnitHandler(requestBroker, xmlKey, content);
             messageContainerMap.put(msg.getUniqueKey(), msg);
          }
          else {
-            msg = (MessageContainer)obj;
+            msg = (MessageUnitHandler)obj;
             msg.setContent(content);
          }
       }
