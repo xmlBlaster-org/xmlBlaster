@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.14 2002/12/29 13:03:49 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.15 2002/12/31 14:26:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -336,7 +336,12 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     * This is used by XmlRpc, see XmlRpcConnection.extractXmlBlasterException()
     */
    public String toString() {
-      return "errorCode=" + getErrorCodeStr() + " message=" + getRawMessage();
+      //return getMessage();
+      String text = "errorCode=" + getErrorCodeStr() + " message=" + getRawMessage();
+      if (this.embeddedMessage != null && this.embeddedMessage.length() > 0) {
+         text += " : " + embeddedMessage;
+      }
+      return text;
    }
 
    /**
