@@ -8,6 +8,11 @@ You need JDK 2 or better to run xmlBlaster.
 
    http://www.inf.fu-berlin.de/~brose/jacorb/
 
+	 Set the environment for JacORB home directory, so that
+	 the xmlBlaster Makefile (Makefile.Include) can find it:
+
+     export JacORB_HOME=/usr/local/jacORB
+
 
 2) Set the environment to the xmlBlaster directory
 
