@@ -3,15 +3,13 @@ Name:      ProtoConverter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter used to convert native data to protocol-specific data.
-Version:   $Id: ProtoConverter.java,v 1.7 2002/11/26 12:39:57 ruff Exp $
-Author:    "Michele Laghi" (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
 
 import java.util.Vector;
 import java.util.Enumeration;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 
 /**
@@ -27,23 +25,23 @@ public class ProtoConverter {
    private final static String ME = "ProtoConverter";
 
    /**
-    * Converts a Vector to a MessageUnit. The first element in vec must be a
-    * String object corresponding to the literal for MessageUnit.xmlKey, the
-    * second element is a byte[] object corresponding to MessageUnit.content.
+    * Converts a Vector to a MsgUnitRaw. The first element in vec must be a
+    * String object corresponding to the literal for MsgUnitRaw.xmlKey, the
+    * second element is a byte[] object corresponding to MsgUnitRaw.content.
     * The third (and last) element is a String corresponding to the literal of
-    * MessageUnit.qos.
+    * MsgUnitRaw.qos.
     *
     * @param vec the vector to convert
-    * @return the MessageUnit to which the vector has been converted to.
+    * @return the MsgUnitRaw to which the vector has been converted to.
     * @throws XmlBlasterException if the size of vec is different from 3, or
     *                             if the type of the vector elements does not
-    *                             correspond to the MessageUnit equivalent.
+    *                             correspond to the MsgUnitRaw equivalent.
     *
     */
-   public static MessageUnit vector2MessageUnit (Vector vec)
+   public static MsgUnitRaw vector2MsgUnitRaw(Vector vec)
       throws XmlBlasterException
    {
-      MessageUnit ret = null;
+      MsgUnitRaw ret = null;
       int size = vec.size();
       if (size != 3) {
          throw new XmlBlasterException("Not a valid Message Unit", "Wrong size");
@@ -54,7 +52,7 @@ public class ProtoConverter {
          String xmlKey = (String)enumeration.nextElement();
          byte[] content = (byte[])enumeration.nextElement();
          String qos = (String)enumeration.nextElement();
-         ret = new MessageUnit(xmlKey, content, qos);
+         ret = new MsgUnitRaw(xmlKey, content, qos);
 
       }
 
@@ -68,13 +66,13 @@ public class ProtoConverter {
 
 
    /**
-    * Converts a single MessageUnit to a Vector.
+    * Converts a single MsgUnitRaw to a Vector.
     *
-    * @param msg the MessageUnit to convert to a Vector.
+    * @param msg the MsgUnitRaw to convert to a Vector.
     * @return the Vector object containing three elements [String, byte[],
-    *         String] representing the MessageUnit.
+    *         String] representing the MsgUnitRaw.
     */
-   public static Vector messageUnit2Vector (MessageUnit msg)
+   public static Vector messageUnit2Vector (MsgUnitRaw msg)
    {
       Vector ret = new Vector();
       ret.addElement(msg.getKey());
@@ -85,30 +83,30 @@ public class ProtoConverter {
 
 
    /**
-    * Converts a Vector to a MessageUnit[]. The input Vector must contain
+    * Converts a Vector to a MsgUnitRaw[]. The input Vector must contain
     * elements of the type Vector. Each of such (sub)Vectors must have three
     * elements fullfilling the requirements for the Vector objects in
-    * vector2MessageUnit.
+    * vector2MsgUnitRaw.
     * @param vec the input Vector (of Vector).
-    * @return the MessageUnit[].
+    * @return the MsgUnitRaw[].
     * @throws XmlBlasterException if the types in the input vector are not
     *                             consistent with the required types.
     */
-   public static MessageUnit[] vector2MessageUnitArray (Vector vec)
+   public static MsgUnitRaw[] vector2MsgUnitRawArray(Vector vec)
       throws XmlBlasterException
    {
       int size = vec.size();
-      MessageUnit[] msgUnitArr = new MessageUnit[size];
+      MsgUnitRaw[] msgUnitArr = new MsgUnitRaw[size];
 
       try {
          Enumeration enumeration = vec.elements();
          for (int i=0; i < size; i++) {
-            msgUnitArr[i] = vector2MessageUnit((Vector)enumeration.nextElement());
+            msgUnitArr[i] = vector2MsgUnitRaw((Vector)enumeration.nextElement());
          }
       }
 
       catch (ClassCastException e) {
-         throw new XmlBlasterException("Not a valid MessageUnit[]", "Class Cast Exception");
+         throw new XmlBlasterException("Not a valid MsgUnitRaw[]", "Class Cast Exception");
       }
 
 
@@ -117,11 +115,11 @@ public class ProtoConverter {
 
 
    /**
-    * Converts a MessageUnit[] object into a Vector.
-    * @param msgs The array of MessageUnit objects to convert to a Vector object.
+    * Converts a MsgUnitRaw[] object into a Vector.
+    * @param msgs The array of MsgUnitRaw objects to convert to a Vector object.
     * @return the Vector containing all information about the msgs parameter.
     */
-   public static Vector messageUnitArray2Vector (MessageUnit[] msgs)
+   public static Vector messageUnitArray2Vector (MsgUnitRaw[] msgs)
    {
       int size = msgs.length;
       Vector ret = new Vector();
@@ -140,7 +138,7 @@ public class ProtoConverter {
     * @throws XmlBlasterException if the elements in the Vector where not valid
     *             String objects.
     */
-   public static String[] vector2StringArray (Vector vec) throws XmlBlasterException
+   public static String[] vector2StringArray(Vector vec) throws XmlBlasterException
    {
       int size = vec.size();
       String[] ret = new String[size];
@@ -167,7 +165,7 @@ public class ProtoConverter {
     * @throws XmlBlasterException if the element in the Vector is not a valid
     *             String object.
     */
-   public static String vector2String (Vector vec) throws XmlBlasterException
+   public static String vector2String(Vector vec) throws XmlBlasterException
    {
       int size = vec.size();
       if (size == 0)
@@ -189,7 +187,7 @@ public class ProtoConverter {
     * @param strings array of String objects to convert to a Vector.
     * @return a Vector object containing all the elements of the input array.
     */
-   public static Vector stringArray2Vector (String[] strings)
+   public static Vector stringArray2Vector(String[] strings)
    {
       int size = strings.length;
       Vector ret = new Vector();
@@ -210,23 +208,23 @@ public class ProtoConverter {
    {
 
       byte[] content = new byte[100];
-      MessageUnit[] msgs = new MessageUnit[5];
+      MsgUnitRaw[] msgs = new MsgUnitRaw[5];
       String[] strings = new String[5];
 
       System.out.println("The Original Messages & strings: \n\n");
 
-      for (int i=0; i < 5; i++) {
-         msgs[i] = new MessageUnit("<key uid='" + i + "'></key>", content, "<qos></qos>");
-         strings[i] = new String("string nr. " + (i+1) );
-         System.out.println(msgs[i].getKey() + " " + strings[i]);
-      }
-
-
-      Vector vec = ProtoConverter.messageUnitArray2Vector(msgs);
-      Vector strVector = ProtoConverter.stringArray2Vector(strings);
-
       try {
-         MessageUnit[] msgs2 = ProtoConverter.vector2MessageUnitArray(vec);
+         for (int i=0; i < 5; i++) {
+            msgs[i] = new MsgUnitRaw("<key uid='" + i + "'></key>", content, "<qos></qos>");
+            strings[i] = new String("string nr. " + (i+1) );
+            System.out.println(msgs[i].getKey() + " " + strings[i]);
+         }
+
+
+         Vector vec = ProtoConverter.messageUnitArray2Vector(msgs);
+         Vector strVector = ProtoConverter.stringArray2Vector(strings);
+
+         MsgUnitRaw[] msgs2 = ProtoConverter.vector2MsgUnitRawArray(vec);
          String[] strings2 = ProtoConverter.vector2StringArray(strVector);
 
          System.out.println("\n\nReconverted Messages: ");
