@@ -9,6 +9,7 @@ Comment:   The client driver for the corba protocol
 #define _CLIENT_PROTOCOL_CORBA_CORBA_DRIVER
 
 #include <util/xmlBlasterDef.h>
+#include <util/plugin/I_Plugin.h>
 #include <client/protocol/corba/CorbaConnection.h>
 #include <client/protocol/corba/DefaultCallback.h>
 #include <string>
@@ -32,7 +33,8 @@ namespace org {
 
    class Dll_Export CorbaDriver 
       : public virtual org::xmlBlaster::client::protocol::I_CallbackServer, 
-        public virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection
+        public virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection,
+        public virtual org::xmlBlaster::util::plugin::I_Plugin
    {
    friend class CorbaDriverFactory; // To be able to create a CorbaDriver instance
 
@@ -126,6 +128,20 @@ namespace org {
         convertFromCorbaException(const serverIdl::XmlBlasterException& ex);
       static serverIdl::XmlBlasterException
         convertToCorbaException(org::xmlBlaster::util::XmlBlasterException& ex);
+
+      /**
+       * Get the name of the plugin. 
+       * @return "IOR"
+       * @enforcedBy I_Plugin
+       */
+      std::string getType() { static std::string type = "IOR"; return type; }
+
+      /**
+       * Get the version of the plugin. 
+       * @return "1.0"
+       * @enforcedBy I_Plugin
+       */
+      std::string getVersion() { static std::string version = "1.0"; return version; }
    };
 
 }}}}} // namespaces
