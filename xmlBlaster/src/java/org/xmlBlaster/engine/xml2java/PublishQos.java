@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.9 2002/05/16 15:33:48 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.10 2002/05/20 13:30:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -150,6 +150,8 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Vector containing RouteInfo objects
     */
    protected Vector routeNodeVec = null;
+   /** Cache for RouteInfo in an array */
+   protected RouteInfo[] routeNodes = null;
    private RouteInfo routeInfo = null;
 
    public long size = 0L;
@@ -203,7 +205,10 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       // !!! setState(qos.getState());
       this.rcvTimestamp = qos.getRcvTimestamp();
       setPriority(qos.getPriority());
-      setRemainingLife(getMaxRemainingLife());
+      setRemainingLife(qos.getRemainingLife());
+      RouteInfo[] routes = qos.getRouteNodes();
+      for (int ii=0; ii<routes.length; ii++)
+         addRouteInfo(routes[ii]);
       size = 0;
    }
 
@@ -295,7 +300,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    /**
     * Access sender name.
-    * @return loginName of sender
+    * @return loginName of sender or null if not known
     */
    public final String getSender()
    {
@@ -324,6 +329,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          Log.error(ME, "Adding null routeInfo");
          return;
       }
+
+      this.routeNodes = null; // clear cache
+
       if (routeNodeVec == null)
          routeNodeVec = new Vector(12);
       routeNodeVec.addElement(routeInfo);
@@ -336,6 +344,17 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          RouteInfo ri = (RouteInfo)routeNodeVec.elementAt(ii);
          ri.setStratum(offset++);
       }
+   }
+
+   /**
+    * @return never null, but may have length==0
+    */
+   public final RouteInfo[] getRouteNodes() {
+      if (routeNodeVec == null)
+         this.routeNodes = new RouteInfo[0];
+      if (this.routeNodes == null)
+         this.routeNodes = (RouteInfo[]) routeNodeVec.toArray(new RouteInfo[0]);
+      return this.routeNodes;
    }
 
    /**
