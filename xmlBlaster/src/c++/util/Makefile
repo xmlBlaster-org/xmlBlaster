@@ -1,7 +1,7 @@
 include ../Makefile.def
 
 .cc.o:
-	$(CC) $(CORBA_INC) -I.. -c $<
+	$(CC) $(SLIB_FLAGS) $(CORBA_INC) -I.. -c $<
 
 all: CompatibleCorba.o Log.o
 

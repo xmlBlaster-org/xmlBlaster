@@ -3,9 +3,9 @@ include ../Makefile.def
 .SUFFIXES: .cpp
 
 .cpp.o::
-	$(CC) $(CORBA_INC) -c $<
+	$(CC) $(SLIB_FLAGS) $(CORBA_INC) -c $<
 .cc.o::
-	$(CC) $(CORBA_INC) -c $<
+	$(CC) $(SLIB_FLAGS) $(CORBA_INC) -c $<
 
 all: $(CORBA_OBJ)
 

@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: LoginQosWrapper.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_LOGINQOSWRAPPER_H
@@ -152,7 +152,7 @@ namespace client {
       string toXml(const string &extraOffset) const {
 	 string offset = "\n   " + extraOffset, sb = "<qos>\n";
 	 if (!usePtP_) sb += offset + "   <noPtP />";
-	 for (int i=0; i<addressVec_.size(); i++) {
+	 for (string::size_type i=0; i<addressVec_.size(); i++) {
 	    util::CallbackAddress ad = addressVec_[i];
 	    sb += ad.toXml("   ") + "\n";
 	 }

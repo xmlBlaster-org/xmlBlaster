@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version
            without caching and without failsave mode.
-Version:   $Id: CorbaConnection.cc,v 1.3 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: CorbaConnection.cc,v 1.4 2001/11/25 19:25:47 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -13,7 +13,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 namespace client {
 
    CorbaConnection::CorbaConnection(int args, char *argc[], bool orbOwner)
-      : log_(args, argc), loginQos_() {
+      : loginQos_(), log_(args, argc) {
       if (numOfSessions_ == 0) orb_ = CORBA::ORB_init(args, argc);
       numOfSessions_++;
       nameServerControl_ = 0;

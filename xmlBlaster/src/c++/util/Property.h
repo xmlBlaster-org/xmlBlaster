@@ -3,7 +3,7 @@ Name:      Property.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class used to read, store & write (java) properties.
-Version:   $Id: Property.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: Property.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_PROPERTY_H
@@ -50,7 +50,7 @@ namespace util {
        */
       string filter(const string &line) const {
 	 string ret = "";
-	 for (int i=0; i<line.length(); i++) {
+	 for (string::size_type i=0; i<line.length(); i++) {
 	    if (line.c_str()[i] != ' ') ret += line.c_str()[i];
 	 }
 	 return ret;
@@ -64,7 +64,7 @@ namespace util {
        * then a pair of empty strings is returned.
        */
       pair<const string, string> getPair(const string &line) const {
-	 int pos = line.find("=");
+	 string::size_type pos = line.find("=");
 	 if ((pos < 2) || (pos >= line.length()) || (isComment(line)) ) {
 	    return pair<const string, string>("","");
 	 }

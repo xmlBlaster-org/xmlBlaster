@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to strip a string containing two kinds of separators into a 
            vector of pairs of strings.
-Version:   $Id: StringStripper2.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: StringStripper2.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -48,16 +48,16 @@ namespace util {
       vector<pair<string,string> > strip(const string &line) {
 
 	 vector<string>               mainVector = mainStrip_.strip(line);
-	 int                          vectorSize;
+	 string::size_type            vectorSize;
 	 pair<string,string>          namePair;
 	 vector<pair<string,string> > ret;
 	 
-	 for (int i=0; i < mainVector.size(); i++) {
+	 for (string::size_type i=0; i < mainVector.size(); i++) {
 	    vector<string> minorVector = minorStrip_.strip(mainVector[i]);
 
 	    if ( (vectorSize = minorVector.size()) > 1) {
 	       string name = "";
-	       for (int j=0; j<(vectorSize-1); j++) name += minorVector[j];
+	       for (string::size_type j=0; j<(vectorSize-1); j++) name += minorVector[j];
 	       namePair = pair<string,string>(name,minorVector[vectorSize-1]);
 	    }
 

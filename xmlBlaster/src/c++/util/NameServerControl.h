@@ -3,7 +3,7 @@ Name:      NameServerControl.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to handle the NameServer stuff (bind, unbind, resolve ...)
-Version:   $Id: NameServerControl.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: NameServerControl.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -182,10 +182,10 @@ namespace util {
 	    CosNaming::NamingContext_var nc = namingContext_;
 	    
 	    try {
-	       for (int i=1;  i < name.length(); i++) {
+	       for (string::size_type i=1;  i < name.length(); i++) {
 		  CosNaming::Name contextName;
 		  contextName.length(i);
-		  for (int j=0; j < i; j++) {
+		  for (string::size_type j=0; j < i; j++) {
 		     contextName[j].id   = CORBA::string_dup(name[j].id);
 		     contextName[j].kind = CORBA::string_dup(name[j].kind);
 		  }
@@ -233,7 +233,7 @@ namespace util {
 	    CosNaming::Name     objectName;
 	    objectName.length(nameVector.size());
 
-	    for (int i=0; i < nameVector.size(); i++) {
+	    for (string::size_type i=0; i < nameVector.size(); i++) {
 	       objectName[i].id   = 
 		  CORBA::string_dup(nameVector[i].first.c_str());
 	       objectName[i].kind = 
@@ -281,7 +281,7 @@ namespace util {
 	    CosNaming::Name     objectName;
 	    objectName.length(nameVector.size());
 
-	    for (int i=0; i < nameVector.size(); i++) {
+	    for (string::size_type i=0; i < nameVector.size(); i++) {
 	       objectName[i].id   = 
 		  CORBA::string_dup(nameVector[i].first.c_str());
 	       objectName[i].kind = 
@@ -309,7 +309,7 @@ namespace util {
 	    CosNaming::Name     objectName;
 	    objectName.length(nameVector.size());
 
-	    for (int i=0; i < nameVector.size(); i++) {
+	    for (string::size_type i=0; i < nameVector.size(); i++) {
 	       objectName[i].id   = 
 		  CORBA::string_dup(nameVector[i].first.c_str());
 	       objectName[i].kind = 
