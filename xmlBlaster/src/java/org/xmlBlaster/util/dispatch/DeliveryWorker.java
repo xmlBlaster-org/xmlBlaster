@@ -15,6 +15,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 
 import java.util.ArrayList;
 
@@ -140,11 +141,13 @@ public final class DeliveryWorker implements Runnable
             if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
          }
 
-         /*{
-            int n = entries.length;
-            for(int i=0; i<n; i++)
-               log.error(ME, "DEBUG ONLY - after sent" + ((org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry)entries[i]).getMsgUnit().toXml());
-         }*/
+         if (false) {
+            int n = entryList.size();
+            for(int i=0; i<n; i++) {
+               MsgUnitWrapper msgUnitWrapper = ((org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry)entryList.get(i)).getMsgUnitWrapper();
+               log.info(ME, "DEBUG ONLY - after sent size=" + msgUnitWrapper.getSizeInBytes() + ":" + msgUnitWrapper.toXml());
+            }
+         }
 
          // messages are successfully sent, remove them now from queue (sort of a commit()):
          // We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
