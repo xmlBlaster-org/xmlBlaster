@@ -4,24 +4,27 @@
 <requirement id='util.property.args' type='NEW' prio='LOW' status="CLOSED">
    <topic>Given command line arguments overwrites xmlBlaster.properties variables</topic>
    <description>
-      The xmlBlaster.properties file allows to customize the behavior of xmlBlaster.
+      The <code>xmlBlaster.properties</code> file allows to customize the behavior of xmlBlaster.
       If you add a xmlBlaster.properties variable (with a added "-" prefix) at
       the command line on startup, this overwrites the setting from xmlBlaster.properties
       or adds this setting if not yet present.
    </description>
    <example>
-      The "Persistence.Path" is set in xmlBlaster.properties and may be overwritten on
-      command line: "jaco org.xmlBlaster.Main -Persistence.Path /tmp"
+      <![CDATA[
+      The "Persistence.Path" is set in xmlBlaster.properties and may be overwritten on command line:
+      <pre>   "jaco org.xmlBlaster.Main -Persistence.Path /tmp"</pre>
       You need to activate this feature in your code like follows:
-      "Property.loadProps(args);"
+      <pre>   "Property.loadProps(args);"</pre>
       If you set the log level already somewhere:
-      "Log.setLogLevel(args);"
-      the args feature is activate automatically as well (so you don't need to
+      <pre>   "Log.setLogLevel(args);"</pre>
+      the args feature is activated automatically as well (so you don't need to
       call loadProps() explicitly).
+      ]]>
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 14</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
+
    <fix status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>

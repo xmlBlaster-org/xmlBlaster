@@ -18,12 +18,16 @@ You can query a closed requirement as follows:
 
 
 
-Generate HTML output:
-=====================
-   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver engine.get.no.xml html.xsl requirement.html
+Generate HTML output with Sun XML parser:
+=========================================
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
 
 
-ruff@swand.lake.de
+Generate HTML output with James Clarks XML parser:
+================================================w==
+   export CLASSPATH=/www/xp/xp.jar:$CLASSPATH
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xml.sax.CommentDriver com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
+
 
 Validating with IBM parser:
 ---------------------------
@@ -166,5 +170,12 @@ filenames_file.xml you could have: <someURIs>
 
 
 
+For embedded HTML examples:
 
+<xsl:template match="HTML_BODY">
+ <xsl:value-of select="." disable-output-escaping="yes"/>
+</xsl:template >
+
+
+ruff@swand.lake.de
 

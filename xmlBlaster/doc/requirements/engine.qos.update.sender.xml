@@ -8,9 +8,19 @@
       message in the qos argument of the update: &lt;sender&gt;. The sender is the
       unique login name of the publisher. This works with PtP and with Pub/Sub style.
    </description>
+   <example>
+      <![CDATA[
+      <pre>
+      &lt;qos>
+         &lt;sender>  &lt;!-- The publisher login name of this message -->
+            Phillipe
+         &lt;/sender>
+      &lt;/qos></pre>
+      ]]>
+   </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 02</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <fix status="CLOSED">
       <name>-</name>
       <comment>-</comment>

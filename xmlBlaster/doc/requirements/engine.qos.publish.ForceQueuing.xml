@@ -9,9 +9,21 @@
       the messages are queued by xmlBlaster. As soon as the receiver logs in,
       all queued messages are flushed to the recevier.
    </description>
+   <example>
+      <![CDATA[
+   <pre>
+      &lt;qos>
+         &lt;destination queryType='EXACT'>
+            Tim
+            &lt;ForceQueuing /> &lt;!-- If the destination client is not logged in, queue the messages ->
+         &lt;/destination>      &lt;!-- Default is no queuing and you get an exception if the client is not reachable -->
+      &lt;/qos></pre>
+      ]]>
+   </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
+
    <fix status="CLOSED">
       <name>-</name>
       <comment>-</comment>

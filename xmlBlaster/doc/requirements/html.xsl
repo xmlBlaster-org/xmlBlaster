@@ -1,4 +1,14 @@
 <?xml version='1.0'?>
+<!--
+Name:      html.xsl
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
+Version:   $Id: html.xsl,v 1.7 2000/03/19 00:27:26 ruff Exp $
+Author:    ruff@swand.lake.de
+-->
+
+
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 version='1.0'
                 xmlns="http://www.w3.org/TR/xhtml1/transitional"
@@ -18,7 +28,7 @@
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2000/03/18 23:40:55 $ $Author: ruff $
+       Last updated $Date: 2000/03/19 00:27:26 $ $Author: ruff $
    </p>
    <p class="sitetitel">XmlBlaster Requirements Reference</p>
 
@@ -28,7 +38,7 @@
          <tr>
          <th><b>ID</b></th>
          <th>Status</th>
-         <th>Topic</th>
+         <th>Topic / Description / Example</th>
          </tr>
       </thead>
       <xsl:for-each select="/files/url">
@@ -41,15 +51,14 @@
 
 <xsl:template match="requirement">
    <tr>
-      <td>
-         <xsl:value-of select="@id"/></td>
+      <td class="reqId"><xsl:value-of select="@id"/></td>
       <td>
          <xsl:attribute name="class"><xsl:value-of select="@status"/></xsl:attribute>
          <xsl:value-of select="@status"/>
       </td>
-      <td><xsl:value-of select="topic"/></td>
+      <td class="topic"><xsl:value-of select="topic"/></td>
    </tr>
-   
+
    <tr>
       <td></td>
       <td></td>
@@ -59,9 +68,15 @@
    <xsl:if test="example">
       <td></td>
       <td></td>
-      <td class="example" colspan="1"><xsl:value-of select="example"/></td>
+      <td class="example" colspan="1"><xsl:value-of select="example" disable-output-escaping="yes"/></td>
    </xsl:if>
 </xsl:template>
+
+<!-- xsl:template match="code">
+   <p class="code">
+      <xsl:value-of select="."/>
+   </p>
+</xsl:template -->
 
 </xsl:stylesheet>
 
