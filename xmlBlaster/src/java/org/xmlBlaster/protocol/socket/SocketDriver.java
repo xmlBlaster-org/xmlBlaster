@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.41 2004/08/26 21:19:42 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.42 2004/09/16 19:43:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -11,6 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -23,11 +24,9 @@ import java.io.IOException;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.io.IOException;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -80,6 +79,8 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    private String serverUrl = null;
    /** State of server */
    private Thread listenerUDP;
+
+   private int sslMarker;
 
    private boolean running = true;
    private boolean runningUDP = true;
@@ -445,6 +446,19 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    }
 
    /**
+    * Is SSL support switched on?
+    */
+   public final boolean isSSL()
+   {
+      if (sslMarker != 0) return sslMarker==-1 ? false : true;
+
+      boolean ssl = this.addressServer.getEnv("SSL", false).getValue();
+      sslMarker = ssl ? 1 : -1;
+      if (log.TRACE) log.trace(ME, addressServer.getEnvLookupKey("SSL") + "=" + ssl);
+      return ssl;
+   }
+
+   /**
     * Starts the server socket and waits for clients to connect.
     */
    public void run()
@@ -452,8 +466,15 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       try {
          int backlog = this.addressServer.getEnv("backlog", 50).getValue(); // queue for max 50 incoming connection request
          if (log.TRACE) log.trace(ME, addressServer.getEnvLookupKey("backlog") + "=" + backlog);
-
-         listen = new ServerSocket(this.socketUrl.getPort(), backlog, this.socketUrl.getInetAddress());
+         
+         
+         if (isSSL()) {
+             listen = this.socketUrl.createServerSocketSSL(backlog, this.addressServer);
+         }
+         else {
+             listen = new ServerSocket(this.socketUrl.getPort(), backlog, this.socketUrl.getInetAddress());
+         }
+         
          log.info(ME, "Started successfully socket driver on '" + this.socketUrl.getUrl() + "'");
          listenerReady = true;
          while (running) {
@@ -544,6 +565,18 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       text += "                       Queue size for incoming connection request [50].\n";
       text += "   -"+getEnvPrefix()+"threadPrio\n";
       text += "                       The priority 1=min - 10=max of the listener thread [5].\n";
+      text += "   -"+getEnvPrefix()+"SSL\n";
+      text += "                       True enables SSL support on server socket [false].\n";
+      text += "   -"+getEnvPrefix()+"keystore\n";
+      text += "                       The path of your keystore file. Use the java utility keytool.\n";
+      text += "   -"+getEnvPrefix()+"keystorepass\n";
+      text += "                       The password of your keystore file.\n";
+      text += "   -"+getEnvPrefix()+"compress/type\n";
+      text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";
+      text += "                       '' disables compression, '"+Constants.COMPRESS_ZLIB_STREAM+"' compresses whole stream.\n";
+      text += "                       '"+Constants.COMPRESS_ZLIB+"' only compresses flushed chunks bigger than 'compress/minSize' bytes.\n";
+      text += "   -"+getEnvPrefix()+"compress/minSize\n";
+      text += "                       Compress message bigger than given bytes, see above.\n";
       text += "   -dump[socket]       true switches on detailed "+getType()+" debugging [false].\n";
       text += "\n";
       return text;
