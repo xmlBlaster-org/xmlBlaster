@@ -1,0 +1,51 @@
+"""
+ver080403
+spex66@gmx.net
+
+ 8888888b.           888888b.   888                   888
+ 888   Y88b          888  "88b  888                   888
+ 888    888          888  .88P  888                   888
+ 888   d88P 888  888 8888888K.  888  8888b.  .d8888b  888888 .d88b.  888d888
+ 8888888P"  888  888 888  "Y88b 888     "88b 88K      888   d8P  Y8b 888P"
+ 888        888  888 888    888 888 .d888888 "Y8888b. 888   88888888 888
+ 888        Y88b 888 888   d88P 888 888  888      X88 Y88b. Y8b.     888
+ 888         "Y88888 8888888P"  888 "Y888888  88888P'  "Y888 "Y8888  888
+                 888
+            Y8b d88P
+             "Y88P"
+             
+pyBlaster.py
+	The Python way ("The first steps" :-)) to use www.XMLBLASTER.org
+
+Have fun and thanks to the xmlblaster-team!
+
+1st Step
+    XmlBlasterClient
+        Implementation of the complete(?) xmlrpc client interface
+        With just a little beautifying of the method-signatures
+
+2nd Step        
+    XmlBlasterCallbackClient    
+        Specialisation of XmlBlasterClient with additional 
+        threaded xmlrpc server implementation
+        
+
+Based on (if you have an uptodate installation, delete te local file)
+    xmlrpclib Version 1.0.1/ SimpleXMLRPCServer from http://www.pythonware.com
+    
+Additional
+    BaseService             class to handle threads
+    ThreadedXMLRPCServer    mixin class SimpleXMLRPCServer & BaseService
+                            to build an threaded XMLRPCServer
+                            
+    ShellService            mixin class BaseService & InteractiveConsole
+                            to serve an interactive Python prompt for 
+                            debugging and testing
+
+Usage and test (batteries included):
+    start pyBlaster.py in a shell and have a look at the help text
+    start pyBlaster.py in more than one shell and experiment interactive
+    	  with publish / subcribe / get <-- this is the python way :)
+    
+        
+"""
