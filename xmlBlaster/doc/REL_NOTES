@@ -3,6 +3,10 @@
 
 Changes for 0.75 [???, 2000]
 ==============================
+   - Added a xmlBlaster reference handbook to xmlBlaster.org
+     This page is generated from the requirement XML files in the
+	  xmlBlaster/doc/requirements directory of the distribution.
+
    - Bugfix if the Callback of a PtP receiver is disappeared,
 	  this usually happens when the receiver crashes without a logout.
 	  Now the XmlBlasterException with e.id="CallbackFailed" it thrown
