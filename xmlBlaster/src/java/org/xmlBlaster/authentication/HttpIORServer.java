@@ -3,11 +3,11 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.16 2002/05/16 23:34:33 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.17 2002/06/15 16:15:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.*;
@@ -28,71 +28,91 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
 {
-   private String ME = "HttpIORServer";
-   private Global glob;
+   private String ME = "HttpServer";
+   private final Global glob;
+   private final LogChannel log;
    private String ip_addr = null;
    private final int HTTP_PORT;
-   private String ior = null;
    private ServerSocket listen = null;
    private boolean running = true;
 
+   private Hashtable knownRequests = new Hashtable();
 
    /**
     * Create a little web server.
     * <p />
     * @param ip_addr The string representation like "192.168.1.1", useful if multihomed computer
     * @param port    The port where we publish the IOR
-    * @param iorStr  The IOR string of the ProxyService
     */
-   public HttpIORServer(Global glob, String ip_addr, int port, String ior)
+   public HttpIORServer(Global glob, String ip_addr, int port)
    {
       this.glob = glob;
+      this.log = glob.getLog("protocol");
       this.ip_addr = ip_addr;
-      this.ior = ior;
       this.HTTP_PORT = port;
       this.ME += "-" + glob.getId();
-      if (Log.CALL) Log.call(ME, "Creating new HttpIORServer");
+      if (log.CALL) log.call(ME, "Creating new HttpServer");
       start();
    }
 
+   /**
+    * If you want to provide some information over http, register it here. 
+    * @param urlPath The access path which the client uses to access your data
+    * @param data The data you want to deliver to the client e.g. the CORBA IOR string
+    */
+   public void registerRequest(String urlPath, String data)
+   {
+      if (log.TRACE) log.trace(ME, "Registering urlPath: " + urlPath + "=" + data);
+      knownRequests.put(urlPath.trim(), data);
+   }
+
+   /**
+    * If you want to provide some information over http, register it here. 
+    * @param urlPath The access path which the client uses to access your data
+    * @param data The data you want to deliver to the client e.g. the CORBA IOR string
+    */
+   public void removeRequest(String urlPath)
+   {
+      knownRequests.remove(urlPath.trim());
+   }
 
    /**
     */
    public void run()
    {
       try {
-         int backlog = glob.getProperty().get("iorBacklog", 50); // queue for max 50 incoming connection request
+         int backlog = glob.getProperty().get("http.backlog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
             Socket accept = listen.accept();
-            //Log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
+            //log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
             if (!running) {
-               Log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
+               log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
                break;
             }
-            HandleRequest hh = new HandleRequest(accept, ior);
+            HandleRequest hh = new HandleRequest(log, accept, knownRequests);
          }
       }
       catch (java.net.UnknownHostException e) {
-         Log.error(ME, "HTTP server problem, IP address '" + ip_addr + "' is invalid: " + e.toString());
+         log.error(ME, "HTTP server problem, IP address '" + ip_addr + "' is invalid: " + e.toString());
       }
       catch (java.net.BindException e) {
-         Log.error(ME, "HTTP server problem, port " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
+         log.error(ME, "HTTP server problem, port " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
       }
       catch (java.net.SocketException e) {
-         Log.info(ME, "Socket " + ip_addr + ":" + HTTP_PORT + " closed successfully: " + e.toString());
+         log.info(ME, "Socket " + ip_addr + ":" + HTTP_PORT + " closed successfully: " + e.toString());
       }
       catch (IOException e) {
-         Log.error(ME, "HTTP server problem on " + ip_addr + ":" + HTTP_PORT + ": " + e.toString());
+         log.error(ME, "HTTP server problem on " + ip_addr + ":" + HTTP_PORT + ": " + e.toString());
       }
 
       if (listen != null) {
-         try { listen.close(); } catch (java.io.IOException e) { Log.warn(ME, "listen.close()" + e.toString()); }
+         try { listen.close(); } catch (java.io.IOException e) { log.warn(ME, "listen.close()" + e.toString()); }
          listen = null;
       }
    }
@@ -103,7 +123,7 @@ public class HttpIORServer extends Thread
     */
    public void shutdown()// throws IOException
    {
-      if (Log.CALL) Log.call(ME, "Entering shutdown");
+      if (log.CALL) log.call(ME, "Entering shutdown");
       running = false;
 
       boolean closeHack = true;
@@ -114,7 +134,7 @@ public class HttpIORServer extends Thread
             java.net.Socket socket = new Socket(listen.getInetAddress(), HTTP_PORT);
             socket.close();
          } catch (java.io.IOException e) {
-            Log.warn(ME, "shutdown problem: " + e.toString());
+            log.warn(ME, "shutdown problem: " + e.toString());
          }
       }
 
@@ -124,7 +144,7 @@ public class HttpIORServer extends Thread
             listen = null;
          }
       } catch (java.io.IOException e) {
-         Log.warn(ME, "shutdown problem: " + e.toString());
+         log.warn(ME, "shutdown problem: " + e.toString());
       }
    }
 }
@@ -136,17 +156,19 @@ public class HttpIORServer extends Thread
 class HandleRequest extends Thread
 {
    private String ME = "HandleRequest";
+   private final LogChannel log;
    private final Socket sock;
-   private final String ior;
+   private final Hashtable knownRequests;
    private final String CRLF = "\r\n";
 
 
    /**
     */
-   public HandleRequest(Socket sock, String iorStr)
+   public HandleRequest(LogChannel log, Socket sock, Hashtable knownRequests)
    {
+      this.log = log;
       this.sock = sock;
-      this.ior = iorStr;
+      this.knownRequests = knownRequests;
       start();
    }
 
@@ -158,7 +180,7 @@ class HandleRequest extends Thread
     */
    public void run()
    {
-      if (Log.CALL) Log.call(ME, "Handling client request, accessing AuthServer IOR ...");
+      if (log.CALL) log.call(ME, "Handling client request, accessing AuthServer IOR ...");
       BufferedReader iStream = null;
       DataOutputStream oStream = null;
       try {
@@ -170,16 +192,16 @@ class HandleRequest extends Thread
 
          if (clientRequest == null) {
             errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true);
-            Log.warn(ME, "Empty client request");
+            log.warn(ME, "Empty client request");
             return;
          }
 
-         if (Log.TRACE) Log.trace(ME, "Handling client request '" + clientRequest + "' ...");
+         if (log.TRACE) log.trace(ME, "Handling client request '" + clientRequest + "' ...");
 
          StringTokenizer toks = new StringTokenizer(clientRequest);
          if (toks.countTokens() != 3) {
             errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true);
-            Log.warn(ME, "Wrong syntax in client request: '" + clientRequest + "'");
+            log.warn(ME, "Wrong syntax in client request: '" + clientRequest + "'");
             return;
          }
 
@@ -190,30 +212,32 @@ class HandleRequest extends Thread
          // RFC 2068 enforces minimum implementation GET and HEAD
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("HEAD")) {
             errorResponse(oStream, "HTTP/1.1 501 Method Not Implemented", "Allow: GET", true);
-            Log.warn(ME, "Invalid method in client request: '" + clientRequest + "'");
+            log.warn(ME, "Invalid method in client request: '" + clientRequest + "'");
             return;
          }
 
-         if (!resource.equalsIgnoreCase("/AuthenticationService.ior")) {
+         String responseStr = (String)knownRequests.get(resource.trim());
+
+         if (responseStr == null) {
             errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true);
-            Log.warn(ME, "Ignoring unknown data from client request: '" + clientRequest + "'");
+            log.warn(ME, "Ignoring unknown data from client request: '" + clientRequest + "'");
             return;
          }
 
          // java.net.HttpURLConnection.HTTP_OK:
          errorResponse(oStream, "HTTP/1.1 200 OK", null, false);
-         String length = "Content-Length: " + ior.length();
+         String length = "Content-Length: " + responseStr.length();
          oStream.write((length+CRLF).getBytes());
          //oStream.write(("Transfer-Encoding: chunked"+CRLF).getBytes()); // java.io.IOException: Bogus chunk size
          oStream.write(("Content-Type: text/plain; charset=iso-8859-1"+CRLF).getBytes());
          if (!method.equalsIgnoreCase("HEAD")) {
             oStream.write(CRLF.getBytes());
-            oStream.write(ior.getBytes());
+            oStream.write(responseStr.getBytes());
          }
          oStream.flush();
       }
       catch (IOException e) {
-         Log.error(ME, "Problems with sending IOR to client: " + e.toString());
+         log.error(ME, "Problems with sending IOR to client: " + e.toString());
          // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
       }
       finally {
@@ -227,7 +251,7 @@ class HandleRequest extends Thread
    private void errorResponse(DataOutputStream oStream, String code, String extra, boolean body) throws IOException
    {
       oStream.write((code+CRLF).getBytes());
-      oStream.write(("Server: XmlBlaster HttpIORServer/1.0"+CRLF).getBytes());
+      oStream.write(("Server: XmlBlaster HttpServer/1.0"+CRLF).getBytes());
       if (extra != null) oStream.write((extra+CRLF).getBytes());
       oStream.write(("Connection: close"+CRLF).getBytes());
       if (body) oStream.write((CRLF+"<html><head><title>"+code+"</title></head><body>"+code+"</body></html>").getBytes());
