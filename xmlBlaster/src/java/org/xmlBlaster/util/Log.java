@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.55 2000/10/11 07:48:01 ruff Exp $
+Version:   $Id: Log.java,v 1.56 2000/11/14 17:02:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -342,7 +342,7 @@ public class Log
     */
    public static final void panic(String instance, String text)
    {
-      info(instance, text);
+      error(instance, text);
       System.err.println(text);
       numErrorInvocations++;
       displayStatistics();
