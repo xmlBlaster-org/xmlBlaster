@@ -35,7 +35,8 @@
      verbosity to 3 and switch on logging for our CORBA plugin implementation:
    </p>
 <pre>
-java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba] true
+java -Djacorb.log.default.verbosity=3 -jar lib/xmlBlaster.jar 
+     -call[corba] true -trace[corba] true
 </pre>
    </example>
 
@@ -111,7 +112,7 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
          </tr>
 
          <tr>
-            <td>java -Djacorb.verbosity=1</td>
+            <td>java -Djacorb.log.default.verbosity=1</td>
             <td>1</td>
             <td>Debugging output for JacORB, try a value of e.g. 3.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -129,7 +130,7 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>
