@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.50 2000/12/26 14:56:41 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.51 2001/02/14 21:34:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,11 +39,6 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
-<<<<<<< BlasterHttpProxyServlet.java
- * @version $Revision: 1.50 $
-=======
- * @version $Revision: 1.50 $
->>>>>>> 1.48.2.1
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
@@ -166,7 +161,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                           "', pathInfo='" + req.getPathInfo() +
                           "', pathTranslated='" + req.getPathTranslated() +
                           "', servletPath='" + req.getServletPath() +
-                          "', documentRoot='" + req.getRealPath("/") +
+                          "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
                           "', accept='" + req.getHeader("Accept") +
                           "', referer='" + req.getHeader("Referer") +
                           "', authorization='" + req.getHeader("Authorization") +
