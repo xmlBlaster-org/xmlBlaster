@@ -63,6 +63,7 @@ public class HelloWorldSubscribe implements I_Callback
          boolean interactive = glob.getProperty().get("interactive", true);
          String oid = glob.getProperty().get("oid", "");
          String xpath = glob.getProperty().get("xpath", "");
+         boolean multiSubscribe = glob.getProperty().get("multiSubscribe", true);
          boolean local = glob.getProperty().get("local", true);
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
@@ -87,6 +88,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -interactive       " + interactive);
          log.info(ME, "   -oid               " + oid);
          log.info(ME, "   -xpath             " + xpath);
+         log.info(ME, "   -multiSubscribe    " + multiSubscribe);
          log.info(ME, "   -local             " + local);
          log.info(ME, "   -initialUpdate     " + initialUpdate);
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
@@ -113,6 +115,7 @@ public class HelloWorldSubscribe implements I_Callback
          SubscribeKey sk = (oid.length() > 0) ? new SubscribeKey(glob, oid) : new SubscribeKey(glob, xpath, Constants.XPATH);
          SubscribeQos sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(initialUpdate);
+         sq.setMultiSubscribe(multiSubscribe);
          sq.setWantLocal(local);
          sq.setWantContent(content);
          
