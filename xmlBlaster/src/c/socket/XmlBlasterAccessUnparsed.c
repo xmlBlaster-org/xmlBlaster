@@ -874,6 +874,8 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
 
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
+
+      pthread_detach(tid); /* Cleanup all resources after ending the thread, instead of pthread_join() */
    }
 
    if (xa->lowLevelAutoAck) {
