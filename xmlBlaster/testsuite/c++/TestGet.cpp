@@ -3,10 +3,10 @@ Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
 -----------------------------------------------------------------------------*/
 
-#include <strstream.h>
+#include <sstream>
 #include <string>
 #include <util/StopWatch.h>
 #include <client/CorbaConnection.h>
@@ -116,7 +116,7 @@ public:
       }
       if (strArr->length() != 1) {
          char buffer[256];
-         ostrstream out(buffer, 255);
+         ostringstream out(buffer, 255);
          out << "erased" << strArr->length() << "messages" << (char)0;
          log_.error(me(), buffer);
       }
@@ -204,11 +204,9 @@ public:
     */
    void testGetMany() {
       int num = 200;
-      char buffer[256];
-      ostrstream out(buffer, 255);
-      out <<  "Get " << num << (char)0;
-      string msg = string(buffer) + " not existing messages ...";
-      log_.info(me(), msg);
+      ostringstream out;
+      out <<  "Get " << num;
+      log_.info(me(), out.str() + " not existing messages ...");
       string xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       string qos    = "<qos></qos>";
       for (int i=0; i < num; i++) {
@@ -223,8 +221,7 @@ public:
             log_.info(me(), string("Success, got XmlBlasterException for trying to get unknown message: ") + string(e.reason));
          }
       }
-      string txt = string(buffer) + " not existing messages done";
-      log_.info(me(), txt);
+      log_.info(me(), out.str() + " not existing messages done");
    }
 
    void usage()

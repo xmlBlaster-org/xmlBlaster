@@ -3,11 +3,11 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
-#include <strstream.h>
+#include <sstream>
 #include <client/CorbaConnection.h>
 #include <util/StopWatch.h>
 
@@ -102,7 +102,7 @@ public:
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          char buffer[256];
-         ostrstream out(buffer, 255);
+         ostringstream out(buffer, 255);
          out << "<key oid='RamTest-" << (i+1) << "'>\n" << "</key>" << (char)0;
          string xmlKey = buffer;
          string qos = "<qos></qos>";
@@ -145,7 +145,7 @@ public:
       char buffer[128];
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
-         ostrstream out(buffer, 127);
+         ostringstream out(buffer, 127);
          out << i+1 << (char)0;
 //           string xmlKey = string("<key oid='RamTest-") + buffer
 //          + "' contentMime='"
@@ -214,7 +214,7 @@ public:
          double elapsed = 0.001 * stopWatch_.elapsed();
          long avg = (long)((double)NUM_PUBLISH / elapsed);
          char buffer[1024];
-         ostrstream out(buffer, 1023);
+         ostringstream out(buffer, 1023);
          out << "Success: Publishing done, " << NUM_PUBLISH;
          out << " messages sent, average messages/second = " << avg << (char)0;
          log_.info(me(), buffer);

@@ -253,7 +253,7 @@ namespace util {
             str += systemId;
          }
          char buffer[128];
-         ostrstream out(buffer, 127);
+         ostringstream out(buffer, 127);
          out << str;
          out << ":" << ex.getLineNumber() << ":" << ex.getColumnNumber() 
              << (char)0;

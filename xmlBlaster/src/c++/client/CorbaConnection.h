@@ -11,7 +11,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #define _CLIENT_CORBACONNECTION_H
 
 #include <string>
-#include <fstream.h>
+#include <fstream>
 #include <client/LoginQosWrapper.h>
 #include <client/DefaultCallback.h>
 #include <util/Log.h>

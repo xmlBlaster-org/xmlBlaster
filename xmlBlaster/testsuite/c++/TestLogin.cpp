@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -386,7 +386,7 @@ private:
          secondConnection_->orbPerformWork();
          if (sum >= timeout) {
             char buffer[512];
-            ostrstream out(buffer, 511);
+            ostringstream out(buffer, 511);
             out << "Timeout of " << timeout << " occured without update"
                 << (char)0;
             cerr << buffer << "timeout: " << timeout << " " << numWait << endl;

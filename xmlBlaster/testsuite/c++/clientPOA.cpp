@@ -19,7 +19,7 @@
 #include COSNAMING
 #include <generated/xmlBlaster.h>
 
-#include <fstream.h>
+#include <fstream>
 #include <string>
 
 using namespace std;

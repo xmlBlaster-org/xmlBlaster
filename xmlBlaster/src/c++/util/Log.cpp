@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.3 2001/12/26 15:47:28 ruff Exp $
+Version:   $Id: Log.cpp,v 1.4 2002/01/31 20:34:09 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -281,7 +281,7 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
    void Log::displayStatistics() {
       char       buffer[512];
-      ostrstream out(buffer, 511);
+      ostringstream out(buffer, 511);
 //       Log.info(ME, Memory.getStatistic());
 #ifdef _TERM_WITH_COLORS_
       if (numErrorInvocations>0) {

@@ -9,7 +9,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define _CLIENT_DEFAULTCALLBACK_H
 
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <util/Log.h>
 #include <client/I_Callback.h>
 #include <client/UpdateKey.h>
@@ -97,7 +97,7 @@ namespace org { namespace xmlBlaster {
 
          if (log_.CALL) {
             char buffer[256];
-            ostrstream out(buffer, 255);
+            ostringstream out(buffer, 255);
             out << "Receiving update of " << msgUnitArr.length();
             out << " message ..." << (char)0;
             log_.call(me(), buffer);

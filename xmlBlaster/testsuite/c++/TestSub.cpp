@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.2 2001/12/26 15:52:34 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/CorbaConnection.h>
@@ -108,7 +108,7 @@ private:
       }
       if (strArr->length() != 1) {
          char buffer[255];
-         ostrstream out(buffer, 255);
+         ostringstream out(buffer, 255);
          out << me() << "Erased " + strArr->length() << " messages:";
       }
       senderConnection_->logout();
@@ -278,7 +278,7 @@ private:
          }
       }
       char buffer[256];
-      ostrstream out(buffer, 255);
+      ostringstream out(buffer, 255);
       out << "Timeout of " << timeout << " milliseconds occured" << (char)0;
       log_.warn(me(), buffer);
    }

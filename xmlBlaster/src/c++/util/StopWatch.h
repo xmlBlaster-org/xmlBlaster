@@ -10,7 +10,7 @@ Comment:   Handling the Client data
 
 #include <sys/timeb.h>
 #include <string>
-#include <strstream.h>
+#include <sstream>
 
 using namespace std;
 
@@ -78,7 +78,7 @@ namespace util {
        */
       string toString() const {
          char buffer[256];
-         ostrstream out(buffer, 255);
+         ostringstream out(buffer, 255);
          out << "elapsed time: " << elapsed() << " milliseconds" << (char)0;
          return string(buffer);
       }

@@ -9,7 +9,7 @@ Comment:   Handling the Client data
 #define _UTIL_LOG_H
 
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <time.h>
 #include <stdlib.h>
 #include <util/Property.h>

@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <string>
-#include <strstream.h>
+#include <sstream>
 #include <client/QosWrapper.h>
 #include <util/Destination.h>
 using namespace std;
@@ -157,7 +157,7 @@ namespace org { namespace xmlBlaster {
          for (int i=0; i<nmax; i++) ret += destVec_[i].toXml("    ") + "\n";
          
          char buffer[512];
-         ostrstream out(buffer, 511);
+         ostringstream out(buffer, 511);
          if (expires_ >= 0) 
             out << "   <expires>\n      " << expires_ << "\n   </expires>\n";
          if (erase_ >= 0) 
