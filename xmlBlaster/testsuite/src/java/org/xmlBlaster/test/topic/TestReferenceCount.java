@@ -36,6 +36,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
@@ -135,6 +136,9 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
          Client client = new Client();
          Global gg = this.glob.getClone(null);
          ConnectQos connectQos = new ConnectQos(gg, loginName, "secret");
+         CallbackAddress cbAddress = new CallbackAddress(glob);
+         cbAddress.setRetries(-1);       // -1 == forever to avoid server side clearing of queue
+         connectQos.addCallbackAddress(cbAddress);
          client.con = gg.getXmlBlasterAccess();
          client.con.registerConnectionListener(this);
          client.updateInterceptor = new MsgInterceptor(gg, this.log, cb); // Collect received msgs
@@ -240,9 +244,8 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
       log.info(ME, "STEP5: Start server and recover message from persistence store");
       this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
 
-      log.info(ME, "STEP6: Start subscriber and subscribe");
+      log.info(ME, "STEP6: Start subscriber and expect the last not delivered message to be sent automatically");
       sub1 = doConnect("subscribe/1", null);
-      doSubscribe(sub1.con);
       assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(1000L, 1));
       sub1.updateInterceptor.clear();
       sub1.con.disconnect(null);
@@ -270,11 +273,11 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info(ME, "I_ConnectionStateListener-"+connection.getId()+": We were lucky, reconnected to xmlBlaster");
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (log!=null) log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+      if (log!=null) log.warn(ME, "I_ConnectionStateListener-"+connection.getId()+": Lost connection to xmlBlaster");
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
