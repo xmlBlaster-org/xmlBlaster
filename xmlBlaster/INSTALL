@@ -144,7 +144,7 @@ If you want to compile with the Make utility:
     After a new login you are ready to start the xmlBlaster (see below).
 
 
-2. Copy xmlBlaster/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
+2. Copy xmlBlaster/config/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
    or edit the existing orb.properties file.
 
    This switches off the default CORBA from JDK 1.2, and replaces it with
