@@ -4,7 +4,7 @@ Name:      ConnectionManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Singleton class to manage all JDBC connections
-Version:   $Id: ConnectionManager.java,v 1.1 2000/02/22 04:25:06 jsrbirch Exp $
+Version:   $Id: ConnectionManager.java,v 1.2 2000/06/03 12:31:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.util.pool.jdbc;
@@ -16,8 +16,8 @@ import org.xmlBlaster.util.Log;
 
 /**
  * Class declaration
- * 
- * 
+ *
+ *
  * @author
  * @version %I%, %G%
  */
@@ -34,8 +34,8 @@ public class ConnectionManager {
 
    /**
     * Constructor declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private ConnectionManager() {
@@ -44,13 +44,13 @@ public class ConnectionManager {
 
          /**
           * Method declaration
-          * 
-          * 
+          *
+          *
           * @see
           */
          public void run() {
             reap();
-         } 
+         }
 
       });
 
@@ -59,98 +59,101 @@ public class ConnectionManager {
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public static ConnectionManager getInstance() {
       if (instance == null) {
          instance = new ConnectionManager();
-      } 
+      }
 
       return instance;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param descriptor
-    * 
+    *
     * @return
-    * 
+    *
     * @throws SQLException
-    * 
+    *
     * @see
     */
-   public ConnectionWrapper getConnectionWrapper(ConnectionDescriptor descriptor) 
+   public ConnectionWrapper getConnectionWrapper(ConnectionDescriptor descriptor)
            throws SQLException {
       Connection        connection = null;
-      String            key = descriptor.getConnectionkey();
+      String            key = descriptor.getConnectionkey(); // <username>::<db_url>, e.g.  "jack::jdbc:oracle:thin:@localhost:1521:mydb"
+      if (Log.CALLS) Log.calls(ME, "Entering getConnectionWrapper(pool-key='" + key + "') ...");
+
       ConnectionWrapper wrapper = (ConnectionWrapper) connections.get(key);
 
       if (wrapper == null) {
          connection = createConnection(descriptor);
          wrapper = new ConnectionWrapper(connection, descriptor);
-      } 
+      }
       else {
          connection = wrapper.getConnection();
 
          if (connection.isClosed()) {
             connection = createConnection(descriptor);
-         } 
+         }
 
          wrapper.setConnection(connection);
          wrapper.setConnectionDescriptor(descriptor);
-      } 
+      }
 
       wrapper.setTimestamp();
 
       return wrapper;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param descriptor
-    * 
+    *
     * @return
-    * 
+    *
     * @throws SQLException
-    * 
+    *
     * @see
     */
-   private Connection createConnection(ConnectionDescriptor descriptor) 
+   private Connection createConnection(ConnectionDescriptor descriptor)
            throws SQLException {
       Connection  connection = null;
       String      url = descriptor.getUrl();
       String      username = descriptor.getUsername();
       String      password = descriptor.getPassword();
+      if (Log.CALLS) Log.calls(ME, "Entering createConnection(" + url + ", " + username + ") ...");
 
       connection = DriverManager.getConnection(url, username, password);
 
       if (descriptor.getConnectionlifespan() > -1) {
-         connections.put(descriptor.getConnectionkey(), 
+         connections.put(descriptor.getConnectionkey(),
                          new ConnectionWrapper(connection, descriptor));
-      } 
-
+      }
+      Log.info(ME, "Created connection to '" + url + "' for user '" + username + "'");
       return connection;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private void reap() {
       while (true) {
          try {
             Thread.sleep(reap_interval);
-         } 
+         }
          catch (Exception e) {}
 
          Vector      trash = new Vector();
@@ -158,9 +161,9 @@ public class ConnectionManager {
 
          while (cons.hasMoreElements()) {
             String               key = (String) cons.nextElement();
-            ConnectionWrapper    wrapper = 
+            ConnectionWrapper    wrapper =
                (ConnectionWrapper) connections.get(key);
-            ConnectionDescriptor descriptor = 
+            ConnectionDescriptor descriptor =
                wrapper.getConnectionDescriptor();
             Connection           connection = wrapper.getConnection();
             long                 now = System.currentTimeMillis();
@@ -172,10 +175,10 @@ public class ConnectionManager {
 
                try {
                   connection.close();
-               } 
+               }
                catch (SQLException sqle) {}
-            } 
-         } 
+            }
+         }
 
          Enumeration garbage = trash.elements();
 
@@ -184,14 +187,14 @@ public class ConnectionManager {
 
             connections.remove(key);
             Log.info(ME, "Removed connection keyed by =>" + key);
-         } 
-      } 
-   } 
+         }
+      }
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    public void release() {
@@ -202,17 +205,17 @@ public class ConnectionManager {
 
          Log.info(ME, "Releasing connection =>" + key);
 
-         ConnectionWrapper    wrapper = 
+         ConnectionWrapper    wrapper =
             (ConnectionWrapper) connections.get(key);
          ConnectionDescriptor descriptor = wrapper.getConnectionDescriptor();
          Connection           connection = wrapper.getConnection();
 
          try {
             connection.close();
-         } 
+         }
          catch (Exception e) {}
-      } 
-   } 
+      }
+   }
 
 }
 
