@@ -3,7 +3,7 @@ Start applet as application:
 
    jaco org.xmlBlaster.MainGUI
     
-   jaco javaclients.applet.HelloWorld
+   jaco javaclients.HelloWorldApplet.HelloWorld
 
 
 
