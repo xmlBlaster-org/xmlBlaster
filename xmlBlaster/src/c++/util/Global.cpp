@@ -56,6 +56,17 @@ template<> const char * lexical_cast(bool arg)
    return (arg) ? _TRUE : _FALSE;
 }
 
+template<> bool lexical_cast(std::string arg)
+{
+   return arg == "true" || arg == "TRUE";
+}
+
+template<> bool lexical_cast(const char* arg)
+{
+   return std::string(arg) == "true" || std::string(arg) == "TRUE";
+}
+
+
 /** Specialization for std::string to return std::string as default impl. crashes on sun with gcc 
     Don't use template<> std::string lexical_cast(const std::string& arg) since it won't be 
     invoked (instead the default template will be invoked)
@@ -234,7 +245,7 @@ string &Global::getReleaseId()
    if (Global::getVersion() == Global::getRevisionNumber())
       return Global::getVersion();
    static string releaseId = Global::getVersion() + " #" + Global::getRevisionNumber();
-	return releaseId;
+        return releaseId;
 }
 
 string &Global::getBuildTimestamp()

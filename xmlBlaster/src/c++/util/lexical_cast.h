@@ -265,6 +265,13 @@ namespace org { namespace xmlBlaster { namespace util {
     */
    template<> Dll_Export std::string lexical_cast(std::string arg); // See Global.cpp
 
+   /**
+    * Laghi 2004-10-28
+    * transforming 'true' or 'false' to bool fails
+    */
+   template<> Dll_Export bool lexical_cast(std::string arg); // See Global.cpp
+   template<> Dll_Export bool lexical_cast(const char* arg); // See Global.cpp
+
 #endif
 }}}
 
