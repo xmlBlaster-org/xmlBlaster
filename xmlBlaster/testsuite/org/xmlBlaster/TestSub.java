@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.17 2000/05/16 20:57:40 ruff Exp $
+Version:   $Id: TestSub.java,v 1.18 2000/05/25 13:41:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -40,7 +40,7 @@ public class TestSub extends TestCase implements I_Callback
    private boolean messageArrived = false;
 
    private String subscribeOid;
-   private String publishOid = "";
+   private String publishOid = "dummy";
    private CorbaConnection senderConnection;
    private String senderName;
    private String senderContent;
@@ -123,7 +123,7 @@ public class TestSub extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
@@ -144,7 +144,7 @@ public class TestSub extends TestCase implements I_Callback
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                      "<key oid='' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+                      "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
                       "      </TestSub-DRIVER>"+
@@ -153,15 +153,13 @@ public class TestSub extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
-         publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+         String tmp = xmlBlaster.publish(msgUnit, "<qos></qos>");
+         assertEquals("Wrong publishOid", publishOid, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
-
-      assert("returned publishOid == null", publishOid != null);
-      assertNotEquals("returned publishOid", 0, publishOid.length());
    }
 
 
@@ -195,7 +193,7 @@ public class TestSub extends TestCase implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
 
       numReceived += 1;
 
