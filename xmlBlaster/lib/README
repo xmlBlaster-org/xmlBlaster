@@ -88,6 +88,7 @@ All packages allow free use for both commercial and non-commercial applications.
       org.omg.CosTradingDynamic
       org.omg.CosTradingRepos
       org.omg.CosEvent*
+      org.omg.Messaging
       jacorb.events
       jacorb.trading
 
@@ -145,8 +146,10 @@ All packages allow free use for both commercial and non-commercial applications.
   http://jakarta.apache.org/builds/ant/release/
 
 
-12) servlet.jar from jakarta-servletapi-4.0-m5
+12) servlet.jar Servlet API 2.0
 ==============================================
+  (Not yet:
+  servlet.jar from jakarta-servletapi-4.0-m5
   Java Servlet 2.3 and JSP 1.2 specifications
-  http://jakarta.apache.org/builds/jakarta-tomcat-4.0/release
+  http://jakarta.apache.org/builds/jakarta-tomcat-4.0/release)
 
