@@ -511,11 +511,13 @@ public class CorbaConnection implements I_XmlBlasterConnection
       }
 
       try {
-         if(sessionId==null) {
-            authServer.logout(xmlBlaster);
-         }
-         else {
-            authServer.disconnect(sessionId,""); // secPlgn.exportMessage(""));
+         if (authServer != null) {
+            if(sessionId==null) {
+               authServer.logout(xmlBlaster);
+            }
+            else {
+               authServer.disconnect(sessionId,""); // secPlgn.exportMessage(""));
+            }
          }
          shutdown();
          // Thread leak !!!
@@ -525,7 +527,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return true;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: [" + e.id + "]" + " " + e.reason);
-      } catch(Exception e) {
+      } catch(org.omg.CORBA.OBJ_ADAPTER e) {
+         Log.warn(ME, "No disconnect possible, no CORBA connection: " + e.toString());
+      } catch(Throwable e) {
          Log.warn(ME, e.toString());
          e.printStackTrace();
       }
