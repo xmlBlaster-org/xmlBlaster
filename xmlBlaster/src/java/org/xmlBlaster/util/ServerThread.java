@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.14 2002/09/03 15:36:19 kkrafft2 Exp $
+Version:   $Id: ServerThread.java,v 1.15 2002/09/03 16:36:21 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -176,8 +176,9 @@ public class ServerThread extends Thread
          if( log.TRACE ) log.trace(ME, "Get first instance of org.xmlBlaster.Main via own class loader.");
          Class mainClass = cl.loadClass("org.xmlBlaster.Main");
          if( log.TRACE ) log.trace(ME, "org.xmlBlaster.Main class created.");
-         Class[] paramClasses = { glob.getClass() };
-         Object[] params = { glob };
+         String[] args = glob.getArgs();
+         Class[] paramClasses = { args.getClass() };
+         Object[] params = { null };
          java.lang.reflect.Constructor constructor = mainClass.getConstructor( paramClasses );
          xmlBlasterMain = (org.xmlBlaster.Main) constructor.newInstance( params );
          log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with specific classloader");
