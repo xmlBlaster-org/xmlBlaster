@@ -8,9 +8,9 @@ You can easy observe all publishing or get an overview about the available topic
 
 Compile it (make all) and start it like that:
 
- 1.  java javaclients.simplereader.SimpleReader -key "//key[@oid='__sys__UserList']"
+ 1. java javaclients.simplereader.SimpleReader -key "//key[@oid='__sys__UserList']"
 
-     whereat the argument for key is a XPATH expression of your subscription.
+    whereat the argument for key is a XPATH expression of your subscription.
 
  2. java javaclients.SimpleReaderGui
     
@@ -27,6 +27,6 @@ Compile it (make all) and start it like that:
 
 Don´t forget to start the server (java org.xmlBlaster.MainGUI) first.
 
-You may add all other parameters you need to connect to a certain xmlBlaster node.
+You may add all other parameters you need to connect to a certain (remote) xmlBlaster node.
 
 Enjoy!
