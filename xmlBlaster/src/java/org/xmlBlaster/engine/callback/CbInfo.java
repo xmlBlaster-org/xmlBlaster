@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.10 2002/03/22 08:16:16 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.11 2002/03/22 09:46:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -124,6 +124,10 @@ public class CbInfo
    public void sendUpdate(MsgQueueEntry[] msg, int redeliver) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "msg.length=" + msg.length + " callbackDrivers.length=" + callbackDrivers.length); 
+      if (cbArr.length == 0) { // assert
+         Log.error(ME, "cbArr.length == 0, msg.length=" + msg.length + " messages are lost");
+         throw new XmlBlasterException(ME, "cbArr.length == 0, msg.length=" + msg.length + " messages are lost");
+      }
 
       // First we export the message (call the interceptor) ...
       for (int i=0; i<msg.length; i++) {
@@ -132,6 +136,7 @@ public class CbInfo
             Log.error(ME+".accessDenied", "No session security context!");
             throw new XmlBlasterException(ME+".accessDenied", "No session security context!");
          }
+         //cbArr[0] REDUCE UPDATE QOS!!! TODO
          msg[i].setMessageUnit(sessionSecCtx.exportMessage(msg[i].getMessageUnit(i, msg.length, redeliver)));
          if (Log.DUMP) Log.dump(ME, "CallbackQos=" + msg[i].getMessageUnit().getQos());
       }
