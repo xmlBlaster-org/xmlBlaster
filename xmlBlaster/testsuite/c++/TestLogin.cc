@@ -3,7 +3,7 @@ Name:      TestLogin.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cc,v 1.5 2001/03/16 09:47:03 ruff Exp $
+Version:   $Id: TestLogin.cc,v 1.6 2001/03/16 09:51:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -209,7 +209,7 @@ public:
          log_->info(me(), txt);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warning(me() + "-testSubscribeXPath",
+         log_->warn(me() + "-testSubscribeXPath",
                        string("XmlBlasterException: ") + string(e.reason));
          string
             txt = string("subscribe - XmlBlasterException: ") +
@@ -252,7 +252,7 @@ public:
 
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warning(me()+"-testPublish",
+         log_->warn(me()+"-testPublish",
                        string("XmlBlasterException: ") + string(e.reason));
          string msg = string("publish - XmlBlasterException: ")
             + string(e.reason);
@@ -316,7 +316,7 @@ public:
             /*second*/ senderConnection_->publish(secondMsg);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warning(me()+"-secondPublish",
+         log_->warn(me()+"-secondPublish",
                        string("XmlBlasterException: ") + string(e.reason));
          string msg = string("second - publish - XmlBlasterException: ")
             + string(e.reason);
