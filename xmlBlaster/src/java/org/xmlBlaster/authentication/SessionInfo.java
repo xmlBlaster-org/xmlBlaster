@@ -392,7 +392,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * <br>
     * @return internal state of SessionInfo as a XML ASCII string
     */
-   public final String toXml() throws XmlBlasterException {
+   public final String toXml() {
       return toXml((String)null);
    }
 
@@ -402,7 +402,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * @param extraOffset indenting of tags for nice output
     * @return internal state of SessionInfo as a XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
+   public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
