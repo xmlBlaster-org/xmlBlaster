@@ -110,9 +110,9 @@ public class CacheQueueTest extends TestCase {
       try {
          // test initialize()
 
-         prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
 
-         StorageId queueId = new StorageId("cb", "SetupQueue");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
          CacheQueueInterceptorPlugin queue = new CacheQueueInterceptorPlugin();
          queue.initialize(queueId, prop);
@@ -157,13 +157,13 @@ public class CacheQueueTest extends TestCase {
 
       // set up the queues ....
       this.queues = new I_Queue[1];
-      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       prop.setMaxMsg(20L);
       prop.setMaxMsgCache(10L);
       prop.setMaxBytes(500L);
       prop.setMaxBytesCache(200L);
 
-      StorageId queueId = new StorageId("cb", "CacheQueueTest/config");
+      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/config");
 
       CacheQueueInterceptorPlugin queue = new CacheQueueInterceptorPlugin();
       this.queues[0] = queue;
@@ -227,12 +227,12 @@ public class CacheQueueTest extends TestCase {
             for (int is=0; is < maxNumOfBytes.length; is++) {
                log.info(ME, "**** TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is]);
                // a new queue each time here ...
-               QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+               QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
                prop.setMaxMsg(2000L);
                prop.setMaxMsgCache(1000L);
                prop.setMaxBytes(maxNumOfBytes[is]);
                prop.setMaxBytesCache(maxNumOfBytesCache[ic]);
-               StorageId queueId = new StorageId("cb", "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
+               StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
 
                CacheQueueInterceptorPlugin queue = new CacheQueueInterceptorPlugin();
                this.queues[0] = queue;

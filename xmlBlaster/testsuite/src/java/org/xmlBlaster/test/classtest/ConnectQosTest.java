@@ -81,7 +81,7 @@ public class ConnectQosTest extends TestCase {
          "      <ptp>false</ptp>\n" +
          "   </callback>\n" +
          */
-         "   <queue relating='session' maxMsg='1600' maxBytes='2000'>\n" +
+         "   <queue relating='callback' maxMsg='1600' maxBytes='2000'>\n" +
          "      <callback type='XML-RPC'>\n" +
          "         <ptp>true</ptp>\n" +
          "         http:/www.mars.universe:8080/RPC2\n" +
@@ -120,7 +120,7 @@ public class ConnectQosTest extends TestCase {
          assertEquals("", false, qos.duplicateUpdates());
 
          {
-            CbQueueProperty prop = qos.getSubjectCbQueueProperty();
+            CbQueueProperty prop = qos.getSubjectQueueProperty();
             assertEquals("", 1009L, prop.getMaxMsg());
             assertEquals("", "XY", prop.getType());
             assertEquals("", "7.0", prop.getVersion());
@@ -134,7 +134,7 @@ public class ConnectQosTest extends TestCase {
             assertEquals("", 30000L, prop.getReloadSwapBytes());
             */
             assertEquals("", "deadMessage", prop.getOnOverflow());
-            assertEquals("", true, qos.subjectCbQueuePropertyIsInitialized());
+            assertEquals("", true, qos.hasSubjectQueueProperty());
          }
 
 

@@ -85,7 +85,7 @@ public class I_QueueTest extends TestCase {
 /*
       QueuePropertyBase prop = null;
       try {
-         prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
 
          String queueId = "cb:SetupQueue";
          JdbcQueuePlugin jdbcQueue = new JdbcQueuePlugin();
@@ -120,7 +120,7 @@ public class I_QueueTest extends TestCase {
       QueuePropertyBase prop = null;
       try {
          // test initialize()
-         prop1 = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         prop1 = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          int max = 12;
          prop1.setMaxMsg(max);
          prop1.setMaxMsgCache(max);
@@ -128,7 +128,7 @@ public class I_QueueTest extends TestCase {
          assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxMsgCache());
          //PluginInfo pluginInfo = new PluginInfo(glob, null, "");
          //queue.init(glob, pluginInfo);     // Init from pluginloader is first
-         StorageId queueId = new StorageId("cb", "SomeQueueId");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
          queue.initialize(queueId, prop1);
          assertEquals(ME+": Wrong queue ID", queueId, queue.getStorageId());
 
@@ -189,12 +189,12 @@ public class I_QueueTest extends TestCase {
    public void testSize1() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          int max = 1;
          prop.setMaxMsg(max);
          prop.setMaxMsgCache(max);
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/size1");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/size1");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0L, queue.getNumOfEntries());
@@ -283,9 +283,9 @@ public class I_QueueTest extends TestCase {
    public void testPutMsg() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/putMsg");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/putMsg");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0L, queue.getNumOfEntries());
@@ -399,9 +399,9 @@ public class I_QueueTest extends TestCase {
 
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/peekMsg");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/peekMsg");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
@@ -575,9 +575,9 @@ public class I_QueueTest extends TestCase {
    public void testRemoveWithPriority() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/removeWithPriority");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/removeWithPriority");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
@@ -669,9 +669,9 @@ public class I_QueueTest extends TestCase {
 
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/removeRandom");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/removeRandom");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
@@ -796,9 +796,9 @@ public class I_QueueTest extends TestCase {
    public void testTakeLowest() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/takeLowest");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/takeLowest");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
@@ -946,9 +946,9 @@ public class I_QueueTest extends TestCase {
    public void testWrongOrder() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/takeLowest");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/takeLowest");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
@@ -1020,9 +1020,9 @@ public class I_QueueTest extends TestCase {
    public void testPutEntriesTwice() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/putEntriesTwice");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/putEntriesTwice");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
@@ -1073,9 +1073,9 @@ public class I_QueueTest extends TestCase {
    public void testPeekWithLimitEntry() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/peekWithLimitEntry");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/peekWithLimitEntry");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
@@ -1201,9 +1201,9 @@ public class I_QueueTest extends TestCase {
    public void testSizesCheck() {
       String queueType = "unknown";
       try {
-         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          queueType = this.queue.toString();
-         StorageId queueId = new StorageId("cb", "QueuePlugin/testSizes");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/testSizes");
          this.queue.initialize(queueId, prop);
          queue.clear();
          assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());

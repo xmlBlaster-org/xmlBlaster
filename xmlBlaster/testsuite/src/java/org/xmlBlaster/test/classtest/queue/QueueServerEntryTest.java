@@ -111,8 +111,8 @@ public class QueueServerEntryTest extends TestCase {
       try {
          // test initialize()
 
-         prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
-         StorageId queueId = new StorageId("cb", "SetupQueue");
+         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
          I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
          jdbcQueue.initialize(queueId, prop);
@@ -161,7 +161,7 @@ public class QueueServerEntryTest extends TestCase {
 
       // set up the queues ....
       this.queues = new I_Queue[1];
-      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "************ Starting updateEntry Test");
       long t0 = System.currentTimeMillis();
 
@@ -173,7 +173,7 @@ public class QueueServerEntryTest extends TestCase {
          fail(ME + " exception when constructing the queue object. " + ex.getMessage());
       }
       queues[0] = queue;
-      StorageId queueId = new StorageId("cb", "updateEntry");
+      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
       queue.initialize(queueId, prop);
       queue.clear();
 
@@ -306,7 +306,7 @@ public class QueueServerEntryTest extends TestCase {
 
       // set up the queues ....
       this.queues = new I_Queue[1];
-      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "********* Starting historyEntry Test");
       long t0 = System.currentTimeMillis();
 
@@ -318,7 +318,7 @@ public class QueueServerEntryTest extends TestCase {
          fail(ME + " exception when constructing the queue object. " + ex.getMessage());
       }
       queues[0] = queue;
-      StorageId queueId = new StorageId("cb", "historyEntry");
+      StorageId queueId = new StorageId(Constants.RELATING_HISTORY, "historyEntry");
       queue.initialize(queueId, prop);
       queue.clear();
 

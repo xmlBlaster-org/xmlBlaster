@@ -138,8 +138,8 @@ public class QueueExtendedTest extends TestCase {
       try {
          // test initialize()
 
-         prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
-         StorageId queueId = new StorageId("cb", "SetupQueue");
+         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
          I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
          jdbcQueue.initialize(queueId, prop);
@@ -189,7 +189,7 @@ public class QueueExtendedTest extends TestCase {
 
       // set up the queues ....
       this.queues = new I_Queue[numOfQueues];
-      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "performancePut: number of queues: " + numOfQueues + ", number of messages per queue: " + numOfMsg + ", size of each message: " + sizeOfMsg);
 
       prop.setMaxMsg(numOfMsg + 1);
@@ -205,7 +205,7 @@ public class QueueExtendedTest extends TestCase {
             fail(ME + " exception when constructing the queue object. " + ex.getMessage());
          }
 
-         StorageId queueId = new StorageId("cb", "perfomance/Put_" + i);
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
          queues[i].initialize(queueId, prop);
          queues[i].clear();
       }
@@ -265,7 +265,7 @@ public class QueueExtendedTest extends TestCase {
 
       // set up the queues ....
       this.queues = new I_Queue[numOfQueues];
-      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
 
       prop.setMaxMsg(numOfMsg + 1);
 
@@ -279,7 +279,7 @@ public class QueueExtendedTest extends TestCase {
          catch (Exception ex) {
             fail(ME + " exception when constructing the queue object. " + ex.getMessage());
          }
-         StorageId queueId = new StorageId("cb", "perfomance/MultiPut_" + i);
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/MultiPut_" + i);
          queues[i].initialize(queueId, prop);
          queues[i].clear();
       }

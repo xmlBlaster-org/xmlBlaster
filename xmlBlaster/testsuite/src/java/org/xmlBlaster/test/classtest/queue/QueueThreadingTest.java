@@ -139,8 +139,8 @@ public class QueueThreadingTest extends TestCase {
       try {
          // test initialize()
 
-         prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
-         StorageId queueId = new StorageId("cb", "SetupQueue");
+         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
          I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
          jdbcQueue.initialize(queueId, prop);
@@ -192,7 +192,7 @@ public class QueueThreadingTest extends TestCase {
       this.queues = new I_Queue[numOfQueues];
       int threadsPerQueue = 5;
       QueueThread[] queueThreads = new QueueThread[numOfQueues*threadsPerQueue];
-      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
+      QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       prop.setMaxMsg(numOfMsg*threadsPerQueue + 1);
 
       this.log.info(ME, "starting setting up " + numOfQueues + " queues");
@@ -205,7 +205,7 @@ public class QueueThreadingTest extends TestCase {
          catch (Exception ex) {
             fail(ME + " exception when constructing the queue object. " + ex.getMessage());
          }
-         StorageId queueId = new StorageId("cb", "perfomance/Put_" + i);
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
          queues[i].initialize(queueId, prop);
          queues[i].clear();
          try {
