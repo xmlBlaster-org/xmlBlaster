@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.9 2002/08/12 13:32:10 ruff Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.10 2002/08/13 16:22:40 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -104,7 +104,9 @@ public class DBAdapterUtils {
 
                switch (cType) {
 
+               case Types.CHAR:
                case Types.VARCHAR:
+               case Types.LONGVARCHAR:
                   columnValue = rs.getString(i);
 
                   break;
@@ -138,9 +140,40 @@ public class DBAdapterUtils {
                   columnValue = rs.getTimestamp(i).toString();
 
                   break;
+
+               case Types.BIT:
+               case Types.TINYINT:
+               case Types.SMALLINT:
+               case Types.BIGINT:
+               case Types.REAL:
+               case Types.DECIMAL:
+               case Types.TIME:
+               case Types.BINARY:
+               case Types.VARBINARY:
+               case Types.LONGVARBINARY:
+               case Types.NULL:
+               case Types.OTHER:
+               case Types.JAVA_OBJECT:
+               case Types.DISTINCT:
+               case Types.STRUCT:
+               case Types.ARRAY:
+               case Types.BLOB:
+               case Types.CLOB:
+               case Types.REF:
+               /* since JDK 1.4
+               case Types.DATALINK:
+               case Types.BOOLEAN:
+               */
+                  columnValue = rs.getObject(i).toString();
+                  break;
+
+               default:
+                  if (log.TRACE) log.warn(ME, "Datatype '" + cType + "' of column '" + columnName + "' is not implemented, plase add a case statement in DBAdapterUtils.java");
+                  columnValue = rs.getObject(i).toString();
+                  break;
                }
 
-               if (log.TRACE) log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", columnValue='" + columnValue + "'");
+               if (log.TRACE) log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", type=" + cType + " columnValue='" + columnValue + "'");
                Element col = (Element) doc.createElement(columnName);
                CDATASection cvalue = (CDATASection) doc.createCDATASection(columnValue);
 
