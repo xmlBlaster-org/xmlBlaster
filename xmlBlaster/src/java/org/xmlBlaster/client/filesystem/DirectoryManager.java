@@ -77,8 +77,8 @@ public class DirectoryManager {
     */
    private File initDirectory(File parent, String propName, String dirName) throws XmlBlasterException {
       File dir = null;
-      if (propName != null) {
-         dir = new File(parent, propName);
+      if (dirName != null) {
+         dir = new File(parent, dirName);
          if (!dir.exists()) {
             String absDirName  = null; 
             try {
