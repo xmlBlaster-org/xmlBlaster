@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.15 2002/09/12 21:01:27 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.16 2002/09/19 14:23:27 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -444,14 +444,14 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
-    * @return Milliseconds until message expiration (from now) or 0L if forever
+    * @return Milliseconds until message expiration (from now) or -1L if forever
     */
    public final long getRemainingLife()
    {
       if (expirationTimestamp < Long.MAX_VALUE)
          return expirationTimestamp - System.currentTimeMillis();
       else
-         return 0L;
+         return -1L;
    }
 
    /**
@@ -459,13 +459,13 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final void setRemainingLife(long remainingLife)
    {
-      if (remainingLife <= 0L && getMaxRemainingLife() <= 0L)
+      if (remainingLife < 0L && getMaxRemainingLife() < 0L)
          this.expirationTimestamp = Long.MAX_VALUE;
-      else if (remainingLife > 0L && getMaxRemainingLife() <= 0L)
+      else if (remainingLife >= 0L && getMaxRemainingLife() < 0L)
          this.expirationTimestamp = getRcvTimestamp().getMillis() + remainingLife;
-      else if (remainingLife <= 0L && getMaxRemainingLife() > 0L)
+      else if (remainingLife < 0L && getMaxRemainingLife() >= 0L)
          this.expirationTimestamp = getRcvTimestamp().getMillis() + getMaxRemainingLife();
-      else if (remainingLife > 0L && getMaxRemainingLife() > 0L) {
+      else if (remainingLife >= 0L && getMaxRemainingLife() >= 0L) {
          if (remainingLife <= getMaxRemainingLife())
             this.expirationTimestamp = getRcvTimestamp().getMillis() + remainingLife;
          else
