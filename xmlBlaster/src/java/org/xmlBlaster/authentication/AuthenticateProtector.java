@@ -86,7 +86,8 @@ final public class AuthenticateProtector implements I_Authenticate
     * Administrative access. 
     */
    public I_AdminSubject getSubjectInfoByName(SessionName sessionName) throws XmlBlasterException {
-      return this.authenticate.getSubjectInfoByName(sessionName).getSubjectInfoProtector();
+      SubjectInfo subjectInfo = this.authenticate.getSubjectInfoByName(sessionName);
+      return (subjectInfo == null) ? null : subjectInfo.getSubjectInfoProtector();
    }
 
    /**
