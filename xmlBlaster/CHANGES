@@ -2,6 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+
+ o BUGFIX Java client library:
+   In fail safe mode on client reconnect the subscribe
+   specific callback redirect got lost and updates where
+   delivered to the default callback handle.
+   (The bug was introduced in 0.849 when fixing a memory leak).
+
  o Removed deprecated classes from package org.xmlBlaster.client:
       EraseKeyWrapper.java
       EraseQosWrapper.java
