@@ -53,7 +53,7 @@ int main (int argc, char **argv)
  */
 xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data)
 {
-   char *loginName=NULL;        // May change in future to a sessionId
+   char *cbSessionId=NULL;      // A unique ID, as specified by the subscriber (we can check it to trust xmlBlaster)
    char *key=NULL;              // The message meta information
    char *qos=NULL;              // Some Quality of Service information
    unsigned char *content=NULL; // binary data, the message content
@@ -70,7 +70,7 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
    }
 
    // Parse the received message ...
-   xmlrpc_parse_value(env, param_array, "(ss6s*)", &loginName, &key, &content, &len, &qos);
+   xmlrpc_parse_value(env, param_array, "(ss6s*)", &cbSessionId, &key, &content, &len, &qos);
    if (env->fault_occurred) {
       fprintf(stderr, "callbackServer: Error when parsing message ... %d, %d, %s\n",
               env->fault_occurred, env->fault_code, env->fault_string);
@@ -82,8 +82,8 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
       unsigned char buf[len+2];
       strncpy(buf, content, len);
       *(buf + len) = 0;
-      printf("loginName=%s\nkey=%s\ncontent=%s\nqos=%s\n",
-                       loginName, key, buf, qos);
+      printf("cbSessionId=%s\nkey=%s\ncontent=%s\nqos=%s\n",
+                       cbSessionId, key, buf, qos);
       printf("\n-------------------------------------------\n");
    }
 
