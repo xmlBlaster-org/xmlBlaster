@@ -18,7 +18,7 @@ import junit.framework.*;
  * TODO: http://xmlunit.sourceforge.net/
  * <p />
  * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading classtest.PublishQosTest
- * @see org.xmlBlaster.client.PublishQos
+ * @see org.xmlBlaster.engine.xml2java.PublishQos
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
  */
 public class PublishQosTest extends TestCase {
