@@ -70,13 +70,18 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    /**
     * Creates the remote console server. 
+    * <p />
+    * Is called by CommandManager on startup
     */
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
-      initializeVariables(glob, commandManager);
+      initializeVariables(glob, commandManager, true);
       return initListener();
    }
 
-   private void initializeVariables(Global glob, CommandManager commandManager) {
+   /**
+    * @param isBootstrap The first instance has no timer set
+    */
+   private void initializeVariables(Global glob, CommandManager commandManager, boolean isBootstrap) {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.instanceCounter++;
@@ -85,7 +90,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout[" + glob.getId() + "]", sessionTimeout);
 
-      if (this.instanceCounter > 1) { // Ignore the first bootstrap instance
+      if (!isBootstrap) { // Ignore the first bootstrap instance
          if (sessionTimeout > 0L) {
             log.info(ME, "New connection from telnet client accepted, session timeout is " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
             timerKey = this.expiryTimer.addTimeoutListener(this, sessionTimeout, null);
@@ -369,7 +374,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    public CommandHandlerIfc getInstance() {
       //if (log.TRACE) log.trace(ME, "getInstance() is returning myself");
       TelnetGateway telnetGateway = new TelnetGateway();
-      telnetGateway.initializeVariables(glob, commandManager);
+      telnetGateway.initializeVariables(glob, commandManager, false);
       return telnetGateway;
    }
 
