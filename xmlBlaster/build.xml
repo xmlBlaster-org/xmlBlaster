@@ -1477,12 +1477,15 @@ TODO
          <fileset dir="${testsuite.dir}/src/c++" includes="${exeName}.cpp"/>
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
-         <sysincludepath location="${CORBACPP_HOME}/include" />
-         <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
-         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
+         <sysincludepath location="${CORBACPP_HOME}" if="TAO" />          <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${XMLCPP_HOME}/include" />             <!-- xerces 1.6.0 -->
+         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />     <!-- Since xerces 1.7.0 -->
 
-         <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
-         <syslibset dir="/usr/lib" libs="pthread" if="unix"/> <!-- if="Linux" -->
+         <syslibset dir="/lib" libs="dl" if="unix"/>
+         <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset>
@@ -1498,7 +1501,8 @@ TODO
 
          <linker name="gcc"  if="use-gcc">
 
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
 
