@@ -40,6 +40,7 @@ protected:
    std::string character_;
    bool doTrimStrings_;
    org::xmlBlaster::util::StringTrim trimmer_;
+   std::string locale_;
 
    std::string getStartElementAsString(const std::string &name, const AttributeMap &attrMap);
 
@@ -67,6 +68,12 @@ public:
     * @param xmlLiteral The XML std::string
     */
    void init(const std::string &xmlLiteral);
+
+   /**
+    * Get the locale (the xerces default is "en_US"). 
+    * Others are "de_DE.iso-8859-1" or "en_US.UTF-8"
+    */
+   std::string getLocale();
 
    /**
     * @return returns the literal xml std::string

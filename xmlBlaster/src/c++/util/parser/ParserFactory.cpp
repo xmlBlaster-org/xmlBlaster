@@ -16,6 +16,7 @@ Comment:   The abstraction parser for xml literals
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/PlatformUtils.hpp>
+#include <util/PanicHandler.hpp>
 #include <util/parser/ParserFactory.h>
 #include <util/parser/Sax2Parser.h>
 
@@ -24,8 +25,50 @@ Comment:   The abstraction parser for xml literals
 namespace org { namespace xmlBlaster { namespace util { namespace parser {
 
 using namespace org::xmlBlaster::util;
+//using namespace std;
     
 ParserFactory* ParserFactory::factory_ = NULL;
+
+
+/**
+ * Xerces panic handler
+ */
+class  XmlBlasterPanicHandler : public PanicHandler
+{
+ public:
+ 
+   XmlBlasterPanicHandler(){};
+ 
+   virtual ~XmlBlasterPanicHandler(){};
+ 
+    /*
+    Receive notification of panic.
+    This method is called when an unrecoverable error has occurred in the Xerces library.
+    This method must not return normally, otherwise, the results are undefined.
+    Ways of handling this call could include throwing an exception or exiting the process.
+    Once this method has been called, the results of calling any other Xerces API, or using any existing Xerces objects are undefined.
+    */
+   virtual void panic(const PanicHandler::PanicReasons reason) {
+
+      std::string txt = std::string("Got panic reason '") + lexical_cast<std::string>((int)reason) + "': " + 
+                    PanicHandler::getPanicReasonString(reason);
+
+      std::cerr << "Xerces::PanicHandler: " << txt << std::endl;
+      throw XmlBlasterException(INTERNAL_UNKNOWN, "Xerces::PanicHandler", txt);
+   }
+ 
+ private:
+ 
+     /* Unimplemented Constructors and operators */
+     /* Copy constructor */
+     XmlBlasterPanicHandler(const PanicHandler&);
+     
+     XmlBlasterPanicHandler& operator=(const XmlBlasterPanicHandler&);
+ 
+};
+
+static XmlBlasterPanicHandler xmlBlasterPanicHandler;
+
 
 ParserFactory& ParserFactory::getFactory()
 {
@@ -69,8 +112,9 @@ I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, Xml
 {
    try {
       if (!isUsingXerces_) {
-         std::cerr << "initializing xerces" << std::endl;
-         XMLPlatformUtils::Initialize();
+         std::cerr << "initializing xerces with '" << handler->getLocale() << "'" << std::endl;
+         // "en_US" is default inside xerces
+         XMLPlatformUtils::Initialize(handler->getLocale().c_str(), 0, &xmlBlasterPanicHandler, 0);
          isUsingXerces_ = true;
       }
    }

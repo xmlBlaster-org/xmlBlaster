@@ -37,6 +37,16 @@ XmlHandlerBase::XmlHandlerBase(Global& global) :
    //if (log_.call()) log_.trace(ME, "Creating new XmlHandlerBase");
 }
 
+/**
+ * Used to initialize the parser
+ */
+string XmlHandlerBase::getLocale()
+{
+   // xerces defaults to "en_US";
+   locale_ = global_.getProperty().getStringProperty("xmlBlaster/locale", "de_DE.iso-8859-1");
+   return locale_;
+}
+
 void XmlHandlerBase::init(const string &xmlLiteral)
 {
    xmlLiteral_ = xmlLiteral;
