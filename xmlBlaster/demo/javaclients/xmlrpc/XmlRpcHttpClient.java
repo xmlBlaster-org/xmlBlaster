@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.13 2002/05/11 19:39:14 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.14 2002/06/02 21:35:59 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -88,7 +88,7 @@ public class XmlRpcHttpClient
          PublishKeyWrapper xmlKey = new PublishKeyWrapper("", "text/plain", null);
 
          MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos><forceUpdate /></qos>");
-         String publishOid = client.publish(msgUnit);
+         client.publish(msgUnit);
          Log.info(ME, "Published a message");
 
          client.logout();

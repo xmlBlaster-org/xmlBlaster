@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.26 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.27 2002/06/02 21:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -18,6 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.GetKeyWrapper;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -92,7 +93,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
       Log.trace(ME, "Publishing ...");
       try {
-         String str = xmlBlasterConnection.publish(msgUnit);
+         xmlBlasterConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
       }

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.58 2002/04/26 21:31:54 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.59 2002/06/02 21:32:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -15,6 +15,7 @@ import org.jutils.time.TimeHelper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.*;
 
@@ -474,8 +475,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             Log.info(ME, "Publishing '" + key + "'");
             MessageUnit msgUnit = new MessageUnit(key, content.getBytes(), qos);
             try {
-               String publishOid = xmlBlaster.publish(msgUnit);
-               Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
+               PublishRetQos publish = xmlBlaster.publish(msgUnit);
+               Log.trace(ME, "Success: Publishing done, returned oid=" + publish.getOid());
             } catch(XmlBlasterException e) {
                Log.warn(ME, "XmlBlasterException: " + e.reason);
             }

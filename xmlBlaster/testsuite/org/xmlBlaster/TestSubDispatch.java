@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.9 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.10 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -169,7 +169,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         String tmp = senderConnection.publish(msgUnit);
+         String tmp = senderConnection.publish(msgUnit).getOid();
          assertEquals("Wrong publishOid", publishOid, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.35 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestSub.java,v 1.36 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,6 +16,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -160,8 +161,8 @@ public class TestSub extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
          sentTimestamp = new Timestamp();
-         String tmp = senderConnection.publish(msgUnit);
-         assertEquals("Wrong publishOid", publishOid, tmp);
+         PublishRetQos tmp = senderConnection.publish(msgUnit);
+         assertEquals("Wrong publishOid", publishOid, tmp.getOid());
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

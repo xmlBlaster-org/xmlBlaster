@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.18 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.19 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -152,7 +152,7 @@ public class TestPubForce extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
 
       try {
-         publishOid = senderConnection.publish(msgUnit);
+         publishOid = senderConnection.publish(msgUnit).getOid();
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

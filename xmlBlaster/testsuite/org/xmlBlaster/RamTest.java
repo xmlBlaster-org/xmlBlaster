@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.18 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: RamTest.java,v 1.19 2002/06/02 21:38:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,6 +14,7 @@ import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
@@ -163,7 +164,7 @@ public class RamTest extends TestCase
 
          stopWatch = new StopWatch();
          // 2. publish all the messages
-         String[] publishOidArr = senderConnection.publishArr(msgUnitArr);
+         PublishRetQos[] publishOidArr = senderConnection.publishArr(msgUnitArr);
 
          long avg = 0;
          double elapsed = stopWatch.elapsed();

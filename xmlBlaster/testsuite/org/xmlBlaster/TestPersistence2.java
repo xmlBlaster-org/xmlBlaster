@@ -145,7 +145,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderConnection.publish(msgUnit);
+         String returnedOid = senderConnection.publish(msgUnit).getOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

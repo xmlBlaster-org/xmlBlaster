@@ -58,7 +58,7 @@ public class HelloWorld5
                      PublishQosWrapper pq = new PublishQosWrapper();
                      pq.addDestination(new Destination(updateQos.getSender()));
                      MessageUnit msgUnit = new MessageUnit(pk.toXml(), "ACK".getBytes(), pq.toXml());
-                     String retQos = receiver.publish(msgUnit);
+                     PublishRetQos retQos = receiver.publish(msgUnit);
                      log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                   }
                   catch (XmlBlasterException e) {
@@ -77,8 +77,8 @@ public class HelloWorld5
          PublishQosWrapper pq = new PublishQosWrapper();
          pq.addDestination(new Destination(receiverName));
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         String retQos = sender.publish(msgUnit);
-         log.info(senderName, "Published message '" + pk.getOid() + "' to " + receiverName);
+         PublishRetQos retQos = sender.publish(msgUnit);
+         log.info(senderName, "Published message '" + retQos.getOid() + "' to " + receiverName);
 
       }
       catch (XmlBlasterException e) {

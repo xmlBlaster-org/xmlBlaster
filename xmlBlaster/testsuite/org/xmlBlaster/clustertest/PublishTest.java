@@ -218,10 +218,10 @@ public class PublishTest extends TestCase {
          PublishKeyWrapper pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
-         String retQos = bilboCon.publish(msgUnit);
+         PublishRetQos retQos = bilboCon.publish(msgUnit);
          log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
-                                    ", the returned QoS is: " + retQos);
+                                    ", the returned QoS is: " + retQos.getOid());
 
 
          heronCon = connect(heronGlob, new I_Callback() {  // Login to xmlBlaster, register for updates
@@ -302,7 +302,7 @@ public class PublishTest extends TestCase {
          retQos = bilboCon.publish(msgUnit);
          log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
-                                    ", the returned QoS is: " + retQos);
+                                    ", the returned QoS is: " + retQos.getOid());
 
 
          assertEquals("heron is not reachable, publish should not have come through", 0, updateCounterHeron);
@@ -356,7 +356,7 @@ public class PublishTest extends TestCase {
          retQos = frodoCon.publish(msgUnit);
          log.info(ME+":"+frodoGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + frodoGlob.getProperty().get("port",0) +
-                                    ", the returned QoS is: " + retQos);
+                                    ", the returned QoS is: " + retQos.getOid());
          assertEquals("frodo is unSubscribed and should not receive message", 0, updateCounterFrodo);
          assertEquals("heron has not received message", 1, updateCounterHeron);
 

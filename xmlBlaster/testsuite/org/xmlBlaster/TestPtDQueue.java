@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.27 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.28 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -125,7 +125,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
-            publishOid = senderConnection.publish(msgUnit);
+            publishOid = senderConnection.publish(msgUnit).getOid();
             Log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
             assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
@@ -153,7 +153,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
-            publishOid = senderConnection.publish(msgUnit);
+            publishOid = senderConnection.publish(msgUnit).getOid();
             Log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.error(ME, "publish() XmlBlasterException: " + e.reason);

@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.7 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.8 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,6 +16,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -131,7 +132,7 @@ public class TestPubBurstMode extends TestCase
          msgUnitArr[ii] = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       }
 
-      String[] publishOidArr = null;
+      PublishRetQos[] publishOidArr = null;
       try {
          Log.info(ME, "Publishing " + numPublish + " messages in burst mode ...");
          stopWatch = new StopWatch();

@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.10 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.11 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -215,7 +215,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
          stopWatch = new StopWatch();
-         String tmp = oneConnection.publish(msgUnit);
+         String tmp = oneConnection.publish(msgUnit).getOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {

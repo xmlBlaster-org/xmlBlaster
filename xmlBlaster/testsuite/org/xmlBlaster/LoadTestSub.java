@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.33 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.34 2002/06/02 21:38:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,6 +16,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.I_Callback;
 
 import junit.framework.*;
@@ -173,7 +174,7 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "   </LoadTestSub-AGENT>" +
                       "</key>";
       MessageUnit[] arr = new MessageUnit[burstModePublish];
-      String[] publishOids;
+      PublishRetQos[] publishOids;
       for (int kk=0; kk<burstModePublish; kk++)
          arr[kk] = new MessageUnit(xmlKey, someContent.getBytes(), "<qos></qos>");
       stopWatch = new StopWatch();

@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.24 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.25 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -182,7 +182,7 @@ public class TestLogin extends TestCase implements I_Callback
       if (ptp)
          msgUnit.qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
       try {
-         publishOid = callbackConnection.publish(msgUnit);
+         publishOid = callbackConnection.publish(msgUnit).getOid();
          Log.info(ME, "Success: Publish " + msgUnit.getXmlKey() + " done");
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
@@ -233,7 +233,7 @@ public class TestLogin extends TestCase implements I_Callback
                          "</key>";
          String content = "Some content";
          MessageUnit mu = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         publishOid = secondConnection.publish(mu);
+         publishOid = secondConnection.publish(mu).getOid();
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
          assertTrue("second - publish - XmlBlasterException: " + e.reason, false);
@@ -247,7 +247,7 @@ public class TestLogin extends TestCase implements I_Callback
       // test logout with following subscribe()
       callbackConnection.logout();
       try {
-         publishOid = callbackConnection.publish(msgUnit);
+         publishOid = callbackConnection.publish(msgUnit).getOid();
          assertTrue("Didn't expect successful publish after logout", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success got exception for publishing after logout: " + e.toString());

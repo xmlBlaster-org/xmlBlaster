@@ -3,7 +3,7 @@ Name:      TestSessionCb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSessionCb.java,v 1.1 2002/05/26 16:35:15 ruff Exp $
+Version:   $Id: TestSessionCb.java,v 1.2 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,6 +16,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -130,7 +131,7 @@ public class TestSessionCb extends TestCase
          PublishKeyWrapper pk = new PublishKeyWrapper(oid, "text/plain", "1.0");
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         String retQos = con2.publish(msgUnit);
+         PublishRetQos retQos = con2.publish(msgUnit);
          log.info(ME, "Published message oid=" + oid);
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time

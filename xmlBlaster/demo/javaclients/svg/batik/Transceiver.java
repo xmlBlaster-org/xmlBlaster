@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.4 2002/05/03 10:37:25 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.5 2002/06/02 21:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -23,6 +23,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.UpdateKey;
@@ -117,8 +118,8 @@ public class Transceiver implements I_Callback
             // retrieve the file content
             byte[] content = this.readFromFile(this.svgFileName);
             MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
-            String ret = this.xmlBlasterConnection.publish(messageUnit);
-            Log.info(ME, "constructor: " + ret);
+            PublishRetQos ret = this.xmlBlasterConnection.publish(messageUnit);
+            Log.info(ME, "constructor: " + ret.getOid());
          }
          else if (svgSlave != null) {
             this.svgFileName = svgSlave;
@@ -329,8 +330,8 @@ public class Transceiver implements I_Callback
 
       MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
       try {
-         String ret = this.xmlBlasterConnection.publish(messageUnit);
-         Log.trace(ME, "move: " + ret);
+         PublishRetQos ret = this.xmlBlasterConnection.publish(messageUnit);
+         Log.trace(ME, "move: " + ret.getOid());
       }
       catch (XmlBlasterException ex) {
          Log.error(ME, ".move exception when publishing: " + ex.getMessage());

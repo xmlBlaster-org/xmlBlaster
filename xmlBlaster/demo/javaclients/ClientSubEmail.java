@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.11 2002/05/11 10:38:45 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.12 2002/06/02 21:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -143,7 +143,7 @@ public class ClientSubEmail implements I_Callback
             MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
             Log.info(ME, "Publishing ...");
             try {
-               publishOid = blasterConnection.publish(msgUnit);
+               publishOid = blasterConnection.publish(msgUnit).getOid();
                Log.info(ME, "Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warn(ME, "XmlBlasterException: " + e.reason);

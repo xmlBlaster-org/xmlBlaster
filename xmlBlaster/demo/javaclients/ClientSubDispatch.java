@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.8 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.9 2002/06/02 21:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -95,7 +95,7 @@ public class ClientSubDispatch implements I_Callback
                            "</key>";
          String content = "Some content #1";
          MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         publishOid1 = blasterConnection.publish(msgUnit);
+         publishOid1 = blasterConnection.publish(msgUnit).getOid();
          Log.info(ME, "Publishing done, returned oid=" + publishOid1);
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
@@ -105,7 +105,7 @@ public class ClientSubDispatch implements I_Callback
                   "</key>";
          content = "Some content #2";
          msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         publishOid2 = blasterConnection.publish(msgUnit);
+         publishOid2 = blasterConnection.publish(msgUnit).getOid();
          Log.info(ME, "Publishing done, returned oid=" + publishOid2);
 
 

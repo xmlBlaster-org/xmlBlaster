@@ -58,10 +58,10 @@ public class PublishToSlave implements I_Callback
                try { System.in.read(); } catch(Exception e2) { }
             }
             MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
-            String retQos = con.publish(msgUnit);
+            PublishRetQos retQos = con.publish(msgUnit);
             Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
-                                    ", the returned QoS is: " + retQos);
+                                    ", the returned QoS is: " + retQos.getOid());
          }
       }
       catch (Exception e) {

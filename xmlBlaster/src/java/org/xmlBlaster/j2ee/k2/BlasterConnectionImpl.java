@@ -21,6 +21,7 @@ import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.PublishRetQos;
 
 import org.xmlBlaster.j2ee.k2.client.BlasterConnection;
 
@@ -72,10 +73,10 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Publish one message
      */
-    public String publish(MessageUnit msgUnit)
+    public PublishRetQos publish(MessageUnit msgUnit)
         throws XmlBlasterException {
         checkSanity();
-        String ret = null;
+        PublishRetQos ret = null;
         try {
             ret = mc.getBlasterConnection().publish(msgUnit);
         }catch(XmlBlasterException ex) {
@@ -96,10 +97,10 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Publish one or more message
      */
-    public String[] publishArr(MessageUnit[] msgUnitArr) 
+    public PublishRetQos[] publishArr(MessageUnit[] msgUnitArr) 
         throws  XmlBlasterException{
         checkSanity();
-        String[] ret = null;
+        PublishRetQos[] ret = null;
         try {
             ret = mc.getBlasterConnection().publishArr(msgUnitArr);
         }catch(XmlBlasterException ex) {

@@ -20,11 +20,14 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class HelloWorld4
 {
    private final String ME = "HelloWorld4";
+   private final LogChannel log;
    private XmlBlasterConnection con = null;
+   private ConnectReturnQos conRetQos = null;
+   private boolean connected;
 
    public HelloWorld4(final Global glob) {
       
-      final LogChannel log = glob.getLog(null);
+      log = glob.getLog(null);
 
       try {
          con = new XmlBlasterConnection(glob);
@@ -32,7 +35,9 @@ public class HelloWorld4
          con.initFailSave(new I_ConnectionProblems() {
                
                public void reConnected() {
-                  log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
+                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId());
+                  connected = true;
+                  conRetQos = con.getConnectReturnQos();
                   //initClient();    // initialize subscription etc. again
                   try {
                      con.flushQueue();    // send all tailback messages
@@ -43,12 +48,13 @@ public class HelloWorld4
                }
 
                public void lostConnection() {
-                  log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
+                  log.warn(ME, "I_ConnectionProblems: No connection to " + glob.getId());
+                  connected = false;
                }
             });
 
          ConnectQos qos = new ConnectQos(glob);
-         ConnectReturnQos conRetQos = con.connect(qos, new I_Callback() {
+         conRetQos = con.connect(qos, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (!updateKey.getOid().equals("HelloWorld4"))
                   log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
@@ -58,7 +64,11 @@ public class HelloWorld4
             }
          });  // Login to xmlBlaster, default handler for updates
 
-         log.info(ME, "Connected to xmlBlaster.");
+         connected = (conRetQos != null);
+         if (connected)
+            log.info(ME, "Connected to xmlBlaster.");
+         else
+            log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("SomeOtherMessage");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
@@ -80,7 +90,7 @@ public class HelloWorld4
          PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld4", "text/plain", "1.0");
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         String retQos = con.publish(msgUnit);
+         PublishRetQos retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
          pk = new PublishKeyWrapper("SomeOtherMessage", "text/plain", "1.0");
@@ -110,6 +120,7 @@ public class HelloWorld4
             }
             catch (XmlBlasterException e) {
                log.error(ME, "Houston, we have a problem: " + e.toString());
+               e.printStackTrace();
             }
             
             con.disconnect(new DisconnectQos());

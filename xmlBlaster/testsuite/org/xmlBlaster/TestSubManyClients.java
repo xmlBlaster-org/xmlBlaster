@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.12 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.13 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,6 +17,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -249,7 +250,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
          stopWatch = new StopWatch();
-         String tmp = oneConnection.publish(msgUnit);
+         String tmp = oneConnection.publish(msgUnit).getOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
@@ -342,8 +343,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
          String senderContent = "New content from publisher " + client.loginName;
          MessageUnit msgUnit = new MessageUnit(pubKey, senderContent.getBytes(), pubQos);
          try {
-            String tmp = oneConnection.publish(msgUnit);
-            assertEquals("Wrong publishOid2", publishOid2, tmp);
+            PublishRetQos tmp = oneConnection.publish(msgUnit);
+            assertEquals("Wrong publishOid2", publishOid2, tmp.getOid());
          } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
             assertTrue("publishOne - XmlBlasterException: " + e.reason, false);

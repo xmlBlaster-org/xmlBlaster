@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.21 2002/05/27 20:57:00 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.22 2002/06/02 21:38:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,6 +19,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -82,7 +83,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
       Log.info(ME, "setup test");
       numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numUpdate = 0;
       recorder = new RamRecorder();
-      recorder.initialize(glob, 1000, this, this);
+      recorder.initialize(glob, (String)null, 1000, this, this);
    }
 
 
@@ -172,11 +173,11 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String publish(MessageUnit msgUnit) throws XmlBlasterException
+   public PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "publish() ...");
       numPublish++;
-      return dummyS;
+      return null;
    }
 
 
@@ -195,11 +196,11 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "publishArr() ...");
       numPublishArr++;
-      return dummySArr;
+      return new PublishRetQos[0];
    }
 
 

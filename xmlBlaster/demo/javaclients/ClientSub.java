@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.32 2002/05/11 10:38:45 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.33 2002/06/02 21:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -14,6 +14,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -110,7 +111,7 @@ public class ClientSub implements I_Callback
 
 
          //----------- Construct a message and publish it ---------
-         String publishOid = "";
+         PublishRetQos pubRetQos = null;
          {
             // This time, as an example, we don't use the wrapper helper classes,
             // and create the string 'by hand':
@@ -126,10 +127,10 @@ public class ClientSub implements I_Callback
             Log.info(ME, "Publishing ...");
             try {
                startTime = System.currentTimeMillis();
-               publishOid = blasterConnection.publish(msgUnit);
-               Log.info(ME, "Publishing done, returned oid=" + publishOid);
+               pubRetQos = blasterConnection.publish(msgUnit);
+               Log.info(ME, "Publishing done, returned oid=" + pubRetQos.getOid());
             } catch(XmlBlasterException e) {
-               Log.warn(ME, "XmlBlasterException: " + e.reason);
+               Log.panic(ME, "XmlBlasterException: " + e.reason);
             }
          }
 
@@ -158,7 +159,7 @@ public class ClientSub implements I_Callback
 
          //----------- cleaning up .... erase() the previous message OID -------
          {
-            String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'/>";
+            String xmlKey = "<key oid='" + pubRetQos.getOid() + "' queryType='EXACT'/>";
             String[] strArr = new String[0];
             try {
                strArr = blasterConnection.erase(xmlKey, "<qos></qos>");

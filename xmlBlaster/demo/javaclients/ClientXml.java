@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.20 2002/05/11 10:38:45 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.21 2002/06/02 21:35:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -75,7 +75,7 @@ public class ClientXml implements I_Callback
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = blasterConnection.publish(msgUnit);
+               publishOid = blasterConnection.publish(msgUnit).getOid();
                Log.info(ME, "   Returned oid=" + publishOid);
                Log.trace(ME, "Publishing done" + stop.nice());
             } catch(XmlBlasterException e) {
@@ -137,7 +137,7 @@ public class ClientXml implements I_Callback
                Log.trace(ME, "Publishing ...");
                stop.restart();
                try {
-                  String str = blasterConnection.publish(msgUnit);
+                  String str = blasterConnection.publish(msgUnit).getOid();
                   Log.trace(ME, "Publishing done" + stop.nice());
                } catch(XmlBlasterException e) {
                   Log.error(ME, "Publishing failed, XmlBlasterException: " + e.reason);

@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.22 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.23 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -120,7 +120,7 @@ public class TestPersistence extends TestCase implements I_Callback
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderConnection.publish(msgUnit);
+         String returnedOid = senderConnection.publish(msgUnit).getOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

@@ -148,7 +148,7 @@ public class TestSubExact extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         publishOid = senderConnection.publish(msgUnit);
+         publishOid = senderConnection.publish(msgUnit).getOid();
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

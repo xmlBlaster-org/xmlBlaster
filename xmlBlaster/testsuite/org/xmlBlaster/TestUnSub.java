@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.19 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.20 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -199,7 +199,7 @@ public class TestUnSub extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         publishOid = senderConnection.publish(msgUnit);
+         publishOid = senderConnection.publish(msgUnit).getOid();
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

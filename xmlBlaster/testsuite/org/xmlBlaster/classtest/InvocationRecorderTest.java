@@ -9,6 +9,7 @@ import org.xmlBlaster.util.recorder.file.FileRecorder;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.I_CallbackRaw;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -49,8 +50,8 @@ public class InvocationRecorderTest extends TestCase {
       try {
          Tester tester = new Tester();
 
-         int maxEntries = 1000;
-         recorder.initialize(glob, maxEntries, tester, tester);
+         long maxEntries = 1000L;
+         recorder.initialize(glob, "test.txt", maxEntries, tester, tester);
 
          {
             String methodName = "subscribe";
@@ -203,7 +204,7 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         recorder.initialize(glob, maxQueueSize, tester, tester);
+         recorder.initialize(glob, "testOverflow.txt", maxQueueSize, tester, tester);
 
          {
             String methodName = "publish";
@@ -279,7 +280,7 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         recorder.initialize(glob, maxQueueSize, tester, tester);
+         recorder.initialize(glob, (String)null, maxQueueSize, tester, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARDOLDEST);
 
          {
@@ -321,7 +322,7 @@ public class InvocationRecorderTest extends TestCase {
 
          int maxInvoke = 4;
          int maxQueueSize = maxInvoke/2;
-         recorder.initialize(glob, maxQueueSize, tester, tester);
+         recorder.initialize(glob, (String)null, maxQueueSize, tester, tester);
          recorder.setMode(Constants.ONOVERFLOW_DISCARD);
 
          {
@@ -374,7 +375,7 @@ public class InvocationRecorderTest extends TestCase {
          numUnSubscribe++;
       }
       
-      public java.lang.String publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException {
+      public PublishRetQos publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException {
          assertEquals("Wrong message key", "<key oid='publish'/>", msgUnit.getXmlKey());
          if (testDiscardOldest)
             assertEquals("Wrong message content", "Ho-"+(numPublish+2), msgUnit.getContentStr());
@@ -382,7 +383,7 @@ public class InvocationRecorderTest extends TestCase {
             assertEquals("Wrong message content", "Ho-"+numPublish, msgUnit.getContentStr());
          assertEquals("Wrong message qos", "<qos/>", msgUnit.getQos());
          numPublish++;
-         return "";
+         return null;
       }
       
       public void publishOneway(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) {
@@ -399,7 +400,7 @@ public class InvocationRecorderTest extends TestCase {
          numPublishOneway++;
       }
 
-      public java.lang.String[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException {
+      public PublishRetQos[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException {
          assertEquals("Wrong message array length", 2, msgUnitArr.length);
 
          assertEquals("Wrong message key", "<key oid='publishArr'/>", msgUnitArr[0].getXmlKey());
@@ -411,7 +412,7 @@ public class InvocationRecorderTest extends TestCase {
          assertEquals("Wrong message qos", "<qos/>", msgUnitArr[1].getQos());
 
          numPublishArr++;
-         return new String[0];
+         return new PublishRetQos[0];
       }
       
       public java.lang.String[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {

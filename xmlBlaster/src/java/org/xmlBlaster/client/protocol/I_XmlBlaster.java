@@ -3,13 +3,14 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface
-Version:   $Id: I_XmlBlaster.java,v 1.3 2002/05/30 09:56:24 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.4 2002/06/02 21:27:57 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.PublishRetQos;
 
 /**
  * Interface for XmlBlaster, the supported methods on java client side.
@@ -24,11 +25,11 @@ public interface I_XmlBlaster
 
    public void unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
-   public java.lang.String publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException;
+   public PublishRetQos publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException;
 
    public void publishOneway(org.xmlBlaster.engine.helper.MessageUnit [] msgUnitArr) throws XmlBlasterException;
 
-   public java.lang.String[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException;
+   public PublishRetQos[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException;
 
    public java.lang.String[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 }

@@ -19,6 +19,7 @@ package org.xmlBlaster.j2ee.k2.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.PublishRetQos;
 
 /**
  * K2 Connection interface for xmlBlaster. 
@@ -51,13 +52,13 @@ public interface BlasterConnection  {
     /**
      * Publish one message
      */
-    public String publish(MessageUnit msgUnit)
+    public PublishRetQos publish(MessageUnit msgUnit)
        throws XmlBlasterException;
     
     /**
      * Publish one or more message
      */
-    public String[] publishArr(MessageUnit[] msgUnitArr) 
+    public PublishRetQos[] publishArr(MessageUnit[] msgUnitArr) 
        throws XmlBlasterException;
     
     /**

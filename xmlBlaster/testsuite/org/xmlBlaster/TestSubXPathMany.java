@@ -173,7 +173,7 @@ public class TestSubXPathMany extends TestCase
          PublishKeyWrapper pk = new PublishKeyWrapper("command-navigation", "text/plain", "1.0");
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         String retQos = con1.publish(msgUnit);
+         PublishRetQos retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
          pk = new PublishKeyWrapper("command-radar-1", "text/plain", "1.0");

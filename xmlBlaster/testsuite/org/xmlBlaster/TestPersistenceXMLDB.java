@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.9 2002/05/17 09:54:49 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.10 2002/06/02 21:38:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -153,7 +153,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderConnection.publish(msgUnit);
+         String returnedOid = senderConnection.publish(msgUnit).getOid();
          assertEquals("Returned oid is invalid", publishOid, returnedOid);
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

@@ -108,7 +108,7 @@ public class XmlDBClient implements I_Callback
       wrap.init(type, limit, confirm, queryStr);
 
       try {
-         String oid = con.publish(wrap.toMessage());
+         con.publish(wrap.toMessage());
          Log.info(ME, "Published query ...");
          if (Log.DUMP) Log.dump(ME, wrap.toXml());
       }
