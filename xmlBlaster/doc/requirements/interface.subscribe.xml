@@ -258,7 +258,6 @@
    <see type="REQ">interface</see>
    <see type="REQ">engine.qos.subscribe.duplicate</see>
    <see type="REQ">engine.qos.subscribe.multiSubscribe</see>
-   <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
    <see type="REQ">client.subscribe.dispatch</see>
 
    <see type="LOCAL">../../demo/javaclients/HelloWorldSubscribe.java.html</see>
@@ -270,7 +269,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
