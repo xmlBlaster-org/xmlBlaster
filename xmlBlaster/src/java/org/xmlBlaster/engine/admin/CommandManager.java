@@ -150,7 +150,7 @@ public final class CommandManager implements I_RunlevelListener
    public synchronized final MsgUnitRaw[] get(String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get(" + cmd + ")");
       if (cmd == null || cmd.length() < 2)
-         throw new IllegalArgumentException("Please pass a command which is not null or too short");
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
       try {
          CommandWrapper w = new CommandWrapper(glob, cmd);
          String key = w.getThirdLevel();
@@ -185,7 +185,7 @@ public final class CommandManager implements I_RunlevelListener
    public synchronized final SetReturn set(String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
-         throw new IllegalArgumentException("Please pass a command which is not null");
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
       try {
          CommandWrapper w = new CommandWrapper(glob, cmd);
          String key = w.getThirdLevel();
