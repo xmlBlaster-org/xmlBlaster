@@ -452,11 +452,11 @@ int main(int argc, char** argv)
       XmlBlasterAccessUnparsed *xa = 0;
       bool debug = false;
 
-# ifdef PTHREAD_THREADS_MAX
-   printf("[client] Try option '-help' if you need usage informations, max %d threads per process are supported on this OS\n", PTHREAD_THREADS_MAX);
-# else
-      printf("[client] Try option '-help' if you need usage informations\n");
-# endif
+#     ifdef PTHREAD_THREADS_MAX
+         printf("[client] Try option '-help' if you need usage informations, max %d threads per process are supported on this OS\n", PTHREAD_THREADS_MAX);
+#     else
+         printf("[client] Try option '-help' if you need usage informations\n");
+#     endif
 
       for (iarg=0; iarg < argc; iarg++) {
          if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
