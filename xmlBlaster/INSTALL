@@ -4,14 +4,14 @@ Howto install and compile xmlBlaster
 You need JDK 2 or better to run xmlBlaster.
 
 
-1) Install the JacORB CORBA library first:
+1) Install the JacORB CORBA library first (JacORB1_0-beta13):
 
    http://www.inf.fu-berlin.de/~brose/jacorb/
 
 	 Set the environment for JacORB home directory, so that
 	 the xmlBlaster Makefile (Makefile.Include) can find it:
 
-     export JacORB_HOME=/usr/local/jacORB
+     export JacORB_HOME=/usr/local/JacORB
 
 
 2) Set the environment to the xmlBlaster directory
@@ -32,6 +32,7 @@ You need JDK 2 or better to run xmlBlaster.
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
+     export CLASSPATH=${CLASSPATH}:/opt/local/xml-tr2/xml.jar        (xml-tr2.zip - http://developer.java.sun.com/developer/products/xml/)
 
 
 4) Compile xmlBlaster:
@@ -48,27 +49,27 @@ You need JDK 2 or better to run xmlBlaster.
 
    a) Start the JacORB Name Service:
 
-       rm /tmp/NS_db;  /usr/local/JacORB/bin/ns  /tmp/NS_Ref  /tmp/NS_db
+       rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /tmp/NS_Ref  /tmp/NS_db
 
-       [rm /tmp/NS_db;  /usr/local/JacORB/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db]
+       [rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db]
 
    b) Start the xmlBlaster server (jaco is the java wrapper from jacORB):
 
-       /usr/local/JacORB/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
 
-       [/usr/local/JacORB/bin/jaco org.xmlBlaster.MainGUI]
+       [${JacORB_HOME}/bin/jaco org.xmlBlaster.MainGUI]
 
        (or for better debugging: jaco -Djava.compiler= org.xmlBlaster.Main)
 
     c) Start the client (paste the IOR String from /tmp/NS_Ref):
 
-       /usr/local/JacORB/bin/jaco org.xmlBlaster.Client IOR:....
+       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Client IOR:....
 
 			or
 
-       /usr/local/JacORB/bin/jaco testsuite.org.xmlBlaster.ClientOid `cat /tmp/NS_Ref` 
+       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid `cat /tmp/NS_Ref` 
 
-       [/usr/local/JacORB/bin/jaco  testsuite.org.xmlBlaster.ClientOid]
+       [${JacORB_HOME}/bin/jaco  testsuite.org.xmlBlaster.ClientOid]
 
     Good. You have done it!
 
