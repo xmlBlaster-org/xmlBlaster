@@ -3,7 +3,7 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.3 2000/02/20 17:38:54 ruff Exp $
+Version:   $Id: Destination.java,v 1.4 2000/05/26 20:46:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -139,18 +139,7 @@ public class Destination
     */
    public final String toXml()
    {
-      return printOn((String)null).toString();
-   }
-
-
-   /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @return internal state of the RequestBroker as a XML ASCII string
-    */
-   public final StringBuffer printOn()
-   {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -160,7 +149,7 @@ public class Destination
     * @param extraOffset indenting of tags for nice output
     * @return The Destination as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset)
+   public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -173,7 +162,7 @@ public class Destination
          sb.append(offset + "   <ForceQueuing />");
       sb.append(offset + "</destination>");
 
-      return sb;
+      return sb.toString();
    }
 
 
@@ -186,6 +175,6 @@ public class Destination
       Destination dest = new Destination();
       dest.setDestination("Johann");
       dest.forceQueuing(true);
-      Log.info("", dest.printOn().toString());
+      Log.info("", dest.toXml());
    }
 }
