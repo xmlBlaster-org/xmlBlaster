@@ -47,13 +47,12 @@ Start the server without environment settings:
 
 Change to the installed xmlBlaster directory and type:
 
-  cp config/orb.properties $JAVA_HOME/jre/lib/orb.properties
-
   java -jar lib/xmlBlaster.jar
 
 Congratulations, now the server is running and ready!
-(orb.properties switches off the outdated, SUN delivered CORBA lib)
+
 Type a 'g' if you want the GUI to pop up.
+Use -help if you want usage infos.
 
 Now start a client:
 
@@ -134,6 +133,9 @@ how to do it.
    If you want to avoid this, you need to specify on command line:
       java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
            -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+
+   If you use the delivered CorbaDrivers (Java helper classes)
+   JacORB is set as the default ORB already and you need to do nothing.
 
 
 3. There are two property files which you can adjust.
