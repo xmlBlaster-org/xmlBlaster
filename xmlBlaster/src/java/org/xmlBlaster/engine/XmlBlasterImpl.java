@@ -54,7 +54,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
 
-   private final static int MAX_CACHE = 500;
+   private final static int MAX_CACHE = 500; // 0: switched off, default is 500;
    private final static int CHUNK_TO_REMOVE = 25;
    private HashMap qosCache = new HashMap(200);
    private HashMap keyCache = new HashMap(200);
@@ -185,10 +185,16 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    }
 
    private void removeRandom(Map map, int numToRemove) {
+      if (map.size() == 0) {
+         return;
+      }
       Iterator iter = map.entrySet().iterator();
       Random rand = new Random();
-      int val = rand.nextInt(map.size());
-      for (int i=0; i < val; i++) iter.next();
+      int val = rand.nextInt(map.size()-1);
+      for (int i=0; i < val && iter.hasNext(); i++) iter.next();
+      if (val == 0) {
+         iter.next(); // The remove() needs at least one call to next()
+      }
       for (int i=0; i < numToRemove; i++) {
          iter.remove();
          if (!iter.hasNext()) break;
@@ -209,25 +215,42 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private MsgUnit toMsgUnit(MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
 
       String keyLiteral = msgUnitRaw.getKey();
-      MsgKeyData key = (MsgKeyData)this.keyCache.get(keyLiteral);
-      if (key == null) {
-         key = glob.getMsgKeyFactory().readObject(keyLiteral);
-         if (this.keyCache.size() >= MAX_CACHE)
-            removeRandom(this.keyCache, CHUNK_TO_REMOVE);
-         this.keyCache.put(keyLiteral, key.clone());
+      MsgKeyData key;
+      if (MAX_CACHE > 0) {
+         synchronized (this.keyCache) {
+            key = (MsgKeyData)this.keyCache.get(keyLiteral);
+            if (key == null) {
+               key = glob.getMsgKeyFactory().readObject(keyLiteral);
+               if (this.keyCache.size() >= MAX_CACHE)
+                  removeRandom(this.keyCache, CHUNK_TO_REMOVE);
+               this.keyCache.put(keyLiteral, key.clone());
+            }
+            else key = (MsgKeyData)key.clone();
+         }
       }
-      else key = (MsgKeyData)key.clone();      
+      else {
+         key = glob.getMsgKeyFactory().readObject(keyLiteral);
+      }
       
       String qosLiteral = msgUnitRaw.getQos();
-      MsgQosData qosData = (MsgQosData)this.qosCache.get(qosLiteral);
-      if (qosData == null) {
+      MsgQosData qosData;
+      if (MAX_CACHE > 0) {
+         synchronized (this.qosCache) {
+            qosData = (MsgQosData)this.qosCache.get(qosLiteral);
+            if (qosData == null) {
+               PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
+               qosData = qos.getData();
+               if (this.qosCache.size() >= MAX_CACHE)
+                  removeRandom(this.qosCache, CHUNK_TO_REMOVE);
+               this.qosCache.put(qosLiteral, qosData.clone());
+            }
+            else qosData = (MsgQosData)qosData.clone();
+         }
+      }
+      else {
          PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
          qosData = qos.getData();
-         if (this.qosCache.size() >= MAX_CACHE)
-            removeRandom(this.qosCache, CHUNK_TO_REMOVE);
-         this.qosCache.put(qosLiteral, qosData.clone());
       }
-      else qosData = (MsgQosData)qosData.clone();
       return new MsgUnit(key, msgUnitRaw.getContent(), qosData);
    }
 
