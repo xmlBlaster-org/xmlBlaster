@@ -55,6 +55,13 @@
      <tr><td>...</td><td>&nbsp;</td></tr>
     </table>
 
+    <p>
+    All ID's are available in a java.util.ResourceBundle
+    the question is if the server already uses the localized
+    text for the client language, or if the client uses the
+    id to find its localized error text. 
+    </p>
+
    </description>
 
    <example lang="XML" type="RAW">
@@ -98,7 +105,7 @@ XmlBlasterException.toXml():
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
