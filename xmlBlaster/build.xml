@@ -361,7 +361,7 @@ TODO
          </fileset>
       </copy>
 
-      <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
+      <copy file="./config/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
       <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
@@ -873,7 +873,7 @@ TODO
 
       <!-- Create xmlBlaster/dist/lib/xmlBlaster.jar with ALL classes ...-->
       <delete file="${dist.dir}/lib/${name}.jar" failonerror="false"/>
-      <jar destfile="${dist.dir}/lib/${name}.jar" manifest="classes/manifest.xmlBlaster" basedir="${dist-classes.dir}"/>
+      <jar destfile="${dist.dir}/lib/${name}.jar" manifest="./config/manifest.xmlBlaster" basedir="${dist-classes.dir}"/>
 
       <!-- Create xmlBlasterDist-0.79e.zip with everything ...-->
       <delete file="${DIST_PATH}/${zipFile}" failonerror="false"/>
@@ -971,11 +971,11 @@ TODO
       <switch value="${ADD_MANIFEST}">
          <case value="false">
             <echo message="Using default manifest.xmlBlaster" />
-            <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${dist-client.dir}/classes/manifest.xmlBlaster" overwrite="yes"/>
+            <copy file="./config/manifest.xmlBlaster" tofile="${dist-client.dir}/config/manifest.xmlBlaster" overwrite="yes"/>
          </case>
          <default>
             <echo message="Using ${ADD_MANIFEST}" />
-            <copy file="${ADD_MANIFEST}" tofile="${dist-client.dir}/classes/manifest.xmlBlaster" overwrite="yes"/>
+            <copy file="${ADD_MANIFEST}" tofile="${dist-client.dir}/config/manifest.xmlBlaster" overwrite="yes"/>
          </default>
       </switch>
       <switch value="${ADD_DIRECTORY}">
@@ -990,10 +990,10 @@ TODO
       </switch>
       
       <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
-      <!--jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/classes/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/-->
+      <!--jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/config/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/-->
       <!--Changes done by astelzl@avitech.de DIST_PATH is set in my build-file to copy the xmlBlasterClient.jar to the specified path-->
       <!--Same as dist target-->
-      <jar destfile="${DIST_PATH}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/classes/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/>
+      <jar destfile="${DIST_PATH}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/config/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/>
       <!-- delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete -->
 
       <echo message="--------------------------------------------"/>
@@ -1191,7 +1191,7 @@ TODO
        </delete>
     </target>
  
-    <target name="delete" depends="clean,cpp-delete" description="Remove all generated ditribution Java and C++ files">
+    <target name="delete" depends="clean,cpp-delete,docs-delete" description="Remove all generated ditribution Java, C++ and documentation files">
        <delete dir="${dist-classes.dir}"/>
        <delete dir="${dist.dir}"/>
        <delete dir="${dist-client.dir}"/>
