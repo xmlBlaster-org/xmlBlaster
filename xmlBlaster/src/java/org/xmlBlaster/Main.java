@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.52 2000/10/02 09:44:51 ruff Exp $
+Version:   $Id: Main.java,v 1.53 2000/10/10 20:45:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -179,6 +179,10 @@ public class Main
          }
          catch (XmlBlasterException e) {
             Log.error(ME, e.toString());
+         }
+         catch (Throwable e) {
+            Log.error(ME, e.toString());
+            e.printStackTrace();
          }
       }
    }
