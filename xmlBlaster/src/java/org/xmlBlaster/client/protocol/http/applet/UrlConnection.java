@@ -27,6 +27,7 @@ public class UrlConnection implements I_Connection {
    public UrlConnection(String urlString) throws Exception {
       URL url = new URL(urlString);
       this.conn = (HttpURLConnection)url.openConnection();
+      this.conn.setDoOutput(true);
    }
 
    public InputStream getInputStream() throws IOException {
