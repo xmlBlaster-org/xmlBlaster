@@ -53,7 +53,6 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 
 import java.util.*;
 
-
 /**
  * Handles all MsgUnit entries of same oid and its subscribers. 
  * <p>
@@ -535,7 +534,6 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
 
             // Forcing RAM entry temporary (reset in finally below) to avoid performance critical harddisk IO during initialization, every callback/subject/history queue put()/take() is changing the reference counter of MsgUnitWrapper. For persistent messages this needs to be written to harddisk
             // If the server crashed during this RAM operation it is not critical as the publisher didn't get an ACK yet
-            //msgUnitWrapper.runningRamBased(true);
             synchronized(this.msgUnitWrapperUnderConstruction) {
                // A queue (e.g. callback queue) could swap its entry and reload it during this initialization phase,
                // in this case we need to assure that it receives our RAM based MsgUnitWrapper (with all current settings)
@@ -543,9 +541,6 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                this.msgUnitWrapperUnderConstruction.put(new Long(msgUnitWrapper.getUniqueId()), msgUnitWrapper);
             }
        
-            //if (log.TRACE) log.trace(ME, "msgUnitCache.put() storing message '" + msgUnit.getLogId() + "' into '" + msgUnitWrapper.getUniqueId() + "' ...");
-            //this.msgUnitCache.put(msgUnitWrapper);
-
             if (addToHistoryQueue && msgUnitWrapper.isAlive()) { // no volatile messages
                if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
                   MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
@@ -557,26 +552,6 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                   }
                }
 
-               // Remove oldest history entry (if queue is full) and decrease reference counter in msgUnitStore
-               /*
-               long numHist = getNumOfHistoryEntries();
-               if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
-                  ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
-                  if (entryList.size() != 1) {
-                     throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
-                           "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
-                  }
-                  / *
-                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-                  MsgUnitWrapper msgUnitEntry = entry.getMsgUnitWrapper();
-                  if (msgUnitEntry != null) { // Check WeakReference
-                     this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
-                  }
-                  * /
-                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-                  if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
-               }
-               */
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
 
@@ -619,28 +594,22 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       finally {
          if (msgUnitWrapper != null) {
             synchronized (msgUnitWrapper) {
-               try {
-               // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
-               // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
-                  if (initialCounter != 0) {
-                     //msgUnitWrapper.incrementReferenceCounter((-1)*initialCounter, null); // Reset referenceCount until update queues are filled
-                     msgUnitWrapper.setReferenceCounter((-1)*initialCounter);
+               synchronized(this.msgUnitCache) {
+                  try {
+                     // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
+                     // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
+                     if (initialCounter != 0) {
+                        msgUnitWrapper.setReferenceCounter((-1)*initialCounter);
+                     }
+                     if (!msgUnitWrapper.isDestroyed()) {
+                        this.msgUnitCache.put(msgUnitWrapper);
+                     }
                   }
-                  if (!msgUnitWrapper.isDestroyed()) {
-                     this.msgUnitCache.put(msgUnitWrapper);
+                  finally {
+                     synchronized(this.msgUnitWrapperUnderConstruction) {
+                        this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
+                     }
                   }
-                  synchronized(this.msgUnitWrapperUnderConstruction) {
-                     this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
-                  }
-               //if (!msgUnitWrapper.isDestroyed() && msgUnitWrapper.getMsgQosData().isPersistent()) {
-               //   this.msgUnitCache.change(msgUnitWrapper, this); // calls changeEntry() below
-               //}
-               }
-               catch (XmlBlasterException e) {
-                  synchronized(this.msgUnitWrapperUnderConstruction) {
-                     this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
-                  }
-                  throw e;
                }
             }
          }

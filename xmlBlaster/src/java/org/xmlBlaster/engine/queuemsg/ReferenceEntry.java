@@ -72,6 +72,7 @@ public class ReferenceEntry extends MsgQueueEntry
       else super.wantReturnObj = false; 
    }
 
+
    /**
     * A new message object is fed by method publish(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
@@ -138,7 +139,7 @@ public class ReferenceEntry extends MsgQueueEntry
             
             //log.error(ME, "No 'meat' found for MsgQueueEntry '" + getLogId() +
             //              "' in msgStore: " + Global.getStackTraceAsString());
-	    //
+            //
             //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, 
             //          "No 'meat' found for MsgQueueEntry '" + getLogId() + "' in msgStore");
          }
@@ -158,18 +159,18 @@ public class ReferenceEntry extends MsgQueueEntry
       Object referent = null;
       if (this.weakMsgUnitWrapper != null) {
          referent = this.weakMsgUnitWrapper.get();
-         if (referent == null || ((MsgUnitWrapper)referent).isSwapped()) {  // message was swapped away
-            this.weakMsgUnitWrapper = null;
-            referent = lookup();
-            if (referent == null) return null;
-         }
+      } 
+      if (referent == null || ((MsgUnitWrapper)referent).isSwapped()) {  // message was swapped away
+         this.weakMsgUnitWrapper = null;
+         referent = lookup();
+         if (referent == null) return null;
          this.weakMsgUnitWrapper = new WeakReference(referent);
       }
       MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)referent;
       return msgUnitWrapper;
    }
 
-   private I_Map getMsgUnitCache() {
+   public I_Map getMsgUnitCache() {
       RequestBroker rb = this.glob.getRequestBroker();
       if (rb == null) return null;
       TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
