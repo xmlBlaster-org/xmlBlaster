@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.7 2002/12/26 22:36:26 laghi Exp $
+Version:   $Id: RamTest.cpp,v 1.8 2003/01/07 21:04:06 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -117,7 +117,7 @@ public:
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          EraseKey key(global_);
-	 key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
+         key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
          EraseQos qos(global_);
          vector<EraseReturnQos> strArr;
          try {
@@ -152,7 +152,7 @@ public:
          PublishKey key(global_);
          key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
          senderContent_ = lexical_cast<string>(i+1);
-	 PublishQos qos(global_);
+         PublishQos qos(global_);
          util::MessageUnit msgUnit(key, senderContent_, qos);
          msgVec.push_back(msgUnit);
       }
@@ -160,9 +160,8 @@ public:
       try {
          // 1. Query the current memory allocated in xmlBlaster
          GetKey key(global_);
-	 key.setQueryString("__cmd:?usedMem");
-	 key.setQueryType("EXACT");
-	 GetQos qos(global_);
+         key.setQueryString("__cmd:?usedMem");
+         GetQos qos(global_);
          vector<util::MessageUnit> msgRetVec = senderConnection_->get(key, qos);
          if (msgRetVec.size() != 1) {
             log_.error(me(), "msgRetVec.length!=1");
