@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.45 2003/05/23 09:04:55 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.46 2003/05/23 09:44:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -220,7 +220,7 @@ public class XmlRpcDriver implements I_Driver
       text += "   -plugin/xmlrpc/hostname\n";
       text += "                       Specify a hostname where the XMLRPC web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -plugin/xmlrpc/debug.\n";
+      text += "   -plugin/xmlrpc/debug\n";
       text += "                       true switches on detailed XMLRPC debugging [false].\n";
       text += "\n";
       return text;
