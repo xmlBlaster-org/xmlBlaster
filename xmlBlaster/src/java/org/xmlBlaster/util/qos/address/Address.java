@@ -96,7 +96,7 @@ public class Address extends AddressBase
       text += "                                      Number of milliseconds we shall collect oneway\n";
       text += "                                      publish messages [" + Address.DEFAULT_collectTime + "].\n";
       text += "                                      This allows performance tuning, try set it to 200.\n";
-    //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+    //text += "   -DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
     //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
     //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
       return text;
