@@ -13,7 +13,7 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
-
+import org.jutils.text.StringHelper;
 
 /**
  * The methods of this class are callable bei XML-RPC clients.
@@ -49,7 +49,7 @@ public class AuthenticateImpl
    {
       if (Log.CALL) Log.call(ME, "Entering login() ...");
       if (Log.DUMP) Log.dump(ME, qos_literal);
- 
+
       if (loginName==null || passwd==null || qos_literal==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
@@ -88,7 +88,7 @@ public class AuthenticateImpl
     */
    public String connect(String qos_literal) throws XmlBlasterException
    {
-      String returnValue = null;
+      String returnValue = null, returnValueStripped = null;
       if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
@@ -96,20 +96,28 @@ public class AuthenticateImpl
          ConnectQos connectQos = new ConnectQos(qos_literal);
          ConnectReturnQos returnQos = authenticate.connect(connectQos);
          returnValue = returnQos.toXml();
+
+         returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
+         returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
+         if (!returnValueStripped.equals(returnValue)) {
+            Log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+                           "This shouldn't be a problem as long as your credentials doesn't contain '<'");
+         }
          if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
 
-      return returnValue;
+      return returnValueStripped;
    }
 
-   public void disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
+   public String disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout()");
       authenticate.disconnect(sessionId, qos_literal);
       if (Log.CALL) Log.call(ME, "Exiting logout()");
+      return "";
    }
 
    /**
