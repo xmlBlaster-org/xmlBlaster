@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.soap' type='NEW' prio='LOW' status="INWORK">
+   <topic>XmlBlaster has a protocol plugin to support access via SOAP</topic>
+   <description>
+      <p>
+      The SOAP support is based on the <a href="http://www.jafworks.com" target="OTHERS">SOAP anywhere</a>
+      library by Jonathan Glanz of JAFWorks.
+      </p>
+      <p>
+      The necessary jar files need to be copied to xmlBlaster/lib/soap directory.
+      </p>
+      <p>
+      You need JDK 1.4 or better to use SOAP anywhere.
+      </p>
+   </description>
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Impl</td>
+         </tr>
+
+         <tr>
+            <td>soap.hostname</td>
+            <td>localhost</td>
+            <td>Specify a hostname where the SOAP server runs
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>soap.port</td>
+            <td>7607</td>
+            <td>The SOAP server port
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ProtocolPlugin[SOAP][1.0]</td>
+            <td><pre>org.xmlBlaster.protocol.soap.CallbackSoapDriver,\
+classpath=soap/jdom.jar:soap/log4j-core.jar:\
+soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar</pre></td>
+            <td>You need to activate SOAP support in your xmlBlaster.properties file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>CbProtocolPlugin[SOAP][1.0]</td>
+            <td><pre>org.xmlBlaster.protocol.soap.CallbackSoapDriver,\
+classpath=soap/jdom.jar:soap/log4j-core.jar:\
+soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar</pre></td>
+            <td>You need to activate SOAP support in your xmlBlaster.properties file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+   <todo>
+   <ol>
+      <li>
+      SOAP support is not implemented.<br />
+      The class xmlBlaster/src/java/org/xmlBlaster/protocol/soap/SoapDriver.java
+      adds the basic skeleton, and xmlBlaster/demo/soap holds a minimal
+      web services directory structure.
+      </li>
+      <li>
+      The SOAP jar files are currently not included with xmlBlaster.
+      </li>
+   </ol>
+   </todo>
+   <see type="REQ">protocol</see>
+   <see type="API">org.xmlBlaster.protocol.soap.SoapDriver</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 09 2</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
