@@ -113,8 +113,9 @@ All packages allow free use for both commercial and non-commercial applications.
    Michele Laghi created it when porting xmlBlaster to Orbaccus.
 
 
-9) gnu-regexp-1.0.8.jar
-=======================
+9) gnu-regexp.jar
+=================
+  gnu-regexp-1.1.4.jar from 2002-05-05
   GNU-REXEXP is under LGPL. The syntax of gnu.regexp includes awk, sed,
   emacs, perl and grep.
   Download: http://www.cacas.org/java/gnu/regexp/
