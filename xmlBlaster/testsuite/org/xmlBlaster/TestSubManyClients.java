@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.3 2000/11/05 21:23:57 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.4 2000/11/05 23:06:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -35,8 +35,12 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
+ *  java  -Xms10m -Xmx220m org.xmlBlaster.Main -info false
+ *
+ *  java testsuite.org.xmlBlaster.TestSubManyClients -numClients 10000 -client.protocol RMI -warn false
+ *
+ *  jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
+ *  jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
  * </pre>
  */
 public class TestSubManyClients extends TestCase implements I_Callback
