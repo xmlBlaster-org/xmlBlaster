@@ -11,25 +11,21 @@
     of the WTTools project. 
     </p>
     <p>
-    A good port to access xmlBlaster is 2702, configuring the port to 0 switches
-    the telnet access off. The default is 0 because of very high security risks.
-    </p>
-    <p>
-    The plugin architecture of <i>remotecons</i> allows us
-    to add more functionality like internal state queries or setting
+    The plugin architecture of <i>remotecons</i> allowed us
+    to add xmlBlaster specific functionality like internal state queries or setting
     of properties.
     </p>
-    <b>
-    You should switch telnet access off (configure the port to 0, see below) when delivering xmlBlaster
-    to your customer, as there is currently no login/passwd protection. Remote console allows you
-    to execute every command on the server machine like deleting the harddisk!
-    </b>
+    <p>
+    The default port to access xmlBlaster is 2702, configuring the port to 0 switches
+    telnet access off (see below).
+    </p>
    </description>
 
-   <example lang="Java" type="HTML">
-    Start xmlBlaster
+   <example lang="any" type="HTML">
+    Start xmlBlaster (port 2702 is default for telnet access).
+    We configure the server to have a nice and short name <i>heron</i>:
     <pre>
-  java org.xmlBlaster.Main -cluster.node.id heron -admin.remoteconsole.port 2702
+  java org.xmlBlaster.Main -cluster.node.id heron
     </pre>
 
     and try a
@@ -41,6 +37,16 @@
     <p>
     Type <code>help</code> for a usage list.
     </p>
+
+    <p>
+    Now lets login to play:
+    </p>
+    <pre>
+  CMD>connect admin secret
+
+  Successful login for user admin, session timeout is  [ 10 min 0 millis ]
+    </pre>
+
     <p>
     Example to query the home directory of the user which started xmlBlaster
     and the current free memory in the server, the last example queries how many
@@ -49,19 +55,16 @@
     <pre>
   CMD>get sysprop/?user.home
 
-  get sysprop/?user.home
   /node/heron/sysprop/?user.home=/home/xmlblast
 
 
   CMD>get ?freeMem
 
-  get ?freeMem
   /node/heron/?freeMem=942272
 
 
   CMD>get /node/heron/?numClients
 
-  get /node/heron/?numClients
   /node/heron/?numClients=0
     </pre>
 
@@ -71,7 +74,6 @@
     <pre>
   CMD> set sysprop/?call[auth]=true
 
-  set sysprop/?call[auth]=true
   /node/heron/sysprop/?call[auth]=true
     </pre>
 
@@ -81,7 +83,6 @@
     <pre>
   CMD> set sysprop/?myTmpPath=${user.home}${file.separator}backup
 
-  set sysprop/?myTmpPath=${user.home}${file.separator}backup
   /node/heron/sysprop/?myTmpPath=/home/xmlblast/backup
     </pre>
 
@@ -91,12 +92,10 @@
     <pre>
   CMD> get ?runlevel
 
-  get ?runlevel
   /node/heron/?runlevel=9
 
   CMD> set ?runlevel=3 
 
-  set ?runlevel=3
   /node/heron/?runlevel=3
     </pre>
 
@@ -105,6 +104,30 @@
        for a description of the command syntax.
     </p>
 
+   </example>
+
+
+   <example lang="any">
+192.168.1.2 &lt;&lt; help
+remotecons.wttools.ConnectionServer$InternalCommands >> 
+  echo           - switch 'echo' mode (for windows telnet is really needed)
+  quit           - close connection to server
+  who            - list all active connections
+  close n        - close active connection number 'n'
+  help [command] - display this message info
+
+org.xmlBlaster.engine.admin.extern.TelnetGateway >> 
+  XmlBlaster telnet administration
+   connect [name] [passwd]  Login with you login name and password
+   get [query]              Get property or xmlBlaster state
+   set [query]              Set a property or change xmlBlaster setting
+   time                     Display current time on server
+   gc                       Run System.gc() command on remote system
+   mem [total|free]         Display amount of memory on remote system
+   exit                     Call System.exit(0) on remote system
+  For query syntax see
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html
    </example>
 
    <configuration where="server">
@@ -117,27 +140,29 @@
          </tr>
 
          <tr>
-            <td>-remoteconsole.port</td>
+            <td>admin.remoteconsole.port</td>
             <td>0</td>
-            <td>Choose the port where xmlBlaster listens for telnet requests, 0 switches telnet access off. Port 2702 is a good port to try.</td>
+            <td>Choose the port where xmlBlaster listens for telnet requests, 0 switches telnet access off.
+                Port 2702 is a good port to try.<br />Example:
+<pre>java org.xmlBlaster.Main -cluster.node.id heron
+                              -admin.remoteconsole.port 2702</pre>
+                </td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>admin.remoteconsole.sessionTimeout</td>
+            <td>600000</td>
+            <td>Auto logout after given milli seconds, defaults to 10 minutes.</td>
             <td>yes</td>
          </tr>
       </table>
    </configuration>
 
    <todo type='HTML'>
-   <ol>
-      <li>
-      Add login/password, currently everybody can access xmlBlaster
-      and for example do a shutdown.
-      </li>
-      <li>
-      Add more xmlBlaster specific query possibilities
-      </li>
-      <li>
-      Support setting of properties
-      </li>
-   </ol>
+      <p>
+      Most is done, testsuite is missing.
+      </p>
    </todo>
    
    <see type="INTERNET">http://wttools.sourceforge.net/remotecons/package.html</see>
@@ -149,7 +174,7 @@
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
