@@ -26,7 +26,8 @@
       On pullback of messages it is possible to use a motion factor to allow 'slow motion'
       or 'fast motion' reply:
       <pre>
-       pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
+pullback(long startDate, long endDate,
+         double motionFactor) throws XmlBlasterException
       </pre>
 
    </description>
@@ -35,7 +36,10 @@
       <p>
       Example how to configure the FileRecorder plugin in your xmlBlaster.properties file:
       </p>
-      <pre>RecorderPlugin[FileRecorder][1.0]=org.xmlBlaster.util.recorder.file.FileRecorder</pre>
+      <pre>
+RecorderPlugin[FileRecorder][1.0]=
+  org.xmlBlaster.util.recorder.file.FileRecorder
+      </pre>
 
       <p>
       These parameters allow to configure the message recorder behavior.
@@ -123,7 +127,7 @@
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
