@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.2 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.3 2001/12/11 10:39:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -11,8 +11,6 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**
