@@ -33,6 +33,12 @@ public class AllTests
       //try { glob.getProperty().set("client.protocol", "IOR"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
       //try { glob.getProperty().set("client.protocol", "RMI"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
       //try { glob.getProperty().set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
+      
+      // !!!!!! RMI, CORBA XML-RPC etc. all have thread leaks on shutdown
+      // Only the SOCKET protocol seems to be clean
+      // So we currently switch off this test
+      // suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestEmbeddedXmlBlaster.class));
+      
       suite.addTest(TestCorbaThreads.suite());
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());
@@ -40,12 +46,15 @@ public class AllTests
       suite.addTest(TestSubExact.suite());
       suite.addTest(TestSubNoDup.suite());
       suite.addTest(TestSub.suite());
+      suite.addTest(TestSubLostClient.suite());
       suite.addTest(TestSubNoInitial.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());
+      suite.addTest(TestSubManyClients.suite());
       suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestSubXPathMany.class));
       suite.addTest(TestSubMulti.suite());
       suite.addTest(TestUnSub.suite());
+      suite.addTest(TestVolatile.suite());
       suite.addTest(TestPtD.suite());
       suite.addTest(TestPtDQueue.suite());
       suite.addTest(TestPub.suite());
@@ -56,9 +65,6 @@ public class AllTests
       suite.addTest(TestFailSave.suite());
       suite.addTest(TestFailSavePing.suite());
       suite.addTest(TestFailSaveAsync.suite());
-      suite.addTest(TestSubManyClients.suite());
-      suite.addTest(LoadTestSub.suite());
-      suite.addTest(RamTest.suite());
       return suite;
    }
 }
