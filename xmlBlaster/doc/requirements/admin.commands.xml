@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="INWORK">
+<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>Description of the available commands for remote administration of xmlBlaster</topic>
    <description>
      <p>
@@ -24,6 +24,7 @@
    <nodeList>heron,avalon,golan,frodo,bilbo</nodeList>
    <heron>
       <uptime>34000</uptime>      <!-- sec -->
+      <runlevel>9</runlevel>
       <freeMem>13000000</freeMem> <!-- bytes -->
       <hostname>server.mycomp.com</hostname>
       <port>3412</host>
@@ -127,7 +128,7 @@
             <td>get</td>
             <td>get</td>
             <td>getAttributes()</td>
-            <td>yes (telnet)</td>
+            <td>only telnet</td>
          </tr>
          <tr>
             <td>SET</td>
@@ -136,7 +137,7 @@
             <td>set</td>
             <td>set</td>
             <td>setAttributes()</td>
-            <td>no</td>
+            <td>only telnet</td>
          </tr>
          <tr>
             <td>SUBSCRIBE</td>
@@ -177,8 +178,8 @@
       </h3>
       <p>
          The following table gives an overview of the query syntax, it
-         is URL conforming to allow direct queries from a browser (authentication
-         is not specified yet) and it is simple to allow typing it into a telnet terminal.
+         is URL conforming to allow direct queries from a browser
+         and it is simple to allow typing it into a telnet terminal.
       </p>
       <table border="1">
          <tr>
@@ -192,6 +193,10 @@
          <tr>
             <td>/node/heron/?freeMem</td>
             <td>Query the free memory in bytes</td>
+         </tr>
+         <tr>
+            <td>/node/heron/?runlevel=3</td>
+            <td>Switch run level of heron to 3 (STANDBY)</td>
          </tr>
          <tr>
             <td>/node/heron/?numClients</td>
@@ -373,8 +378,12 @@
       
          <tr>
             <td>telnet</td>
-            <td><pre>get /node/heron/?freeMem</pre></td>
-            <td>With telnet you give the command <i>get</i> followed by the query (separated with a blank)
+            <td><pre>
+get ?runlevel
+set /node/heron/?runlevel=3
+set sysprop/?trace[corba]=true
+            </pre></td>
+            <td>With telnet you give the command <i>get</i> or <i>set</i> followed by the query (separated with a blank)
             </td>
             <td>yes</td>
          </tr>
@@ -410,7 +419,7 @@
          How does authentication work?
       </h3>
       For MoM clients the usual authentication applies.<br />
-      For telnet clients this is an open issue.<br />
+      For telnet clients you have to use the connect command on startup.<br />
       For SNMP access the authentication is done in SNMP<br />
       For JMX we have not investigated yet.
 
@@ -483,6 +492,8 @@ UserInfo: joe:mypasswd
          </tr>
 
       </table>
+      <p>See the API links of I_AdminNode, I_AdminSubject, I_AdminSession below of the
+      available core properties to monitor or configure</p>
    </configuration>
 
    <todo type="HTML">
@@ -491,13 +502,18 @@ UserInfo: joe:mypasswd
       The rest is missing.
    </todo>
 
+   <see type="API">org.xmlBlaster.engine.admin.I_AdminNode</see>
+   <see type="API">org.xmlBlaster.engine.admin.I_AdminSubject</see>
+   <see type="API">org.xmlBlaster.engine.admin.I_AdminSession</see>
+   <see type="API">org.xmlBlaster.engine.admin.extern.TelnetGateway</see>
    <see type="REQ">admin</see>
+   <see type="REQ">engine.runlevel</see>
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
