@@ -214,13 +214,16 @@ public class MsgInterceptor extends Assert implements I_Callback
       Vector ret = new Vector();
       for (int i=0; i<this.updateVec.size(); i++) {
          Msg msg = (Msg)this.updateVec.elementAt(i);
+         //System.out.println("MsgInterceptor: Checking msg oid='" + msg.getOid() + "' with state='" + msg.getState() + "' against '" + oid + "' '" + state + "'");
          if (
              (oid == null || oid.equals(msg.getOid())) &&
              (state == null || state.equals(msg.getState()))
-            )
+            ) {
             ret.addElement(msg);
+            //System.out.println("MsgInterceptor: FOUND: Checking msg oid='" + msg.getOid() + "' with state='" + msg.getState() + "' against '" + oid + "' '" + state + "'");
+         }
       }
-      return (Msg[])ret.toArray(new Msg[ret.size()]);
+      return  (Msg[])ret.toArray(new Msg[ret.size()]);
    }
 
    public Msg[] getMsgs() {
@@ -234,6 +237,7 @@ public class MsgInterceptor extends Assert implements I_Callback
     */
    public Msg getMsg(String oid, String state) throws XmlBlasterException {
       Msg[] msgs = getMsgs(oid, state);
+      //System.out.println("MsgInterceptor: FOUND " + msgs.length + " entries for msg oid='" + oid + "' with state='" + state);
       if (msgs.length > 1)
          throw new XmlBlasterException("Msgs", "update(oid=" + oid + ", state=" + state + ") " + msgs.length + " arrived instead of zero or one");
       if (msgs.length == 0)
