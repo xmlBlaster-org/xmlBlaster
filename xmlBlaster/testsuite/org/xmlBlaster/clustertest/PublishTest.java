@@ -19,6 +19,9 @@ import junit.framework.*;
 /**
  * Test publishing a message from bilbo to heron. 
  * <p />
+ * <pre>
+ * java -Djava.compiler= junit.textui.TestRunner -noloading clustertest.PublishTest
+ * </pre>
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
  */
 public class PublishTest extends TestCase {
@@ -31,19 +34,14 @@ public class PublishTest extends TestCase {
    public static int frodoPort = 7603;
    public static int bilboPort = 7604;
 
-   private ServerThread heronThread = null;
-   private ServerThread avalonThread = null;
-   private ServerThread golanThread = null;
-   private ServerThread frodoThread = null;
-   private ServerThread bilboThread = null;
+   private ServerThread heronThread, avalonThread, golanThread, frodoThread, bilboThread;
 
-   private Global heronGlob = null;
-   private Global avalonGlob = null;
-   private Global golanGlob = null;
-   private Global frodoGlob = null;
-   private Global bilboGlob = null;
+   private Global heronGlob, avalonGlob, golanGlob, frodoGlob, bilboGlob;
 
    private XmlBlasterConnection heronCon, avalonCon, golanCon, frodoCon, bilboCon;
+
+   private int updateCounter = 0;
+   private String oid = "PublishToBilbo";
 
    public PublishTest(String name) {
       super(name);
@@ -101,6 +99,26 @@ public class PublishTest extends TestCase {
       log.info(ME, "'bilbo' is ready for testing on port " + bilboPort);
    }
 
+   private void stopHeron() {
+      if (heronThread != null) { heronThread.stopServer(true); heronThread=null; }
+   }
+
+   private void stopAvalon() {
+      if (avalonThread != null) { avalonThread.stopServer(true); avalonThread=null; }
+   }
+
+   private void stopGolan() {
+      if (golanThread != null) { golanThread.stopServer(true); golanThread=null; }
+   }
+
+   private void stopFrodo() {
+      if (frodoThread != null) { frodoThread.stopServer(true); frodoThread=null; }
+   }
+
+   private void stopBilbo() {
+      if (bilboThread != null) { bilboThread.stopServer(true); bilboThread=null; }
+   }
+
    /** Connect in fail save mode to a server node (as given in glob.getId()) */
    private XmlBlasterConnection connect(final Global glob, I_Callback cb) throws XmlBlasterException {
       String clientName = "ClientTo[" + glob.getId() + "]";
@@ -128,6 +146,7 @@ public class PublishTest extends TestCase {
     */
    protected void setUp() {
       log = glob.getLog(ME);
+      log.info(ME, "Entering setUp(), test starts");
 
       // The init is used for server nodes but used for client connections as well
       initHeron();
@@ -138,8 +157,8 @@ public class PublishTest extends TestCase {
 
       // Starts a cluster node
       startHeron();
-      startAvalon();
-      startGolan();
+      //startAvalon();
+      //startGolan();
       startFrodo();
       startBilbo();
    }
@@ -159,11 +178,11 @@ public class PublishTest extends TestCase {
 
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {} // Wait some time
 
-      if (heronThread != null) { heronThread.stopServer(true); heronThread=null; }
-      if (avalonThread != null) { avalonThread.stopServer(true); avalonThread=null; }
-      if (golanThread != null) { golanThread.stopServer(true); golanThread=null; }
-      if (frodoThread != null) { frodoThread.stopServer(true); frodoThread=null; }
-      if (bilboThread != null) { bilboThread.stopServer(true); bilboThread=null; }
+      stopHeron();
+      stopAvalon();
+      stopGolan();
+      stopFrodo();
+      stopBilbo();
    }
 
    /**
@@ -184,7 +203,7 @@ public class PublishTest extends TestCase {
 
          String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS
          String content = "We win";
-         String oid = "PublishToBilbo";
+
          PublishKeyWrapper pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
@@ -201,11 +220,74 @@ public class PublishTest extends TestCase {
                }
             });
 
+         // Check if the message has reached the master node heron ...
          GetKeyWrapper gk = new GetKeyWrapper(oid);
          MessageUnit[] msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
          log.info(heronGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
+
+         // Check if the message is available at the slave node bilbo ...
+         gk = new GetKeyWrapper(oid);
+         gk.setDomain(domain);
+         msgs = bilboCon.get(gk.toXml(), null);
+         assertTrue("Invalid msgs returned", msgs != null);
+         assertEquals("Invalid number of messages returned", 1, msgs.length);
+         log.info(bilboGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
+
+         // Trying to erase the message at the slave node ...
+         EraseKeyWrapper ek = new EraseKeyWrapper(oid);
+         ek.setDomain(domain);
+         EraseQosWrapper eq = new EraseQosWrapper();
+         bilboCon.erase(ek.toXml(), eq.toXml());
+
+         // Check if erased ...
+         gk = new GetKeyWrapper(oid);
+         msgs = heronCon.get(gk.toXml(), null);
+         assertTrue("Invalid msgs returned", msgs != null);
+         assertEquals("Invalid number of messages returned", 0, msgs.length);
+         log.info(heronGlob.getId(), "SUCCESS: Got no message after erase");
+
+         System.out.println("***PublishTest: Publish a message to a cluster slave - frodo is offline ...");
+
+         // Subscribe from heron, the message is currently erased ...
+         SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
+         sk.setDomain(domain);
+         SubscribeQosWrapper sq = new SubscribeQosWrapper();
+         String subId = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+            public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+               assertEquals("Reveiving unexpected asynchronous update message", oid, updateKey.getOid());
+               log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
+               updateCounter++;
+               return "";
+            }
+         });  // subscribe with our specific update handler
+
+         stopFrodo();
+
+         // Check: heron is not available ...
+         gk = new GetKeyWrapper(oid);
+         msgs = heronCon.get(gk.toXml(), null);
+         assertTrue("Invalid msgs returned", msgs != null);
+         assertEquals("Invalid number of messages returned", 0, msgs.length);
+         log.info(heronGlob.getId(), "SUCCESS: Got no message after erase");
+
+         // publish again ...
+         pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
+         pq = new PublishQosWrapper();
+         msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
+         retQos = bilboCon.publish(msgUnit);
+         log.info(bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+                                    "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
+                                    ", the returned QoS is: " + retQos);
+
+
+         assertEquals("heron is not reachable, publish should not have come through", 0, updateCounter);
+
+         startFrodo();
+
+         try { Thread.currentThread().sleep(5000); } catch( InterruptedException i) {} // Wait some time
+         assertEquals("heron is reachable again, publish should have come through", 1, updateCounter);
       }
       catch (XmlBlasterException e) {
          fail("PublishToBilbo-Exception: " + e.toString());
@@ -218,4 +300,13 @@ public class PublishTest extends TestCase {
 
       System.out.println("***PublishTest: testPublish [SUCCESS]");
    }
+
+   /**
+    * setUp() and tearDown() are ivoked between each test...() method
+    */
+    /*
+   public void testDummy() {
+      System.out.println("***PublishTest: testDummy [SUCCESS]");
+   }
+     */
 }
