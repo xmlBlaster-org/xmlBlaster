@@ -28,7 +28,7 @@ Comment:   Default handling of Sax callbacks
 using namespace std;
 
 #if defined(XERCES_HAS_CPP_NAMESPACE)
-	// Since Xerces 2.2 namespace is introduced:
+        // Since Xerces 2.2 namespace is introduced:
    XERCES_CPP_NAMESPACE_USE
 #endif
 
@@ -50,8 +50,6 @@ private:
    
 protected:
    string            character_;
-   StringTrim<char>  charTrimmer_; // wrappers for the java String.trim
-   StringTrim<XMLCh> xmlChTrimmer_;
    /**
     * The original XML string in ASCII representation, for example:
     * <code>   &lt;qos>&lt;/qos>"</code>
@@ -218,29 +216,29 @@ protected:
     string getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const;
 
     /**
-     * returns a value (usually from an attribute) as a string
+     * returns a trimmed value (usually from an attribute) as a standard C++ string
      */
-    string getStringValue(const XMLCh* const value);
+    string getStringValue(const XMLCh* const value) const;
 
     /**
      * returns a value (usually from an attribute) as an integer
      */
-    int getIntValue(const XMLCh* const value);
+    int getIntValue(const XMLCh* const value) const;
 
     /**
      * returns a value (usually from an attribute) as a long
      */
-    long getLongValue(const XMLCh* const value);
+    long getLongValue(const XMLCh* const value) const;
 
     /**
      * returns a value (usually from an attribute) as a Timestamp
      */
-     Timestamp getTimestampValue(const XMLCh* const value);
+     Timestamp getTimestampValue(const XMLCh* const value) const;
 
     /**
      * returns a value (usually from an attribute) as a bool
      */
-     bool getBoolValue(const XMLCh* const value);
+     bool getBoolValue(const XMLCh* const value) const;
 
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
@@ -248,7 +246,7 @@ protected:
       * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
       * method. If the 'doTrim' argument is set to true, the string is trimmed before it is given back.
       */
-     bool getStringAttr(const AttributeList& list, const XMLCh* const name, string& value, bool doTrim=true);
+     bool getStringAttr(const AttributeList& list, const XMLCh* const name, string& value, bool doTrim=true) const;
 
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
@@ -256,7 +254,7 @@ protected:
       * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
       * method.
       */
-     bool getIntAttr(const AttributeList& list, const XMLCh* const name, int& value);
+     bool getIntAttr(const AttributeList& list, const XMLCh* const name, int& value) const;
 
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
@@ -264,7 +262,7 @@ protected:
       * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
       * method.
       */
-     bool getLongAttr(const AttributeList& list, const XMLCh* const name, long& value);
+     bool getLongAttr(const AttributeList& list, const XMLCh* const name, long& value) const;
 
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
@@ -272,7 +270,7 @@ protected:
       * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
       * method.
       */
-     bool getTimestampAttr(const AttributeList& list, const XMLCh* const name, Timestamp& value);
+     bool getTimestampAttr(const AttributeList& list, const XMLCh* const name, Timestamp& value) const;
 
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
@@ -280,13 +278,7 @@ protected:
       * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
       * method.
       */
-     bool getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value);
-
-     /**
-      * returns the input string trimmed
-      */
-     string stringTrim(const string& str) const;
-
+     bool getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value) const;
    };
 }}} // namespace
 

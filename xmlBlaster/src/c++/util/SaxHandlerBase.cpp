@@ -17,7 +17,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 
-# include <boost/lexical_cast.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace boost;
 
@@ -28,8 +28,7 @@ using namespace org::xmlBlaster::util;
    
 // SaxHandlerBase::SaxHandlerBase(int args, const char * const argc[])
 SaxHandlerBase::SaxHandlerBase(Global& global)
-: charTrimmer_(),
-  xmlChTrimmer_(),
+: 
   global_(global),
   log_(global.getLog("util"))
 {
@@ -81,9 +80,7 @@ SaxHandlerBase::parse(const string &xmlData)
     return;
   }
   catch (SAXException &err) {
-    char *help = XMLString::transcode(err.getMessage());
-    string msg = string(help);
-    XMLString::release(&help);
+    string msg = getStringValue(err.getMessage());
     throw XmlBlasterException(USER_ILLEGALARGUMENT, me() + "::parse", string("sax parser exception: ") + msg);
   }
 
@@ -117,14 +114,9 @@ void
 SaxHandlerBase::characters(const XMLCh* const ch, const unsigned int start,
                 const unsigned int length) 
 {
-  char *chHelper = XMLString::transcode(ch);
-  character_.assign(string(chHelper), start, length);
-  if (log_.trace())
-     log_.trace(me(), string("characters, character:'") + character_ + string("'"));
-  XMLString::release(&chHelper);
+  character_.assign(getStringValue(ch), start, length);
+  if (log_.trace()) log_.trace(me(), string("characters, character:'") + character_ + string("'"));
 }
-
-
 
 
 //
@@ -165,17 +157,10 @@ void
 SaxHandlerBase::notationDecl(const XMLCh* const name, const XMLCh* const publicId, 
                   const XMLCh* const systemId) 
 {
-   string txt             = "notationDecl(name=";
-   char   *nameHelper     = XMLString::transcode(name);
-   char   *publicIdHelper = XMLString::transcode(publicId);
-   char   *systemIdHelper = XMLString::transcode(systemId);
-
-   txt += string(nameHelper) + ", publicId=" + publicIdHelper 
-      + ", systemId=" + systemIdHelper + ")";
+   string txt = "notationDecl(name=" +
+        getStringValue(name) + ", publicId=" + getStringValue(publicId) +
+        ", systemId=" + getStringValue(systemId) + ")";
    if (log_.trace()) log_.trace(me(), txt);
-   XMLString::release(&nameHelper);
-   XMLString::release(&publicIdHelper);
-   XMLString::release(&systemIdHelper);
 }
       
 
@@ -186,40 +171,29 @@ SaxHandlerBase::unparsedEntityDecl(const XMLCh* const name,
                         const XMLCh* const systemId, 
                         const XMLCh* const notationName) 
 {
-  char *nameHelper         = XMLString::transcode(name);
-  char *publicIdHelper     = XMLString::transcode(publicId);
-  char *systemIdHelper     = XMLString::transcode(systemId);
-  char *notationNameHelper = XMLString::transcode(notationName); 
-
-  if (log_.trace()) log_.trace(me(), string("unparsedEntityDecl(name=") +
-                            nameHelper + ", publicId="+publicIdHelper+
-                            ", systemId=" + systemIdHelper + 
-                            ", notationName=" + notationNameHelper +
-                            ")");
-  delete nameHelper;
-  delete publicIdHelper;
-  delete systemIdHelper;
-  delete notationNameHelper;
+  if (log_.trace()) log_.trace(me(),
+      string("unparsedEntityDecl(name=") + getStringValue(name) +
+      ", publicId="+getStringValue(publicId)+
+      ", systemId=" + getStringValue(systemId) + 
+      ", notationName=" + getStringValue(notationName) +
+      ")");
 }
 
 /** Returns a string of the location. */
 string 
 SaxHandlerBase::getLocationString(const SAXParseException &ex) 
 {
+  string systemId = getStringValue(ex.getSystemId());
   string str;
-  char*  systemIdHelper = XMLString::transcode(ex.getSystemId()); 
-  string systemId       = systemIdHelper;
-  XMLString::release(&systemIdHelper);
   if (systemId != "") {
     int index = systemId.find_last_of('/');
     if (index != -1) systemId = systemId.substr(index + 1);
-    str += systemId;
+    str = systemId + ":";
   }
-  return str + ":" +lexical_cast<string>(ex.getLineNumber()) 
-             + ":" + lexical_cast<string>(ex.getColumnNumber());
+  return str +lexical_cast<string>(ex.getLineNumber()) 
+      + ":" + lexical_cast<string>(ex.getColumnNumber());
 }
 
-   
 /**
  * Compares two strings (where name1 is a Unicode3.0 string!!) for 
  * unsensitive case compare. It returns true if the content of the
@@ -240,54 +214,45 @@ SaxHandlerBase::caseCompare(const XMLCh *name1, const char *name2)
   return ret;
 }
 
-
-string
-SaxHandlerBase::getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const
+string SaxHandlerBase::getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const
 {
-   char *nameCh = NULL;
-   char *keyCh = NULL;
-   char *valueCh = NULL;
    string ret = "";
    try {
-      nameCh = XMLString::transcode(name);
       int len = attrs.getLength();
-      ret += string("<") + string(nameCh) + string(" ");
+      ret += string("<") + getStringValue(name) + string(" ");
       for (int i = 0; i < len; i++) {
-         if (keyCh != NULL) delete keyCh;
-         if (valueCh != NULL) delete valueCh;
-         keyCh   = XMLString::transcode(attrs.getName(i));
-         valueCh = XMLString::transcode(attrs.getValue(i));
-         ret += string(keyCh) + string("='") + string(valueCh) + string("' ");
+         ret += getStringValue(attrs.getName(i)) + string("='") + getStringValue(attrs.getValue(i)) + string("' ");
       }
    }
    catch (...) { // to avoid memory leaks
    }
-   XMLString::release(&nameCh);
-   XMLString::release(&keyCh);
-   XMLString::release(&valueCh);
    ret += ">";
    return ret;
 }
 
 
 /**
- * returns a value (usually from an attribute) as a string
+ * returns a trimmed value (usually from an attribute) as a string
  */
-string
-SaxHandlerBase::getStringValue(const XMLCh* const value)
+string SaxHandlerBase::getStringValue(const XMLCh* const value) const
 {
-   char* help1   = NULL;
-   char* help2   = NULL;
-   string ret;
+   char* help = 0;
    try {
-      help1 = XMLString::transcode(value);
-      help2 = charTrimmer_.trim(help1);
-      ret.assign(help2);
+      help = XMLString::transcode(value);
+      if (help != 0) {
+         string ret = StringTrim::trim(help);
+         XMLString::release(&help);
+         return ret;
+      }
    }
-   catch (...) {}
-   XMLString::release(&help1);
-   XMLString::release(&help2);
-   return ret;
+   catch (...) {
+      if (help != 0)
+         XMLString::release(&help);
+      cerr << "Caught exception in getStringValue(XMLCh=" << value << ")" << endl;
+      // throw;
+   }
+
+   return string();
 }
 
 /**
@@ -296,28 +261,23 @@ SaxHandlerBase::getStringValue(const XMLCh* const value)
  * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
  * method.
  */
-bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const name, string& value, bool doTrim)
+bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const name, string& value, bool doTrim) const
 {
    const XMLCh* tmp = list.getValue(name);
    if (!tmp) return false;
 
    char* help1 = NULL;
-   char* help2 = NULL;
-   bool  ret = true;
    try {
       help1 = XMLString::transcode(tmp);
       if (!help1) return false;
       if (doTrim) {
-         help2 = charTrimmer_.trim(help1);
-         if (!help2) ret = false;
-         if (ret) value.assign(help2);
+         value.assign(StringTrim::trim(help1));
       }
       else value.assign(help1);
    }
    catch (...) {}
    XMLString::release(&help1);
-   XMLString::release(&help2);
-   return ret;
+   return true;
 }
 
 /**
@@ -326,7 +286,7 @@ bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const
  * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
  * method.
  */
-bool SaxHandlerBase::getIntAttr(const AttributeList& list, const XMLCh* const name, int& value)
+bool SaxHandlerBase::getIntAttr(const AttributeList& list, const XMLCh* const name, int& value) const
 {
    string buf;
    bool ret = getStringAttr(list, name, buf);
@@ -343,7 +303,7 @@ bool SaxHandlerBase::getIntAttr(const AttributeList& list, const XMLCh* const na
  * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
  * method.
  */
-bool SaxHandlerBase::getLongAttr(const AttributeList& list, const XMLCh* const name, long& value)
+bool SaxHandlerBase::getLongAttr(const AttributeList& list, const XMLCh* const name, long& value) const
 {
    string buf;
    bool ret = getStringAttr(list, name, buf);
@@ -360,7 +320,7 @@ bool SaxHandlerBase::getLongAttr(const AttributeList& list, const XMLCh* const n
  * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
  * method.
  */
-bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* const name, Timestamp& value)
+bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* const name, Timestamp& value) const
 {
    string buf;
    bool ret = getStringAttr(list, name, buf);
@@ -378,7 +338,7 @@ bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* co
  * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
  * method.
  */
-bool SaxHandlerBase::getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value)
+bool SaxHandlerBase::getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value) const
 {
    string buf;
    bool ret = getStringAttr(list, name, buf);
@@ -394,93 +354,62 @@ bool SaxHandlerBase::getBoolAttr(const AttributeList& list, const XMLCh* const n
  * returns a value (usually from an attribute) as an integer
  */
 int
-SaxHandlerBase::getIntValue(const XMLCh* const value)
+SaxHandlerBase::getIntValue(const XMLCh* const value) const
 {
-    char* help1   = NULL;
-    char* help2   = NULL;
-    int ret = 0;
-    try {
-       help1 = XMLString::transcode(value);
-       help2 = charTrimmer_.trim(help1);
-       ret = atoi(help2);
-    }
-    catch (...) {}
-    XMLString::release(&help1);
-    XMLString::release(&help2);
-    return ret;
+   if ( value == 0 ) return 0;
+   try {
+      return lexical_cast<int>(getStringValue(value));
+   }
+   catch (...) {
+      cerr << "SaxHandlerBase:: Conversion from " << value << " to int failed" << endl;
+   }
+   return 0;
 }
 
 /**
  * returns a value (usually from an attribute) as a long
  */
 long
-SaxHandlerBase::getLongValue(const XMLCh* const value)
+SaxHandlerBase::getLongValue(const XMLCh* const value) const
 {
-   char* help1   = NULL;
-   char* help2   = NULL;
-   long ret = 0l;
+   if ( value == 0 ) return 0l;
    try {
-      help1 = XMLString::transcode(value);
-      help2 = charTrimmer_.trim(help1);
-      ret = atol(help2);
+      return lexical_cast<long>(getStringValue(value));
    }
-   catch (...) {}
-   XMLString::release(&help1);
-   XMLString::release(&help2);
-   return ret;
+   catch (...) {
+      cerr << "SaxHandlerBase:: Conversion from " << value << " to long failed" << endl;
+   }
+   return 0l;
 }
 
 /**
  * returns a value (usually from an attribute) as a Timestamp
  */
 Timestamp
-SaxHandlerBase::getTimestampValue(const XMLCh* const value)
+SaxHandlerBase::getTimestampValue(const XMLCh* const value) const
 {
-   char* help1   = NULL;
-   char* help2   = NULL;
    Timestamp ret = 0l;
    try {
-      help1 = XMLString::transcode(value);
-      help2 = charTrimmer_.trim(help1);
-      // this might not be fully ansi compatible
-//      ret = STRING_TO_TIMESTAMP(help2);
-      ret = lexical_cast<Timestamp>(help2);
+      ret = lexical_cast<Timestamp>(getStringValue(value));
    }
-   catch (...) {}
-   XMLString::release(&help1);
-   XMLString::release(&help2);
+   catch (...) {
+      cerr << "SaxHandlerBase:: Conversion from " << value << " to Timestamp failed" << endl;
+   }
    return ret;
 }
 
 /**
  * returns a value (usually from an attribute) as a bool
  */
-bool SaxHandlerBase::getBoolValue(const XMLCh* const value)
+bool SaxHandlerBase::getBoolValue(const XMLCh* const value) const
 {
-   char* help1   = NULL;
-   char* help2   = NULL;
-   bool ret = false;
    try {
-      help1 = XMLString::transcode(value);
-      help2 = charTrimmer_.trim(help1);
-      ret = ( (string("true")== help2) || (string("TRUE")==help2) );
+      return StringTrim::isTrue(getStringValue(value));
    }
-   catch (...) {}
-   XMLString::release(&help1);
-   XMLString::release(&help2);
-   return ret;
-}
-
-/**
- * returns the input string trimmed
- */
-string SaxHandlerBase::stringTrim(const string& str) const
-{
-   char* help = charTrimmer_.trim(str.c_str());
-   if (help==NULL) return string("");
-   string ret = string(help);
-   delete help;
-   return ret;
+   catch (...) {
+      cerr << "SaxHandlerBase:: Conversion from " << value << " to bool failed" << endl;
+   }
+   return false;
 }
 
 #endif
