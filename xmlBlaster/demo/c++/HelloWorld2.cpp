@@ -5,11 +5,7 @@ Comment:   C++ client example
 Author:    Michele Laghi
 ------------------------------------------------------------------------------*/
 #include <client/XmlBlasterAccess.h>
-#include <util/XmlBlasterException.h>
-#include <util/ErrorCode.h>
 #include <util/Global.h>
-#include <util/Log.h>
-#include <util/Timestamp.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -117,7 +113,7 @@ public:
          try {
             org::xmlBlaster::util::thread::Thread::sleepSecs(1);
          }
-         catch(XmlBlasterException e) {
+         catch(const XmlBlasterException &e) {
             log_.error(ME, e.toXml());
          }
 
@@ -141,7 +137,7 @@ public:
          DisconnectQos disconnectQos(global_);
          con.disconnect(disconnectQos);
       }
-      catch (XmlBlasterException e) {
+      catch (const XmlBlasterException &e) {
          log_.error(ME, e.toXml());
       }
    }
