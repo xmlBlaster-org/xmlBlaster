@@ -4,7 +4,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
- o Added simple ActiveX (Windows) control to support access from C# and VisualBasic.net
+ o Renamed admin access to subjectInfo getCbQueueNumMsgs to getSubjectQueueNumMsgs
+
+ o Added ActiveX (Windows) control to support access from C# and VisualBasic.net
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.activex.html
 
  o Fixed to rethrow XmlBLasterException from inside SAX parsing
