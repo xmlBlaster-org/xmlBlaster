@@ -23,7 +23,7 @@ public:
     
    /**
     * Get the name of the plugin. 
-    * @return For example "SOCKET", "IOR", "SQLITE", "RAM", "XERCES", ...
+    * @return For example "SOCKET", "IOR", "SQLite", "RAM", "XERCES", ...
     */
    virtual std::string getType() = 0;
 
