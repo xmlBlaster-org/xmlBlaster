@@ -60,11 +60,11 @@ Changes for 0.79 [?, ? 2000]
        export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
     whith $XMLBLASTER_HOME/config/xmlBlaster.policy
 
-  - Migrated to XML-RPC java.1.0_beta_3 with JDK 1.3 patch
+  - Migrated to XML-RPC java.1.0_beta_4
 
   - Migrated to Ant 1.2
 
-  - Migrated to JacORB 1.2.1 (plus multi-homed patch from xmlBlaster.org)
+  - Migrated to JacORB 1.2.2
 
   - Changed package for FileDriver, modify xmlBlaster.properties to
       Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
