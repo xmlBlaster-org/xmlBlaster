@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.57 2000/10/15 10:56:11 ruff Exp $
+Version:   $Id: Main.java,v 1.58 2000/10/22 21:30:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -152,8 +152,14 @@ public class Main
 
       boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
       if (!useKeyboard) {
+         while (true) {
+            try { Thread.currentThread().sleep(1000000000L);
+            } catch(InterruptedException e) { Log.warn(ME, "Caught exception: " + e.toString()); }
+         }
+         /*  Exception in thread "main" java.lang.IllegalMonitorStateException:
          try { Thread.currentThread().wait();
          } catch(InterruptedException e) { Log.warn(ME, "Caught exception: " + e.toString()); }
+         */
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
