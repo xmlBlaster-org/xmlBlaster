@@ -36,7 +36,7 @@ AUTHOR:
           * will call our loginSucceeded() method below. 
           */
          function openCallBack() {
-            winOptions = "height=100,width=350,screenX=0,screenY=0,status=no,scrollbars=no,toolbar=no,directories=no,menubar=no,location=no,resizable=no";
+            winOptions = "height=140,width=360,screenX=0,screenY=0,status=no,scrollbars=no,toolbar=no,directories=no,menubar=no,location=no,resizable=no";
             xmlBlasterWindow = window.open("../../persistentWindow/index.html"+location.search, "xmlBlasterFrame", winOptions);
          }
          
@@ -88,7 +88,7 @@ AUTHOR:
       </script>
 
 
-      <frameset onUnload="cleanup()" rows="150,70,70,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
+      <frameset onUnload="cleanup()" rows="150,90,90,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
          <frame name="northFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin="0" frameborder="0" framespacing="0">
          <frame name="cpuinfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
          <frame name="meminfoFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
