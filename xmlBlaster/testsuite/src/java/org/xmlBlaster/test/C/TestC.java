@@ -73,21 +73,37 @@ public class TestC extends TestCase implements I_ExecuteListener
       */
 
       /* Find the location of the C binaries */
-      String xmlBlasterHome = glob.getProperty().get("XMLBLASTER_HOME", "$HOME"+sep+"xmlBlaster");
-      String[] pathToCArr = { ".."+sep+".."+sep+".."+sep+".."+sep+"c"+sep+"bin",
-                              ".."+sep+".."+sep+".."+sep+".."+sep+".."+sep+"c"+sep+"bin",
-                             "testsuite"+sep+"src"+sep+"c"+sep+"bin",
-                             xmlBlasterHome+sep+"testsuite"+sep+"src"+sep+"c"+sep+"bin"};
-      for (int i=0; i<pathToCArr.length; i++) {
-         File f = new File(pathToCArr[i]);
-         log.trace(ME, "Looking under '" + f.toString() + "'");
-         if (f.exists()) {
-            this.pathToCBinary = pathToCArr[i];
-            log.info(ME, "Found C executables under '" + this.pathToCBinary + "'");
-            break;
-         }
+      String xmlBlasterHome = getXmlBlasterHomePath();
+      this.pathToCBinary = xmlBlasterHome+sep+"testsuite"+sep+"src"+sep+"c"+sep+"bin";
+      File f = new File(this.pathToCBinary);
+      log.trace(ME, "Looking under '" + f.toString() + "'");
+      if (f.exists()) {
+         log.info(ME, "Found C executables under '" + this.pathToCBinary + "'");
       }
       assertTrue("Path to C binaries not found, no testing of C client library is not possible", this.pathToCBinary!=null);
+   }
+
+   /**
+    * @return for example ""
+    */
+   private String getXmlBlasterHomePath() {
+      String xmlBlasterHome = glob.getProperty().get("XMLBLASTER_HOME", "$HOME"+sep+"xmlBlaster");
+      File f = new File(xmlBlasterHome);
+      if (f.exists()) {
+         return xmlBlasterHome;
+      }
+      xmlBlasterHome = "..";
+      f = new File(xmlBlasterHome+"RELEASE_NOTES");
+      if (f.exists()) {
+         return xmlBlasterHome;
+      }
+      for (int i=0; i<10; i++) {
+         xmlBlasterHome += sep+"..";
+         f = new File(xmlBlasterHome+sep+"RELEASE_NOTES");
+         if (f.exists())
+            return xmlBlasterHome;
+      }
+      return null;
    }
 
    /**
