@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.10 2000/04/29 23:09:55 ruff Exp $
+Version:   $Id: Property.java,v 1.11 2000/04/30 10:46:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -146,7 +146,7 @@ public class Property
 
 
    /**
-    * Returns the xmlBlaster.properties properties from the cache. 
+    * Returns the xmlBlaster.properties properties from the cache.
     * <p />
     * If xmlBlaster.properties is not parsed yet, it will be initialized
     * automatically. Note that you should prefer loadProps() to initialize
@@ -166,7 +166,7 @@ public class Property
 
 
    /**
-    * This loads xmlBlaster.properties file. 
+    * This loads xmlBlaster.properties file.
     * <p />
     * Use this method only the first time to initialize everything.
     * @args This key/value parameter array is added to the poperties object (see addArgs2Props()).
@@ -175,7 +175,7 @@ public class Property
    public static final Properties loadProps(String[] args)
    {
       veryFirst = false;
-      if (xmlBlasterProperties != null && args != null) {
+      if (xmlBlasterProperties != null && args == null) {
          return xmlBlasterProperties;
       }
       else if (xmlBlasterProperties != null) {
@@ -437,6 +437,21 @@ public class Property
    }
 
 
+   static String toXml()
+   {
+      StringBuffer buf = new StringBuffer();
+      buf.append("<Property>\n");
+      for (Enumeration e = getProps().propertyNames(); e.hasMoreElements() ;) {
+         String key = (String)e.nextElement();
+         buf.append("   <").append(key).append(">");
+         buf.append(getProps().getProperty(key));
+         buf.append("</").append(key).append(">\n");
+      }
+      buf.append("</Property>\n");
+      return buf.toString();
+   }
+
+
    /**
     * For testing only
     * <p />
@@ -461,7 +476,8 @@ public class Property
       Log.info(ME, "Persistence.Driver=" + Property.getProperty("Persistence.Driver", "NONE"));
       Log.info(ME, "Persistence.Dummy=" + Property.getProperty("Persistence.Dummy", "NONE"));
       Properties props = Property.getProps();
-      Log.info(ME, "All properties: " + props);
+      Log.info(ME, "All properties:\n" + props);
+      Log.info(ME, "All properties as XML:\n" + Property.toXml());
       Log.exit(ME, "Found xmlBlaster.properties:\n" + props);
    }
 }
