@@ -506,7 +506,7 @@ vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
         retArr = xmlBlaster_->unSubscribe(xmlKey.c_str(), qos.c_str());
      
      vector<string> vecArr;
-     for (unsigned int ii=0; ii<retArr->length(); ii++) {
+     for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
      }
      return vecArr;
@@ -608,7 +608,7 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
      copyToCorba(msgUnitArr, msgVec);
      serverIdl::XmlTypeArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
      vector<string> vecArr;
-     for (unsigned int ii=0; ii<retArr->length(); ii++) {
+     for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
      }
      return vecArr;
@@ -727,7 +727,7 @@ CorbaConnection::erase(const string &xmlKey, const string &qos)
   try {
      serverIdl::XmlTypeArr_var retArr = xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
      vector<string> vecArr;
-     for (unsigned int ii=0; ii<retArr->length(); ii++) {
+     for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<const char *>(retArr[ii]));
      }
      return vecArr;
@@ -848,7 +848,7 @@ CorbaConnection::copyToCorba(serverIdl::MessageUnitArr_var &units,
 {
   unsigned int len = msgVec.size();
   units->length(len);
-  for (unsigned int ii=0; ii<len; ii++) {
+  for (CORBA::ULong ii=0; ii<len; ii++) {
      util::MessageUnit src = msgVec[ii];
      serverIdl::MessageUnit dest;
      copyToCorba(dest, src);
