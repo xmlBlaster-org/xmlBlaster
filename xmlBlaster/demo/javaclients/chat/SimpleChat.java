@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.19 2001/08/21 10:23:08 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.20 2001/08/21 10:40:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 import org.jutils.io.FileUtil;
+import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -30,6 +31,10 @@ import java.awt.*;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.text.DateFormat;
+import java.text.DateFormat;
+import java.util.Locale;
+import java.util.Date;
 
 
 /**
@@ -180,7 +185,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       String msgContent = new String(content);
-      appendOutput("[" + updateQoS.getSender() +"]: " + msgContent +System.getProperty("line.separator"));
+      DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+      String text = df.format(new java.util.Date());
+      text += "[" + updateQoS.getSender() +"]: ";
+      text += msgContent;
+      appendOutput(text +System.getProperty("line.separator"));
       Log.info(ME, "CallBack\n");
    }
 
