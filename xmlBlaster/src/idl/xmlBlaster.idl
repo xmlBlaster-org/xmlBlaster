@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.12 1999/11/15 14:47:47 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.13 1999/11/16 18:16:21 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   JacORB:
@@ -266,7 +266,7 @@ module authenticateIdl
       /**
        * Logout from server
        */
-      void logout() raises (serverIdl::XmlBlasterException);
+      void logout(in serverIdl::Server xmlBlaster) raises (serverIdl::XmlBlasterException);
    };
 
 

@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.7 $
-           $Date: 1999/11/13 17:20:32 $
+           $Revision: 1.8 $
+           $Date: 1999/11/16 18:16:25 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -121,7 +121,7 @@ public class RequestBroker
          }
 
          Map subscriberMap = msgHandler.getSubscriberMap();
-         if (Log.DEBUG) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
+         if (Log.TRACE) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
 
          // DANGER: The whole update blocks if one client blocks - needs a redesign !!!
          // PREFORMANCE: All updates for each client should be collected !!!
@@ -130,7 +130,7 @@ public class RequestBroker
 
             while (iterator.hasNext())
             {
-               if (Log.DEBUG) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
+               if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
                BlasterCallback cb = sub.getClientInfo().getCB();
                XmlQoSUpdate xmlQoS = new XmlQoSUpdate();

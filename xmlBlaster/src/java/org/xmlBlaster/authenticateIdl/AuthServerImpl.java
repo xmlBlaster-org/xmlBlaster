@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
-           $Revision: 1.5 $  $Date: 1999/11/15 15:04:24 $
+           $Revision: 1.6 $  $Date: 1999/11/16 18:16:24 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authenticateIdl;
 
@@ -67,7 +67,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       org.xmlBlaster.serverIdl.Server server =
-            authenticate.login(loginName, passwd, cb, qos_literal, orb.object_to_string(cb));
+            authenticate.login(loginName, passwd, cb, orb.object_to_string(cb), qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
 
@@ -78,11 +78,11 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    /**
     * Logout of a client
     */
-   public void logout() throws XmlBlasterException
+   public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering logout()");
 
-      authenticate.logout();
+      authenticate.logout(xmlServer);
    }
 
 

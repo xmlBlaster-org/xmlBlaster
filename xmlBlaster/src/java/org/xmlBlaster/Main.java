@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Main class to invoke the xmlBlaster server
-           $Revision: 1.6 $ $Date: 1999/11/15 09:35:48 $
+           $Revision: 1.7 $ $Date: 1999/11/16 18:16:24 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -27,31 +27,34 @@ public class Main
    {
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
-         org.omg.PortableServer.POA poa = 
+         org.omg.PortableServer.POA rootPOA = 
          org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // USING TIE:
-         org.omg.PortableServer.Servant servantAuth = new AuthServerPOATie(new AuthServerImpl(orb));
+         org.omg.PortableServer.Servant authServant = new AuthServerPOATie(new AuthServerImpl(orb));
          // NOT TIE:
-         // org.omg.PortableServer.Servant servantAuth = new AuthServerImpl(orb);
+         // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
 
-         org.omg.CORBA.Object o = poa.servant_to_reference(servantAuth);
+         // org.omg.CORBA.Object authRef = rootPOA.servant_to_reference(authServant);
+         // alternatively you can use (more performant)
+         org.omg.CORBA.Object authRef = new AuthServerPOATie(new AuthServerImpl(orb))._this(orb);
 
          if( args.length == 1 ) {
             // write the object reference to args[0]
 
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File( args[0] )));
-            ps.println( orb.object_to_string( o ) );
+            ps.println( orb.object_to_string( authRef ) );
             ps.close();
          } 
          else {
             NamingContext nc = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"));
             NameComponent [] name = new NameComponent[1];
-            name[0] = new NameComponent();
+            name[0] = new NameComponent(); // name[0] = new NameComponent("AuthenticationService", "service");
             name[0].id = "xmlBlaster-Authenticate";
             name[0].kind = "MOM";
 
-            nc.bind(name, o);
+            nc.bind(name, authRef);
+
          }
       } catch ( Exception e ) {
          e.printStackTrace();

@@ -9,16 +9,17 @@ import org.omg.CosNaming.*;
 
 public class Client
 {
+   private org.omg.CORBA.ORB orb = null;
+   private Server xmlServer = null;
+
    public Client(String args[]) 
    { 
-      final String ME = "Karl";
+      String ME = "Karl";
 
-      org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init(args,null);
+      orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
-         Server xmlServer = null;
          String authServerIOR = null;
-         String loginName = ME;
 
          if (args.length == 1) {
             authServerIOR = args[0];  // args[0] is an IOR-string 
@@ -26,10 +27,11 @@ public class Client
          else if (args.length > 1) {
             String argv = args[0];
             if (argv.equals("-name")) {
-              loginName = args[1];
+              ME = args[1];
             }
          }
 
+         String loginName = ME;
 
          if (authServerIOR != null) {
             authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
@@ -72,7 +74,7 @@ public class Client
          //------------ Use the returned IOR as Server Reference ------
          Log.info(ME, "Got xmlBlaster server IOR" + stop.nice());
 
-         Log.warning(ME, "Server IOR= " + orb.object_to_string(xmlServer) + stop.nice());
+         Log.trace(ME, "Server IOR= " + orb.object_to_string(xmlServer) + stop.nice());
 
          String xmlKey = "KEY_FOR_SMILEY";
 
@@ -126,11 +128,24 @@ public class Client
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
-         /*
-         xmlServer._release();
-         System.out.println("done. ");
-         */
 
+         //----------- Logout -----------------------
+         try {
+            authServer.logout(xmlServer);
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
+
+
+         Log.trace(ME, "Sending some new Smiley data after logout ...");
+         try {
+            xmlServer.publish(marr, qarr);
+
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
+
+         Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
       }
       catch (Exception e) {
           e.printStackTrace();
