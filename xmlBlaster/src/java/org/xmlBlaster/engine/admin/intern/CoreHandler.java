@@ -94,7 +94,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       String client = cmd.getThirdLevel();
       if (client == null || client.length() < 2)
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is invalid, aborted request.");
 
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
@@ -156,7 +156,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       String client = cmd.getThirdLevel();
       if (client == null || client.length() < 1)
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is invalid, aborted request.");
 
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
@@ -213,7 +213,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
                    "Please pass a vaild command, aborted request.");
       try {
          Vector params = new Vector();
-         Invoker invoker = new Invoker(impl, aInterface);
+         Invoker invoker = new Invoker(glob, impl, aInterface);
          methodName = "get" + property.substring(0,1).toUpperCase() + property.substring(1);
          Object obj = invoker.execute(methodName, params);
          if (log.TRACE) log.trace(ME, "Return for '" + methodName + "' is '" + obj + "'");
@@ -226,17 +226,6 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          log.info(ME, "Invoke method '" + property + "' return=" + returnValue + " class=" + returnValue.getClass());
          return returnValue;
          */
-      }
-      catch (java.lang.reflect.InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof XmlBlasterException)
-            throw (XmlBlasterException)t;
-         else {
-            String text = "Invoke of property '" + property + "' failed: " + t.toString();
-            log.error(ME, text);
-            t.printStackTrace();
-            throw new XmlBlasterException(ME, text);
-         }
       }
       catch (Exception e) {
          //e.printStackTrace();
@@ -258,17 +247,6 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          log.info(ME, "Successful invoked set method '" + property + "'");
          if (obj != null) log.warn(ME, "Ignoring returned value of set method '" + property + "'");
          return obj;
-      }
-      catch (java.lang.reflect.InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof XmlBlasterException)
-            throw (XmlBlasterException)t;
-         else {
-            String text = "Invoke property '" + property + "' with " + argValues.length + " arguments failed: " + t.toString();
-            log.error(ME, text);
-            t.printStackTrace();
-            throw new XmlBlasterException(ME, text);
-         }
       }
       catch (Exception e) {
          if (argValues.length > 0) {
@@ -312,6 +290,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
  */
 class Invoker
 {
+   private Global glob;
    private Object invokeTarget;
    private Class targetClass;
    boolean debug = true;
@@ -321,27 +300,20 @@ class Invoker
     *        to access methods in the implementing class (e.g. RequestBroker) instead
     *        of only I_AdminClass
     */
-   public Invoker(Object target, Class targetClass) {
+   public Invoker(Global glob, Object target, Class targetClass) {
+      this.glob = glob;
       this.invokeTarget = target;
       this.targetClass = targetClass;
    }
 
-
    // main method, sucht methode in object, wenn gefunden dann aufrufen.
-   public Object execute (String methodName,
-         Vector params) throws Exception
-   {
-
-
-      // Array mit Classtype bilden, ObjectAry mit Values bilden
+   public Object execute(String methodName, Vector params) throws XmlBlasterException {
       Class[] argClasses = null;
       Object[] argValues = null;
-      if (params != null)
-      {
+      if (params != null) {
          argClasses = new Class[params.size()];
          argValues = new Object[params.size()];
-         for (int i = 0; i < params.size(); i++)
-         {
+         for (int i = 0; i < params.size(); i++) {
                argValues[i] = params.elementAt(i);
                if (argValues[i] instanceof Integer)
                   argClasses[i] = Integer.TYPE;
@@ -357,8 +329,7 @@ class Invoker
       Method method = null;
 
       /*
-      if (debug)
-      {
+      if (debug) {
          System.err.println("Searching for method: " + methodName);
          for (int i = 0; i < argClasses.length; i++)
                System.err.println("Parameter " + i + ": " +
@@ -366,49 +337,48 @@ class Invoker
       }
       */
 
-      try
-      {
+      try {
          method = targetClass.getMethod(methodName, argClasses);
       }
-      catch (NoSuchMethodException nsm_e)
-      {
-         throw nsm_e;
+      catch (NoSuchMethodException nsm_e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
+                   "Please check your command, aborted request.", nsm_e);
       }
-      catch (SecurityException s_e)
-      {
-         throw s_e;
+      catch (SecurityException s_e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, "CoreHandler",
+                   "Aborted request.", s_e);
       }
 
-      // our policy is to make all public methods callable except the ones defined in java.lang.Object
-      if (method.getDeclaringClass () == Class.forName ("java.lang.Object"))
-         throw new Exception ("Invoker can't call methods defined in java.lang.Object");
+      try {
+         // our policy is to make all public methods callable except the ones defined in java.lang.Object
+         if (method.getDeclaringClass () == Class.forName ("java.lang.Object"))
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
+                      "Invoker can't call methods defined in java.lang.Object");
+      }
+      catch (java.lang.ClassNotFoundException e) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "CoreHandler",
+                     "Invoker can't call methods defined in java.lang.Object", e);
+      }
 
       // invoke
       Object returnValue = null;
-      try
-      {
+      try  {
          returnValue = method.invoke (invokeTarget, argValues);
       }
-      catch (IllegalAccessException iacc_e)
-      {
-         throw iacc_e;
+      catch (IllegalAccessException iacc_e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
+                   "Aborted request.", iacc_e);
       }
-      catch (IllegalArgumentException iarg_e)
-      {
-         throw iarg_e;
+      catch (IllegalArgumentException iarg_e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
+                   "Aborted request.", iarg_e);
       }
-      catch (InvocationTargetException it_e)
-      {
+      catch (InvocationTargetException it_e) {
          if (debug)
-               it_e.getTargetException ().printStackTrace ();
-         // check whether the thrown exception is XmlRpcException
+            it_e.getTargetException ().printStackTrace ();
          Throwable t = it_e.getTargetException();
-         /*
-         if (t instanceof XmlRpcException)
-               throw (XmlRpcException) t;
-         // It is some other exception
-         */
-         throw new Exception (t.toString ());
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CoreHandler",
+                   "Aborted request.", t);
       }
 
       return returnValue;

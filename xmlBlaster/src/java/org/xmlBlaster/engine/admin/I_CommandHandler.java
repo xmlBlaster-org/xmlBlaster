@@ -31,7 +31,7 @@ public interface I_CommandHandler {
     * Your plugin should process the command. 
     * <p />
     * @param sessionId Is null if not logged in
-    * @param cmd The command to process
+    * @param cmd The command to process, e.g. "clientList"
     * @return An array of MsgUnitRaw object:
     *       <ul>
     *         <li>Internal message are delivered as is, please don't manipulate them</li>
