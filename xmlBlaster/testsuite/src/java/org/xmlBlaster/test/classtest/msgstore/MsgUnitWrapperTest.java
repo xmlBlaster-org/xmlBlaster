@@ -132,8 +132,8 @@ public class MsgUnitWrapperTest extends TestCase {
          assertEquals("", PriorityEnum.HIGH_PRIORITY.toString(), qos.getPriority().toString());
          assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
  
-         System.out.println("SUCESS BEFORE: " + msgUnitWrapper.toXml());
-         System.out.println("SUCESS AFTER: " + newWrapper.toXml());
+         System.out.println("SUCCESS BEFORE: " + msgUnitWrapper.toXml());
+         System.out.println("SUCCESS AFTER: " + newWrapper.toXml());
 
          // The remaing life changes so we can't compare the XML strings directly:
          //assertEquals("OLD="+msgUnitWrapper.getMsgQosData().toXml()+"\nNEW="+newWrapper.getMsgQosData().toXml(), msgUnitWrapper.getMsgQosData().toXml(), newWrapper.getMsgQosData().toXml());

@@ -149,7 +149,7 @@ public class TestPublishFilter extends TestCase
       String content = "12345678901"; // content is too long, our plugin denies this message
       try {
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), null));
-         log.info(ME, "TEST 1: SUCESS returned state=" + rq.getState());
+         log.info(ME, "TEST 1: SUCCESS returned state=" + rq.getState());
          assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getState()));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -170,7 +170,7 @@ public class TestPublishFilter extends TestCase
       try {
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), null));
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
-         log.info(ME, "TEST 2: SUCESS");
+         log.info(ME, "TEST 2: SUCCESS");
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -221,7 +221,7 @@ public class TestPublishFilter extends TestCase
          PublishQos pq = new PublishQos(glob);
          pq.addDestination(new Destination(new SessionName(glob, name)));
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
-         log.info(ME, "TEST 1: SUCESS returned state=" + rq.getState());
+         log.info(ME, "TEST 1: SUCCESS returned state=" + rq.getState());
          assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getState()));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -243,7 +243,7 @@ public class TestPublishFilter extends TestCase
          pq.addDestination(new Destination(new SessionName(glob, name)));
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
-         log.info(ME, "TEST 2: SUCESS");
+         log.info(ME, "TEST 2: SUCCESS");
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
