@@ -1,4 +1,5 @@
 <!-- Qos for client -->
+<!-- NOTE: This is outdated - see ClientQoS.java for current syntax -->
 
 <!ELEMENT qos (callback*,
                compress?,
