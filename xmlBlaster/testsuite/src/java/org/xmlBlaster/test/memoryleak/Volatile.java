@@ -20,7 +20,6 @@ import java.io.*;
  * You can use this client to test with tools like OptimizeIt if we
  * have memory leaks with volatile messages.
  *
- * Invoke: java Volatile -loginName joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  */
 public class Volatile
@@ -30,10 +29,12 @@ public class Volatile
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
+   private int bulkSize = 10;
 
    public Volatile(final Global glob) {
       
       log = glob.getLog(null);
+      bulkSize = glob.getProperty().get("bulkSize", bulkSize);
       long lCount = 0L;
 
       try {
@@ -61,8 +62,8 @@ public class Volatile
                            "</key>";
             con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
-            if ((lCount % 100L) == 0) {
-               log.info(ME, "Sent " + lCount + " messages, enter return to continue, enter 'q' to quit");
+            if ((lCount % bulkSize) == 0) {
+               log.info(ME, "Sent " + lCount + " different topics, enter return to continue, enter 'q' to quit");
                try {
                   BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
                   String line = in.readLine(); // Blocking in I/O
@@ -103,7 +104,7 @@ public class Volatile
       
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         System.out.println("Example: java Volatile -loginName Jeff\n");
+         System.out.println("Example: java Volatile -bulkSize 10\n");
          System.exit(1);
       }
 

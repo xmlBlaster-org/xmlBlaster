@@ -19,7 +19,6 @@ import java.io.*;
  * You can use this client to test with tools like OptimizeIt if we
  * have memory leaks with volatile messages.
  *
- * Invoke: java PublishSame -loginName joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  */
 public class PublishSame

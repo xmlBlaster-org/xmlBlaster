@@ -20,15 +20,7 @@ import org.xmlBlaster.util.MsgUnit;
 import java.io.*;
 
 /**
- * This client connects to xmlBlaster in fail save mode and uses specific update handlers. 
- * <p />
- * In fail save mode the client will poll for the xmlBlaster server and
- * queue messages until the server is available.
- * <p />
- * Invoke: java PublishErase
- * <p />
- * Invoke: java PublishErase -loginName joe -passwd secret
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+ * Creating/destroying topic in bulks of 100. 
  */
 public class PublishErase
 {
@@ -37,10 +29,12 @@ public class PublishErase
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
+   private int bulkSize = 100;
 
    public PublishErase(final Global glob) {
       
       log = glob.getLog(null);
+      bulkSize = glob.getProperty().get("bulkSize", bulkSize);
 
       try {
          con = glob.getXmlBlasterAccess();
@@ -74,8 +68,8 @@ public class PublishErase
             EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
          
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
-            if ((lCount % 1000L) == 0) {
-               log.info(ME, "Published and erased " + lCount + " messages, enter return to continue, enter 'q' to quit");
+            if ((lCount % bulkSize) == 0) {
+               log.info(ME, "Published and erased " + lCount + " topics, enter return to continue, enter 'q' to quit");
                try {
                   BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
                   String line = in.readLine(); // Blocking in I/O
@@ -105,7 +99,7 @@ public class PublishErase
    /**
     * Try
     * <pre>
-    *   java org.xmlBlaster.test.memoryleak.PublishErase -help
+    *   java org.xmlBlaster.test.memoryleak.PublishErase -bulkSize 200
     * </pre>
     * for usage help
     */
