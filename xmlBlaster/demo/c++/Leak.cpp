@@ -101,10 +101,42 @@ public:
       }
    }
 
-   // Using the vector seems to leak memory -> this issue is not yet resolved!
+   // Using the pointers seems to leak memory -> this issue is not yet resolved!
    void checkConnection2()
    {
       log_.info(ME, "checkConnection2()");
+      try {
+         XmlBlasterAccess** refs;
+         refs = new XmlBlasterAccess*[count];
+         for (int i=0; i<count; i++) {
+            string instanceName = string("connection2-") + lexical_cast<std::string>(i);
+            Property::MapType propMap;
+            GlobalRef globalRef = global_.createInstance(instanceName, &propMap);
+            XmlBlasterAccess* con = new XmlBlasterAccess(globalRef);
+            refs[i] = con;
+            SpecificCallback* cbP = new SpecificCallback(globalRef);
+            ConnectQos qos(*globalRef);
+            ConnectReturnQos retQos = con->connect(qos, cbP);
+            log_.info(ME, "Successfully connected to xmlBlaster as " +
+                      retQos.getSessionQos().getSessionName()->getAbsoluteName());
+         }
+         for (int i=0; i<count; i++) {
+            XmlBlasterAccess* con = refs[i];
+            con->disconnect(DisconnectQos(con->getGlobal()));
+            delete con->getCallback();  // same as *cbP
+            delete con;
+         }
+         delete [] refs;
+      }
+      catch (const XmlBlasterException &e) {
+         log_.error(ME, e.toXml());
+      }
+   }
+
+   // Using the vector seems to leak memory -> this issue is not yet resolved!
+   void checkConnection3()
+   {
+      log_.info(ME, "checkConnection3()");
       try {
          vector<XmlBlasterAccessRef> connVec; // Holding all connections to xmlBlaster
          for (int i=0; i<count; i++) {
