@@ -1,5 +1,6 @@
 package authentication;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -20,6 +21,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   private final String WRONG_PASSWORD = "notExistingUserPW";
   private String userhome = "";
   private Global glob = null;
+  private LogChannel log = null;
   private XmlBlasterConnection con = null;
   private int serverPort = 7604;
 
@@ -30,6 +32,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   public TestAuthenticationHtPassWd (String name)
   { super(name);
     this.glob = new Global();
+    this.log = glob.getLog("test");
     this.userhome = glob.getProperty().get("user.home","/home/astelzl")+java.io.File.separatorChar;
     try
     { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
@@ -77,21 +80,22 @@ public class TestAuthenticationHtPassWd extends TestCase
     serverThread = ServerThread.startXmlBlaster(glob);
   }
 
-  protected void tearDown()
-  { try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
+  protected void tearDown() {
+    try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
     if (serverThread != null)
       serverThread.stopServer(true);
+    glob.init(Util.getDefaultServerPorts());
   }
 
   public void testAuthHtPassWordCase1()
-  { Log.info(ME,"Testcase1");
+  { log.info(ME,"Testcase1");
     testCaseSetup(1);
     boolean isValue=true;
     try
     { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
-    { Log.error(ME,"Could not initialize XmlBlasterConnection: " + ex.toString());
+    { log.error(ME,"Could not initialize XmlBlasterConnection: " + ex.toString());
       ex.printStackTrace();
     }
     try
@@ -100,7 +104,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       con.disconnect(null);
     }
     catch(Exception ex)
-    { Log.info(ME,"Could not connect: " + ex.toString());
+    { log.info(ME,"Could not connect: " + ex.toString());
       ex.printStackTrace();
       isValue = false;
     }
@@ -109,14 +113,14 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
   
   public void testAuthHtPassWordCase2()
-  { Log.info(ME,"Testcase2");
+  { log.info(ME,"Testcase2");
     testCaseSetup(2);
     boolean isValue = true;
     try
     { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
-    { Log.error(ME,"Could not initialize XmlBlasterConnection");
+    { log.error(ME,"Could not initialize XmlBlasterConnection");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,RIGHT_USERNAME, RIGHT_PASSWORD);
@@ -124,7 +128,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       con.disconnect(null);
     }
     catch(Exception ex)
-    { Log.info(ME,"Could not connect");
+    { log.info(ME,"Could not connect");
       isValue = false;
       ex.printStackTrace();
     }
@@ -133,14 +137,14 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   public void testAuthHtPassWordCaseWrongPassword()
-  { Log.info(ME,"Testcase3");
+  { log.info(ME,"Testcase3");
     testCaseSetup(3);
     boolean isValue = false;
     try
     { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
-    { Log.error(ME,"Could not initialize XmlBlasterConnection");
+    { log.error(ME,"Could not initialize XmlBlasterConnection");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);
@@ -150,19 +154,19 @@ public class TestAuthenticationHtPassWd extends TestCase
     }
     catch(Exception ex)
     { isValue = true;
-      Log.info(ME,"Could not connect");
+      log.info(ME,"Could not connect");
     }
   }
 
   public void testAuthHtPassWordCase3()
-  { Log.info(ME,"Testcase4");
+  { log.info(ME,"Testcase4");
     testCaseSetup(4);
     boolean isValue = true;
     try
     { con = new XmlBlasterConnection(glob);
     }
     catch(Exception ex)
-    { Log.error(ME,"Could not initialize XmlBlasterConnection");
+    { log.error(ME,"Could not initialize XmlBlasterConnection");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);
@@ -170,7 +174,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       con.disconnect(null);
     }
     catch(Exception ex)
-    { Log.info(ME,"Could not connect");
+    { log.info(ME,"Could not connect");
       isValue = false;
     }
     assertTrue("Could not connect although it should have been possible as any username and password is authenticated",isValue);
