@@ -164,6 +164,8 @@ TODO
    <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
    <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
+   <property name="src.c.dir" value="./src/c"/>
+
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
       <!-- <compilerarg value="/GX" /> -->
@@ -697,7 +699,7 @@ TODO
 
       <echo message=""/>
       <echo message="   Start xmlBlaster and a demo data publisher:"/>
-      <echo message="      java org.xmlBlaster.Main -protocol/xmlrpc/port 8089    (we switch port to allow tomcat on 8080)"/>
+      <echo message="      java org.xmlBlaster.Main -plugin/xmlrpc/port 8089    (we switch port to allow tomcat on 8080)"/>
       <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
       <echo message=""/>
       <echo message="   Start tomcat and invoke the demo with:"/>
@@ -1874,6 +1876,15 @@ TODO
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
+    <target name="c-clean" depends="prepare" description="Remove C object files">
+    </target>
+
+    <target name="c-delete" depends="c-clean" description="Remove all generated C files/libs/executables">
+       <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${src.c.dir}" includes="client"/>
+       </delete>
+    </target>
+
     <target name="cpp-clean" depends="prepare" description="Remove C++ object files">
        <delete dir="${build.dir}/obj"/>
        <delete dir=".c_dependency_cache"/>
