@@ -504,7 +504,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
       <p>
       The xmlBlaster SOCKET protocol supports compression with zlib and jzlib.
       You can switch on two compression modes with the property <i>plugin/socket/compress/type</i>.
-      If the server side socket plugin has this option enabled (see <tt>xmlBlasterPlugins.xml</tt>)
+      If the server side socket plugin has the option <i>zlib:stream</i> enabled (see <tt>xmlBlasterPlugins.xml</tt>)
       it won't accept uncompressed clients. If you have both types of clients you need
       to register two SOCKET protocol driver in <tt>xmlBlasterPlugins.xml</tt>.
       </p>
@@ -907,7 +907,7 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
    <see type="INTERNET" label="xmlBlaster.properties">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlaster.properties.template</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.52 $</revision>
+   <revision>$Revision: 1.53 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
