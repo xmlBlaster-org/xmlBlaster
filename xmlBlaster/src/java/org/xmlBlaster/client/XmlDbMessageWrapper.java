@@ -3,7 +3,7 @@ Name:      XmlDbMessageWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping a SQL request with XML.
-Version:   $Id: XmlDbMessageWrapper.java,v 1.5 2001/02/14 21:02:48 ruff Exp $
+Version:   $Id: XmlDbMessageWrapper.java,v 1.6 2001/03/05 09:02:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -85,17 +85,18 @@ public class XmlDbMessageWrapper
       if (type.equalsIgnoreCase("insert") || type.equalsIgnoreCase("delete"))
          type = "update";
 
-      content = "" + "<database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'>" + " <database:url>" + url
-                     + "</database:url>" + " <database:username>" + user
-                     + "</database:username>" + " <database:password>"
-                     + passwd + "</database:password>"
-                     + " <database:interaction type='" + type + "'/>"
-                     + " <database:command><![CDATA[" + queryStr
-                     + "]]></database:command>"
-                     + " <database:connectionlifespan ttl='1'/>"
-                     + " <database:rowlimit max='" + limit + "'/>"
-                     + " <database:confirmation confirm='" + confirm
-                     + "'/>" + "</database:adapter>";
+      StringBuffer tmp = new StringBuffer();
+      tmp.append("<database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'>");
+      tmp.append(" <database:url>").append(url).append("</database:url>");
+      tmp.append(" <database:username>").append(user).append("</database:username>");
+      tmp.append(" <database:password>").append(passwd).append("</database:password>");
+      tmp.append(" <database:interaction type='").append(type).append("'/>");
+      tmp.append(" <database:command><![CDATA[").append(queryStr).append("]]></database:command>");
+      tmp.append(" <database:connectionlifespan ttl='1'/>");
+      tmp.append(" <database:rowlimit max='").append(limit).append("'/>");
+      tmp.append(" <database:confirmation confirm='").append(confirm).append("'/>");
+      tmp.append("</database:adapter>");
+      content = tmp.toString();
    }
 
 
