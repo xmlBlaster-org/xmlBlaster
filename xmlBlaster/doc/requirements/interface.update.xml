@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='interface.update' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Clients receive asynchronous messages with the update() method</topic>
+   <description>
+      <p>
+      If clients want to receive callbacks from xmlBlaster they need to install
+      a callback server.
+      The messages arrive in the <b>update()</b> method.<br />
+      The client side callback interface has to support following methods.
+      </p>
+      <p>
+      Callback server method detail (CORBA IDL notation):
+      </p>
+      <pre>
+   typedef string XmlType;
+   typedef sequence&lt;XmlType> XmlTypeArr;
+   typedef sequence&lt;MessageUnit> MessageUnitArr;
+
+   XmlTypeArr update(in string cbSessionId, in MessageUnitArr msgUnitArr)
+                                                     raises(XmlBlasterException);
+
+   oneway void updateOneway(in string cbSessionId, in MessageUnitArr msgUnitArr);
+
+   string ping(in string qos);
+      </pre>
+
+      <p>
+      As you can see the client has to provide three methods
+      (see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl">xmlBlaster.idl</a>)
+      </p>
+      <ul>
+        <li>update() This is the acknowledged update invocation</li>
+        <li>updateOneway() This method has no return value, there is no application level ACK for
+                           increased performance</li>
+        <li>ping() Allows xmlBlaster to ping the client, currently empty strings "" are expected</li>
+      </ul>
+
+      <p>
+      We discuss here update() only as updateOneway() is just a subtype without return value.
+      </p>
+         
+      <table border="1">
+         <tr>
+         <td>Parameter</td><td>Type</td><td>Description</td>
+         </tr>
+         <tr>
+         <td>cbSessionId</td><td>string</td><td>A session ID provided by the client on connect().
+                   This allows the clients callback server to decide if it trusts the callback</td>
+         </tr>
+         <tr>
+         <td>msgUnitArr</td><td>MessageUnit[]</td><td>An array of messages</td>
+         </tr>
+         <tr>
+         <td>return</td><td>string</td>
+         <td>An array of XML encoded strings containing the status of each message.
+         This is the status from the client point of view. The syntax is not
+         specified yet, it will be specified when xmlBlaster gets transaction support
+         and clients want to participate. For the time being return an empty string ""
+         or an empty qos "&lt;qos/>".
+         </td>
+         </tr>
+      </table>
+
+      <p>
+      Be prepared to receive all sorts of messages on update, like
+      normal messages or internal xmlBlaster messages or administrative command messages.
+      </p>
+   </description>
+
+
+   <example lang="XML" type="HTML">
+      <p>
+      Here is an example of an update message:
+      </p>
+      <table border="1">
+         <tr><td>Key</td><td>&lt;key oid='MyMessage' /></td></tr>
+         <tr><td>content</td><td>Hello world</td></tr>
+         <tr><td>QoS</td><td>&lt;qos>&lt;state id='OK'>&lt;/qos></td></tr>
+      </table>
+      <p>
+      And a return value form the client (sent back to xmlBlaster):
+    </p>
+   <table border="1"><tr><td>
+   <pre>
+      return "";
+   </pre>
+   </td></tr></table>
+   </example>
+   
+   <example lang="XML" type="HTML">
+      <p>
+      Here is an example of an UpdateQos:
+      </p>
+      <pre>
+&lt;qos> &lt;!-- UpdateQos -->
+
+  &lt;state id='OK'/>
+
+  &lt;sender>Tim&lt;/sender>
+
+  &lt;priority>5&lt;/priority>
+
+  &lt;subscriptionId>__subId:1&lt;/subscriptionId>
+
+  &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call,
+          in nanoseconds since 1970 -->
+  &lt;rcvTimestamp nanos='1007764305862000002'>
+        2001-12-07 23:31:45.862000002 &lt;!-- The nanos from above but human readable -->
+  &lt;/rcvTimestamp>
+
+  &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
+  &lt;expiration remainingLife='1200'/>
+  
+  &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
+  
+  &lt;redeliver>4&lt;/redeliver>
+  
+  &lt;route>
+     &lt;node id='heron'/>
+  &lt;/route>
+&lt;/qos>
+      </pre>
+   </example>
+   
+   <example lang="Java" type="HTML">
+      <p>
+      A typical Java client code to handle message updates:
+      </p>
+      <pre>
+   import org.xmlBlaster.client.*;
+   ...
+
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
+                        UpdateQos updateQos) {
+
+      if (updateKey.isInternal()) {
+         System.out.println("Received internal message '" +
+              updateKey.getOid() + " from xmlBlaster");
+         return "&lt;qos/>";
+      }
+
+      System.out.println("Received asynchronous message '" + updateKey.getOid() +
+                   "' state=" + updateQos.getState() +
+                   " content=" + new String(content) + " from xmlBlaster");
+      return "&lt;qos/>";
+   }
+      </pre>
+   <p>
+   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   </p>
+   </example>
+
+   <configuration>
+   </configuration>
+
+   <see type="REQ">interface</see>
+   <see type="REQ">engine.qos.update.queue</see>
+   <see type="REQ">engine.qos.update.rcvTimestamp</see>
+   <see type="REQ">engine.qos.update.sender</see>
+   <see type="REQ">engine.qos.update.subscriptionId</see>
+
+   <see type="API">org.xmlBlaster.client.UpdateKey</see>
+   <see type="API">org.xmlBlaster.client.UpdateQos</see>
+   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.client.protocol.corba.CorbaCallbackServer</see>
+   <see type="API">org.xmlBlaster.client.protocol.rmi.RmiCallbackServer</see>
+   <see type="API">org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer</see>
+
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 26</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSub</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestErase</test>
+   </testcase>
+</requirement>
+
