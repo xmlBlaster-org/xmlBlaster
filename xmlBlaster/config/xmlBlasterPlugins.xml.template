@@ -139,6 +139,20 @@
    </plugin>
    -->
       <!-- attribute id='directoryName'>/tmp</attribute -->
+
+   <!-- FilePollerPlugin[FilePollerPlugin][1.0] 
+   <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filesystem.FilePollerPlugin'>
+     <attribute id='directoryName'>/tmp/filePoller</attribute>
+     <attribute id='topicName'>poller.test</attribute> -->
+     <attribute id='publishKey'><![CDATA[<key oid='poller.test'><poller><test/></poller></key>]]></attribute>
+     <attribute id='publishQos'><![CDATA[<qos/>]]></attribute>
+     <attribute id='maximumFileSize'>-1L</attribute>
+     <attribute id='delaySinceLastFileChange'>10000L</attribute>
+     <attribute id='pollInterval'>2000L</attribute>
+     <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+     <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+   </plugin>
+-->
    <!--===============================================-->
 
 
