@@ -157,6 +157,17 @@ TODO
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
+   <property name="svnversion.exe" value="svnversion"/>  <!-- On UNIX: /usr/bin/svnversion -->
+   <!--
+   <path id="svn.classpath">
+         <pathelement location="${svnant.jar}" />
+         <pathelement location="${svnClientAdapter.jar}" />
+         <pathelement location="${svnjavahl.jar}" />
+   </path>
+   <taskdef resource="svntask.properties" classpathref="svn.classpath"/>
+   -->
+
+
    <!-- for the embedded java devices (j2me) : the WTK TOOLKIT -->
    <condition property="J2ME_HOME" value="${env.J2ME_HOME}">
       <isset property="env.J2ME_HOME"/>
@@ -421,6 +432,7 @@ TODO
          <format property="build.timestamp" pattern="MM/dd/yyyy hh:mm aa" unit="hour"/>
       </tstamp>
       <filter token="version" value="${version}"/>
+      <filter token="revision.number" value="${revision.number}"/>
       <filter token="build.timestamp" value="${build.timestamp}"/>
       <filter token="build.java.version" value="${java.version}"/>
       <filter token="build.java.vendor" value="${java.vendor}"/>
@@ -444,6 +456,21 @@ TODO
       <echo message="JVM.target=${JVM.target}, JVM.source=${JVM.source}"/>
 
    </target>
+
+   <!-- =================================================================== -->
+   <!-- Determine the current subversion revision number                    -->
+   <!-- =================================================================== -->
+   <target name="revisionnumber" description="Determines the svn revision number">
+      <!--
+      svnversion xmlBlaster svn://www.xmlBlaster.org/trunk/xmlBlaster
+      12683:12702M
+      -->
+      <exec executable="${svnversion.exe}" failonerror="false" failifexecutionfails="false">
+         <redirector outputproperty="revision.number"/>
+         <arg line="."/>
+      </exec>
+      <echo message="Subversion revision number is '${revision.number}'."/>
+   </target> <!-- revision -->
 
    <!-- =================================================================== -->
    <!-- Compiles the source code                                            -->
@@ -516,7 +543,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster core source directory                       -->
    <!-- =================================================================== -->
-   <target name="xmlBlaster" depends="java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
+   <target name="xmlBlaster" depends="revisionnumber,java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
 
       <copy todir="${build.src}/xmlBlaster" filtering="true">
          <fileset dir="${src.java.dir}">
