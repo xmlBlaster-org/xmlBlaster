@@ -1112,7 +1112,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates the distribution                                            -->
    <!-- =================================================================== -->
-   <target name="dist" depends="delete,all,dist-only" description="Creates a server distribution for deployment (see usage)"/>
+   <target name="dist" depends="java-delete,all,dist-only" description="Creates a server distribution for deployment (see usage)"/>
    <target name="dist-only" depends="" description="">
       <delete dir="${dist.dir}"/>
       <delete dir="${dist-classes.dir}"/>
@@ -1147,6 +1147,9 @@ TODO
       <unjar src="${lib.dir}/omquery.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/xtdash.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/remotecons.jar" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/commons-codec.jar" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/commons-lang-2.0.jar" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-classes.dir}" />
 
       <switch value="${ADD_EMAIL}">
          <case value="true">
@@ -1317,7 +1320,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates the distribution for java clients                           -->
    <!-- =================================================================== -->
-   <target name="dist-client" depends="delete,all,dist-client-only" description="Create a java client distribution"/>
+   <target name="dist-client" depends="java-delete,all,dist-client-only" description="Create a java client distribution"/>
    <target name="dist-client-only" depends="" description="">
       <mkdir dir="${dist-client.dir}"/>
       <mkdir dir="${dist-client.dir}/lib"/>
@@ -1336,7 +1339,11 @@ TODO
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/concurrent.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/commons-codec.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/commons-lang-2.0.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-client.dir}/classes" />
 
       <switch value="${ADD_HSQLDB}">
          <case value="true">
@@ -1441,7 +1448,9 @@ TODO
       <!--jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/config/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/-->
       <!--Changes done by astelzl@avitech.de DIST_PATH is set in my build-file to copy the xmlBlasterClient.jar to the specified path-->
       <!--Same as dist target-->
-      <jar destfile="${DIST_PATH}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/config/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/>
+      <jar destfile="${DIST_PATH}/lib/xmlBlasterClient.jar"
+           manifest="${dist-client.dir}/config/manifest.xmlBlaster"
+           basedir="${dist-client.dir}/classes"/>
       <!-- delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete -->
 
       <echo message="--------------------------------------------"/>
