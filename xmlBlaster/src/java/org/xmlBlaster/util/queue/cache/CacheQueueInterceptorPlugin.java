@@ -374,12 +374,20 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
          // synchronizing in case it is not swapping (better performance)
          if (sizeOfEntries + this.transientQueue.getNumOfBytes() < this.transientQueue.getMaxNumOfBytes()) {
             this.transientQueue.put(queueEntries, ignorePutInterceptor);
+            if (this.notifiedAboutAddOrRemove) {
+               for(int i=0; i<queueEntries.length; i++)
+                  queueEntries[i].added(this.queueId);
+            }
          }
 
          else {
             synchronized (this.swappingPutMonitor) {
                // put all messages on transient queue
                this.transientQueue.put(queueEntries, ignorePutInterceptor);
+               if (this.notifiedAboutAddOrRemove) {
+                  for(int i=0; i<queueEntries.length; i++)
+                     queueEntries[i].added(this.queueId);
+               }
 
                // handle swapping (if any)
                long exceedingSize = this.transientQueue.getNumOfBytes() - this.transientQueue.getMaxNumOfBytes();
@@ -666,6 +674,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       // and now the transient queue (the ram queue)
       if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
       ret = this.transientQueue.removeRandom(queueEntries);
+
+      if (this.notifiedAboutAddOrRemove) {
+         for(int i=0; i<queueEntries.length; i++)
+            queueEntries[i].removed(this.queueId);
+      }
+
       loadFromPersistence();
       return ret;
    }
