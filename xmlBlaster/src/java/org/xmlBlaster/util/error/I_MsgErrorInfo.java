@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.error;
 
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
@@ -22,6 +23,12 @@ public interface I_MsgErrorInfo
     * @return never null
     */
    MsgQueueEntry[] getMsgQueueEntries();
+
+   /**
+    * Access the queue where the entries are inside. 
+    * @return null if entries are not in a queue
+    */
+   I_Queue getQueue();
 
    /**
     * Access the exception object describing the problem
