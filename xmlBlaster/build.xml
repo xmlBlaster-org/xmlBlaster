@@ -645,6 +645,7 @@ Else add it manually.
             -o /opt/local/xmlBlaster/lib/libxmlBlasterClient.so.0.79d
             /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
       -->
+      <mkdir dir="${build.dir}/obj"/>
       <cc debug="true" link="shared" outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj">
          <compiler name="msvc" if="BUILD_WINDOWS">
             <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -658,7 +659,12 @@ Else add it manually.
             <compilerarg value="-Wimplicit-int"/>
             <compilerarg value="-Werror-implicit-function-declaration"/>
          </compiler>
-
+         <!-- libset libs="pthread, dl" / -->
+         <!-- linker name="gcc" if="BUILD_UNIX">
+            <linkerarg value="-shared"/>
+            <linkerarg value="-g"/>
+            <libset libs="pthread, ml"/>
+         </linker -->
          <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
@@ -711,7 +717,7 @@ Else add it manually.
  
       <cc debug="true" link="executable"
           outfile="${testsuite.dir}/c++/bin/${exeName}"
-          objdir="build/obj">
+          objdir="${build.dir}/obj">
          <compiler name="msvc" if="BUILD_WINDOWS">
             <defineset><define name="_WINDOWS" value="1" /></defineset>
             <compilerarg value="/GX" />
