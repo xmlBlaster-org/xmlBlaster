@@ -51,7 +51,7 @@
              messages back to the client. This makes possible a simple fire wall tunneling.
           </li>
 
-        <li> The code is tested on memory leaks with valgrind and partially statically
+        <li> The code is tested for memory leaks with valgrind and partially statically
              checked with splint.
           </li>
     </ul>
@@ -1020,6 +1020,15 @@ Solaris:
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
+         <tr>
+            <td>-dispatch/callback/plugin/socket/multiThreaded</td>
+            <td>true</td>
+            <td>Every callback call is a separate thread (the update() function).
+                Like this you can call methods like publish() or subscribe()
+                from within the update() call</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
          <!-- A separate callback server is not yet supported
               we reuse the sync connection to tunnel callback messages back
          <tr>
@@ -1079,15 +1088,15 @@ build reportShow
       instance is currently not synchronized, this design decision is pending.
       If you have such a case just add your own mutex to the function calls.</li>
 
-      <li> Invoking xmlBlaster from within the callback thread (in update() function)
-        will deadlock if the update is only one unique thread.
-        This is fixed and supported now, we
-        have now a dedicated thread for each update delivered into the client code!
-        Probably we could tune it with a thread pool</li>
+      <li> Adding a thread pool for update() threads.</li>
 
       <li> Add another layer which parses the QoS with Expat</li>
 
-      <li> Add client persistent queue with <a href="http://www.sqlite.org" target='others'>SQLite</a></li>
+      <li> Add client persistent queue with <a href="http://www.sqlite.org" target='others'>SQLite</a>.
+           A client side C based persistent queue is implemented already
+           and used in our C++ client library. Embedding this code into
+           the C client library is an open task (see requirement client.c.queue).
+      </li>
 
       <li> Integrate Base64 support, for example from <a href="http://wbxmllib.sourceforge.net/html/group__wbxml__base64.html" target='others'>WBXML</a></li>
 
@@ -1104,6 +1113,7 @@ build reportShow
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
    <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
    <see type="REQ">protocol.socket</see>
+   <see type="REQ">client.c.queue</see>
    <see type="REQ">client.cpp.socket</see>
    <see type="REQ">client.cpp</see>
    <see type="REQ">interface</see>
@@ -1112,7 +1122,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.49 $</revision>
+   <revision>$Revision: 1.50 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
