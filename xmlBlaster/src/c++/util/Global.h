@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.14 2003/02/13 15:05:04 ruff Exp $
+Version:   $Id: Global.h,v 1.15 2003/02/21 11:25:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -75,6 +75,20 @@ public:
     * The method to call to get the singleton Timestamp object.
     */
    static Global& getInstance(const char* instanceName="default");
+
+   /**
+    * The version field is automatically set by ant on compilation (see filter token in build.xml)
+    * @return The version string e.g. "0.842"
+    *         or "@version@" if not set
+    */
+   static string& getVersion();
+
+   /**
+    * The timestamp field is automatically set by ant on compilation (see filter token in build.xml)
+    * @return The compilation timestamp of format "MM/dd/yyyy hh:mm aa"
+    *         or "@build.timestamp@" if not set
+    */
+   static string& getBuildTimestamp();
  
    /**
     * Constructs a current timestamp which is guaranteed to be unique in time for this JVM

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.21 2003/02/18 21:24:24 laghi Exp $
+Version:   $Id: Global.cpp,v 1.22 2003/02/21 11:25:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -70,6 +70,21 @@ Global& Global::initialize(int args, const char * const argc[])
    property_ = new Property(args, argc);
    isInitialized_ = true;
    return *this;
+}
+
+string &Global::getVersion()
+{
+   static string version = "@version@";
+   if ( version[0] == '@' ) {
+      version = "0.842";
+   }
+   return version;
+}
+
+string &Global::getBuildTimestamp()
+{
+   static string timestamp = "@build.timestamp@";
+   return timestamp;
 }
 
 Property& Global::getProperty() const
