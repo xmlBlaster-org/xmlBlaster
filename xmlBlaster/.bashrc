@@ -248,16 +248,6 @@ fi
 # (tinySQL has modified parser.java)
 #CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
 
-#-------- Checkin for preset Buildcompiler -
-# if you want to switch, set in your own .profile
-# default is modern, possible values are classic, modern or jikes
-if [ "${BUILDCOMPILER}" = "" ] ; then
-   BUILDCOMPILER=modern
-fi
-export BUILDCOMPILER
-${ECHO} "$BLACK_LTGREEN   Set BUILDCOMPILER to ${BUILDCOMPILER} $ESC"
-
-
 #-------- Checking jikes version -
 # use jikes 1.06 or better
 if [ "${JIKES_HOME}" != "" ] ; then
