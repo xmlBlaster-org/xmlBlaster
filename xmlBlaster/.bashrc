@@ -126,22 +126,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
    # this stuff is only needed for the demo javaclients.svg.batik
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-awt-util.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-ext.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-parser.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-transcoder.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-bridge.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-extension.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-script.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-util.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-css.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-gui-util.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-svg-dom.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-xml.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-dom.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-gvt.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik-svggen.jar:${CLASSPATH}
-
+   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/batik/js.jar:${CLASSPATH}
 
    if [ "${USE_ANT}" = "true" ] ; then
       ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
