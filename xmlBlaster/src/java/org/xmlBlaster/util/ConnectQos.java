@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.37 2002/12/24 14:15:33 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.38 2003/01/04 22:43:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -21,6 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xml.sax.Attributes;
 import java.util.Vector;
 import java.util.ArrayList;
@@ -35,29 +36,34 @@ import java.io.Serializable;
  * <br />
  * A typical <b>login</b> qos could look like this:<br />
  * <pre>
- *     &lt;qos>
- *        &lt;securityService type="htpasswd" version="1.0">
- *          &lt;![CDATA[
- *          &lt;user>joe&lt;/user>
- *          &lt;passwd>secret&lt;/passwd>
- *          ]]>
- *        &lt;/securityService>
- *        &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
- *        &lt;ptp>true&lt;/ptp>
- *        &lt;!-- The client side queue: -->
- *        &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
- *           &lt;address type='IOR' sessionId='4e56890ghdFzj0'>
- *              IOR:10000010033200000099000010....
- *           &lt;/address>
- *        &lt;queue>
- *        &lt;!-- The server side callback queue: -->
- *        &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
- *           &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
- *              IOR:10000010033200000099000010....
- *              &lt;burstMode collectTime='400' />
- *           &lt;/callback>
- *        &lt;queue>
- *     &lt;/qos>
+ *&lt;qos>
+ *   &lt;securityService type="htpasswd" version="1.0">
+ *     &lt;![CDATA[
+ *     &lt;user>joe&lt;/user>
+ *     &lt;passwd>secret&lt;/passwd>
+ *     ]]>
+ *   &lt;/securityService>
+ *
+ *   &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false'
+ *               sessionId='4e56890ghdFzj0'/>
+ *
+ *   &lt;ptp>true&lt;/ptp>  <!-- Allow receiving PtP messages (no SPAM protection) -->
+ *
+ *   &lt;!-- The client side queue: -->
+ *   &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
+ *      &lt;address type='IOR' sessionId='4e56890ghdFzj0'>
+ *         IOR:10000010033200000099000010....
+ *      &lt;/address>
+ *   &lt;queue>
+ *
+ *   &lt;!-- The server side callback queue: -->
+ *   &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *      &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
+ *         IOR:10000010033200000099000010....
+ *         &lt;burstMode collectTime='400' />
+ *      &lt;/callback>
+ *   &lt;queue>
+ *&lt;/qos>
  * </pre>
  * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
  * you don't need to create the <pre>&lt;callback></pre> element.
@@ -103,8 +109,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** Clear on login all other sessions of this user (for recovery reasons) "session.clearSessions false" */
    protected boolean clearSessions = false;
 
-   /** Passing own secret sessionId is not yet supported */
+   /** Passing own secret sessionId */
    protected String sessionId = null;
+
    /** The unified session name which is a clusterwide unique identifier
    */
    protected SessionName sessionName;
@@ -129,7 +136,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private transient boolean inQueue = false;
    private transient boolean inSecurityService = false;
    private transient boolean inSession = false;
-   private transient boolean inSessionId = false;
    private transient boolean inCallback = false;
    private transient boolean inAddress = false;
    
@@ -172,13 +178,24 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param glob A global instance, holding properties, command line arguments and logging object
     * @param xmlQoS_literal An xml string to be parsed
     */
-   public ConnectQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
-   {
+   public ConnectQos(Global glob, String xmlQoS_literal) throws XmlBlasterException {
+      this(glob, xmlQoS_literal, true);
+   }
+
+   public ConnectQos(Global glob, String xmlQoS_literal, boolean isServerSide) throws XmlBlasterException {
       super(glob);
       //if (log.DUMP) log.dump(ME, "Creating ConnectQos(" + xmlQoS_literal + ")");
       //addressArr = null;
       initialize(glob);
       init(xmlQoS_literal);
+      if ((this.sessionName == null || "guest".equals(this.sessionName.getLoginName())) && this.securityQos != null) {
+         this.sessionName = new SessionName(glob, this.securityQos.getUserId());
+      }
+      // Strip absolut naming component if not a cluster client:
+      if (isServerSide && !isClusterNode()) {
+         this.sessionName = new SessionName(glob, new NodeId(glob.getStrippedId()), this.sessionName.getRelativeName());
+      }
+
       //if (log.DUMP) log.dump(ME, "Parsed ConnectQos to\n" + toXml());
    }
 
@@ -196,7 +213,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       super(glob);
       initialize(glob);
       securityQos = getPlugin(mechanism,version).getSecurityQos();
-      securityQos.setUserId(loginName);
+      this.sessionName = new SessionName(glob, loginName); // parse it and strip it if user has given an absolute name
+      securityQos.setUserId(sessionName.getLoginName());
       securityQos.setCredential(password);
    }
 
@@ -210,7 +228,23 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       super(glob);
       initialize(glob);
       securityQos = getPlugin(null, null).getSecurityQos();
-      securityQos.setUserId(loginName);
+      this.sessionName = new SessionName(glob, loginName); // parse it and strip it if user has given an absolute name
+      securityQos.setUserId(sessionName.getLoginName());
+      securityQos.setCredential(password);
+   }
+
+   /**
+    * For clients who whish to use the default security plugin. 
+    * @param sessionName The unique userId (probably with public session ID)
+    * @param password  Your credentials, depends on the plugin type
+    */
+   public ConnectQos(Global glob, SessionName sessionName, String password) throws XmlBlasterException
+   {
+      super(glob);
+      initialize(glob);
+      securityQos = getPlugin(null, null).getSecurityQos();
+      this.sessionName = sessionName;
+      securityQos.setUserId(sessionName.getLoginName());
       securityQos.setCredential(password);
    }
 
@@ -269,24 +303,39 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
       this.glob = glob;
       this.log = glob.getLog(null);
+      String sessionNameStr = glob.getProperty().get("session.name", (String)null);
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
       setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
       if (nodeId != null) {
+         sessionNameStr = glob.getProperty().get("session.name["+nodeId+"]", sessionNameStr);
          setSessionTimeout(glob.getProperty().get("session.timeout["+nodeId+"]", getSessionTimeout()));
          setMaxSessions(glob.getProperty().get("session.maxSessions["+nodeId+"]", getMaxSessions()));
          clearSessions(glob.getProperty().get("session.clearSessions["+nodeId+"]", clearSessions()));
       }
+      if (sessionNameStr != null) {
+         this.sessionName = new SessionName(glob, sessionNameStr);
+      }
 
+      // -loginName is deprecated !!!
       String loginName = glob.getProperty().get("loginName", "guest");
       String passwd = glob.getProperty().get("passwd", "secret");
       if (nodeId != null) {
          loginName = glob.getProperty().get("loginName["+nodeId+"]", loginName);
          passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
       }
-      if (log.TRACE) log.trace(ME, "initialize loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
+
+      if (this.sessionName != null && !"guest".equals(loginName)) {
+         log.warn(ME, "session.name=" + this.sessionName + " is stronger than loginName=" + loginName + ", we proceed with " + this.sessionName);
+      }
+
+      if (this.sessionName == null) {
+         this.sessionName = new SessionName(glob, loginName); // "guest"
+      }
+
+      if (log.TRACE) log.trace(ME, "initialize session loginName=" + this.sessionName + " passwd=" + passwd + " nodeId=" + nodeId);
       securityQos = getPlugin(null,null).getSecurityQos();
-      securityQos.setUserId(loginName);
+      securityQos.setUserId(this.sessionName.getLoginName());
       securityQos.setCredential(passwd);
    }
 
@@ -364,7 +413,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       org.xmlBlaster.client.PluginLoader loader = glob.getClientSecurityPluginLoader();
       I_ClientPlugin plugin = loader.getClientPlugin(mechanism, version);
       securityQos = plugin.getSecurityQos();
-      securityQos.setUserId(loginName);
+      SessionName sessionName = new SessionName(glob, loginName); // parse it and strip it if user has given an absolute name
+      securityQos.setUserId(sessionName.getLoginName());
       securityQos.setCredential(password);
    }
 
@@ -386,7 +436,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (log.TRACE) log.trace(ME, "Initializing loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
          securityQos.setCredential(passwd);
       }
-      securityQos.setUserId(loginName);
+      SessionName sessionName = new SessionName(glob, loginName); // parse it and strip it if user has given an absolute name
+      securityQos.setUserId(sessionName.getLoginName());
    }
 
    /**
@@ -526,10 +577,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * This is used server side only.
     * @param id The unique and secret sessionId
     */
-   public void setSessionId(String id)
-   {
+   public void setSessionId(String id) {
       if(id==null || id.equals("")) id = null;
-      sessionId = id;
+      this.sessionId = id;
    }
 
    /**
@@ -537,9 +587,31 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <p />
     * @return The unique, secret sessionId
     */
-   public final String getSessionId()
-   {
-      return sessionId;
+   public final String getSessionId() {
+      return this.sessionId;
+   }
+
+   /**
+    * The public session ID to support reconnect to an existing session. 
+    * <p>
+    * This is extracted from the sessionName.getPublicSessionId()
+    * </p>
+    * @return 0 if no session but a login name<br />
+    *        <0 if session ID is generated by xmlBlaster<br />
+    *        >0 if session ID is given by user
+    */
+   public final long getPublicSessionId() {
+      if (this.sessionName != null) {
+         return this.sessionName.getPublicSessionId();
+      }
+      return 0L;
+   }
+
+   public final boolean hasPublicSessionId() {
+      if (this.sessionName != null) {
+         return this.sessionName.isSession();
+      }
+      return false;
    }
 
    /**
@@ -556,6 +628,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @return The unique SessionName (null if not known)
     */
    public final SessionName getSessionName() {
+      if (this.sessionName == null && this.securityQos != null) {
+         this.sessionName = new SessionName(glob, this.securityQos.getUserId());
+      }
       return this.sessionName;
    }
 
@@ -612,6 +687,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final void setPtpAllowed(boolean ptpAllowed) {
       this.ptpAllowed = ptpAllowed;
+   }
+
+   public final boolean isPtpAllowed() {
+      return this.ptpAllowed;
    }
 
    /**
@@ -921,14 +1000,17 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             int len = attrs.getLength();
             int ii=0;
             for (ii = 0; ii < len; ii++) {
-               if (attrs.getQName(ii).equalsIgnoreCase("name"))
+               if (attrs.getQName(ii).equalsIgnoreCase("name")) {
                   this.sessionName = new SessionName(glob, attrs.getValue(ii).trim());
+               }
                else if (attrs.getQName(ii).equalsIgnoreCase("timeout"))
                   this.sessionTimeout = (new Long(attrs.getValue(ii).trim())).longValue();
                else if (attrs.getQName(ii).equalsIgnoreCase("maxSessions"))
                   this.maxSessions = (new Integer(attrs.getValue(ii).trim())).intValue();
                else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
                   this.clearSessions = (new Boolean(attrs.getValue(ii).trim())).booleanValue();
+               else if (attrs.getQName(ii).equalsIgnoreCase("sessionId"))
+                  this.sessionId = attrs.getValue(ii);
                else
                   log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
@@ -952,14 +1034,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
       if (name.equalsIgnoreCase("duplicateUpdates")) {
          setDuplicateUpdates(true);
-         character.setLength(0);
-         return;
-      }
-
-      if (name.equalsIgnoreCase("sessionId")) {
-         if (!inSession)
-            return;
-         inSessionId = true;
          character.setLength(0);
          return;
       }
@@ -1040,13 +1114,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (tmp.length() > 0)
             setDuplicateUpdates(new Boolean(tmp).booleanValue());
          return;
-      }
-
-      if (name.equalsIgnoreCase("sessionId")) {
-         if (inSession) {
-            inSessionId = false;
-            setSessionId(character.toString().trim());
-         }
       }
 
       if (name.equalsIgnoreCase("securityService")) {
@@ -1136,18 +1203,19 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (duplicateUpdates() == false)
          sb.append(offset).append(" <duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
 
-      sb.append(offset).append(" <session timeout='").append(sessionTimeout);
-      sb.append("' maxSessions='").append(maxSessions);
-      sb.append("' clearSessions='").append(clearSessions());
-      if (getSessionName() != null)
-         sb.append("' name='").append(getSessionName().getAbsoluteName());
-      if(sessionId!=null) {
-         sb.append("'>");
-         sb.append(offset).append("  <sessionId>").append(sessionId).append("</sessionId>");
-         sb.append(offset).append(" </session>");
+      sb.append(offset).append(" <session");
+      if (getSessionName() != null) {
+         if (isClusterNode())
+            sb.append(" name='").append(getSessionName().getAbsoluteName()).append("'"); // cluster node clients
+         else
+            sb.append(" name='").append(getSessionName().getRelativeName()).append("'"); // ordinary clients
       }
-      else
-         sb.append("'/>");
+      sb.append(" timeout='").append(sessionTimeout).append("'");
+      sb.append(" maxSessions='").append(maxSessions).append("'");
+      sb.append(" clearSessions='").append(clearSessions()).append("'");
+      if (this.sessionId!=null)
+         sb.append(" sessionId='").append(this.sessionId).append("'");
+      sb.append("/>");
 
       for (int ii=0; ii<clientQueuePropertyList.size(); ii++) {
          QueueProperty ad = (QueueProperty)clientQueuePropertyList.get(ii);
@@ -1162,8 +1230,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       for (int ii=0; ii<serverRefVec.size(); ii++) {
          ServerRef ref = (ServerRef)serverRefVec.elementAt(ii);
          sb.append(ref.toXml(extraOffset+Constants.INDENT));
-         if (ii < serverRefVec.size()-1)
-            sb.append("\n");
       }
 
       sb.append(offset).append("</qos>");
@@ -1183,7 +1249,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
       text += "   -security.plugin.type    The security plugin to use [simple]\n";
       text += "   -security.plugin.version The version of the plugin [1.0]\n";
-      text += "   -loginName          The name for login []\n";
+      text += "   -session.name       The name for login, e.g. 'joe' or with public session ID 'joe/2' []\n";
       text += "   -passwd             My password []\n";
       text += "\n";
       return text;
@@ -1214,9 +1280,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <ptp>true</ptp>\n" +
             "   <isClusterNode>true</isClusterNode>\n" +
             "   <duplicateUpdates>false</duplicateUpdates>\n" +
-            "   <session timeout='3600000' maxSessions='20' clearSessions='false'>\n" +
-            "      <sessionId>anId</sessionId>\n" +
-            "   </session>\n" +
+            "   <session timeout='3600000' maxSessions='20' clearSessions='false' sessionId='wvt57gj'/>\n" +
             "   <queue relating='session' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
             "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
             "         <ptp>true</ptp>\n" +
