@@ -127,9 +127,9 @@ int main(int argc, char** argv)
       const char *key = "<key oid='HelloWorld'/>";
       char qos[1024];
       if (updateOneway)
-         strcpy(qos, "<qos><updateOneway/></qos>");
+         strcpy(qos, "<qos><updateOneway/><notify>false</notify></qos>");
       else
-         strcpy(qos, "<qos/>");
+         strcpy(qos, "<qos><notify>false</notify></qos>");
       printf("[client] Subscribe message 'HelloWorld' with updateOneway=%s callback ...\n", updateOneway?"true":"false");
       response = xa->subscribe(xa, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
    printf("[client] Waiting one second on update messages ...\n");
    sleepMillis(sleepInterval);
  
-   if (false) {  /* erase ... */
+   {  /* erase ... */
       QosArr* resp;
       const char *key = "<key oid='HelloWorld'/>";
       /*const char *key = "<key oid='' queryType='XPATH'>//key</key>";*/
