@@ -15,22 +15,57 @@ using namespace org::xmlBlaster::util;
 
 #define  MAX_NEST 50
 
+Property::Property(int args, const char * const argv[]) : properties_() {
+   initializeDefaultProperties();
+   if (args && argv) {
+      loadCommandLineProps(args, argv, std::string("-"), false); // xmlBlaster-style properties
+   }
+   //loadPropertyFile();
+}
+
 Property::Property(MapType propMap) : properties_(propMap)
+{
+   initializeDefaultProperties();
+}
+
+void Property::initializeDefaultProperties()
 {
    // Add some predefined variables to be useful in xmlBlaster.properties as ${user.home} etc.
    bool useEnv = true;
    bool overwrite = false;
    
    if (!propertyExists("user.home", false)) {
-      setProperty("user.home", getProperty("HOME", useEnv), true); // UNIX
-      // Windows: _WINDOWS
-      // HOMEDRIVE=C:
-      // HOMEPATH=\Documents and Settings\Marcel
-      char *driveP = getenv("HOMEDRIVE");
-      string drive = (driveP != 0) ? string(driveP) : string("");
-      char *pathP = getenv("HOMEPATH");
-      string path = (pathP != 0) ? string(pathP) : string("");
-      setProperty("user.home", drive + path);
+      string value = getProperty("HOME", useEnv);
+      if (value != "") {
+         setProperty("user.home", value, true); // UNIX
+      }
+      else {
+         // Windows: _WINDOWS
+         // HOMEDRIVE=C:
+         // HOMEPATH=\Documents and Settings\Marcel
+         char *driveP = getenv("HOMEDRIVE");
+         string drive = (driveP != 0) ? string(driveP) : string("");
+         char *pathP = getenv("HOMEPATH");
+         string path = (pathP != 0) ? string(pathP) : string("");
+         setProperty("user.home", drive + path);
+      }
+   }
+
+   if (!propertyExists("user.name", false)) {
+      string value = getProperty("USER", useEnv);
+      if (value != "") {
+         setProperty("user.name", value, true); // UNIX
+      }
+      else {
+         // Windows: _WINDOWS
+         // HOMEPATH=\Documents and Settings\Marcel
+         char *pathP = getenv("HOMEPATH");
+         string path = (pathP != 0) ? string(pathP) : string("");
+         std::string::size_type pos = path.rfind(FILE_SEP);
+         if (pos != string::npos && pos < path.size()-1) {
+            setProperty("user.name", path.substr(pos+1));
+         }
+      }
    }
    
    // XMLBLASTER_HOME
@@ -123,9 +158,8 @@ Property::loadPropertyFile()
       num = readPropertyFile(filename, false);
    }
    if (num < 1) {      
-     if(getenv("HOME")) {
-       path = getenv("HOME");
-     if (!path.empty())
+     path = getStringProperty("user.home", "", true); // Check home directory $HOME
+     if (!path.empty()) {
        num = readPropertyFile(path + FILE_SEP + filename, false);
      }
    }
@@ -145,11 +179,17 @@ Property::loadPropertyFile()
 int Property::readPropertyFile(const string &filename, bool overwrite) 
 {
    ifstream in(filename.c_str());
-   string  line;
+   string  line, tmp;
    int     count = 0;
    if (in == 0) return -1;
    while (!in.eof()) {
-      getline(in, line);
+      getline(in, tmp);
+      StringTrim::trimEnd(tmp);
+      if (tmp.size() > 0 && tmp[tmp.size()-1] == '\\') {
+         line += tmp.substr(0,tmp.size()-1);
+         continue;
+      }
+      line += tmp;
       if (!in.eof()) {
          pair<const string, string> valuePair(getPair(line));
          if ((valuePair.first != "") && (valuePair.second != "")) {
@@ -158,6 +198,7 @@ int Property::readPropertyFile(const string &filename, bool overwrite)
                count++;
          }
       }
+      line = "";
    }
    in.close();
 //   if (count > 0)
@@ -307,7 +348,9 @@ bool Property::setProperty_(const string &name, const string &value,
 bool Property::setProperty(const string &name, const string &value,
                       bool overwrite) 
 {
-   return setProperty_(name, value, overwrite);
+   string newValue = replaceVariable(name, value, true);
+   bool ret = setProperty_(name, newValue, overwrite);
+   return ret;
 }
 
 

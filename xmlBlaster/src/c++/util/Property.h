@@ -24,6 +24,9 @@ namespace util {
     * When writing, properties are written in alphabetical order (of the 
     * property name).
     * <br />
+    * In properties like <code>SomeValue-${xy}-somePostValue</code> the <code>${}</code>
+    * are replaced by the value of <code>xy</code>.
+    * <br />
     * Fills during construction the properties <code>user.home</code> and
     * <code>file.separator</code> and <code>path.separator</code>.
     * This simplifies the reuse of the xmlBlaster.properties
@@ -51,6 +54,16 @@ namespace util {
       bool setProperty_(const std::string &name, const std::string &value,
                        bool overwrite=true);
 
+      /**
+       * Initialize some default properties, similar to the java virtual machine. 
+       * Add some predefined variables to be useful in xmlBlaster.properties as ${user.home} etc:
+       * <pre>
+       * user.home       For example "/home/marcel"
+       * file.separator  On UNIX "/", on Windows "\"
+       * path.separator  On UNIX ":", on Windows ";"
+       * </pre>
+       */
+      void initializeDefaultProperties();
 
    protected:
       /**
@@ -102,14 +115,7 @@ namespace util {
                  * @param args Length of argv
                  * @param argv The command line arguments, for example "-protocol SOCKET"
        */
-      Property(int args=0, const char * const argv[]=0) : properties_() {
-
-         if (args && argv) {
-            loadCommandLineProps(args, argv, std::string("-"), false); // xmlBlaster-style properties
-         }
-
-         //loadPropertyFile();
-      }
+      Property(int args=0, const char * const argv[]=0);
 
       /**
        * Initialize with the given key/value std::map. 
