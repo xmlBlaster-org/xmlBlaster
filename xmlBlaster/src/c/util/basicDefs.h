@@ -48,6 +48,9 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #else
 # include<stdint.h>  /*-> C99:  uint64_t etc. */
 #endif
+/*#define INT64_DIGITLEN_MAX 19  Size of a max int64_t dumped to a string: LLONG_MAX from limits.h 9223372036854775807 */
+#define INT64_STRLEN_MAX 22 /** Size of a max int64_t dumped to a string including an optional LL and termination '\0': LLONG_MAX from limits.h 9223372036854775807LL */
+
 
 #ifdef GCC_ANSI  /* Set -DGCC_ANSI on command line if you use the 'gcc --ansi' flag */
 #ifndef __USE_BSD /* gcc -ansi on Linux: */
