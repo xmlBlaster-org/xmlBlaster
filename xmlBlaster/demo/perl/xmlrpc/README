@@ -1,0 +1,51 @@
+Howto start the Perl/XmlRpc demo:
+
+ - Start xmlBlaster
+
+      cd xmlBlaster
+      java -jar lib/xmlBlaster.jar
+
+
+ - Run the Perl demo client
+   (Pass as argument the url where xmlBlaster listens,
+    xmlBlaster logs this url on your console)
+
+      cd xmlBlaster/demo/perl/xmlrpc
+      perl  hello.perl  http://myhost:8080
+
+
+Thats it!
+
+
+-------------------------------------------------------------------
+Ken McLeod has implemented XML-RPC for Perl
+   http://www.perlware.com/products/xmlrpc/
+
+Get more informations about INSTALLATION at
+   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto-perl.html
+-------------------------------------------------------------------
+
+
+This is the simplest Perl client code:
+-------------------------------------------------------------------
+use Frontier::Client;
+    
+# Make an object to represent the XML-RPC server.
+$server_url = 'http://myHost:8080/';
+print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
+
+$server = Frontier::Client->new(url => $server_url);
+print "Connected to xmlBlaster server on $server_url \n";
+
+# Call the remote server and get our result.
+$sessionId = $server->call('authenticate.login', "ben", "secret", "<qos></qos>", "");
+print "\nLogin success with sessionId=$sessionId \n";
+
+# Call the server and get its current memory consumption.
+$message = $server->call('xmlBlaster.get', $sessionId, "<key oid='__sys__TotalMem'></key>", "<qos></qos>");
+print "\nResult for a get():\n----------------\n $message \n----------------\n";
+-------------------------------------------------------------------
+
+See
+   xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
+with all allowed server-methods you can invoke.
