@@ -1560,7 +1560,7 @@ TODO
       <delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" />
 
       <!-- SunOS and CPP_LINK=static: the lib is named xmlBlaster/lib/xmlBlaster.a -->
-      <copy file="${lib.dir}/xmlBlasterClient.a" tofile="${lib.dir}/libxmlBlasterClient.a" overwrite="false" />
+      <!-- copy file="${lib.dir}/xmlBlasterClient.a" tofile="${lib.dir}/libxmlBlasterClient.a" overwrite="false" failonerror="false" / -->
    </target>  <!-- cpp-lib -->
 
 
@@ -1598,7 +1598,7 @@ TODO
       </foreach>
    </target>
 
-   <!--				   
+   <!--                            
       Here an example on how to compile a single test application ...
       ./build.sh -DcompileCppSourcePath=/home/xmlBlaster/testsuite/src/c++ -DexeName=TestConnect compileCppExe
    -->
@@ -1609,7 +1609,7 @@ TODO
       </foreach>
    </target>
 
-   <!--				   
+   <!--                            
       Here an example on how to compile a single test application ...
       ./build.sh -DcompileCppSourcePath=/home/xmlBlaster/testsuite/src/c++ -DexeName=TestConnect compileCppExe
    -->
