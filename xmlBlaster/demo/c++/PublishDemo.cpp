@@ -225,9 +225,9 @@ void PublishDemo::publish()
       //pq.setForceDestroy(forceDestroy);
       //pq.setSubscribable(subscribable);
       if (clientPropertyMap.size() > 0) {
-         pq.getData().setClientProperties(clientPropertyMap);
+         pq.setClientProperties(clientPropertyMap);
          //This is the correct way for a typed property:
-         pq.getData().addClientProperty("ALONG", long(12L));
+         pq.addClientProperty("ALONG", long(12L));
       }
       
       if (i == 0) {
