@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.io.IOException;
 import java.io.SyncFailedException;
+
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
@@ -44,6 +46,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public class FileIO
 {
+   private final Global glob;
    private long currReadPos;
    private long lastReadPos;
    private File f;
@@ -78,7 +81,8 @@ public class FileIO
     * @param filename An absolute or relative path including the fileName, missing directories will be created
     * @param userDataHandler Your implementation of your data format marshalling
     */
-   public FileIO(String fileName, I_UserDataHandler userDataHandler, long maxEntries, boolean useSync) throws IOException {
+   public FileIO(Global glob, String fileName, I_UserDataHandler userDataHandler, long maxEntries, boolean useSync) throws IOException {
+      this.glob = glob;
       this.fileName = fileName;
       if (maxEntries < 1)
          this.maxEntries = Long.MAX_VALUE;
@@ -155,7 +159,7 @@ public class FileIO
          numFileDeleteLost = getNumUnread();
          initialize();
          throw new XmlBlasterException("FileRecorder.FileLost",
-            fileName + " was lost, " + getNumUnread() + " are messages lost, no message retrieved");
+            fileName + " was lost, " + getNumUnread() + " messages are lost, no message retrieved");
       }
 
       long pos = getCurrReadPos();
@@ -207,7 +211,7 @@ public class FileIO
       String errorText = null;
       if (!f.exists()) {
          numFileDeleteLost = getNumUnread();
-         errorText = fileName + " was lost, " + getNumUnread() + " are messages lost, creating a new one and storing your message.";
+         errorText = fileName + " disappeared, " + getNumUnread() + " messages are lost, creating a new one and storing your message.";
          initialize();
       }
 
@@ -236,8 +240,10 @@ public class FileIO
       ra.seek(UNREAD_POS);
       ra.writeLong(numUnread);
 
-      if (errorText != null)
+      if (errorText != null) {
+         glob.getLog("recorder").error("FileRecorder.FileLost", errorText);
          throw new XmlBlasterException("FileRecorder.FileLost", errorText);
+      }
    }
 
    /** Write the first 8 bytes containing the offset to data to be read */
@@ -286,7 +292,7 @@ public class FileIO
             numUnread = ra.readLong(); // on restart
          }
          catch(java.io.IOException e) {
-            System.err.println("FileIO.getNumUnread()" + e.toString());
+            glob.getLog("recorder").error("FileIO.getNumUnread()", e.toString());
          }
       }
       return this.numUnread;
@@ -304,7 +310,7 @@ public class FileIO
             numLost = ra.readLong(); // on restart
          }
          catch(java.io.IOException e) {
-            System.err.println("FileIO.getNumLost()" + e.toString());
+            glob.getLog("recorder").error("FileIO.getNumLost()", e.toString());
          }
       }
       return this.numLost;
