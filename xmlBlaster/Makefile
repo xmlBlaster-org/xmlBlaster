@@ -27,6 +27,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine.admin \
 			org.xmlBlaster.engine.admin.intern \
 			org.xmlBlaster.engine.admin.extern \
+			org.xmlBlaster.engine.admin.extern.snmp \
 			org.xmlBlaster.engine.mime \
 			org.xmlBlaster.engine.mime.regex \
 			org.xmlBlaster.engine.mime.demo \
