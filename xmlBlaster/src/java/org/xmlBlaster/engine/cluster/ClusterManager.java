@@ -65,7 +65,7 @@ public final class ClusterManager
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
       this.clusterNodeMap = new HashMap();
-      this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob);
+      this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob, this);
       this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob);
 
       if (this.glob.getNodeId() == null)
@@ -87,16 +87,34 @@ public final class ClusterManager
                   log.info(ME, "Ignoring envrionment setting -" + env[ii]);
                   continue;
                }
-               log.info(ME, "Parsing envrionment -" + env[ii] + " ...");
+               log.info(ME, "Parsing envrionment -" + env[ii] + " for node '" + nodeIdName + "' ...");
                NodeParser nodeParser = new NodeParser(glob, this, xml); // fills the info to ClusterManager
             }
          }
       }
 
-      // !!! subscribe !!!
+      publish();
+
+      subscribe();
 
       if (log.DUMP) log.dump(ME, toXml());
       this.log.info(ME, "Initialized and ready");
+   }
+
+   private void publish() {
+      log.warn(ME, "publish() of cluster messages is missing");
+   /*
+      StringBuffer buf = new StringBuffer(256);
+      buf.append("<key oid='").append(Constants.OID_CLUSTER_INFO).append("[").append(getId()).append("]").append("'><").append(Constants.OID_CLUSTER_INFO)("/></key>");
+      msgUnit.setKey(buf.toString());
+      msgUnit.setQos(pubQos.toXml());
+      XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQos(msgUnit.getQos()));
+   */
+   }
+
+   private void subscribe() {
+      log.warn(ME, "subscribe() of cluster messages is missing");
    }
 
    /**
@@ -143,19 +161,20 @@ public final class ClusterManager
     * @return null if no forwarding is done, if we are the master of this message ourself.
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public String forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
-      XmlBlasterConnection con = getConnection(publisherSession, msgUnitWrapper);
+   public String forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering forwardPublish(" + msgWrapper.getUniqueKey() + ")");
+      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
       if (con == null)
          return null;
 
-      PublishQos publishQos = msgUnitWrapper.getPublishQos();
-      MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();
+      PublishQos publishQos = msgWrapper.getPublishQos();
+      MessageUnit msgUnit = msgWrapper.getMessageUnit();
 
       return con.publish(msgUnit);
       /*
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Problems with clustering of published message '" + msgUnitWrapper.getUniqueKey() + "'");
+         Log.error(ME, "Problems with clustering of published message '" + msgWrapper.getUniqueKey() + "'");
          e.printStackTrace();
          return Constants.RET_FORWARD_ERROR; // "<qos><state>FORWARD_ERROR</state></qos>"
       }
@@ -174,6 +193,14 @@ public final class ClusterManager
          throw new IllegalArgumentException("Illegal argument in addClusterNode()");
       }
       this.clusterNodeMap.put(clusterNode.getId(), clusterNode);
+   }
+
+   /**
+    * Return the map containing all known cluster nodes. 
+    * @return never null, map contains ClusterNode objects, please treat as read only.
+    */
+   public Map getClusterNodeMap() {
+      return this.clusterNodeMap;
    }
 
    /**
@@ -212,18 +239,28 @@ public final class ClusterManager
    /**
     * @return null if plugins not found
     */
-   public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + ")");
 
       I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId(
                          this.pluginDomainMapperType, this.pluginDomainMapperVersion, // "DomainToMaster", "1.0"
-                         msgUnitWrapper.getContentMime(), msgUnitWrapper.getContentMimeExtended());
+                         msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
       if (domainMapper == null) {
          Log.warn(ME, "No domain mapping plugin found, clustering switched off");
          return null;
       }
 
-      NodeId nodeId = domainMapper.getMasterId(msgUnitWrapper);
+      NodeId nodeId = domainMapper.getMasterId(msgWrapper);
       ClusterNode clusterNode = getClusterNode(nodeId);
+
+      if (clusterNode.isLocalNode()) {
+         log.info(ME, "Message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "' is at master");
+         return null;
+      }
+
+      log.info(ME, "Found node '" + nodeId.getId() + "' which maps to message oid='"
+               + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() +
+               "', looking for master connection ...");
 
       I_LoadBalancer balancer = loadBalancerPluginManager.getPlugin(
                 this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"

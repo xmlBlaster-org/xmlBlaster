@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.3 2002/04/19 11:03:05 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.4 2002/04/23 08:03:38 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -16,6 +16,7 @@ import org.xmlBlaster.engine.Global;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Collections;
 
 /**
@@ -35,13 +36,15 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
 
    private final Global glob;
    private final Log log;
+   private final ClusterManager clusterManager;
 
    private final Map mapMsgToMasterIdMap = Collections.synchronizedMap(new HashMap());
 
-   public MapMsgToMasterPluginManager(Global glob) {
+   public MapMsgToMasterPluginManager(Global glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
       this.log = this.glob.getLog();
+      this.clusterManager = clusterManager;
    }
 
    /**
@@ -110,7 +113,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    protected final I_MapMsgToMasterId loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
       I_MapMsgToMasterId i = (I_MapMsgToMasterId)super.instantiatePlugin(pluginNameAndParam);
-      i.initialize(glob);
+      i.initialize(glob, clusterManager);
       return i;
    }
 
@@ -190,5 +193,17 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          e.printStackTrace();
       }
       return null;
+   }
+
+   /**
+    * Is called when new configuration arrived, notify all plugins to empty their
+    * cache or do whatever they need to do. 
+    */
+   public void reset() {
+      Iterator it = mapMsgToMasterIdMap.values().iterator();
+      while (it.hasNext()) {
+         I_MapMsgToMasterId i = (I_MapMsgToMasterId)it.next();
+         i.reset();
+      }
    }
 }

@@ -20,10 +20,16 @@ public interface I_MapMsgToMasterId
    /**
     * This is called after instantiation of the plugin. 
     * We pass the engine.Global handle which has more knowledge then
-    * the util.Global passed by I_Plugin (we could have downcasted though).
+    * the util.Global passed by I_Plugin (we could have down casted though).
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob);
+   public void initialize(Global glob, ClusterManager clusterManager);
+
+   /**
+    * Is called when new configuration arrived, notify the plugin to empty its
+    * cache or do whatever it needs to do. 
+    */
+   public void reset();
 
    /** Get a human readable name of the implementation */
    public String getName();
@@ -42,5 +48,12 @@ public interface I_MapMsgToMasterId
     */
    public String[] getMimeExtended();
 
+   /**
+    * Find out who is the master of the provided message. 
+    * <p />
+    * Here you code your clustering logic.
+    * @param msgWrapper The message
+    * @return The node id which is master of the message, you should always return a valid node id
+    */
    public NodeId getMasterId(MessageUnitWrapper msgWrapper) throws XmlBlasterException;
 }

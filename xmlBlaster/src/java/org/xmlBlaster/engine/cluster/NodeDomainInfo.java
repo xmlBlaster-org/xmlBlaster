@@ -32,9 +32,10 @@ public final class NodeDomainInfo
    /** Unique name for logging */
    private final static String ME = "NodeDomainInfo";
    private final Global glob;
+   private final ClusterNode clusterNode;
 
    private static int counter=0;
-   private final int id;
+   private final int count;
 
    private int stratum = 0;
    private String refId = null;
@@ -44,17 +45,28 @@ public final class NodeDomainInfo
    private String version;
    private String query = null;
 
+   private Object preparedQuery = null;
+
    private XmlKey[] keyMappings;
 
-   public NodeDomainInfo(Global glob) {
+   public NodeDomainInfo(Global glob, ClusterNode clusterNode) {
       this.glob = glob;
-      id = counter++;
+      this.clusterNode = clusterNode;
+      count = counter++;
       version = glob.getProperty().get("cluster.domainMapper.version", DEFAULT_version);
    }
 
    /** Unique number (in this JVM) */
-   public int getId() {
-      return id;
+   public int getCount() {
+      return count;
+   }
+
+   /**
+    * Convenience method, delegates to clusterNode.getNodeId(). 
+    * @return My node id object
+    */
+   public NodeId getNodeId() {
+      return clusterNode.getNodeId();
    }
 
    /**
@@ -74,12 +86,14 @@ public final class NodeDomainInfo
    }
 
    /**
-    * Set the master query, it should fit to the protocol-type.
-    *
+    * Set the master query, it should fit to the protocol-type. 
+    * <p />
+    * Clears the pre parsed query object to null
     * @param query The master query, e.g. "&lt;key domain='RUGBY'>" to select RUGBY messages
     */
    public final void setQuery(String query) {
       this.query = query;
+      this.preparedQuery = null;
    }
 
    /**
@@ -88,6 +102,24 @@ public final class NodeDomainInfo
     */
    public final String getQuery() {
       return query;
+   }
+
+   /**
+    * This object is for the plugin writer, she can
+    * parse the query and store here an arbitrary pre parsed object
+    * for better performance.
+    */
+   public Object getPreparedQuery() {
+      return this.preparedQuery;
+   }
+
+   /**
+    * This object is for the plugin writer, she can
+    * parse the query and store here an arbitrary pre parsed object
+    * for better performance.
+    */
+   public void setPreparedQuery(Object preparedQuery) {
+      this.preparedQuery = preparedQuery;
    }
 
    public void setStratum(int stratum) {
@@ -168,7 +200,7 @@ public final class NodeDomainInfo
          if (tmp.length() > 0)
             setQuery(tmp);
          if (getQuery() == null)
-            glob.getLog().error(ME, "master contains no query data to map messages to their master node");
+            glob.getLog().error(ME, "<master> contains no query data to map messages to their master node");
          character.setLength(0);
       }
    }

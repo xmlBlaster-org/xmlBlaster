@@ -34,7 +34,7 @@ public final class ClusterNode
    private NodeStateInfo state;
    
    /** Hold mapping informations to map a message to a master node */
-   private Map domainInfoMap;
+   private Map domainInfoMap = new TreeMap();
 
    /**
     * Create an object holding all informations about a node
@@ -115,6 +115,7 @@ public final class ClusterNode
 
    /**
     * Access the filter rules to determine the master of a message. 
+    * @return The map contains NodeDomainInfo objects, it is never null, please treat as read only.
     */
    public Map getDomainInfoMap() {
       return domainInfoMap;
@@ -124,8 +125,7 @@ public final class ClusterNode
     * Set the filter rules to determine the master of a message. 
     */
    public void addDomainInfo(NodeDomainInfo domainInfo) {
-      if (this.domainInfoMap == null) this.domainInfoMap = new TreeMap();
-      this.domainInfoMap.put(""+domainInfo.getId(), domainInfo);
+      this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
    }
 
    /**
@@ -133,6 +133,13 @@ public final class ClusterNode
     */
    public boolean isAvailable() {
       return available;
+   }
+
+   /**
+    * Check if we have currently a functional connection to this node. 
+    */
+   public boolean isLocalNode() {
+      return getId().equals(glob.getId());
    }
 
    /**

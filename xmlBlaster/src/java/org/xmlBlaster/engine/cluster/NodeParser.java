@@ -153,7 +153,7 @@ public class NodeParser extends SaxHandlerBase
       if (name.equalsIgnoreCase("master")) {
          if (inClusternode != 1) return;
          inMaster = true;
-         tmpMaster = new NodeDomainInfo(glob);
+         tmpMaster = new NodeDomainInfo(glob, tmpClusterNode);
          if (tmpMaster.startElement(uri, localName, name, character, attrs) == true)
             tmpClusterNode.addDomainInfo(tmpMaster);
          else
