@@ -8,7 +8,7 @@
     </topic>
     <description>
        <p>The generic plugin for jdbc based queues has been tested against Oracle 9.20 i on linux).</p>
-        <p>Oracle is available on <a href='www.oracle.com'>http://www.oracle.com</a> where you can find all
+        <p>Oracle is available on <a href='http://www.oracle.com'>http://www.oracle.com</a> where you can find all
         necessary information and instructions on how to make Oracle run.
         </p>
         <p>Once you have a running oracle database you can configure xmlBlaster to make it run against it.
@@ -114,7 +114,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
