@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.25 2004/04/09 18:05:18 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.26 2004/04/09 19:26:48 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.25 2004/04/09 18:05:18 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.26 2004/04/09 19:26:48 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -374,7 +374,7 @@ Dll_Export char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen)
       }
       if (maxContentDumpLen == 0)
          *contentStr = 0;
-      else if (maxContentDumpLen > 0 && maxContentDumpLen < (msg->contentLen-5))
+      else if (maxContentDumpLen > 0 && (size_t)maxContentDumpLen < (msg->contentLen-5))
          strcpy(contentStr+maxContentDumpLen, " ...");
       SNPRINTF(xml, len, "%s\n <content size='%lu'><![CDATA[%s]]></content>%s",
                          msg->key, (unsigned long)msg->contentLen, contentStr, msg->qos);
