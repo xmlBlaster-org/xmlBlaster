@@ -3,7 +3,7 @@ Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.6 2002/02/13 21:06:29 ruff Exp $
+Version:   $Id: MessageUnit.java,v 1.7 2002/03/29 20:53:57 laghi Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
@@ -22,6 +22,16 @@ public class MessageUnit implements java.io.Serializable
    public String xmlKey;
    public byte[] content;
    public String qos;
+
+   /**
+    * This is a temporary constructor used for the javascript (rhino) client
+    */
+   public MessageUnit(String xmlKey, String contentAsString, String qos)
+   {
+      setKey(xmlKey);
+      setContent(contentAsString.getBytes());
+      setQos(qos);
+   }
 
    /**
     * The only constructor guarantees any attribute to be not null
