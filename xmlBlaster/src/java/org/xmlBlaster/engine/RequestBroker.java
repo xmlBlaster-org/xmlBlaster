@@ -1011,7 +1011,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                if (log.DUMP) log.dump(ME, toXml());
             }
          }
-         else { // Try to unssubscribe with message oid instead of subscribe id:
+         else { // Try to unSubscribe with message oid instead of subscribe id:
             String suppliedXmlKey = xmlKey.getOid(); // remember supplied oid, another oid may be generated later
 
             KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, unSubscribeQos.getData());
