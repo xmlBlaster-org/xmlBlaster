@@ -3,7 +3,7 @@ Name:      xmlBlasterDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.16 2003/02/18 21:24:24 laghi Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.17 2003/03/05 11:22:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -38,7 +38,7 @@ namespace org { namespace xmlBlaster { namespace util {
 // This is useful to retrieve stack traces in exceptions. If your system
 // contains execinfo.h then you can add the ifdef of that system here.
 #ifdef __GNUC__
-#define _ENABLE_STACK_TRACE_
+//#define _ENABLE_STACK_TRACE_ // is set in build.xml
 #include <execinfo.h>
 #endif
 
