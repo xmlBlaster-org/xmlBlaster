@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.14 1999/12/09 13:28:35 ruff Exp $
+Version:   $Id: Main.java,v 1.15 1999/12/11 14:44:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -17,7 +17,7 @@ import org.omg.CosNaming.*;
 
 
 /**
- * Main class to invoke the xmlBlaster server. 
+ * Main class to invoke the xmlBlaster server.
  * <p />
  * Startparameters supported
  * <p />
@@ -90,8 +90,13 @@ public class Main
          catch (XmlBlasterException e) {
             Log.info(ME, "AuthServer IOR is not published to naming service");
          } catch (org.omg.CORBA.COMM_FAILURE e) {
-            Log.warning(ME, "Can't publish AuthServer to naming service, is your naming service really running? " + e.toString());
+            Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                         e.toString() +
+                         "\nYou don't need the naming service, i'll switch to builtin http IOR download");
          }
+         Log.info(ME, "####################################");
+         Log.info(ME, "# xmlBlaster is ready for requests #");
+         Log.info(ME, "####################################");
       } catch (Exception e) {
          e.printStackTrace();
          Log.panic(ME, e.toString());
