@@ -698,10 +698,10 @@ UserInfo: joe:mypasswd
    <see type="REQ">engine.runlevel</see>
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
-   <author>Michele.Laghi@swisscom.com</author>
+   <author>laghi@swissinfo.org</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.52 $</revision>
+   <revision>$Revision: 1.53 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

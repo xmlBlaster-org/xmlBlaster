@@ -70,7 +70,7 @@ public class StreamCallback implements I_Callback {
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (this.out == null) return "OK";
       StringBuffer buf = new StringBuffer();
-      buf.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->");
+      buf.append("\n<!-- ___________________________________ update ________________________________ -->");
       buf.append("\n").append(this.offset).append("<update>\n");
       buf.append(this.offset).append("<sessionId>").append(cbSessionId).append("</sessionId>");
       buf.append(updateKey.toXml(this.offset + "  ")).append("\n");
