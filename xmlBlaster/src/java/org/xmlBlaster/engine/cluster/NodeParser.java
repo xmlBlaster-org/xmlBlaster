@@ -11,6 +11,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Vector;

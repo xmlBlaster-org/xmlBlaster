@@ -19,6 +19,8 @@ import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;

@@ -9,7 +9,7 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
@@ -41,10 +41,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private RunlevelManager runlevelManager;
 
    /** the authentication service */
-   private Authenticate authenticate = null;
+   private Authenticate authenticate;
    /** the xmlBlaster core class */
-   private RequestBroker requestBroker = null;
-   private NodeId nodeId = null;
+   private RequestBroker requestBroker;
+   private NodeId nodeId;
    private ClusterManager clusterManager;
    private Timeout sessionTimer;
    private Timeout topicTimer;

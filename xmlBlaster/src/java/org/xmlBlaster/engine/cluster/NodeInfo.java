@@ -12,6 +12,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.cluster.NodeId;
 
 import java.util.Map;
 import java.util.TreeMap;

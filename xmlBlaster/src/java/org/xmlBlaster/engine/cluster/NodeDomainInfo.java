@@ -12,6 +12,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.Constants;
 
 import org.xml.sax.Attributes;
@@ -61,8 +63,7 @@ public final class NodeDomainInfo implements Comparable
    private String version;
    private String query = "";
 
-   public static final boolean DEFAULT_dirtyRead = false;
-   private boolean dirtyRead = DEFAULT_dirtyRead;
+   private boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
 
    /** for SAX parsing */
    private int inMaster = 0;
@@ -395,7 +396,7 @@ public final class NodeDomainInfo implements Comparable
           sb.append(" acceptDefault='").append(getAcceptDefault()).append("'");
       if (DEFAULT_acceptOtherDefault != getAcceptOtherDefault())
           sb.append(" acceptOtherDefault='").append(getAcceptOtherDefault()).append("'");
-      if (DEFAULT_dirtyRead != getDirtyRead())
+      if (RouteInfo.DEFAULT_dirtyRead != getDirtyRead())
           sb.append(" dirtyRead='").append(getDirtyRead()).append("'");
       sb.append(">");
 
