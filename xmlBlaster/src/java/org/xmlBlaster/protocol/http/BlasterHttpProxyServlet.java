@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.18 2000/05/09 16:55:17 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.19 2000/05/13 20:07:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -49,10 +49,13 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
       // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      // Log.addLogLevel("TRACE");
+      // Log.addLogLevel("TRACE"); // Use this to trace the code
       // Log.addLogLevel("CALLS");
-      Log.addLogLevel("TIME");
-      // Log.addLogListener(this);
+      // Log.addLogLevel("TIME");
+
+      // To redirect your Logging output into the servlet logfile (jserv.log),
+      // outcomment this line:
+      //Log.addLogListener(this);
 
       Log.trace(ME, "Initialize ...");
    }
@@ -81,19 +84,23 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
 
-      HttpSession session = req.getSession(true);
-      String sessionId = session.getId();
-      if (Log.TRACE) Log.trace(ME, "Entering doGet() for sessionId=" + sessionId);
+      String actionType = Util.getParameter(req, "ActionType", "");
 
-      if(sessionId == null) {
+      HttpSession session = req.getSession(true);
+      if (actionType.equals("login")) {
+         session.invalidate();   // force a new sessionId
+         session = req.getSession(true);
+      }
+      String sessionId = session.getId();
+      if (Log.TRACE) Log.trace(ME, "Processing doGet() for sessionId=" + sessionId);
+
+      if (sessionId == null) {
          PrintWriter out = res.getWriter();
          out.println(HttpPushHandler.alert("Sorry, your sessionId is invalid"));
          return;
       }
 
       try {
-         String actionType = Util.getParameter(req, "ActionType", "");
-
          //------------------ Login -------------------------------------------------
          if (actionType.equals("login")) {
 
@@ -106,7 +113,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
             Log.info(ME, "Login action for user " + loginName);
 
-            HttpPushHandler pushHandler = new HttpPushHandler(req, res);
+            HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId);
 
             // Find proxyConnection !!Attention, other browser can use an existing
             //                        xmlBlaster connection. This is a security problem.
@@ -126,23 +133,22 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                }
                catch (InterruptedException i) {
                   Log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
+                  proxyConnection.cleanup(sessionId);
+                  break;
                }
             }
 
-            //Thread.currentThread().join();
-
-            pushHandler.deinitialize();
-            proxyConnection.removeHttpPushHandler( sessionId, pushHandler );
-
-            Log.trace(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet(sessionId=" + sessionId + ") ....");
+            Log.info(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet(sessionId=" + sessionId + ") ....");
          }
 
 
-         //------------------ ready --------------------------------------------------
+         //------------------ ready, browser processed last message --------------------------
+         // The HttpPushHandler adds javascript 'parent.browserReady();' which
+         // is invoked after the browser is ready.
          else if(actionType.equals("browserReady")) {
             try {
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
-               pushHandler.setReady( true );
+               pushHandler.setBrowserIsReady( true );
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
@@ -150,10 +156,42 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                return;
             }
             catch (XmlBlasterException e) {
-               Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
+               Log.error(ME, "Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.reason);
                return;
             }
          }
+         //------------------ answer of a ping -----------------------------------------------
+         // The HttpPushHandler adds javascript 'parent.ping();' which
+         // pings the browser to hold the http connection.
+         // The browser responses with 'pong', to allow the servlet to
+         // detect if the browser is alive.
+         else if(actionType.equals("pong")) {
+            try {
+               HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
+               pushHandler.pong();
+
+               // Otherwise the browser (controlFrame) complains 'document contained no data'
+               PrintWriter out = res.getWriter();
+               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='pong'</body></html>");
+               return;
+            }
+            catch (XmlBlasterException e) {
+               Log.error(ME, "Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.reason);
+               return;
+            }
+         }
+
+         //------------------ logout ---------------------------------------------------------
+         else if (actionType.equals("logout")) {
+            Log.info(ME, "Logout for sessionId '" + sessionId + "' arrived ...");
+            ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
+            if (pc != null)  pc.cleanup(sessionId);
+
+            // Otherwise the browser (controlFrame) complains 'document contained no data'
+            PrintWriter out = res.getWriter();
+            out.println(" <html><body text='white' bgcolor='white'><script language='JavaScript1.2'>top.close()</script></body></html>");
+         }
+
          else {
             String text = "Unknown ActionType '" + actionType + "', request for permanent http connection ignored";
             throw new XmlBlasterException(ME, text);
@@ -172,6 +210,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          }
       } catch (Exception e) {
          Log.error(ME, "Caught Exception: " + e.toString());
+         e.printStackTrace();
          try {
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
             pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n",false);
@@ -179,7 +218,6 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             PrintWriter out = res.getWriter();
             out.println(HttpPushHandler.alert(e.toString()));
          }
-         e.printStackTrace();
       }
    }
 
@@ -210,7 +248,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       PrintWriter out = res.getWriter();
 
       //HttpSession session = req.getSession();
-      HttpSession session = req.getSession(true);
+      HttpSession session = req.getSession(false);
       String sessionId = req.getRequestedSessionId();
       Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
       ProxyConnection proxyConnection = null;
@@ -234,11 +272,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       try {
          String actionType = Util.getParameter(req, "ActionType", "NONE");
 
-         if (actionType.equals("logout")) {
-            Log.trace(ME, "Logout ActionType arrived ...");
-         }
-
-         else if (actionType.equals("subscribe")) {
+         if (actionType.equals("subscribe")) {
             Log.trace(ME, "subscribe arrived ...");
             String xmlKey =
                       "<key oid='' queryType='XPATH'>\n" +

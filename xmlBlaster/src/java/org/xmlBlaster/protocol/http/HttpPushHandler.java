@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.20 2000/05/09 16:42:42 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.21 2000/05/13 20:07:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -14,6 +14,7 @@ import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.xmlBlaster.util.*;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
 
 /**
@@ -32,23 +33,43 @@ import org.xmlBlaster.util.*;
 public class HttpPushHandler
 {
    static private final String ME  = "HttpPushHandler";
+   /**
+    * Ping the browser every 10 seconds. 
+    * <br />
+    * You need to adjust ping() in persistenWindow/index.html as well,
+    * if you change the value here.
+    */
    private final long PING_INTERVAL = 10000L;
+
    private final HttpServletRequest req;
    private final HttpServletResponse res;
+   private final String sessionId;
+   
+   /** Current http connection state */
    private boolean closed = false;
+
    private ServletOutputStream outMulti;
    private PrintWriter outPlain;
+
    /** The header of the HTML page */
    private String head;
    /** The tail of the HTML page */
    private String tail;
+   /** Javascript code to invoke browserReady method */
    private String readyStr;
+   /** Check it the browser is ready to accept more messages */
+   private boolean browserIsReady = false;
+
    /** handlesMultipart is true for netscape browser */
-   private boolean handlesMultipart             = false;
-   private boolean ready                        = false;
-   private HttpPingThread pingThread            = null;
-   private Vector pushQueue                     = null;
-   private boolean firstPush                    = true;
+   private boolean handlesMultipart = false;
+
+   /** Check browser and holds the http connection */
+   private HttpPingThread pingThread = null;
+
+   /** Queue to hold messages until the browser is ready for them */
+   private Vector pushQueue = null;
+
+   private boolean firstPush = true;
 
 
    /**
@@ -57,13 +78,17 @@ public class HttpPushHandler
     * should be implemented in derived classes, but this is better performing :-)
     * @param req The request object
     * @param res The response object
+    * @param sessionId The browser id
     * @param head The HTML header section including the body start tag
     * @param tail The HTML tail section including the body end tag
     */
-   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String head, String tail) throws IOException
+   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res,
+                          String sessionId, String head, String tail)
+                               throws ServletException, IOException
    {
       this.req = req;
       this.res = res;
+      this.sessionId = sessionId;
       initialize(head, tail);
    }
 
@@ -72,16 +97,18 @@ public class HttpPushHandler
     * Use this constructor if you are too lazy to pass a HTML header, a default will be used.
     * @param req The request object
     * @param res The response object
+    * @param sessionId The browser id
     */
-   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res) throws IOException
+   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId)
+                               throws ServletException, IOException
    {
-      this.closed = false;
       this.req = req;
       this.res = res;
+      this.sessionId = sessionId;
       initialize(null, null);
 
       pushQueue = new Vector();
-      ready = true;
+      setBrowserIsReady(true);
 
       Log.trace(ME,"Creating PingThread ...");
       pingThread = new HttpPingThread( this, PING_INTERVAL );
@@ -143,23 +170,37 @@ public class HttpPushHandler
    public void deinitialize()
    {
       try {
-         cleanup();
+         setClosed(true);
 
-         //pingThread should die in one millisecond
-         pingThread.join(1);
+         if (handlesMultipart) {
+            outMulti.close();
+         }
+         else {
+            outPlain.close();
+         }
+
+         pingThread.stopThread();
+         pingThread.join(1); // pingThread should die in one millisecond
+         Log.info(ME, "Closed push connection to browser");
       }
       catch(Exception e) {
          Log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
       }
    }
 
-   private void cleanup() throws IOException
+
+   /** 
+    * Delegates the cleanup call to HttpPushHandler
+    */
+   private void cleanup()
    {
-      if (handlesMultipart) {
-         outMulti.close();
+      if (Log.CALLS) Log.calls(ME, "Entering cleanup() ...");
+      try {
+         ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
+         if (pc != null) pc.cleanup(sessionId);
       }
-      else {
-         outPlain.close();
+      catch (XmlBlasterException e) {
+         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId);
       }
    }
 
@@ -185,25 +226,29 @@ public class HttpPushHandler
       this.closed = closed;
    }
 
+
    /**
-    * check's whether the HTTP connection is ready or not
+    * check's whether the browser is ready to accept more messages or not
     */
-   public boolean ready()
+   public final boolean isBrowserReady()
    {
-      return ready;
+      return browserIsReady;
    }
    /**
     */
-   public void setReady(boolean ready)
+   public void setBrowserIsReady(boolean ready)
    {
-      this.ready = ready;
+      this.browserIsReady = ready;
+      if (Log.TRACE) Log.trace(ME, "Setting browserReady=" + browserIsReady);
 
-      //send queue if connection is ready
-      try {
-         if( ready ) pushQueue(true);
-      }
-      catch(Exception e) {
-         Log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
+      //send queue if browser is ready
+      if (browserIsReady) {
+         try {
+            pushToBrowser(true);
+         }
+         catch(Exception e) {
+            Log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
+         }
       }
    }
 
@@ -245,26 +290,31 @@ public class HttpPushHandler
    {
       synchronized(pushQueue) {
          pushQueue.addElement( str );
-         pushQueue(confirm);
+         pushToBrowser(confirm);
       }
    }
    public void push(String str) throws ServletException, IOException
    {
       synchronized(pushQueue) {
          pushQueue.addElement( str );
-         pushQueue(true);
+         pushToBrowser(true);
       }
    }
 
-   private void pushQueue(boolean confirm) throws ServletException, IOException
+
+   /**
+    * Pushing messages in the queue to the browser
+    */
+   private void pushToBrowser(boolean confirm) throws ServletException, IOException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering pushToBrowser() ...");
       synchronized(pushQueue) {
-         if( pushQueue.size() == 0 || !ready )
+         if( pushQueue.size() == 0 || !isBrowserReady() )
             return;
 
          //setting Http push connection to false.
          if (handlesMultipart) {
-            Log.trace(ME, "Pushing multipart, pushQueue.size=" + pushQueue.size());
+            if (Log.TRACE) Log.trace(ME, "Pushing multipart, pushQueue.size=" + pushQueue.size());
             /* Every line which is sent to the browser overwrites the former one
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -284,7 +334,7 @@ public class HttpPushHandler
 
                if( confirm ) {
                   buf.append(readyStr);
-                  ready = false;
+                  setBrowserIsReady(false);
                }
 
                buf.append(tail);
@@ -295,7 +345,7 @@ public class HttpPushHandler
                outMulti.println();
                outMulti.println("--End");
                outMulti.flush();
-               Log.trace(ME,"Push content queue successfully sent.");
+               Log.trace(ME,"Push content queue successfully sent as multipart.");
                pushQueue.clear();
             }
          }
@@ -315,8 +365,9 @@ public class HttpPushHandler
                res.setContentType("text/html");
 
                StringBuffer buf = new StringBuffer();
-               if (firstPush)
+               if (firstPush) {
                   buf.append(head);
+               }
                else
                   buf.append("<script language='JavaScript'>\n");
 
@@ -325,7 +376,7 @@ public class HttpPushHandler
 
                if( confirm ) {
                   buf.append(readyStr);
-                  ready = false;
+                  setBrowserIsReady(false);
                }
 
                buf.append(tail);
@@ -334,15 +385,15 @@ public class HttpPushHandler
 
                outPlain.println(buf.toString());
 
-               outPlain.println("</script>\n");
+               outPlain.println("</script><p />\n");
 
-               firstPush = false;
                outPlain.flush();
-               //outPlain.close();
+               Log.trace(ME,"Push content queue successfully sent.");
                pushQueue.clear();
             }
          }
       }
+      firstPush = false;
    }
 
 
@@ -353,12 +404,11 @@ public class HttpPushHandler
    public void update( String updateKey, String content, String updateQos )
    {
       try {
-         String codedKey               = URLEncoder.encode( updateKey );
-         String codedContent           = URLEncoder.encode( content );
-         String codedQos               = URLEncoder.encode( updateQos );
+         String codedKey     = URLEncoder.encode( updateKey );
+         String codedContent = URLEncoder.encode( content );
+         String codedQos     = URLEncoder.encode( updateQos );
 
-
-         Log.trace(ME,"**********Update:"+updateKey.substring(0,40)+" ...");
+         if (Log.TRACE) Log.trace(ME,"update dump: " + updateKey.substring(0,50) + " ...");
          /*
          Log.plain(ME,"Key:"+updateKey);
          Log.plain(ME,"\nContent:"+content);
@@ -374,7 +424,7 @@ public class HttpPushHandler
 
 
    /**
-    * Display a popup alert message containing the error text. 
+    * Display a popup alert message containing the error text.
     * <p />
     * This method wraps your text into javascript/alert code
     * and escapes "\n" and "'" characters
@@ -445,14 +495,44 @@ public class HttpPushHandler
 
 
    /**
-    * Ping the xmlBlaster server, to test if connection is alive
+    * This is the browser response for our previous ping. 
+    */
+   public void pong()
+   {
+      pingThread.pong();
+   }
+
+
+   /**
+    * Ping the browser, to avoid that the web server or the browser
+    * closes the http connection after a vendor specific timeout.
+    * <p />
+    * Note that the ping sends some bytes as well, the netscape browser
+    * for example closes the http connection if the amount of bytes per second
+    * falls below a certain level. 
+    * <p />
+    * The browser responses with 'pong' which allows us to check if the browser
+    * is still here.
     */
    private class HttpPingThread extends Thread
    {
       private final String ME = "HttpPingThread";
       private HttpPushHandler pushHandler;
       private final long PING_INTERVAL;
-      boolean pingRunning = true;
+      private boolean pingRunning = true;
+      /** We wait for a browser response (pong) after out ping */
+      private boolean waitForPong = false;
+
+      /** Response from the browser on our ping */
+      public void pong()
+      {
+         waitForPong = false;
+      }
+
+      public void stopThread()
+      {
+         pingRunning = false;
+      }
 
       /**
        * @param pingInterval How many milli seconds sleeping between the pings
@@ -463,24 +543,35 @@ public class HttpPushHandler
          if (Log.CALLS) Log.calls(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         Log.trace(ME, "Pinging browser ...");
+         if (Log.CALLS) Log.calls(ME, "Pinging browser ...");
          while (pingRunning) {
 
             try {
                Thread.currentThread().sleep(PING_INTERVAL);
+               if (pingRunning == false)
+                  break;
             }
             catch (InterruptedException i) { }
 
             try {
-               if(Log.TRACE) Log.trace(ME,"pinging the Browser ...");
-               pushHandler.ping("refresh");
+               if (waitForPong) {
+                  Log.warning(ME, "Browser seems to have disappeared, no response for my ping. Closing connection.");
+                  pushHandler.cleanup();
+                  stopThread();
+               }
+               else {
+                  if (Log.TRACE) Log.trace(ME,"pinging the Browser ...");
+                  pushHandler.ping("refresh");
+                  waitForPong = true;
+               }
             } catch(Exception e) {
                //error handling: browser closed connection.
                Log.warning(ME,"You tried to ping a browser who is not interested. Close HttpPushHandler.");
-               pushHandler.setClosed( true );
-               pingRunning = false;
+               pushHandler.cleanup();
+               stopThread();
             }
          }
+         Log.trace(ME, "Ping thread dies ...");
       }
    } // class PingThread
 

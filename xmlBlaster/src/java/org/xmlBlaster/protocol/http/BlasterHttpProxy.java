@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.12 2000/05/09 16:40:56 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.13 2000/05/13 20:07:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class BlasterHttpProxy
 {
@@ -112,11 +112,8 @@ public class BlasterHttpProxy
 
 
    /**
-    * gives a proxy connection by a given sessionId
-    * if a proxy connection was found by the loginName, it will be returned.
-    * if not the routine searches the first proxyConnection
-    * which contains a HTTP Session with the given sessionId
-    *
+    * Gives a proxy connection by a given sessionId. 
+    * <p />
     * @param sessionId HTTP sessionId
     * @return valid proxyConnection for valid HTTP sessionId.
     */
@@ -134,6 +131,17 @@ public class BlasterHttpProxy
          }
       }
       return null;
+   }
+
+
+   /**
+    * Cleanup Hashtable etc.
+    */
+   public static void cleanup(String loginName)
+   {
+      synchronized(proxyConnections) {
+         proxyConnections.remove(loginName);
+      }
    }
 
 
