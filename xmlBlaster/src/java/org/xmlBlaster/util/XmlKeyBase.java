@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.23 1999/12/14 11:41:11 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.24 1999/12/14 23:22:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -384,15 +384,20 @@ public class XmlKeyBase
    {
       StringBuffer oid = new StringBuffer(60);
 
-      // String ip_addr = jacorb.orb.Environment.getProperty("OAIAddr");
-      String ip_addr = "127.0.0.0";
-      String oa_port = jacorb.orb.Environment.getProperty("OAPort");
-      try {
-         ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // "192.168.1.1" from "swand.lake.de/192.168.1.1"
-      } catch (java.net.UnknownHostException e) {
-         if (Log.TRACE) Log.trace(ME, e.toString());
+      String ip_addr = jacorb.orb.Environment.getProperty("OAIAddr");
+      if (ip_addr == null) {
+         try {
+            ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // "192.168.1.1" from "swand.lake.de/192.168.1.1"
+         } catch (java.net.UnknownHostException e) {
+            if (Log.TRACE) Log.trace(ME, e.toString());
+         }
       }
+      if (ip_addr == null)
+         ip_addr = "127.0.0.0";
 
+      String oa_port = jacorb.orb.Environment.getProperty("OAPort");
+      //  java.net.ServerSocket.getLocalPort();
+      
       long currentTime = System.currentTimeMillis();
 
       oid.append(ip_addr).append("-").append(oa_port).append("-").append(currentTime);
