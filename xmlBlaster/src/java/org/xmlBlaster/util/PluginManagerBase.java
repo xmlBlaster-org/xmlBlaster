@@ -107,6 +107,15 @@ abstract public class PluginManagerBase {
    abstract protected String getPluginPropertyName();
 
    /**
+    * @return e.g. "Security.Server.Plugin[simple][1.0]"
+    */
+   public final String getPluginPropertyName(String type, String version) {
+      StringBuffer buf = new StringBuffer(80);
+      buf.append(getPluginPropertyName()).append("[").append(type).append("][").append(version).append("]");
+      return buf.toString();
+   }
+
+   /**
     * Resolve type and version to the plugins name
     * <p/>
     * @param String The type of the requested plugin.
@@ -119,7 +128,7 @@ abstract public class PluginManagerBase {
       String rawString;
 
       if (isSupported(type, version)) {
-         rawString = XmlBlasterProperty.get(getPluginPropertyName()+"["+type+"]["+version+"]", (String)null);
+         rawString = XmlBlasterProperty.get(getPluginPropertyName(type, version), (String)null);
          if (rawString==null) {
             rawString = getDefaultPluginName();
          }
@@ -136,7 +145,7 @@ abstract public class PluginManagerBase {
             }
          }
          //else
-         //   Log.warn(ME, "Accessing " + getPluginPropertyName()+"["+type+"]["+version+"] failed, no such entry found in xmlBlaster.properties");
+         //   Log.warn(ME, "Accessing " + getPluginPropertyName(type, version) + " failed, no such entry found in xmlBlaster.properties");
       }
       if (pluginData != null && pluginData[0].equalsIgnoreCase("")) pluginData = null;
 
