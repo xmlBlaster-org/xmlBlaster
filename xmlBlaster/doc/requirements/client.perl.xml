@@ -129,7 +129,7 @@
       </li>
       <li>XMLRPC driver:
       xml-rpc implemeted by Frontier (thanks to Ken MacLeod).
-      Look at CPAN for this package or at <a href="http://bitsko.slc.ut.us/~ken/xml-rpc/">http://bitsko.slc.ut.us/~ken/xml-rpc/</a>
+      Look at CPAN for this package or at <a href="http://bitsko.slc.ut.us/~ken/xml-rpc/" target="others">http://bitsko.slc.ut.us/~ken/xml-rpc/</a>
       (Frontier-RPC-0.07b4.tar.gz)
       </li>
    </ul>
@@ -144,6 +144,6 @@
    <author><a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a></author>
    <author><a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 09 26</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 
