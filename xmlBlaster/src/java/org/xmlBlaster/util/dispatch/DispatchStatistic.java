@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.Constants;
 public class DispatchStatistic
 {
    private long numUpdate = 0L;
+   private long numUpdateOneway = 0L;
    private long numPublish = 0L;
    private long numSubscribe = 0L;
    private long numUnSubscribe = 0L;
@@ -35,6 +36,22 @@ public class DispatchStatistic
     */ 
    public final long getNumUpdate() {
       return this.numUpdate;
+   }   
+
+   /**
+    * Add count messages which where updated
+    * @param count The additional number of messages
+    */
+   public final void incrNumUpdateOneway(long count) {
+      this.numUpdateOneway += count; // Not synchronized since we have only one DispatchWorker thread
+   }
+
+   /**
+    * How many update where sent for this client, the sum of all session and
+    * subject queues of this clients. 
+    */ 
+   public final long getNumUpdateOneway() {
+      return this.numUpdateOneway;
    }   
 
    /**
@@ -155,6 +172,9 @@ public class DispatchStatistic
       sb.append(offset).append("<DispatchStatistic");
       if (getNumUpdate() > 0) {
          sb.append("' numUpdate='").append(getNumUpdate());
+      }
+      if (getNumUpdateOneway() > 0) {
+         sb.append("' numUpdateOneway='").append(getNumUpdateOneway());
       }
       if (getNumPublish() > 0) {
          sb.append("' numPublish='").append(getNumPublish());
