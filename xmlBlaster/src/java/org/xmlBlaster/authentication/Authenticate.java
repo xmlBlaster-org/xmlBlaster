@@ -18,7 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.Global;
 import java.util.*;
@@ -109,7 +109,7 @@ final public class Authenticate implements I_Authenticate
       org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(loginName, "");
       session.init(securityQos);
       I_Subject subject = session.getSubject();
-      SubjectInfo subjectInfo = new SubjectInfo(subject, new QueueProperty(getGlobal(), Constants.RELATING_SUBJECT), getGlobal());
+      SubjectInfo subjectInfo = new SubjectInfo(subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null), getGlobal());
       ConnectQos connectQos = new ConnectQos(glob);
       connectQos.setSessionTimeout(0L);  // Lasts forever
       return new SessionInfo(subjectInfo, session, connectQos, getGlobal());
@@ -177,11 +177,11 @@ final public class Authenticate implements I_Authenticate
          I_Subject subjectCtx = sessionCtx.getSubject();
          SubjectInfo subjectInfo = getSubjectInfoByName(subjectCtx.getName());
          if (subjectInfo == null) {
-            subjectInfo = new SubjectInfo(subjectCtx, connectQos.getSubjectQueueProperty(), getGlobal());
+            subjectInfo = new SubjectInfo(subjectCtx, connectQos.getSubjectCbQueueProperty(), getGlobal());
             loginNameSubjectInfoMap.put(subjectCtx.getName(), subjectInfo);
          }
          else
-            subjectInfo.setQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
+            subjectInfo.setCbQueueProperty(connectQos.getSubjectCbQueueProperty()); // overwrites only if not null
 
          /*
          // Check if client does a relogin and may only login once ...

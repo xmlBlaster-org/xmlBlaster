@@ -15,7 +15,7 @@ import org.xmlBlaster.engine.queue.SubjectMsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -74,9 +74,9 @@ public class SubjectInfo
     * Create this instance when a client did a login.
     * <p />
     * @param securityCtx  The security context of this subject
-    * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
+    * @param prop         The property from the subject queue, usually from connectQos.getSubjectCbQueueProperty()
     */
-   public SubjectInfo(I_Subject securityCtx, QueueProperty prop, Global glob)
+   public SubjectInfo(I_Subject securityCtx, CbQueueProperty prop, Global glob)
           throws XmlBlasterException
    {
       if (securityCtx==null) {
@@ -93,9 +93,9 @@ public class SubjectInfo
     * <p />
     * @param loginName    The unique loginName
     * @param securityCtx  The security context of this subject
-    * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
+    * @param prop         The property from the subject queue, usually from connectQos.getSubjectCbQueueProperty()
     */
-   private void initialize(String loginName, I_Subject securityCtx, QueueProperty prop, Global glob)
+   private void initialize(String loginName, I_Subject securityCtx, CbQueueProperty prop, Global glob)
           throws XmlBlasterException
    {
       synchronized (SubjectInfo.class) {
@@ -105,7 +105,7 @@ public class SubjectInfo
       this.glob = glob;
       this.loginName = loginName;
       this.securityCtx = securityCtx;
-      if (prop == null) prop = new QueueProperty(glob, Constants.RELATING_SUBJECT);
+      if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
       this.subjectQueue = new SubjectMsgQueue("subject:"+loginName, prop, glob);
       if (Log.CALL) Log.trace(ME, "Created new SubjectInfo " + loginName);
    }
@@ -138,7 +138,7 @@ public class SubjectInfo
    /**
     * Allows to overwrite queue property, will be only written if prop!= null
     */
-   public final void setQueueProperty(QueueProperty prop) throws XmlBlasterException {
+   public final void setCbQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
       this.subjectQueue.setProperty(prop);
    }
 

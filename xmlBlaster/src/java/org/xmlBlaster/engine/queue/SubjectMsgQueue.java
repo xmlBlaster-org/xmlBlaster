@@ -3,7 +3,7 @@ Name:      SubjectMsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: SubjectMsgQueue.java,v 1.4 2002/03/22 08:17:03 ruff Exp $
+Version:   $Id: SubjectMsgQueue.java,v 1.5 2002/05/03 13:46:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -11,7 +11,7 @@ package org.xmlBlaster.engine.queue;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.callback.CbInfo;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
@@ -28,14 +28,14 @@ public class SubjectMsgQueue extends MsgQueue
     * @param queueName "subject:joe"
     * @param prop The behavior of the queue
     */
-   public SubjectMsgQueue(String queueName, QueueProperty prop, Global glob) throws XmlBlasterException {
+   public SubjectMsgQueue(String queueName, CbQueueProperty prop, Global glob) throws XmlBlasterException {
       super(queueName, prop, glob);
    }
 
    /**
     * Allows to overwrite queue property, will be only written if prop!= null
     */
-   public final void setProperty(QueueProperty  prop) throws XmlBlasterException
+   public final void setProperty(CbQueueProperty  prop) throws XmlBlasterException
    {
       if (prop != null) {
          this.property = prop;
@@ -53,7 +53,7 @@ public class SubjectMsgQueue extends MsgQueue
    {
       if (this.property == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "No QueueProperty - internal error");
+         throw new XmlBlasterException(ME, "No CbQueueProperty - internal error");
       }
       this.property.setCallbackAddresses(addr);
       cbInfo = new CbInfo(glob, addr);

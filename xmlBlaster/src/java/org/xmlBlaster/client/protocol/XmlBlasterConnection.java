@@ -39,6 +39,7 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -591,7 +592,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
-      return connect(qos, client, (QueueProperty)null, (CallbackAddress)null, (String)null);
+      return connect(qos, client, (CbQueueProperty)null, (CallbackAddress)null, (String)null);
    }
 
    /**
@@ -605,7 +606,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client, CallbackAddress cbAddr) throws XmlBlasterException
    {
-      return connect(qos, client, (QueueProperty)null, cbAddr, (String)null);
+      return connect(qos, client, (CbQueueProperty)null, cbAddr, (String)null);
    }
 
    /**
@@ -618,7 +619,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback client, String cbSessionId) throws XmlBlasterException
    {
-      return connect(qos, client, (QueueProperty)null, (CallbackAddress)null, cbSessionId);
+      return connect(qos, client, (CbQueueProperty)null, (CallbackAddress)null, cbSessionId);
    }
 
    /**
@@ -630,7 +631,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @exception XmlBlasterException On connection problems
     * @see #connect(ConnectQos qos, I_Callback client)
     */
-   public ConnectReturnQos connect(ConnectQos qos, I_Callback client, QueueProperty prop) throws XmlBlasterException
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback client, CbQueueProperty prop) throws XmlBlasterException
    {
       return connect(qos, client, prop, (CallbackAddress)null, (String)null);
    }
@@ -639,7 +640,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Internal connect method, collecting all other connect() variants
     * @see #connect(ConnectQos qos, I_Callback client)
     */
-   private ConnectReturnQos connect(ConnectQos qos, I_Callback client, QueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
+   private ConnectReturnQos connect(ConnectQos qos, I_Callback client, CbQueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
    {
       if (qos == null) qos = new ConnectQos(glob);
 
@@ -694,15 +695,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          // Set all configurable callback parameters, they are added to the connect QoS
 
-         QueueProperty prop = givenProp; // Use user supplied property if != null
+         CbQueueProperty prop = givenProp; // Use user supplied property if != null
          if (prop == null)
-            prop = connectQos.getQueueProperty(); // Creates a default property for us if none is available
+            prop = connectQos.getCbQueueProperty(); // Creates a default property for us if none is available
          else
-            connectQos.addQueueProperty(prop);
-
-         prop.setOnOverflow(glob.getProperty().get("cb.queue.onOverflow", QueueProperty.DEFAULT_onOverflow));
-         prop.setOnFailure(glob.getProperty().get("cb.queue.onFailure", QueueProperty.DEFAULT_onFailure));
-         prop.setMaxMsg(glob.getProperty().get("cb.queue.maxMsg", QueueProperty.DEFAULT_maxMsgDefault));
+            connectQos.addCbQueueProperty(prop);
 
          CallbackAddress addr = null;
          if (cbAddr != null) {
@@ -1751,11 +1748,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "                       Clients can overwrite this with ConnectQos.java\n";
 
       Log.plain(text);
+      Global glob = new Global();
       try {
-         Log.plain(new ConnectQos(new Global()).usage());
+         Log.plain(new ConnectQos(glob).usage());
       } catch (XmlBlasterException e) {}
-      Log.plain(new Address(new Global()).usage());
-      Log.plain(new CallbackAddress(new Global()).usage());
+      Log.plain(new Address(glob).usage());
+      Log.plain(new QueueProperty(glob,null).usage());
+      Log.plain(new CallbackAddress(glob).usage());
+      Log.plain(new CbQueueProperty(glob,null,null).usage());
       Log.plain(SocketConnection.usage());
       Log.plain(CorbaConnection.usage());
       Log.plain(RmiConnection.usage());

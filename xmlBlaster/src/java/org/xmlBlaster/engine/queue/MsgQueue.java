@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.11 2002/04/26 21:31:51 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.12 2002/05/03 13:46:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.callback.CbInfo;
@@ -32,7 +32,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 {
    private String ME = "MsgQueue";
    private String name;
-   protected QueueProperty property;
+   protected CbQueueProperty property;
    protected final Global glob;
    private final CbWorkerPool cbWorkerPool;
    protected CbInfo cbInfo = null;
@@ -49,7 +49,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
     * @param queueName "subject:joe", "subject:jack", "session:c0xfrt", "unrelated:XML-RPC:http://www.xy.com:8080"
     * @param prop The behavior of the queue
     */
-   public MsgQueue(String queueName, QueueProperty prop, Global glob) throws XmlBlasterException
+   public MsgQueue(String queueName, CbQueueProperty prop, Global glob) throws XmlBlasterException
    {
       super(prop.getMaxMsg(), new MsgComparator());
       this.glob = glob;
@@ -121,7 +121,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    /**
     * Access the settings of this queue. 
     */
-   public final QueueProperty getProperty()
+   public final CbQueueProperty getProperty()
    {
       return property;
    }
@@ -197,7 +197,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
     * <br />
     * This is overwritten in the SubjectMsgQueue to allow multiple callbacks
     */
-   public void setProperty(QueueProperty  prop) throws XmlBlasterException
+   public void setProperty(CbQueueProperty  prop) throws XmlBlasterException
    {
       if (prop != null) {
          this.property = prop;

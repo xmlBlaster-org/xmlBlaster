@@ -17,7 +17,7 @@ import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
@@ -422,7 +422,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             updateInternalStateInfo(unsecureSessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
          }
 
-         QueueProperty[] props = subscribeQos.getQueueProperties();
+         CbQueueProperty[] props = subscribeQos.getQueueProperties();
          if (props.length > 1) {         // WE NEED TO RETURN A STRING[] (currently wer return a simple String!!
             Log.warn(ME, "subscribe for more than one queue is currently not supported");
             throw new XmlBlasterException(ME, "subscribe for more than one queue is currently not supported");
@@ -437,7 +437,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             else if (props[ii].isSubjectRelated())
                msgQueue = sessionInfo.getSubjectInfo().getSubjectQueue();
             else
-               msgQueue = new MsgQueue("unrelated:"+props[ii].getCallbackAddresses()[0], new QueueProperty(getGlobal(), Constants.RELATING_UNRELATED), getGlobal());
+               msgQueue = new MsgQueue("unrelated:"+props[ii].getCallbackAddresses()[0], new CbQueueProperty(getGlobal(), Constants.RELATING_UNRELATED, null), getGlobal());
 
             SubscriptionInfo subsQuery = null;
             if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages

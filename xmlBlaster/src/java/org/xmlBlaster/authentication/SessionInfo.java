@@ -86,7 +86,7 @@ public class SessionInfo implements I_Timeout
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
-      this.sessionQueue = new SessionMsgQueue("session:"+securityCtx.getSessionId(), this, connectQos.getSessionQueueProperty(), glob);
+      this.sessionQueue = new SessionMsgQueue("session:"+securityCtx.getSessionId(), this, connectQos.getSessionCbQueueProperty(), glob);
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
          Log.info(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");

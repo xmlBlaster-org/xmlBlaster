@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.16 2002/04/26 21:31:58 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.17 2002/05/03 13:46:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -169,7 +169,7 @@ public class HandleClient extends Executor implements Runnable
                      Log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
                      callback = new CallbackSocketDriver(this.loginName, this);
 
-                     CallbackAddress[] cbArr = conQos.getSessionQueueProperty().getCallbackAddresses();
+                     CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                      for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                         cbKey = cbArr[ii].getType() + cbArr[ii].getAddress();
                         driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well (see CbInfo.java)

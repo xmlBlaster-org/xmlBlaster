@@ -26,7 +26,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *      &lt;session timeout='86400000' maxSessions='10' clearSessions='false'>
  *         &lt;sessionId>sessionId:192.168.1.2-null-1018875420070--582319444-3&lt;/sessionId>
  *      &lt;/session>
- *      &lt;!-- QueueProperty -->
+ *      &lt;!-- CbQueueProperty -->
  *      &lt;queue relating='session'>
  *         &lt;callback type='SOCKET'>
  *            192.168.1.2:33301

@@ -3,7 +3,7 @@ Name:      SessionMsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: SessionMsgQueue.java,v 1.2 2002/03/13 16:41:19 ruff Exp $
+Version:   $Id: SessionMsgQueue.java,v 1.3 2002/05/03 13:46:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -11,7 +11,7 @@ package org.xmlBlaster.engine.queue;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.Global;
 
@@ -28,7 +28,7 @@ public class SessionMsgQueue extends MsgQueue
     * @param queueName "session:c0xfrt"
     * @param prop The behavior of the queue
     */
-   public SessionMsgQueue(String queueName, SessionInfo sessionInfo, QueueProperty prop, Global glob) throws XmlBlasterException {
+   public SessionMsgQueue(String queueName, SessionInfo sessionInfo, CbQueueProperty prop, Global glob) throws XmlBlasterException {
       super(queueName, prop, glob);
       this.sessionInfo = sessionInfo;
    }

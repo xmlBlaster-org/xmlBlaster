@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.14 2002/05/03 10:29:12 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.15 2002/05/03 13:46:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.QueueProperty;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -108,16 +108,16 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private transient boolean inCallback = false;
    
    /** Helper for SAX parsing */
-   private transient QueueProperty tmpProp = null;
+   private transient CbQueueProperty tmpProp = null;
    /** Helper for SAX parsing */
    private transient CallbackAddress tmpAddr = null;
 
    /** Holding queue properties */
    protected transient Vector queuePropertyVec = new Vector();
    /** Holding queue property if subject related, a reference to a queuePropertyVec entry */
-   private transient QueueProperty subjectQueueProperty = null;
+   private transient CbQueueProperty subjectCbQueueProperty = null;
    /** Holding queue property if session related, a reference to a queuePropertyVec entry */
-   private transient QueueProperty sessionQueueProperty = null;
+   private transient CbQueueProperty sessionCbQueueProperty = null;
 
    /** The Address object holding the connection configuration */
    private Address address = null;
@@ -274,17 +274,17 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Returns never null. 
     * <p />
-    * If no QueueProperty exists, a RELATING_SESSION queue property object is created
+    * If no CbQueueProperty exists, a RELATING_SESSION queue property object is created
     * on the fly.
     * <p />
-    * If more than one QueueProperty exists, the first is chosen. (Verify this behavior)!
+    * If more than one CbQueueProperty exists, the first is chosen. (Verify this behavior)!
     */
-   public final QueueProperty getQueueProperty() {
+   public final CbQueueProperty getCbQueueProperty() {
       if (queuePropertyVec.size() > 0)
-         return (QueueProperty)queuePropertyVec.elementAt(0);
+         return (CbQueueProperty)queuePropertyVec.elementAt(0);
 
-      addQueueProperty(new QueueProperty(glob, Constants.RELATING_SESSION));
-      return (QueueProperty)queuePropertyVec.elementAt(0);
+      addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId));
+      return (CbQueueProperty)queuePropertyVec.elementAt(0);
    }
 
    /**
@@ -292,20 +292,20 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * The subjectQueue has never callback addresses, the addresses of the sessions are used
     * if configured.
     */
-   public final QueueProperty getSubjectQueueProperty() {
-      if (this.subjectQueueProperty == null) {
-         this.subjectQueueProperty = new QueueProperty(glob, Constants.RELATING_SUBJECT);
+   public final CbQueueProperty getSubjectCbQueueProperty() {
+      if (this.subjectCbQueueProperty == null) {
+         this.subjectCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, nodeId);
       }
-      return this.subjectQueueProperty;
+      return this.subjectCbQueueProperty;
    }
 
    /**
     * Returns never null
     */
-   public final QueueProperty getSessionQueueProperty() {
-      if (this.sessionQueueProperty == null)
-         this.sessionQueueProperty = new QueueProperty(glob, Constants.RELATING_SESSION);
-      return this.sessionQueueProperty;
+   public final CbQueueProperty getSessionCbQueueProperty() {
+      if (this.sessionCbQueueProperty == null)
+         this.sessionCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId);
+      return this.sessionCbQueueProperty;
    }
 
    /**
@@ -566,12 +566,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Add a callback address where to send the message (for PtP). 
     * <p />
-    * Creates a default QueueProperty object to hold the callback address argument.<br />
+    * Creates a default CbQueueProperty object to hold the callback address argument.<br />
     * Note you can invoke this multiple times to allow multiple callbacks.
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
    public final void addCallbackAddress(CallbackAddress callback) {
-      QueueProperty prop = new QueueProperty(glob, null); // Use default queue properties for this callback address
+      CbQueueProperty prop = new CbQueueProperty(glob, null, nodeId); // Use default queue properties for this callback address
       prop.setCallbackAddress(callback);
       queuePropertyVec.addElement(prop);
       //queuePropertyArr = null; // reset to be recalculated on demand
@@ -583,19 +583,19 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param prop The property object of the callback queue which shall be established in the server for calling us back.
     * @see org.xmlBlaster.engine.helper.CallbackAddress
     */
-   public final void addQueueProperty(QueueProperty prop) {
+   public final void addCbQueueProperty(CbQueueProperty prop) {
       if (prop == null) return;
       if (prop.isSessionRelated()) {
-         if (this.sessionQueueProperty != null) {
-            Log.warn(ME, "addQueueProperty() overwrites previous session queue setting");
+         if (this.sessionCbQueueProperty != null) {
+            Log.warn(ME, "addCbQueueProperty() overwrites previous session queue setting");
             Thread.currentThread().dumpStack();
          }
-         this.sessionQueueProperty = prop;
+         this.sessionCbQueueProperty = prop;
          queuePropertyVec.addElement(prop);
       }
       else if (prop.isSubjectRelated()) {
-         if (this.subjectQueueProperty != null) Log.warn(ME, "addQueueProperty() overwrites previous subject queue setting");
-         this.subjectQueueProperty = prop;
+         if (this.subjectCbQueueProperty != null) Log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
+         this.subjectCbQueueProperty = prop;
          queuePropertyVec.addElement(prop);
       }
       else if (prop.isUnrelated()) {
@@ -689,12 +689,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
          if (!inQueue) {
-            tmpProp = new QueueProperty(glob, null); // Use default queue properties for this callback address
+            tmpProp = new CbQueueProperty(glob, null, null); // Use default queue properties for this callback address
             queuePropertyVec.addElement(tmpProp);
             if (tmpProp.isSubjectRelated())
-               subjectQueueProperty = tmpProp;
+               subjectCbQueueProperty = tmpProp;
             else if (tmpProp.isSessionRelated())
-               sessionQueueProperty = tmpProp;
+               sessionCbQueueProperty = tmpProp;
          }
          tmpAddr = new CallbackAddress(glob);
          tmpAddr.startElement(uri, localName, name, character, attrs);
@@ -709,13 +709,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             character.setLength(0);
             return;
          }
-         tmpProp = new QueueProperty(glob, null);
+         tmpProp = new CbQueueProperty(glob, null, null);
          queuePropertyVec.addElement(tmpProp);
          tmpProp.startElement(uri, localName, name, attrs);
          if (tmpProp.isSubjectRelated())
-            subjectQueueProperty = tmpProp;
+            subjectCbQueueProperty = tmpProp;
          else if (tmpProp.isSessionRelated())
-            sessionQueueProperty = tmpProp;
+            sessionCbQueueProperty = tmpProp;
          character.setLength(0);
          return;
       }
@@ -938,7 +938,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          sb.append("'/>");
 
       for (int ii=0; ii<queuePropertyVec.size(); ii++) {
-         QueueProperty ad = (QueueProperty)queuePropertyVec.elementAt(ii);
+         CbQueueProperty ad = (CbQueueProperty)queuePropertyVec.elementAt(ii);
          sb.append(ad.toXml(extraOffset));
       }
       /*
