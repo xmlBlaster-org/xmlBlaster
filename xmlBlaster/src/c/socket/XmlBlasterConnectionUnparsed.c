@@ -38,30 +38,32 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
 XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** argv) {
-   XmlBlasterConnectionUnparsed *xmlBlasterAccess = (XmlBlasterConnectionUnparsed *)calloc(1, sizeof(XmlBlasterConnectionUnparsed));
-   xmlBlasterAccess->argc = argc;
-   xmlBlasterAccess->argv = argv;
-   xmlBlasterAccess->socketToXmlBlaster = -1;
-   xmlBlasterAccess->isInitialized = false;
-   xmlBlasterAccess->requestId = 0;
-   *xmlBlasterAccess->secretSessionId = 0;
-   xmlBlasterAccess->connect = xmlBlasterConnect;
-   xmlBlasterAccess->disconnect = xmlBlasterDisconnect;
-   xmlBlasterAccess->publish = xmlBlasterPublish;
-   xmlBlasterAccess->subscribe = xmlBlasterSubscribe;
-   xmlBlasterAccess->unSubscribe = xmlBlasterUnSubscribe;
-   xmlBlasterAccess->erase = xmlBlasterErase;
-   xmlBlasterAccess->get = xmlBlasterGet;
-   xmlBlasterAccess->ping = xmlBlasterPing;
-   xmlBlasterAccess->isConnected = isConnected;
-   xmlBlasterAccess->preSendEvent = 0;
-   xmlBlasterAccess->preSendEvent_userP = 0;
-   xmlBlasterAccess->postSendEvent = 0;
-   xmlBlasterAccess->postSendEvent_userP = 0;
-   xmlBlasterAccess->debug = false;
-   if (initConnection(xmlBlasterAccess) == false)
+   XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)calloc(1, sizeof(XmlBlasterConnectionUnparsed));
+   xb->argc = argc;
+   xb->argv = argv;
+   xb->socketToXmlBlaster = -1;
+   xb->isInitialized = false;
+   xb->requestId = 0;
+   *xb->secretSessionId = 0;
+   xb->connect = xmlBlasterConnect;
+   xb->disconnect = xmlBlasterDisconnect;
+   xb->publish = xmlBlasterPublish;
+   xb->subscribe = xmlBlasterSubscribe;
+   xb->unSubscribe = xmlBlasterUnSubscribe;
+   xb->erase = xmlBlasterErase;
+   xb->get = xmlBlasterGet;
+   xb->ping = xmlBlasterPing;
+   xb->isConnected = isConnected;
+   xb->preSendEvent = 0;
+   xb->preSendEvent_userP = 0;
+   xb->postSendEvent = 0;
+   xb->postSendEvent_userP = 0;
+   xb->debug = false;
+   if (initConnection(xb) == false) {
+      free(xb);
       return (XmlBlasterConnectionUnparsed *)0;
-   return xmlBlasterAccess;
+   }
+   return xb;
 }
 
 void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
@@ -81,7 +83,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
    struct hostent hostbuf, *hostP = 0;
    struct servent *portP = 0;
 
-   char *tmphstbuf=NULL;
+   char *tmphstbuf=0;
    size_t hstbuflen=0;
 
    char serverHostName[256];
@@ -141,6 +143,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
    portP = getservbyname(servTcpPort, "tcp");
    if (hostP != 0) {
       xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
+      free(tmphstbuf);
       if (portP != 0)
          xmlBlasterAddr.sin_port = portP->s_port;
       else

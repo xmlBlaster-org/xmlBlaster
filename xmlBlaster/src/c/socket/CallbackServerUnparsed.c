@@ -51,6 +51,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    cb->update = update;
    memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(char *));
    cb->addResponseListener = addResponseListener;
+   cb->isShutdown = false;
 
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/hostname") == 0)
@@ -163,6 +164,8 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
    char *tmphstbuf=NULL;
    size_t hstbuflen=0;
  
+   cb->isShutdown = false;
+
    if (cb->listenSocket == -1) {
       char serverHostName[256];
       if (cb->hostCB == NULL) {
@@ -180,6 +183,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       if ((cb->listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
           printf("[CallbackServerUnparsed] Failed creating socket for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
              cb->hostCB, cb->portCB);
+          cb->isShutdown = true;
           return 0;
       }
 
@@ -188,8 +192,10 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
        */
       serv_addr.sin_family = AF_INET;
       hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen);
-      if (hostP != NULL)
+      if (hostP != NULL) {
          serv_addr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /*inet_addr("192.168.1.2"); */
+         free(tmphstbuf);
+      }
       else
          serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
       serv_addr.sin_port = htons((u_short)cb->portCB);
@@ -197,6 +203,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       if (bind(cb->listenSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
           printf("[CallbackServerUnparsed] Failed binding port for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
              cb->hostCB, cb->portCB);
+          cb->isShutdown = true;
           return 0;
       }
 
@@ -206,6 +213,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       if (listen(cb->listenSocket, 5) < 0) {
           printf("[CallbackServerUnparsed] Failed creating listener for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
              cb->hostCB, cb->portCB);
+          cb->isShutdown = true;
           return 0;
       }
 
@@ -219,6 +227,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       cli_len = (socklen_t)sizeof(cli_addr);
       if ((cb->acceptSocket = (int)accept(cb->listenSocket, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
           perror("[CallbackServerUnparsed] accept");
+          cb->isShutdown = true;
           return 0;
       }
       if (cb->debug) printf("[CallbackServerUnparsed] XmlBlaster connected from %s:%hd\n",
@@ -292,6 +301,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       freeMsgUnitArr(msgUnitArr);
    }
 
+   cb->isShutdown = true;
    return 0;
 }
 
@@ -417,13 +427,16 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
 }
 
 /**
- * Used internally only to close the socket
+ * Used internally only to close the socket, it blocks until the thread is dead.
  */
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
+   int i;
    if (!cb->reusingConnectionSocket) {
       return; /* not our duty, we only have borrowed the socket from the client side connection */
    }
+
+   free(cb->hostCB);
 
    closeAcceptSocket(cb);
 
@@ -436,6 +449,15 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
       cb->listenSocket = -1;
       if (cb->debug) printf("[CallbackServerUnparsed] Closed listener socket\n");
    }
+
+   for(i=0; i<10; i++) {
+      if (cb->isShutdown) {
+         return;
+      }
+      if (cb->debug) printf("[CallbackServerUnparsed] Waiting for thread to die ...\n");
+      sleep(1);
+   }
+   printf("[CallbackServerUnparsed] WARNING: Thread has not died after 10 sec\n");
 }
 
 const char *callbackServerRawUsage()
