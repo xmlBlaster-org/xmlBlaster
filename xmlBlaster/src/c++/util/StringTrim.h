@@ -10,7 +10,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define _UTIL_STRINGTRIM_H
 
 #include <util/XmlBCfg.h>
-#include <ctype.h>
+#include <ctype.h>  // ::tolower
 #include <string>
 
 #define  EMPTY_STRING std::string("")
@@ -36,6 +36,20 @@ namespace util {
        */
       StringTrim()
       {
+      }
+
+      /**
+       * This method converts a string to lowercase. Note that the input string is
+       * modified and a reference to it is returned.
+       */
+      static std::string& toLowerCase(std::string& ref)
+      {
+         std::string::iterator iter = ref.begin();
+         while (iter != ref.end()) {
+            *iter = ::tolower(*iter);
+            iter++;
+         }
+         return ref;
       }
 
       /**
