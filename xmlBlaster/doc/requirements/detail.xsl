@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.22 2002/09/13 23:17:47 ruff Exp $
+Version:   $Id: detail.xsl,v 1.23 2002/10/10 09:03:50 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -35,7 +35,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/09/13 23:17:47 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/10/10 09:03:50 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -81,7 +81,7 @@ Author:    ruff@swand.lake.de
          <td class="topic"><xsl:value-of select="topic"/></td>
       </tr>
       <tr>
-         <td class="reqId">Description</td>
+         <td class="reqId">Des<br />cription</td>
          <td class="description">
             <!-- xsl:value-of select="description" disable-output-escaping="yes" / -->
             <xsl:copy-of select="description" />
@@ -141,7 +141,7 @@ Author:    ruff@swand.lake.de
       <xsl:for-each select="see">
          <tr>
             <xsl:if test="@type='API'">
-               <td class="reqId">See<br />Javadoc<br /> API</td>
+               <td class="reqId">See API</td>
                <td>
                <a>
                   <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
@@ -151,7 +151,7 @@ Author:    ruff@swand.lake.de
             </xsl:if>
 
             <xsl:if test="@type='REQ'">
-               <td class="reqId">See Requirement</td>
+               <td class="reqId">See REQ</td>
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/>.html</xsl:attribute>
@@ -166,7 +166,7 @@ Author:    ruff@swand.lake.de
             </xsl:if>
 
             <xsl:if test="@type='INTERNET'">
-               <td class="reqId">See Internet</td>
+               <td class="reqId">See</td>
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
@@ -177,7 +177,7 @@ Author:    ruff@swand.lake.de
             </xsl:if>
 
             <xsl:if test="@type='LOCAL'">
-               <td class="reqId">See distribution</td>
+               <td class="reqId">See</td>
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
@@ -195,7 +195,7 @@ Author:    ruff@swand.lake.de
          <xsl:for-each select="test">
             <tr>
                <xsl:if test="@tool='SUITE'">
-                  <td class="reqId">See<br />Testcase<br />Code</td>
+                  <td class="reqId">See TEST</td>
                     <td>
                   <a>
                     <xsl:attribute name="href">../../testsuite/src/java/<xsl:value-of select="translate(.,'.','/')"/>.java.html</xsl:attribute>
