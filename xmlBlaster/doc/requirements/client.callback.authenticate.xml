@@ -38,11 +38,12 @@ You receive this sessionId with your message update (example for Java):
    <author>?</author>
    <hacker>?</hacker>
    <date>2002 01 22</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestCallbackConfig</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.authentication.TestSessionCb</test>
    </testcase>
 </requirement>
 
