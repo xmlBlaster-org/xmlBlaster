@@ -15,15 +15,22 @@ Please read:
 
   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.html
   
+Communication protocol:
+
+  You can choose to use the CORBA plugin or the SOCKET plugin
+  or compile both simultanously to access the Java xmlBlaster server.
+
   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.compile.html
 
   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.socket.html
 
+Logging:
 
-Protocol:
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.logging.html
 
-  You can choose to use the CORBA plugin or the SOCKET plugin
-  or compile both simultanously to access the Java xmlBlaster server.
+Xerces XML parser:
+
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.compile.html
 
 
 HOW TO RUN THE TESTSUITE:
@@ -34,8 +41,8 @@ Read ${XMLBLASTER_HOME}/testsuite/src/c++/README
 To manually start a test look at the file test.sh in that directory.
 
 
-And now some additional notes:
-==============================
+And now some additional implementation notes (you can skip this):
+=================================================================
 
 These C++ classes are practically a clone to the java-client & util classes (at
 the time of writing this, some of the util classes in java have moved out from
