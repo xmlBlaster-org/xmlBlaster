@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.5 2000/10/22 19:21:06 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.6 2000/10/27 12:28:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -21,6 +21,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.Naming;
+import java.rmi.AlreadyBoundException;
 
 
 /**
@@ -140,16 +141,21 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
             }
          }
 
-         // e.g. "rmi://localhost:1099/I_XmlBlasterCallback"
-         callbackRmiServerBindName = "rmi://" + hostname + ":" + registryPort + "/I_XmlBlasterCallback";
+         // e.g. "rmi://localhost:1099/I_XmlBlasterCallback/Tim"
+         callbackRmiServerBindName = "rmi://" + hostname + ":" + registryPort + "/I_XmlBlasterCallback/" + loginName;
 
          // Publish RMI based xmlBlaster server ...
          try {
-            Naming.rebind(callbackRmiServerBindName, callbackRmiServer);
+            Naming.bind(callbackRmiServerBindName, callbackRmiServer);
             Log.info(ME, "Bound RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
-         } catch (Exception e) {
-            Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e.toString());
-            throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e.toString());
+         } catch (AlreadyBoundException e) {
+            try {
+               Naming.rebind(callbackRmiServerBindName, callbackRmiServer);
+               Log.warn(ME, "Removed another entry while binding authentication RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
+            } catch (Exception e2) {
+               Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e2.toString());
+               throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e2.toString());
+            }
          }
       } catch (Exception e) {
          e.printStackTrace();
