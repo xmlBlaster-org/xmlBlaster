@@ -821,13 +821,13 @@ Else add it manually.
        <delete dir="${build.dir}/obj"/>
        <delete dir=".c_dependency_cache"/>
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${testsuite.dir}/c++" includes="*.o"/>
        </delete>
     </target>
  
     <target name="cpp-delete" depends="cpp-clean">
        <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll"/>
           <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
        </delete>
