@@ -562,7 +562,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
                MessageUnitWrapper msgUnitWrapper = msgUnitHandler.getMessageUnitWrapper();
 
-               // Check with SessionInfo.getUpdateQoS() !!!
+               // Check with MsgQueueEntry.getUpdateQos() !!!
                StringBuffer buf = new StringBuffer();
                buf.append("\n<qos>\n");
                buf.append("   <state>OK</state>\n");    // OK | EXPIRED | ERASED
