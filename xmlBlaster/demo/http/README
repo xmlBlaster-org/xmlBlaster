@@ -41,10 +41,13 @@ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
    export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
 
 
-5. Start you browser
+5a. Start you browser and the DHTML demo:
 
    http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
 
+5b. Start the persistent HTTP applet demo with:
+   
+   http://localhost:8080/xmlBlaster/HelloWorld3.html
 
 Configure the servlet
 =====================
