@@ -54,6 +54,7 @@ private:
    //string domain;
    string xpath;
    bool multiSubscribe;
+   bool persistentSubscribe;
    bool notifyOnErase;
    bool local;
    bool initialUpdate;
@@ -110,6 +111,7 @@ public:
       //domain = global_.getProperty().get("domain", "");
       xpath = global_.getProperty().get("xpath", "");
       multiSubscribe = global_.getProperty().get("multiSubscribe", true);
+      persistentSubscribe = global_.getProperty().get("persistentSubscribe", false);
       notifyOnErase = global_.getProperty().get("notifyOnErase", true);
       local = global_.getProperty().get("local", true);
       initialUpdate = global_.getProperty().get("initialUpdate", true);
@@ -138,26 +140,27 @@ public:
       }
 
       log_.info(ME, "Used settings are:");
-      log_.info(ME, "   -interactive       " + lexical_cast<string>(interactive));
-      log_.info(ME, "   -interactiveUpdate " + lexical_cast<string>(interactiveUpdate));
-      log_.info(ME, "   -updateSleep       " + lexical_cast<string>(updateSleep));
+      log_.info(ME, "   -interactive         " + lexical_cast<string>(interactive));
+      log_.info(ME, "   -interactiveUpdate   " + lexical_cast<string>(interactiveUpdate));
+      log_.info(ME, "   -updateSleep         " + lexical_cast<string>(updateSleep));
       log_.info(ME, "   -updateException.errorCode " + updateExceptionErrorCode);
       log_.info(ME, "   -updateException.message   " + updateExceptionMessage);
       log_.info(ME, "   -updateException.runtime   " + updateExceptionRuntime);
-      log_.info(ME, "   -oid               " + oid);
+      log_.info(ME, "   -oid                 " + oid);
       //log_.info(ME, "   -domain            " + domain);
-      log_.info(ME, "   -xpath             " + xpath);
-      log_.info(ME, "   -multiSubscribe    " + lexical_cast<string>(multiSubscribe));
-      log_.info(ME, "   -notifyOnErase     " + lexical_cast<string>(notifyOnErase));
-      log_.info(ME, "   -local             " + lexical_cast<string>(local));
-      log_.info(ME, "   -initialUpdate     " + lexical_cast<string>(initialUpdate));
-      log_.info(ME, "   -historyNumUpdates " + lexical_cast<string>(historyNumUpdates));
-      log_.info(ME, "   -wantContent       " + lexical_cast<string>(wantContent));
-      log_.info(ME, "   -unSubscribe       " + lexical_cast<string>(unSubscribe));
-      log_.info(ME, "   -disconnect        " + lexical_cast<string>(disconnect));
-      log_.info(ME, "   -filter.type       " + filterType);
-      log_.info(ME, "   -filter.version    " + filterVersion);
-      log_.info(ME, "   -filter.query      " + filterQuery);
+      log_.info(ME, "   -xpath               " + xpath);
+      log_.info(ME, "   -multiSubscribe      " + lexical_cast<string>(multiSubscribe));
+      log_.info(ME, "   -persistentSubscribe " + lexical_cast<string>(persistentSubscribe));
+      log_.info(ME, "   -notifyOnErase       " + lexical_cast<string>(notifyOnErase));
+      log_.info(ME, "   -local               " + lexical_cast<string>(local));
+      log_.info(ME, "   -initialUpdate       " + lexical_cast<string>(initialUpdate));
+      log_.info(ME, "   -historyNumUpdates   " + lexical_cast<string>(historyNumUpdates));
+      log_.info(ME, "   -wantContent         " + lexical_cast<string>(wantContent));
+      log_.info(ME, "   -unSubscribe         " + lexical_cast<string>(unSubscribe));
+      log_.info(ME, "   -disconnect          " + lexical_cast<string>(disconnect));
+      log_.info(ME, "   -filter.type         " + filterType);
+      log_.info(ME, "   -filter.version      " + filterVersion);
+      log_.info(ME, "   -filter.query        " + filterQuery);
       log_.info(ME, "For more info please read:");
       log_.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
    }
@@ -165,7 +168,7 @@ public:
    void connect()
    {
       ConnectQos connQos(global_);
-      log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
+      log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
       ConnectReturnQos retQos = connection_.connect(connQos, this);
       log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
    }
@@ -191,6 +194,7 @@ public:
          SubscribeQos sq(global_);
          sq.setWantInitialUpdate(initialUpdate);
          sq.setMultiSubscribe(multiSubscribe);
+         sq.setPersistent(persistentSubscribe);
          sq.setWantNotify(notifyOnErase);
          sq.setWantLocal(local);
          sq.setWantContent(wantContent);
@@ -272,8 +276,11 @@ public:
       string contentStr((char*)content, (char*)(content)+contentSize);
       log_.plain(ME, "<xmlBlaster>");
       log_.plain(ME, updateKey.toXml("  "));
-      log_.plain(ME, " <content>");
-      log_.plain(ME, contentStr);
+      log_.plain(ME, " <content size='" + lexical_cast<string>(contentSize) + "'>");
+      if (contentSize < maxContentLength)
+         log_.plain(ME, contentStr);
+      else
+         log_.plain(ME, contentStr.substr(0, maxContentLength-5) + " ...");
       log_.plain(ME, " </content>");
       log_.plain(ME, updateQos.toXml("  "));
       log_.plain(ME, "</xmlBlaster>");
