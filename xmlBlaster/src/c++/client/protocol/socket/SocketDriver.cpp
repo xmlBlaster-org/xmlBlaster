@@ -118,7 +118,7 @@ SocketDriver::~SocketDriver()
       }
    }
    catch (...) {
-      cerr << "Unexpected catch in ~SocketDriver()" << endl;
+      log_.error(ME, "Unexpected catch in ~SocketDriver()");
    }
 }
 
@@ -236,7 +236,7 @@ bool SocketDriver::shutdown()
 
 void SocketDriver::resetConnection()
 {
-   std::cerr << "'SocketDriver::resetConnection' not implemented" << std::endl;
+   log_.error(ME, "'SocketDriver::resetConnection' not implemented");
 }
 
 string SocketDriver::getLoginName()
