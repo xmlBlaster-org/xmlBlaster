@@ -57,6 +57,9 @@ import org.xmlBlaster.client.I_ConnectionHandler;
  *Publish automatically 10 messages and sleep 1 sec in between:
  * java javaclients.HelloWorldPublish -interactive false -sleep 1000 -numPublish 10 -oid Hello -persistent true -erase true
  *
+ *Publish automatically 10 different topics with different DOM entries:
+ * java javaclients.HelloWorldPublish -interactive false -numPublish 10 -oid Hello-%counter -clientTags "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>"
+ *
  *Login as joe/5 and send one persistent message:
  * java javaclients.HelloWorldPublish -session.name joe/5 -passwd secret -persistent true -dump[HelloWorldPublish] true
  *
@@ -96,7 +99,7 @@ public class HelloWorldPublish
          boolean oneway = glob.getProperty().get("oneway", false);
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 1);
-         String oid = glob.getProperty().get("oid", "Hello");
+         String oid = glob.getProperty().get("oid", "Hello");  // "HelloTopic_#%counter"
          String domain = glob.getProperty().get("domain", (String)null);
          String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
          String contentStr = glob.getProperty().get("content", "Hi-%counter");
@@ -212,17 +215,19 @@ public class HelloWorldPublish
          org.jutils.time.StopWatch stopWatch = new org.jutils.time.StopWatch();
          for(int i=0; i<numPublish; i++) {
 
+            String currOid = org.jutils.text.StringHelper.replaceAll(oid, "%counter", ""+(i+1));
+
             if (interactive) {
-               Global.waitOnKeyboardHit("Hit a key to publish '" + oid + "' #" + (i+1) + "/" + numPublish);
+               Global.waitOnKeyboardHit("Hit a key to publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
             }
             else {
                if (sleep > 0) {
                   try { Thread.currentThread().sleep(sleep); } catch( InterruptedException e) {}
                }
-               log.info(ME, "Publish '" + oid + "' #" + (i+1) + "/" + numPublish);
+               log.info(ME, "Publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
             }
 
-            PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
+            PublishKey pk = new PublishKey(glob, currOid, "text/xml", "1.0");
             if (domain != null) pk.setDomain(domain);
             pk.setClientTags(org.jutils.text.StringHelper.replaceAll(clientTags, "%counter", ""+(i+1)));
             PublishQos pq = new PublishQos(glob);
