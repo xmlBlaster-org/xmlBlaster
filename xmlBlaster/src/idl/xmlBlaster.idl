@@ -3,16 +3,23 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.9 1999/11/13 17:16:01 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.10 1999/11/14 21:55:55 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
-Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
+Compile:   JacORB:
+             /usr/local/JacORB/bin/idl -p org.xmlBlaster -d ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
+           VisiBroker:
+             /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
+           Mico:
+             /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
 ================================================================================
 */
 
 #ifndef _xmlBlaster_IDL_
 #define _xmlBlaster_IDL_
 
+
+#pragma prefix "org.xmlBlaster"
 
 //------------------------------------------------------------------------------
 //#include "xy.idl"
@@ -22,7 +29,7 @@ Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 /**
  * Decration of common types
  */
-module org { module xmlBlaster { module serverIdl
+module serverIdl
 {
    typedef string XmlType;
    typedef sequence<XmlType> XmlTypeArr;
@@ -41,7 +48,7 @@ module org { module xmlBlaster { module serverIdl
    };
    typedef sequence<MessageUnit> MessageUnitArr;
 
-}; }; }; // org::xmlBlaster::serverIdl
+}; // org::xmlBlaster::serverIdl
 
 
 
@@ -55,7 +62,7 @@ module org { module xmlBlaster { module serverIdl
  *    interface org::xmlBlaster::clientIdl::BlasterCallback;
  * didn't work!?
  */
-module org { module xmlBlaster { module clientIdl
+module clientIdl
 {
    /**
     * This interface needs to be implemented by the clients using
@@ -70,19 +77,18 @@ module org { module xmlBlaster { module clientIdl
        * @param qos         Qualitiy of Service for each MessageUnit
        */
      //oneway
-     void update(in org::xmlBlaster::serverIdl::MessageUnitArr messageUnitArr,
-                 in org::xmlBlaster::serverIdl::XmlTypeArr qosArr);
+     void update(in serverIdl::MessageUnitArr messageUnitArr,
+                 in serverIdl::XmlTypeArr qosArr);
    };
 
-}; }; }; // org::xmlBlaster::clientIdl
-
+}; // org::xmlBlaster::clientIdl
 
 
 
 /**
  * The xmlBlaster interface
  */
-module org { module xmlBlaster { module serverIdl
+module serverIdl
 {
    /**
     * Exception class for xmlBlaster interface
@@ -151,27 +157,6 @@ module org { module xmlBlaster { module serverIdl
     */
    interface Server
    {
-      /**
-       * Login to server
-       * @param loginName A unique name - Not yet necessary
-       * @param passwd    Pasword - Not yet necessary
-       * @param cb        Reference to the BlasterCallback interface or null for synchronous access
-       * @param qos       Quality of Service, flags for additional client informations
-       *                  like clientCertificate (X.509), timeouts etc.
-       * @return sessionId The unique identifier for the client
-       */
-      string login(in string loginName, in string passwd,
-                   in org::xmlBlaster::clientIdl::BlasterCallback cb,
-                   in XmlType qosClient) raises (XmlBlasterException);
-
-
-      /**
-       * Login to server
-       * @param sessionId The client identifier, obtained from login()
-       */
-      void logout(in string sessionId) raises (XmlBlasterException);
-
-
       /**
        * Asynchron read-access method
        * The result are returned to the
@@ -251,7 +236,43 @@ module org { module xmlBlaster { module serverIdl
 
    };
 
-}; }; }; // org::xmlBlaster::serverIdl
+}; // org::xmlBlaster::serverIdl
+
+
+
+/**
+ * The xmlBlaster authentication interface
+ * If the login is successfull, an IOR for the xmlBlaster server interface is returned
+ * This is a sort of a factory
+ */
+module authenticateIdl
+{
+   interface AuthServer
+   {
+      /**
+       * Login to server
+       * @param loginName A unique name - Not yet necessary
+       * @param passwd    Pasword - Not yet necessary
+       * @param cb        Reference to the BlasterCallback interface or null for synchronous access
+       * @param qos       Quality of Service, flags for additional client informations
+       *                  like clientCertificate (X.509), timeouts etc.
+       * @return ior      The IOR of the server interface
+       */
+      string login(in string loginName, in string passwd,
+                   in clientIdl::BlasterCallback cb,
+                   in serverIdl::XmlType qosClient)
+                      raises (serverIdl::XmlBlasterException);
+
+
+      /**
+       * Login to server
+       * @param sessionId The client identifier, obtained from login()
+       */
+      void logout(in string sessionId) raises (serverIdl::XmlBlasterException);
+   };
+
+
+}; // org::xmlBlaster::AuthenticateIdl
 
 
 
