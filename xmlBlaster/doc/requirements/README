@@ -13,6 +13,10 @@ with one to many full automatic test cases.
 
 Every bug is noted here and checked with a testsuite case.
 
+You can query a closed requirement as follows:
+   java DomQueryTest  engine.get.no.xml  "requirement/fix[@status='CLOSED']/.."
+
+
 
 ruff@swand.lake.de
 
