@@ -149,6 +149,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          try {
             Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
+            if (glob.getBootstrapAddress().isSameAddress(addr)) {
+               Log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
+               return null;
+            }
+            if (Log.DUMP) Log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
             ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this);
          }
          catch(XmlBlasterException e) {
