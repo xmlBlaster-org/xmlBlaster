@@ -358,6 +358,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       ArrayList result = new ArrayList(size);
       for (int ii=0; ii<size; ii++) {
          MsgQueueEntry entry = (MsgQueueEntry)entryList.get(ii);
+         // Take care to remove the filtered away messages from the queue as well
+         //log.error(ME, "DEBUG ONLY: Analyze msg " + entry.toXml());
          if (entry.isDestroyed()) {
             log.info(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it");
             if (log.TRACE) log.trace(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
@@ -369,10 +371,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             }
             continue;
          }
-         //if (entry.isExpired()) {
-         //   log.info(ME, "Message " + entry.getLogId() + " is expired but not destroyed, forwarding it");
-         //}
-         result.add(entry.clone());
+         result.add(entry.clone()); // expired messages are sent as well
       }
 
       return result;
