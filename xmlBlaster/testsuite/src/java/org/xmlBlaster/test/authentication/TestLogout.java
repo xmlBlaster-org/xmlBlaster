@@ -54,6 +54,7 @@ public class TestLogout extends TestCase implements I_Callback
    protected void setUp() {
       try {
          con = new XmlBlasterConnection(glob); // Find orb
+         /*
          con.initFailSave(new I_ConnectionProblems() {
                public void reConnected() {
                   log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
@@ -67,7 +68,7 @@ public class TestLogout extends TestCase implements I_Callback
                   log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
                }
             });
-
+         */
          ConnectQos qos = new ConnectQos(glob, ME, "secret");
          con.connect(qos, this); // Login to xmlBlaster
          log.info(ME, "Successful login");
@@ -92,10 +93,14 @@ public class TestLogout extends TestCase implements I_Callback
     */
    public void testDisconnect() {
       log.info(ME, "*** Enter testDisconnect() ...");
-      if (con.disconnect(null) == false)
+      if (con.disconnect(null) == false) {
+         log.error(ME, "Expected successful disconnect");
          fail("Expected successful disconnect");
-      if (con.disconnect(null) == true)
+      }
+      if (con.disconnect(null) == true) {
+         log.error(ME, "Expected disconnect to fail, we have disconnected already");
          fail("Expected disconnect to fail, we have disconnected already");
+      }
       con = null;
       log.info(ME, "*** Leave testDisconnect() ...");
    }
