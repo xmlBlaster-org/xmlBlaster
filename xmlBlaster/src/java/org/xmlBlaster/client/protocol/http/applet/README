@@ -33,6 +33,7 @@ Todo:
   o Define a protocol which supports binary data (Hashtables with resialized Java objects, or SOCKET style?)
   o Optimize message flow (no 'browserIsReady' acknowledges etc.)
   o Reconnect if e.g. a proxy closes the connection
+  o Add simple xml parser or change xmlBlaster to support key/values
   o and much more
 
 Flow:
