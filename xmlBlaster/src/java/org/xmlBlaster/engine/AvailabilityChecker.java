@@ -10,6 +10,7 @@ package org.xmlBlaster.engine;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
@@ -26,7 +27,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
    private String ME = "AvailabilityChecker";
    private final Global glob;
    private final LogChannel log;
-   private int currRunlevel = 0;
+   private RunlevelManager runlevelManager;
    private boolean startup = true;
 
    /**
@@ -36,7 +37,8 @@ public final class AvailabilityChecker implements I_RunlevelListener
    public AvailabilityChecker(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("core");
-      glob.getRunlevelManager().addRunlevelListener(this);
+      this.runlevelManager = glob.getRunlevelManager();
+      this.runlevelManager.addRunlevelListener(this);
    }
 
    public void shutdown() {
@@ -44,29 +46,44 @@ public final class AvailabilityChecker implements I_RunlevelListener
    }
 
    /**
+    * Returns the stringified availability status. 
+    * @param qos Currently ignored
+    * @return "OK" if we are ready for client invocations, else the run level string,
+    *          id's are for example "RUNLEVEL_CLEANUP", "RUNLEVEL_STANDBY", "RUNLEVEL_HALTED".
+    * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)  
+    */
+   public String getStatus(String qos) {
+      if (this.runlevelManager.getCurrentRunlevel() > RunlevelManager.RUNLEVEL_CLEANUP)
+         return Constants.STATE_OK;
+      return RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel());
+   }
+
+   /**
     * The extended check when the message is imported/decrypted. 
     * @param sessionName The client, null is OK
     * @param msgUnit The decrypted (readable) message received, null is OK
     * @param action The method name for logging, never null!
+    * @throws XmlBlasterException: If the server is not in a run level to accept messages
+    * it throws ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY
     */
    public void checkServerIsReady(SessionName sessionName, MsgUnit msgUnit, MethodName action) throws XmlBlasterException {
 
-      if (this.currRunlevel > RunlevelManager.RUNLEVEL_CLEANUP) // 7 to 9
+      if (this.runlevelManager.getCurrentRunlevel() > RunlevelManager.RUNLEVEL_CLEANUP) // 7 to 9
          return;
 
       boolean isInternalUser = (sessionName != null && sessionName.isInternalLoginName()) ? true : false;
       if (isInternalUser)
          return;
 
-      if (!this.startup && action == MethodName.DISCONNECT && this.currRunlevel >= RunlevelManager.RUNLEVEL_STANDBY)
+      if (!this.startup && action == MethodName.DISCONNECT && this.runlevelManager.getCurrentRunlevel() >= RunlevelManager.RUNLEVEL_STANDBY)
          return; // to allow internal services to disconnect on shutdown
 
-      if (this.startup && this.currRunlevel < RunlevelManager.RUNLEVEL_STANDBY) // 3
+      if (this.startup && this.runlevelManager.getCurrentRunlevel() < RunlevelManager.RUNLEVEL_STANDBY) // 3
          return; // Accept internal calls and startup (for example from persistence recovery)
       
       // <= 6
       String post = (sessionName != null) ? " from '" + sessionName.getAbsoluteName() + "'" : "";
-      String str = "The server is in run level " + RunlevelManager.toRunlevelStr(this.currRunlevel) +
+      String str = "The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) +
                      " and not ready for " + action.toString() + post;
 
       if (this.log.TRACE) this.log.trace(ME, str);
@@ -82,21 +99,22 @@ public final class AvailabilityChecker implements I_RunlevelListener
     * @param action The method name for logging
     * @param origEx The internal cause during shutdown
     * @return XmlBlasterException With the probably corrected exception errorCode or the origEx
+    *  If the server is not in a run level to accept messages it throws ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY
     */
    public XmlBlasterException checkException(MethodName action, Throwable origEx) {
 
-      if (this.currRunlevel <= RunlevelManager.RUNLEVEL_CLEANUP) { // 6
+      if (this.runlevelManager.getCurrentRunlevel() <= RunlevelManager.RUNLEVEL_CLEANUP) { // 6
 
          if (origEx instanceof XmlBlasterException) {
             XmlBlasterException e = (XmlBlasterException)origEx;
             if (e.isCommunication()) return e; // Is already how we want it
          }
 
-         this.log.warn(ME, "DEBUG ONLY: The server is in run level " + RunlevelManager.toRunlevelStr(this.currRunlevel) + " and not ready for " + action.toString() + 
+         this.log.warn(ME, "DEBUG ONLY: The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) + " and not ready for " + action.toString() + 
             "(): " + origEx.toString());
 
          return new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY, ME,
-               "The server is in run level " + RunlevelManager.toRunlevelStr(this.currRunlevel) + " and not ready for " + action.toString() + "()",
+               "The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) + " and not ready for " + action.toString() + "()",
                origEx);
       }
 
@@ -133,7 +151,6 @@ public final class AvailabilityChecker implements I_RunlevelListener
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      this.currRunlevel = to;
       this.startup = to > from; 
    }
 }

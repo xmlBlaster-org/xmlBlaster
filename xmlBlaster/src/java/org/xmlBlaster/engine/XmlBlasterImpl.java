@@ -362,13 +362,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    }
 
    /**
-    * ping xmlBlaster if everything is OK. 
-    * <p />
-    * @param qos ""
-    * @return "<qos/>"
+    * ping xmlBlaster if everything is OK and if xmlBlaster is willing to accept requests. 
+    * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
+    * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
     */
    public final String ping(String qos) {
-      return "<qos/>";
+      String ret = "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
+      if (log.CALL) log.call(ME, "Entering ping("+qos+"), returning " + ret + " ...");
+      return ret;
    }
 
    /**

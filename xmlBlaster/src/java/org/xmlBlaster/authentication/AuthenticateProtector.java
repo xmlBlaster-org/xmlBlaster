@@ -123,6 +123,15 @@ final public class AuthenticateProtector implements I_Authenticate
    }
 
    /**
+    * Ping xmlBlaster if everything is OK, checks the availability. 
+    * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
+    * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
+    */
+   public final String ping(String qos) {
+      return "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
+   }
+
+   /**
     * Administrative access. 
     */
    public I_AdminSubject getSubjectInfoByName(SessionName sessionName) throws XmlBlasterException {
