@@ -72,8 +72,6 @@ public:
 
    size_t getSizeInBytes() const;
 
-   org::xmlBlaster::util::MessageUnit& getMsgUnit() const;
-
    org::xmlBlaster::client::qos::PublishReturnQos &getPublishReturnQos() const;
 
    std::string toXml(const std::string& indent="") const;

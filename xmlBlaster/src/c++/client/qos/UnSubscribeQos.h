@@ -31,7 +31,7 @@ class Dll_Export UnSubscribeQos
 protected:
    std::string ME;
    org::xmlBlaster::util::Global& global_;
-   org::xmlBlaster::util::qos::QueryQosData data_;
+   mutable org::xmlBlaster::util::qos::QueryQosData data_;
 
 public:
    /**
@@ -39,6 +39,11 @@ public:
     */
    UnSubscribeQos(org::xmlBlaster::util::Global& global);
 
+   /**
+    * Create the instance. 
+    * @param global
+    * @param data The const'ness may be broken when put to persistence. 
+    */
    UnSubscribeQos(org::xmlBlaster::util::Global& global,
                   const org::xmlBlaster::util::qos::QueryQosData& data);
 

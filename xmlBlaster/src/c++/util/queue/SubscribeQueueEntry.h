@@ -27,6 +27,12 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 class Dll_Export SubscribeQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
+   /**
+    * Holds the serialized information which is returned by getEmbeddedObject(),
+    * encoded according to embeddedType
+    */
+   mutable BlobHolder blobHolder_;
+
 public:
 
    /**
@@ -35,10 +41,20 @@ public:
    SubscribeQueueEntry(org::xmlBlaster::util::Global& global,
                        const org::xmlBlaster::client::key::SubscribeKey& subscribeKey,
                        const org::xmlBlaster::client::qos::SubscribeQos& subscribeQos,
-                       const std::string& methodName=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::SUBSCRIBE,
                        int priority=MAX_PRIORITY, // 9
-                       bool persistent=false,
                        org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
+
+   ~SubscribeQueueEntry();
+
+   /**
+    * copy constructor
+    */
+   SubscribeQueueEntry(const SubscribeQueueEntry& entry);
+
+   /**
+    * assignment constructor
+    */
+   SubscribeQueueEntry& operator =(const SubscribeQueueEntry& entry);
 
    MsgQueueEntry *getClone() const;
 

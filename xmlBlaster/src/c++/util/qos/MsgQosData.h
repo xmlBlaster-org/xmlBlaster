@@ -37,7 +37,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Destination.h>
 #include <util/SessionName.h>
 #include <util/qos/TopicProperty.h>
-#include <util/PriorityEnum.h>
 #include <util/cluster/RouteInfo.h>
 #include <util/cluster/NodeId.h>
 #include <util/Prop.h>
@@ -79,9 +78,6 @@ private:
    long queueIndex_; //  = -1L;
    long queueSize_; // = -1L;
 
-   /** Internal use only, is this message sent from the persistence layer? */
-   bool fromPersistenceStore_; // = false;
-
    /**
     * Send message to subscriber even the content is the same as the previous?
     * <br />
@@ -102,9 +98,6 @@ private:
 
    /** the sender (publisher) of this message (unique loginName) */
    mutable org::xmlBlaster::util::SessionNameRef sender_;
-
-   /** The priority of the message */
-   org::xmlBlaster::util::PriorityEnum priority_; // = org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY;
 
    void init();
 
@@ -255,33 +248,6 @@ public:
    long getQueueIndex() const;
 
    /**
-    * Message priority.
-    * @return priority 0-9
-    * @see org.xmlBlaster.util.def.PriorityEnum
-    */
-   org::xmlBlaster::util::PriorityEnum getPriority() const;
-
-   /**
-    * Set message priority value, org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY (5) is default. 
-    * org::xmlBlaster::util::PriorityEnum.MIN_PRIORITY (0) is slowest
-    * whereas org::xmlBlaster::util::PriorityEnum.MAX_PRIORITY (9) is highest priority.
-    * @see org.xmlBlaster.util.def.PriorityEnum
-    */
-   void setPriority(org::xmlBlaster::util::PriorityEnum priority);
-
-   /**
-    * Internal use only, is this message sent from the persistence layer?
-    * @return true/false
-    */
-   bool isFromPersistenceStore() const;
-
-   /**
-    * Internal use only, set if this message sent from the persistence layer
-    * @param true/false
-    */
-   void setFromPersistenceStore(bool fromPersistenceStore);
-
-   /**
     * The life time of the message or -1L if forever
     */
    long getLifeTime()const;
@@ -353,15 +319,15 @@ public:
    /**
     * Dump state of this object into a XML ASCII std::string.
     * <br>
-	 * @param clearText Dump base64 clientProperties encoded as plain text
+    * @param clearText Dump base64 clientProperties encoded as plain text
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII std::string
     */
    std::string toXml(bool clearText, const std::string& extraOffset="") const;
 
    std::string toXml(const std::string& extraOffset="") const {
-		return toXml(false, extraOffset);
-	}
+      return toXml(false, extraOffset);
+   }
 
    void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& prop);
 

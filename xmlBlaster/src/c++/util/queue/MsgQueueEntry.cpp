@@ -160,6 +160,10 @@ const MsgQueueEntry& MsgQueueEntry::send(I_ConnectionsHandler&) const
    return *this;
 }
 
+MessageUnit& MsgQueueEntry::getMsgUnit() const 
+{
+   return *msgUnit_;
+}
 
 }}}} // namespace
 

@@ -32,8 +32,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Constants.h>
 #include <util/lexical_cast.h>
 #include <util/Global.h>
-
-
+#include <util/PriorityEnum.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cluster;
@@ -55,6 +54,8 @@ void QosData::init()
    rcvTimestamp_ = 0;
    rcvTimestampFound_ = false;
    serialData_ = "";
+   priority_ = NORM_PRIORITY;
+   fromPersistenceStore_ = false;
    persistent_ = DEFAULT_persistent;
 }
 
@@ -66,6 +67,8 @@ void QosData::copy(const QosData& data)
    rcvTimestamp_ = data.rcvTimestamp_;
    rcvTimestampFound_ = data.rcvTimestampFound_;
    serialData_ = data.serialData_;
+   priority_ = data.priority_;
+   fromPersistenceStore_ = data.fromPersistenceStore_;
    persistent_ = data.persistent_;
 }
 
@@ -229,6 +232,45 @@ void QosData::clearRoutes()
 int QosData::size() const
 {
    return toXml().size();
+}
+
+/**
+ * Message priority.
+ * @return priority 0-9
+ * @see org.xmlBlaster.util.def.Constants
+ */
+PriorityEnum QosData::getPriority() const
+{
+   return priority_;
+}
+
+/**
+ * Set message priority value, PriorityEnum.NORM_PRIORITY (5) is default. 
+ * PriorityEnum.MIN_PRIORITY (0) is slowest
+ * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
+ * @see org.xmlBlaster.util.def.Constants
+ */
+void QosData::setPriority(PriorityEnum priority)
+{
+   priority_ = priority;
+}
+
+/**
+ * Internal use only, is this message sent from the persistence layer?
+ * @return true/false
+ */
+bool QosData::isFromPersistenceStore() const
+{
+   return fromPersistenceStore_;
+}
+
+/**
+ * Internal use only, set if this message sent from the persistence layer
+ * @param true/false
+ */
+void QosData::setFromPersistenceStore(bool fromPersistenceStore)
+{
+   fromPersistenceStore_ = fromPersistenceStore;
 }
 
 /**

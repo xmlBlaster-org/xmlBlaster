@@ -43,10 +43,13 @@ public:
     * <p>
     * The state defaults to Constants::STATE_OK
     * </p>
-    * @param The factory which knows how to serialize and parse me
+    * @param global The stack
+    * @param data The data object
     */
    SubscribeReturnQos(org::xmlBlaster::util::Global& global,
                       const org::xmlBlaster::util::qos::StatusQosData& data);
+
+   SubscribeReturnQos(org::xmlBlaster::util::Global& global);
 
    SubscribeReturnQos(const SubscribeReturnQos& data);
 
@@ -86,7 +89,7 @@ public:
     */
    std::string toXml(const std::string& extraOffset="") const;
 
-   const org::xmlBlaster::util::qos::StatusQosData& getData() const;
+   org::xmlBlaster::util::qos::StatusQosData& getData();
 
 };
 

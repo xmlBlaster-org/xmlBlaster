@@ -34,6 +34,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/cluster/RouteInfo.h>
 #include <util/qos/ClientProperty.h>
+#include <util/PriorityEnum.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -74,6 +75,12 @@ protected:
     */
    Timestamp rcvTimestamp_;
    bool rcvTimestampFound_; // = false;
+
+   /** The priority of the message */
+   org::xmlBlaster::util::PriorityEnum priority_; // = org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY;
+
+   /** Internal use only, is this message sent from the persistence layer? */
+   bool fromPersistenceStore_; // = false;
 
    bool persistent_; // = DEFAULT_persistent;
 
@@ -243,6 +250,33 @@ public:
    void clearRoutes();
 
    int size() const;
+
+   /**
+    * Message priority.
+    * @return priority 0-9
+    * @see org.xmlBlaster.util.def.PriorityEnum
+    */
+   org::xmlBlaster::util::PriorityEnum getPriority() const;
+
+   /**
+    * Set message priority value, org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY (5) is default. 
+    * org::xmlBlaster::util::PriorityEnum.MIN_PRIORITY (0) is slowest
+    * whereas org::xmlBlaster::util::PriorityEnum.MAX_PRIORITY (9) is highest priority.
+    * @see org.xmlBlaster.util.def.PriorityEnum
+    */
+   void setPriority(org::xmlBlaster::util::PriorityEnum priority);
+
+   /**
+    * Internal use only, is this message sent from the persistence layer?
+    * @return true/false
+    */
+   bool isFromPersistenceStore() const;
+
+   /**
+    * Internal use only, set if this message sent from the persistence layer
+    * @param true/false
+    */
+   void setFromPersistenceStore(bool fromPersistenceStore);
 
    /**
     * @param persistent mark a message as persistent

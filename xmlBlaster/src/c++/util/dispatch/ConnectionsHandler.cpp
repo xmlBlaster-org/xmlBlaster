@@ -8,6 +8,8 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/dispatch/ConnectionsHandler.h>
 #include <util/Global.h>
 #include <util/Timeout.h>
+#include <util/Timestamp.h>
+#include <util/Constants.h>
 #include <util/lexical_cast.h>
 #include <util/queue/QueueFactory.h>
 #include <util/queue/PublishQueueEntry.h>
@@ -225,14 +227,18 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
 //   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, MethodName::SUBSCRIBE);
-   if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, MethodName::SUBSCRIBE);
+   if (status_ == POLLING) return queueSubscribe(key, qos);
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, MethodName::SUBSCRIBE);
    try {
       SubscribeReturnQos ret = connection_->subscribe(key, qos);
       return ret;
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) toPollingOrDead(&ex);
+      //   toPollingOrDead(&ex); Do it always?
+      if ( ex.isCommunication() && pingIsStarted_) {
+         toPollingOrDead(&ex);
+         return queueSubscribe(key, qos);
+      }
       throw ex;
    }
 }
@@ -517,6 +523,35 @@ void ConnectionsHandler::timeout(void * /*userData*/)
  
 }
 
+SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, const SubscribeQos& qos)
+{
+   if (!queue_) {
+      if (!connectQos_) {
+         throw XmlBlasterException(INTERNAL_SUBSCRIBE, ME + "::queueSubscribe", "need to create a queue but the connectQos is NULL (probably never connected)");
+      }
+      if (log_.trace()) log_.trace(ME+":queueSubscribe", "creating a client queue ...");
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
+      if (log_.trace()) log_.trace(ME+":queueSubscribe", "created a client queue");
+   }
+   if (log_.trace()) 
+      log_.trace(ME, string("queueSubscribe: entry '") + key.getOid() + "' has been queued");
+   SubscribeReturnQos retQos(global_);
+   std::string subscriptionId;
+   {
+      subscriptionId = Constants::SUBSCRIPTIONID_PREFIX; // "__subId:"
+      subscriptionId += global_.getImmutableId();
+      org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp();
+      subscriptionId += "-";
+      subscriptionId += lexical_cast<std::string>(uniqueId);
+   }
+   retQos.getData().setSubscriptionId(subscriptionId);
+   retQos.getData().setState("QUEUED");
+   log_.error(ME, string("Creating subscriptionId on client side queued messages is missing"));
+   qos.setSubscriptionId(subscriptionId);
+   SubscribeQueueEntry entry(global_, key, qos, qos.getData().getPriority());
+   queue_->put(entry);
+   return retQos;
+}
 
 PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
 {

@@ -16,7 +16,8 @@ using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit, int priority, Timestamp uniqueId)
+PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit,
+                                     int priority, Timestamp uniqueId)
    : MsgQueueEntry(global, msgUnit, 
                    org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::PUBLISH,
                    priority, msgUnit.getQos().isPersistent(), uniqueId)
@@ -121,11 +122,6 @@ const MsgQueueEntry& PublishQueueEntry::send(I_ConnectionsHandler& connectionsHa
    if (log_.dump()) log_.dump(ME, string("send: ") + PublishQueueEntry::toXml());
    publishReturnQos_ = new PublishReturnQos(connectionsHandler.getConnection().publish(*msgUnit_));
    return *this;
-}
-
-MessageUnit& PublishQueueEntry::getMsgUnit() const 
-{
-   return *msgUnit_;
 }
 
 PublishReturnQos &PublishQueueEntry::getPublishReturnQos() const

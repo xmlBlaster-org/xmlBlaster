@@ -37,6 +37,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    {
    }
 
+   SubscribeReturnQos::SubscribeReturnQos(Global& global)
+      : ME("SubscribeReturnQos"), global_(global), data_(global)
+   {
+   }
+
    SubscribeReturnQos::SubscribeReturnQos(const SubscribeReturnQos& data)
      : ME(data.ME), global_(data.global_), data_(data.data_)
    {
@@ -68,7 +73,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       return data_.toXml(extraOffset);
    }
 
-   const StatusQosData& SubscribeReturnQos::getData() const
+   StatusQosData& SubscribeReturnQos::getData()
    {
       return data_;
    }

@@ -247,6 +247,8 @@ public:
     */
    virtual size_t getSizeInBytes() const = 0;
 
+   org::xmlBlaster::util::MessageUnit& getMsgUnit() const;
+
    // this should actually be in another interface but since it is an only method we put it here.
    virtual const MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&) const; // = 0;
 

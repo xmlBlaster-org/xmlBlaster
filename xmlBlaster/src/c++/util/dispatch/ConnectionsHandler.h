@@ -128,25 +128,25 @@ public:
 
    bool isFailsafe() const;
 
-	/**
-	 * Same as isAlive() || isPolling()
-	 * @return true if connect() call was successful, even if we are polling
-	 */
+   /**
+    * Same as isAlive() || isPolling()
+    * @return true if connect() call was successful, even if we are polling
+    */
    bool isConnected() const;
 
-	/**
-	 * @return true if connected with server and ready
-	 */
+   /**
+    * @return true if connected with server and ready
+    */
    bool isAlive() const;
 
-	/**
-	 * @return true if polling for the server
-	 */
+   /**
+    * @return true if polling for the server
+    */
    bool isPolling() const;
 
-	/**
-	 * @return true if we have given up
-	 */
+   /**
+    * @return true if we have given up
+    */
    bool isDead() const;
 
    /**
@@ -167,6 +167,7 @@ protected:
    /** only used inside the class to avoid deadlock */
    long flushQueueUnlocked(org::xmlBlaster::util::queue::I_Queue *queueToFlush, bool doRemove=true);
    org::xmlBlaster::client::qos::PublishReturnQos queuePublish(const org::xmlBlaster::util::MessageUnit& msgUnit);
+   org::xmlBlaster::client::qos::SubscribeReturnQos queueSubscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
    org::xmlBlaster::util::qos::ConnectReturnQos& queueConnect();
    bool startPinger();
 

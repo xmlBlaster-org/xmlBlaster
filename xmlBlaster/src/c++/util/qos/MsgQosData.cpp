@@ -49,12 +49,10 @@ void MsgQosData::init()
    redeliver_ = 0;
    queueIndex_ = -1;
    queueSize_ = -1;
-   fromPersistenceStore_ = false;
    forceUpdate_.setValue(global_.getProperty(), "forceUpdate");
    forceDestroy_.setValue(global_.getProperty(), "forceDestroy");
    lifeTime_ = -1;
    remainingLifeStatic_ = -1;
-   priority_ = NORM_PRIORITY;
    isExpired_ = false; // cache the expired state for performance reasons
    maxLifeTime_ = global_.getProperty().getLongProperty("message.maxLifeTime", -1);
    receiveTimestampHumanReadable_ = global_.getProperty().getBoolProperty("cb.receiveTimestampHumanReadable", false);
@@ -74,12 +72,10 @@ void MsgQosData::copy(const MsgQosData& data)
    redeliver_ = data.redeliver_;
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
-   fromPersistenceStore_ = data.fromPersistenceStore_;
    forceUpdate_= data.forceUpdate_;
    forceDestroy_ = data.forceDestroy_;
    lifeTime_ = data.lifeTime_;
    remainingLifeStatic_ = data.remainingLifeStatic_;
-   priority_ = data.priority_;
    isExpired_ = data.isExpired_;
    maxLifeTime_ = data.maxLifeTime_;
    receiveTimestampHumanReadable_ = data.receiveTimestampHumanReadable_;
@@ -285,45 +281,6 @@ void MsgQosData::setQueueIndex(long queueIndex)
 long MsgQosData::getQueueIndex() const
 {
    return queueIndex_;
-}
-
-/**
- * Message priority.
- * @return priority 0-9
- * @see org.xmlBlaster.util.def.Constants
- */
-PriorityEnum MsgQosData::getPriority() const
-{
-   return priority_;
-}
-
-/**
- * Set message priority value, PriorityEnum.NORM_PRIORITY (5) is default. 
- * PriorityEnum.MIN_PRIORITY (0) is slowest
- * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
- * @see org.xmlBlaster.util.def.Constants
- */
-void MsgQosData::setPriority(PriorityEnum priority)
-{
-   priority_ = priority;
-}
-
-/**
- * Internal use only, is this message sent from the persistence layer?
- * @return true/false
- */
-bool MsgQosData::isFromPersistenceStore() const
-{
-   return fromPersistenceStore_;
-}
-
-/**
- * Internal use only, set if this message sent from the persistence layer
- * @param true/false
- */
-void MsgQosData::setFromPersistenceStore(bool fromPersistenceStore)
-{
-   fromPersistenceStore_ = fromPersistenceStore;
 }
 
 /**
