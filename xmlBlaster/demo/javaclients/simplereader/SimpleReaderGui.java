@@ -2,7 +2,7 @@
 Name:      SimpleReaderGui.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Author:    Thomas Bodemer
+Author:    Wolfgang Kleinertz, Thomas Bodemer
 ------------------------------------------------------------------------------*/
 package javaclients.simplereader;
 
@@ -230,14 +230,14 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
           boolean isSelected,
           boolean cellHasFocus)
       {
-          setComponentOrientation(list.getComponentOrientation());
+          this.setComponentOrientation(list.getComponentOrientation());
      if (isSelected) {
-         setBackground(list.getSelectionBackground());
-         setForeground(list.getSelectionForeground());
+         this.setBackground(list.getSelectionBackground());
+         this.setForeground(list.getSelectionForeground());
      }
      else {
-         setBackground(list.getBackground());
-         setForeground(list.getForeground());
+         this.setBackground(list.getBackground());
+         this.setForeground(list.getForeground());
      }
 
      if (value instanceof Icon) {
@@ -249,8 +249,8 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
          setText((value == null) ? "" : ( ((MessageWrapper) value).getUpdateKey().getOid()));
      }
 
-     setEnabled(list.isEnabled());
-     setFont(list.getFont());
+     this.setEnabled(list.isEnabled());
+     this.setFont(list.getFont());
      setBorder((cellHasFocus) ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
 
      return this;
