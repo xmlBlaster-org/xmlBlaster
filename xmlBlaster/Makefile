@@ -22,6 +22,8 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine.xml2java \
 			org.xmlBlaster.engine.helper \
 			org.xmlBlaster.engine.queue \
+			org.xmlBlaster.engine.mime \
+			org.xmlBlaster.engine.mime.demo \
 			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.engine.persistence.xmldb \
 			org.xmlBlaster.engine.persistence.xmldb.xindice \
