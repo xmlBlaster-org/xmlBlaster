@@ -411,7 +411,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             if (log.TRACE) log.trace(ME, "Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED_PRE) {
-            this.glob.shutdown();
+            if (this.glob != null) {
+              this.glob.shutdown();
+            }
             log.info(ME, "XmlBlaster halted.");
          }
 
