@@ -143,8 +143,8 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
    public static void main(String[] args) {
       MsgKeyData key = new MsgKeyData(null);
       String clientTags = "<agent>\n" +
-                          " Hello\n" +
-                          " world\n" +
+                          "<![CDATA[ Hello\n" +
+                          " world\n]]>" +
                           "</agent>";
       key.setClientTags(clientTags);
       System.out.println(key.getClientTags());
