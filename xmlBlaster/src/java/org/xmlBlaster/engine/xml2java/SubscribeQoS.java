@@ -3,14 +3,14 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.17 2002/09/13 23:18:06 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.18 2002/09/24 10:40:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
@@ -28,6 +28,7 @@ import java.util.Vector;
  * A full example:
  * <pre>
  *  &lt;qos>
+ *     &lt;id>__subId:/node/heron/client/joe/3/34&lt;/id>
  *     &lt;meta>false&lt;/meta>
  *     &lt;content>false&lt;/content>
  *     &lt;local>false&lt;/local>
@@ -57,6 +58,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
    // helper flags for SAX parsing
 
+   private transient boolean inId = false;
+   /** A client can force a specific subscription id */
+   private String subId = null;
    /** <meta>false</meta> Don't send me the xmlKey meta data on updates */
    private boolean meta = true;     
    /** <content>false</content> Don't send me the content data on updates (notify only) */
@@ -85,8 +89,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Constructs the specialized quality of service object for a publish() call.
     */
-   public SubscribeQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
-   {
+   public SubscribeQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("core");
       if (log.TRACE) log.trace(ME, "Creating SubscribeQoS(" + xmlQoS_literal + ")");
@@ -96,8 +99,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Return the subscribe filters or null if none is specified. 
     */
-   public final AccessFilterQos[] getFilterQos()
-   {
+   public final AccessFilterQos[] getFilterQos() {
       if (filterArr != null || filterVec == null || filterVec.size() < 1)
          return filterArr;
 
@@ -107,10 +109,24 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    }
 
    /**
+    * Get the identifier (unique handle) for this subscription. 
+    * @return the identifier force by the client, or null if xmlBlaster generates it
+    */
+   public final String getSubscriptionId() {
+      return this.subId;
+   }
+
+   /**
+    * Set the identifier (unique handle) for this subscription. 
+    */
+   public final void setSubscriptionId(String subId) {
+      this.subId = subId;
+   }
+
+   /**
     * The properties of the specified queues
     */
-   public CbQueueProperty[] getQueueProperties()
-   {
+   public CbQueueProperty[] getQueueProperties() {
       if (queuePropertyArr != null)
          return queuePropertyArr;
 
@@ -128,11 +144,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     * @return true if full XmlKey is sent
     *         false if only <key> tag with its attributes is sent
     */
-   public final boolean sendMeta()
-   {
+   public final boolean sendMeta() {
       return meta;
    }
-
 
    /**
     * Does client wants to have an initial update on subscribe if the message
@@ -141,11 +155,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     * @return true if initial update wanted
     *         false if only updates on new publishes are sent
     */
-   public final boolean initialUpdate()
-   {
+   public final boolean initialUpdate() {
       return initialUpdate;
    }
-
 
    /**
     * Does client wish the content data on updates?
@@ -153,21 +165,17 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     * @return true if clients wishes the content on message update
     *         false if client wishes empty content updates (NOTIFICATION style)
     */
-   public final boolean sendContent()
-   {
+   public final boolean sendContent() {
       return content;
    }
-
 
    /**
     * Inhibit the delivery of messages to myself if i have published it (and am a subscriber as well)?
     * @return true/false
     */
-   public final boolean sendLocal()
-   {
+   public final boolean sendLocal() {
       return local;
    }
-
 
    /**
     * Start element, event from SAX parser.
@@ -184,6 +192,10 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if (!inQos) return;
 
+      if (name.equalsIgnoreCase("id")) {
+         inId = true;
+         return;
+      }
       if (name.equalsIgnoreCase("meta")) {
          meta = true;
          return;
@@ -252,6 +264,16 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       super.endElement(uri, localName, name);
 
       if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
+
+      if (name.equalsIgnoreCase("id")) {
+         if (!inId) log.error(ME, "We are not inside <id> tag");
+         inId = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            setSubscriptionId(tmp);
+         character.setLength(0);
+         return;
+      }
 
       if (name.equalsIgnoreCase("meta")) {
          String tmp = character.toString().trim();
@@ -331,6 +353,8 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       offset += extraOffset;
 
       sb.append(offset).append("<").append("qos").append("> <!-- SubscribeQos -->");
+      if (getSubscriptionId() != null)
+         sb.append(offset).append("   <id>").append(getSubscriptionId()).append("</id>");
       if (!meta)
          sb.append(offset).append("   <meta>false</meta>");
       if (!content)
@@ -360,6 +384,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          SubscribeQoS qos = null;
          String xml =
             "<qos>\n" +
+            "   <id>__subId:/node/heron/client/joe/3/34</id>" + // 34 is an arbitrary number specific in the client context
             "   <meta>false</meta>\n" +
             "   <content>false</content>\n" +
             "   <local>false</local>\n" +
