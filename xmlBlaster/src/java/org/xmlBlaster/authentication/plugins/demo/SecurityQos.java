@@ -1,6 +1,6 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
-import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
  * Helper class for Java clients. 
@@ -17,17 +17,17 @@ import org.xmlBlaster.authentication.plugins.I_InitQos;
  *    &lt;/securityService>
  * </pre>
  */
-public class InitQos implements I_InitQos {
+public class SecurityQos implements I_SecurityQos {
    private String mechanism = "gui";
    private String version = "1.0";
    private String user = "";
    private String passwd = "";
 
-   public InitQos()
+   public SecurityQos()
    {
    }
 
-   public InitQos(String loginName, String password)
+   public SecurityQos(String loginName, String password)
    {
       this.user = loginName;
       this.passwd = password;

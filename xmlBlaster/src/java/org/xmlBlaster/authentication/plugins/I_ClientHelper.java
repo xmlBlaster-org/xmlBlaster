@@ -28,7 +28,7 @@ public interface I_ClientHelper {
     * which you have to initialize with your credentials (e.g. your 
     * login name and password).
     */
-   public I_InitQos getInitQoSWrapper();
+   public I_SecurityQos getSecurityQos();
    public void setSessionData(String sessionData);
 
    // --- message handling ----------------------------------------------------

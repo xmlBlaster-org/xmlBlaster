@@ -32,7 +32,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 import java.applet.Applet;
 
@@ -84,10 +84,10 @@ import java.util.Iterator;
  * If a client side security plugin is specified in xmlBlaster.properties
  * or on command line, this will be loaded and used here. All xmlBlaster invocations
  * will be intercepted with your supplied plugin.<br />
- * Your plugin must implement the interfaces I_ClientHelper and I_InitQos
+ * Your plugin must implement the interfaces I_ClientHelper and I_SecurityQos
  *
  * @see org.xmlBlaster.authentication.plugins.I_ClientHelper
- * @see org.xmlBlaster.authentication.plugins.I_InitQos
+ * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see testsuite.org.xmlBlaster.TestFailSave
  *
  * @author $Author: ruff $
@@ -463,11 +463,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (qos == null)
          qos = new LoginQosWrapper();
       
-      I_InitQos securityQos = qos.getSecurityQos();
+      I_SecurityQos securityQos = qos.getSecurityQos();
       if(securityQos == null) {
          // Create default security tags (as specified in xmlBlaster.properties) ...
          initSecuritySettings(null, null);
-         securityQos = secPlgn.getInitQoSWrapper();
+         securityQos = secPlgn.getSecurityQos();
          securityQos.setUserId(loginName);
          securityQos.setCredential(passwd);
          qos.setSecurityQos(securityQos);

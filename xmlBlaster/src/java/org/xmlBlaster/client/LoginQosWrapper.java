@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.13 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.14 2001/09/04 17:25:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import java.util.Vector;
 
 
@@ -67,7 +67,7 @@ public class LoginQosWrapper extends QosWrapper
 
    private PluginLoader pMgr;
    private I_ClientHelper plugin;
-   private I_InitQos securityQos;
+   private I_SecurityQos securityQos;
 
    /**
     * Default constructor for clients without asynchronous callbacks
@@ -85,7 +85,7 @@ public class LoginQosWrapper extends QosWrapper
     */
    public LoginQosWrapper(String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {
-      securityQos = getPlugin(mechanism,version).getInitQoSWrapper();
+      securityQos = getPlugin(mechanism,version).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
    }
@@ -106,13 +106,13 @@ public class LoginQosWrapper extends QosWrapper
     * <p />
     * Usage to login to xmlBlaster:
     * <pre>
-    *    import org.xmlBlaster.authentication.plugins.simple.InitQos;
+    *    import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
     *    ...
-    *    LoginQosWrapper qos = new LoginQosWrapper(new InitQos("joe", "secret"));
+    *    LoginQosWrapper qos = new LoginQosWrapper(new SecurityQos("joe", "secret"));
     *    xmlBlasterConnection.connect(qos);
     * </pre>
     */
-   public LoginQosWrapper(I_InitQos securityQos)
+   public LoginQosWrapper(I_SecurityQos securityQos)
    {
       this.securityQos = securityQos;
    }
@@ -167,14 +167,14 @@ public class LoginQosWrapper extends QosWrapper
     * <p />
     * Usage to login to xmlBlaster:
     * <pre>
-    *    import org.xmlBlaster.authentication.plugins.simple.InitQos;
+    *    import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
     *    ...
     *    LoginQosWrapper qos = new LoginQosWrapper();
-    *    qos.setCredential(new InitQos("joe", "secret"));
+    *    qos.setCredential(new SecurityQos("joe", "secret"));
     *    xmlBlasterConnection.connect(qos);
     * </pre>
     */
-   public void setSecurityQos(I_InitQos securityQos)
+   public void setSecurityQos(I_SecurityQos securityQos)
    {
       this.securityQos = securityQos;
    }
@@ -224,14 +224,14 @@ public class LoginQosWrapper extends QosWrapper
       addressVec.addElement(callback);
    }
 
-   public I_InitQos getSecurityQos() throws XmlBlasterException
+   public I_SecurityQos getSecurityQos() throws XmlBlasterException
    {
       return this.securityQos;
    }
 
    public String getSecurityPluginType() throws XmlBlasterException
    {
-      I_InitQos securityQos = getSecurityQos();
+      I_SecurityQos securityQos = getSecurityQos();
       if (securityQos != null)
          return securityQos.getPluginType();
       return null;
@@ -239,7 +239,7 @@ public class LoginQosWrapper extends QosWrapper
 
    public String getSecurityPluginVersion() throws XmlBlasterException
    {
-      I_InitQos securityQos = getSecurityQos();
+      I_SecurityQos securityQos = getSecurityQos();
       if (securityQos != null)
          return securityQos.getPluginVersion();
       return null;
@@ -247,7 +247,7 @@ public class LoginQosWrapper extends QosWrapper
 
    public String getUserId() throws XmlBlasterException
    {
-      I_InitQos i=getSecurityQos();
+      I_SecurityQos i=getSecurityQos();
       if (i==null)
          return "NoLoginName";
       else
@@ -285,7 +285,7 @@ public class LoginQosWrapper extends QosWrapper
    {
       if(plugin!=null && securityQos==null) {
          try {
-            securityQos = getPlugin(null,null).getInitQoSWrapper();
+            securityQos = getPlugin(null,null).getSecurityQos();
          } catch(XmlBlasterException e) {
             Log.warn(ME+".toXml", e.toString());
          }
@@ -324,7 +324,7 @@ public class LoginQosWrapper extends QosWrapper
       try {
          org.xmlBlaster.util.XmlBlasterProperty.init(args);
          LoginQosWrapper qos = new LoginQosWrapper(new CallbackAddress("IOR"));
-         I_InitQos securityQos = new org.xmlBlaster.authentication.plugins.simple.InitQos("joe", "secret");
+         I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos("joe", "secret");
          qos.setSecurityQos(securityQos);
          System.out.println(qos.toXml());
       }

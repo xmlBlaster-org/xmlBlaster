@@ -4,7 +4,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 //import org.jutils.JUtilsException;
 
 /**
@@ -52,12 +52,12 @@ public class ClientHelper implements I_ClientHelper {
     */
 
    /**
-    * The client application can use this method to get a new I_InitQos instance,
+    * The client application can use this method to get a new I_SecurityQos instance,
     * and use it to set userId/password etc.
     */
-   public I_InitQos getInitQoSWrapper()
+   public I_SecurityQos getSecurityQos()
    {
-      return new InitQos(); // "demo" "1.0"
+      return new SecurityQos(); // "demo" "1.0"
    }
 
    public void setSessionData(String sessionData)

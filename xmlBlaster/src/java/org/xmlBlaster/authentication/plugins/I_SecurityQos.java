@@ -6,7 +6,7 @@ package org.xmlBlaster.authentication.plugins;
  * The reason is for clients to access xmlBlaster
  * transparently from the authentication method
  */
-public interface I_InitQos {
+public interface I_SecurityQos {
 
    /**
     * Set the userId for the login.

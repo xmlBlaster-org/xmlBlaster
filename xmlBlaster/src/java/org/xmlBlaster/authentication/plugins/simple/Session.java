@@ -43,7 +43,7 @@ public class Session implements I_Session {
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
       authenticated = false;
-      InitQos xmlQoS = new InitQos(xmlQoS_literal);
+      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
       subject = determineSubject(xmlQoS.getUserId(), xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 

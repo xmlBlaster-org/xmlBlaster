@@ -7,7 +7,7 @@ import org.xml.sax.helpers.*;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.jutils.text.StringHelper;
 
 /**
@@ -20,9 +20,9 @@ import org.jutils.text.StringHelper;
  *  &lt;/securityService>
  * </pre>
  */
-public final class InitQos extends SaxHandlerBase implements I_InitQos
+public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
-   private static String ME = "InitQos-simple";
+   private static String ME = "SecurityQos-simple";
 
    // helper flags for SAX parsing
    private boolean inSecurityService = false;
@@ -34,11 +34,11 @@ public final class InitQos extends SaxHandlerBase implements I_InitQos
    private String user = null;
    private String passwd = null;
 
-   public InitQos()
+   public SecurityQos()
    {
    }
 
-   public InitQos(String xmlQoS_literal) throws XmlBlasterException {
+   public SecurityQos(String xmlQoS_literal) throws XmlBlasterException {
 
       // Strip CDATA tags that we are able to parse it:
       xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
@@ -49,7 +49,7 @@ public final class InitQos extends SaxHandlerBase implements I_InitQos
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
-   public InitQos(String loginName, String password)
+   public SecurityQos(String loginName, String password)
    {
       this.user = loginName;
       this.passwd = password;
@@ -192,7 +192,7 @@ public final class InitQos extends SaxHandlerBase implements I_InitQos
    }
 
 
-   /** For testing: java org.xmlBlaster.authentication.plugins.simple.InitQos */
+   /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
    public static void main(String[] args)
    {
       try {
@@ -206,7 +206,7 @@ public final class InitQos extends SaxHandlerBase implements I_InitQos
             "</securityService>";
 
          System.out.println("Original:\n" + xml);
-         InitQos qos = new InitQos(xml);
+         SecurityQos qos = new SecurityQos(xml);
          System.out.println("Result:\n" + qos.toXml());
          qos.setUserId("AnotherUser");
          qos.setCredential("AnotherPassword");

@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.17 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.18 2001/09/04 17:25:21 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -13,7 +13,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
 import java.io.Serializable;
@@ -145,7 +145,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       securityPluginVersion = version;
       org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
       I_ClientHelper plugin = loader.getClientPlugin(mechanism, version);
-      I_InitQos connectQos = plugin.getInitQoSWrapper();
+      I_SecurityQos connectQos = plugin.getSecurityQos();
       connectQos.setUserId(loginName);
       connectQos.setCredential(password);
       securityPluginData = connectQos.toXml("   ");
@@ -405,7 +405,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
                             tmp+
                              //"   ]]>\n"+
                              "</securityService>";
-         // Without a CDATA we should delegate parsing to the appropriate plugin InitQos
+         // Without a CDATA we should delegate parsing to the appropriate plugin SecurityQos
       }
 
       if (name.equalsIgnoreCase("session")) {

@@ -12,9 +12,12 @@ import org.a2Blaster.client.api.CorbaConnection;
 /**
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/04 11:51:50 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2001/09/04 17:25:21 $)
  * Last Changes:
  *    ($Log: Session.java,v $
+ *    (Revision 1.4  2001/09/04 17:25:21  ruff
+ *    (Renamed InitQos to SecurityQos
+ *    (
  *    (Revision 1.3  2001/09/04 11:51:50  ruff
  *    (Integrated Security Framework.
  *    (Now most stuff is working
@@ -115,7 +118,7 @@ public class Session implements I_Session, I_Subject {
       if (Log.CALL) Log.call(ME+".init(String qos=...)=...", "-------START-----\n");
       String result = null;
       authenticated = false;
-      InitQos xmlQoS = new InitQos(xmlQoS_literal);
+      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
       name = xmlQoS.getUserId();
 
       // Ok, we have to decide, if we have to log on the a2Blaster, or if the

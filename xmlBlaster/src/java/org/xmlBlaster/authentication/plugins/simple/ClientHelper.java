@@ -4,8 +4,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
-import org.xmlBlaster.authentication.plugins.simple.InitQos;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 
 /**
  * Helper only for Java clients. 
@@ -14,11 +14,11 @@ import org.xmlBlaster.authentication.plugins.simple.InitQos;
  * <p />
  * 1. Generate the xml string
  *    which is passed as the init() or login() qos string
- *    with the help of InitQos.java
+ *    with the help of SecurityQos.java
  * <p />
  * 2. The messages are not crypted or modified, so
  *    the importMessage() and exportMessage() methods do nothing.
- * @see org.xmlBlaster.authentication.plugins.demo.InitQos
+ * @see org.xmlBlaster.authentication.plugins.demo.SecurityQos
  */
 public class ClientHelper implements I_ClientHelper {
    public static final String ME = "ClientHelper";
@@ -57,12 +57,12 @@ public class ClientHelper implements I_ClientHelper {
     */
 
    /**
-    * The client application can use this method to get a new I_InitQos instance,
+    * The client application can use this method to get a new I_SecurityQos instance,
     * and use it to set userId/password etc.
     */
-   public I_InitQos getInitQoSWrapper()
+   public I_SecurityQos getSecurityQos()
    {
-      return new InitQos(); // "simple" "1.0"
+      return new SecurityQos(); // "simple" "1.0"
    }
 
    public void setSessionData(String sessionData)

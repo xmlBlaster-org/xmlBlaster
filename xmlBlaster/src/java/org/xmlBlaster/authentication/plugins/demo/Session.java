@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
-import org.xmlBlaster.authentication.plugins.simple.InitQos;
+import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.Log;
@@ -45,7 +45,7 @@ public class Session implements I_Session {
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
       authenticated = false;
-      InitQos xmlQoS = new InitQos(xmlQoS_literal);
+      SecurityQos xmlQoS = new SecurityQos(xmlQoS_literal);
       subject = determineSubject(xmlQoS.getUserId(), xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 

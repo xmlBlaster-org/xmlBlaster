@@ -3,7 +3,7 @@ Name:      HttpIorForCpp.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Writes to standard output the IOR read from the HTTP Server
-Version:   $Id: HttpIorForCpp.java,v 1.3 2001/09/04 14:50:10 ruff Exp $
+Version:   $Id: HttpIorForCpp.java,v 1.4 2001/09/04 17:25:21 ruff Exp $
 Author:    michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.authentication.plugins.InitResultQos;
-import org.xmlBlaster.authentication.plugins.simple.InitQos;
+import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -40,7 +40,7 @@ public class HttpIorForCpp
       String passwd = XmlBlasterProperty.get("-passwd", "secret");
 
       LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
-      loginQos.setSecurityQos(new InitQos(loginName, passwd));
+      loginQos.setSecurityQos(new SecurityQos(loginName, passwd));
 
       CorbaConnection con = new CorbaConnection(args);
 

@@ -3,7 +3,7 @@ Name:      LogoutQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LogoutQosWrapper.java,v 1.1 2001/09/01 09:35:33 ruff Exp $
+Version:   $Id: LogoutQosWrapper.java,v 1.2 2001/09/04 17:25:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -12,7 +12,6 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
-import org.xmlBlaster.authentication.plugins.I_InitQos;
 import java.util.Vector;
 
 
