@@ -34,7 +34,7 @@ Dll_Export const char * RELATING_SUBJECT    = "subject";
 Dll_Export const char * RELATING_UNRELATED  = "unrelated";
 Dll_Export const char * RELATING_CLIENT     = "client";
 Dll_Export const char * RELATING_HISTORY    = "history";
-Dll_Export const char * RELATING_TOPICCACHE = "topic";
+Dll_Export const char * RELATING_TOPICCACHE = "msgUnitStore";
 
 Dll_Export const char * ONOVERFLOW_BLOCK = "block";
 Dll_Export const char * ONOVERFLOW_DEADLETTER = "deadLetter";
