@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.40 2000/03/13 16:50:38 ruff Exp $
+Version:   $Id: Log.java,v 1.41 2000/03/21 14:33:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -184,6 +184,13 @@ public class Log
     * the args array to the property object (see Property.java).<br />
     * This is not the correct place, but we have the args here, and we don't need
     * to remember this task somewhere else.
+    * <p />
+    * CHANGE:
+    *  "+" parameters are a bad idea, we should change to -calls true/false<br />
+    * If you now want to change the setting in xmlBlaster.properties it looks ugly:<br />
+    * +calls=true      # Switch Log.calls() on<br />
+    * info=true        # Switch Log.info() off (on commandline: -info)
+    * 
     */
    public static final void setLogLevel(String[] args)
    {
@@ -194,12 +201,25 @@ public class Log
          return;
       }
 
-      if (Args.getArg(args, "+calls")) Log.addLogLevel("CALLS");
-      if (Args.getArg(args, "+time"))  Log.addLogLevel("TIME");
-      if (Args.getArg(args, "+trace")) Log.addLogLevel("TRACE");
-      if (Args.getArg(args, "+dump"))  Log.addLogLevel("DUMP");
+      // Note: "+" parameters are a bad idea, we should change to -calls true/false
+      if (Property.getProperty("+info", false)) Log.addLogLevel("INFO");
+      if (Property.getProperty("+warn", false)) Log.addLogLevel("WARN");
+      if (Property.getProperty("+error", false)) Log.addLogLevel("ERROR");
+      if (Property.getProperty("+calls", false)) Log.addLogLevel("CALLS");
+      if (Property.getProperty("+time", false)) Log.addLogLevel("TIME");
+      if (Property.getProperty("+trace", false)) Log.addLogLevel("TRACE");
+      if (Property.getProperty("+dump", false)) Log.addLogLevel("DUMP");
 
-      String fileName = Args.getArg(args, "-logFile", (String)null);
+      // Given flag -info switches off Log.info messages:
+      if (Property.getProperty("info", false)) Log.removeLogLevel("INFO");
+      if (Property.getProperty("warn", false)) Log.removeLogLevel("WARN");
+      if (Property.getProperty("error", false)) Log.removeLogLevel("ERROR");
+      if (Property.getProperty("calls", false)) Log.removeLogLevel("CALLS");
+      if (Property.getProperty("time", false)) Log.removeLogLevel("TIME");
+      if (Property.getProperty("trace", false)) Log.removeLogLevel("TRACE");
+      if (Property.getProperty("dump", false)) Log.removeLogLevel("DUMP");
+
+      String fileName = Property.getProperty("logFile", (String)null);
       if (fileName != null)
          Log.logToFile(fileName);
    }
@@ -256,7 +276,7 @@ public class Log
          return L_PANIC;
       else if (logLevel.equals("ERROR"))
          return L_ERROR;
-      else if (logLevel.equals("WARNING"))
+      else if (logLevel.equals("WARN"))
          return L_WARN;
       else if (logLevel.equals("INFO"))
          return L_INFO;
@@ -282,7 +302,7 @@ public class Log
       StringBuffer sb = new StringBuffer();
       if ((level & L_PANIC) > 0) sb.append("PANIC");
       if ((level & L_ERROR) > 0) sb.append(" | ERROR");
-      if ((level & L_WARN) > 0) sb.append(" | WARNING");
+      if ((level & L_WARN) > 0) sb.append(" | WARN");
       if ((level & L_INFO) > 0) sb.append(" | INFO");
       if ((level & L_CALLS) > 0) sb.append(" | CALLS");
       if ((level & L_TIME) > 0) sb.append(" | TIME");
@@ -329,6 +349,7 @@ public class Log
     */
    public static final void logToFile(String fileName)
    {
+      // System.out.println(ME + ": Logging to file " + fileName + " ...");
       Log.addLogListener(new LogFile(fileName));
    }
 
@@ -565,7 +586,7 @@ public class Log
 
 
    /**
-    * Command line usage. 
+    * Command line usage.
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" or "+" prefix there.

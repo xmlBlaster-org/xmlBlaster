@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.7 2000/03/14 10:50:09 ruff Exp $
+Version:   $Id: Property.java,v 1.8 2000/03/21 14:33:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -111,6 +111,21 @@ public class Property
       } catch (Exception e) {
          return defaultVal;
       }
+   }
+
+
+   /**
+    * Try to find the given key in xmlBlaster.properties or on command line
+    * <p />
+    * @param key the parameter key to look for
+    * @return true if the property exists
+    */
+   public final static boolean propertyExists(String key)
+   {
+      String str = getProps().getProperty(key);
+      if (str == null)
+         return false;
+      return true;
    }
 
 
@@ -348,7 +363,7 @@ public class Property
     * <p />
     * Args parameters are stronger and overwrite the property file variables
     * The arg key must have a leading - or + (as usual on command line).<br />
-    * The leading - or + are stripped (to match the property variable)
+    * The leading - are stripped (to match the property variable)
     * args must be a tuple (key / value pairs) or
     * if args has no value, the value will be set to "true" (is a flag)
     * <p />
@@ -365,12 +380,13 @@ public class Property
 
       for (int ii=0; ii<args.length; ii++) {
          String arg = args[ii];
-         if (arg.startsWith("-") || arg.startsWith("+")) {
-            String key = arg.substring(1);
+         if (arg.startsWith("-") || arg.startsWith("+")) { // only parameters starting with "-" or "+" are recognized
+            String key = arg;
+            if (arg.startsWith("-")) key = arg.substring(1); // strip "-", but not "+"
             String value = "true";
             if ((ii+1) < args.length) {
                String arg2 = args[ii+1];
-               if (!arg2.startsWith("-") && !arg2.startsWith("+")) {
+               if (!arg2.startsWith("-") && !arg2.startsWith("+")) { // parameter with a given value?
                   value = arg2;
                   ii++;
                }
