@@ -160,7 +160,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    }
 
    public void shutdown() {
-      this.sessionInfo = null;
+      //this.sessionInfo = null;
    }
 }
 
