@@ -59,6 +59,8 @@ static bool execSilent(I_Queue *queueP, const char *sqlStatement, const char *co
 static bool compilePreparedQuery(I_Queue *queueP, const char *methodName, sqlite_vm **ppVm, const char *queryString, ExceptionStruct *exception);
 static bool fillCache(I_Queue *queueP, ExceptionStruct *exception);
 static void shutdownInternal(I_Queue **queuePP, ExceptionStruct *exception);
+static void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr);
+static void freeQueueEntryData(QueueEntry *queueEntry);
 
 /**
  * Called for each SQL result row and does the specific result parsing depending on the query. 
@@ -173,23 +175,6 @@ Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
 static _INLINE_FUNC DbInfo *getDbInfo(I_Queue *queueP) {
    return (queueP==0) ? 0 : (DbInfo *)(queueP->privateObject);
 }
-static _INLINE_FUNC sqlite *getDb(I_Queue *queueP) {
-   return ((DbInfo *)(queueP->privateObject))->db;
-}
-/*
-static const char *getDbname(I_Queue *queueP) {
-   return ((DbInfo *)(queueP->privateObject))->prop.dbName;
-}
-static sqlite_vm *getVmPut(I_Queue *queueP) {
-   return ((DbInfo *)(queueP->privateObject))->pVm_put;
-}
-static sqlite_vm *getVmPeekWithSamePriority(I_Queue *queueP) {
-   return ((DbInfo *)(queueP->privateObject))->pVm_peekWithSamePriority;
-}
-static sqlite_vm *getVmFillCache(I_Queue *queueP) {
-   return ((DbInfo *)(queueP->privateObject))->pVm_fillCache;
-}
-*/
 
 /**
  * Access the queue configuration. 
@@ -1131,7 +1116,7 @@ Dll_Export void freeQueueEntryArr(QueueEntryArr *queueEntryArr)
  * Frees everything inside QueueEntryArr but NOT the struct QueueEntryArr itself
  * @param queueEntryArr The struct internals to free, passing NULL is OK
  */
-Dll_Export void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr)
+static void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr)
 {
    size_t i;
    if (queueEntryArr == (QueueEntryArr *)0) return;
@@ -1145,7 +1130,7 @@ Dll_Export void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr)
 /**
  * Does not free the queueEntry itself
  */
-Dll_Export void freeQueueEntryData(QueueEntry *queueEntry)
+static void freeQueueEntryData(QueueEntry *queueEntry)
 {
    if (queueEntry == (QueueEntry *)0) return;
    if (queueEntry->embeddedBlob.data != 0) {
@@ -1156,7 +1141,8 @@ Dll_Export void freeQueueEntryData(QueueEntry *queueEntry)
 }
 
 /**
- * Frees everything. 
+ * Frees the internal blob and the queueEntry itself. 
+ * @param queueEntry Its memory is freed, it is not usable anymore after this call
  */
 Dll_Export void freeQueueEntry(QueueEntry *queueEntry)
 {
@@ -1172,7 +1158,7 @@ Dll_Export void freeQueueEntry(QueueEntry *queueEntry)
  *        content to the given number of bytes
  * @return A ASCII XML formatted entry or NULL if out of memory
  */
-Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDumpLen)
+Dll_Export char *queueEntryToXml(QueueEntry *queueEntry, int maxContentDumpLen)
 {
    if (queueEntry == (QueueEntry *)0) return 0;
    {
@@ -1200,16 +1186,6 @@ Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDu
    free(contentStr);
    return xml;
    }
-}
-
-/**
- * NOTE: You need to free the returned pointer with free()!
- *
- * @return A ASCII XML formatted message or NULL if out of memory
- */
-Dll_Export char *queueEntryToXml(QueueEntry *queueEntry)
-{
-   return queueEntryToXmlLimited(queueEntry, -1);
 }
 
 /**
@@ -1315,7 +1291,7 @@ static void testRun(int argc, char **argv) {
       printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
       for (i=0; i<entries->len; i++) {
          QueueEntry *queueEntry = &entries->queueEntryArr[i];
-         char *dump = queueEntryToXmlLimited(queueEntry, 200);
+         char *dump = queueEntryToXml(queueEntry, 200);
          printf("%s\n", dump);
          free(dump);
       }
