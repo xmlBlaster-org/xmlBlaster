@@ -456,7 +456,8 @@ Else add it manually.
   </target>
 
   <target name="cpp-test" depends="cpp-lib">
-     <cc compiler="gcc" debug="true"
+     <echo message="Compiling of C++ test clients is not yet supported, please use the ${testsuite.dir}/c++/Makefile"/>
+     <!-- cc compiler="gcc" debug="true"
          outfile="${testsuite.dir}/c++/bin/TestGet"
          objdir="build/obj">
         <fileset dir="${testsuite.dir}/c++" includes="TestGet.cpp"/>
@@ -467,14 +468,14 @@ Else add it manually.
            <define name="MICO" value="1" />
         </defineset>
         <libset>
-           <!-- libs></libs -->
-            <!-- fileset dir="${MICO_HOME}/lib" includes="*mico${MICO_VER}.*" / -->
+           <libs>????</libs>
+            <fileset dir="${MICO_HOME}/lib" includes="*mico${MICO_VER}.*" />
         </libset>
         <compilerarg value="-Wall" />
         <compilerarg value="-Wstrict-prototypes" />
         <compilerarg value="-Wimplicit-int" />
         <compilerarg value="-Werror-implicit-function-declaration" />
-     </cc>
+     </cc -->
   </target>
 
   <!-- =================================================================== -->
