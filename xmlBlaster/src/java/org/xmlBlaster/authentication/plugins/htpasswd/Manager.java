@@ -56,7 +56,7 @@ public class Manager implements I_Manager {
 
 
    public I_Session reserveSession(String sessionId) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "reserveSession(sessionId="+sessionId+")");
+      if (log != null && log.CALL) log.call(ME, "reserveSession(sessionId="+sessionId+")");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
