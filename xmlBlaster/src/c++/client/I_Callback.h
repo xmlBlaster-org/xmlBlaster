@@ -47,7 +47,7 @@ class Dll_Export I_Callback {
 public:
    virtual std::string update(const std::string &sessionId,
                        org::xmlBlaster::client::key::UpdateKey &updateKey, 
-                       void *content, long contentSize, 
+                       const unsigned char *content, long contentSize, 
                        org::xmlBlaster::client::qos::UpdateQos &updateQos) = 0;
 
    virtual ~I_Callback() // = 0;
