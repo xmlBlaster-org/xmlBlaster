@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xx 2003]
 ===============================
+ o BUGFIXES in CACHE and JDBC plugins when persistent storage failed
+
+ o BUGIFX for passing EraseReturnQos in cluster environment back to client
+
+ o Cleanup of testsuite to avoid memory leaks during tests
+
  o The client side synchronous access cache is ported and
    does now automatically remove outdated entries, see:
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cache.html
