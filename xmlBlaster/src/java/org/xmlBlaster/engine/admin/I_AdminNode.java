@@ -30,7 +30,17 @@ public interface I_AdminNode {
 
    public String getRunlevel();
    public void setRunlevel(String level) throws XmlBlasterException;
-
+   /**
+    * Returns the current server time in milliseconds. 
+    * For an accuracy discussion please consult {@link System.currentTimeMillis}
+    * @return For example 1111400317333
+    */
+   public long getServerTimestampMillis();
+   /**
+    * Access the current server time as a java.sql.Timestamp string. 
+    * @return For example "2005-03-21 11:18:12.622"
+    */
+   public String getServerTimestamp();
    public long getUptime();
    public long getFreeMem();
    public long getTotalMem();

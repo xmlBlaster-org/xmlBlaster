@@ -4,7 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
 
- o #13291 c++ in MsgQosData.toXml the forceDestroy flag is written out (if modified).
+ o #13295 Added new server methods for administrative access:
+    getServerTimestampMillis(): Access current server time in milli seconds
+    getServerTimestamp(): Access current server time, e.g. "2005-03-21 11:18:12.622"
 
  o #13280 Removed outdated SOAP protocol plugins
 

@@ -106,6 +106,15 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>get ?serverTimestamp</td>
+            <td><pre>
+2005-03-21 11:31:35.044
+            </pre></td>
+            <td>The current time on the server
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>get topic/?Hello</td>
             <td>
                <pre><![CDATA[

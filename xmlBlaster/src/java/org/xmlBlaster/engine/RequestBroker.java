@@ -2130,6 +2130,13 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public String getVersion() {
       return glob.getVersion();
    }
+   public long getServerTimestampMillis() {
+      return System.currentTimeMillis();
+   }
+   public String getServerTimestamp() {
+      java.sql.Timestamp tt = new java.sql.Timestamp(System.currentTimeMillis());
+      return tt.toString();
+   }
    public String getBuildTimestamp() {
       return glob.getBuildTimestamp();
    }
