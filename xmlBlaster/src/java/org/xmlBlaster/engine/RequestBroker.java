@@ -1498,7 +1498,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                }
                else {
                   if (! publishQos.isFromPersistenceStore()) {
-                     log.warn(ME, "Cluster manager is not ready, handling message locally");
+                     log.warn(ME, "Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
                   }
                }
             }
@@ -1666,13 +1666,14 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
          TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
          Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
+         EraseReturnQos[] clusterRetArr = null;
 
          for (int ii=0; ii<topicHandlerArr.length; ii++) {
             TopicHandler topicHandler = topicHandlerArr[ii];
 
             if (useCluster && !isClusterUpdate) { // cluster support - forward erase to master
                try {
-                  EraseReturnQos ret[] = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
+                  clusterRetArr = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
                   //Thread.currentThread().dumpStack();
                   //if (ret != null) return ret;
                }
@@ -1688,7 +1689,13 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             }
 
             if (topicHandler == null) { // unSubscribe on a unknown message ...
-               log.warn(ME, "Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
+               if (clusterRetArr != null && clusterRetArr.length > 0) {
+                  log.info(ME, "Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
+                  oidSet.add(xmlKey.getOid());
+               }
+               else {
+                  log.warn(ME, "Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
+               }
                // !!! how to delete XPath subscriptions, still MISSING ???
                continue;
             }
