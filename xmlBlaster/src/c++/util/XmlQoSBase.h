@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it 
            with SAX
-Version:   $Id: XmlQoSBase.h,v 1.3 2000/09/15 17:16:12 ruff Exp $
+Version:   $Id: XmlQoSBase.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <string>
@@ -13,6 +13,7 @@ Version:   $Id: XmlQoSBase.h,v 1.3 2000/09/15 17:16:12 ruff Exp $
 #ifndef _UTIL_XMLQOSBASE_H
 #define _UTIL_XMLQOSBASE_H
 
+namespace org { namespace xmlBlaster {
 namespace util {
     /**
      * In good old C days this would have been named a 'flag' (with bit wise 
@@ -130,7 +131,7 @@ namespace util {
 	  endElementBase(name);
        }
     };
-};
+}}} // namespace
 
 #endif
 

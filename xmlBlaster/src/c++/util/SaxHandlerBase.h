@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: SaxHandlerBase.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_SAXHANDLERBASE_H
@@ -22,6 +22,7 @@ Version:   $Id: SaxHandlerBase.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
 
+namespace org { namespace xmlBlaster {
 namespace util {
     
    /**
@@ -296,7 +297,7 @@ namespace util {
 	 return ret;
       }
    };
-};
+}}} // namespace
 
 #endif
 

@@ -3,7 +3,7 @@ Name:      UpdateQoS.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
-Version:   $Id: UpdateQoS.h,v 1.4 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: UpdateQoS.h,v 1.5 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 //  package org.xmlBlaster.client;
@@ -17,7 +17,7 @@ Version:   $Id: UpdateQoS.h,v 1.4 2000/09/15 17:16:11 ruff Exp $
 
 #include <util/XmlQoSBase.h>
 
-namespace client {
+namespace org { namespace xmlBlaster {
    
    /**
     * QoS (quality of service) informations sent from server to client<br />
@@ -229,7 +229,7 @@ namespace client {
 	 return printOn("");
       }
    };
-};
+}} // namespace
 
 #endif
 

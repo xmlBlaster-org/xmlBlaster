@@ -3,7 +3,7 @@ Name:      NameServerControl.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to handle the NameServer stuff (bind, unbind, resolve ...)
-Version:   $Id: NameServerControl.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
+Version:   $Id: NameServerControl.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -88,6 +88,7 @@ typedef vector<string> ListType;
 //  }
 
 
+namespace org { namespace xmlBlaster {
 namespace util {
 
 /**
@@ -363,7 +364,7 @@ namespace util {
 	 }
 	    
       };
-};
+}}} // namespace
 
 #endif
 

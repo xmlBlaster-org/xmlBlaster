@@ -3,7 +3,7 @@ Name:      KeyWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: KeyWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: KeyWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_KEYWRAPPER_H
@@ -14,7 +14,7 @@ Version:   $Id: KeyWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 #define CLIENT_HEADER xmlBlaster
 #include <util/CompatibleCorba.h>
 
-namespace client {
+namespace org { namespace xmlBlaster {
     
     /**
      * This base class encapsulates XmlKey which you send to xmlBlaster.
@@ -65,7 +65,7 @@ namespace client {
 	 return ret;
       }
    };
-}; 
+}} // namespace
 
 #endif
 

@@ -3,13 +3,14 @@ Name:      StringTrim.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to emulate the java String.trim() method
-Version:   $Id: StringTrim.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: StringTrim.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_STRINGTRIM_H
 #define _UTIL_STRINGTRIM_H
 
+namespace org { namespace xmlBlaster {
 namespace util {
    
    /**
@@ -97,7 +98,7 @@ namespace util {
       }
       
    };
-};
+}}} // namespace
 
 #endif
 

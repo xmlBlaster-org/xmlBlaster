@@ -3,7 +3,7 @@
   Project:   xmlBlaster.org
   Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
   Comment:   Handling one xmlQoS
-  Version:   $Id: PublishQosWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+  Version:   $Id: PublishQosWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
   ---------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_PUBLISHQOSWRAPPER_H
@@ -15,7 +15,7 @@
 #include <client/QosWrapper.h>
 #include <util/Destination.h>
 
-namespace client {
+namespace org { namespace xmlBlaster {
    
    /**
     * This class encapsulates the qos of a publish() message.
@@ -171,7 +171,7 @@ namespace client {
 	 return ret;
       }
    };
-};
+}} // namespace
 
 #endif
 

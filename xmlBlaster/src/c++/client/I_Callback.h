@@ -3,7 +3,7 @@ Name:      I_Callback.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: I_Callback.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_ICALLBACK_H
@@ -16,15 +16,15 @@ Version:   $Id: I_Callback.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 #include <util/CompatibleCorba.h>
 
 
-namespace client {
+namespace org { namespace xmlBlaster {
    /**
     * This is a little helper class wraps the CORBA BlasterCallback update(),
     * and delivers the client a nicer update() method. <p>
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.2 $
-    * @author $Author: laghi $
+    * @version $Revision: 1.3 $
+    * @author $Author: ruff $
     */
    class I_Callback {
       /**
@@ -50,7 +50,7 @@ namespace client {
 			  void *content, long contentSize, 
 			  UpdateQoS &updateQoS) = 0;
    };
-};
+}} // namespace
 
 #endif
 

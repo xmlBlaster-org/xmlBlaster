@@ -3,7 +3,7 @@ Name:      DefaultCallback.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
-Version:   $Id: DefaultCallback.h,v 1.5 2001/11/25 19:25:47 ruff Exp $
+Version:   $Id: DefaultCallback.h,v 1.6 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_DEFAULTCALLBACK_H
@@ -19,7 +19,7 @@ Version:   $Id: DefaultCallback.h,v 1.5 2001/11/25 19:25:47 ruff Exp $
 #include <util/CompatibleCorba.h>
 #include COSNAMING
 
-namespace client {
+namespace org { namespace xmlBlaster {
    
    /**
     * Example for a callback implementation.<p />
@@ -153,7 +153,7 @@ namespace client {
 	 }
       }
    }; // class DefaultCallback
-};
+}} // namespace
 
 
 #endif

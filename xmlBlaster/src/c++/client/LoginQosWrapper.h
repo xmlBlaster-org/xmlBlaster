@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
+Version:   $Id: LoginQosWrapper.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_LOGINQOSWRAPPER_H
@@ -31,7 +31,7 @@ Version:   $Id: LoginQosWrapper.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
 
-namespace client {   
+namespace org { namespace xmlBlaster {
    
    class LoginQosWrapper : public QosWrapper {
 	 
@@ -160,7 +160,7 @@ namespace client {
 	 return sb;
       }
    }; // class
-}; // namespace
+}} // namespace
 
 #endif
 

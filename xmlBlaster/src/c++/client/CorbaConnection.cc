@@ -4,13 +4,13 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version
            without caching and without failsave mode.
-Version:   $Id: CorbaConnection.cc,v 1.4 2001/11/25 19:25:47 ruff Exp $
+Version:   $Id: CorbaConnection.cc,v 1.5 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
 #include <client/CorbaConnection.h>
 
-namespace client {
+namespace org { namespace xmlBlaster {
 
    CorbaConnection::CorbaConnection(int args, char *argc[], bool orbOwner)
       : loginQos_(), log_(args, argc) {
@@ -363,7 +363,7 @@ namespace client {
    CORBA::ORB_ptr CorbaConnection::orb_           = 0;
    unsigned short CorbaConnection::numOfSessions_ = 0;
    PortableServer::POA_ptr CorbaConnection::poa_  = 0;
-}; // end of namespace
+}} // end of namespace
 
 
 

@@ -3,7 +3,7 @@ Name:      SubscribeKeyWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: SubscribeKeyWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 //  package org.xmlBlaster.client;
@@ -16,7 +16,7 @@ Version:   $Id: SubscribeKeyWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 #include <util/CompatibleCorba.h>
 
 
-namespace client {
+namespace org { namespace xmlBlaster {
 /**
  * This class encapsulates the Message meta data and unique identifier (key) 
  * of a subscribe() or get() message.<p />
@@ -112,4 +112,4 @@ namespace client {
 	 return ret;
       }
    };
-};
+}} // namespace

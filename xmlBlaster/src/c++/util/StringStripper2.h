@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to strip a string containing two kinds of separators into a 
            vector of pairs of strings.
-Version:   $Id: StringStripper2.h,v 1.3 2001/11/25 19:25:47 ruff Exp $
+Version:   $Id: StringStripper2.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -30,6 +30,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
  * separator will be the first element in the pair. The result will be:
  * <"ti","che">,<"ta","tacat">,<"i","tac">,<"tacumi","tac">
  */
+namespace org { namespace xmlBlaster {
 namespace util {
    
    class StringStripper2 {
@@ -77,6 +78,6 @@ namespace util {
       }
 
    };
-};
+}}} // namespace
 
 #endif

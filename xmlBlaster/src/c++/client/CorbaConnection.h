@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version 
            without caching and without failsave mode.
-Version:   $Id: CorbaConnection.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: CorbaConnection.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -23,7 +23,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <util/CompatibleCorba.h>
 #include COSNAMING
 
-namespace client {
+namespace org { namespace xmlBlaster {
 
    class CorbaConnection {
       
@@ -270,7 +270,7 @@ namespace client {
       void usage();
    
    }; // class CorbaConnection
-};
+}} // namespace
 
 #endif
 

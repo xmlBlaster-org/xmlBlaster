@@ -3,7 +3,7 @@ Name:      QosWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS message
-Version:   $Id: QosWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: QosWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_QOSWRAPPER_H
@@ -11,7 +11,7 @@ Version:   $Id: QosWrapper.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 
 #include <string>
 
-namespace client {
+namespace org { namespace xmlBlaster {
 
 /**
  * This base class encapsulates XmlQoS which you send to xmlBlaster.
@@ -54,6 +54,6 @@ namespace client {
 	 return "<qos>\n</qos>";
       }
    }; // class
-}; // namespace
+}} // namespace
 
 #endif

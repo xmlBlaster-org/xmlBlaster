@@ -3,7 +3,7 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: CallbackAddress.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_CALLBACKADDRESS_H
@@ -11,6 +11,7 @@ Version:   $Id: CallbackAddress.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 
 #include <string>
 
+namespace org { namespace xmlBlaster {
 namespace util {
 
    /**
@@ -93,7 +94,7 @@ namespace util {
       }
    };
 
-}; // namespace 
+}}}; // namespace 
 
 #endif
 

@@ -3,7 +3,7 @@ Name:      StopWatch.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: StopWatch.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: StopWatch.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_STOPWATCH_H
@@ -14,6 +14,7 @@ Version:   $Id: StopWatch.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 #include <strstream.h>
 
 
+namespace org { namespace xmlBlaster {
 namespace util {
 
 /**
@@ -114,7 +115,7 @@ namespace util {
 	 }
       }
    };
-};
+}}} // namespace
 
 #endif
 

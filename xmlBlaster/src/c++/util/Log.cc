@@ -3,11 +3,12 @@ Name:      Log.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cc,v 1.3 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: Log.cc,v 1.4 2001/11/26 09:20:59 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
 
+namespace org { namespace xmlBlaster {
 namespace util {
 
    Log::Log(int args, char *argc[]) {
@@ -394,7 +395,7 @@ namespace util {
    bool   Log::DUMP  = false;
 
 
-}; // end of namespace
+}}} // end of namespace
 
 
 

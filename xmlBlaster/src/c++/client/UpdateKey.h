@@ -3,7 +3,7 @@ Name:      UpdateKey.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.h,v 1.4 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: UpdateKey.h,v 1.5 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_UPDATEKEY_H
@@ -15,7 +15,7 @@ Version:   $Id: UpdateKey.h,v 1.4 2000/09/15 17:16:11 ruff Exp $
 #include <sax/AttributeList.hpp>
 
 
-namespace client {
+namespace org { namespace xmlBlaster {
    
 /**
  * This class encapsulates the Message meta data and unique identifier of a 
@@ -259,6 +259,6 @@ namespace client {
 	 return sb;
       }
    };
-};
+}} // namespace
 
 #endif

@@ -3,7 +3,7 @@ Name:      Destination.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: Destination.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_DESTINATION_H
@@ -17,6 +17,7 @@ Version:   $Id: Destination.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
 //  import org.xmlBlaster.util.Log;
 //  import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
+namespace org { namespace xmlBlaster {
 namespace util {
    
    
@@ -158,6 +159,6 @@ namespace util {
 	 return ret;
       }
    };
-};
+}}} // namespace
 
 #endif

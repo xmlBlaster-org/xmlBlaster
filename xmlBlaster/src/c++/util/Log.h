@@ -3,7 +3,7 @@ Name:      Log.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: Log.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #define _TERM_WITH_COLORS_
@@ -26,6 +26,7 @@ Version:   $Id: Log.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
  */
 
 
+namespace org { namespace xmlBlaster {
 namespace util {
    
    
@@ -344,6 +345,6 @@ namespace util {
 
    }; // end of class Log
 
-}; // end of namespace util
+}}} // end of namespace util
 
 #endif // _UTIL_LOG_H
