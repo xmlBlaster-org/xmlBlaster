@@ -509,6 +509,7 @@ UserInfo: joe:mypasswd
         <li>JMX (JmxGateway.java) support is missing.</li>
         <li>A swing or browser based GUI interface for administration.</li>
         <li>Wildcard queries.</li>
+        <li>XPath queries with <a href="http://jakarta.apache.org/commons/jxpath/" target="others">JXPath</a></li>
       </ul>
    </todo>
 
@@ -525,7 +526,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
