@@ -19,6 +19,8 @@ import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer;
 import org.xmlBlaster.client.protocol.socket.SocketConnection;
 import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
+//import org.xmlBlaster.client.protocol.soap.SoapConnection;
+//import org.xmlBlaster.client.protocol.soap.SoapCallbackServer;
 
 import org.xmlBlaster.client.BlasterCache;
 import org.xmlBlaster.client.PluginLoader;
@@ -60,7 +62,7 @@ import java.util.Collections;
 
 /**
  * This is a helper class, helping a Java client to connect to xmlBlaster
- * using IIOP (CORBA), RMI, XML-RPC, SOCKET or any other supported protocol.
+ * using IIOP (CORBA), RMI, XML-RPC, SOCKET, SOAP or any other supported protocol.
  * <p />
  * Please note that you don't need to use this wrapper, you can use the raw I_XmlBlasterConnection
  * interface as well. You can also hack your own little wrapper, which does exactly
@@ -337,11 +339,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       else if (driverType.equalsIgnoreCase("RMI")) {
          driver = new RmiConnection(this.glob);
       }
-      else if (driverType.equalsIgnoreCase("XML-RPC")) {
+      else if (driverType.equalsIgnoreCase("XML-RPC") || driverType.equalsIgnoreCase("XMLRPC")) {
          driver = new XmlRpcConnection(this.glob);
       }
+//      else if (driverType.equalsIgnoreCase("SOAP")) {
+//         driver = new SoapConnection(this.glob);
+//      }
       else {
-         String text = "Unknown protocol '" + driverType + "' to access " + getServerNodeId() + ", use SOCKET, IOR, RMI or XML-RPC.";
+         String text = "Unknown protocol '" + driverType + "' to access " + getServerNodeId() + ", use SOCKET, IOR, RMI, SOAP or XML-RPC.";
          log.error(ME, text);
          throw new XmlBlasterException(ME+".UnknownDriver", text);
       }
@@ -436,8 +441,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          driver = new CorbaConnection(glob, ap);
       else if (driverType.equalsIgnoreCase("RMI"))
          driver = new RmiConnection(glob, ap);
-      else if (driverType.equalsIgnoreCase("XML-RPC"))
+      else if (driverType.equalsIgnoreCase("XML-RPC") || driverType.equalsIgnoreCase("XMLRPC"))
          driver = new XmlRpcConnection(glob, ap);
+//      else if (driverType.equalsIgnoreCase("SOAP"))
+//         driver = new SoapConnection(glob, ap);
       else {
          String text = "Unknown protocol '" + driverType + "' to access " + getServerNodeId() + ", use IOR, RMI or XML-RPC.";
          log.error(ME, text);
@@ -877,11 +884,16 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             server.initialize(this.glob, loginName, this);
             return server;
          }
-         else if (driverType.equalsIgnoreCase("XML-RPC")) {
+         else if (driverType.equalsIgnoreCase("XML-RPC") || driverType.equalsIgnoreCase("XMLRPC")) {
             I_CallbackServer server = new XmlRpcCallbackServer();
             server.initialize(this.glob, loginName, this);
             return server;
          }
+//         else if (driverType.equalsIgnoreCase("SOAP")) {
+//            I_CallbackServer server = new SoapCallbackServer();
+//            server.initialize(this.glob, loginName, this);
+//            return server;
+//         }
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -2083,7 +2095,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       Global glob = Global.instance();
       String text = "\n";
       text += "Choose a connection protocol:\n";
-      text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
+      text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "                       Example: java MyApp -client.protocol RMI -rmi.hostname 192.168.10.34\n";
       text += "\n";
