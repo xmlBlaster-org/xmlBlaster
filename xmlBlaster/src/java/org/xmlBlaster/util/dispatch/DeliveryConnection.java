@@ -55,17 +55,17 @@ abstract public class DeliveryConnection implements I_Timeout
 
    /** For logging only */
    protected final String myId;
-   protected AddressBase address = null;
+   protected AddressBase address;
 
    private final Timeout pingTimer;
-   private Timestamp timerKey = null;
+   private Timestamp timerKey;
 
    protected ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
 
    protected int retryCounter = 0;
 
    /**
-    * Our initialize() needs to be called next. 
+    * Our loadPlugin() and initialize() needs to be called next. 
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
     * @param address The address i shall connect to
     */
@@ -87,29 +87,29 @@ abstract public class DeliveryConnection implements I_Timeout
    abstract public String getName();
 
    /** 
-    * Load the appropriate protocol driver. 
+    * Connects on protocol level to the server and tries a ping
     * Needs to be called after construction
     * <p>
-    * Calls initDriver() which needs to be implemented by derived classes
+    * Calls connectLowLevel() which needs to be implemented by derived classes
+    * loadPlugin() needs to be called before.
     * </p>
+    * Called by ClientDeliveryConnectionsHandler or CbDeliveryConnectionsHandler
     */
    public final void initialize() throws XmlBlasterException {
-      if (this.address == null) {
-         this.state = ConnectionStateEnum.DEAD;
-         XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "null address");
-         connectionsHandler.toDead(this, ex);
-         throw ex;
-      }
-
-      this.state = ConnectionStateEnum.ALIVE;
       this.retryCounter = 0;
 
       try {
-         initDriver();
-         //connectionsHandler.toAlive(this);
-         if (address.getPingInterval() > 0L) { // respan ping timer (even for native plugins we do a dummy ping)
-            this.timerKey = this.pingTimer.addOrRefreshTimeoutListener(this,
-                        this.address.getPingInterval(), null, this.timerKey);
+         connectLowlevel();
+         handleTransition(true, true, null);
+      }
+      catch (XmlBlasterException e) {
+         if (log.TRACE) log.trace(ME, e.getMessage());
+         if (e.isCommunication()) {
+            handleTransition(false, true, e); // never returns - throws exception
+         }
+         else {
+            connectionsHandler.toDead(this, e);
+            throw e;
          }
       }
       catch (Throwable throwable) {
@@ -117,7 +117,6 @@ abstract public class DeliveryConnection implements I_Timeout
                                   new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "", throwable);
          if (log.TRACE) log.trace(ME, e.toString());
          connectionsHandler.toDead(this, e);
-         handleTransition(false, true, e);
          throw e;
       }
 
@@ -141,8 +140,17 @@ abstract public class DeliveryConnection implements I_Timeout
    /** Called on COMMUNICATION errors, reset protocol driver for reconnect polling */
    abstract public void resetConnection();
 
-   /** The derived class should create an instance of the protocol driver */
-   abstract public void initDriver() throws XmlBlasterException;
+   /**
+    * The derived class should create an instance of the protocol driver. 
+    */
+   abstract public void loadPlugin() throws XmlBlasterException;
+
+   /**
+    * Connect on protocol layer and try an initial low level ping. 
+    * @exception XmlBlasterException with ErrorCode.COMMUNICATION* if server is not reachable
+    *            or other exceptions on other errors 
+    */
+   abstract public void connectLowlevel() throws XmlBlasterException;
 
    /** A human readable name of the protocol plugin */
    abstract public String getDriverName();
@@ -166,8 +174,8 @@ abstract public class DeliveryConnection implements I_Timeout
       if (msgArr == null || msgArr.length == 0) return; // assert
 
       if (isDead()) { // assert
-         log.error(ME, "Connection to " + address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Internal problem: Connection to " + address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
+         log.error(ME, "Connection to " + this.address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Internal problem: Connection to " + this.address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
       }
 
       // Send the message ...
@@ -177,7 +185,7 @@ abstract public class DeliveryConnection implements I_Timeout
          return;
       }
       catch (XmlBlasterException e) {
-         if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + state.toString());
+         if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
          for (int i=0; i<msgArr.length; i++)
             msgArr[i].incrRedeliverCounter();
          if (e.isCommunication()) {
@@ -225,7 +233,7 @@ abstract public class DeliveryConnection implements I_Timeout
          return returnVal;
       }
       catch (Throwable e) {
-         if (isAlive() && log.TRACE) log.trace(ME, "Exception from callback ping(), retryCounter=" + retryCounter + ", state=" + state.toString());
+         if (isAlive() && log.TRACE) log.trace(ME, "Exception from callback ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
          handleTransition(false, byDeliveryConnectionsHandler, e);
          return ""; // Only reached if from timeout
       }
@@ -277,23 +285,31 @@ abstract public class DeliveryConnection implements I_Timeout
    protected final void handleTransition(boolean toReconnected, boolean byDeliveryConnectionsHandler,
                                        Throwable throwable) throws XmlBlasterException {
 
-      ConnectionStateEnum oldState = state;
+      ConnectionStateEnum oldState = this.state;
       if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDeliveryConnectionsHandler=" + byDeliveryConnectionsHandler);
 
       synchronized (this) {
          if (isDead()) {   // ignore, not possible
-            log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": We ignore it.");
+            log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": We ignore it.");
             //Thread.currentThread().dumpStack();
-            throw XmlBlasterException.convert(glob, ME, "Connection transition " + oldState.toString() + " -> " + state.toString(), throwable);
+            throw XmlBlasterException.convert(glob, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString(), throwable);
          }
 
-         if (toReconnected && oldState == ConnectionStateEnum.UNDEF) { //startup
-            state = ConnectionStateEnum.ALIVE;
-            connectionsHandler.toAlive(this);
+         /*
+         if (oldState == ConnectionStateEnum.UNDEF) { //startup
+            if (toReconnected) {
+               this.state = ConnectionStateEnum.ALIVE;
+               connectionsHandler.toAlive(this);
+            }
+            else {
+               this.state = ConnectionStateEnum.POLLING;
+               connectionsHandler.toPolling(this);
+            }
          }
+         */
 
          if (toReconnected && isAlive()) { //everything is ok
-            if (address.getPingInterval() > 0L) { // respan ping timer (even for native plugins we do a dummy ping)
+            if (this.address.getPingInterval() > 0L) { // respan ping timer (even for native plugins we do a dummy ping)
                // timerKey==null (byDeliveryConnectionsHandler==false) -> call from a ping timeout: respan
                //
                // timerKey!=null (byDeliveryConnectionsHandler==true)  -> call between pings from successful update() invocation:
@@ -312,50 +328,50 @@ abstract public class DeliveryConnection implements I_Timeout
             timerKey = null;
          }
 
-         if (toReconnected && isPolling()) {
-            state = ConnectionStateEnum.ALIVE;
+         if (toReconnected && (isPolling() || isUndef())) {
+            this.state = ConnectionStateEnum.ALIVE;
             retryCounter = 0; // success
-            log.info(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": Success, " + myId + " reconnected.");
-            if (address.getPingInterval() > 0L) // respan ping timer
-               timerKey = pingTimer.addTimeoutListener(this, address.getPingInterval(), null);
+            log.info(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " reconnected.");
+            if (this.address.getPingInterval() > 0L) // respan ping timer
+               timerKey = pingTimer.addTimeoutListener(this, this.address.getPingInterval(), null);
             connectionsHandler.toAlive(this);
             return;
          }
 
-         if (address.getRetries() == -1 || retryCounter < address.getRetries()) {
+         if (this.address.getRetries() == -1 || retryCounter < this.address.getRetries()) {
             // poll for connection ...
-            state = ConnectionStateEnum.POLLING;
+            this.state = ConnectionStateEnum.POLLING;
             retryCounter++;
-            if (address.getDelay() > 0L) { // respan reconnect poller
-               if (log.TRACE) log.trace(ME, "Polling for server with delay=" + address.getDelay());
-               timerKey = pingTimer.addTimeoutListener(this, address.getDelay(), "poll");
-               if (oldState == ConnectionStateEnum.ALIVE) {
+            if (this.address.getDelay() > 0L) { // respan reconnect poller
+               if (log.TRACE) log.trace(ME, "Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState);
+               timerKey = pingTimer.addTimeoutListener(this, this.address.getDelay(), "poll");
+               if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   resetConnection();
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": " + address.toString() + " is unaccessible, we poll for it every " + address.getDelay() + " msec ...");
-                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + address.getDelay() + ", maxRetries=" + address.getRetries());
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible, we poll for it every " + this.address.getDelay() + " msec ...");
+                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries());
                   connectionsHandler.toPolling(this);
                }
                if (byDeliveryConnectionsHandler)
-                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request");
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request. oldState=" + oldState);
                return;
             }
             else {
                if (oldState == ConnectionStateEnum.ALIVE) {
                   resetConnection();
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": " + address.toString() + " is unaccessible");
-                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + address.getDelay() + ", maxRetries=" + address.getRetries());
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible");
+                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries());
                }
             }
          }
 
          // error giving up ...
-         state = ConnectionStateEnum.DEAD;
+         this.state = ConnectionStateEnum.DEAD;
       } // synchronized because of timerKey and status transition
 
       // error giving up ...
       XmlBlasterException ex = null;
       if (throwable == null) {
-         ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": " + address.toString() + " is unaccessible.");
+         ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible.");
       }
       else if (throwable instanceof XmlBlasterException) {
          ex = (XmlBlasterException)throwable;
@@ -363,7 +379,7 @@ abstract public class DeliveryConnection implements I_Timeout
       else {
          ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Sending of messge failed", throwable);
       }
-      log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": retryCounter=" + retryCounter + ", maxRetries=" + address.getRetries());
+      log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": retryCounter=" + retryCounter + ", maxRetries=" + this.address.getRetries());
 
       connectionsHandler.toDead(this, ex);
       
@@ -379,7 +395,7 @@ abstract public class DeliveryConnection implements I_Timeout
     * Stop all remote connections. 
     */
    public void shutdown() throws XmlBlasterException {
-      state = ConnectionStateEnum.DEAD;
+      this.state = ConnectionStateEnum.DEAD;
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       if (timerKey != null) {
          this.pingTimer.removeTimeoutListener(timerKey);
@@ -390,6 +406,10 @@ abstract public class DeliveryConnection implements I_Timeout
 
    public final ConnectionStateEnum getState() {
       return this.state;
+   }
+
+   public final boolean isUndef() {
+      return this.state == ConnectionStateEnum.UNDEF;
    }
 
    public final boolean isAlive() {
@@ -410,6 +430,6 @@ abstract public class DeliveryConnection implements I_Timeout
     * @param extraOffset indenting of tags for nice output
     * @return internal state as an XML ASCII string
     */
-   abstract public String toXml(String extraOffset) throws XmlBlasterException;
+   abstract public String toXml(String extraOffset);
 }
 
