@@ -3,25 +3,16 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.27 2000/05/16 20:57:35 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.28 2000/06/04 19:13:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
-import org.xmlBlaster.protocol.corba.ServerImpl;
-import org.xmlBlaster.protocol.corba.serverIdl.ServerPOATie;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.AuthServerImpl;
-import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import java.util.*;
 
-import org.omg.PortableServer.*;
-import jacorb.poa.util.POAUtil;
 
 
 /**
@@ -33,12 +24,13 @@ public class Authenticate
 {
    final private static String ME = "Authenticate";
 
-   private AuthServerImpl authServerImpl;
+   /** Unique counter to generate IDs */
+   private long counter = 1;
 
    /**
-    * With this map you can find a client using a uniqueClientKey.
+    * With this map you can find a client using a sessionId.
     *
-    * key   = uniqueClientKey, the byte[] from the POA active object map (aom)
+    * key   = sessionId, the byte[] from the POA active object map (aom)
     * value = ClientInfo object, containing all data about a client
     */
    final private Map aomClientInfoMap = Collections.synchronizedMap(new HashMap());
@@ -56,91 +48,13 @@ public class Authenticate
     */
    final private Set clientListenerSet = Collections.synchronizedSet(new HashSet());
 
-   private final String xmlBlasterPOA_name = "xmlBlaster-POA"; //  This specialized POA controlles the xmlBlaster server
-   private POA xmlBlasterPOA;                                  // We use our own, customized POA
-
-   private org.omg.CORBA.ORB orb;
-
-   private org.omg.PortableServer.POA rootPOA;
-
-   // USING TIE:
-   // private ServerPOATie xmlBlasterServant;  // extends org.omg.PortableServer.Servant
-   // NOT TIE
-   private ServerImpl xmlBlasterServant;  // extends org.omg.PortableServer.Servant
 
 
    /**
-    * One instance implements a server.
-    *
-    * Authenticate creates a single instance of the xmlBlaster.Server.
-    * Clients need first to do a login, from where they get
-    * an IOR which serves them, one thread for each request.<p>
-    *
-    * Every client has its own IOR, but in reality this IOR is mapped
-    * to a single servant.<p>
-    * This allows:<br>
-    * - Identification of the client thru its unique IOR<br>
-    * - Only a few threads are enough to serve many clients
-    *
-    * @param The CORBA interface implementing object
     */
-   public Authenticate(AuthServerImpl authServerImpl)
+   public Authenticate()
    {
-      this.authServerImpl = authServerImpl;
-
       if (Log.CALLS) Log.calls(ME, "Entering constructor");
-
-      orb = authServerImpl.getOrb();
-
-      try {
-         rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
-         POAManager poaMgr  = rootPOA.the_POAManager();
-
-
-         // Create a customized POA:
-         // - Allows a single servant for multiple clients
-         // - Allows one thread per request (per invocation of a server method)
-         // - Allows to recognize the calling client (thru one IOR per client)
-         //   so the clients do not need to send a sessionId as a method parameter
-         // - Allows thousands of clients simultaneously, as there is only one servant
-         org.omg.CORBA.Policy [] policies = new org.omg.CORBA.Policy[2];
-         policies[0] = rootPOA.create_request_processing_policy(RequestProcessingPolicyValue.USE_DEFAULT_SERVANT);
-         policies[1] = rootPOA.create_id_uniqueness_policy(IdUniquenessPolicyValue.MULTIPLE_ID);
-         // policies[] = rootPOA.create_id_assignment_policy(IdAssignmentPolicyValue.USER_ID);
-         // policies[] = rootPOA.create_lifespan_policy(LifespanPolicyValue.PERSISTENT);
-         xmlBlasterPOA = rootPOA.create_POA(xmlBlasterPOA_name, poaMgr, policies);
-         for (int i=0; i<policies.length; i++) policies[i].destroy();
-
-         // This single servant handles all requests (with the policies from above)
-
-         // USING TIE:
-         // xmlBlasterServant = new ServerPOATie(new ServerImpl(orb, this));
-         // NOT TIE:
-         xmlBlasterServant = new ServerImpl(orb, this, new RequestBroker(this));
-
-         xmlBlasterPOA.set_servant(xmlBlasterServant); // set as default servant
-         poaMgr.activate();
-
-         // orb.run();
-         // Log.info(ME, "Default Active Object Map ID=" + default_oid);
-         if (Log.TRACE) Log.trace(ME, "Default xmlBlasterServant activated");
-      }
-      catch ( Exception e ) {
-         e.printStackTrace();
-         Log.error(ME, e.toString());
-      }
-
-      if (Log.CALLS) Log.trace(ME, "Leaving constructor");
-   }
-
-
-   /**
-    * Get a handle on the request broker singleton (the engine of xmlBlaster).
-    * @return RequestBroker
-    */
-   public RequestBroker getRequestBroker()
-   {
-      return xmlBlasterServant.getRequestBroker();
    }
 
 
@@ -163,44 +77,31 @@ public class Authenticate
     *           &lt;/queue>
     *        &lt;/client>
     *     </pre>
-    * @return The xmlBlaster.Server interface
+    * @param sessionId The user session ID if generated outside, otherwise null
+    * @return The sessionId on successful login
     * @exception XmlBlasterException Access denied
     */
-   public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
-                       String xmlQoS_literal) throws XmlBlasterException
+   public String login(String loginName, String passwd,
+                       String xmlQoS_literal, String sessionId)
+                          throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "-------START-login()---------\n" + printOn().toString());
-      String uniqueClientKey;
-      org.omg.CORBA.Object certificatedServerRef = null;
+      if (Log.DUMP) Log.dump(ME, "-------START-login()---------\n" + toXml().toString());
 
       ClientInfo clientInfo = getClientInfoByName(loginName);
 
       if (clientInfo != null && clientInfo.isLoggedIn()) {
          Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in. Your login session will be re-initialized.");
-         resetClientInfo(clientInfo.getAuthenticationInfo().getXmlBlaster(), false);
+         resetClientInfo(clientInfo.getUniqueKey(), false);
          // allowing re-login: if the client crashed without proper logout, she should
          // be allowed to login again, so - first logout the last session (but keep messages in client queue)
          // We need to clean up clientInfo, usually the callback reference is another one, etc.
       }
 
-      try {
-         // set up a association between the new created object reference (oid is sufficient)
-         // and the callback object reference
-         certificatedServerRef = xmlBlasterPOA.create_reference(ServerHelper.id());
-         byte[] oid = xmlBlasterPOA.reference_to_id(certificatedServerRef);
-         uniqueClientKey = new String(oid);
-
-         // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
-         Log.info(ME, "Login for " + loginName + " oid=<" + POAUtil.convert(oid, true) + ">");
-      } catch ( Exception e ) {
-         e.printStackTrace();
-         Log.error(ME, e.toString());
-         throw new XmlBlasterException(ME+"Unknown", "login failed: " + e.toString());
-      }
-
-      org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
       ClientQoS xmlQoS = new ClientQoS(xmlQoS_literal);
-      AuthenticationInfo authInfo = new AuthenticationInfo(uniqueClientKey, loginName, passwd, xmlBlaster, xmlQoS);
+
+      // !=== CHECK PASSWORD HERE IN FUTURE VERSION ====!
+
+      AuthenticationInfo authInfo = new AuthenticationInfo(sessionId, loginName, passwd, xmlQoS);
 
       if (clientInfo != null) {
          clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
@@ -212,14 +113,18 @@ public class Authenticate
          }
       }
 
+      if (sessionId == null || sessionId.length() < 2) {
+         sessionId = createSessionId(loginName);
+      }
+
       synchronized(aomClientInfoMap) {
-         aomClientInfoMap.put(uniqueClientKey, clientInfo);
+         aomClientInfoMap.put(sessionId, clientInfo);
       }
 
       fireClientEvent(clientInfo, true);
 
-      if (Log.DUMP) Log.dump(ME, "-------END-login()---------\n" + printOn().toString());
-      return xmlBlaster;
+      if (Log.DUMP) Log.dump(ME, "-------END-login()---------\n" + toXml().toString());
+      return sessionId;
    }
 
 
@@ -266,10 +171,10 @@ public class Authenticate
     * <p>
     * @exception XmlBlasterException If client is unknown
     */
-   public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
+   public void logout(String sessionId) throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + printOn().toString());
-      ClientInfo clientInfo = resetClientInfo(xmlServer, true);
+      if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + toXml().toString());
+      ClientInfo clientInfo = resetClientInfo(sessionId, true);
 
       String loginName = clientInfo.getLoginName();
 
@@ -279,7 +184,7 @@ public class Authenticate
 
       Log.info(ME, "Successful logout for client " + loginName);
       clientInfo = null;
-      if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + printOn().toString());
+      if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + toXml().toString());
    }
 
 
@@ -287,29 +192,21 @@ public class Authenticate
     * @param xmlServer xmlBlaster CORBA handle
     * @param clearQueue Shall the message queue of the client be destroyed as well?
     */
-   private ClientInfo resetClientInfo(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer, boolean clearQueue) throws XmlBlasterException
+   private ClientInfo resetClientInfo(String sessionId, boolean clearQueue) throws XmlBlasterException
    {
-      byte[] oid;
-
-      try {
-         oid = xmlBlasterPOA.reference_to_id(xmlServer);
-      } catch (Exception e) {
-         Log.error(ME+".Unknown", "Sorry, you are not known, no logout possible");
-         throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout possible");
-      }
-
+      /* !!!!!!!!!!!
+      !!! Callback to protocolDriver into AuthServerImpl !!!!
       try {
          xmlServer._release();
       } catch (Exception e) {
          e.printStackTrace();
          Log.error(ME, e.toString());
       }
-
-      String uniqueClientKey = new String(oid);
+      */
 
       Object obj;
       synchronized(aomClientInfoMap) {
-         obj = aomClientInfoMap.remove(uniqueClientKey);
+         obj = aomClientInfoMap.remove(sessionId);
       }
 
       if (obj == null) {
@@ -319,11 +216,49 @@ public class Authenticate
 
       ClientInfo clientInfo = (ClientInfo)obj;
 
-      fireClientEvent(clientInfo, false); // informs all ClientListener
+      fireClientEvent(clientInfo, false); // informs all I_ClientListener
 
       clientInfo.notifyAboutLogout(true);
 
       return clientInfo;
+   }
+
+
+   /**
+    *  Generate a unique resource ID <br>
+    *
+    *  @param loginName
+    *  @return unique ID
+    *  @exception XmlBlasterException random generator
+    */
+   private final String createSessionId(String loginName) throws XmlBlasterException
+   {
+      try {
+         String ip;
+         try  {
+            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+            ip = addr.getHostAddress();
+         } catch (Exception e) {
+            Log.warning(ME, "Can't determin your IP address");
+            ip = "localhost";
+         }
+
+         // This is a real random, but probably not necessary here:
+         // Random random = new java.security.SecureRandom();
+         java.util.Random ran = new java.util.Random();  // is more or less currentTimeMillis
+
+         // Note: We should include the process ID from this JVM on this host to be granted unique
+
+         //   <IP-Address>-<LoginName>-<TimestampMilliSec>-<RandomNumber>-<LocalCounter>
+         String sessionId = ip + "-" + loginName + "-" + System.currentTimeMillis() + "-" +  ran.nextInt() + "-" + (counter++);
+                        if (Log.TRACE) Log.trace(ME, "Created sessionId='" + sessionId + "'");
+                        return sessionId;
+      }
+      catch (Exception e) {
+         String text = "Can't generate a unique sessionId: " + e.toString();
+         Log.error(ME, text);
+         throw new XmlBlasterException("NoSessionId", text);
+      }
    }
 
 
@@ -340,7 +275,7 @@ public class Authenticate
          Iterator iterator = clientListenerSet.iterator();
 
          while (iterator.hasNext()) {
-            ClientListener cli = (ClientListener)iterator.next();
+            I_ClientListener cli = (I_ClientListener)iterator.next();
             if (login)
                cli.clientAdded(event);
             else
@@ -362,39 +297,23 @@ public class Authenticate
     * @return ClientInfo - if the client is OK
     * @exception XmlBlasterException Access denied
     */
-   public ClientInfo check() throws XmlBlasterException
+   public ClientInfo check(String sessionId) throws XmlBlasterException
    {
-      byte[] active_oid;
-      String uniqueClientKey;
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
-      try {
-         // who is it?
-         // find out by asking the xmlBlasterPOA
-
-         // org.omg.PortableServer.Current poa_current = xmlBlasterPOA.getORB().orb.getPOACurrent();
-         org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
-                                                      orb.resolve_initial_references("POACurrent"));
-         active_oid = poa_current.get_object_id();
-         uniqueClientKey = new String(active_oid);
-      } catch (Exception e) {
-         Log.error(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
-         throw new XmlBlasterException(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
-      }
 
       Object obj = null;
       synchronized(aomClientInfoMap) {
-         obj = aomClientInfoMap.get(uniqueClientKey);
+         obj = aomClientInfoMap.get(sessionId);
       }
 
       if (obj == null) {
-         Log.error(ME+".AccessDenied", "Sorry, uniqueClientKey is invalid");
-         throw new XmlBlasterException(ME+".AccessDenied", "Sorry, uniqueClientKey is invalid");
+         Log.error(ME+".AccessDenied", "Sorry, sessionId is invalid");
+         throw new XmlBlasterException("AccessDenied", "Sorry, sessionId is invalid");
       }
       ClientInfo clientInfo = (ClientInfo)obj;
 
       if (Log.TIME) Log.time(ME, "Elapsed time in check()" + stop.nice());
-      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString() +
-                      " oid=<" + POAUtil.convert(active_oid, true) + ">");
+      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString());
 
       return clientInfo;
    }
@@ -403,9 +322,9 @@ public class Authenticate
    /**
     * Adds the specified client listener to receive login/logout events.
     * <p />
-    * This listener needs to implement the ClientListener interface.
+    * This listener needs to implement the I_ClientListener interface.
     */
-   public void addClientListener(ClientListener l) {
+   public void addClientListener(I_ClientListener l) {
       if (l == null) {
          return;
       }
@@ -418,7 +337,7 @@ public class Authenticate
    /**
     * Removes the specified listener
     */
-   public synchronized void removeClientListener(ClientListener l) {
+   public synchronized void removeClientListener(I_ClientListener l) {
       if (l == null) {
          return;
       }
@@ -433,9 +352,9 @@ public class Authenticate
     * <br>
     * @return internal state of Authenticate as a XML ASCII string
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -445,9 +364,9 @@ public class Authenticate
     * @param extraOffset indenting of tags for nice output
     * @return internal state of Authenticate as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(1000);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
@@ -463,7 +382,7 @@ public class Authenticate
       }
       sb.append(offset + "</Authenticate>\n");
 
-      return sb;
+      return sb.toString();
    }
 
 }

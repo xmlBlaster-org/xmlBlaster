@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.15 2000/02/28 18:39:50 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.16 2000/06/04 19:13:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.ClientListener;
+import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 
 import java.util.*;
@@ -24,10 +24,10 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.15 2000/02/28 18:39:50 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.16 2000/06/04 19:13:24 ruff Exp $
  * @author Marcel Ruff
  */
-public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
+public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
 {
    final private static String ME = "ClientSubscriptions";
 
@@ -66,7 +66,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Exactly one instance for each xmlBlaster server. 
+    * Exactly one instance for each xmlBlaster server.
     * <p />
     * (no singleton pattern to allow multiple servers)
     * @param requestBroker my master (singleton)
@@ -136,7 +136,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked on successful client login (interface ClientListener)
+    * Invoked on successful client login (interface I_ClientListener)
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
@@ -146,11 +146,11 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked when client does a logout (interface ClientListener)
+    * Invoked when client does a logout (interface I_ClientListener)
     */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + requestBroker.printOn().toString());
+      if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + requestBroker.toXml());
 
       ClientInfo clientInfo = e.getClientInfo();
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString() + ", removing entries");
@@ -164,7 +164,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       } catch (XmlBlasterException e2) {
       }
 
-      if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + requestBroker.printOn().toString());
+      if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + requestBroker.toXml());
    }
 
 

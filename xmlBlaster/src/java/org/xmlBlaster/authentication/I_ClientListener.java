@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      ClientListener.java
+Name:      I_ClientListener.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Listens on clientRemove and clientAdded events
-Version:   $Id: ClientListener.java,v 1.3 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: I_ClientListener.java,v 1.1 2000/06/04 19:13:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -13,10 +13,10 @@ package org.xmlBlaster.authentication;
  * <p>
  * The events are fired by the Authenticate object.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.1 $
  * @author $Author: ruff $
  */
-public interface ClientListener extends java.util.EventListener {
+public interface I_ClientListener extends java.util.EventListener {
     /**
      * Invoked on successfull client login
      */

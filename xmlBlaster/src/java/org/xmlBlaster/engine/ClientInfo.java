@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.29 2000/05/16 20:57:37 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.30 2000/06/04 19:13:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -310,17 +310,6 @@ public class ClientInfo
    public final String getUniqueKey() throws XmlBlasterException
    {
       return authInfo.getUniqueKey();
-   }
-
-
-   /**
-    * The uniqueKey in hex notation.
-    * <p />
-    * @return the uniqueKey in hex notation for dumping it (readable form)
-    */
-   public final String getUniqueKeyHex() throws XmlBlasterException
-   {
-      return jacorb.poa.util.POAUtil.convert(getUniqueKey().getBytes(), true);
    }
 
 

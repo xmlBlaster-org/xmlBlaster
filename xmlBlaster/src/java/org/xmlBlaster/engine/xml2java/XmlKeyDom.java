@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.3 2000/05/25 13:39:20 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.4 2000/06/04 19:13:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -19,8 +19,6 @@ import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.ClientListener;
-import org.xmlBlaster.authentication.ClientEvent;
 import java.util.*;
 import java.io.*;
 

@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.3 2000/05/16 20:57:35 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.4 2000/06/04 19:13:23 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -34,7 +34,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean inCallback = false;
    private CallbackAddress tmpAddr = null;
    private CallbackAddress[] addressArr = null;
-   private Vector addressVec = new Vector();  // <callback type="IOR>IOR:000122200..."</callback>
+   private Vector addressVec = new Vector();  // <callback type="IOR">IOR:000122200...</callback>
 
 
    /**

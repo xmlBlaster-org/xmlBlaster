@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.12 2000/02/28 18:39:50 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.13 2000/06/04 19:13:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -18,7 +18,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.ClientListener;
+import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import java.util.*;
 import java.io.*;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p />
  * Full text search scanning the content BLOB may be available through MIME based plugins.
  */
-public class BigXmlKeyDOM extends XmlKeyDom implements ClientListener, MessageEraseListener
+public class BigXmlKeyDOM extends XmlKeyDom implements I_ClientListener, MessageEraseListener
 {
    final private static String ME = "BigXmlKeyDOM";
 
@@ -40,7 +40,7 @@ public class BigXmlKeyDOM extends XmlKeyDom implements ClientListener, MessageEr
 
 
    /**
-    * A singleton for each xmlBlaster server. 
+    * A singleton for each xmlBlaster server.
     */
    BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
@@ -65,7 +65,7 @@ public class BigXmlKeyDOM extends XmlKeyDom implements ClientListener, MessageEr
 
 
    /**
-    * Invoked on successful client login (interface ClientListener)
+    * Invoked on successful client login (interface I_ClientListener)
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
@@ -75,7 +75,7 @@ public class BigXmlKeyDOM extends XmlKeyDom implements ClientListener, MessageEr
 
 
    /**
-    * Invoked when client does a logout (interface ClientListener)
+    * Invoked when client does a logout (interface I_ClientListener)
     */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {

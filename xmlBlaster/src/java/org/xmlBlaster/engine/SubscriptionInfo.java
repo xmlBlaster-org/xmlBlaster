@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.19 2000/03/05 20:11:24 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.20 2000/06/04 19:13:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -244,7 +244,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    {
       StringBuffer buf = new StringBuffer(80);
 
-      buf.append("Subscription-").append(clientInfo.getUniqueKeyHex());
+      buf.append("Subscription-").append(clientInfo.getUniqueKey());
 
       buf.append("-").append(xmlKey.getUniqueKey());
 

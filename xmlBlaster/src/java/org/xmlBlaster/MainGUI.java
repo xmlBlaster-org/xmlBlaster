@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.28 2000/06/03 13:28:13 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.29 2000/06/04 19:13:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -335,8 +335,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
             try {
                Log.info(ME, "Dump start");
                Authenticate auth = xmlBlasterMain.getAuthenticate();
-               StringBuffer buf = auth.printOn();
-               buf.append(auth.getRequestBroker().printOn().toString());
+               StringBuffer buf = new StringBuffer(auth.toXml());
+               buf.append(xmlBlasterMain.getRequestBroker().toXml());
                log(buf.toString());
                Log.info(ME, "Dump end");
             }

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.67 2000/05/25 13:40:01 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.68 2000/06/04 19:13:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,7 +15,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.ClientListener;
+import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import java.util.*;
@@ -24,15 +24,15 @@ import java.io.*;
 /**
  * This is the central message broker, all requests are routed through this singleton.
  * <p>
- * The interface ClientListener informs about Client login/logout<br />
+ * The interface I_ClientListener informs about Client login/logout<br />
  * The interface MessageEraseListener informs when a MessageUnit is erased<br />
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.67 $
+ * @version $Revision: 1.68 $
  * @author ruff@swand.lake.de
  */
-public class RequestBroker implements ClientListener, MessageEraseListener
+public class RequestBroker implements I_ClientListener, MessageEraseListener
 {
    /** Total count of published messages */
    public static long publishedMessages = 0L;
@@ -719,7 +719,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
    /**
     * This helper method checks for a published message which didn't exist before if
-    * there are any XPath subscriptions pending which match. 
+    * there are any XPath subscriptions pending which match.
     * <p />
     */
    private final void checkExistingSubscriptions(ClientInfo clientInfo, XmlKey xmlKey,
@@ -864,7 +864,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Event invoked on successful client login (interface ClientListener).
+    * Event invoked on successful client login (interface I_ClientListener).
     * <p />
     * Publishes a login event for this client with key oid="__sys_Login"
     * <pre>
@@ -884,7 +884,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Event invoked when client does a logout (interface ClientListener).
+    * Event invoked when client does a logout (interface I_ClientListener).
     * <p />
     * Publishes a logout event for this client with key oid="__sys_Logout"
     * <pre>
@@ -1012,9 +1012,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -1024,7 +1024,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -1042,6 +1042,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       sb.append(clientSubscriptions.printOn(extraOffset + "   ").toString());
       sb.append(offset + "</RequestBroker>\n");
 
-      return sb;
+      return sb.toString();
    }
 }

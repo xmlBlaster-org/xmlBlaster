@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.36 2000/06/03 13:28:12 ruff Exp $
+Version:   $Id: Main.java,v 1.37 2000/06/04 19:13:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -57,7 +57,11 @@ public class Main
    /** XmlBlaster internal http listen port is 7609, to access IOR for bootstrapping */
    public static final int DEFAULT_HTTP_PORT = 7609;
    /** The singleton handle for this xmlBlaster server */
-   private AuthServerImpl authServer = null;
+   private AuthServerImpl authServer = null; // !!!!! remove
+   /** The singleton handle for this xmlBlaster server */
+   private Authenticate authenticate = null;
+   /** The singleton handle for this xmlBlaster server */
+   private RequestBroker requestBroker = null;
    private org.omg.PortableServer.POA rootPOA = null;
    private org.omg.CORBA.Object authRef = null;
 
@@ -98,7 +102,11 @@ public class Main
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
 
-         authServer = new AuthServerImpl(orb);
+         authenticate = new Authenticate();
+         requestBroker = new RequestBroker(authenticate);
+
+         // !!!!!!!!! This is all protocol specific !!! move away 
+         authServer = new AuthServerImpl(orb, authenticate, requestBroker);
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
@@ -243,7 +251,16 @@ public class Main
     */
    public Authenticate getAuthenticate()
    {
-      return authServer.getAuthenticationService();
+      return authenticate;
+   }
+
+
+   /**
+    * Access the requestBroker singleton.
+    */
+   public RequestBroker getRequestBroker()
+   {
+      return requestBroker;
    }
 
 
@@ -290,16 +307,14 @@ public class Main
                   String fileName = null;
                   if (line.length() > 1) fileName = line.substring(1).trim();
 
-                  Authenticate auth = authServer.getAuthenticationService();
-
                   if (fileName == null) {
-                     Log.plain(ME, auth.printOn().toString());
-                     Log.plain(ME, auth.getRequestBroker().printOn().toString());
+                     Log.plain(ME, authenticate.toXml());
+                     Log.plain(ME, requestBroker.toXml());
                      Log.info(ME, "Dump done");
                   }
                   else {
-                     FileUtil.writeFile(fileName, auth.printOn().toString());
-                     FileUtil.appendToFile(fileName, auth.getRequestBroker().printOn().toString());
+                     FileUtil.writeFile(fileName, authenticate.toXml());
+                     FileUtil.appendToFile(fileName, requestBroker.toXml());
                      Log.info(ME, "Dumped internal state to '" + fileName + "'");
                   }
                }
