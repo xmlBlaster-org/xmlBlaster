@@ -205,10 +205,10 @@ int main(int argc, char** argv)
       xmlBlasterFree(response);
    }
  
-   if (false) {  /* publishArr ... IS NOT IMPLEMENTED */
+   if (true) {  /* publishArr */
       QosArr* resp;
       MsgUnitArr holder;
-      printf("[client] Publishing messages 'HelloWorld1' and 'HelloWorld1' ...\n");
+      printf("[client] Publishing messages 'HelloWorld0' and 'HelloWorld1' ...\n");
       holder.len = 2;
       holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
       holder.msgUnitArr[0].key = strcpyAlloc("<key oid='HelloWorld0'/>");
@@ -240,7 +240,7 @@ int main(int argc, char** argv)
       }
    }
  
-   if (false) {  /* publishOneway ... IS NOT IMPLEMENTED */
+   if (true) {  /* publishOneway */
       MsgUnitArr holder;
       printf("[client] Publishing oneway messages 'HelloWorld1' and 'HelloWorld1' ...\n");
       holder.len = 2;
