@@ -165,7 +165,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          // Get or create the sessionId (we respect a user supplied sessionId) ...
          if (sessionId == null) {
             sessionId = connectQos.getSessionId();
-            log.info(ME, "Using sessionId '" + sessionId + "' from ConnectQos");
+            if (sessionId != null && sessionId.length() >= 2)
+               log.info(ME, "Using sessionId '" + sessionId + "' from ConnectQos");
          }
          if (sessionId == null || sessionId.length() < 2) {
             sessionId = createSessionId("null" /*subjectCtx.getName()*/);
