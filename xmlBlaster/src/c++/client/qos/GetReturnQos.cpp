@@ -9,6 +9,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::cluster;
 
 using namespace std;
@@ -44,7 +45,7 @@ bool GetReturnQos::isReadonly() const
    return data_.isReadonly();
 }
 
-SessionQos GetReturnQos::getSender()
+SessionNameRef GetReturnQos::getSender()
 {
    return data_.getSender();
 }

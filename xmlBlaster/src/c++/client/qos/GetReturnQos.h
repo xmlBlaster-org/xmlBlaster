@@ -72,7 +72,7 @@ public:
     * Access sender unified naming object.
     * @return sessionName of sender or null if not known
     */
-   org::xmlBlaster::util::qos::SessionQos getSender();
+   org::xmlBlaster::util::SessionNameRef getSender();
 
    /**
     * Message priority.
