@@ -20,6 +20,7 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -150,6 +151,16 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             throw new IllegalArgumentException(glob.getErrorText());
          else
             System.exit(0);
+      }
+
+      boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
+      if (jdk14loggingCapture) {
+         try {
+            XmlBlasterJdk14LoggingHandler.initLogManager(this.glob);
+         }
+         catch (XmlBlasterException e) {
+            log.warn(ME, "Capturing JDK 1.4 logging output failed: " + e.toString());
+         }
       }
 
       long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
@@ -512,6 +523,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
       log.plain(ME, "                              true: Allows user 'joe' to send wrong sender address in PublishQos");
       log.plain(ME, "   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
+      log.plain(ME, "   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [true]");
       log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning.");
       log.plain(ME, "   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702].");
