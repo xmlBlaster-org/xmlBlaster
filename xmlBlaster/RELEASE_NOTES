@@ -69,6 +69,9 @@ KNOWN BUGS:
 2. On some JDK 1.2x variants there is a delay of 10 seconds on client login.
    The reason is not known.
 
+3. C++ clients with MICO 2.37 and 2.3.8: If you invoke XmlBlasterAccess::shutdown on one XmlBlasterAccess
+   instance, you will not receive any callbacks anymore from any other instance of that class. This problem
+   does NOT exist with TAO.
 
 NEXT RELEASES:
 --------------
