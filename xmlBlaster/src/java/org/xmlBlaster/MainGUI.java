@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.14 1999/12/27 21:23:30 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.15 1999/12/29 15:38:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -356,7 +356,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       messageBar.setLocation(BAR_X, BAR_Y);
       messageBar.setBackground(java.awt.SystemColor.control);
       messageBar.setSize(BAR_WIDTH, BAR_HEIGHT);
-      messageBar.init(0, 5, 100, Color.green, Color.green, true, true);
+      boolean useAvg = true;
+      boolean isVariable = true;     // !!!
+      int MAX_SCALE = 10;
+      messageBar.init(0, 5, MAX_SCALE, Color.green, Color.green, useAvg, isVariable);
       messageBar.setAvgValue(0);
       // messageBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
       panel.add(messageBar, messageBar.getName());
