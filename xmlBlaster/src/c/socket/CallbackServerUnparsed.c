@@ -162,9 +162,43 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
    MsgUnitArr *msgUnitArrP;
 
    if (success == false) { /* EOF */
+      int i;
       if (!cb->reusingConnectionSocket)
          cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__, "Lost callback socket connection to xmlBlaster (EOF)");
       closeAcceptSocket(cb);
+      /* Notify pending requests, otherwise they block in their mutex for a minute ... */
+      for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
+         if (cb->responseListener[i].msgRequestInfoP == 0) {
+            continue;
+         }
+         if (true) {  
+            ResponseListener *listener = &cb->responseListener[i];
+            MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
+            XmlBlasterException exception;
+            initializeXmlBlasterException(&exception);
+            
+            cb->responseListener[i].msgRequestInfoP = 0;
+
+            /* Simulate an exception on client side ... */
+            socketDataHolder->type = (char)MSG_TYPE_EXCEPTION;
+            strncpy0(socketDataHolder->requestId, msgRequestInfoP->requestIdStr, MAX_REQUESTID_LEN);
+            strncpy0(socketDataHolder->methodName, msgRequestInfoP->methodName, MAX_METHODNAME_LEN);
+
+            exception.remote = true;
+            strncpy0(exception.errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            SNPRINTF(exception.message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                  "[%.100s:%d] Lost connection to xmlBlaster with server side EOF", __FILE__, __LINE__);
+
+            encodeXmlBlasterException(&socketDataHolder->blob, &exception, false); 
+            
+            /* Takes a clone of socketDataHolder->blob */
+            listener->responseEventFp(msgRequestInfoP, socketDataHolder);
+            
+            freeBlobHolderContent(&socketDataHolder->blob);
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+               "Notified pending requestId '%s' about lost socket connection", socketDataHolder->requestId);
+         }
+      }
       return;
    }
 
@@ -258,7 +292,7 @@ static void listenLoop(ListenLoopArgs* ls)
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Going to block on socket read until a new message arrives ...");
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException, udp);
-      cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__, udp ? "UDP arrived" : "TCP arrived");
+      cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__, "%s arrived, success=%s", udp ? "UDP" : "TCP", success ? "true" : "false -> EOF");
 
       rc = pthread_mutex_lock(&cb->listenMutex);
       if (rc != 0) /* EINVAL */
@@ -569,11 +603,14 @@ static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, So
    freeMsgUnitArr(msgUnitArrP);
 }
 
+/**
+ * Force closing socket
+ */
 static void closeAcceptSocket(CallbackServerUnparsed *cb)
 {
-   if (cb->reusingConnectionSocket) {
-      return; /* not our duty, we only have borrowed the socket from the client side connection */
-   }
+   // We close even if cb->reusingConnectionSocket is set
+   // to react instantly on EOF from server side.
+   // Otherwise the client thread would block until socket response timeout happens (one minute)
    if (cb->acceptSocket != -1) {
       closeSocket(cb->acceptSocket);
       cb->acceptSocket = -1;
