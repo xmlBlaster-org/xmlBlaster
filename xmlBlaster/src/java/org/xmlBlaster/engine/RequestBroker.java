@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.11 1999/11/17 16:00:53 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.12 1999/11/17 17:13:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -88,7 +88,7 @@ public class RequestBroker
          throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
       }
       */
-      
+
       // Using Sun's approach to be able to use  com.sun.xml.tree.XmlDocument::changeNodeOwner(node) later
       xmlKeyDoc = new com.sun.xml.tree.XmlDocument ();
       com.sun.xml.tree.ElementNode root = (com.sun.xml.tree.ElementNode) xmlKeyDoc.createElement ("xmlBlaster");
@@ -115,7 +115,7 @@ public class RequestBroker
       try {
          Log.info(ME, "addKeyNode=" + node.toString());
          xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
-         // !!!!!!! xmlKeyDoc.appendChild(node);
+         xmlKeyRootNode.appendChild(node);
          Log.info(ME, "New tree=" + xmlKeyRootNode.toString());
          Writer          out = new OutputStreamWriter (System.out);
          xmlKeyDoc.write(out);
@@ -144,6 +144,13 @@ public class RequestBroker
    {
       String uniqueKey = xmlKey.getUniqueKey();
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+
+      /*
+      if (xmlKey.isGeneratedOid()) { // subscription without a given oid
+         subscriptionMultiMap.put();
+      }
+      */
+
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
          MessageUnitHandler msg;
