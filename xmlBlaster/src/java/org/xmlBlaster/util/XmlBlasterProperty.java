@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.10 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.11 2000/10/10 09:39:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Log;
 
 import java.util.Properties;
 
+import java.applet.Applet;
 
 /**
  * xmlBlaster.properties and command line handling.
@@ -176,6 +177,20 @@ public class XmlBlasterProperty
    public final static boolean init(String[] args) throws JUtilsException
    {
       property = new Property("xmlBlaster.properties", true, args, true);  // initialize
+      Log.setLogLevel(property);  // Initialize logging as well.
+      // System.out.println(toXml());
+      return property.wantsHelp();
+   }
+
+   /**
+    * Returns true if the user wants a 'usage' help.
+    * @return true if the option '--help' or '-help' or '-h' or '-?' was given.
+    */
+   public final static boolean init(Applet applet) throws JUtilsException
+   {
+      System.out.println("Trying to load xmlBlaster.properties from an applet");
+      property = new Property("xmlBlaster.properties", false, applet, true);  // initialize
+      //System.out.println("xmlBlaster.properties loaded");
       Log.setLogLevel(property);  // Initialize logging as well.
       // System.out.println(toXml());
       return property.wantsHelp();
