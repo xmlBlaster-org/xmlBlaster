@@ -32,7 +32,7 @@
       </p></center>
       <p>
       In this example we have three xmlBlaster instances running, each of them has
-      a unique cluster node ID, here the names <i>golan</i>, <i>heron</i> and <i>avalon</i>.
+      a unique cluster node ID, here the names <i>heron</i>, <i>golan</i> and <i>avalon</i>.
       </p>
       <p>
       Each of the nodes have an arbitrary number of clients attached. The clients
@@ -60,7 +60,9 @@
       we can connect an almost unlimited number of clients. Every child leaf supplies
       a certain amount of slaves, which supplies other slaves which finally supply
       clients with message updates. The slaves are caching the messages and respond to
-      request of their clients directly. With every child level in the tree the latency increases
+      request of their clients directly. The cache is always up to date as it is real time
+      updated according to the publish/subscribe paradigm. 
+      With every child level in the tree the latency increases
       for typically 5-40 milliseconds (intranet) for new published message updates.
       Note that the publisher does not need to be connected to the master node, the client in the
       down left edge of the picture is publishing as well.
@@ -76,8 +78,9 @@
       <li><h4>Logical separation based on message domains:</h4><br />
       One xmlBlaster instance can be the master for selective messages (e.g. for
       stock exchange messages) and be slave for other messages (e.g. for 
-      air traffic radar tracks or rugby news) simultaneously. Consequently a client interested
-      in all informations only needs to connect to one xmlBlaster server instance.
+      air traffic radar tracks or rugby news) simultaneously, we call that <i>cluster message domains</i>.
+      Consequently a client interested in all informations only needs to connect
+      to one xmlBlaster server instance.
       <p>
       <img src="cluster.domain.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
@@ -94,6 +97,10 @@
       Subscribed messages are retrieved using a load balance algorithm.
       <p>
       <img src="cluster.loadbalance.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
+      </p>
+      <p>
+      In the above scenario heron1 and heron2 share their knowledge.
+      Slave nodes can choose which of those servers to use.
       </p>
       </li>
       </ol>
@@ -257,7 +264,7 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
