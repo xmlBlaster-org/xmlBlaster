@@ -233,7 +233,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          publishQos.setTopicProperty(topicProperty);
          this.publishQosForEvents = publishQos;
 
-         // Should we configure historyQueue and topicCache to be RAM based only?
+         // Should we configure historyQueue and msgUnitStore to be RAM based only?
 
          this.publishLoginEvent = glob.getProperty().get("loginEvent", true);
          if (this.publishLoginEvent) {
