@@ -17,7 +17,7 @@ import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;
 import org.xmlBlaster.util.queue.QueuePluginManager;

@@ -7,7 +7,6 @@ package org.xmlBlaster.util.key;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.Constants;
 
 /**
  * This class encapsulates the Message meta data and unique identifier (key)

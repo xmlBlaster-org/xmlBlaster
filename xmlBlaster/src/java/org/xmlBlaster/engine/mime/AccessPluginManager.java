@@ -15,7 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.engine.RunlevelManager;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.Map;
 import java.util.HashMap;

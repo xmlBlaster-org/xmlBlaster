@@ -14,7 +14,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.TopicHandler;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.mime.I_AccessFilter;

@@ -179,7 +179,7 @@
                   <li><pre>public boolean isAuthorized(String actionKey, String key)</pre>
                       The intention of this method ist to check, if the subject (user) has the permission to perform a specific task.
                       The first parameter describes the kind of the task (i.e. publish, subscribe, get, erase, ... see 
-                      <code>org.xmlBlaster.engine.helper.Constants</code>. Whereas the second parameter describe whereon the task will
+                      <code>org.xmlBlaster.util.enum.Constants</code>. Whereas the second parameter describe whereon the task will
                       be performed. Example: <code>isAuthorized("publish", "aMessageKey");</code><br />
                       The example would check if the subject is permitted to 'publish' a message with the key 'aMessageKey'. 
                   </li>

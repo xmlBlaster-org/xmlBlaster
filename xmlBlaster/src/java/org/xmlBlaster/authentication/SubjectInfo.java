@@ -13,7 +13,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_Subject;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.CallbackAddress;

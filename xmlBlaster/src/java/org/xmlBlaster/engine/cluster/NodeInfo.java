@@ -11,7 +11,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.Map;
 import java.util.TreeMap;

@@ -14,7 +14,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;

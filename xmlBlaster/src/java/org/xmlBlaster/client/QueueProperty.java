@@ -8,7 +8,7 @@ package org.xmlBlaster.client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
 import org.xmlBlaster.engine.helper.Address;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 /**
  * Helper class to configure the client side queue. 

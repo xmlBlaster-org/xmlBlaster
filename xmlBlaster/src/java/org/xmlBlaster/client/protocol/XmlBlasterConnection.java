@@ -43,7 +43,7 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.util.MsgUnit;

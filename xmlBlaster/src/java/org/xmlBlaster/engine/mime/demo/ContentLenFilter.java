@@ -12,7 +12,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.mime.I_AccessFilter;

@@ -304,7 +304,7 @@ long MsgQosData::getQueueIndex() const
 /**
  * Message priority.
  * @return priority 0-9
- * @see org.xmlBlaster.engine.helper.Constants
+ * @see org.xmlBlaster.util.enum.Constants
  */
 PriorityEnum MsgQosData::getPriority() const
 {
@@ -315,7 +315,7 @@ PriorityEnum MsgQosData::getPriority() const
  * Set message priority value, PriorityEnum.NORM_PRIORITY (5) is default. 
  * PriorityEnum.MIN_PRIORITY (0) is slowest
  * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
- * @see org.xmlBlaster.engine.helper.Constants
+ * @see org.xmlBlaster.util.enum.Constants
  */
 void MsgQosData::setPriority(PriorityEnum priority)
 {

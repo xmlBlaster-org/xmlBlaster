@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.util.queue.StorageId;

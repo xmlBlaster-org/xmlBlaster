@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.11 2002/12/20 13:14:36 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.12 2002/12/20 15:29:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,7 +14,7 @@ import java.text.MessageFormat;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.jutils.JUtilsException;
 
 

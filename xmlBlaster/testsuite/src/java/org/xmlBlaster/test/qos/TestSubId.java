@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import junit.framework.*;
 

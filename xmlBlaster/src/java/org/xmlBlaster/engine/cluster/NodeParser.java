@@ -9,7 +9,6 @@ package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.authentication.SessionInfo;

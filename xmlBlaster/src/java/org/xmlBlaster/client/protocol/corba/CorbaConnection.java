@@ -24,7 +24,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.corba.CorbaDriver;

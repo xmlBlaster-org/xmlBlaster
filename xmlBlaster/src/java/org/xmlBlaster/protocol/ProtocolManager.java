@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.10 2002/12/18 12:39:08 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.11 2002/12/20 15:29:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -11,7 +11,6 @@ import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;

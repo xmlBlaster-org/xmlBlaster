@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.key.PublishKey;

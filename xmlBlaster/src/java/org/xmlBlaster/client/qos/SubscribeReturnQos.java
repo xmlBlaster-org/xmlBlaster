@@ -63,7 +63,7 @@ public final class SubscribeReturnQos
    /**
     * Additional structured information about a state.
     * @return "QUEUED" or "QUEUED[bilbo]"
-    * @see org.xmlBlaster.engine.helper.Constants
+    * @see org.xmlBlaster.util.enum.Constants
     */
    public final String getStateInfo() {
       return this.statusQosData.getStateInfo();

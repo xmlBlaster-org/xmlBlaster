@@ -8,7 +8,7 @@ package org.xmlBlaster.test;
 
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.Vector;
 

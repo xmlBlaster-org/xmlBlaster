@@ -3,12 +3,13 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.16 2002/11/26 12:38:44 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.17 2002/12/20 15:29:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xml.sax.Attributes;
 
 

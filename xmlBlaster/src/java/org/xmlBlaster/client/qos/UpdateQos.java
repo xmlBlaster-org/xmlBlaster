@@ -13,7 +13,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.cluster.RouteInfo;
 import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 
@@ -96,7 +95,7 @@ public final class UpdateQos
    /**
     * Message priority.
     * @return priority 0-9
-    * @see org.xmlBlaster.engine.helper.Constants
+    * @see org.xmlBlaster.util.enum.Constants
     */
    public PriorityEnum getPriority() {
       return this.msgQosData.getPriority();

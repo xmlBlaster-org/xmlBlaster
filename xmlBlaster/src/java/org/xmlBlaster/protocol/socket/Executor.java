@@ -13,7 +13,7 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;

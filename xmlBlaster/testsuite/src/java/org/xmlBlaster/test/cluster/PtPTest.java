@@ -22,7 +22,6 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.engine.helper.Constants;
 
 
 import junit.framework.*;

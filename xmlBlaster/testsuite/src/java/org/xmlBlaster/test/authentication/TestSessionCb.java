@@ -24,7 +24,7 @@ import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;

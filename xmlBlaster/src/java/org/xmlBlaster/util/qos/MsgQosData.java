@@ -16,7 +16,7 @@ import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;
 
@@ -356,7 +356,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /**
     * Message priority.
     * @return priority 0-9
-    * @see org.xmlBlaster.engine.helper.Constants
+    * @see org.xmlBlaster.util.enum.PriorityEnum
     */
    public PriorityEnum getPriority() {
       return priority;
@@ -366,7 +366,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Set message priority value, PriorityEnum.NORM_PRIORITY (5) is default. 
     * PriorityEnum.MIN_PRIORITY (0) is slowest
     * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
-    * @see org.xmlBlaster.engine.helper.Constants
+    * @see org.xmlBlaster.util.enum.PriorityEnum
     */
    public void setPriority(PriorityEnum priority) {
       this.priority = priority;

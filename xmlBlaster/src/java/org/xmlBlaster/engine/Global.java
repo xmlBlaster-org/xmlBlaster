@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;

@@ -8,7 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 import org.xml.sax.*;

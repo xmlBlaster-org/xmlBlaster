@@ -12,7 +12,7 @@ import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.cluster.RouteInfo;
 import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.PriorityEnum;
 
 import org.xml.sax.Attributes;
@@ -102,7 +102,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Message priority.
     * @return priority 0-9
-    * @see org.xmlBlaster.engine.helper.Constants
+    * @see org.xmlBlaster.util.enum.Constants
     */
    public PriorityEnum getPriority()
    {

@@ -10,7 +10,6 @@ import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.HistoryQueueProperty;
 import org.xmlBlaster.engine.helper.TopicCacheProperty;

@@ -13,7 +13,6 @@ import org.jutils.runtime.Memory;
 import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.engine.*;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.protocol.I_XmlBlaster;

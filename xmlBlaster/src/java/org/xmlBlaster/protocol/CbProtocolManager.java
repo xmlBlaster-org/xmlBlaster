@@ -9,7 +9,6 @@ import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;

@@ -16,7 +16,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.AddressBase;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;

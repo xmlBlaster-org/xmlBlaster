@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.RouteInfo;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;
 

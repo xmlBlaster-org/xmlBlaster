@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.5 2002/12/18 13:16:16 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.6 2002/12/20 15:30:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -17,7 +17,6 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;

@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.12 2002/12/18 12:10:12 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.13 2002/12/20 15:30:17 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.PublishReturnQos;

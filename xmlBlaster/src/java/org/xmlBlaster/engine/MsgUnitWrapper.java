@@ -18,7 +18,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.TopicHandler;

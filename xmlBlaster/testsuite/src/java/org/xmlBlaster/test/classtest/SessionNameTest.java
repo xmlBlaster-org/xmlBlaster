@@ -4,7 +4,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.cluster.NodeId;
 
 import junit.framework.*;

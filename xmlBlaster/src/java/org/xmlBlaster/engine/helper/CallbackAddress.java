@@ -3,11 +3,12 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.21 2002/11/26 12:38:45 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.22 2002/12/20 15:29:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xml.sax.Attributes;
 
 

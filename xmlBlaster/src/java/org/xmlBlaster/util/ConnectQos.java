@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.34 2002/12/18 11:48:11 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.35 2002/12/20 15:29:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.ServerRef;

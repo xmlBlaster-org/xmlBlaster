@@ -10,7 +10,7 @@ import org.xmlBlaster.util.key.QueryKeySaxFactory;
 //import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 //import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 import junit.framework.*;

@@ -8,7 +8,6 @@ package org.xmlBlaster.engine.mime;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.helper.Constants;
 
 /**
  * Little container which holds a &lt;filter> query string. 

@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.10 2002/08/26 09:10:47 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.11 2002/12/20 15:29:15 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.Map;
 import java.util.HashMap;

@@ -8,7 +8,7 @@ package org.xmlBlaster.client;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import org.xml.sax.Attributes;
 
@@ -89,7 +89,7 @@ public final class PublishRetQos implements I_RetQos
    /**
     * Additional structured information about a state. 
     * @return "QUEUED" or "QUEUED[bilbo]"
-    * @see org.xmlBlaster.engine.helper.Constants
+    * @see org.xmlBlaster.util.enum.Constants
     */
    public final String getStateInfo() {
       return this.stateInfo;

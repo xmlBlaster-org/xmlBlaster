@@ -35,7 +35,7 @@ import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.qos.UpdateQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;

@@ -7,7 +7,7 @@ package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 
 /**

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.RouteInfo;

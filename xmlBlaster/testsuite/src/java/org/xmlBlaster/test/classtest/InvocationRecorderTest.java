@@ -15,7 +15,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.engine.MsgUnitWrapper;

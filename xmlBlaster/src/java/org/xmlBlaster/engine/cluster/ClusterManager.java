@@ -18,7 +18,7 @@ import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;

@@ -6,7 +6,7 @@ import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import java.util.Vector;
 import java.util.StringTokenizer;
 

@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 

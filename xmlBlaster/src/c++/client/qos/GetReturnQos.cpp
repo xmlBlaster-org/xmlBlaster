@@ -66,7 +66,7 @@ SessionQos GetReturnQos::getSender()
 /**
 * Message priority.
 * @return priority 0-9
-* @see org.xmlBlaster.engine.helper.Constants
+* @see org.xmlBlaster.util.enum.PriorityEnum
 */
 PriorityEnum GetReturnQos::getPriority() const
 {

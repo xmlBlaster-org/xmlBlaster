@@ -7,7 +7,7 @@ package org.xmlBlaster.util.key;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 import java.util.ArrayList;

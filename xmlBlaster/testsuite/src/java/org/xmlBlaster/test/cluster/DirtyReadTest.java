@@ -16,7 +16,6 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.helper.Constants;
 
 
 import java.util.Vector;

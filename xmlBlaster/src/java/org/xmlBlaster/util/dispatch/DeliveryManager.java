@@ -15,7 +15,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.queue.I_Queue;

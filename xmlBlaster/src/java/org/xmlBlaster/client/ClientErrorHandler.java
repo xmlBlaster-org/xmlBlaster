@@ -7,7 +7,6 @@ package org.xmlBlaster.client;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;

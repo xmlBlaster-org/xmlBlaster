@@ -15,7 +15,7 @@ import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 /**
  * Encapsulates the parsed xmlKey and QoS, and the raw content. 

@@ -3,12 +3,12 @@ Name:      CbQueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.java,v 1.6 2002/12/18 10:17:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xml.sax.Attributes;
 
 /**

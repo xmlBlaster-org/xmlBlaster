@@ -15,7 +15,7 @@ import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.XmlNotPortable;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
