@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.2 2000/10/18 22:09:51 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.3 2000/10/21 20:54:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -68,7 +68,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -125,9 +125,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * You can choose the protocol with this command line option: <br />
     * <pre>
-    * java ... -Client.protocol RMI
-    * java ... -Client.protocol IOR
-    * java ... -Client.protocol XML-RPC
+    * java ... -Client.Protocol RMI
+    * java ... -Client.Protocol IOR
+    * java ... -Client.Protocol XML-RPC
     * </pre>
     */
    public XmlBlasterConnection() throws XmlBlasterException
@@ -142,9 +142,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * You can choose the protocol with this command line option: <br />
     * <pre>
-    * java ... -Client.protocol RMI
-    * java ... -Client.protocol IOR
-    * java ... -Client.protocol XML-RPC
+    * java ... -Client.Protocol RMI
+    * java ... -Client.Protocol IOR
+    * java ... -Client.Protocol XML-RPC
     * </pre>
     * @param arg  parameters given on command line
     */
@@ -180,7 +180,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          }
       }
 
-      if (driverType == null) driverType = XmlBlasterProperty.get("Client.protocol", "IOR");
+      if (driverType == null) driverType = XmlBlasterProperty.get("Client.Protocol", "IOR");
+
+      Log.info(ME, "Using 'Client.Protocol=" + driverType + "' to access xmlBlaster");
 
       if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
          driver = new CorbaConnection(this.args);
@@ -793,11 +795,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public static void usage()
    {
-      String driverType = XmlBlasterProperty.get("Client.protocol", "IOR");
+      String driverType = XmlBlasterProperty.get("Client.Protocol", "IOR");
       if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
-         CorbaConnection.usage();
+         Log.plain(CorbaConnection.usage());
       else if (driverType.equalsIgnoreCase("RMI"))
-         RmiConnection.usage();
+         Log.plain(RmiConnection.usage());
    }
 
 } // class XmlBlasterConnection

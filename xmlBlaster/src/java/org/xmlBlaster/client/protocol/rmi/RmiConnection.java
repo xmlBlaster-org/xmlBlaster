@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.1 2000/10/18 22:09:51 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.2 2000/10/21 20:54:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -11,6 +11,7 @@ package org.xmlBlaster.client.protocol.rmi;
 
 import org.xmlBlaster.protocol.rmi.I_AuthServer;
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
+import org.xmlBlaster.protocol.rmi.I_XmlBlasterCallback;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
@@ -50,7 +51,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -65,38 +66,42 @@ public class RmiConnection implements I_XmlBlasterConnection
    private String passwd = null;
    protected LoginQosWrapper loginQos = null;
 
+   /** The RMI interface which we implement to allow callbacks */
+   private I_XmlBlasterCallback callback = null;
+
+   /** The name for the RMI registry */
+   private String callbackRmiServerBindName = null;
+
+   /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
+   public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
 
    /**
     * RMI client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
     * @param arg  parameters given on command line
     */
-   public RmiConnection(String[] args)
+   public RmiConnection(String[] args) throws XmlBlasterException
    {
+      createSecurityManager();
    }
 
 
    /**
-    * RMI client access to xmlBlaster for <strong>applets</strong>. 
+    * RMI client access to xmlBlaster for <strong>applets</strong>.
     * <p />
     * @param ap  Applet handle
     */
-   public RmiConnection(Applet ap)
+   public RmiConnection(Applet ap) throws XmlBlasterException
    {
+      createSecurityManager();
    }
 
 
    /**
     * Connect to RMI server.
     */
-   private void initRmi() throws XmlBlasterException
+   private void initRmiClient() throws XmlBlasterException
    {
-      // Create and install a security manager
-      if (System.getSecurityManager() == null) {
-         System.setSecurityManager(new RMISecurityManager());
-         if (Log.TRACE) Log.trace(ME, "Started RMISecurityManager");
-      }
-
       String hostname;
       try  {
          java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -105,7 +110,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
+      hostname = XmlBlasterProperty.get("rmi.Hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
       int registryPort = XmlBlasterProperty.get("rmi.RegistryPort",
@@ -118,7 +123,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          authServer = (I_AuthServer)rem;
-         Log.info(ME, "Accessing reference using given '" + addr + "' string");
+         Log.info(ME, "Accessed xmlBlaster authentication reference with '" + addr + "'");
       }
       else {
          throw new XmlBlasterException("InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
@@ -130,7 +135,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          blasterServer = (I_XmlBlaster)rem;
-         Log.info(ME, "Accessing reference using given '" + addr + "' string");
+         Log.info(ME, "Accessed xmlBlaster server reference with '" + addr + "'");
       }
       else {
          throw new XmlBlasterException("InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
@@ -237,16 +242,19 @@ public class RmiConnection implements I_XmlBlasterConnection
          this.loginQos = qos;
 
       if (client != null) {
-      /*
-         this.callback = createCallbackServer(new DefaultCallback(loginName, client));
+         try {
+            this.callback = new RmiCallbackServer(loginName, client);
+         }
+         catch (RemoteException e) {
+            Log.error(ME, "Creation of RmiCallbackServer failed: " + e.toString());
+            throw new XmlBlasterException("RmiDriverFailed", e.toString());
+         }
+         createCallbackServer(this.callback);
 
-         // Add the stringified IOR to QoS ...
-         CallbackAddress addr = new CallbackAddress("IOR");
-         addr.setAddress(orb.object_to_string(this.callback));
+         CallbackAddress addr = new CallbackAddress("RMI");
+         addr.setAddress(callbackRmiServerBindName);
          loginQos.addCallbackAddress(addr);
-         if (Log.TRACE) Log.trace(ME, "Success, exported BlasterCallback Server interface for " + loginName);
-      */
-         Log.warn(ME, "No callback RMI server implemented");
+         Log.info(ME, "Success, exported RMI callback server for " + loginName);
       }
 
       loginRaw();
@@ -264,8 +272,8 @@ public class RmiConnection implements I_XmlBlasterConnection
    {
       if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
       try {
-         initRmi();
-         sessionId = authServer.login(loginName, passwd, "<qos></qos>");
+         initRmiClient();
+         sessionId = authServer.login(loginName, passwd, loginQos.toXml());
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
       } catch(RemoteException e) {
@@ -326,23 +334,135 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * Building a Callback server, using the tie approach.
     *
-    * @return the BlasterCallback server
+    * @param the BlasterCallback server
     * @exception XmlBlasterException if the BlasterCallback server can't be created
     *            id="CallbackCreationError"
     */
-    /*
-   public BlasterCallback createCallbackServer(!!! callbackImpl) throws XmlBlasterException
+   public void createCallbackServer(I_XmlBlasterCallback callbackRmiServer) throws XmlBlasterException
    {
-      Log.info(ME, "The callback server is started.");
+      bindToRegistry(callbackRmiServer);
    }
-     */
+   
+
+   /**
+    * Create and install a security manager, using xmlBlaster.policy
+    * <p />
+    * Note the similar method in org.xmlBlaster.protocol.rmi.RmiDriver;
+    */
+   private void createSecurityManager() throws XmlBlasterException
+   {
+      if (System.getSecurityManager() == null) {
+         if (System.getProperty("java.security.policy") != null) {
+            // use the given policy file (java -Djava.security.policy=...)
+            Log.info(ME, "Setting security policy from file " + System.getProperty("java.security.policy"));
+         }
+         else {
+            // try to find the policy file in the CLASSPATH
+            ClassLoader loader = RmiConnection.class.getClassLoader();
+            if (loader != null) {
+               java.net.URL serverPolicyURL = loader.getResource("xmlBlaster.policy");
+               if (serverPolicyURL != null ) {
+                  String serverPolicy = serverPolicyURL.getFile();
+                  System.setProperty("java.security.policy", serverPolicy);
+                  Log.info(ME, "Setting security policy " + serverPolicy + ", found it in your CLASSPATH.");
+               }
+            }
+         }
+
+         // Check if there was any policy file found
+         if (System.getProperty("java.security.policy") == null) {
+            String text = "java.security.policy is not set, please include config/xmlBlaster.policy into your CLASSPATH or pass the file on startup like 'java -Djava.security.policy=<path>xmlBlaster.policy'...";
+            throw new XmlBlasterException("RmiDriverFailed", text);
+         }
+
+         System.setSecurityManager(new RMISecurityManager());
+         if (Log.TRACE) Log.trace(ME, "Started RMISecurityManager");
+      }
+      else
+         Log.warn(ME, "Another security manager is running already, no config/xmlBlaster.policy bound");
+   }
+
+
+   /**
+    * Publish the RMI xmlBlaster server to rmi registry.
+    * <p />
+    * The bind name is typically "rmi://localhost:1099/xmlBlaster"
+    * @exception XmlBlasterException
+    *                    RMI registry error handling
+    */
+   private void bindToRegistry(I_XmlBlasterCallback callbackRmiServer) throws XmlBlasterException
+   {
+      if (Log.CALL) Log.call(ME, "bindToRegistry() ...");
+
+      // Use the xmlBlaster-server rmiRegistry as a fallback:
+      int registryPort = XmlBlasterProperty.get("rmi.RegistryPort", 
+                                                DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
+      // Use the given callback port if specified :
+      registryPort = XmlBlasterProperty.get("rmi.RegistryPortCB", registryPort); 
+
+      String hostname;
+      try  {
+         java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+         hostname = addr.getHostName();
+      } catch (Exception e) {
+         Log.info(ME, "Can't determin your hostname");
+         // Use the xmlBlaster-server rmiRegistry as a fallback:
+         hostname = XmlBlasterProperty.get("rmi.Hostname", "localhost");
+      }
+      // Use the given callback hostname if specified :
+      hostname = XmlBlasterProperty.get("rmi.HostnameCB", hostname);
+
+      try {
+         if (registryPort > 0) {
+            // Start a 'rmiregistry' if desired
+            try {
+               java.rmi.registry.LocateRegistry.createRegistry(registryPort);
+               Log.info(ME, "Started RMI registry on port " + registryPort);
+            } catch (java.rmi.server.ExportException e) {
+               // Try to bind to an already running registry:
+               try {
+                  java.rmi.registry.LocateRegistry.getRegistry(hostname, registryPort);
+                  Log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
+                               " we will use this one. You could change the port with e.g. -rmi.RegistryPortCB=1122 to run your own rmiregistry.");
+               }
+               catch (RemoteException e2) {
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -rmi.RegistryPortCB=1122 : " + e.toString();
+                  Log.error(ME, text);
+                  throw new XmlBlasterException(ME, text);
+               }
+            }
+         }
+
+         // e.g. "rmi://localhost:1099/I_XmlBlasterCallback"
+         callbackRmiServerBindName = "rmi://" + hostname + ":" + registryPort + "/I_XmlBlasterCallback";
+
+         // Publish RMI based xmlBlaster server ...
+         try {
+            Naming.rebind(callbackRmiServerBindName, callbackRmiServer);
+            Log.info(ME, "Bound RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
+         } catch (Exception e) {
+            Log.error(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e.toString());
+            throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e.toString());
+         }
+      } catch (Exception e) {
+         e.printStackTrace();
+         throw new XmlBlasterException("InitRmiFailed", "Could not initialize RMI registry: " + e.toString());
+      }
+   }
+
 
    /**
     * Shutdown the callback server.
     */
    public void shutdownCallbackServer()
    {
-      Log.info(ME, "The callback server is shutdown.");
+      try {
+         if (callbackRmiServerBindName != null)
+            Naming.unbind(callbackRmiServerBindName);
+      } catch (Exception e) {
+         ;
+      }
+      Log.info(ME, "The RMI callback server is shutdown.");
    }
 
 
@@ -476,11 +596,64 @@ public class RmiConnection implements I_XmlBlasterConnection
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" prefix there.
     */
-   public static void usage()
+   public static String usage()
    {
-      String ME="RmiConnection";
-      Log.plain(ME, "");
-      Log.plain(ME, "Client connection options:");
-      Log.plain(ME, "");
+      String text = "\n";
+      text += "RmiConnection options:\n";
+      text += "   -rmi.RegistryPortCB Specify a port number where rmiregistry listens.\n";
+      text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
+      text += "   -rmi.HostnameCB     Specify a hostname where rmiregistry runs.\n";
+      text += "                       Default is the localhost.\n";
+      text += "\n";
+      return text;
    }
 } // class RmiConnection
+
+
+/**
+ * Example for a callback implementation.
+ * <p />
+ * You can use this default callback handling with your clients,
+ * but if you need other handling of callbacks, take a copy
+ * of this Callback implementation and add your own code.
+ * <p />
+ */
+class RmiCallbackServer extends java.rmi.server.UnicastRemoteObject implements I_XmlBlasterCallback
+{
+   private final String ME;
+   private final I_CallbackExtended boss;
+   private final String loginName;
+
+   /**
+    * Construct a persistently named object.
+    * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
+    */
+   public RmiCallbackServer(String name, I_CallbackExtended boss) throws RemoteException
+   {
+      this.ME = "RmiCallbackServer-" + name;
+      this.boss = boss;
+      this.loginName = name;
+      if (Log.CALL) Log.call(ME, "Entering constructort");
+   }
+
+
+   /**
+    * This is the callback method invoked from xmlBlaster
+    * informing the client in an asynchronous mode about new messages.
+    * <p />
+    * It implements the interface I_XmlBlasterCallback
+    * <p />
+    * The call is converted to the native MessageUnit, and the other update()
+    * method of this class is invoked.
+    *
+    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @see xmlBlaster.idl
+    */
+   public void update(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
+   {
+      if (msgUnitArr == null) return;
+      boss.update(loginName, msgUnitArr);
+   }
+
+} // class RmiCallbackServer
+
