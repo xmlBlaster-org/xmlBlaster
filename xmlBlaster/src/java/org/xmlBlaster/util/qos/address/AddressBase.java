@@ -144,6 +144,14 @@ public abstract class AddressBase
     */
    protected void initialize()
    {
+      /* This is always set on server side from ServerAddress.java
+         but not always on client side
+         Shall we switch it on always here?
+      if (this.nodeId == null) {
+         this.nodeId = glob.getId();
+      }
+      */
+      if (log.TRACE) log.trace(ME, "this.nodeId=" + this.nodeId + " context=" + context + " className=" + className + " instanceName=" + this.instanceName);
       // SOCKET, IOR, XMLRPC, RMI, ...
       this.type.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "protocol");
 
@@ -154,8 +162,8 @@ public abstract class AddressBase
       this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapHostname");
       this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapPort");
 
-      this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapHostname");
-      this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapPort");
+      //this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapHostname");
+      //this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapPort");
       //log.error(ME, "DEBUG ONLY: Checking " + this.instanceName + ": " + envPrefix+"port to result=" + this.bootstrapPort.getValue() );
 
       // These are protocol unspecific values
