@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.11 2001/01/30 14:02:46 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.12 2001/02/14 21:00:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -15,11 +15,14 @@ import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlNotPortable;
 
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -36,7 +39,6 @@ public class XmlKeyDom implements I_MergeDomNode
    protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
    protected Document xmlKeyDoc = null;
-   protected Node xmlKeyRootNode = null; // Root node <xmlBlaster></xmlBlaster>
 
    protected String encoding = "ISO-8859-1";             // !!! TODO: access from xmlBlaster.properties file
                                                          // default is "UTF-8"
@@ -50,7 +52,6 @@ public class XmlKeyDom implements I_MergeDomNode
    {
       this.requestBroker = requestBroker;
 
-      /*
       // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
       String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                    "<xmlBlaster></xmlBlaster>";
@@ -58,21 +59,17 @@ public class XmlKeyDom implements I_MergeDomNode
       org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
 
       try {
-         xmlKeyDoc = XmlProcessor.getInstance().load(input);
-      } catch (java.io.IOException e) {
+         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance ();
+         //dbf.setNamespaceAware(true);
+         //dbf.setCoalescing(true);
+         //dbf.setValidating(false);
+         //dbf.setIgnoringComments(true);
+         DocumentBuilder db = dbf.newDocumentBuilder ();
+         xmlKeyDoc = db.parse(input);
+      } catch (Exception e) {
          Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-      } catch (org.xml.sax.SAXException e) {
-         Log.error(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
+         throw new XmlBlasterException(ME, "Problems when building DOM tree from your XmlKey: " + e.toString());
       }
-      */
-
-      // Using Sun's approach to be able to use  org.apache.crimson.tree.XmlDocument::changeNodeOwner(node) later
-      xmlKeyDoc = new org.apache.crimson.tree.XmlDocument ();
-      Element root = (Element)xmlKeyDoc.createElement("xmlBlaster");
-      xmlKeyDoc.appendChild(root);
-      xmlKeyRootNode = xmlKeyDoc.getDocumentElement();
    }
 
 
@@ -99,28 +96,12 @@ public class XmlKeyDom implements I_MergeDomNode
     */
    public final org.w3c.dom.Node mergeNode(org.w3c.dom.Node node) throws XmlBlasterException
    {
-      try {     // !!! synchronize is missing !!!
-         if (Log.TRACE) Log.trace(ME, "mergeNode=" + node.toString());
+      // !!! synchronize is missing !!!
+      // !!! PENDING: If same key oid exists, remove the old and replace with new
 
-         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).changeNodeOwner(node); // not DOM portable
-
-         // !!! PENDING: If same key oid exists, remove the old and replace with new
-
-         xmlKeyRootNode.appendChild(node);
-
-         if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
-
-         // if (Log.DUMP) Log.dump(ME, printOn().toString());  // dump the whole tree
-
-         queryMgr = null; // needs to be reloaded, since the Document changed
-
-         return node;
-
-      } catch (Exception e) {
-         Log.error(ME+".mergeNode", "Problems adding new key tree: " + e.toString());
-         e.printStackTrace();
-         throw new XmlBlasterException(ME+".mergeNode", "Problems adding new key tree: " + e.toString());
-      }
+      XmlNotPortable.mergeNode(xmlKeyDoc, node);
+      queryMgr = null; // needs to be reloaded, since the Document changed
+      return node;
    }
 
 
@@ -206,12 +187,6 @@ public class XmlKeyDom implements I_MergeDomNode
          return getKeyOid(node.getParentNode()); // w3c: getParentNode() sun: getParentImpl()
       }
 
-      /* org.apache.crimson.tree.Element: !!!!
-      org.w3c.dom.Attr keyOIDAttr = node.getAttributeNode("oid");
-      if (keyOIDAttr != null)
-         return keyOIDAttr.getValue();
-      */
-
       // w3c conforming code:
       org.w3c.dom.NamedNodeMap attributes = node.getAttributes();
       if (attributes != null && attributes.getLength() > 0) {
@@ -256,32 +231,8 @@ public class XmlKeyDom implements I_MergeDomNode
       offset += extraOffset;
 
       sb.append(offset + "<XmlKeyDom>");
-      /*
-      // import java.io.IOException;
-      // import java.io.StringWriter;
-      // import org.apache.xalan.xpath.xml.FormatterToXML;
-      // import org.apache.xml.serialize.OutputFormat;
-      try
-      {
-         StringWriter stringWriter = new StringWriter();
-         FormatterToXML serializer = new FormatterToXML(stringWriter);
-         OutputFormat xmlOutputFormat = new OutputFormat();
-         xmlOutputFormat.setOmitXMLDeclaration(true);
-         xmlOutputFormat.setIndent(true);
-         xmlOutputFormat.setIndentAmount(2);
-         serializer.setOutputFormat(xmlOutputFormat);
-         serializer.serialize(xmlKeyDoc);
-      }
-      catch (IOException ioException)
-      {
-         ioException.printStackTrace();
-         // handle exception
-      }
-      */
       try {
-         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).write(out); //, encoding); // !!!
-         StringTokenizer st = new StringTokenizer(out.toString(), "\n");
+         StringTokenizer st = new StringTokenizer(XmlNotPortable.write(xmlKeyDoc).toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset + "   " + st.nextToken());
          }
