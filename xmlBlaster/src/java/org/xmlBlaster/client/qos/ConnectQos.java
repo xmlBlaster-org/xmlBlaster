@@ -265,6 +265,7 @@ public final class ConnectQos
 
    /**
     * @param Set if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    * @deprecated Please use multiSubscribe=false from SubscribeQos
     */
    public void setDuplicateUpdates(boolean duplicateUpdates) {
       this.connectQosData.setDuplicateUpdates(duplicateUpdates);
@@ -272,6 +273,7 @@ public final class ConnectQos
 
    /**
     * @return true if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    * @deprecated Please use multiSubscribe=false from SubscribeQos
     */
    public boolean duplicateUpdates() {
       return this.connectQosData.duplicateUpdates();
