@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.33 2000/05/19 20:33:52 ruff Exp $
+Version:   $Id: Main.java,v 1.34 2000/05/24 14:14:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -58,6 +58,8 @@ public class Main
    public static final int DEFAULT_HTTP_PORT = 7609;
    /** The singleton handle for this xmlBlaster server */
    private AuthServerImpl authServer = null;
+   private org.omg.PortableServer.POA rootPOA = null;
+   private org.omg.CORBA.Object authRef = null;
 
    /**
     * true: If instance created by control panel<br />
@@ -93,18 +95,17 @@ public class Main
 
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
-         org.omg.PortableServer.POA rootPOA =
-             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+         rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
 
          authServer = new AuthServerImpl(orb);
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
-         org.omg.CORBA.Object authRef = ((AuthServerPOATie)(authServant))._this(orb);
+         authRef = ((AuthServerPOATie)(authServant))._this(orb);
          // NOT TIE:
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
-         // org.omg.CORBA.Object authRef = rootPOA.servant_to_reference(authServant);
+         // authRef = rootPOA.servant_to_reference(authServant);
 
 
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
@@ -206,6 +207,7 @@ public class Main
     */
    public void shutdown(boolean wait_for_completion)
    {
+      Log.info(ME, "Shutting down POA and ORB ...");
       try {
          if (httpIORServer != null) httpIORServer.shutdown();
          if (nc != null) nc.unbind(name);
@@ -215,7 +217,24 @@ public class Main
          Log.warning(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
+
+      if (rootPOA != null && authRef != null) {
+         try {
+            rootPOA.deactivate_object(rootPOA.reference_to_id(authRef));
+         } catch(Exception e) { Log.warning(ME, "POA deactivate authentication servant failed"); }
+      }
+
+      if (rootPOA != null) {
+         try {
+            rootPOA.the_POAManager().deactivate(false, true);
+         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+         rootPOA = null;
+      }
+
+      authRef = null;
+
       orb.shutdown(wait_for_completion);
+      if (Log.TRACE) Log.trace(ME, "POA and ORB are down, CORBA resources released.");
    }
 
 
