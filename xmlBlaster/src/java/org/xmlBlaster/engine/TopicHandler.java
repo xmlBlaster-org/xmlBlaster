@@ -1068,25 +1068,35 @@ public final class TopicHandler implements I_Timeout
          if (log.CALL) log.call(ME, "pushing update() message '" + sub.getKeyData().getOid() + "' " + msgUnitWrapper.getStateStr() +
                        "' into '" + sub.getSessionInfo().getId() + "' callback queue");
 
-         MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnitWrapper,
+         MsgQueueUpdateEntry msgQueueUpdateEntry = new MsgQueueUpdateEntry(glob, msgUnitWrapper,
                   sub.getMsgQueue().getStorageId(),
                   sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
 
-         sub.getMsgQueue().put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+         sub.getMsgQueue().put(msgQueueUpdateEntry, I_Queue.USE_PUT_INTERCEPTOR);
 
          // If in MsgQueueUpdateEntry we set super.wantReturnObj = true; (see ReferenceEntry.java):
          //UpdateReturnQosServer retQos = (UpdateReturnQosServer)entry.getReturnObj();
          return 1;
       }
       catch (Throwable e) {
-         e.printStackTrace();
          SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
                                      msgUnitWrapper.getMsgQosData().getSender();
          if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
                             sub.getSessionInfo().getId() + " failed: " + e.toString());
-         sub.getSessionInfo().getDispatchManager().internalError(e); // calls MsgErrorHandler
-         //retCount does not change
-         return 0;
+         try {
+            MsgQueueEntry[] entries = {
+                  new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                              sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()) };
+            String reason = e.toString();
+            if (e instanceof XmlBlasterException)
+               reason = ((XmlBlasterException)e).getMessage();
+            requestBroker.deadMessage(entries, null, reason);
+         }
+         catch (XmlBlasterException e2) {
+            log.error(ME, "PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
+                            sub.getSessionInfo().getId() + " failed, message is lost: " + e2.getMessage() + " original exception is: " + e.toString());
+         }
+         return 1; // Don't remove subscriber for queue overflow exception
       }
    }
 
