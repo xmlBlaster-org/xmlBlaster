@@ -154,6 +154,13 @@ public final class ClusterManager
    }
 
    /**
+    * Check if supplied address would connect to our own node. 
+    */
+   public final boolean isLocalAddress(Address other) {
+      return getMyClusterNode().getNodeInfo().contains(other);
+   }
+
+   /**
     * Return myself
     */
    public ClusterNode getMyClusterNode() {

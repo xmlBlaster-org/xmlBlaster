@@ -96,8 +96,23 @@ public final class NodeInfo
    /**
     * Access all addresses of a node, please handle as readonly. 
     */
-   public Map getAddressMap() {
+   public final Map getAddressMap() {
       return addressMap;
+   }
+
+   /**
+    * Does the given address belong to this node?
+    */
+   public boolean contains(Address other) {
+      if (addressMap == null || addressMap.size() == 0)
+         return false;
+      Iterator it = addressMap.values().iterator();
+      while (it.hasNext()) {
+         Address aa = (Address)it.next();
+         if (aa.isSameAddress(other))
+            return true;
+      }
+      return false;
    }
 
    /**

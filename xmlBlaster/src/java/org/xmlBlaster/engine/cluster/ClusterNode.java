@@ -129,6 +129,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // TODO: new Global(args)
 
          this.xmlBlasterConnection = new XmlBlasterConnection(glob);
+         this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.initFailSave(this);
 
          CallbackAddress callback = nodeInfo.getCbAddress();
@@ -150,7 +151,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          try {
             Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
 
-            if (glob.getBootstrapAddress().isSameAddress(addr)) { // TODO: This test is not enough for other protocols/bootstrappings
+            if (glob.getClusterManager().isLocalAddress(addr)) {
                Log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
                return null;
             }
