@@ -108,12 +108,12 @@ public class Constants
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
    
    /** The returned message status if message is stale (that is old but not erased yet) */
-   public final static String STATE_STALE = "STALE"; // needs to be implemented as another message timer TODO!!!
-   public final static String RET_STALE = "<qos><state id='" + Constants.STATE_STALE + "'/></qos>";
+   //public final static String STATE_STALE = "STALE"; // needs to be implemented as another message timer TODO!!!
+   //public final static String RET_STALE = "<qos><state id='" + Constants.STATE_STALE + "'/></qos>";
    
-   /** The returned message status if message is expired (and therefor erased) */
-   public final static String STATE_EXPIRED = "EXPIRED";
-   public final static String RET_EXPIRED = "<qos><state id='" + Constants.STATE_EXPIRED + "'/></qos>";
+   /** The returned message status if message timeout occured (but not erased) */
+   public final static String STATE_TIMEOUT = "TIMEOUT";
+   public final static String RET_TIMEOUT = "<qos><state id='" + Constants.STATE_TIMEOUT + "'/></qos>";
    
    /** The returned message status if message is explicitly erased by a call to erase() */
    public final static String STATE_ERASED = "ERASED";
