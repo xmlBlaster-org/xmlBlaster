@@ -92,7 +92,8 @@ java HelloWorld2 -help
      </pre>
 
 
-     <p><b>Failsafe Connection to XmlBlaster Server</b><br/>
+     <p> <a NAME="failsafe"></a>
+     <b>Failsafe Connection to XmlBlaster Server</b><br/>
 
      The following parameters control the client side dispatch configuration
      <center>
@@ -137,7 +138,9 @@ java HelloWorld2 -help
     </p>
 
 
-     <p><b>Protocol specific configuration</b><br/>
+     <p>  <a NAME="connection"></a>
+     
+     <b>Protocol specific configuration</b><br/>
 
      The following parameters control the client side dispatch configuration,
      in this example we show the options for the SOCKET protocol.
@@ -167,7 +170,8 @@ java HelloWorld2 -help
     </center>
     </p>
 
-     <p><b>Server Side Callback (in case we install a local callback server)</b><br/>
+     <p> <a NAME="callback"></a>
+     <b>Server Side Callback (in case we install a local callback server)</b><br/>
      The following parameters control the callback (server side) dispatch configuration. It only makes
      sense to configure these if you have assigned a callback to this session.
     <center>
@@ -189,7 +193,9 @@ java HelloWorld2 -help
        </tr>
        <tr>
          <td>-dispatch/callback/pingInterval</td>
-         <td>Pinging every given milliseconds [10000]</td>
+         <td>Pinging every given milliseconds the clients callback server [10000]. 
+             If the ping fails the server will retry as specified with <i>dispatch/callback/retries</i>
+             or destroy the clients session.</td>
       </tr>
        <tr>
          <td>-dispatch/callback/retries</td>
@@ -223,7 +229,8 @@ java HelloWorld2 -help
     </center>
      </p>
 
-     <p><b>Queue Client Side Storage Properties</b><br/>
+     <p> <a NAME="queueconnection"></a>
+     <b>Queue Client Side Storage Properties</b><br/>
      <center>
      <table border="1">
        <tr><th>Command line</th><th>Comment and [default]</th></tr>
@@ -241,7 +248,8 @@ java HelloWorld2 -help
      </p>
      
 
-     <p><b>Queue Callback Storage Properties</b><br/>
+     <p> <a NAME="queuecallback"></a>
+     <b>Queue Callback Storage Properties</b><br/>
      <center>
      <table border="1">
        <tr><th>Command line</th><th>Comment and [default]</th></tr>
