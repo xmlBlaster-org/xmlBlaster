@@ -9,6 +9,7 @@ package org.xmlBlaster.client.protocol.rmi;
 
 import org.xmlBlaster.protocol.rmi.I_AuthServer;
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
+import org.xmlBlaster.protocol.rmi.RmiUrl;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
@@ -64,6 +65,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    private I_XmlBlaster blasterServer = null;
    private String sessionId = null;
    protected Address clientAddress;
+   private RmiUrl rmiUrl;
 
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
@@ -126,13 +128,10 @@ public class RmiConnection implements I_XmlBlasterConnection
 
       this.clientAddress = address;
 
-      // default xmlBlaster RMI publishing port is 1099
-      int registryPort = this.clientAddress.getEnv("registryPort", DEFAULT_REGISTRY_PORT).getValue();
-      String hostname = this.clientAddress.getEnv("hostname", glob.getLocalIP()).getValue();
-      String prefix = "rmi://" + hostname + ":" + registryPort + "/";
+      // default xmlBlaster RMI publishing registryPort is 1099
+      this.rmiUrl = new RmiUrl(glob, this.clientAddress);
 
-
-      String authServerUrl = prefix + "I_AuthServer";
+      String authServerUrl = this.rmiUrl.getUrl() + "I_AuthServer";
       String addr = this.clientAddress.getEnv("AuthServerUrl", authServerUrl).getValue();
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
@@ -144,7 +143,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "No connect to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
       }
 
-      String xmlBlasterUrl = prefix + "I_XmlBlaster";
+      String xmlBlasterUrl = this.rmiUrl.getUrl() + "I_XmlBlaster";
       addr = this.clientAddress.getEnv("XmlBlasterUrl", xmlBlasterUrl).getValue();
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
