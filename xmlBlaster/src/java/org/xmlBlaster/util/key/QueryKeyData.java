@@ -199,6 +199,16 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    /**
+    * Helper which returns the oid OR the xpath query for nice logging. 
+    */
+   public String getNiceString() {
+      if (getOid() != null && getOid().length() > 0) {
+         return getOid();
+      }
+      return getQueryString();
+   }
+
+   /**
     * Return the filters or array with size==0 if none is specified. 
     * <p />
     * For subscribe() and get() and cluster messages.
