@@ -93,7 +93,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String queuesTableName = null;
    private String entriesTableName = null;
    private java.util.HashSet nodesCache;
-   private String pingStatement;
    private String blobVarName;
    private String keyAttr;
 
@@ -185,9 +184,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       this.blobTxt = (String)names.get("blob");
       if (this.blobTxt == null) this.blobTxt = "bytea";
-
-      this.pingStatement = (String)names.get("pingStatement");
-      if (this.pingStatement == null) this.pingStatement = "SHOW ALL";
 
       this.blobVarName = (String)names.get("blobVarName");
       if (this.blobVarName == null) this.blobVarName = "blob";
