@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.21 2001/02/14 21:02:13 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.22 2001/02/24 23:17:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
+import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
@@ -118,8 +119,7 @@ public class BigXmlKeyDOM extends XmlKeyDom implements I_ClientListener, Message
 
       sb.append(offset + "<BigXmlKeyDOM>");
       try {
-         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         ((org.apache.crimson.tree.XmlDocument)xmlKeyDoc).write(out/*, encoding*/); // !!!
+         java.io.ByteArrayOutputStream out = XmlNotPortable.write(xmlKeyDoc);
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset + "   " + st.nextToken());

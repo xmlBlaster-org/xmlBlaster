@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.13 2000/12/26 14:56:43 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.14 2001/02/24 23:17:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -168,8 +168,7 @@ public class XmlToDom
    {
       StringBuffer sb = new StringBuffer();
       try {
-         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         ((org.apache.crimson.tree.XmlDocument)xmlDoc).write(out);
+         java.io.ByteArrayOutputStream out = XmlNotPortable.write(xmlDoc);
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset + st.nextToken());

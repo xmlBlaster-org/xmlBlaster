@@ -3,11 +3,12 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.16 2001/02/14 20:52:45 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.17 2001/02/24 23:16:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -255,9 +256,9 @@ public class XmlDBAdapter
     */
    private MessageUnit[] getResponseMessage(Document doc)
    {
-      ByteArrayOutputStream bais = new ByteArrayOutputStream();
-      try { ((org.apache.crimson.tree.XmlDocument)doc).write(bais); } catch(IOException e) { Log.error(ME, e.getMessage()); }
-      return getResponseMessage(bais.toByteArray(), "QueryResults");
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      try { out = XmlNotPortable.write(doc); } catch(IOException e) { Log.error(ME, e.getMessage()); }
+      return getResponseMessage(out.toByteArray(), "QueryResults");
    }
 
 
