@@ -120,7 +120,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inTopic = false;
    private boolean inQueue = false;
    private boolean inPersistence = false;
-   private boolean inIsPubSub = false;
+   private boolean inSubscribeable = false;
    private boolean inDestination = false;
    private boolean inSender = false;
    private boolean inPriority = false;
@@ -197,7 +197,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("subscribeable")) {
          if (!inQos)
             return;
-         inIsPubSub = true;
+         inSubscribeable = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -205,6 +205,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             }
             // if (log.TRACE) log.trace(ME, "Found subscribeable tag");
          }
+         msgQosData.setSubscribeable(true);
          return;
       }
 
@@ -551,10 +552,10 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("subscribeable")) {
-         inIsPubSub = false;
+         inSubscribeable = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
-            msgQosData.setIsSubscribeable(new Boolean(tmp).booleanValue());
+            msgQosData.setSubscribeable(new Boolean(tmp).booleanValue());
          }
          character.setLength(0);
          return;
@@ -657,7 +658,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setPersistent(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
+         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;
       }
@@ -727,7 +728,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append("'/>");
       }
 
-      if (msgQosData.isSubscribeableProp().isModified()) {
+      if (msgQosData.getSubscribeableProp().isModified()) {
          if (msgQosData.isSubscribeable())
             sb.append(offset).append(" <subscribeable/>");
          else

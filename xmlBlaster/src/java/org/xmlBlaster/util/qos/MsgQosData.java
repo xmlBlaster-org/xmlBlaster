@@ -66,7 +66,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
 
    public transient final static boolean DEFAULT_isSubscribeable = true;
    /** As default you can subscribe even PtP messages, set it to false if you don't want any subscriber to see your PtP message */
-   private PropBoolean isSubscribeable = new PropBoolean(DEFAULT_isSubscribeable);
+   private PropBoolean subscribeable = new PropBoolean(DEFAULT_isSubscribeable);
 
    /** the number of resend tries on failure */
    private int redeliver;
@@ -160,8 +160,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /**
     * @see #isSubscribeable()
     */
-   public void setIsSubscribeable(boolean isSubscribeable) {
-      this.isSubscribeable.setValue(isSubscribeable);
+   public void setSubscribeable(boolean isSubscribeable) {
+      this.subscribeable.setValue(isSubscribeable);
    }
 
    /**
@@ -171,11 +171,11 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
     */
    public boolean isSubscribeable() {
-      return this.isSubscribeable.getValue();
+      return this.subscribeable.getValue();
    }
 
-   public PropBoolean isSubscribeableProp() {
-      return this.isSubscribeable;
+   public PropBoolean getSubscribeableProp() {
+      return this.subscribeable;
    }
 
    /**
@@ -684,7 +684,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       //try {
          newOne = (MsgQosData)super.clone();
          synchronized(this) {
-            newOne.isSubscribeable = (PropBoolean)this.isSubscribeable.clone();
+            newOne.subscribeable = (PropBoolean)this.subscribeable.clone();
             newOne.persistent = (PropBoolean)this.persistent.clone();
             newOne.forceUpdate = (PropBoolean)this.forceUpdate.clone();
             newOne.lifeTime = (PropLong)this.lifeTime.clone();
