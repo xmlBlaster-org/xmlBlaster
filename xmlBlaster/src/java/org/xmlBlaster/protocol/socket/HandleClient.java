@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.24 2002/09/10 18:56:02 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.25 2002/09/14 23:10:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -29,6 +29,12 @@ import java.io.OutputStream;
 /**
  * Holds one socket connection to a client and handles
  * all requests from one client with plain socket messaging. 
+ * <p />
+ * <ol>
+ *   <li>We block on the socket input stream to read incoming messages
+ *       in a separate thread (see run() method)</li>
+ *   <li>We send update() and ping() back to the client</li>
+ * </ol>
  * 
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -52,8 +58,7 @@ public class HandleClient extends Executor implements Runnable
       this.log = glob.getLog("socket");
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
-      this.SOCKET_DEBUG = driver.SOCKET_DEBUG;
-      Thread t = new Thread(this, "XmlBlaster.SOCKET.HandleClient");
+      Thread t = new Thread(this, "XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient");
       t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
       t.start();
    }
@@ -62,7 +67,7 @@ public class HandleClient extends Executor implements Runnable
     * Close connection for one specific client
     */
    public void shutdown() {
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Schutdown connection ...");
+      if (log.TRACE) log.trace(ME, "Schutdown connection ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
@@ -91,8 +96,17 @@ public class HandleClient extends Executor implements Runnable
             e.printStackTrace();
          }
       }
-      if (responseListenerMap.size() > 0)
-         log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
+      if (responseListenerMap.size() > 0) {
+         java .util.Iterator iterator = responseListenerMap.keySet().iterator();
+         StringBuffer buf = new StringBuffer(256);
+         while (iterator.hasNext()) {
+            if (buf.length() > 0) buf.append(", ");
+            String key = (String)iterator.next();
+            buf.append(key);
+         }
+         log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
+         responseListenerMap.clear();
+      }
    }
 
    /**
@@ -121,7 +135,7 @@ public class HandleClient extends Executor implements Runnable
          parser.addMessage(msgUnitArr);
          if (expectingResponse) {
             Object response = execute(parser, WAIT_ON_RESPONSE);
-            if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got update response " + response.toString());
+            if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
@@ -150,7 +164,7 @@ public class HandleClient extends Executor implements Runnable
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, cbSessionId);
          parser.addMessage(qos);
          Object response = execute(parser, WAIT_ON_RESPONSE);
-         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Got ping response " + response.toString());
+         if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
          return (String)response; // return the QoS
       } catch (Throwable e) {
          throw new XmlBlasterException("CallbackPingFailed", "SOCKET callback ping failed: " + e.toString());
@@ -158,12 +172,11 @@ public class HandleClient extends Executor implements Runnable
    }
 
    /**
-    * Serve a client
+    * Serve a client, we block until a message arrives ...
     */
    public void run() {
       if (log.CALL) log.call(ME, "Handling client request ...");
       Parser receiver = new Parser();
-      receiver.SOCKET_DEBUG = SOCKET_DEBUG;
 
       try {
          if (log.TRACE) log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
@@ -173,15 +186,15 @@ public class HandleClient extends Executor implements Runnable
                //iStream = sock.getInputStream();
                receiver.parse(iStream);  // blocks until a message arrive
 
-               if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-               if (SOCKET_DEBUG>1) log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+               if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+               if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
                // receive() processes all invocations, only connect()/disconnect() we do locally ...
                if (receive(receiver) == false) {
                   if (Constants.CONNECT.equals(receiver.getMethodName())) {
                      ConnectQos conQos = new ConnectQos(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
-                     Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient-" + conQos.getUserId());
+                     Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient-" + conQos.getUserId());
                      this.ME += "-" + this.loginName;
                      log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
                      callback = new CallbackSocketDriver(this.loginName, this);
@@ -235,7 +248,7 @@ public class HandleClient extends Executor implements Runnable
          try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
          try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
          try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-         if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Deleted thread for '" + loginName + "'.");
+         if (log.TRACE) log.trace(ME, "Deleted thread for '" + loginName + "'.");
       }
    }
 }
