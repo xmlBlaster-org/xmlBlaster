@@ -281,6 +281,16 @@ public class Global implements Cloneable
    }
 
    /**
+    * Combination from getVersion() and getRevisionNumber(). 
+    * @return e.g. "0.91 #12702"
+    */
+   public String getReleaseId() {
+      if (!getVersion().equals(getRevisionNumber()))
+         return getVersion() + " #" + getRevisionNumber();
+      return getVersion();
+   }
+
+   /**
     * See @build.timestamp@ which will be replaced by build.xml with the current timestamp
     * @return e.g. "06/17/2002 01:38 PM"
     */

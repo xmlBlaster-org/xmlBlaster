@@ -423,7 +423,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                String line = sh.charChain('-', width-2);
                String bound = "+";
                log.info(ME, " "+line+" ");
-               String ver = bound + " xmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp();
+               String ver = bound + " xmlBlaster " + glob.getReleaseId() + " " + glob.getBuildTimestamp();
                log.info(ME, ver + sh.charChain(' ', width-ver.length()-1) + bound);
                boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
                if (useKeyboard) {
