@@ -71,6 +71,7 @@ Else add it manually.
  
    <property name="build.compiler" value="classic"/>
    <property name="debug" value="off"/>
+   <property name="JVM.target" value="1.1" />
  
    <property name="src.dir" value="./src/java"/>
    <property name="dtd.dir" value="./src/dtd"/>
@@ -202,7 +203,8 @@ Else add it manually.
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
             classpath="${classpath}"
-            debug="${debug}"/>
+            debug="${debug}"
+            target="${JVM.target}" />
 
       <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
       <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
@@ -231,7 +233,8 @@ Else add it manually.
       <javac srcdir="${build.src}/demo"
             destdir="${build.dest}"
             classpath="${classpath}:${lib.dir}/${name}.jar"
-            debug="${debug}"/>
+            debug="${debug}"
+            target="${JVM.target}" />
       <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
    </target>
@@ -261,7 +264,8 @@ Else add it manually.
       <javac srcdir="${build.src}/testsuite"
             destdir="${build.dest}"
             classpath="${classpath}:${lib.dir}/${name}.jar"
-            debug="${debug}"/>
+            debug="${debug}"
+            target="${JVM.target}" />
       <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
       <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
    </target>
