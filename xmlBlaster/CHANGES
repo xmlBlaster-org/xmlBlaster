@@ -97,7 +97,7 @@ Changes for 0.80 [Sep, 25 2002]
     to
       public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo)
     The package name changed from
-     org.xmlBlaster.util.I_Plugin
+     org.xmlBlaster.util.plugin.I_Plugin
     to
      org.xmlBlaster.util.plugin.I_Plugin
 
