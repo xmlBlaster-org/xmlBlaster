@@ -275,25 +275,50 @@ public abstract class Executor implements ExecutorBase
             executeResponse(receiver, response);
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
-            if (this.cbClient == null) {
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation. Try configuration ' -protocol SOCKET'");
+            try {
+               I_CallbackExtended cbClientTmp = this.cbClient;
+               if (cbClientTmp == null) {
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The SOCKET callback driver is not created, can't process the remote invocation. Try configuration ' -protocol SOCKET'");
+               }
+               MsgUnitRaw[] arr = receiver.getMessageArr();
+               if (arr == null || arr.length < 1) {
+                  log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+                  return true;
+               }
+               cbClientTmp.updateOneway(receiver.getSecretSessionId(), arr);
             }
-            MsgUnitRaw[] arr = receiver.getMessageArr();
-            if (arr == null || arr.length < 1) {
-               log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+            catch (XmlBlasterException e) {
+               executeExecption(receiver, e);
                return true;
             }
-            this.cbClient.updateOneway(receiver.getSecretSessionId(), arr);
+            catch (Throwable e) {
+               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
+               executeExecption(receiver, xmlBlasterException);
+               return true;
+            }
          }
          else if (MethodName.UPDATE == receiver.getMethodName()) {
-            if (this.cbClient == null) {
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation. Try configuration ' -protocol SOCKET'");
+            try {
+               I_CallbackExtended cbClientTmp = this.cbClient; // Remember to avoid synchronized block
+               if (cbClientTmp == null) {
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
+               }
+               MsgUnitRaw[] arr = receiver.getMessageArr();
+               if (arr == null || arr.length < 1) {
+                  throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+               }
+               String[] response = cbClientTmp.update(receiver.getSecretSessionId(), arr);
+               executeResponse(receiver, response);
             }
-            MsgUnitRaw[] arr = receiver.getMessageArr();
-            if (arr == null || arr.length < 1)
-               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
-            String[] response = this.cbClient.update(receiver.getSecretSessionId(), arr);
-            executeResponse(receiver, response);
+            catch (XmlBlasterException e) {
+               executeExecption(receiver, e);
+               return true;
+            }
+            catch (Throwable e) {
+               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
+               executeExecption(receiver, xmlBlasterException);
+               return true;
+            }
          }
          else if (MethodName.GET == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
@@ -303,6 +328,11 @@ public abstract class Executor implements ExecutorBase
             executeResponse(receiver, response);
          }
          else if (MethodName.PING == receiver.getMethodName()) {
+            if (this.cbClient == null && !glob.isServerSide()) {
+               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
+               executeExecption(receiver, xmlBlasterException);
+               return true;
+            }
             executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>"
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
