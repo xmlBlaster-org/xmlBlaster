@@ -2,7 +2,7 @@ INTRODUCTION:
 =============
 
 This is the implementation of the xmlBlaster client classes in c++.
-They are helper classes for simpler CORBA access to xmlBlaster.
+They are helper classes for simple CORBA access to xmlBlaster.
 
 The C++ source code is compiled to a shared library
 
@@ -10,90 +10,12 @@ The C++ source code is compiled to a shared library
 
 (the extension is .so on Linux, .sl on HPUX, .dll on Windows)
 
-Tested with mico 2.3.6 and 2.3.7 (cvs from 2002-04-01)
-and xerces 1.6, 1.7 and 2.0 on Linux.
-Added some boost headers (http://www.boost.org) from cvs 2002-Aug-21
 
-NOTE (2002-08-21): 
- Compiling with the new g++ 3.0.4 and 3.1.1 on Linux is fine, but
- linking fails with unresolved mico externals.
- The problem is not tracked down.
- Better stay with g++ 2.9.x for the moment (if you
- resolve the issue, please mail to our mailing list).
+Please read:
 
-
-HOW TO BUILD THE CLIENT CLASSES:
-================================
-
-- retrieve xerces from http://xml.apache.org
-- install xerces, lets say in /opt/local/xerces
-- install one c++ implementation of corba (currently MICO or ORBACUS)
-  lets say in /opt/local/mico-src
-     ./configure --prefix /opt/local/mico --disable-mini-stl
-     gmake
-     gmake install
-     Installs the necessary stuff in /opt/local/mico
-- If you want to use mico with STLport
-  Just remove  '#include <algorithm>' from the .cc
-  files:
-    orb/orb.cc
-    daemon/mediator.cc
-    coss/trader/trader_main.cc
-  Nothing from algortithm is used in any of these files.
-  [ shaun.goldsworthy@str.com.au ]
-[ 
-  Currently NOT necessary (just that i dont forget it):
-  - (boost 1.27.0 compiled with jam for thread support)
-  export BOOST_ROOT=/home/xmlblast/boost-cvs
-  g++ thread.cpp -o thread -pthread -I$BOOST_ROOT libboost_thread.a
-  g++ monitor.cpp -o monitor -I$BOOST_ROOT $BOOST_ROOT/libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a
-  g++ thread.cpp -s -o thread -I$BOOST_ROOT -pthread
-      $BOOST_ROOT/libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a
-      $BOOST_ROOT/libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a
-      -lrt  -Wl,-rpath-link,. -Wl,-soname,thread.x
-
-  g++   -pthread -s  -o "../../../libs/thread/example/bin/tennis/gcc/release/runtime-link-dynamic/threading-multi/tennis.1.27.0"    "../../../libs/thread/example/bin/tennis/gcc/release/runtime-link-dynamic/threading-multi/tennis.o"  "../../../libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a"  "../../../libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a"  -lrt  -Wl,-rpath-link,. -Wl,-soname,tennis.1.27.0
-]
-
-- define the following environment variables if different than the default
-  (the given value is the default setting).
-
-  Do this by editing xmlBlaster/build.properties:
-
-     CORBACPP_HOME = /opt/local/mico
-     CORBACPP_VER  = 2.3.7
-     XMLCPP_HOME   = /opt/local/xerces-c-src1_7_0
-     XMLCPP_VER    = 1_7_0
-     BOOST_ROOT    = /opt/local/boost
-    
-    XMLCPP_HOME=<directory-where-you-installed-xerces>
-                (for example XMLCPP_HOME=/opt/local/xerces)
-
-    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_7_0")
-
-    ORBACUS_HOME or CORBACPP_HOME (depending if you run with orbacus or mico
-        ex.: ORBACUS_HOME=/opt/local/orbacus
-
-    ORBACUS_VER or CORBACPP_VER to the version of mico or orbacus
-        ex.: CORBACPP_VER="2.3.7"
-
-    Currently not supported (sorry Michele):
-    CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
- 
-  NOTE:
-   The Makefiles are only tested on Linux and are deprecated!
-
-  The recommended way to compile C++ is using ant.
-  Go to xmlBlaster root directory and type:
-
-     build.bat cpp-lib
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.html
   
-  or
-
-     build.sh cpp-lib
-
-  which will compile the xmlBlasterClient shared library (dll).
-  Some demo C++ clients are in xmlBlaster/testsuite/src/c++
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.compile.html
 
 
 HOW TO RUN THE TESTSUITE:
@@ -104,52 +26,20 @@ Read ${XMLBLASTER_HOME}/testsuite/src/c++/README
 To manually start a test look at the file test.sh in that directory.
 
 
-How to bind the mico callback server on a specified port:
-=========================================================
-
-  -ORBIIOPAddr inet:<host addr>:<port number>
-
-
 And now some additional notes:
 ==============================
 
-These c++ classes are practically a clone to the java-client & util classes (at
+These C++ classes are practically a clone to the java-client & util classes (at
 the time of writing this, some of the util classes in java have moved out from
 xmlBlaster to jutil). Some slight differences are:
 
-- The classes you will not find in the java-implementation:
+- The classes you will not find in the Java-implementation:
         StringStripper, StringStripper2, StringTrim and NameServerControl.
         These are used to simplify the use of the NameService. StringTrim
         implements methods to handle trimming of strings the same way as
         String.trim() does in java.
 
 - Locales are not implemented (this affects the way logging looks like).
-
-- Failsave is not implemeted (yet).
-
-- There is no caching in CorbaConnection (yet)
-
-- Many QoS features have no C++ client-class interface yet.
-  You need to stick to raw xml in those cases or extend
-  the C++ client classes and contribute them.
-
-
--Some notes on XERCES
-
-  1) Note that the strings in xerces are UNICODE 3.0 compliant and the
-     characters XMLCh sizes are different from the CORBA and ansi string ones.
-
-  2) To transform the character types from one system to the other, xerces uses
-     the static methods of XMLString. Particularly useful is the transcode()
-     method which comes in different flowers.
-
-  3) When using methods of the xerces utility classes which return pointers
-     (often pointers to characters XMLCh*) the principle is like a T_ptr type
-     in CORBA, i.e. it is allocated dynamically inside the method and returned
-     to the caller of the method. At this moment the caller becomes the owner
-     of that XMLCh* memory-space, so it is (the caller) the responsible for
-     deleting that pointer (not deleting results in memory leak).
-
 
 - Notes on corba compatibility
 
@@ -162,7 +52,7 @@ xmlBlaster to jutil). Some slight differences are:
      In writing the c++ client classes I tried to keep the implementor-
      specific stuff in a header- and a source file:
 
-        util/CompatibleCorba.h and util/CompatibleCorba.cpp
+        client/protocol/corba/CompatibleCorba.h and client/protocol/corba/CompatibleCorba.cpp
 
      In the header file, macros, header file names etc. are specified, while
      in the source file, special non-standard functions encapsulate
@@ -172,73 +62,14 @@ xmlBlaster to jutil). Some slight differences are:
      must first define a new name (in CompatibleCorba.h) telling which corba
      to use. At present the following names are identified:
 
-        - MICO
-        - ORBACUS
+        - XMLBLASTER_OMNIORB
+        - XMLBLASTER_ORBACUS
+        - XMLBLASTER_MICO
+        - XMLBLASTER_TAO
+        - XMLBLASTER_ORBIX
 
-     Then you define all the header filenames  (look at the MICO or ORBACUS
+     Then you define all the header filenames  (look at the MICO or TAO
      case).
-
-     To use this header do it in the following way:
-
-     For each idl-file (in our case we only have one: xmlBlaster.idl) you
-     have to assign to either CLIENT_HEADER or SERVER_HEADER the name of the
-     prefix of the idl file (This is used to build defines for the
-     idl-generated files).
-     This is done because some corba implementors have one header file for the
-     server and another for the client. Note that you have to include
-     util/CompatibleCorba.h after each definition.
-
-     So if you will use two different idl files in your source, lets say
-     module1.idl and module2.idl, then you will call the following at the start
-     of your implementation:
-
-        #define SERVER_HEADER module1
-        #include <util/CompatibleCorba.h>
-        #define SERVER_HEADER module2
-        #include <util/CompatibleCorba.h>
-
-     You need to do this because CompatibleCorba will define macros for the
-     implementor-names for the different headers (like nameservice, event
-     service and more).
-
-     You will call CLIENT_HEADER if the code you write will only be a pure
-     client. In case you write a server, or a mixed client/server, then you
-     will call SERVER_HEADER. Note that xmlBlaster is always a mixed
-     client/server even if you are only writing a client (because of the
-     callback).
-
-     After having defined and included what explained, if you want to use
-     a service (for example a naming service), you don't need to call
-     the implementor-specific name for it, just include a macro like this:
-
-     #include COSNAMING
-
-     And from now on you do not bother about implementor specific stuff.
-     The following names are defined for the different services:
-
-        CORBA_HEADER (the corba header: you don't need to include this
-                implicitly, because it is called already the first time you
-                include util/CompatibleCorba.h)
-        COSCONTAINEMENT
-        COSOBJECTIDENTITY
-        COSREFERENCE
-        COSEVENTCHANNELADMIN
-        COSEVENTCOMM
-        COSRELATIONSHIPS
-        COSGRAPHS
-        COSTIME
-        COSGRAPHEXTENTSION
-        COSTRADING
-        COSNAMING
-        COSPROPERTY
-        COSTRADINGREPOS
-        COSTYPEDEVENTCHANNELADMIN
-        COSTYPEDEVENT
-
-    Note that not all these are implemented by all vendors. If a particular
-    vendor does not implement a certain feature, then it links to a file called
-    not_implemented.h which does not exist. This will automatically result in
-    a compile error.
 
 
 Cheers & good Luck
