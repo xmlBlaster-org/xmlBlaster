@@ -486,7 +486,7 @@ Else add it manually.
    <!-- =================================================================== -->
    <!-- Creates the distribution for java clients                           -->
    <!-- =================================================================== -->
-   <target name="dist-client"> <!-- depends="all" -->
+   <target name="dist-client" depends="all">
       <mkdir dir="${dist-client.dir}"/>
       <mkdir dir="${dist-client.dir}/lib"/>
       <mkdir dir="${dist-client.dir}/classes"/>
