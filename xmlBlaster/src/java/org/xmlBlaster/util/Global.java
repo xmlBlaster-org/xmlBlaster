@@ -171,9 +171,6 @@ public class Global implements Cloneable
 
    protected static int counter = 0;
 
-   /** a hastable keeping all JdbcManager objects: one per DB */
-   protected Hashtable jdbcQueueManagersCommonTable;
-
    private PluginManagerBase pluginManager;
    private PluginRegistry pluginRegistry;
 
@@ -1383,10 +1380,6 @@ public class Global implements Cloneable
       }
    }
 
-   public synchronized void detachJdbcManagerCommonTable(String managerName) {
-      if (this.jdbcQueueManagersCommonTable != null) 
-         this.jdbcQueueManagersCommonTable.remove(managerName);
-   }
 
    /**
     * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 
@@ -1626,17 +1619,6 @@ public class Global implements Cloneable
       }
 
       shutdownHttpServer();
-
-      if (this.jdbcQueueManagersCommonTable != null) {
-         java.util.Enumeration enum = this.jdbcQueueManagersCommonTable.keys();
-         while (enum.hasMoreElements()) {
-            String key = (String)enum.nextElement();
-            Object obj = this.jdbcQueueManagersCommonTable.get(key);
-            if (obj != null) ((JdbcManagerCommonTable)obj).shutdown();
-         }
-         this.jdbcQueueManagersCommonTable.clear();
-         this.jdbcQueueManagersCommonTable = null;
-      }
 
       if (this.xmlProcessor != null) {
          this.xmlProcessor.shutdown();

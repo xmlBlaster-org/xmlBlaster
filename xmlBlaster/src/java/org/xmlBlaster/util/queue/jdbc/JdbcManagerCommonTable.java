@@ -2541,7 +2541,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //      if (this.pool != null) this.pool.shutdown();
       if (this.log.CALL) this.log.call(ME, "shutdown");
       if (this.pool != null) {
-         this.glob.detachJdbcManagerCommonTable(this.managerName);
          this.pool.unregisterManager(this);
       }
    }
