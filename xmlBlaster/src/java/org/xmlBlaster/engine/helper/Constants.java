@@ -46,7 +46,7 @@ public class Constants
     * <pre>
     *  xmlblaster      3412/tcp   xmlBlaster
     *  xmlblaster      3412/udp   xmlBlaster
-    *  #                          Marcel Ruff <ruff@swand.lake.de> February 2002
+    *  #                          Marcel Ruff <xmlBlaster@marcelruff.info> February 2002
     * </pre>
     */
    public static final int XMLBLASTER_PORT = 3412;
@@ -106,6 +106,10 @@ public class Constants
    public final static String RELATING_SUBJECT = "subject";
    /** Type of a message queue  on client side */
    public final static String RELATING_CLIENT = "client";
+   /** Type of a history message queue containing references on messages */
+   public final static String RELATING_HISTORY = "history";
+   /** Message cache */
+   public final static String RELATING_TOPICCACHE = "topic";
 
    /* message queue onOverflow handling, blocking until queue takes messages again (client side) */
    public final static String ONOVERFLOW_BLOCK = "block";
@@ -131,6 +135,7 @@ public class Constants
    public final static String SUBSCRIPTIONID_CLIENT_PREFIX = "__subId:/node/";
 
    public final static String INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
+   public final static String INTERNAL_OID_ADMIN_CMD = "__cmd:";
    public final static String INTERNAL_OID_PREFIX_FOR_CORE = "__";
    public final static String INTERNAL_OID_PREFIX = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
    public final static String INTERNAL_OID_CLUSTER_PREFIX = INTERNAL_OID_PREFIX +"cluster";  // "__sys__cluster"
@@ -143,6 +148,10 @@ public class Constants
 
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
+
+   public static final String INDENT = " ";
+   public static final String OFFSET = "\n" + INDENT;
+
 
    /** XmlKey queryType enum */
    public static final String XPATH = "XPATH";
