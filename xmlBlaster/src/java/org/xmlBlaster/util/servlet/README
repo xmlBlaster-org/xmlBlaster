@@ -1,3 +1,6 @@
+Servlet which generates the requirement html overview page on the fly from xml/xsl
+
+
 please put the following lines in your zone.properties(Apache) (servlet.properties):
 
 	servlet.ReqListServlet.code=org.xmlBlaster.util.servlet.ReqListServlet
