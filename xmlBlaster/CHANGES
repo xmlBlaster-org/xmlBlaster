@@ -2,6 +2,9 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for x.xxx [xxx, xx xxxx]
 ================================
+  - Bugfixed jutils.jar added:
+    * Removed JDBC pool code (does not compile with JDK 1.4)
+    * Bugfix for xmlBlaster.properties file in CLASSPATH
 
   - build.xml: Added target "dist-client" to build a xmlBlasterClient.jar
     This contains all necessary class files for a typical xmlBlaster client 
