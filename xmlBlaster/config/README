@@ -1,9 +1,0 @@
-jacorb.sh       : settings and Makefile-variables specific to jacorb
-java_orbacus.sh : wrapper script to run java with a correct orbacus 
-	          configuration (similar to the jaco script)
-
-mico.sh		: specific settings for mico
-
-orbacus.cfg     : configuration stuff for orbacus 
-
-orbacus.sh      : settings and Makefile-variables specific to orbacus
