@@ -211,6 +211,7 @@ public class PublishTest extends TestCase {
                   return "";
                }
             });
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -231,6 +232,7 @@ public class PublishTest extends TestCase {
                   return "";
                }
             });
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -280,6 +282,7 @@ public class PublishTest extends TestCase {
                return "";
             }
          });  // subscribe with our specific update handler
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -314,6 +317,7 @@ public class PublishTest extends TestCase {
                   return "";
                }
             });
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -329,6 +333,7 @@ public class PublishTest extends TestCase {
                return "";
             }
          });  // subscribe with our specific update handler
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
