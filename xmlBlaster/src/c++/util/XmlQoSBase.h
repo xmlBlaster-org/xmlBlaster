@@ -10,13 +10,13 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 #define _UTIL_XMLQOSBASE_H
 
 #include <util/xmlBlasterDef.h>
-#include <string>
 #include <util/SaxHandlerBase.h>
+#include <util/Global.h>
+#include <string>
 
 using namespace std;
 
-namespace org { namespace xmlBlaster {
-namespace util {
+namespace org { namespace xmlBlaster { namespace util {
     /**
      * In good old C days this would have been named a 'flag' (with bit wise 
      * setting)<br />
@@ -29,11 +29,13 @@ namespace util {
      * The &lt;qos> tag is parsed here, and you provide the parsing of the 
      * inner tags.
      */
-    class Dll_Export XmlQoSBase : public SaxHandlerBase {
+    class Dll_Export XmlQoSBase : public SaxHandlerBase
+    {
 
     private:
 
-       string me() {
+       string me()
+       {
           return "XmlQoSBase";
        }
        
@@ -47,7 +49,8 @@ namespace util {
         * Constructs an un initialized QoS (quality of service) object.
         * You need to call the init() method to parse the XML string.
         */
-       XmlQoSBase(int args=0, const char * const argc[]=0) : SaxHandlerBase(args,argc) {
+       XmlQoSBase(Global& global) : SaxHandlerBase(global)
+       {
           inQos_ = false;
           if (log_.CALL) log_.trace(me(), "Creating new XmlQoSBase");
        }

@@ -23,8 +23,10 @@ Comment:   The qos for the security (a subelement of connect qos)
 #include <string>
 #include <util/SaxHandlerBase.h>
 #include <util/StringTrim.h>
-
+#include <util/Global.h>
 // #include <util/XmlBlasterException>
+
+using org::xmlBlaster::util::Global;
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
@@ -42,12 +44,10 @@ namespace org { namespace xmlBlaster { namespace authentication {
       string version_;
       string user_;
       string passwd_;
-      int args_;
-      const char * const* argc_;
 
       util::StringTrim<char> trim_;
 
-      void prep(int args,const char * const argc[])
+      void prep()
       {
          inSecurityService_ = false;
          inUser_            = false;
@@ -56,9 +56,6 @@ namespace org { namespace xmlBlaster { namespace authentication {
          version_           = "1.0";
          user_              = "";
          passwd_            = "";
-         args_              = args;
-         argc_              = argc;
-
       }
 
       void copy(const SecurityQos& securityQos)
@@ -70,12 +67,13 @@ namespace org { namespace xmlBlaster { namespace authentication {
          version_           = securityQos.version_;
          user_              = securityQos.user_;
          passwd_            = securityQos.passwd_;
-         args_              = securityQos.args_;
-         argc_              = securityQos.argc_;
+//         args_              = securityQos.args_;
+//         argc_              = securityQos.argc_;
       }
 
    public:
-      SecurityQos(int args=0, const char * const argc[]=0);
+//      SecurityQos(int args=0, const char * const argc[]=0);
+      SecurityQos(Global& global);
 
       void parse(const string& xmlQoS_literal)
       {
@@ -102,13 +100,11 @@ namespace org { namespace xmlBlaster { namespace authentication {
          init(ret);
       }
 
-      SecurityQos(const string& xmlQoS_literal, int args=0, const char * const argc[]=0);
+      SecurityQos(const string& xmlQoS_literal, Global& global);
 
       SecurityQos(const string& loginName,
                   const string& password,
-                  int args=0,
-                   const char * const argc[]=0);
-
+                  Global& global);
       SecurityQos(const SecurityQos& securityQos);
       SecurityQos& operator =(const SecurityQos& securityQos);
 

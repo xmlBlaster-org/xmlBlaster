@@ -15,14 +15,14 @@ Comment:   Helper to easy get the callback messages
 using namespace std;
 
 
-namespace org { namespace xmlBlaster {
+namespace org { namespace xmlBlaster { namespace client {
    /**
     * This is a little helper class wraps the CORBA BlasterCallback update(),
     * and delivers the client a nicer update() method. <p>
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.12 $
+    * @version $Revision: 1.13 $
     * @author $Author: laghi $
     */
    class Dll_Export I_Callback {
@@ -53,7 +53,7 @@ namespace org { namespace xmlBlaster {
                           void *content, long contentSize, 
                           UpdateQos &updateQos) = 0;
    };
-}} // namespace
+}}} // namespace
 
 #endif
 

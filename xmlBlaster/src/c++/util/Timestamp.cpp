@@ -3,16 +3,13 @@ Name:      Timestamp.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.cpp,v 1.4 2002/11/27 10:53:40 laghi Exp $
+Version:   $Id: Timestamp.cpp,v 1.5 2002/12/05 21:33:40 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/Timestamp.h>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/xtime.hpp>
-
-// #include <stddef.h>
-// #include <iostream>
 
 namespace org { namespace xmlBlaster { namespace util {
 

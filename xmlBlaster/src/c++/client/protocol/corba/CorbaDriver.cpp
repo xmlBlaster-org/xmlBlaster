@@ -58,13 +58,13 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
    }
 
 
-CorbaDriver::CorbaDriver(int args, const char * const argc[],
-                         bool connectionOwner) : ME("CorbaDriver")
+CorbaDriver::CorbaDriver(Global& global, bool connectionOwner)
+   : ME("CorbaDriver"), global_(global)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
    _COMM_TRY
-      connection_ = new CorbaConnection(args, argc, connectionOwner);
+      connection_ = new CorbaConnection(global_, connectionOwner);
    _COMM_CATCH("::Constructor", true, false)
 }
 
@@ -83,7 +83,7 @@ void CorbaDriver::initialize(const string& name, I_Callback &client)
    _COMM_TRY
       if (defaultCallback_ != NULL) delete defaultCallback_;
       defaultCallback_ = NULL;
-      defaultCallback_ =  new DefaultCallback(name, &client, 0);
+      defaultCallback_ =  new DefaultCallback(global_, name, &client, 0);
       if (connection_ != NULL) delete connection_;
       connection_ = NULL;
       connection_->createCallbackServer(defaultCallback_);

@@ -15,7 +15,7 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 #include <util/ServerRef.h>
 #include <util/qos/SessionQos.h>
 #include <authentication/SecurityQos.h>
-
+#include <util/Global.h>
 
 /**
  * <qos>\n") +
@@ -52,12 +52,12 @@ using namespace org::xmlBlaster::util;
 class Dll_Export ConnectQosData
 {
 private:
-   SecurityQos securityQos_;
-   SessionQos  sessionQos_;
-   ServerRef   serverRef_;
-   bool        ptp_;
-   bool        isDirty_;
-   string      literal_;
+   SecurityQos  securityQos_;
+   SessionQos   sessionQos_;
+   ServerRef    serverRef_;
+   bool         ptp_;
+   bool         isDirty_;
+   string       literal_;
 
    void setLiteral(const string& literal);
 
@@ -99,14 +99,9 @@ private:
    bool inSecurityService_;
    bool inServerRef_;
    bool inSession_;
-   int args_;
-   const char * const* argc_;
-//   util::StringTrim<char> ;
 
-   void prep(int args, const char * const argc[])
+   void prep()
    {
-      args_              = args;
-      argc_              = argc;
       inSecurityService_ = false;
       inServerRef_       = false;
       inSession_         = false;
@@ -117,7 +112,7 @@ private:
    }
 
 public:
-   ConnectQosFactory(int args=0, const char * const argc[]=0);
+   ConnectQosFactory(Global& global);
 
    ~ConnectQosFactory();
 

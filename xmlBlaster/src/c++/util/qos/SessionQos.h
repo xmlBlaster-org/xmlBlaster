@@ -12,6 +12,7 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 #include <string>
 #include <util/XmlQoSBase.h>
 #include <util/StringTrim.h>
+#include <util/Global.h>
 
 /**
  *
@@ -62,21 +63,12 @@ class Dll_Export SessionQosFactory: public util::XmlQoSBase
 {
 private:
    const string ME;
-
-   SessionQosData sessionQos_;
-   // helper flags for SAX parsing
-   int args_;
-   const char * const* argc_;
-   util::StringTrim<char> trim_;
-
-   void prep(int args, const char * const argc[])
-   {
-      args_ = args;
-      argc_ = argc;
-   }
+   SessionQosData* sessionQos_;
 
 public:
-   SessionQosFactory(int args=0, const char * const argc[]=0);
+   SessionQosFactory(Global& global);
+
+   ~SessionQosFactory();
 
    /**
     * This characters emulates the java version but keep in mind that it is

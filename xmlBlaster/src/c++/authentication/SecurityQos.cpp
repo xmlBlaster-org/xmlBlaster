@@ -11,39 +11,38 @@ Comment:   The qos for the security (a subelement of connect qos)
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
-SecurityQos::SecurityQos(int args, const char * const argc[])
-   : SaxHandlerBase(args, argc),
+SecurityQos::SecurityQos(Global& global)
+   : SaxHandlerBase(global),
      ME("SecurityQos-simple"),
      trim_()
 {
    log_.call(ME, "first constructor");
-   prep(args, argc);
+   prep();
 }
 
-SecurityQos::SecurityQos(const string& xmlQoS_literal, int args, const char * const argc[])
-   : SaxHandlerBase(args, argc),
+SecurityQos::SecurityQos(const string& xmlQoS_literal, Global& global)
+   : SaxHandlerBase(global),
      ME("SecurityQos-simple"),
      trim_()
 {
    log_.call(ME, "second constructor");
-   prep(args, argc);
+   prep();
    parse(xmlQoS_literal);
 }
 
 SecurityQos::SecurityQos(const string& loginName,
                          const string& password,
-                         int args,
-                          const char * const argc[])
-   : SaxHandlerBase(args, argc), ME("SecurityQos-simple"), trim_()
+                         Global& global)
+   : SaxHandlerBase(global), ME("SecurityQos-simple"), trim_()
 {
    log_.call(ME, "third constructor");
-   prep(args, argc);
+   prep();
    user_   = loginName;
    passwd_ = password;
 }
 
 SecurityQos::SecurityQos(const SecurityQos& securityQos)
-   : SaxHandlerBase(securityQos.args_, securityQos.argc_), ME("SecurityQos-simple"), trim_()
+   : SaxHandlerBase(securityQos.global_), ME("SecurityQos-simple"), trim_()
 {
    copy(securityQos);
 }
@@ -232,8 +231,9 @@ int main(int args, char* argv[])
       string("   ]]>\n") +
       string("</securityService>");
 
+   Global& glob = Global::getInstance();
    cout << "Original:\n" << xml << endl;
-   org::xmlBlaster::authentication::SecurityQos qos(xml, args, argv);
+   org::xmlBlaster::authentication::SecurityQos qos(xml, glob);
    cout << "Result:\n" << qos.toXml() << endl;
    qos.setUserId("AnotherUser");
    qos.setCredential("AnotherPassword");

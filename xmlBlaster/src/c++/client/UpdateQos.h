@@ -11,8 +11,10 @@ Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 #include <util/Log.h>
 #include <util/Constants.h>
 #include <util/XmlQoSBase.h>
+#include <util/Global.h>
 
 using namespace std;
+using org::xmlBlaster::util::Global;
 
 namespace org { namespace xmlBlaster {
    
@@ -53,8 +55,8 @@ namespace org { namespace xmlBlaster {
        * Constructs the specialized quality of service object for a 
        * update() call.
        */
-      UpdateQos(const string &xmlQoS_literal, int args=0, char *argc[]=0) 
-               : util::XmlQoSBase(args, argc),
+      UpdateQos(Global& global, const string &xmlQoS_literal)
+               : util::XmlQoSBase(global),
                inState_(false), state_(util::Constants::STATE_OK),  
                inSender_(false), sender_(""),
                inSubscriptionId_(false), subscriptionId_("")

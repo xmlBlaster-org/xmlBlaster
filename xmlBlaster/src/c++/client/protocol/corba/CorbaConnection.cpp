@@ -33,13 +33,17 @@ namespace org {
     namespace corba {
 
 
-CorbaConnection::CorbaConnection(int args, const char * const argc[], bool orbOwner)
-  : loginQos_(), log_(args, argc), connectReturnQos_()
+CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
+  : loginQos_(), connectReturnQos_(), global_(global), log_(global.getLog("corba"))
 {
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
   if (log_.CALL) log_.call(me(), "CorbaConnection constructor ...");
-  if (numOfSessions_ == 0) orb_ = CORBA::ORB_init(args, const_cast<char **>(argc));
+  if (numOfSessions_ == 0) {
+     int args                 = global_.getArgs();
+     const char * const* argc = global_.getArgc();
+     orb_ = CORBA::ORB_init(args, const_cast<char **>(argc));
+  }
   numOfSessions_++;
   nameServerControl_ = 0;
   numLogins_         = 0;
@@ -49,8 +53,6 @@ CorbaConnection::CorbaConnection(int args, const char * const argc[], bool orbOw
   defaultCallback_   = 0;
   sessionId_         = "";
   orbOwner_          = orbOwner;
-  args_              = args;
-  argc_              = argc;
   xmlBlasterIOR_     = "";
 }
 
@@ -271,7 +273,7 @@ CorbaConnection::login(const string &loginName, const string &passwd,
 
   if (client) {
      if (defaultCallback_) delete defaultCallback_;
-     defaultCallback_ =  new DefaultCallback(loginName_, client, 0);
+     defaultCallback_ =  new DefaultCallback(global_, loginName_, client, 0);
      callback_ = createCallbackServer(defaultCallback_);
      util::CallbackAddress addr("IOR");
      addr.setAddress(orb_->object_to_string(callback_));
@@ -342,7 +344,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       if (log_.TRACE) log_.trace(me(), string("connect req: ") + reqQos);
       string retQos = authServer_->connect(reqQos.c_str());
       if (log_.TRACE) log_.trace(me(), string("connect ret: ") + retQos);
-      ConnectQosFactory factory(args_, argc_);
+      ConnectQosFactory factory(global_);
       connectReturnQos_ = factory.readObject(retQos);
       sessionId_ = connectReturnQos_.getSessionId();
       xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();

@@ -22,6 +22,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/Log.h>
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
+#include <util/Global.h>
 
 #include <stdlib.h>
 
@@ -45,21 +46,23 @@ namespace util {
       
    protected:
       string            character_;
-      Log               log_;
       StringTrim<char>  charTrimmer_; // wrappers for the java String.trim
       StringTrim<XMLCh> xmlChTrimmer_;
       /**
        * The original XML string in ASCII representation, for example:
        * <code>   &lt;qos>&lt;/qos>"</code>
        */
-      string xmlLiteral_;
-      
+      string  xmlLiteral_;
+      Global& global_;
+      Log&    log_;
+
    public:
       /**
        * Constructs an new object.
        * You need to call the init() method to parse the XML string.
        */
-      SaxHandlerBase(int args=0, const char * const argc[]=0);
+//      SaxHandlerBase(int args=0, const char * const argc[]=0);
+      SaxHandlerBase(Global& global);
 
       
       /*

@@ -14,6 +14,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <client/I_Callback.h>
 #include <client/UpdateKey.h>
 #include <client/UpdateQos.h>
+#include <util/Global.h>
 #define  SERVER_HEADER generated/xmlBlaster
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
@@ -27,6 +28,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 
 using namespace std;
 using namespace boost;
+using namespace org::xmlBlaster::util;
 
 namespace org { 
  namespace xmlBlaster {
@@ -43,7 +45,8 @@ namespace org {
    class Dll_Export DefaultCallback : public virtual POA_clientIdl::BlasterCallback {
 
    protected:
-      util::Log log_;
+      Global& global_;
+      Log&    log_;
 
    private:
       string me() {
@@ -65,10 +68,11 @@ namespace org {
        * Construct a persistently named object.
        */
    public:
-      DefaultCallback(const string &name="", I_Callback *boss=0, 
+      DefaultCallback(Global& global, const string &name="", I_Callback *boss=0,
                       /*BlasterCache*/ void* /*cache*/=0);
 
-      DefaultCallback(const DefaultCallback &el) : log_() {
+      DefaultCallback(const DefaultCallback &el) : global_(el.global_), log_(el.log_)
+      {
          copy(el);
       }
 

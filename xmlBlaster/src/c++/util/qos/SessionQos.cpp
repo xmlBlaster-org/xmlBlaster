@@ -100,18 +100,23 @@ string SessionQosData::toXml() const
 
 /*-------------------------- SessionQosFactory -------------------------------*/
 
-SessionQosFactory::SessionQosFactory(int args, const char * const argc[])
-   : XmlQoSBase(args, argc), ME("SessionQosFactory"), sessionQos_()
+SessionQosFactory::SessionQosFactory(Global& global)
+   : XmlQoSBase(global), ME("SessionQosFactory")
 {
    log_.call(ME, "constructor");
-   prep(args, argc);
+}
+
+
+SessionQosFactory::~SessionQosFactory()
+{
+   delete sessionQos_;
 }
 
 void SessionQosFactory::characters(const XMLCh* const ch, const unsigned int length)
 {
    char *chHelper = XMLString::transcode(ch);
    if (chHelper != NULL) {
-      char *trimmedCh = trim_.trim(chHelper);
+      char *trimmedCh = charTrimmer_.trim(chHelper);
       delete chHelper;
       if (trimmedCh != NULL) {
          character_ += string(trimmedCh);
@@ -137,18 +142,18 @@ void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& att
       int len = attrs.getLength();
       for (int i = 0; i < len; i++) {
          if (SaxHandlerBase::caseCompare(attrs.getName(i), "timeout")) {
-            sessionQos_.timeout_ = SaxHandlerBase::getLongValue(attrs.getValue(i));
+            sessionQos_->timeout_ = SaxHandlerBase::getLongValue(attrs.getValue(i));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxSessions")) {
-            sessionQos_.maxSessions_ = SaxHandlerBase::getIntValue(attrs.getValue(i));
+            sessionQos_->maxSessions_ = SaxHandlerBase::getIntValue(attrs.getValue(i));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "clearSessions")) {
             string help = SaxHandlerBase::getStringValue(attrs.getValue(i));
-            if (help == "true") sessionQos_.clearSessions_ = true;
-            else sessionQos_.clearSessions_ = false;
+            if (help == "true") sessionQos_->clearSessions_ = true;
+            else sessionQos_->clearSessions_ = false;
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "name")) {
-            sessionQos_.name_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
+            sessionQos_->name_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
          }
       }
       return;
@@ -166,25 +171,28 @@ void SessionQosFactory::endElement(const XMLCh* const name) {
       return;
    }
    if (SaxHandlerBase::caseCompare(name, "sessionId")) {
-      sessionQos_.sessionId_ = character_;
+      sessionQos_->sessionId_ = character_;
    }
 }
 
 void SessionQosFactory::reset()
 {
-   sessionQos_ = SessionQosData();
+   if (sessionQos_ != NULL) delete sessionQos_;
+   sessionQos_ = NULL;
+   sessionQos_ = new SessionQosData();
 }
 
 SessionQosData SessionQosFactory::getData() const
 {
-   return sessionQos_;
+   return *sessionQos_;
 }
 
 SessionQosData SessionQosFactory::readObject(const string& qos)
 {
    // this should be synchronized here ....
+   reset();
    init(qos);
-   return sessionQos_;
+   return *sessionQos_;
 }
 
 
@@ -225,7 +233,8 @@ int main(int args, char* argv[])
              string("   <sessionId>IIOP:01110728321B0222011028</sessionId>\n") +
              string("</session>\n");
 
-       SessionQosFactory factory(args, argv);
+       Global& glob = Global::getInstance();
+       SessionQosFactory factory(glob);
        SessionQosData data = factory.readObject(qos);
 
        string ret = factory.writeObject(data);

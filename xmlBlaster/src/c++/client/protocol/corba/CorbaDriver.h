@@ -18,8 +18,10 @@ Comment:   The client driver for the corba protocol
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/XmlBlasterException.h>
+#include <util/Global.h>
 
 using org::xmlBlaster::util::MessageUnit;
+using org::xmlBlaster::util::Global;
 using namespace std;
 
 namespace org {
@@ -36,6 +38,7 @@ namespace org {
       CorbaConnection* connection_;
       DefaultCallback* defaultCallback_;
       const string     ME;
+      Global&          global_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -44,9 +47,7 @@ namespace org {
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
    public:
-      CorbaDriver(int args=0,
-                  const char * const argc[]=0,
-                  bool connectionOwner = false);
+      CorbaDriver(Global& global, bool connectionOwner = false);
 
       virtual ~CorbaDriver();
 

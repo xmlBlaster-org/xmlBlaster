@@ -21,6 +21,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <util/CallbackAddress.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQos.h>
+#include <util/Global.h>
 
 #define  SERVER_HEADER generated/xmlBlaster
 #include <client/protocol/corba/CompatibleCorba.h>
@@ -28,6 +29,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 using namespace std;
 using namespace org::xmlBlaster::util::qos; // ConnectQos + ConnectReturnQos
 using org::xmlBlaster::client::protocol::corba::NameServerControl;
+using org::xmlBlaster::util::Global;
 
 namespace org {
  namespace xmlBlaster {
@@ -52,15 +54,15 @@ namespace org {
       string                          loginName_;
       string                          passwd_;
       LoginQosWrapper                 loginQos_;
-      mutable util::Log               log_;
       int                             numLogins_;
       bool                            orbOwner_;
       DefaultCallback*                defaultCallback_;
       ConnectReturnQos                connectReturnQos_;
-      int                             args_;
-      const char * const*             argc_;
       string                          sessionId_;
       string                          xmlBlasterIOR_;
+      Global&                         global_;
+      //mutable util::Log               log_;
+      util::Log&                      log_;
 
    public:
       /**
@@ -93,7 +95,7 @@ namespace org {
        *    <li>-ns true/false, if a naming service shall be used</li>
        * </ul>
        */
-      CorbaConnection(int args=0, const char * const argc[]=0, bool orbOwner = false);
+      CorbaConnection(Global& global, bool orbOwner = false);
 
       ~CorbaConnection();
 

@@ -20,12 +20,14 @@ using namespace std;
 using namespace org::xmlBlaster::util;
     
    
-SaxHandlerBase::SaxHandlerBase(int args, const char * const argc[]) 
-: log_(args, argc),
-  charTrimmer_(),
-  xmlChTrimmer_() 
+// SaxHandlerBase::SaxHandlerBase(int args, const char * const argc[])
+SaxHandlerBase::SaxHandlerBase(Global& global)
+: charTrimmer_(),
+  xmlChTrimmer_(),
+  global_(global),
+  log_(global.getLog("util"))
 {
-  log_.initialize();
+//  log_.initialize();
   if (log_.CALL) log_.trace(me(), "Creating new SaxHandlerBase");
 }
 

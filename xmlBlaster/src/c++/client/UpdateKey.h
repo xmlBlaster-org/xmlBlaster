@@ -12,8 +12,10 @@ Comment:   Handling one xmlKey, knows how to parse it with DOM
 #include <util/Log.h>
 #include <util/SaxHandlerBase.h>
 #include <sax/AttributeList.hpp>
+#include <util/Global.h>
 
 using namespace std;
+using org::xmlBlaster::util::Global;
 
 namespace org { namespace xmlBlaster { 
    
@@ -68,8 +70,8 @@ namespace org { namespace xmlBlaster {
     */
    public:
       
-      UpdateKey(int args=0, char *argc[]=0) : 
-         util::SaxHandlerBase(args, argc) {
+      UpdateKey(Global& global) :
+         util::SaxHandlerBase(global) {
          inKey_               = false;
          keyOid_              = "";
          contentMime_         = "text/plain";

@@ -17,9 +17,8 @@ using boost::lexical_cast;
 
 /*---------------------------- ConnectQosData --------------------------------*/
 
-ConnectQosData::ConnectQosData() : securityQos_(), serverRef_("")
+ConnectQosData::ConnectQosData() : securityQos_(Global::getInstance()), serverRef_("")
 {
-//   sessionId_ = "";
    isDirty_ = true;
 }
 
@@ -48,7 +47,7 @@ void ConnectQosData::setPtp(bool ptp)
 void ConnectQosData::setSessionQos(const SessionQos& sessionQos)
 {
    sessionQos_ = sessionQos;
-   isDirty_ = true;
+   isDirty_    = true;
 }
 
 SessionQos ConnectQosData::getSessionQos() const
@@ -103,11 +102,11 @@ string ConnectQosData::toXml() const
 
 /*-------------------------- ConnectQosFactory -------------------------------*/
 
-ConnectQosFactory::ConnectQosFactory(int args, const char * const argc[])
-   : XmlQoSBase(args, argc), ME("ConnectQosFactory"), sessionQosFactory_(args, argc)
+ConnectQosFactory::ConnectQosFactory(Global& global)
+   : XmlQoSBase(global), ME("ConnectQosFactory"), sessionQosFactory_(global)
 {
    log_.call(ME, "constructor");
-   prep(args, argc);
+   prep();;
 }
 
 ConnectQosFactory::~ConnectQosFactory()
@@ -191,7 +190,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       try {
          inSecurityService_ = false;
          delete securityQos_;
-         securityQos_ = new SecurityQos(args_, argc_);
+         securityQos_ = new SecurityQos(global_);
          character_ += string("\n</securityService>\n");
          securityQos_->parse(character_);
          character_.erase();
@@ -326,7 +325,8 @@ int main(int args, char* argv[])
        string("   </queue>\n") +
        string("</qos>\n");
 
-       ConnectQosFactory factory(args, argv);
+       Global& glob = Global::getInstance();
+       ConnectQosFactory factory(glob);
        ConnectQosData data = factory.readObject(qos);
        cout << "sessionId    : " << data.getSessionId() << endl;
        cout << "userId       : " << data.getUserId() << endl;

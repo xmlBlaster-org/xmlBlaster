@@ -13,9 +13,9 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 using namespace org::xmlBlaster::client::protocol::corba;
 
 
-DefaultCallback::DefaultCallback(const string &name, I_Callback *boss, 
+DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback *boss,
                 /*BlasterCache*/ void* /*cache*/) 
-:log_() 
+:global_(global), log_(global.getLog("corba"))
 {
    boss_         = boss;
    loginName_    = name;
@@ -65,9 +65,9 @@ DefaultCallback::update(const char* sessionId,
       UpdateKey *updateKey = 0;
       UpdateQos *updateQos = 0;
       try {
-         updateKey = new UpdateKey();
+         updateKey = new UpdateKey(global_);
          updateKey->init(string(msgUnit.xmlKey));
-         updateQos = new UpdateQos(string(msgUnit.qos));
+         updateQos = new UpdateQos(global_, string(msgUnit.qos));
          // Now we know all about the received msg, dump it or do 
          // some checks
          if (log_.DUMP) log_.dump("UpdateKey", string("\n") + updateKey->printOn());
@@ -146,9 +146,9 @@ DefaultCallback::updateOneway(const char* sessionId,
       try {
          const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
          try {
-            updateKey = new UpdateKey();
+            updateKey = new UpdateKey(global_);
             updateKey->init(string(msgUnit.xmlKey));
-            updateQos = new UpdateQos(string(msgUnit.qos));
+            updateQos = new UpdateQos(global_, string(msgUnit.qos));
          } 
          catch (serverIdl::XmlBlasterException &e) {
             log_.error(me(), string(e.message) );
