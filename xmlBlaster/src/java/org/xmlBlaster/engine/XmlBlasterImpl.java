@@ -20,9 +20,12 @@ import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.Authenticate;
@@ -49,18 +52,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final String ME;
    private final RequestBroker requestBroker;
    private final Authenticate authenticate;
+   private final AvailabilityChecker availabilityChecker;
    private final Global glob;
    private final LogChannel log;
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
-
-   // !!!! NOTE: The cache is currently buggy, as the PublishQos.clone() is buggy!!!
-   private int MAX_CACHE_KEY = 0; // 0: switched off, a good value is 500;
-   private int MAX_CACHE_QOS = 0; // 0: switched off, a good value is 500;
-   private int CHUNK_TO_REMOVE_KEY = 25;
-   private int CHUNK_TO_REMOVE_QOS = 25;
-   private HashMap qosCache = new HashMap(200);
-   private HashMap keyCache = new HashMap(200);
 
 
    /**
@@ -74,18 +70,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       this.ME = "XmlBlasterImpl" + this.glob.getLogPrefixDashed();
       this.log = this.glob.getLog("core");
       this.requestBroker = new RequestBroker(authenticate);
-
-      this.MAX_CACHE_KEY = this.glob.getProperty().get("xmlBlaster/MAX_CACHE_KEY", this.MAX_CACHE_KEY);
-      this.MAX_CACHE_KEY = this.glob.getProperty().get(this.glob.getLogPrefix()+"/MAX_CACHE_KEY", this.MAX_CACHE_KEY);
-      this.CHUNK_TO_REMOVE_KEY = this.glob.getProperty().get("xmlBlaster/CHUNK_TO_REMOVE_KEY", this.CHUNK_TO_REMOVE_KEY);
-      this.CHUNK_TO_REMOVE_KEY = this.glob.getProperty().get(this.glob.getLogPrefix()+"/CHUNK_TO_REMOVE_KEY", this.CHUNK_TO_REMOVE_KEY);
-      if (log.TRACE) log.trace(ME, "Setting " + this.glob.getLogPrefix()+"/MAX_CACHE_KEY=" + this.MAX_CACHE_KEY + " and " + this.glob.getLogPrefix() + "/CHUNK_TO_REMOVE_KEY=" + this.CHUNK_TO_REMOVE_KEY);
-      
-      this.MAX_CACHE_QOS = this.glob.getProperty().get("xmlBlaster/MAX_CACHE_QOS", this.MAX_CACHE_QOS);
-      this.MAX_CACHE_QOS = this.glob.getProperty().get(this.glob.getLogPrefix()+"/MAX_CACHE_QOS", this.MAX_CACHE_QOS);
-      this.CHUNK_TO_REMOVE_QOS = this.glob.getProperty().get("xmlBlaster/CHUNK_TO_REMOVE_QOS", this.CHUNK_TO_REMOVE_QOS);
-      this.CHUNK_TO_REMOVE_QOS = this.glob.getProperty().get(this.glob.getLogPrefix()+"/CHUNK_TO_REMOVE_QOS", this.CHUNK_TO_REMOVE_QOS);
-      if (log.TRACE) log.trace(ME, "Setting " + this.glob.getLogPrefix()+"/MAX_CACHE_QOS=" + this.MAX_CACHE_QOS + " and " + this.glob.getLogPrefix() + "/CHUNK_TO_REMOVE_QOS=" + this.CHUNK_TO_REMOVE_QOS);
+      this.availabilityChecker = new AvailabilityChecker(this.glob);
    }
 
    /**
@@ -94,35 +79,27 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      try {
-         if (log.CALL) log.call(ME, "Entering subscribe(" + sessionId + ", key, qos)");
+      if (log.CALL) log.call(ME, "Entering subscribe(" + sessionId + ", key, qos)");
 
+      try {
          // authentication security check
          SessionInfo sessionInfo = authenticate.check(sessionId);
          
          // import and authorize message
-         MsgUnitRaw msgUnitRaw = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
                                        new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                        MethodName.SUBSCRIBE);
 
-         // Parse XML key and XML QoS
-         QueryKeyData queryKey = glob.getQueryKeyFactory().readObject(msgUnitRaw.getKey());
-         SubscribeQosServer subscribeQos = new SubscribeQosServer(glob, msgUnitRaw.getQos());
+         SubscribeQosServer subscribeQos = new SubscribeQosServer(glob, (QueryQosData)msgUnit.getQosData());
 
          // Invoke xmlBlaster
-         String ret = requestBroker.subscribe(sessionInfo, queryKey, subscribeQos);
+         String ret = requestBroker.subscribe(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), subscribeQos);
          
          // export (encrypt) return value
          return sessionInfo.getSecuritySession().exportMessage(ret);
       }
-      catch (XmlBlasterException e) {
-         if (e.isInternal()) log.error(ME, "subscribe() failed: " + e.getMessage());
-         throw e;
-      }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.getMessage());
-         e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_SUBSCRIBE.toString(), e);
+         throw this.availabilityChecker.checkException(MethodName.SUBSCRIBE, e);
       }
    }
 
@@ -140,16 +117,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          // import and authorize message
-         MsgUnitRaw msgUnitRaw = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
                                        new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                        MethodName.UNSUBSCRIBE);
          
-         // Parse XML key and XML QoS
-         QueryKeyData queryKey = glob.getQueryKeyFactory().readObject(msgUnitRaw.getKey());
-         UnSubscribeQosServer unSubscribeQosServer = new UnSubscribeQosServer(glob, msgUnitRaw.getQos());
+         UnSubscribeQosServer unSubscribeQosServer = new UnSubscribeQosServer(glob, (QueryQosData)msgUnit.getQosData());
 
          // Invoke xmlBlaster
-         String [] retArr = requestBroker.unSubscribe(sessionInfo, queryKey, unSubscribeQosServer);
+         String [] retArr = requestBroker.unSubscribe(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), unSubscribeQosServer);
 
          // export (encrypt) return value
          I_Session sec = sessionInfo.getSecuritySession();
@@ -158,14 +133,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return retArr;
 
       }
-      catch (XmlBlasterException e) {
-         if (e.isInternal()) log.error(ME, "unSubscribe() failed: " + e.getMessage());
-         throw e;
-      }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.getMessage());
-         e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_UNSUBSCRIBE.toString(), e);
+         throw this.availabilityChecker.checkException(MethodName.UNSUBSCRIBE, e);
       }
    }
 
@@ -181,101 +150,16 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       try {
          // authentication and authorization security checks
          SessionInfo sessionInfo = authenticate.check(sessionId);
-         msgUnitRaw = importAndAuthorize(sessionInfo, msgUnitRaw, MethodName.PUBLISH);
 
-         String ret = requestBroker.publish(sessionInfo, toSecureMsgUnit(sessionInfo, msgUnitRaw));
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo, msgUnitRaw, MethodName.PUBLISH);
+         
+         String ret = requestBroker.publish(sessionInfo, msgUnit);
 
          return sessionInfo.getSecuritySession().exportMessage(ret);
       }
-      catch (XmlBlasterException e) {
-         if (e.isInternal()) log.error(ME, "publish() failed: " + e.getMessage());
-         throw e;
-      }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.getMessage());
-         e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_PUBLISH.toString(), e);
+         throw this.availabilityChecker.checkException(MethodName.PUBLISH, e);
       }
-   }
-
-   private void removeRandom(Map map, int numToRemove) {
-      if (map.size() == 0) {
-         return;
-      }
-      Iterator iter = map.entrySet().iterator();
-      Random rand = new Random();
-      int val = rand.nextInt(map.size()-1);
-      for (int i=0; i < val && iter.hasNext(); i++) iter.next();
-      if (val == 0) {
-         iter.next(); // The remove() needs at least one call to next()
-      }
-      for (int i=0; i < numToRemove; i++) {
-         iter.remove();
-         if (!iter.hasNext()) break;
-         iter.next();
-      }
-   }
-
-   private MsgUnit toSecureMsgUnit(SessionInfo sessionInfo, MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
-
-      String keyLiteral = msgUnitRaw.getKey();
-      MsgKeyData key;
-      if (MAX_CACHE_KEY > 0) {
-         synchronized (this.keyCache) {
-            key = (MsgKeyData)this.keyCache.get(keyLiteral);
-            if (key == null) {
-               key = glob.getMsgKeyFactory().readObject(keyLiteral);
-               if (this.keyCache.size() >= MAX_CACHE_KEY)
-                  removeRandom(this.keyCache, CHUNK_TO_REMOVE_KEY);
-               this.keyCache.put(keyLiteral, key.clone());
-            }
-            else key = (MsgKeyData)key.clone();
-         }
-      }
-      else {
-         key = glob.getMsgKeyFactory().readObject(keyLiteral);
-      }
-      
-      String qosLiteral = msgUnitRaw.getQos();
-      MsgQosData qosData;
-      if (MAX_CACHE_QOS > 0) {
-         synchronized (this.qosCache) {
-            qosData = (MsgQosData)this.qosCache.get(qosLiteral);
-            if (qosData == null) {
-               PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
-               qosData = qos.getData();
-               if (this.qosCache.size() >= MAX_CACHE_QOS)
-                  removeRandom(this.qosCache, CHUNK_TO_REMOVE_QOS);
-               this.qosCache.put(qosLiteral, qosData.clone());
-            }
-            else qosData = (MsgQosData)qosData.clone();
-         }
-      }
-      else {
-         PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
-         qosData = qos.getData();
-      }
-
-      // Protect against faked sender name
-      if (sessionInfo.getConnectQos().isClusterNode()) {
-         if (qosData.getSender() == null) // In cluster routing don't overwrite the original sender
-            qosData.setSender(sessionInfo.getSessionName());
-      }
-      else {
-         if (qosData.getSender() == null) {
-            qosData.setSender(sessionInfo.getSessionName());
-         }
-         else if (!sessionInfo.getSessionName().equalsAbsolute(qosData.getSender())) {
-            //if (! publishQos.isFromPersistenceStore()) {
-            log.warn(ME, sessionInfo.getId() + " sends message '" + key.getOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
-            qosData.setSender(sessionInfo.getSessionName());
-         }
-      }
-
-      MsgUnit msgUnit = new MsgUnit(key, msgUnitRaw.getContent(), qosData);
-
-
-      return msgUnit;
    }
 
    /**
@@ -294,21 +178,15 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // How to guarantee complete transaction?
          String[] returnArr = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
-            MsgUnitRaw msgUnitRaw = importAndAuthorize(sessionInfo, msgUnitArr[ii], MethodName.PUBLISH);
-            String ret = requestBroker.publish(sessionInfo, toSecureMsgUnit(sessionInfo, msgUnitRaw));
+            MsgUnit msgUnit = importAndAuthorize(sessionInfo, msgUnitArr[ii], MethodName.PUBLISH);
+            String ret = requestBroker.publish(sessionInfo, msgUnit);
             returnArr[ii] = sec.exportMessage(ret);
          }
 
          return returnArr;
       }
-      catch (XmlBlasterException e) {
-         if (e.isInternal()) log.error(ME, "publishArr() failed: " + e.getMessage());
-         throw e;
-      }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.getMessage());
-         e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_PUBLISH.toString(), e);
+         throw this.availabilityChecker.checkException(MethodName.PUBLISH_ARR, e);
       }
    }
 
@@ -339,16 +217,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          // import (decrypt) and authorize message
-         MsgUnitRaw msgUnitRaw = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
                                        new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                        MethodName.ERASE);
 
-         // Parse XML key and XML QoS
-         QueryKeyData queryKey = glob.getQueryKeyFactory().readObject(msgUnitRaw.getKey());
-         EraseQosServer eraseQosServer = new EraseQosServer(glob, msgUnitRaw.getQos());
+         EraseQosServer eraseQosServer = new EraseQosServer(glob, (QueryQosData)msgUnit.getQosData());
 
          // Invoke xmlBlaster
-         String [] retArr = requestBroker.erase(sessionInfo, queryKey, eraseQosServer);
+         String [] retArr = requestBroker.erase(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), eraseQosServer);
 
          // export (encrypt) return value
          I_Session sec = sessionInfo.getSecuritySession();
@@ -356,14 +232,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
             retArr[ii] = sec.exportMessage(retArr[ii]);
          return retArr;
       }
-      catch (XmlBlasterException e) {
-         if (e.isInternal()) log.error(ME, "erase() failed: " + e.getMessage());
-         throw e;
-      }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.getMessage());
-         e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_ERASE.toString(), e);
+         throw this.availabilityChecker.checkException(MethodName.ERASE, e);
       }
    }
 
@@ -380,16 +250,15 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          // import (decrypt) and authorize message
-         MsgUnitRaw msgUnitRaw = importAndAuthorize(sessionInfo,
-                                       new MsgUnitRaw(xmlKey_literal, null, qos_literal),
-                                       MethodName.GET);
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
+                                   new MsgUnitRaw(xmlKey_literal, null, qos_literal),
+                                   MethodName.GET);
 
          // Parse XML key and XML QoS
-         QueryKeyData queryKey = glob.getQueryKeyFactory().readObject(msgUnitRaw.getKey());
-         GetQosServer getQosServer = new GetQosServer(glob, msgUnitRaw.getQos());
+         GetQosServer getQosServer = new GetQosServer(glob, (QueryQosData)msgUnit.getQosData());
 
          // Invoke xmlBlaster
-         MsgUnit[] msgUnitArr = requestBroker.get(sessionInfo, queryKey, getQosServer);
+         MsgUnit[] msgUnitArr = requestBroker.get(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), getQosServer);
 
          // export (encrypt) return value
          MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgUnitArr.length];
@@ -399,14 +268,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          return msgUnitRawArr;
       }
-      catch (XmlBlasterException e) {
-         if (e.isInternal()) log.error(ME, "get() failed: " + e.getMessage());
-         throw e;
-      }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.getMessage());
-         e.printStackTrace();
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_GET.toString(), e);
+         throw this.availabilityChecker.checkException(MethodName.GET, e);
       }
    }
 
@@ -439,22 +302,49 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * @param sessionInfo The sessionInfo (we are already authenticated)
     * @param MsgUnit The message, probably encrypted
     * @param String actionKey (eg. PUBLISH, GET, ...)
-    * @return The message decrypted (readable)
+    * @return The message decrypted (readable) of type MsgUnit (ready parsed)
     * @exception XmlBlasterException Thrown if seal/signature checks fail, the identity in unknown
     *                                or the message format has errors.<br />
     *            Throws "NotAuthorized" if client may not do the action with this message
     */
-   private MsgUnitRaw importAndAuthorize(SessionInfo sessionInfo, MsgUnitRaw msgUnit, MethodName action) throws XmlBlasterException {
+   private MsgUnit importAndAuthorize(SessionInfo sessionInfo, MsgUnitRaw msgUnitRaw, MethodName action) throws XmlBlasterException {
       I_Session sessionSecCtx = sessionInfo.getSecuritySession();
       if (sessionSecCtx==null) { // assert
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".accessDenied", "unknown session - internal error.");
       }
 
       // check the message, if it was treated with confidentiality and integrity
-      msgUnit = sessionSecCtx.importMessage(msgUnit, action);
+      msgUnitRaw = sessionSecCtx.importMessage(msgUnitRaw, action);
+
+      // Parse XML key and XML QoS
+      MsgUnit msgUnit = new MsgUnit(glob, msgUnitRaw.getKey(), msgUnitRaw.getContent(), msgUnitRaw.getQos(), action);
+      QosData qosData = msgUnit.getQosData();
+
+      // Currently we have misused used the clientProperty to transport this information
+      if (qosData.getClientProperty(Constants.PERSISTENCE_ID) != null)
+         qosData.isFromPersistenceRecovery(true);
       
+      // Check if server is ready (throws XmlBlasterException otherwise)
+      this.availabilityChecker.checkServerIsReady(sessionInfo.getSessionName(), msgUnit, action);
+
+      // Protect against faked sender name
+      if (sessionInfo.getConnectQos().isClusterNode()) {
+         if (qosData.getSender() == null) // In cluster routing don't overwrite the original sender
+            qosData.setSender(sessionInfo.getSessionName());
+      }
+      else {
+         if (qosData.getSender() == null) {
+            qosData.setSender(sessionInfo.getSessionName());
+         }
+         else if (!sessionInfo.getSessionName().equalsAbsolute(qosData.getSender())) {
+            //if (! publishQos.isFromPersistenceStore()) {
+            log.warn(ME, sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
+            qosData.setSender(sessionInfo.getSessionName());
+         }
+      }
+
       /*
-      msgUnit = new MsgUnitRaw(
+      msgUnitRaw = new MsgUnitRaw(
                (msgUnit.getKey().size() > 0) ? sessionSecCtx.importMessage(msgUnit.getKey()) : msgUnit.getKey(), 
                (msgUnit.getContent().length > 0) ? sessionSecCtx.importMessage(msgUnit.getContent()) : msgUnit.getContent(),
                (msgUnit.getQos().size() > 0) ? sessionSecCtx.importMessage(msgUnit.getQos()) : msgUnit.getQos());
@@ -462,7 +352,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       // check if this user is permitted to do this action with this message
       I_Subject subjSecCtx = sessionSecCtx.getSubject();
-      if (!subjSecCtx.isAuthorized(action, msgUnit.getKey())) {
+      if (!subjSecCtx.isAuthorized(action, msgUnitRaw.getKey())) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED, ME,
                        "Subject '" + subjSecCtx.getName() + "' is not permitted to perform action '" + action +
                        "' on key '" + msgUnit.getKey() + "'");
@@ -479,6 +369,13 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String ping(String qos) {
       return "<qos/>";
+   }
+
+   /**
+    * @todo Call me
+    */
+   public final void shutdown() {
+      this.availabilityChecker.shutdown();
    }
 }
 
