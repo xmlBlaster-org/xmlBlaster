@@ -6,13 +6,19 @@
       The callback server, instantiated from clients, needs to authenticate xmlBlaster
    </topic>
    <description>
+      <p>
       When xmlBlaster sends a message asynchronous back to the client callback
       server, we must attach some credentials to the message.
+      </p>
+      <p>
       The client callback server must protect itself against intruder messages.
+      </p>
+      <p>
       This is achieved by a session ID, a unique and secret string. The session ID is
       passed when you register your callback server with xmlBlaster. On callback this
       session ID is bounced back with the update() method. You can now check the delivered
       session ID.
+      </p>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -26,7 +32,8 @@ This xml is passed as the QoS of a connect() or subcribe()
 
 You receive this sessionId with your message update (example for Java):
 
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
+   public String update(String cbSessionId, UpdateKey updateKey,
+                        byte[] content, UpdateQos updateQos)
    {
       // cbSessionId should be '0fxrc83plP'
    }
@@ -38,7 +45,7 @@ You receive this sessionId with your message update (example for Java):
    <author>?</author>
    <hacker>?</hacker>
    <date>2002 01 22</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
