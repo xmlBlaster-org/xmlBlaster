@@ -426,7 +426,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   ", durable " + this.booleanTxt +
                   ", byteSize " + this.longintTxt +
                   ", blob " + this.blobTxt +
-                  ", PRIMARY KEY (dataId, nodeId)" + 
+                  ", PRIMARY KEY (dataId, queueName)" + 
                   ", FOREIGN KEY (queueName, nodeId) REFERENCES " + this.queuesTableName + " ON DELETE CASCADE)";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
@@ -722,8 +722,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       int count = 0;
       Connection conn = null;
       try {
-      	try {
-       	   String req = "DROP TABLE " + this.entriesTableName;
+        try {
+           String req = "DROP TABLE " + this.entriesTableName;
             conn = this.pool.getConnection();
             conn.setAutoCommit(false);
             this.update(req, conn);
@@ -737,7 +737,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
 
-      	try {
+        try {
             String req = "DROP TABLE " + this.queuesTableName;
             this.update(req, conn);
             count++;
@@ -751,7 +751,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
 
          try {
-       	   String req = "DROP TABLE " + this.nodesTableName;
+           String req = "DROP TABLE " + this.nodesTableName;
             this.update(req, conn);
             count++;
          }
