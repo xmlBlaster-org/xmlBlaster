@@ -36,7 +36,7 @@ clean: clean_SUB_DIRS
 
 xmlBlaster:
 	@echo -e "\nStarting xmlBlaster server ...\n"
-	jaco ${BlasterSystemProperties} ${BlasterServerMemory} org.xmlBlaster.MainGUI
+	${JAVA_WRAP} ${BlasterSystemProperties} ${BlasterServerMemory} org.xmlBlaster.MainGUI
 
 #doc:
 #	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java

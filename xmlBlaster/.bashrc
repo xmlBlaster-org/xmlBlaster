@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.45 $
+# $Revision: 1.46 $
 #-----------------------------------------------------------
 
 
@@ -150,6 +150,7 @@ fi
 
 source ${XMLBLASTER_HOME}/config/jacorb.sh
 source ${XMLBLASTER_HOME}/config/mico.sh
+#source ${XMLBLASTER_HOME}/config/orbacus.sh
 
 #-------- Checking jikes version -
 # use jikes 1.06 or better

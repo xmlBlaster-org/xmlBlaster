@@ -1,0 +1,1 @@
+java $@ -ORBconfig ~/orb.cfg

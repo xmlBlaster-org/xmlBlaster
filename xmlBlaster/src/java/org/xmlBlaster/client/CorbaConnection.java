@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.45 2000/05/05 19:40:12 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.46 2000/05/09 02:42:49 laghi Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,8 +54,8 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.45 $
- * @author $Author: ruff $
+ * @version $Revision: 1.46 $
+ * @author $Author: laghi $
  */
 public class CorbaConnection implements ServerOperations
 {
@@ -639,6 +639,8 @@ public class CorbaConnection implements ServerOperations
       try {
          callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          rootPOA.the_POAManager().activate();
+	 // necessary for orbacus
+	 if (orb.work_pending()) orb.perform_work();
          return callback;
       } catch (Exception e) {
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());

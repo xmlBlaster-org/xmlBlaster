@@ -47,6 +47,8 @@ else
    ${ECHO} "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
 fi
 
-
-export IDL2JAVA="${JacORB_HOME}/bin/idl -p org.xmlBlaster.protocol.corba"
-
+JACO_EXE=`which jaco`
+JACO_BIN=`dirname ${JACO_EXE}`
+export IDL_OUTDIR="-d"
+export IDL2JAVA="${JACO_BIN}/idl -p org.xmlBlaster.protocol.corba"
+export JAVA_WRAP=jaco

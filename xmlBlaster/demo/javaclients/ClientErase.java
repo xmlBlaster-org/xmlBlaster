@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.7 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.8 2000/05/09 02:42:48 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
-import jacorb.naming.NameServer;
+// import jacorb.naming.NameServer;
 import org.omg.CosNaming.*;
 
 
