@@ -205,7 +205,7 @@ function catchError(text, url, row)
 // Set event handler, to catch the internal errors as well
 self.onerror = catchError;
 for (var jj=0; jj<top.frames.length; jj++) {
-   top.frames[ii].onerror = catchError;
+   top.frames[jj].onerror = catchError;
 }
 
 
