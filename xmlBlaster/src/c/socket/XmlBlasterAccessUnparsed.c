@@ -174,7 +174,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 }
 
 /**
- * Creates client side connection object and the callback server. 
+ * Creates client side connection object and the callback server and does the low level IP connection. 
  * This method is automatically called by connect() so you usually only
  * call it explicitly if you are interested in the callback server settings.
  * @param clientUpdateFp The clients callback handler function. If NULL our default handler is used
@@ -209,7 +209,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    }
    xa->connectionP->log = xa->log;
    xa->connectionP->logUserP = xa->logUserP;
-   if (xa->connectionP->initConnection(xa->connectionP, exception) == false) /* Establish low level TCP/IP connection */
+   if (xa->connectionP->initConnection(xa->connectionP, exception) == false) /* Establish low level IP connection */
       return false;
 
    /* the fourth arg 'xa' is returned as 'void *userData' in update() method */
