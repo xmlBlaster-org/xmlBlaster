@@ -96,6 +96,13 @@
      natively as we are in the same JVM.
      </p> 
      <h3>Step 2: Register our plugin in <code>xmlBlasterPlugins.xml</code></h3>
+     <p>
+     First copy the xmlBlasterPlugins.xml file to your home directory, the
+     following example is for UNIX, on Windows it is similar:
+     </p>
+     <pre>
+cp xmlBlaster/config/xmlBlasterPlugins.xml.template  $HOME/xmlBlasterPlugins.xml
+     </pre>
      <pre>
 &lt;xmlBlaster>
    ...
@@ -131,7 +138,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
