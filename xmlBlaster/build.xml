@@ -481,6 +481,7 @@ TODO
 
 
 
+      <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" todir="${build.dest}/javaclients/simplereader"/>
       <copy file="${demo.java.dir}/simplereader/blue.gif" todir="${build.dest}/javaclients/simplereader"/>
       <copy file="${demo.java.dir}/simplereader/red.gif" todir="${build.dest}/javaclients/simplereader"/>
 
