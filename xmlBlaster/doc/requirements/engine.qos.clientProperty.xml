@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.clientProperty' type='NEW' prio='LOW' status="CLOSED">
+   <topic>A generic qos subtag permitting to pass client specific parameters to other clients or to plugins</topic>
+   <description>
+      <p>
+      In some cases the fixed tags offered by the different qos are not sufficient to cover all specific
+      needs a client has. This is a generic tag so you could pass such information which otherwise would 
+      need to be passed wrapped inside the content of the message.
+      This tag is in the following qos:
+      <ul>
+        <li>ConnectQos</li>
+        <li>DisconnectQos</li>
+        <li>PublishQos</li>
+        <li>SubscribeQos</li>
+        <li>UnSubscribeQos</li>
+        <li>GetQos</li>
+        <li>EraseQos</li>
+      </ul>	
+
+      </p>
+	The information you send inside this tag is not processed by the core. It could be processed by
+	other clients (for example in the update method) or by plugins.
+      <p>
+      </p>
+   </description>
+   <example lang="XML">
+&lt;-- Publish QoS to send a message with a given correlationId -->
+
+&lt;qos>
+   ...
+   &lt;clientProperty name='correlationId'>0102203030303030452378&lt;/clientProperty>
+   ...
+&lt;/qos>
+   </example>
+   <see type="API">org.xmlBlaster.util.qos.QosData</see>
+   <see type="API">org.xmlBlaster.client.qos.ConnectQos</see>
+   <see type="API">org.xmlBlaster.client.qos.DisconnectQos</see>
+   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
+   <see type="API">org.xmlBlaster.client.qos.SubscribeQos</see>
+   <see type="API">org.xmlBlaster.client.qos.UnSubscribeQos</see>
+   <see type="API">org.xmlBlaster.client.qos.GetQos</see>
+   <see type="API">org.xmlBlaster.client.qos.EraseQos</see>
+   <author>laghi@swissinfo.org</author>
+   <date>2003 09 18</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestClientProperty</test>
+   </testcase>
+</requirement>
+

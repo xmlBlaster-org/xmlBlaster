@@ -34,6 +34,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/cluster/RouteInfo.h>
 #include <vector>
+#include <map>
 #include <string>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
@@ -50,6 +51,7 @@ typedef std::vector<org::xmlBlaster::util::cluster::RouteInfo> RouteVector;
 
 class Dll_Export QosData
 {
+
 private:
    void init();
 
@@ -76,6 +78,9 @@ protected:
     * ArrayList containing org::xmlBlaster::util::cluster::RouteInfo objects
     */
    RouteVector routeNodeList_;
+
+   typedef std::map<std::string, std::string> ClientPropertyMap;
+   ClientPropertyMap clientProperties_;	
 
    void copy(const QosData& data);
 
@@ -179,6 +184,10 @@ public:
     * Set timestamp to current time.
     */
    void touchRcvTimestamp();
+
+   void setClientProperty(const std::string& key, const std::string& value);
+	
+   const ClientPropertyMap& getClientProperties() const;
 
    /**
     * Dump state of this object into a XML ASCII std::string.

@@ -3,7 +3,7 @@ Name:      DisconnectQos.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.cpp,v 1.1 2002/12/26 22:36:24 laghi Exp $
+Version:   $Id: DisconnectQos.cpp,v 1.2 2003/09/18 19:11:23 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/DisconnectQos.h>
@@ -15,17 +15,24 @@ using namespace org::xmlBlaster::util;
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 DisconnectQos::DisconnectQos(Global& global)
-   : ME("DisconnectQos"), global_(global), log_(global.getLog("core"))
+   : ME("DisconnectQos"), 
+     global_(global), 
+     log_(global.getLog("core")),
+     clientProperties_()
 {
    deleteSubjectQueue_ = true;
    clearSessions_      = false;
 }
 
 DisconnectQos::DisconnectQos(const DisconnectQos& qos)
-   : ME(qos.ME), global_(qos.global_), log_(qos.log_)
+   : ME(qos.ME), 
+     global_(qos.global_), 
+     log_(qos.log_),
+     clientProperties_()
 {
    deleteSubjectQueue_ = qos.deleteSubjectQueue_;
    clearSessions_      = qos.clearSessions_;
+   clientProperties_ = qos.clientProperties_;
 }
 
 DisconnectQos& DisconnectQos::operator =(const DisconnectQos& qos)
@@ -56,6 +63,16 @@ void DisconnectQos::setClearSessions(bool del)
    clearSessions_ = del;
 }
 
+void DisconnectQos::setClientProperty(const std::string& key, const std::string& value)
+{
+   clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
+}
+	
+const DisconnectQos::ClientPropertyMap& DisconnectQos::getClientProperties() const
+{
+   return clientProperties_;
+}
+
 string DisconnectQos::toXml(const string& extraOffset) const
 {
    string ret;
@@ -65,6 +82,14 @@ string DisconnectQos::toXml(const string& extraOffset) const
    ret += offset + "<qos>";
    ret += offset + "  <deleteSubjectQueue>" + global_.getBoolAsString(deleteSubjectQueue_) + "</deleteSubjectQueue>";
    ret += offset + "  <clearSessions>" + global_.getBoolAsString(clearSessions_) + "</clearSessions>";
+
+   DisconnectQos::ClientPropertyMap::const_iterator 
+      iter = clientProperties_.begin();
+   while (iter != clientProperties_.end()) {
+      offset + "   <clientProperty name='" + (*iter).first + "'>" + (*iter).second + "</clientProperty>";
+      iter++;
+   }
+
    ret += offset + "</qos>";
 
    return ret;

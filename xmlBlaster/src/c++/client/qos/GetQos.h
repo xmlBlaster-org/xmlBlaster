@@ -60,6 +60,11 @@ public:
     */
    void setHistoryQos(const org::xmlBlaster::util::qos::HistoryQos& historyQos);
 
+   /**
+    * Sets a client property to the given value.
+    */	
+   void setClientProperty(const std::string& key, const std::string& value);
+
 };
 
 }}}} // namespace

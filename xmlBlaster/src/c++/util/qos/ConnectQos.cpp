@@ -31,7 +31,8 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       cbAddresses_(),
       clientQueueProperties_(),
       sessionCbQueueProperty_(global, Constants::RELATING_CALLBACK, ""),
-      serverReferences_()
+      serverReferences_(),
+      clientProperties_()
 {
    clusterNode_      = false;
    duplicateUpdates_ = false;
@@ -46,7 +47,8 @@ ConnectQosData::ConnectQosData(const ConnectQosData& data)
       cbAddresses_(data.cbAddresses_),
       clientQueueProperties_(data.clientQueueProperties_),
       sessionCbQueueProperty_(data.sessionCbQueueProperty_),
-      serverReferences_(data.serverReferences_)
+      serverReferences_(data.serverReferences_),
+      clientProperties_()
 {
    copy(data);
 }
@@ -194,6 +196,16 @@ CbQueueProperty ConnectQosData::getSessionCbQueueProperty() const
    return sessionCbQueueProperty_;
 }
 
+void ConnectQosData::setClientProperty(const std::string& key, const std::string& value)
+{
+   clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
+}
+	
+const ConnectQosData::ClientPropertyMap& ConnectQosData::getClientProperties() const
+{
+   return clientProperties_;
+}
+
 /**
  * Dump state of this object into a XML ASCII string.
  * <br>
@@ -236,6 +248,13 @@ string ConnectQosData::toXml(const string& extraOffset) const
             ret += (*iter).toXml(extraOffset);
             iter++;
          }
+      }
+
+      ConnectQosData::ClientPropertyMap::const_iterator 
+         iter = clientProperties_.begin();
+      while (iter != clientProperties_.end()) {
+         offset + "   <clientProperty name='" + (*iter).first + "'>" + (*iter).second + "</clientProperty>";
+         iter++;
       }
 
       ret += offset + string("</qos>");

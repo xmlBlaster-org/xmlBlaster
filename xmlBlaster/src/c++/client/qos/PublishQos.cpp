@@ -177,6 +177,13 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    }
 
    /**
+    * Sets a client property to the given value.
+    */	
+   void PublishQos::setClientProperty(const std::string& key, const std::string& value) {
+      msgQosData_.setClientProperty(key, value);
+   }
+
+   /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */

@@ -59,6 +59,7 @@ void QosData::init()
 
 void QosData::copy(const QosData& data)
 {
+   clientProperties_ = data.clientProperties_;
    state_ = data.state_;
    stateInfo_ = data.stateInfo_;
    rcvTimestamp_ = data.rcvTimestamp_;
@@ -71,7 +72,8 @@ QosData::QosData(Global& global, const string& serialData)
    : ME("QosData"),
      global_(global),
      log_(global.getLog("core")),
-     routeNodeList_()
+     routeNodeList_(),
+     clientProperties_()     
 {
    init();
    serialData_ = serialData;
@@ -83,7 +85,8 @@ QosData::QosData(const QosData& data)
    : ME(data.ME),
      global_(data.global_),
      log_(data.log_),
-     routeNodeList_(data.routeNodeList_)
+     routeNodeList_(data.routeNodeList_),
+     clientProperties_()
 {
    copy(data);
 }
@@ -189,6 +192,16 @@ Timestamp QosData::getRcvTimestamp() const
 void QosData::touchRcvTimestamp()
 {
    rcvTimestamp_ = TimestampFactory::getInstance().getTimestamp();
+}
+
+void QosData::setClientProperty(const std::string& key, const std::string& value)
+{
+   clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
+}
+	
+const QosData::ClientPropertyMap& QosData::getClientProperties() const
+{
+   return clientProperties_;
 }
 
 RouteVector QosData::getRouteNodes() const

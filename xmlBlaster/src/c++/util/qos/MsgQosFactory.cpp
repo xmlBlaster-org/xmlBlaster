@@ -247,6 +247,13 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       log_.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
       return;
    }
+   
+   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+      if (!inQos_) return;
+      character_.erase();
+      clientPropertyKey_ = SaxHandlerBase::getStringValue(attrs.getValue("name"));
+   }
+      
 }
 
 
@@ -395,6 +402,11 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       inRoute_ = false;
       character_.erase();
       return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+      msgQosData_.setClientProperty(clientPropertyKey_, character_);
+      character_.erase();
    }
 
    character_.erase(); // reset data from unknown tags

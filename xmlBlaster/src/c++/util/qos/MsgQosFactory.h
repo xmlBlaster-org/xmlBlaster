@@ -73,6 +73,8 @@ private:
    XMLCh* INDEX;
    XMLCh* SIZE;
 
+   std::string clientPropertyKey_;
+
 public:
    /**
     * Can be used as singleton. 

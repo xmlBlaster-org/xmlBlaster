@@ -127,6 +127,12 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
          }
       }
    }
+   
+   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+      character_.erase();
+      clientPropertyKey_ = SaxHandlerBase::getStringValue(attrs.getValue("name"));
+   }
+   
 }
 
 void ConnectQosFactory::endElement(const XMLCh* const name) {
@@ -203,6 +209,11 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       string address = character_;
 //      serverRef_ = ServerRef(serverRefType_, address);
       connectQos_.addServerRef(ServerRef(serverRefType_, address));
+      character_.erase();
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+      connectQos_.setClientProperty(clientPropertyKey_, character_);
       character_.erase();
    }
 

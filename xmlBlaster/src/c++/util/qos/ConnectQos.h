@@ -24,6 +24,7 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/qos/storage/CbQueueProperty.h>
 
 #include <vector>
+#include <map>
 
 /**
  * <qos>\n") +
@@ -54,6 +55,9 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 class Dll_Export ConnectQosData
 {
+
+typedef std::map<std::string, std::string> ClientPropertyMap;
+
 private:
    org::xmlBlaster::util::Global&     global_;
    org::xmlBlaster::util::Log&        log_;
@@ -69,6 +73,7 @@ private:
    org::xmlBlaster::util::qos::storage::CbQueueProperty         sessionCbQueueProperty_;
    std::vector<ServerRef>       serverReferences_;
 
+
    friend class ConnectQosFactory;
 
    void copy(const ConnectQosData& data)
@@ -83,7 +88,11 @@ private:
       cbAddresses_            = data.cbAddresses_;
       clientQueueProperties_  = data.clientQueueProperties_;
       sessionCbQueueProperty_ = data.sessionCbQueueProperty_;
+      clientProperties_       = data.clientProperties_;
    }
+
+protected:
+   ClientPropertyMap clientProperties_;	
 
 public:
    ConnectQosData(org::xmlBlaster::util::Global& global, const std::string& user="", const std::string& passwd="", long publicSessionId=0);
@@ -122,6 +131,9 @@ public:
 
    void setSessionCbQueueProperty(const org::xmlBlaster::util::qos::storage::CbQueueProperty& prop);
    org::xmlBlaster::util::qos::storage::CbQueueProperty getSessionCbQueueProperty() const;
+
+   void setClientProperty(const std::string& key, const std::string& value);
+   const ClientPropertyMap& getClientProperties() const;
 
 };
 

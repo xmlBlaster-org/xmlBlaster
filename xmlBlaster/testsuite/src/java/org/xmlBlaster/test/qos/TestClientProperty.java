@@ -1,0 +1,384 @@
+/*------------------------------------------------------------------------------
+Name:      TestClientProperty.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Demo code for a client using xmlBlaster
+Version:   $Id: TestClientProperty.java,v 1.1 2003/09/18 19:11:24 laghi Exp $
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.test.qos;
+
+import java.util.HashMap;
+
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.DisconnectQosData;
+import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.QueryQosSaxFactory;
+
+import junit.framework.*;
+
+
+/**
+ *
+ *  * Invoke examples:<br />
+ * <pre>
+ *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestClientProperty
+ *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestClientProperty
+ * </pre>
+ */
+public class TestClientProperty extends TestCase implements I_Callback
+{
+   private static String ME = "TestClientProperty";
+   private final Global glob;
+   private final LogChannel log;
+
+   private boolean messageArrived = false;
+
+   private I_XmlBlasterAccess senderConnection;
+
+   /**
+    * Constructs the TestClientProperty object.
+    * <p />
+    * @param testName  The name used in the test suite
+    * @param loginName The name to login to the xmlBlaster
+    */
+   public TestClientProperty(Global glob) {
+      super("clientProperty");
+      this.glob = glob;
+      this.log = this.glob.getLog("test");
+   }
+
+
+   /**
+    * Sets up the fixture.
+    * <p />
+    * Connect to xmlBlaster and login
+    */
+   protected void setUp() {
+   }
+
+
+   /**
+    * Tears down the fixture.
+    * <p />
+    * cleaning up .... erase() the previous message OID and logout
+    */
+   protected void tearDown() {
+   }
+
+   private void checkValues(HashMap map) {
+      assertEquals("", 3, map.size());
+      assertEquals("", "oneValue", (String)map.get("oneKey"));
+      assertEquals("", "twoValue", (String)map.get("twoKey"));
+      assertEquals("", "threeValue", (String)map.get("threeKey"));
+   }
+
+
+   public void testConnectQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestConnectQos");
+      ConnectQos qos = new ConnectQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
+      try {
+         ConnectQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+   public void testDisconnectQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestDisconnectQos");
+      DisconnectQos qos = new DisconnectQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      DisconnectQosSaxFactory factory = new DisconnectQosSaxFactory(this.glob);
+      try {
+         DisconnectQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+
+   public void testPublishQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestPublishQos");
+      PublishQos qos = new PublishQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      MsgQosSaxFactory factory = new MsgQosSaxFactory(this.glob);
+      try {
+         MsgQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+
+   public void testSubscribeQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestSubscribeQos");
+      SubscribeQos qos = new SubscribeQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
+      try {
+         QueryQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+
+   public void testUnSubscribeQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestUnSubscribeQos");
+      UnSubscribeQos qos = new UnSubscribeQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
+      try {
+         ConnectQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+
+   public void testGetQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestGetQos");
+      ConnectQos qos = new ConnectQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
+      try {
+         QueryQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+   public void testEraseQos()
+   {
+      if (log.TRACE) log.trace(ME, "TestEraseQos");
+      EraseQos qos = new EraseQos(this.glob);
+      qos.setClientProperty("oneKey", "oneValue");
+      qos.setClientProperty("twoKey", "twoValue");
+      qos.setClientProperty("threeKey", "threeValue");
+      String literal = qos.toXml();
+      
+      QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
+      try {
+         QueryQosData data = factory.readObject(literal);
+         checkValues(data.getClientProperties());
+      }
+      catch (XmlBlasterException ex) {
+         assertTrue("Exeption occured : " + ex.getMessage(), false);
+      }
+   }
+
+   /**
+    * TEST: Construct a message and publish it.
+    * <p />
+    * The returned publishOid is checked
+    */
+   public void testUpdateQos()
+   {
+      if (log.TRACE) log.trace(ME, "Testing the update qos ...");
+
+      try {
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
+         String passwd = "secret";
+         ConnectQos connQos = new ConnectQos(glob, "clientProperty", passwd);
+         if (log.TRACE) log.trace(ME, "the connect qos is: " + connQos.toXml());
+         senderConnection.connect(connQos, this); // Login to xmlBlaster
+
+         // publish 
+         PublishKey key = new PublishKey(this.glob, "clientProp");
+         PublishQos qos = new PublishQos(this.glob);
+         qos.setClientProperty("oneKey", "oneValue");
+         qos.setClientProperty("twoKey", "twoValue");
+         qos.setClientProperty("threeKey", "threeValue");
+         MsgUnit msg = new MsgUnit(key, "message".getBytes(), qos);
+         senderConnection.publish(msg);
+
+         // subscribe
+         senderConnection.subscribe(new SubscribeKey(this.glob, "clientProp"), new SubscribeQos(this.glob));
+
+         waitOnUpdate(10000);
+
+         senderConnection.erase(new EraseKey(this.glob, "clientProperty"), new EraseQos(this.glob));
+         senderConnection.disconnect(new DisconnectQos(this.glob));
+         
+      }
+      catch (Exception e) {
+          log.error(ME, "Login failed: " + e.toString());
+          e.printStackTrace();
+          assertTrue("Login failed: " + e.toString(), false);
+      }
+   }
+
+
+
+   /**
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
+    */
+   public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + "...");
+
+      if (updateQos.isErased()) return "";
+
+      assertEquals("Wrong sender", "clientProperty", updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", "clientProp", updateKey.getOid());
+
+
+      HashMap map = updateQos.getData().getClientProperties();
+
+      this.checkValues(map);
+      this.messageArrived = true;
+      return "";
+   }
+
+
+   /**
+    * Little helper, waits until the variable 'messageArrive' is set
+    * to true, or returns when the given timeout occurs.
+    * @param timeout in milliseconds
+    */
+   private void waitOnUpdate(final long timeout)
+   {
+      long pollingInterval = 50L;  // check every 0.05 seconds
+      if (timeout < 50)  pollingInterval = timeout / 10L;
+      long sum = 0L;
+      while (!messageArrived) {
+         try {
+            Thread.sleep(pollingInterval);
+         }
+         catch( InterruptedException i)
+         {}
+         sum += pollingInterval;
+         if (sum > timeout) {
+            log.warn(ME, "Timeout of " + timeout + " occurred");
+            break;
+         }
+      }
+      assertTrue("The message never arrived", messageArrived);
+      messageArrived = false;
+   }
+
+
+   /**
+    * Method is used by TestRunner to load these tests
+    */
+   public static Test suite()
+   {
+       TestSuite suite= new TestSuite();
+       String loginName = "Tim";
+       suite.addTest(new TestClientProperty(new Global()));
+       return suite;
+   }
+
+
+   /**
+    * Invoke: java org.xmlBlaster.test.qos.TestClientProperty
+    * @deprecated Use the TestRunner from the testsuite to run it:<p />
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestClientProperty</pre>
+    */
+   public static void main(String args[])
+   {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
+      }
+      TestClientProperty test = new TestClientProperty(glob);
+      test.setUp();
+      test.testConnectQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testDisconnectQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testPublishQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testSubscribeQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testUnSubscribeQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testGetQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testEraseQos();
+      test.tearDown();
+
+      test.setUp();
+      test.testUpdateQos();
+      test.tearDown();
+   }
+}
+

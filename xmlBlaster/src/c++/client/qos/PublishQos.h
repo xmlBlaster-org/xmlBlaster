@@ -177,6 +177,11 @@ public:
    void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& topicProperty);
 
    /**
+    * Sets a client property to the given value.
+    */	
+   void setClientProperty(const std::string& key, const std::string& value);
+
+   /**
     * Converts the data into a valid XML ASCII std::string.
     * @return An XML ASCII std::string
     */

@@ -38,6 +38,8 @@ public:
 
    EraseQos& operator =(const EraseQos& qos);
 
+   void setClientProperty(const std::string& key, const std::string& value);
+
    /**
     * NOT IMPLEMENTED
     * @param notify true - notify subscribers that message is erased (default is true)

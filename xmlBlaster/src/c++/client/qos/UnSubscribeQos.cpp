@@ -64,4 +64,13 @@ QueryQosData UnSubscribeQos::getData() const
    return data_;
 }
 
+/**
+ * Sets a client property to the given value.
+ */	
+void UnSubscribeQos::setClientProperty(const std::string& key, const std::string& value) 
+{
+	data_.setClientProperty(key, value);
+}
+
+
 }}}}

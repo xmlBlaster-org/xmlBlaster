@@ -3,7 +3,7 @@ Name:      DisconnectQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.h,v 1.7 2003/07/03 20:54:48 ruff Exp $
+Version:   $Id: DisconnectQos.h,v 1.8 2003/09/18 19:11:23 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -31,17 +31,23 @@ Version:   $Id: DisconnectQos.h,v 1.7 2003/07/03 20:54:48 ruff Exp $
 #include <util/xmlBlasterDef.h>
 #include <util/Log.h>
 #include <string>
+#include <map>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 class Dll_Export DisconnectQos
 {
+typedef std::map<std::string, std::string> ClientPropertyMap;
+
 private:
    std::string  ME; // = "DisconnectQos";
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::Log&    log_;
    bool    deleteSubjectQueue_; // = true;
    bool    clearSessions_; // = false;
+
+protected:
+   ClientPropertyMap clientProperties_;	
 
 public:
    /**
@@ -75,6 +81,9 @@ public:
     * @return false
     */
    bool getClearSessions() const;
+
+   void setClientProperty(const std::string& key, const std::string& value);
+   const ClientPropertyMap& getClientProperties() const;
 
    /**
     * @param true if we shall kill all other sessions of this user on logout (defaults to false). 

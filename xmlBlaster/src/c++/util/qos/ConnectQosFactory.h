@@ -48,6 +48,7 @@ private:
    org::xmlBlaster::util::qos::storage::QueuePropertyFactory queuePropertyFactory_;
    org::xmlBlaster::util::qos::address::AddressFactory addressFactory_;
    std::string serverRefType_;
+   std::string clientPropertyKey_;
 
    // helper flags for SAX parsing
    bool inSecurityService_;
