@@ -194,7 +194,10 @@ string ConnectionsHandler::loginRaw()
 
 bool ConnectionsHandler::shutdown()
 {
-   return connection_->shutdown();
+   if (connection_) {
+      return connection_->shutdown();
+   }
+   return false;
 }
 
 string ConnectionsHandler::getLoginName() 
