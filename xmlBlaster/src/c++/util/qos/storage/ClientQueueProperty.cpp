@@ -100,9 +100,17 @@ using namespace org::xmlBlaster::util::qos::address;
       text += string("   -queue/connection/maxEntries [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("]\n");
       text += string("                       The maximum allowed number of messages in this queue.\n");
       text += string("                       0 switches recording of invocations off, -1 sets it to unlimited.\n");
-      text += string("   -queue/connection/type    The queue plugin type [") + DEFAULT_type + string("].\n");
-      text += string("   -queue/connection/version The queue plugin type [") + DEFAULT_version + string("].\n");
-      text += string("   -queue/connection/maxBytes     The maximum size in kBytes of this queue [" + lexical_cast<std::string>(DEFAULT_bytesDefault) + "].\n");
+      text += string("   -queue/connection/type [RAM].\n");
+#     ifdef XMLBLASTER_PERSISTENT_QUEUE
+      text += string("                       The queue plugin type, choose 'SQLite' for a persistent client side queue.\n");
+#     else
+      text += string("                       Please recompile with -DXMLBLASTER_PERSISTENT_QUEUE=1 defined\n");
+      text += string("                       to have a persistent client side queue 'SQLite'.\n");
+#     endif
+      text += string("   -queue/connection/version ") + DEFAULT_version + string("].\n");
+      text += string("                       The queue plugin type.\n");
+      text += string("   -queue/connection/maxBytes [" + lexical_cast<std::string>(DEFAULT_bytesDefault) + "].\n");
+      text += string("                       The maximum size in bytes of this queue.\n");
     //text += string("   -queue/connection/expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += string("   -queue/connection/onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
     //text += string("   -queue/connection/onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
