@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.9 2002/03/18 00:28:00 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.10 2002/03/22 08:16:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -140,10 +140,13 @@ public class CbInfo
          Log.error(ME, "Sending of callback failed, no callback driver available");
 
       for (int ii=0; ii<callbackDrivers.length; ii++) {
-         if (cbArr[ii].oneway())
+         if (cbArr[ii].oneway()) {
+            //Log.info(ME, "Sending oneway message ...");
             callbackDrivers[ii].sendUpdateOneway(msg);
-         else
+         }
+         else {
             callbackDrivers[ii].sendUpdate(msg);
+         }
       }
    }
 
