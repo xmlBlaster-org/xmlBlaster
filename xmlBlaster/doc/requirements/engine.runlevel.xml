@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.runlevel' type='NEW' prio='MEDIUM' status="INWORK">
+<requirement id='engine.runlevel' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>XmlBlaster supports different run levels</topic>
    <description>
      <p>
@@ -30,7 +30,7 @@
             <td>3</td>
             <td>All configured plugins are alive
                 but only administrative access from outside is possible</td>
-            <td>XmlBlaster has sync all databases and just waits, it is ready to be killed or reactivated</td>
+            <td>XmlBlaster has sync'd all databases and just waits, it is ready to be killed or reactivated</td>
          </tr>
          <tr>
             <td>CLEANUP</td>
@@ -41,7 +41,7 @@
          </tr>
          <tr>
             <td>RUNNING</td>
-            <td>10</td>
+            <td>9</td>
             <td>All configured plugins are alive</td>
             <td>XmlBlaster is fully operational</td>
          </tr>
@@ -55,6 +55,18 @@
        The internal command manager supports the attribute <i>getRunlevel()</i> and <i>setRunlevel()</i>
        allowing to monitor or change the run level via SNMP, telnet or other supported administration
        protocols (see requirement admin below).
+       </li>
+       <li>Every run level has a PRE and POST event fired:<br />
+       The steps between the major run levels are pre and post events, they are not recorded as a stable
+       run level but just as a transition.<br />
+       For example the STANDBY run level has following pre/post events:
+       <ul>
+         <li>RUNLEVEL_STANDBY_PRE=2 This step fires a PRE-STANDBY event but is not a possible run level itself</li>
+         <li>RUNLEVEL_STANDBY=3  This is a possible run level</li>
+         <li>RUNLEVEL_STANDBY_POST=4 This step fires a POST-STANDBY event but is not a possible run level itself</li>
+       </ul>
+       The listeners can use these pre/post events to prepare the transition or do some logging or whatever
+       they wish.
        </li>
      </ul>
 
@@ -70,27 +82,65 @@
          stopping its plugins.
        </li>
        <li>Increments of run level changes:<br />
-       The run levels are changed directly, e.g. to change from level 10
-       to level 5 only one event is fired (10->5) and not an event for
-       every step (10->9->8->7->6->5)
+       The run levels are changed step by step, e.g. to change from level 9
+       to level 3 six events are fired.
        </li>
      </ul>
    </description>
 
 
-   <example lang="XML" type="HTML">
+   <example lang="any" type="HTML">
+   <p>
+   You can play with the run levels interactive on command line, start the server
+   and type '?' when it is up to get the usage:
+   </p>
+   <pre>
+java org.xmlBlaster.Main
+...
+
+----------------------------------------------------------
+Following interactive keyboard input is recognized:
+Key:
+   g             Popup the control panel GUI.
+   r &lt;run level> Change to run level (0,3,6,9).
+   d &lt;file name> Dump internal state of xmlBlaster to file.
+   q             Quit xmlBlaster.
+----------------------------------------------------------
+
+r 3
+
+[Jun 15, 2002 3:37:53 PM INFO  RunlevelManager] Change request from run level RUNNING to run level STANDBY ...
+[Jun 15, 2002 3:37:54 PM INFO  RunlevelManager] Successful shutdown to run level=CLEANUP.
+[Jun 15, 2002 3:37:54 PM INFO  CorbaDriver] POA and ORB are down, CORBA resources released.
+[Jun 15, 2002 3:37:54 PM INFO  RunlevelManager] Successful shutdown to run level=STANDBY.
+   </pre>
    </example>
 
    <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>runlevel</td>
+            <td>9</td>
+            <td>Choose run level on xmlBlaster server startup, e.g. <pre>java org.xmlBlaster.Main -runlevel 6</pre></td>
+            <td>yes</td>
+         </tr>
+      </table>
    </configuration>
 
+   <see type="API">org.xmlBlaster.engine.RunlevelManager</see>
    <see type="API">org.xmlBlaster.engine.I_RunlevelListener</see>
-   <see type="API">org.xmlBlaster.engine.helper.Constants</see>
    <see type="REQ">admin</see>
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
