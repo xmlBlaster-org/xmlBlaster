@@ -111,7 +111,7 @@ Config files setup:
 
     httpd.conf -> jserv.conf -> jserv.properties -> zone.properties
 
-5) Where are the xmlBlaster servlets lying around: 
+5) Where are the xmlBlaster servlets lying around:
    Edit /etc/httpd/conf/jserv/zone.properties
 
       # List of Repositories
@@ -119,8 +119,8 @@ Config files setup:
       repositories=/home/ruff/xmlBlaster/classes
       or:
       repositories=/home/ruff/xmlBlaster/lib/xmlBlaster.jar
-      
-      
+
+
       # Servlet Aliases
       ##################
       servlet.BlasterHttpProxyServlet.code=org.xmlBlaster.protocol.http.BlasterHttpProxyServlet
@@ -155,7 +155,7 @@ Config files setup:
       wrapper.classpath=/home/ruff/xmlBlaster/lib/jaxp.jar
 
       log.file=/var/log/httpd/jserv.log
-      
+
       security.authentication=false
 
 
@@ -203,12 +203,12 @@ Config files setup:
 
 
    Watch log output (if there are problems):
- 
+
       tail -f  /var/log/httpd/jserv.log
 
 8) For an example see:
 
-      xmlBlaster/demo/html/systemInfo       
+      xmlBlaster/demo/html/systemInfo
 
 
 
@@ -243,4 +243,58 @@ http://localhost/servlets/Hello
 
 See:
 http://java.apache.org/faq/
+
+
+
+
+======= CACHING and MSIE ===========================================
+   Page refreshes well with HTTP 1.1 Expires: -1 header.
+
+   The information in this article applies to:
+
+     Microsoft Internet Explorer versions 3.02, 4.0, 4.01, 4.01 Service Pack 1, 5 for Windows 95 
+     Microsoft Internet Explorer version 5 for Windows 98 
+     Microsoft Internet Explorer versions 4.0, 4.01, 4.01 Service Pack 1, 5 for Windows NT 4.0
+
+SYMPTOMS
+
+  When you use the <HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE"> metatag in the header section at the
+  beginning of an HTML Web page, the Web page may still be cached in the Temporary Internet Files folder. 
+
+  CAUSE
+
+  A page that Internet Explorer is browsing is not cached until half of the 64 KB buffer is filled. Usually, metatags
+  are inserted in the header section of an HTML document, which appears at the beginning of the document.
+  When the HTML code is parsed, it is read from top to bottom. When the <HTTP-EQUIV="PRAGMA"
+  CONTENT="NO-CACHE"> metatag is read, Internet Explorer looks for the existence of the page in cache at
+  that exact moment. If it is there, it is removed.
+
+  RESOLUTION
+
+  To properly prevent the Web page from appearing in the cache, place another header section at the end of the
+  HTML document. For example:
+
+  <HTML>
+  <HEAD>
+
+  <META HTTP-EQUIV="REFRESH" CONTENT="5">
+  <TITLE> Pragma No-cache </TITLE>
+  </HEAD>
+
+  <BODY>
+  This is an example of where to place the second header section<br>
+  so that the "Pragama, No-Cache" metatag will work as it is supposed to.<br>
+  </BODY>
+
+  <HEAD>
+  <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+  </HEAD>
+  </HTML>
+
+
+
+
+
+
+
 
