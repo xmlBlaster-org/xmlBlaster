@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.27 2002/05/01 21:40:11 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.28 2002/05/06 13:28:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -277,6 +277,12 @@ public class CorbaDriver implements I_Driver
          if (port > 0) {
             JdkCompatible.setSystemProperty("OAPort", ""+port);
             if (Log.TRACE) Log.trace(ME, "Using ior.port=" + System.getProperty("OAPort"));
+         }
+
+         int verbose = glob.getProperty().get("jacorb.verbosity", -1);
+         if (verbose >= 0) {
+            JdkCompatible.setSystemProperty("jacorb.verbosity", ""+verbose);
+            if (Log.TRACE) Log.trace(ME, "Using jacorb.verbosity=" + System.getProperty("jacorb.verbosity"));
          }
       }
       if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
