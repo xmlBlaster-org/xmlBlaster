@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.39 2000/06/04 23:44:45 ruff Exp $
+Version:   $Id: Main.java,v 1.40 2000/06/05 11:39:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -121,7 +121,6 @@ public class Main
 
       boolean useKeyboard = Property.getProperty("useKeyboard", true);
       if (!useKeyboard) {
-         // !!! orb.run();
          try { Thread.currentThread().wait();
          } catch(InterruptedException e) { Log.warning(ME, "Caught exception: " + e.toString()); }
       }

@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.9 2000/06/04 19:13:23 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.10 2000/06/05 11:39:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -48,7 +48,7 @@ public class AuthenticationInfo
 
    /**
     * Accessing the Callback addresses of the client
-    * this may be a CORBA-IOR or email or URL ... 
+    * this may be a CORBA-IOR or email or URL ...
     * <p />
     * @return An array of CallbackAddress objects, containing the address and the protocol type
     *         If no callback available, return an array of 0 length
@@ -68,17 +68,6 @@ public class AuthenticationInfo
    public final String getUniqueKey() throws XmlBlasterException
    {
       return sessionId;
-   }
-
-
-   /**
-    * The unique Client ID in HEX format, to be able to dump it
-    * @return the sessionId in hex notation for dumping it (readable form)
-	 * @deprecated Is CORBA specific!
-    */
-   public final String getUniqueKeyHex() throws XmlBlasterException
-   {
-      return jacorb.poa.util.POAUtil.convert(getUniqueKey().getBytes(), true);
    }
 
 
