@@ -841,7 +841,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       // Now the MessageUnit exists, subscribe to it
       boolean newSubscribed = msgUnitHandler.addSubscriber(subs);
-      subs.addMessageUnitHandler(msgUnitHandler);
 
       if (!newSubscribed) return;         // client had already subscribed
 
@@ -1221,7 +1220,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                // ... check if the new message matches ...
                if (xmlKey.match(xpath) == true) {
                   SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(), existingQuerySubscription, xmlKey);
-                  subs.addMessageUnitHandler(msgUnitHandler);
                   existingQuerySubscription.addSubscription(subs);
                   matchingSubsVec.addElement(subs);
                }
