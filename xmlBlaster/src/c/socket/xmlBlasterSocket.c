@@ -483,6 +483,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
    MsgUnitArr *msgUnitArr = (MsgUnitArr *)calloc(1, sizeof(MsgUnitArr));
    size_t currpos = 0;
    size_t currIndex = 0;
+   msgUnitArr->isOneway = false;
    if (dataLen <= 0) {
       return msgUnitArr; /* Empty messageUnit array, only a first \0 for the qos */
    }
