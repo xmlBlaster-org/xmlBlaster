@@ -1,7 +1,17 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
-Changes for 0.79b [???, ?? 2000]
-================================
+Changes for 0.79b [March, 11 2000]
+==================================
+
+ - Bugfix with Base64 support in xmlrpc (thanks to Nikolai Devereaux)
+
+ - J2EE support added by Peter Antman
+   See: xmlBlaster/src/java/org/xmlBlaster/j2ee/k2/README
+   See: xmlBlaster/demo/javaclients/j2ee/k2
+   New jars for J2EE support:
+   connector.jar jaas.jar jta-spec1_0_1.jar
+   jms.jar ejb2.0.jar jndi-jdk1_3_1.jar
+   (The jndi jar is needed for JDK 1.2 only)
 
  - Added support for volatile messages (thanks to Peter Antman).
    A volatile messages exists only during publish and processing it (doing the updates).
@@ -37,7 +47,8 @@ Changes for 0.79b [???, ?? 2000]
    see xmlBlaster/demo/python/README
 
  - Messages from the persistent store now deliver the correct
-   sender name (the unique login name of the publisher)
+   sender name, the unique login name of the publisher.
+   Thanks to Suhas Bharambe for reporting the bug.
 
  - Persistent Db integration (code, but no release).
 
