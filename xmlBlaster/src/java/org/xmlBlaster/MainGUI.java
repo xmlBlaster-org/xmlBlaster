@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.9 1999/12/22 22:49:28 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.10 1999/12/22 22:50:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -205,14 +205,14 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
             inputTextField.setText("//key");
             inputPanel.add("Center", inputTextField);
             inputTextField.addKeyListener(new XPathKeyListener());
-            
+
             panel.add("North", inputPanel);
          }
 
          {  // TextArea to show query results
             queryOutput = new TextArea();
             queryOutput.setEditable(false);
-            
+
             panel.add("South", queryOutput);
          }
 
@@ -431,12 +431,12 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Handles return key when a XPath query is entered into the TextField. 
+    * Handles return key when a XPath query is entered into the TextField.
     */
    private class XPathKeyListener implements KeyListener
    {
       /**
-         * Access XPath query string (event from KeyListener). 
+         * Access XPath query string (event from KeyListener).
          */
       public final void keyPressed(KeyEvent ev)
       {
@@ -471,9 +471,9 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
                }
                break;
             /*
-            case KeyEvent.VK_DOWN: displayHistory(tableView.getHistory().getNext());
+            case KeyEvent.VK_DOWN: displayHistory(getHistory().getNext());
                break;
-            case KeyEvent.VK_UP: displayHistory(tableView.getHistory().getPrev());
+            case KeyEvent.VK_UP: displayHistory(getHistory().getPrev());
                break;
             */
          }
@@ -490,7 +490,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * A client accessing xmlBlaster to do some XPath query. 
+    * A client accessing xmlBlaster to do some XPath query.
     */
    private class ClientQuery
    {
