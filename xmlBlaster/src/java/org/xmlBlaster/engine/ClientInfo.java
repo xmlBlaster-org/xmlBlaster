@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.44 2000/11/09 23:34:43 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.45 2001/01/30 14:06:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -12,8 +12,8 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Property;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.callback.CbInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.44 $
+ * @version $Revision: 1.45 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -44,11 +44,10 @@ public class ClientInfo
    private String ME = "ClientInfo";
    private String loginName = null;            // the unique client identifier
    private AuthenticationInfo authInfo = null; // all client informations
-   private I_CallbackDriver[] callbackDrivers = new I_CallbackDriver[0];
+   /** Holding the callback connections */
+   private CbInfo cbInfo = new CbInfo();
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
-   /** Map holding the Class of all protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
-   private static Hashtable protocols = null;
 
    /**
     * All MessageUnit which can't be delivered to the client (if he is not logged in)
@@ -88,56 +87,6 @@ public class ClientInfo
 
 
    /**
-    * Load the callback drivers from xmlBlaster.properties.
-    * <p />
-    * Accessing the CallbackDriver for this client, supporting the
-    * desired protocol (CORBA, EMAIL, HTTP, RMI).
-    * <p />
-    * Default is support for IOR, XML-RPC, RMI and the JDBC service (ODBC bridge)
-    */
-   private final void loadDrivers()
-   {
-      if (protocols != null)
-         return;
-
-      protocols = new Hashtable();
-      String defaultDrivers =
-               "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver," +
-               "RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver," +
-               "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
-               "JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver";
-
-      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", defaultDrivers);
-      StringTokenizer st = new StringTokenizer(drivers, ",");
-      int numDrivers = st.countTokens();
-      for (int ii=0; ii<numDrivers; ii++) {
-         String token = st.nextToken().trim();
-         int index = token.indexOf(":");
-         if (index < 0) {
-            Log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.CallbackDrivers, driver ignored: " + token);
-            continue;
-         }
-         String protocol = token.substring(0, index).trim();
-         String driverId = token.substring(index+1).trim();
-
-         // Load the protocol driver ...
-         try {
-            if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
-            Class cl = java.lang.Class.forName(driverId);
-            protocols.put(protocol, cl);
-            // Log.info(ME, "Found callback driver class '" + driverId + "' for protocol '" + protocol + "'");
-         }
-         catch (SecurityException e) {
-            Log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
-         }
-         catch (Throwable e) {
-            Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name in xmlBlaster.properties and/or the CLASSPATH to the driver file: " + e.toString());
-         }
-      }
-   }
-
-
-   /**
     * PtP mode: This sends the update to the client, or stores it in the client queue or throws an exception.
     * @param msgUnitWrapper Wraps the msgUnit with some more infos
     * @param destination The Destination object of the receiver
@@ -145,15 +94,13 @@ public class ClientInfo
    final void sendUpdate(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
    {
       if (isLoggedIn()) {
-         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + callbackDrivers.length + " callback drivers, sending message");
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + cbInfo.getSize() + " callback drivers, sending message");
          try {
             MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
             msg.qos = getUpdateQoS((String)null, msgUnitWrapper);
             MessageUnit[] arr = new MessageUnit[1];
             arr[0] = msg;
-            for (int ii=0; ii<callbackDrivers.length; ii++) {
-               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, arr);
-            }
+            cbInfo.sendUpdate(this, msgUnitWrapper, arr);
             sentMessages++;
          } catch(XmlBlasterException e) {
             Log.error(ME, "Callback failed, " + e.reason + ". Trying to queue the message ...");
@@ -200,14 +147,12 @@ public class ClientInfo
    {
       MessageUnitWrapper msgUnitWrapper = subInfo.getMessageUnitWrapper();
       if (isLoggedIn()) {
-         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + callbackDrivers.length + " callback drivers, sending message");
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + cbInfo.getSize() + " callback drivers, sending message");
          MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
          msg.qos = getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper());
          MessageUnit[] arr = new MessageUnit[1];
          arr[0] = msg;
-         for (int ii=0; ii<callbackDrivers.length; ii++) {
-            callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, arr);
-         }
+         cbInfo.sendUpdate(this, msgUnitWrapper, arr);
          sentMessages++;
       }
       else {
@@ -251,38 +196,7 @@ public class ClientInfo
 
       // Get the appropriate callback protocol driver, add driver by reflection with xmlBlaster.properties
       // How to protect the misuse of other email addresses??
-      loadDrivers();
-      CallbackAddress[] cbArr = authInfo.getCallbackAddresses();
-      if (cbArr == null) {
-         callbackDrivers = new I_CallbackDriver[0];
-      }
-      else {
-         callbackDrivers = new I_CallbackDriver[cbArr.length];
-         for (int ii=0; ii<cbArr.length; ii++) {
-            // Load the protocol driver ...
-            Class cl = (Class)protocols.get(cbArr[ii].getType());
-            if (cl == null) {
-               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
-               throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
-            }
-
-
-            try {
-               callbackDrivers[ii] = (I_CallbackDriver)cl.newInstance();
-               callbackDrivers[ii].init(cbArr[ii]);
-               if (Log.TRACE) Log.trace(ME, "Created callback driver for protocol '" + cbArr[ii].getType() + "'");
-            }
-            catch (IllegalAccessException e) {
-               Log.error(ME, "The driver class '" + cbArr[ii].getType() + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
-            }
-            catch (SecurityException e) {
-               Log.error(ME, "No right to access the driver class or initializer '" + cbArr[ii].getType() + "'");
-            }
-            catch (Throwable e) {
-               Log.error(ME, "The driver class or initializer '" + cbArr[ii].getType() + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-            }
-         }
-      }
+      this.cbInfo = new CbInfo(authInfo.getCallbackAddresses());
 
       // send messages to client, if there are any in the queue
       if (messageQueue != null) {
@@ -294,10 +208,8 @@ public class ClientInfo
             msg.qos = getUpdateQoS((String)null, msgUnitWrapper);
             MessageUnit[] arr = new MessageUnit[1];
             arr[0] = msg;
-            for (int ii=0; ii<callbackDrivers.length; ii++) {
-               // TODO: emails can also be sent to the logged off client!
-               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper,arr);
-            }
+            // TODO: emails can also be sent to the logged off client!
+            cbInfo.sendUpdate(this, msgUnitWrapper,arr);
             sentMessages++;
          }
       }
@@ -363,12 +275,10 @@ public class ClientInfo
       }
 
       // TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
-      for (int ii=0; ii<callbackDrivers.length; ii++) {
-         callbackDrivers[ii].shutdown();
-      }
+      cbInfo.shutdown();
 
       this.authInfo = null;
-      this.callbackDrivers = new I_CallbackDriver[0];
+      this.cbInfo = new CbInfo();
    }
 
 
@@ -423,9 +333,9 @@ public class ClientInfo
     * <br>
     * @return internal state of ClientInfo as a XML ASCII string
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -435,7 +345,7 @@ public class ClientInfo
     * @param extraOffset indenting of tags for nice output
     * @return internal state of ClientInfo as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -448,15 +358,9 @@ public class ClientInfo
          sb.append(offset + "   <isLoggedIn />");
       else
          sb.append(offset + "   <isNotLoggedIn />");
-      if (callbackDrivers.length < 1)
-         sb.append(offset + "   <noCallbackDriver />");
-      else {
-         for (int ii=0; ii<callbackDrivers.length; ii++) {
-            sb.append(offset + "   <" + callbackDrivers[ii].getName() + " />");
-         }
-      }
+      sb.append(cbInfo.toXml(extraOffset + "   "));
       sb.append(offset + "</ClientInfo>\n");
 
-      return sb;
+      return sb.toString();
    }
 }
