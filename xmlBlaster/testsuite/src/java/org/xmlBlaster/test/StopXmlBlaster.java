@@ -9,7 +9,7 @@ package org.xmlBlaster.test;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -40,7 +40,7 @@ public class StopXmlBlaster extends TestCase
          ConnectQos qos = new ConnectQos(null, "joe", "secret");
          con.connect(qos, null);
 
-         con.publish(new MessageUnit("<key oid='__cmd:?exit=0'/>", "".getBytes(), "<qos/>"));
+         con.publish(new MsgUnit("<key oid='__cmd:?exit=0'/>", "".getBytes(), "<qos/>"));
 
          con.disconnect(null);
 

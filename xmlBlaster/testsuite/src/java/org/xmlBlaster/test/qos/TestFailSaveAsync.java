@@ -22,7 +22,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.engine.helper.Address;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -217,7 +217,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       try {
          publishKeyWrapper.setOid(oid);
          String content = "" + counter;
-         MessageUnit msgUnit = new MessageUnit(publishKeyWrapper.toXml(), content.getBytes(), publishQosWrapper.toXml());
+         MsgUnit msgUnit = new MsgUnit(publishKeyWrapper.toXml(), content.getBytes(), publishQosWrapper.toXml());
 
          con.publish(msgUnit);
          Util.delay(publishDelay);  // Wait some time

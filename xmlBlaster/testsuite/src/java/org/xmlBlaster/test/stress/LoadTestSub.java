@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.6 2002/11/26 12:40:49 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.7 2002/12/18 13:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -12,7 +12,7 @@ import org.jutils.time.StopWatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -183,15 +183,20 @@ public class LoadTestSub extends TestCase implements I_Callback
       //String qos = "<qos><isDurable>false</isDurable></qos>";
       //String qos = "<qos><isDurable>true</isDurable></qos>";
 
-      MessageUnit[] arr = new MessageUnit[burstModePublish];
+      MsgUnit[] arr = new MsgUnit[burstModePublish];
       PublishReturnQos[] publishOids;
-      for (int kk=0; kk<burstModePublish; kk++)
-         arr[kk] = new MessageUnit(xmlKey, someContent.getBytes(), qos);
+      try {
+         for (int kk=0; kk<burstModePublish; kk++)
+            arr[kk] = new MsgUnit(xmlKey, someContent.getBytes(), qos);
+      }
+      catch (XmlBlasterException e) {
+         fail(e.getMessage());
+      }
       stopWatch = new StopWatch();
       try {
          for (int ii=0; ii<numPublish; ) {
             for (int jj=0; jj<burstModePublish; jj++) {
-               arr[jj] = new MessageUnit(arr[jj], null, new String(someContent + (ii+1)).getBytes(), null);
+               arr[jj] = new MsgUnit(arr[jj], null, new String(someContent + (ii+1)).getBytes(), null);
             }
             ii+=burstModePublish;
             if (publishOneway)

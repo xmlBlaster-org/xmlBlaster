@@ -15,7 +15,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
 
@@ -112,7 +112,7 @@ public class DirtyReadTest extends TestCase {
       PublishKey pk;
       PublishQos pq;
       PublishReturnQos prq;
-      MessageUnit msgUnit;
+      MsgUnit msgUnit;
 
       try {
          System.err.println("->Connect to frodo ...");
@@ -146,7 +146,7 @@ public class DirtyReadTest extends TestCase {
          System.err.println("->Check publish '" + oid + "', frodo should get it ...");
          pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(glob, pk, contentStr.getBytes(), pq);
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
@@ -162,7 +162,7 @@ public class DirtyReadTest extends TestCase {
 
          System.err.println("->Find out the public session Id of slave frodo at heron ...");
          String cmd = "__cmd:client/" + serverHelper.getFrodoGlob().getId() + "/?sessionList";
-         MessageUnit[] msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
+         MsgUnit[] msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
          assertEquals("Command failed", 1, msgs.length);
          String pubSessionId = msgs[0].getContentStr();
 

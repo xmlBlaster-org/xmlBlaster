@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.4 2002/11/26 12:40:38 ruff Exp $
+Version:   $Id: TestGet.java,v 1.5 2002/12/18 13:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -108,7 +108,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnit[] msgArr = connection.get(xmlKey, qos);
+         MsgUnit[] msgArr = connection.get(xmlKey, qos);
          if (msgArr.length > 0) {
             log.error(ME, "Received " + msgArr.length + " unexpected messages");
             for (int i=0; i<msgArr.length; i++) {
@@ -129,7 +129,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
          PublishQos qosWrapper = new PublishQos(glob); // the same as "<qos></qos>"
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qosWrapper.toXml());
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qosWrapper.toXml());
          connection.publish(msgUnit);
          log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
@@ -140,7 +140,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnit[] msgArr = connection.get(xmlKey, qos);
+         MsgUnit[] msgArr = connection.get(xmlKey, qos);
          
          assertEquals("Got wrong number of messages", 1, msgArr.length);
          log.info(ME, "Success, got the message '" + msgArr[0].getKey() + "'");
@@ -182,7 +182,7 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       for (int ii=0; ii<num; ii++) {
          try {
-            MessageUnit[] msgArr = connection.get(xmlKey, qos);
+            MsgUnit[] msgArr = connection.get(xmlKey, qos);
             if (msgArr.length > 0)
                assertTrue("get() of not existing message is not possible", false);
          } catch(XmlBlasterException e) {

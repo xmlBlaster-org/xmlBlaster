@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.Address;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -186,7 +186,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "</key>";
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       con.publish(msgUnit);
       log.info(ME, "Success: Publishing of " + oid + " done");

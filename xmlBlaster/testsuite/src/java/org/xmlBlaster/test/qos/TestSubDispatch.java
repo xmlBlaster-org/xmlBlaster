@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -174,8 +174,8 @@ public class TestSubDispatch extends TestCase implements I_Callback
                       "   </TestSubDispatch-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          String tmp = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid", publishOid, tmp);
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);

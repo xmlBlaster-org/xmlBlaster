@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.5 2002/11/26 12:40:49 ruff Exp $
+Version:   $Id: RamTest.java,v 1.6 2002/12/18 13:16:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -13,7 +13,7 @@ import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -140,24 +140,26 @@ public class RamTest extends TestCase
 
       long usedMemBefore = 0L;
 
-      MessageUnit[] msgUnitArr = new MessageUnit[numPublish];
-      for (int ii=0; ii<numPublish; ii++) {
-         String xmlKey = "<key oid='RamTest-" + (ii+1) + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
-                         "   <RamTest-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                         "      <RamTest-DRIVER id='FileProof' pollingFreq='10'>" +
-                         "      </RamTest-DRIVER>"+
-                         "   </RamTest-AGENT>" +
-                         "</key>";
-         senderContent = "" + (ii+1);
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
-         msgUnitArr[ii] = msgUnit;
-      }
+      MsgUnit[] msgUnitArr = new MsgUnit[numPublish];
 
       try {
+         for (int ii=0; ii<numPublish; ii++) {
+            String xmlKey = "<key oid='RamTest-" + (ii+1) + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+                            "   <RamTest-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                            "      <RamTest-DRIVER id='FileProof' pollingFreq='10'>" +
+                            "      </RamTest-DRIVER>"+
+                            "   </RamTest-AGENT>" +
+                            "</key>";
+            senderContent = "" + (ii+1);
+            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+            msgUnitArr[ii] = msgUnit;
+         }
+
+
          // 1. Query the current memory allocated in xmlBlaster
          String xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnit[] msgArr = senderConnection.get(xmlKey, qos);
+         MsgUnit[] msgArr = senderConnection.get(xmlKey, qos);
 
          assertTrue("returned msgArr == null", null != msgArr);
          assertEquals("msgArr.length!=1", 1, msgArr.length);

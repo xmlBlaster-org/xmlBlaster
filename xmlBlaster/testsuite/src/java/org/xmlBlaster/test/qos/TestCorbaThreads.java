@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.2 2002/11/26 12:40:37 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.3 2002/12/18 13:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -162,7 +162,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
       return "";
    }
-   public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) {
+   public String[] update(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) {
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<retArr.length; ii++) retArr[ii] = "";
@@ -171,7 +171,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral) {
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
    }
-   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) {
+   public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) {
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
    }
 

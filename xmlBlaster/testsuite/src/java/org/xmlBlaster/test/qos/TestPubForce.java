@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -152,9 +152,9 @@ public class TestPubForce extends TestCase implements I_Callback
       PublishQos qosWrapper = new PublishQos(glob);
       qosWrapper.setForceUpdate(forceUpdate);
       String qos = qosWrapper.toXml(); // == "<qos><forceUpdate/></qos>"
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
 
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

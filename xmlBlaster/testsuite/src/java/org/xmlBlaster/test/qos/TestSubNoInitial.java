@@ -3,7 +3,7 @@ Name:      TestSubNoInitial.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubNoInitial.java,v 1.3 2002/11/26 12:40:41 ruff Exp $
+Version:   $Id: TestSubNoInitial.java,v 1.4 2002/12/18 13:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -166,8 +166,8 @@ public class TestSubNoInitial extends TestCase implements I_Callback
                       "   </TestSubNoInitial-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          sentTimestamp = new Timestamp();
          PublishReturnQos tmp = senderConnection.publish(msgUnit);
          assertEquals("Wrong publishOid", publishOid, tmp.getKeyOid());

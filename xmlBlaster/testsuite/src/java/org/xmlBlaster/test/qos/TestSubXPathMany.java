@@ -23,7 +23,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
 import junit.framework.*;
@@ -40,7 +40,7 @@ import junit.framework.*;
  *    java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubXPathMany
  *    java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestSubXPathMany
  * </pre>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class TestSubXPathMany extends TestCase
 {
@@ -187,19 +187,19 @@ public class TestSubXPathMany extends TestCase
       try {
          PublishKey pk = new PublishKey(glob, "command-navigation", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          PublishReturnQos retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "command-radar-1", "text/plain", "1.0");
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "dummyTestSubXPathMany", "text/plain", "1.0");
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
       }

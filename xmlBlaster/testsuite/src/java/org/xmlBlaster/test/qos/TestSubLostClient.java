@@ -19,7 +19,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -212,8 +212,8 @@ public class TestSubLostClient extends TestCase implements I_Callback
                       "<key oid='" + publishOid1 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "</key>";
       String senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          stopWatch = new StopWatch();
          String tmp = oneConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);

@@ -26,7 +26,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -141,7 +141,7 @@ public class TestPtSession extends TestCase
          for(int i=0; i<sessionNameArr.length; i++)
             pq.addDestination(new Destination(sessionNameArr[i]));
          
-         MessageUnit msgUnit = new MessageUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml());
 
          PublishReturnQos rq = conHolder.con.publish(msgUnit);
          

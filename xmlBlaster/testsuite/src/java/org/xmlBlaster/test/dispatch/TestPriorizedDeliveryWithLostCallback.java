@@ -30,7 +30,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Address;
@@ -162,7 +162,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
    private void changeStatus(String oid, String state) {
       log.info(ME, "Changing band width state to '" + state + "'");
       try {
-         PublishReturnQos rq = con.publish(new MessageUnit(glob, "<key oid='" + oid + "'/>", state, null));
+         PublishReturnQos rq = con.publish(new MsgUnit(glob, "<key oid='" + oid + "'/>", state, null));
          log.info(ME, "SUCCESS for state change to '" + state + "', " + rq.getState());
          // Sleep to be shure the plugin has got and processed the message
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
@@ -179,7 +179,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          String content = "" + msgSequenceNumber;
          PublishQos pq = new PublishQos(glob);
          pq.setPriority(prio);
-         PublishReturnQos rq = con.publish(new MessageUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
          log.info(ME, "SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
@@ -198,7 +198,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
-         PublishReturnQos rq = con.publish(new MessageUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
          log.info(ME, "SUCCESS publish '" + oid + "' returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());

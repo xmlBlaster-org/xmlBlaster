@@ -19,7 +19,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
 
@@ -164,7 +164,7 @@ public class SubscribeTest extends TestCase {
          System.err.println("->Publish to avalon ...");
          PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
          PublishQos avalon_pq = new PublishQos(glob);
-         MessageUnit avalon_msgUnit = new MessageUnit(avalon_pk.toXml(), contentStr.getBytes(), avalon_pq.toXml());
+         MsgUnit avalon_msgUnit = new MsgUnit(glob, avalon_pk, contentStr, avalon_pq);
          PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
          assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
@@ -250,7 +250,7 @@ public class SubscribeTest extends TestCase {
             System.err.println("->Publish to avalon #" + ii + " ...");
             PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
             PublishQos avalon_pq = new PublishQos(glob);
-            MessageUnit avalon_msgUnit = new MessageUnit(avalon_pk.toXml(), contentStr.getBytes(), avalon_pq.toXml());
+            MsgUnit avalon_msgUnit = new MsgUnit(glob, avalon_pk, contentStr, avalon_pq);
             PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
             assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 

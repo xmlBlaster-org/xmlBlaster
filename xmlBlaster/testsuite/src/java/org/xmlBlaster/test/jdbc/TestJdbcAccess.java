@@ -15,7 +15,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 
@@ -156,7 +156,7 @@ public class TestJdbcAccess extends TestCase
          GetKey key = new GetKey(glob, "__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQos qos = new GetQos(glob);
-         MessageUnit[] msgUnitArr = con.get(key.toXml(), qos.toXml());
+         MsgUnit[] msgUnitArr = con.get(key.toXml(), qos.toXml());
          if (msgUnitArr.length > 0) {
             String result = new String(msgUnitArr[0].getContent());
             if (log.TRACE) log.trace(ME, result);

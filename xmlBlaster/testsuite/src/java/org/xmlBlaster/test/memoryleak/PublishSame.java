@@ -7,7 +7,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.io.*;
 
@@ -52,7 +52,7 @@ public class PublishSame
          while(true) {
             lCount++;
             xmlKey =  "<key oid='OneMessage'> <topic id='aaaa'/> </key>";
-            con.publish(new MessageUnit(xmlKey,b,qw.toXml()));
+            con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
             if ((lCount % 100L) == 0) {
                log.info(ME, "Sent " + lCount + " identical messages, enter return to continue, enter 'q' to quit");

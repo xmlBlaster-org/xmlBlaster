@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -172,7 +172,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 
       log.info(ME, "TEST 1: Send a message which triggers an exception in update");
       try {
-         con.publish(new MessageUnit("<key oid='" + msgOidWantException + "'/>", "Hello".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='" + msgOidWantException + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -182,7 +182,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 
       log.info(ME, "TEST 2: Send a normal message, check if everything still works");
       try {
-         con.publish(new MessageUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -191,7 +191,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 
       log.info(ME, "TEST 3: Send a message which triggers an illegal exception in update");
       try {
-         con.publish(new MessageUnit("<key oid='" + msgOidWantIllegalException + "'/>", "Hello".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='" + msgOidWantIllegalException + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -200,7 +200,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 
       log.info(ME, "TEST 4: Send a normal message, check if everything still works");
       try {
-         con.publish(new MessageUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -209,7 +209,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 
       log.info(ME, "TEST 5: Send a message which triggers a nullpointer exception");
       try {
-         con.publish(new MessageUnit("<key oid='" + msgOidWantNPE + "'/>", "Hello".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='" + msgOidWantNPE + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -218,7 +218,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 
       log.info(ME, "TEST 6: Send a normal message, check if everything still works");
       try {
-         con.publish(new MessageUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);

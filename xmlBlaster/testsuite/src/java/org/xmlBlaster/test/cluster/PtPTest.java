@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -136,7 +136,7 @@ public class PtPTest extends TestCase {
          destination.forceQueuing(true);
          pq.addDestination(destination);
          log.info(ME, "Sending PtP message from bilbo to '" + sessionName + "' :" + pq.toXml());
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(glob, pk, contentStr.getBytes(), pq);
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message to destination='" + sessionName +
                                     "' content='" + contentStr +

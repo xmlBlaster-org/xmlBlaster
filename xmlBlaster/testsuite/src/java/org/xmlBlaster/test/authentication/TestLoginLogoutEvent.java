@@ -15,7 +15,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -169,7 +169,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          waitOnUpdate(1000L, 1);  // login event arrived?
 
          // Test the '__sys__UserList' feature:
-         MessageUnit[] msgArr = secondConnection.get(
+         MsgUnit[] msgArr = secondConnection.get(
                           "<key oid='__sys__UserList' queryType='EXACT'></key>",
                           "<qos></qos>");
          assertTrue(msgArr.length == 1);

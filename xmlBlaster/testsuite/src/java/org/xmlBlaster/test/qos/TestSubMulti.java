@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.3 2002/11/26 12:40:40 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -147,8 +147,8 @@ public class TestSubMulti extends TestCase implements I_Callback
       key.setClientTags("<location dest='agent-192.168.10.218' driver='PSD1'></location>");
       PublishQos qos = new PublishQos(glob);
       senderContent = "some content";
-      MessageUnit msgUnit = new MessageUnit(key.toXml(), senderContent.getBytes(), qos.toXml());
       try {
+         MsgUnit msgUnit = new MsgUnit(key.toXml(), senderContent.getBytes(), qos.toXml());
          sentTimestamp = new Timestamp();
          publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);

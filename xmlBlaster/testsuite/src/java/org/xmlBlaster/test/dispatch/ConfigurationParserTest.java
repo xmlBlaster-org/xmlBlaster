@@ -22,7 +22,7 @@ import junit.framework.*;
  * @see org.xmlBlaster.util.dispatch.plugins.prio.ConfigurationParser
  * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.priorizedDelivery.html" target="others">the dispatch.plugin.priorizedDelivery requirement</a>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class ConfigurationParserTest extends TestCase {
    protected Global glob;

@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.3 2002/11/26 12:40:34 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.4 2002/12/18 13:16:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
@@ -139,7 +139,7 @@ public class TestGetFilter extends TestCase
       log.info(ME, "TEST 1: Testing unfiltered message");
       String content = "1234567890";
       try {
-         con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -149,7 +149,7 @@ public class TestGetFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assertTrue("Expected one returned message", msgUnits!=null);
          assertTrue("Expected exactly one returned message", msgUnits.length==1);
          assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
@@ -164,7 +164,7 @@ public class TestGetFilter extends TestCase
       log.info(ME, "TEST 2: Testing filtered message");
       content = "12345678901"; // content is too long, our plugin denies this message
       try {
-         con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -174,7 +174,7 @@ public class TestGetFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assertTrue("Expected one returned message", msgUnits!=null);
          assertEquals("Expected no returned message", 0, msgUnits.length);
          log.info(ME, "Success: Got no message.");
@@ -186,7 +186,7 @@ public class TestGetFilter extends TestCase
 
       log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
-         con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", "123".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          fail("publish - XmlBlasterException: " + e.getMessage());
@@ -196,7 +196,7 @@ public class TestGetFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          fail("get() message should throw an XmlBlasterException, but it didn't happen");
       } catch(XmlBlasterException e) {
          log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.getMessage());

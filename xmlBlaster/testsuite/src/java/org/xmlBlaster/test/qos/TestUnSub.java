@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.3 2002/11/26 12:40:42 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.4 2002/12/18 13:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,7 +15,8 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -198,9 +199,11 @@ public class TestUnSub extends TestCase implements I_Callback
                       "   </TestUnSub-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+      PublishReturnQos publishReturnQos = null;
       try {
-         publishOid = senderConnection.publish(msgUnit).getKeyOid();
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+         publishReturnQos = senderConnection.publish(msgUnit);
+         publishOid = publishReturnQos.getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -208,7 +211,7 @@ public class TestUnSub extends TestCase implements I_Callback
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
-      assertTrue("returned publishOid", 0 != publishOid.length());
+      assertTrue("returned publishOid: " + publishReturnQos.toXml(), 0 != publishOid.length());
    }
 
 

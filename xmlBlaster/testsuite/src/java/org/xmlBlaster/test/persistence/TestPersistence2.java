@@ -26,7 +26,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
@@ -147,8 +147,8 @@ public class TestPersistence2 extends TestCase implements I_Callback
                    "   <isDurable />" +
                    "</qos>";
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);

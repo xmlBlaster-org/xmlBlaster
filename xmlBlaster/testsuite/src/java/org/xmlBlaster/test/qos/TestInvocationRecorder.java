@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.4 2002/12/18 13:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_CallbackRaw;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -42,7 +42,7 @@ import junit.framework.*;
  *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestInvocationRecorder
  * </pre>
  */
-public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_CallbackRaw
+public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, I_CallbackRaw
 {
    private static String ME = "TestInvocationRecorder";
    private final Global glob;
@@ -54,7 +54,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
    private String publishOid = "";
 
    private int numSubscribe, numUnSubscribe, numPublish, numPublishArr, numErase, numGet, numUpdate;
-   private MessageUnit[] dummyMArr = new MessageUnit[0];
+   private MsgUnit[] dummyMArr = new MsgUnit[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
@@ -87,7 +87,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
       log.info(ME, "setup test");
       numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numUpdate = 0;
       recorder = new RamRecorder();
-      recorder.initialize(glob, (String)null, 1000, this, this);
+      recorder.initialize(glob, (String)null, 1000, this);//, this);
    }
 
 
@@ -111,20 +111,19 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
       String xmlKey = "<key oid='Hello' queryType='XPATH'>\n   //TestInvocationRecorder-AGENT\n</key>";
       String qos = "<qos></qos>";
       String content = "The content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
-      MessageUnit[] msgUnitArr = new MessageUnit[1];
-      msgUnitArr[0] = msgUnit;
       String clientName = "Gonzales";
       String xmlAttr = "";
 
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qos);
+         MsgUnit[] msgUnitArr = { msgUnit };
          recorder.subscribe(xmlKey_subscribe, qos_subscribe);
          recorder.get(xmlKey_get, qos_get);
          recorder.unSubscribe(xmlKey, qos);
          recorder.publish(msgUnit);
          recorder.publishArr(msgUnitArr);
          recorder.erase(xmlKey, qos);
-         recorder.update(clientName, msgUnitArr);
+         //recorder.update(clientName, msgUnitArr);
       }
       catch(XmlBlasterException e) {
          log.error(ME, "problems feeding the recorder: " + e.getMessage());
@@ -178,7 +177,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
+   public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publish() ...");
       numPublish++;
@@ -190,7 +189,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(MessageUnit [] msgUnitArr)
+   public void publishOneway(MsgUnit [] msgUnitArr)
    {
       if (log.CALL) log.call(ME, "publishOneway() ...");
       numPublishArr++;
@@ -201,7 +200,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public PublishReturnQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishReturnQos[] publishArr(MsgUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       numPublishArr++;
@@ -225,7 +224,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public MsgUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "get() ...");
       numGet++;
@@ -238,9 +237,8 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
    /**
     * This is the callback method enforced by interface I_CallbackRaw.
     * <p />
-    * @param MessageUnit Container for the Message
-    */
-   public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+    * @param MsgUnit Container for the Message
+   public String[] update(String cbSessionId, org.xmlBlaster.util.MsgUnit[] msgUnitArr)
    {
       if (log.CALL) log.call(ME, "update(" + cbSessionId + ") ...");
       numUpdate++;
@@ -249,11 +247,12 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
       return retArr;
    }
 
-   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnit[] msgUnitArr)
    {
       if (log.CALL) log.call(ME, "update(" + cbSessionId + ") ...");
       numUpdate++;
    }
+    */
 
    /**
     * Method is used by TestRunner to load these tests

@@ -13,7 +13,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.test.Util;
 
@@ -119,7 +119,7 @@ public class TestSessionReconnect extends TestCase implements I_Callback
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
          {  
-            MessageUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
+            MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
             assertEquals("Get test failed", 1, msgs.length);
          }
 
@@ -129,7 +129,7 @@ public class TestSessionReconnect extends TestCase implements I_Callback
          log.error(ME, "TESTCODE IS MISSING !!! ");
          if (false) {
             log.info(ME, "Trying to get messages from shutdown server");
-            MessageUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
+            MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
             assertEquals("Get test failed", 0, msgs.length);
          }
 

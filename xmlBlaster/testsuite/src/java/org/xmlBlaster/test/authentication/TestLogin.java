@@ -10,13 +10,17 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
 
@@ -41,7 +45,7 @@ public class TestLogin extends TestCase implements I_Callback
    private final LogChannel log;
 
    private String publishOid = "";
-   private String firstOid = "TestLogin";
+   private String firstOid = "FirstOid";
    private XmlBlasterConnection callbackConnection;
    private String senderName;
    private String senderContent;
@@ -50,7 +54,7 @@ public class TestLogin extends TestCase implements I_Callback
    private String secondName;
    private String secondOid = "SecondOid";
 
-   private MessageUnit msgUnit;     // a message to play with
+   private MsgUnit msgUnit;     // a message to play with
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
@@ -108,7 +112,13 @@ public class TestLogin extends TestCase implements I_Callback
                         "   </TestLogin-AGENT>" +
                         "</key>";
       senderContent = "Some content";
-      msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+      try {
+         msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "setup() failed: " + e.getMessage());
+         fail(e.getMessage());
+      }
    }
 
 
@@ -137,10 +147,9 @@ public class TestLogin extends TestCase implements I_Callback
          String qos = "<qos></qos>";
          try {
             EraseReturnQos[] arr = callbackConnection.erase(xmlKey, qos);
-            if (arr.length != 1) {
-               log.error(ME, "Erased " + arr.length + " messages:");
-               assertEquals("Wrong number of messages erased", 1, arr.length);
-            }
+            if (arr.length != 1)
+               log.error(ME, "Erased " + arr.length + " messages of '" + secondOid + "'");
+            assertEquals("Wrong number of messages '" + secondOid + "' erased", 1, arr.length);
          } catch(XmlBlasterException e) { 
             log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.getMessage());
             fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.getMessage());
@@ -191,13 +200,19 @@ public class TestLogin extends TestCase implements I_Callback
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
-      msgUnit = new MessageUnit(msgUnit, null, null, "<qos></qos>");
-      if (ptp)
-         msgUnit = new MessageUnit(msgUnit, null, null, "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>");
       try {
+         PublishQos publishQos = new PublishQos(glob);
+         msgUnit = new MsgUnit(msgUnit, null, null, publishQos.getData());
+         if (ptp) {
+            PublishKey pk = new PublishKey(glob);
+            PublishQos pq = new PublishQos(glob);
+            pq.addDestination(new Destination(new SessionName(glob, secondName)));
+            msgUnit = new MsgUnit(msgUnit, pk.getData(), null, pq.getData());
+         }
          publishOid = callbackConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publish " + msgUnit.getKey() + " done");
-         assertEquals("oid is different", firstOid, publishOid);
+         if (!ptp)
+            assertEquals("oid is different", firstOid, publishOid);
       } catch(XmlBlasterException e) {
          log.warn(ME+"-doPublish", "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -245,7 +260,7 @@ public class TestLogin extends TestCase implements I_Callback
                          "   </TestLogin-AGENT>" +
                          "</key>";
          String content = "Some content";
-         MessageUnit mu = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+         MsgUnit mu = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid = secondConnection.publish(mu).getKeyOid();
       } catch(XmlBlasterException e) {
          log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.getMessage());
@@ -268,6 +283,8 @@ public class TestLogin extends TestCase implements I_Callback
       try { Thread.currentThread().sleep(1000L); } catch (Exception e) { } // wait a second
       assertEquals("Didn't expect an update", 0, numReceived);
 
+      log.info(ME, "SUCCESS in testLoginLogout()");
+
       // login again
       setUp();
 
@@ -280,7 +297,9 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState() +
+               " rcvTime=" + updateQos.getRcvTimestamp().toString());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid() + updateQos.toXml());
       numReceived++;
       return "";
    }
@@ -302,11 +321,19 @@ public class TestLogin extends TestCase implements I_Callback
       while (numReceived < numWait) {
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
+         if (sum > timeout) {
+            log.error(ME, "Timeout of " + timeout + " occurred without update");
+            Thread.currentThread().dumpStack();
+         }
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
       try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      if (numWait != numReceived) {
+         log.error(ME, "Wrong number of messages arrived, expected numWait=" + numWait + " but got numReceived=" + numReceived);
+         Thread.currentThread().dumpStack();
+      }
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
 
       numReceived = 0;

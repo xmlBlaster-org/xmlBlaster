@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.4 2002/12/18 13:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -125,8 +125,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
                       "</qos>";
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
+            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
             assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
@@ -153,8 +153,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
                       "</qos>";
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
+            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {

@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.4 2002/11/26 12:40:44 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.5 2002/12/18 13:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -117,8 +117,8 @@ public class TestVolatile extends TestCase implements I_Callback
                    "   <isVolatile>true</isVolatile>" +
                    "</qos>";
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);

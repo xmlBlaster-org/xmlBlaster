@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.2 2002/11/26 12:40:37 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.3 2002/12/18 13:16:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -131,7 +131,7 @@ public class TestCallback extends TestCase implements I_Callback
          String subscribeOid = con.subscribe("<key oid='testCallbackMsg'/>", null).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
 
-         MessageUnit msgUnit = new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null);
+         MsgUnit msgUnit = new MsgUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null);
          publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 

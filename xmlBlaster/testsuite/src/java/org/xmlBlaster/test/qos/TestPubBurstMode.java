@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -129,10 +129,15 @@ public class TestPubBurstMode extends TestCase
       PublishQos qosWrapper = new PublishQos(glob);
       String qos = qosWrapper.toXml(); // == "<qos></qos>"
 
-      MessageUnit[] msgUnitArr = new MessageUnit[numPublish];
-      for (int ii=0; ii<numPublish; ii++) {
-         String senderContent = ME + ii; // different content forcing xmlBlaster to store
-         msgUnitArr[ii] = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
+      MsgUnit[] msgUnitArr = new MsgUnit[numPublish];
+      try {
+         for (int ii=0; ii<numPublish; ii++) {
+            String senderContent = ME + ii; // different content forcing xmlBlaster to store
+            msgUnitArr[ii] = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
+         }
+      }
+      catch (XmlBlasterException e) {
+         fail(e.getMessage());
       }
 
       PublishReturnQos[] publishOidArr = null;

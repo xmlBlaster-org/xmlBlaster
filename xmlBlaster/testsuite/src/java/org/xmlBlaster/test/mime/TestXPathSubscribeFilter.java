@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -193,7 +193,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
 
       log.info(ME, "TEST 1: Testing sport message");
       try {
-         con.publish(new MessageUnit("<key oid='MSG' contentMime='text/xml'/>", "<news type='sport'></news>".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG' contentMime='text/xml'/>", "<news type='sport'></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -203,7 +203,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
 
       log.info(ME, "TEST 2: Testing culture message");
       try {
-         con.publish(new MessageUnit("<key oid='MSG' contentMime='text/xml'/>", "<news type='culture'></news>".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG' contentMime='text/xml'/>", "<news type='culture'></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -212,7 +212,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
 
       log.info(ME, "TEST 3: Testing AnotherMsG message");
       try {
-         con.publish(new MessageUnit("<key oid='AnotherMsG' contentMime='text/xml'/>", "<news type='culture'></news>".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='AnotherMsG' contentMime='text/xml'/>", "<news type='culture'></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -222,7 +222,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       /* See TestSubscribeFilter.java for this test
       log.info(ME, "TEST 4: Test what happens if the plugin throws an exception");
       try {   
-         con.publish(new MessageUnit("<key oid='MSG'/>", "<broken><xml></broken>".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", "<broken><xml></broken>".getBytes(), null));
          waitOnUpdate(subscribeOid,4000L, 1); // a dead message should come if we would subscribe on it
       } catch(XmlBlasterException e) {
          fail("publish forced the plugin to throw an XmlBlasterException, but it should not reach the publisher: " + e.toString());

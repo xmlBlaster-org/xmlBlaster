@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.3 2002/11/26 12:40:41 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.4 2002/12/18 13:16:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -57,8 +57,7 @@ public class TestSubXPath extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestSubXPath(Global glob, String testName, String loginName)
-   {
+   public TestSubXPath(Global glob, String testName, String loginName) {
       super(testName);
       this.glob = glob;
       this.log = this.glob.getLog("test");
@@ -66,14 +65,12 @@ public class TestSubXPath extends TestCase implements I_Callback
       this.receiverName = loginName;
    }
 
-
    /**
     * Sets up the fixture.
     * <p />
     * Connect to xmlBlaster and login
     */
-   protected void setUp()
-   {
+   protected void setUp() {
       try {
          senderConnection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
@@ -86,14 +83,12 @@ public class TestSubXPath extends TestCase implements I_Callback
       }
    }
 
-
    /**
     * Tears down the fixture.
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   protected void tearDown()
-   {
+   protected void tearDown() {
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   /xmlBlaster/key/AGENT" +
                       "</key>";
@@ -105,13 +100,11 @@ public class TestSubXPath extends TestCase implements I_Callback
       senderConnection.disconnect(null);
    }
 
-
    /**
     * TEST: Subscribe to message number 3 with XPATH.
     * <p />
     */
-   public void testSubscribeXPath()
-   {
+   private void subscribeXPath() {
       if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
@@ -130,14 +123,12 @@ public class TestSubXPath extends TestCase implements I_Callback
       assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
-
    /**
     * TEST: Construct 5 messages and publish them.
     * <p />
     * The returned publishOid is checked
     */
-   public void testPublish()
-   {
+   private void doPublish() {
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       for (int counter= 1; counter <= numPublish; counter++) {
@@ -149,8 +140,8 @@ public class TestSubXPath extends TestCase implements I_Callback
                          "</AGENT>" +
                          "</key>";
          String content = "Content: message_" + counter;
-         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          try {
+            MsgUnit msgUnit = new MsgUnit(glob, xmlKey, content.getBytes(), "<qos></qos>");
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Success: Publishing #" + counter + " done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
@@ -163,24 +154,22 @@ public class TestSubXPath extends TestCase implements I_Callback
       }
    }
 
-
    /**
     * TEST: Construct 5 messages and publish them,<br />
     * the previous XPath subscription should match message #3 and send an update.
     */
-   public void testPublishAfterSubscribeXPath()
-   {
-      testSubscribeXPath();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+   public void testPublishAfterSubscribeXPath()  {
+      subscribeXPath();
+      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       numReceived = 0;
-      testPublish();
+      doPublish();
       waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
 
       numReceived = 0;
-      testPublish();
+      doPublish();
       waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
    }
@@ -190,8 +179,7 @@ public class TestSubXPath extends TestCase implements I_Callback
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " subId=" + updateQos.getSubscriptionId() + " ...");
 
       numReceived += 1;
@@ -211,8 +199,7 @@ public class TestSubXPath extends TestCase implements I_Callback
     * to true, or returns when the given timeout occurs.
     * @param timeout in milliseconds
     */
-   private void waitOnUpdate(final long timeout)
-   {
+   private void waitOnUpdate(final long timeout) {
       long pollingInterval = 50L;  // check every 0.05 seconds
       if (timeout < 50)  pollingInterval = timeout / 10L;
       long sum = 0L;
@@ -234,22 +221,19 @@ public class TestSubXPath extends TestCase implements I_Callback
    /**
     * Method is used by TestRunner to load these tests
     */
-   public static Test suite()
-   {
+   public static Test suite() {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        suite.addTest(new TestSubXPath(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
 
-
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestSubXPath
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubXPath</pre>
     */
-   public static void main(String args[])
-   {
+   public static void main(String args[]) {
       TestSubXPath testSub = new TestSubXPath(new Global(args), "TestSubXPath", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();

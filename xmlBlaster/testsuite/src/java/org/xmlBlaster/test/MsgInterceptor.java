@@ -12,7 +12,7 @@ import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.lang.InterruptedException;
 

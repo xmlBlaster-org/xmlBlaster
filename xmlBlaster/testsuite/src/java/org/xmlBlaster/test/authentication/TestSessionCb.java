@@ -25,7 +25,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -108,6 +108,7 @@ public class TestSessionCb extends TestCase
          assertInUpdate = null;
          con1.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                  log.info(ME, "****** Con1 update arrived" + updateKey.toXml() + updateQos.toXml());
                   assertInUpdate = glob.getId() + ": Did not expect message update in first handler";
                   fail(assertInUpdate); // This is routed to server, not to junit
                   return "";
@@ -122,10 +123,13 @@ public class TestSessionCb extends TestCase
          assertTrue(assertInUpdate, assertInUpdate == null);
          con1.shutdownCb();
 
+         log.info(ME, "############ Con1 is down");
+
          assertInUpdate = null;
          con2 = new XmlBlasterConnection(glob);
          con2.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                  log.info(ME, "****** Con2 update arrived" + updateKey.toXml() + updateQos.toXml());
                   assertInUpdate = glob.getId() + "Reveiving asynchronous message '" + updateKey.getOid() + "' in second handler";
                   log.info(ME, assertInUpdate);
                   return "";
@@ -141,17 +145,21 @@ public class TestSessionCb extends TestCase
          SubscribeReturnQos srDeadMessage = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                deadMessageCounter++;
-               log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
+               log.info(ME, "****** Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
                assertEquals("No dead letter received", Constants.OID_DEAD_LETTER, updateKey.getOid());
                return "";
             }
          });  // subscribe with our specific update handler
 
+         log.info(ME, "############ Con2 subscribed for msg and for DEAD letter, publishing now msg");
+
          PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          PublishReturnQos retQos = con2.publish(msgUnit);
          log.info(ME, "Published message oid=" + oid);
+
+         log.info(ME, "############ Con2 is waiting for msg and for DEAD letter ...");
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("DeadMessage is missing", 1, deadMessageCounter);

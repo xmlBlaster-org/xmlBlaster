@@ -17,7 +17,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -159,7 +159,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
 
       log.info(ME, "TEST 1: Testing unfiltered message");
       try {
-         con.publish(new MessageUnit("<key oid='MSG'/>", "1234567890".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", "1234567890".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -169,7 +169,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
 
       log.info(ME, "TEST 2: Testing filtered message");
       try {
-         con.publish(new MessageUnit("<key oid='MSG'/>", "12345678901".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", "12345678901".getBytes(), null));
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
@@ -179,7 +179,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
 
       log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
-         con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
+         con.publish(new MsgUnit("<key oid='MSG'/>", "123".getBytes(), null));
          waitOnUpdate(2000L, 1); // a dead message should come
          assertEquals("", Constants.OID_DEAD_LETTER, updateOid);
          log.info(ME, "SUCCESS: Dead message arrived");

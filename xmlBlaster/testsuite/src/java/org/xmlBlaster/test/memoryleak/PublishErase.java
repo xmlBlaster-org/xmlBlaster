@@ -11,7 +11,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.io.*;
 
@@ -62,7 +62,7 @@ public class PublishErase
             xmlKey =  "<key oid='" + lCount +
                            "'> <topic id='aaaa'/>" +
                            "</key>";
-            con.publish(new MessageUnit(xmlKey,b,qw.toXml()));
+            con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
 
             try { Thread.currentThread().sleep(5L); } catch( InterruptedException i) {}
 

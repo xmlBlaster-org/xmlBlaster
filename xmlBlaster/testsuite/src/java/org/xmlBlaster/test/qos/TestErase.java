@@ -15,7 +15,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
 import junit.framework.*;
@@ -124,8 +124,8 @@ public class TestErase extends TestCase implements I_Callback
       numReceived = 0;
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "'/>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos/>");
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
          publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

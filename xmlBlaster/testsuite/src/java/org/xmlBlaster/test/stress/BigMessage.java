@@ -19,7 +19,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 
@@ -134,7 +134,7 @@ public class BigMessage extends TestCase implements I_Callback
       log.info(ME, "Allocated message content with size=" + content.length/1000000 + " MB");
       try {
          PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
-         MessageUnit msgUnit = new MessageUnit("<key oid='" + oid + "'/>", content, "<qos/>");
+         MsgUnit msgUnit = new MsgUnit("<key oid='" + oid + "'/>", content, "<qos/>");
          stopWatch = new StopWatch();
          stopWatchRoundTrip = new StopWatch();
 

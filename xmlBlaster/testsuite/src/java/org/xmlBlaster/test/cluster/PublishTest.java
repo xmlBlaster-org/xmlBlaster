@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
 
@@ -117,7 +117,7 @@ public class PublishTest extends TestCase {
          PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
          pk.setDomain(domain);
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(glob, pk, contentStr, pq);
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
@@ -137,7 +137,7 @@ public class PublishTest extends TestCase {
 
          System.err.println("->Check if the message has reached the master node heron ...");
          GetKey gk = new GetKey(glob, oid);
-         MessageUnit[] msgs = heronCon.get(gk.toXml(), null);
+         MsgUnit[] msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
          assertTrue("Invalid message oid returned", msgs[0].getKey().indexOf(oid) > 0);
@@ -199,7 +199,7 @@ public class PublishTest extends TestCase {
          pk = new PublishKey(glob, oid, "text/plain", "1.0");
          pk.setDomain(domain);
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
@@ -255,7 +255,7 @@ public class PublishTest extends TestCase {
          System.err.println("->Check publish, frodo should not get it ...");
          pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(glob, pk, contentStr, pq);
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +

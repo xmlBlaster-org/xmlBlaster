@@ -21,7 +21,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -254,7 +254,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                      CbQueueProperty cbProp =loginQosW.getCbQueueProperty();
                      // algo is maxSubPerCon*4
                      cbProp.setMaxMsg(maxSubPerCon*1000);//This means we have a backlog of 1000 messages per subscriber as i normal when each con only have one subscriber!
-                     //cbProp.setMaxSize(4000);
+                     //cbProp.setMaxBytes(4000);
                      //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
                      //loginQosW.setSubjectCbQueueProperty(cbProp);
                      log.trace(ME,"Login qos: " +  loginQosW.toXml());
@@ -316,7 +316,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       String xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       try {
-         MessageUnit[] msgArr = oneConnection.get(xmlKey, qos);
+         MsgUnit[] msgArr = oneConnection.get(xmlKey, qos);
          String mem = new String(msgArr[0].getContent());
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
@@ -343,7 +343,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          stopWatch = new StopWatch();
          for (int i = 0; i < noToPub;i++) {
             senderContent = senderContent+"-"+i;
-            MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
             String tmp = oneConnection.publish(msgUnit).getKeyOid();
             assertEquals("Wrong publishOid1", publishOid1, tmp);
             log.info(ME, "Success: Publishing done for " + i +", returned oid=" + publishOid1);

@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -227,7 +227,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       try {
-         MessageUnit[] msgArr = oneConnection.get(xmlKey, qos);
+         MsgUnit[] msgArr = oneConnection.get(xmlKey, qos);
          String mem = new String(msgArr[0].getContent());
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
@@ -251,8 +251,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
                       "<key oid='" + publishOid1 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "</key>";
       String senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          stopWatch = new StopWatch();
          String tmp = oneConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
@@ -345,8 +345,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
          Client client = manyClients[ii];
          // The content changes, equal contents would not be updated to the subscriber without <forceUpdate/>
          String senderContent = "New content from publisher " + client.loginName;
-         MessageUnit msgUnit = new MessageUnit(pubKey, senderContent.getBytes(), pubQos);
          try {
+            MsgUnit msgUnit = new MsgUnit(pubKey, senderContent.getBytes(), pubQos);
             PublishReturnQos tmp = oneConnection.publish(msgUnit);
             assertEquals("Wrong publishOid2", publishOid2, tmp.getKeyOid());
          } catch(XmlBlasterException e) {

@@ -5,7 +5,7 @@ import org.xmlBlaster.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 
 import junit.framework.*;
@@ -23,7 +23,7 @@ import java.net.*;
 public class XmlBlasterClassloaderTest extends TestCase {
    protected Global glob;
    protected LogChannel log;
-   private MessageUnit msgUnit;     // a message to play with
+   private MsgUnit msgUnit;     // a message to play with
 
    public XmlBlasterClassloaderTest(String name) {
       super(name);
@@ -80,7 +80,7 @@ public class XmlBlasterClassloaderTest extends TestCase {
                            "   </TestLogin-AGENT>" +
                            "</key>";
          String senderContent = "Some content";
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          conn.publish(msgUnit);
 
       }

@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.4 2002/12/18 13:16:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -137,8 +137,8 @@ public class TestPtD extends TestCase implements I_Callback
                    "</qos>";
 
       senderContent = "Hi " + receiverName + ", i love you, " + senderName;
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
@@ -174,8 +174,8 @@ public class TestPtD extends TestCase implements I_Callback
                    "</qos>";
 
       senderContent = "Hi " + receiver2Name + ", i know you are listening, " + senderName;
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {

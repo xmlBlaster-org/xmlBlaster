@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
+Version:   $Id: TestPub.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -153,12 +153,11 @@ public class TestPub extends TestCase implements I_Callback
                       "</key>";
       PublishQos qosWrapper = new PublishQos(glob);
       qosWrapper.setReadonly(true);
-      String qos = qosWrapper.toXml(); // == "<qos><readonly /></qos>"
-
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
+      String qos = qosWrapper.toXml(); // == "<qos><topic readonly='true'/></qos>"
 
       if (first) {
          try {
+            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
@@ -170,6 +169,7 @@ public class TestPub extends TestCase implements I_Callback
       }
       else {
          try {
+            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             assertTrue("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
