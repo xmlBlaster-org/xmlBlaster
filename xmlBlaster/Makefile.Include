@@ -12,8 +12,8 @@
 #------------------------------------------------------------------------------
 MAKE_DIR=$(XMLBLASTER_HOME)/make
 SRC_DOCS_DIR=$(XMLBLASTER_HOME)/doc
-JAVADOC_DIR=$(XMLBLASTER_HOME)/javadoc
-JAR_DIR=$(XMLBLASTER_HOME)/bin
+JAVADOC_DIR=$(XMLBLASTER_HOME)/doc/api
+JAR_DIR=$(XMLBLASTER_HOME)/lib
 CLASS_TOP_DIR=$(XMLBLASTER_HOME)/classes
 
 ROOT_PACKAGE=$(XMLBLASTER_HOME_PACKAGE)
@@ -70,13 +70,13 @@ JAR= jar
 help:
 	@echo "xmlBlaster generation utility"
 	@echo "--> Usage: "
-	@echo "   make all   --> makes everything new"
-	@echo "   make clean --> deletes all classes/doc etc."
-
-#	@echo "   make doc   --> makes javadoc docus into directory $(JAVADOC_DIR)"  
-#	@echo "   make demo  --> makes everything new and starts a demo"
-#	@echo "   make test  --> makes everything new and starts a test scenario"
-#	@echo "   make jar   --> makes jar files of all packages into directory $(JAR_DIR)"
+	@echo "   make all       --> makes everything new"
+	@echo "   make clean     --> deletes all classes"
+	@echo "   make distclean --> deletes all classes/doc/jar"
+	@echo "   make javadoc   --> makes javadoc docus into directory $(JAVADOC_DIR)"  
+	@echo "   make demo      --> makes everything new and starts a demo"
+	@echo "   make test      --> makes everything new and starts a test scenario"
+	@echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
 
 all_SUB_DIRS:
 	@for i in $(SUB_DIRS) ; do \
