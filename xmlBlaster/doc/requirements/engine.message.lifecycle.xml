@@ -55,7 +55,7 @@
       <br />
 
 
-      <h3>
+      <h3 id="topicConditions">
       Internal conditions of a topic:
       </h3>
       <table border="1">
@@ -208,7 +208,7 @@
    <see type="REQ">engine.message</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
