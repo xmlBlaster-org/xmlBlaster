@@ -70,8 +70,9 @@ public interface I_Entry extends java.io.Serializable
    void removed(StorageId storageId);
 
    /**
-    * to be invoked with 'true' when the entry is put in a storage and with 'false' when the entry is
-    * removed from the storage.
+    * Is invoked by the storage implementation with 'true' when the entry is put
+    * in a storage and with 'false' when the entry is removed from the storage.
+    * The storage is for example a 'cache', a 'ram' or a 'jdbc' implementation.
     * @param stored 'true' if the entry will be put into the storage, 'false' if it is removed.
     */
    void setStored(boolean stored);
