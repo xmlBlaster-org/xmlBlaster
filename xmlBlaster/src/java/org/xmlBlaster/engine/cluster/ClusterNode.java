@@ -150,7 +150,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // new Global(args) !!!!!!!
          ConnectQos qos = new ConnectQos(glob, type, version, name, passwd);
          qos.setSessionTimeout(0L); // session lasts forever
-         //qos.clearSessions(true);   // We only login once, kill other (older) sessions of myself!
+         qos.clearSessions(true);   // We only login once, kill other (older) sessions of myself!
 
          // Login to other xmlBlaster cluster node, register for updates
          try {

@@ -181,7 +181,11 @@ public final class ClusterManager
    }
 
    /**
-    * @return null if no forwarding is done, if we are the master of this message ourself.
+    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    *         <pre>&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos></pre> if message is
+    *         tailed back because cluster node is temporary not available. The message will
+    *         be flushed on reconnect.<br />
+    *         Otherwise the normal publish return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
    public String forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
@@ -193,15 +197,14 @@ public final class ClusterManager
       PublishQos publishQos = msgWrapper.getPublishQos();
       MessageUnit msgUnit = msgWrapper.getMessageUnit();
 
-      return con.publish(msgUnit);
-      /*
+      try {
+         return con.publish(msgUnit);
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Problems with clustering of published message '" + msgWrapper.getUniqueKey() + "'");
-         e.printStackTrace();
-         return Constants.RET_FORWARD_ERROR; // "<qos><state>FORWARD_ERROR</state></qos>"
+         if (e.id.equals("TryingReconnect"))
+            return Constants.RET_FORWARD_WARNING; // "<qos><state id='FORWARD_WARNING'/></qos>"
+         throw e;
       }
-      */
    }
 
    /**
