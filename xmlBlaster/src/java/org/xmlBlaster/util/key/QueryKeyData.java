@@ -57,17 +57,11 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    public void setQueryType(String queryType) throws XmlBlasterException {
-      /*
-      if (queryType.equals(Constants.EXACT))
-         oid = queryString;
-      else if (queryType.equals(Constants.DOMAIN))
-         this.domain = queryString;
-      else if (queryType.equals(Constants.XPATH))
-         this.queryString = queryString;
-      else
-      */
-      if (!Constants.EXACT.equalsIgnoreCase(queryType) && !Constants.XPATH.equalsIgnoreCase(queryType))
-         throw new XmlBlasterException(ME, "Your queryType=" + queryType + " is invalid, use one of '" + Constants.EXACT + "' , '" + Constants.XPATH + "'");
+      if (!Constants.EXACT.equalsIgnoreCase(queryType) &&
+          !Constants.XPATH.equalsIgnoreCase(queryType) &&
+          !Constants.DOMAIN.equalsIgnoreCase(queryType))
+         throw new XmlBlasterException(ME, "Your queryType=" + queryType + " is invalid, use one of '"
+               + Constants.EXACT + "' , '" + Constants.XPATH + "', '" + Constants.DOMAIN + "'");
       this.queryType = queryType.toUpperCase();
    }
 
@@ -77,6 +71,17 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
     */
    public void setQueryString(String tags) {
       this.queryString = tags;
+   }
+
+   /**
+    * Same as setQueryString() but allows you to call it more than once
+    * the strings are concatenated. 
+    */
+   public void appendQueryString(String tags) {
+      if (this.queryString == null)
+         this.queryString = tags;
+      else 
+         this.queryString += tags;
    }
 
    public String getQueryString() {
