@@ -1,6 +1,6 @@
-NOTE: This demo is currently not supported !
-See ../README for XML-RPC demonstration.
+See ../README for a generic (and recommended) XML-RPC demonstration.
 
+See as well:   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
 
 To run this demo do the following:
 
