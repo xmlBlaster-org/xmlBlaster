@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.perl' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      XmlBlaster provides a simple client library written in Perl using XmlRpc.
+   </topic>
+   <description>
+     <p>
+     You find the perl client code in the directory <i>xmlBlaster/demo/perl/xmlrpc</i>.
+     Please use the file <i>XmlBlaster.pm</i> which provides access to
+     xmlBlaster in an easy way. See <i>xmlBlasterClient.pl</i> as an example.
+     </p>
+     <p>
+     Following access methods are supported:
+     </p>
+     <p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     </ul>
+     </p>
+   </description>
+
+   <example lang="PERL" type="HTML">
+      <p><a NAME="example"></a></p>
+      <p>Here is an example <i>hello.pl</i> showing raw access.</p>
+      <p>NOTE: You should prefer the example xmlBlasterClient.pl which
+      uses the perl modules of Cyrille for simpler xmlBlaster access.
+      </p>
+      <pre>
+      <a name="line1" href="#line1"> 1</a> <font color="#444444">#!/usr/bin/perl
+      <a name="line2" href="#line2"> 2</a> # Name: xmlBlaster/demo/perl/xmlrpc/hello.pl (xmlBlaster.org)
+      <a name="line3" href="#line3"> 3</a> # Invoke
+      <a name="line4" href="#line4"> 4</a> #   perl hello.pl http://myHost:8080/
+      <a name="line5" href="#line5"> 5</a> # if xmlBlaster runs on 'myHost'
+      <a name="line6" href="#line6"> 6</a> 
+      <a name="line7" href="#line7"> 7</a> </font><strong>use</strong> Frontier::Client;
+      <a name="line8" href="#line8"> 8</a> <strong>use</strong> MIME::Base64;
+      <a name="line9" href="#line9"> 9</a> <font color="#444444">#use String::Trim;
+      <a name="line10" href="#line10">10</a>     
+      <a name="line11" href="#line11">11</a> #$server_url = 'http://MyHost:8080/';
+      <a name="line12" href="#line12">12</a> </font><font color="#2040a0">$server_url</font> = <font color="#2040a0">@ARGV</font><font color="4444FF"><strong>[</strong></font>0<font color="4444FF"><strong>]</strong></font>;
+      <a name="line13" href="#line13">13</a> <strong>if</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">$#</font>ARGV == -1<font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+      <a name="line14" href="#line14">14</a>    <font color="#2040a0">$host</font> = `uname -n`;
+      <a name="line15" href="#line15">15</a>    <font color="#2040a0">$host</font> =~<font color="b000d0"> s/^\s*(.*?)\s*$/$1/</font>; <font color="#444444"># trim whitespace
+      <a name="line16" href="#line16">16</a>    </font><font color="#2040a0">$server_url</font> = <font color="#008000">&quot;http://&quot;</font> . <font color="#2040a0">$host</font> . <font color="#008000">&quot;:8080/&quot;</font>;  <font color="#444444"># guess where xmlBlaster is
+      <a name="line17" href="#line17">17</a> </font><font color="4444FF"><strong>}</strong></font>
+      <a name="line18" href="#line18">18</a> <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>Trying to connect to xmlBlaster server on <font color="#2040a0">$server_url</font> ...<font color="#77dd77">\n</font>&quot;</font>;
+      <a name="line19" href="#line19">19</a> 
+      <a name="line20" href="#line20">20</a> <font color="#444444"># Make an object to represent the XMLRPC server.
+      <a name="line21" href="#line21">21</a> </font><font color="#2040a0">$server</font> = Frontier::Client-&gt;<strong>new</strong><font color="4444FF"><strong>(</strong></font>url =&gt; <font color="#2040a0">$server_url</font><font color="4444FF"><strong>)</strong></font>;
+      <a name="line22" href="#line22">22</a> <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;Connected to xmlBlaster server on <font color="#2040a0">$server_url</font> <font color="#77dd77">\n</font>&quot;</font>;
+      <a name="line23" href="#line23">23</a> 
+      <a name="line24" href="#line24">24</a> <font color="#444444"># Call the remote server and get our result.
+      <a name="line25" href="#line25">25</a> </font><font color="#2040a0">$sessionId</font> = <font color="#2040a0">$server</font>-&gt;call<font color="4444FF"><strong>(</strong></font><font color="#008000">'authenticate.login'</font>, <font color="#008000">&quot;ben&quot;</font>, <font color="#008000">&quot;secret&quot;</font>,
+      <a name="line26" href="#line26">26</a>                                                  <font color="#008000">&quot;&lt;qos&gt;&lt;/qos&gt;&quot;</font>, <font color="#008000">&quot;&quot;</font><font color="4444FF"><strong>)</strong></font>;
+      <a name="line27" href="#line27">27</a> <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;Login success, got secret sessionId=<font color="#2040a0">$sessionId</font> <font color="#77dd77">\n</font>&quot;</font>;
+      <a name="line28" href="#line28">28</a> 
+      <a name="line29" href="#line29">29</a> <font color="#444444"># Call the server and get its current memory consumption.
+      <a name="line30" href="#line30">30</a> </font><font color="#2040a0">$queryKey</font> = <font color="#008000">&quot;&lt;key oid='__cmd:?totalMem'/&gt;&quot;</font>;
+      <a name="line31" href="#line31">31</a> <font color="#444444"># Call the server and query all messages with XPath:
+      <a name="line32" href="#line32">32</a> #$queryKey = &quot;&lt;key queryType='XPATH'&gt;/xmlBlaster&lt;/key&gt;&quot;;
+      <a name="line33" href="#line33">33</a> 
+      <a name="line34" href="#line34">34</a> </font><font color="#2040a0">@msgUnits</font> = <font color="#2040a0">$server</font>-&gt;call<font color="4444FF"><strong>(</strong></font><font color="#008000">'xmlBlaster.get'</font>, <font color="#2040a0">$sessionId</font>, <font color="#2040a0">$queryKey</font>, <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF"><strong>)</strong></font>;
+      <a name="line35" href="#line35">35</a> <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>Results for a get(<font color="#2040a0">$queryKey</font>):&quot;</font>;
+      <a name="line36" href="#line36">36</a> <strong>for</strong> <font color="#2040a0">$i</font> <font color="4444FF"><strong>(</strong></font>0 .. <font color="#2040a0">$#</font>msgUnits<font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+      <a name="line37" href="#line37">37</a>    <strong>for</strong> <font color="#2040a0">$j</font> <font color="4444FF"><strong>(</strong></font>0 .. <font color="#2040a0">$#</font><font color="4444FF"><strong>{</strong></font><font color="#2040a0">$msgUnits</font><font color="4444FF"><strong>[</strong></font><font color="#2040a0">$i</font><font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>}</strong></font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+      <a name="line38" href="#line38">38</a>       <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>-------------#<font color="#2040a0">$j</font>-------------------&quot;</font>;
+      <a name="line39" href="#line39">39</a>       <font color="#2040a0">$key</font> = <font color="#2040a0">$msgUnits</font><font color="4444FF"><strong>[</strong></font><font color="#2040a0">$i</font><font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>[</strong></font>j<font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>[</strong></font>0<font color="4444FF"><strong>]</strong></font>;
+      <a name="line40" href="#line40">40</a>       <font color="#2040a0">$contentBase64AndEncoded</font> = <font color="#2040a0">$msgUnits</font><font color="4444FF"><strong>[</strong></font><font color="#2040a0">$i</font><font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>[</strong></font>j<font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>[</strong></font>1<font color="4444FF"><strong>]</strong></font>;
+      <a name="line41" href="#line41">41</a>       <font color="#2040a0">$content</font> = decode_base64<font color="4444FF"><strong>(</strong></font><font color="#2040a0">$contentBase64AndEncoded</font>-&gt;value<font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font>;
+      <a name="line42" href="#line42">42</a>       <font color="#2040a0">$qos</font> = <font color="#2040a0">$msgUnits</font><font color="4444FF"><strong>[</strong></font><font color="#2040a0">$i</font><font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>[</strong></font>j<font color="4444FF"><strong>]</strong></font><font color="4444FF"><strong>[</strong></font>2<font color="4444FF"><strong>]</strong></font>;
+      <a name="line43" href="#line43">43</a>       <font color="a52a2a"><strong>print</strong></font> <font color="#2040a0">$key</font>;
+      <a name="line44" href="#line44">44</a>       <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>&lt;content&gt;&quot;</font> . <font color="#2040a0">$content</font> . <font color="#008000">&quot;&lt;/content&gt;<font color="#77dd77">\n</font>&quot;</font>;
+      <a name="line45" href="#line45">45</a>       <font color="a52a2a"><strong>print</strong></font> <font color="#2040a0">$qos</font>;
+      <a name="line46" href="#line46">46</a>       <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>-------------#<font color="#2040a0">$j</font>-------------------<font color="#77dd77">\n</font>&quot;</font>;
+      <a name="line47" href="#line47">47</a>    <font color="4444FF"><strong>}</strong></font>
+      <a name="line48" href="#line48">48</a> <font color="4444FF"><strong>}</strong></font>
+      <a name="line49" href="#line49">49</a> 
+      <a name="line50" href="#line50">50</a> <font color="#444444"># Try publishing a message:
+      <a name="line51" href="#line51">51</a> </font><font color="#2040a0">$returnQos</font> = <font color="#2040a0">$server</font>-&gt;call<font color="4444FF"><strong>(</strong></font><font color="#008000">'xmlBlaster.publish'</font>, <font color="#2040a0">$sessionId</font>,
+      <a name="line52" href="#line52">52</a>                            <font color="#008000">&quot;&lt;key oid='MyMessage'&gt;&lt;/key&gt;&quot;</font>,
+      <a name="line53" href="#line53">53</a>                            <font color="#008000">&quot;Hello world&quot;</font>, <font color="#008000">&quot;&lt;qos&gt;&lt;forceUpdate /&gt;&lt;/qos&gt;&quot;</font><font color="4444FF"><strong>)</strong></font>;
+      <a name="line54" href="#line54">54</a> <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>Result for a publish():<font color="#77dd77">\n</font>------------&quot;</font>, <font color="#2040a0">$returnQos</font>, <font color="#008000">&quot;<font color="#77dd77">\n</font>------------<font color="#77dd77">\n</font>&quot;</font>;
+      <a name="line55" href="#line55">55</a> 
+      <a name="line56" href="#line56">56</a> 
+      <a name="line57" href="#line57">57</a> <font color="#444444"># Logout from xmlBlaster
+      <a name="line58" href="#line58">58</a> </font><font color="#2040a0">$server</font>-&gt;call<font color="4444FF"><strong>(</strong></font><font color="#008000">'authenticate.logout'</font>, <font color="#2040a0">$sessionId</font><font color="4444FF"><strong>)</strong></font>;
+      <a name="line59" href="#line59">59</a> <font color="a52a2a"><strong>print</strong></font> <font color="#008000">&quot;<font color="#77dd77">\n</font>Logout done, bye.<font color="#77dd77">\n</font>&quot;</font>;
+</pre>
+   <p>Try it like this:</p>
+   <pre>
+ - Start xmlBlaster (with xmlrpc dumping switched on)
+
+      cd xmlBlaster
+      java -jar lib/xmlBlaster.jar -plugin/xmlrpc/debug true
+
+
+ - Run the client :
+
+      (1) cd xmlBlaster/demo/perl/xmlrpc
+
+      (2) hello.pl
+
+      It will try to lookup xmlBlaster on the same machine, or try
+
+      (3) perl hello.pl http://myHost:8080/
+
+      If xmlBlaster is running on 'myHost'
+   </pre>
+   </example>
+
+   <configuration where="client">
+   <p>You need the XML package and the Frontier XML-RPC module to run our Perl clients:</p>
+   <ul>
+      <li>XML Expat: 
+      Install expat (expat-1.95.2 at http://sourceforge.net/projects/expat/)
+      on my linux redhat 7.2 it was already installed.
+      </li>
+      <li>XML Parser:
+      perl module XML-Parser (XML-Parser.2.30 at http://search.cpan.org/search?dist=XML-Parser)
+      </li>
+      <li>XMLRPC driver:
+      xml-rpc implemeted by Frontier (thanks to Ken MacLeod).
+      Look at CPAN for this package or at <a href="http://bitsko.slc.ut.us/~ken/xml-rpc/">http://bitsko.slc.ut.us/~ken/xml-rpc/</a>
+      (Frontier-RPC-0.07b4.tar.gz)
+      </li>
+   </ul>
+   </configuration>
+
+   <see type="CODE" lang="PERL">hello.pl</see>
+   <see type="CODE" lang="PERL">xmlBlasterClient.pl</see>
+   <see type="CODE" lang="PERL">xmlBlaster/XmlBlaster.pm</see>
+   <see type="INTERNET" lang="PERL">http://www.xmlBlaster.org/xmlBlaster/demo/perl/xmlrpc/README</see>
+   <see type="REQ">interface</see>
+
+   <author><a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a></author>
+   <author><a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a></author>
+   <date>2003 09 26</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
