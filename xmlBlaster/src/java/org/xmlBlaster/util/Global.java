@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.26 2002/05/31 10:02:46 ruff Exp $
+Version:   $Id: Global.java,v 1.27 2002/06/10 13:21:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -40,7 +40,7 @@ public class Global implements Cloneable
 {
    private static Global firstInstance = null;
 
-   private final static String ME = "Global";
+   private String ME = "Global";
    protected String ip_addr = null;
    protected String id = "";
 
@@ -127,6 +127,7 @@ public class Global implements Cloneable
       if (this.id == null && getBootstrapAddress().getPort() > 0) {
          this.id = getBootstrapAddress().getAddress();
       }
+      this.ME = "Global-" + this.id;
    }
 
    protected void shallowCopy(org.xmlBlaster.util.Global utilGlob)
@@ -339,6 +340,7 @@ public class Global implements Cloneable
     */
    public void setId(String id) {
       this.id = id;
+      this.ME = "Global-" + this.id;
    }
 
    /**
