@@ -77,7 +77,7 @@
 
    EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld4");
 
-   con.erase(ek.toXml(), eq.toXml());
+   EraseRetQos er = con.erase(ek.toXml(), eq.toXml());
       </pre>
    <p>
    See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
@@ -97,7 +97,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
