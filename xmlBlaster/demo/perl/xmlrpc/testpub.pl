@@ -1,3 +1,4 @@
+# Invoke: perl testpub.pl http://myHost:8080
 use Frontier::Client;
 use MIME::Base64 ();
 
@@ -24,15 +25,15 @@ $sessionId = $server->call('authenticate.login', "testpubUser", "secret", $conne
 print "\nLogin success, got secret sessionId=$sessionId \n";
 
 my $publishKey="<key oid='' contentMime='text/xml'>".
-               " <service>post</service>".
-               " <type>request</type>".
-               " <id>123</id>".
+               "  <service>post</service>".
+               "  <type>request</type>".
+               "  <id>123</id>".
                "</key>",
 my $cdata="<event>testing</event>";
 my $publishQos="<qos>".
-               " <expiration lifeTime='0'/>".
-               " <isDurable>false</isDurable>".
-               " <topic destroyDelay='0'/>".
+               "  <expiration lifeTime='0'/>".
+               "  <isDurable>false</isDurable>".
+               "  <topic destroyDelay='0'/>".
                "</qos>";
 
 $message = $server->call('xmlBlaster.publish', $sessionId,
