@@ -3,13 +3,15 @@ Name:      EraseQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: EraseQoS.java,v 1.9 2002/05/16 23:31:58 ruff Exp $
+Version:   $Id: EraseQoS.java,v 1.10 2002/06/25 17:44:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.client.UpdateQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
 
@@ -23,6 +25,7 @@ import java.util.Vector;
 public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
 {
    private static String ME = "EraseQoS";
+   private final LogChannel log;
 
    private boolean inNotify = false; // parsing inside <notify> ?
    /** Default is to notify subscribers when their topic is erased */
@@ -32,10 +35,21 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Constructs the specialized quality of service object for a publish() call.
     */
-   public EraseQoS(String xmlQoS_literal) throws XmlBlasterException
+   public EraseQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Creating EraseQoS(" + xmlQoS_literal + ")");
+      log = glob.getLog("core");
+      if (log.CALL) log.call(ME, "Creating EraseQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
+   }
+
+
+   /**
+    * Constructs the specialized quality of service object for a cluster update() forward call.
+    */
+   public EraseQoS(Global glob, UpdateQos qos) throws XmlBlasterException
+   {
+      this.log = glob.getLog("core");
+      //this.notify = ;
    }
 
 
@@ -59,7 +73,7 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      if (log.TRACE) log.trace(ME, "Entering startElement for " + name);
 
       if (!inQos) return;
 
@@ -70,9 +84,9 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <notify> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <notify> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found notify tag");
+            // if (log.TRACE) log.trace(ME, "Found notify tag");
          }
          return;
       }
@@ -89,7 +103,7 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.endElementBase(uri, localName, name) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
       if(name.equalsIgnoreCase("notify")) {
          inNotify = false;
@@ -97,9 +111,9 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
          try {
             notify = new Boolean(tmp).booleanValue();
          } catch (NumberFormatException e) {
-            Log.error(ME, "Wrong format of <notify>" + tmp + "</notify>, expected true or false.");
+            log.error(ME, "Wrong format of <notify>" + tmp + "</notify>, expected true or false.");
          }
-         // if (Log.TRACE) Log.trace(ME, "Found notify = " + notify);
+         // if (log.TRACE) log.trace(ME, "Found notify = " + notify);
          character.setLength(0);
          return;
       }
@@ -147,11 +161,11 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
             "   <notify>true</notify>\n" +
             "</qos>\n";
 
-         EraseQoS qos = new EraseQoS(xml);
+         EraseQoS qos = new EraseQoS(new Global(args), xml);
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed" + e.toString());
       }
    }
 }
