@@ -325,6 +325,7 @@ public class Timeout extends Thread
     */
    public final void removeTimeoutListener(Timestamp key)
    {
+      if (key == null) return;
       synchronized (map) {
          Container container = (Container) map.remove(key);
          if (container != null) {
