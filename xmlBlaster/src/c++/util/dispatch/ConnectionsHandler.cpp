@@ -308,7 +308,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "publishOneway");
 
    try {
-      connection_->publishArr(msgUnitArr);
+      connection_->publishOneway(msgUnitArr);
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
