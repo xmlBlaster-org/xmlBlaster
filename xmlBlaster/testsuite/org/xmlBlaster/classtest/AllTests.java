@@ -7,7 +7,7 @@ import junit.framework.*;
  * <pre>
  * java classtest.AllTests
  * java -Djava.compiler= classtest.AllTests
- * java -Djava.compiler= junit.ui.TestRunner -noloading classtest.AllTests
+ * java -Djava.compiler= junit.swingui.TestRunner -noloading classtest.AllTests
  * </pre>
  */
 public class AllTests {
@@ -25,6 +25,7 @@ public class AllTests {
       suite.addTest(new TestSuite(classtest.EraseRetQosTest.class));
       suite.addTest(new TestSuite(classtest.SubscribeRetQosTest.class));
       suite.addTest(new TestSuite(classtest.PublishQosTest.class));
+      suite.addTest(new TestSuite(classtest.DisconnectQosTest.class));
       return suite;
    }
 }
