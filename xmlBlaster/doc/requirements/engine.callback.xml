@@ -143,6 +143,7 @@
       </p>
    </description>
    <example lang="Java">
+   This shows the callback part of a connect() or subscribe() QoS:
    <![CDATA[
    <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='5' delay='60000' useForSubjectQueue='true'>
       IOR:00044550005...
@@ -245,7 +246,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>
