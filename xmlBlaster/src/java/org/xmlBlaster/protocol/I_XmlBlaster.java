@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.4 2000/06/25 18:32:42 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.5 2000/09/14 18:21:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -38,28 +38,37 @@ public interface I_XmlBlaster
 
 
    /**
-    * Unsubscribe from messages.
+    * Unsubscribe from messages. 
     * <p />
+    * If you have parsed the xml string already, use this method.
+    *
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public void unSubscribe(String sessionId, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException;
    /**
     * Unsubscribe from messages.
     * <p />
+    * To pass the raw xml ASCII strings, use this method.
+    *
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public void unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQoS_literal) throws XmlBlasterException;
 
 
    /**
-    * Publish a message.
+    * Publish a message. 
     * <p />
+    * The MessageUnit contains the literal ASCII strings of xmlKey and publishQoS only,
+    * this method allows to pass the parsed objects of xmlKey/publishQoS as well (if you have them),
+    * to avoid double parsing.
+    *
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String publish(String sessionId, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException;
    /**
     * Publish a message.
     * <p />
+    * @param msgUnit The MessageUnit contains the literal ASCII strings of xmlKey and publishQoS and the binary content.
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException;
@@ -68,6 +77,9 @@ public interface I_XmlBlaster
    /**
     * Publish messages.
     * <p />
+    * This variant allows to pass an array of MessageUnit object, for performance reasons and 
+    * probably in future as an entity for transactions.
+    *
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException;
