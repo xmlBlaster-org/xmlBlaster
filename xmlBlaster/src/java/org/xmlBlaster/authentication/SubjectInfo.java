@@ -19,6 +19,8 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -56,6 +58,9 @@ public class SubjectInfo
    private boolean isShutdown = false;
    /** Cache for callback addresses for this subject queue */
    public CallbackAddress[] callbackAddressCache = null;
+
+   private NodeId nodeId = null;
+   private boolean determineNodeId = true;
    
 
    /**
@@ -150,6 +155,49 @@ public class SubjectInfo
       this.callbackAddressCache = null;
       //this.loginName = null;
       this.securityCtx = null;
+   }
+
+   /**
+    * @return not null if client is a cluster node, else null
+    */
+   public final NodeId getNodeId() throws XmlBlasterException {
+      if (determineNodeId) {
+
+         determineNodeId = false;
+      
+         if (loginName.startsWith(org.xmlBlaster.engine.RequestBroker.internalLoginNamePraefix))
+            return null; // don't check for internal logins
+
+         if (glob.useCluster()) {
+            // Is the client a well known, configured cluster node?
+            ClusterNode clusterNode = glob.getClusterManager().getClusterNode(loginName); // is null if not found
+            if (clusterNode != null) {
+               nodeId = clusterNode.getNodeId();
+            }
+            else {
+               // Does the client send a tag which marks it as a cluster node?
+
+               SessionInfo ses = getFirstSession();
+               if (ses != null) {
+                  if (ses.getConnectQos().isClusterNode())
+                     nodeId = new NodeId(loginName);
+               }
+            }
+         }
+         /*
+         if (!glob.useCluster() && connectQos.isCluster()) {
+            log.error(ME, "Internal mismatch: Clustering is switched off, but client '" + loginName + "' claims to be a cluster node");
+         }
+         */
+      }
+      return nodeId;
+   }
+
+   /**
+    * @return true if this client is an xmlBlaster cluster node
+    */
+   public boolean isCluster() throws XmlBlasterException {
+      return getNodeId() != null;
    }
 
    /**
