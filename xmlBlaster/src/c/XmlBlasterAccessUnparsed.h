@@ -31,20 +31,24 @@ extern "C" {
 #include <CallbackServerUnparsed.h>
 #include <pthread.h> /* For Windows and WinCE (downloaded from http://sources.redhat.com/pthreads-win32) */
 
-struct XmlBlasterAccessUnparsedStruct;
-typedef struct XmlBlasterAccessUnparsedStruct XmlBlasterAccessUnparsed;
+/*
+ NOTE: The struct name and the later typedef name are identical, we need this
+       to allow in C++ SocketDriver.h a forward declaration of the XmlBlasterAccessUnparsed*
+       pointer (to avoid inclusion of this complete header)
+*/
+struct XmlBlasterAccessUnparsed;
 
 /* Declare function pointers to use in struct to simulate object oriented access */
-typedef char *( * XmlBlasterAccessUnparsedConnect)(XmlBlasterAccessUnparsed *xb, const char * const qos, UpdateFp update, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterAccessUnparsedInitialize)(XmlBlasterAccessUnparsed *xa, UpdateFp update, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterAccessUnparsedDisconnect)(XmlBlasterAccessUnparsed *xb, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterAccessUnparsedPublish)(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
-typedef char *( * XmlBlasterAccessUnparsedSubscribe)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterAccessUnparsedUnSubscribe)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterAccessUnparsedErase)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef MsgUnitArr *( * XmlBlasterAccessUnparsedGet)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterAccessUnparsedPing)(XmlBlasterAccessUnparsed *xb, const char * const qos);
-typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(XmlBlasterAccessUnparsed *xb);
+typedef char *( * XmlBlasterAccessUnparsedConnect)(struct XmlBlasterAccessUnparsed *xb, const char * const qos, UpdateFp update, XmlBlasterException *exception);
+typedef bool  ( * XmlBlasterAccessUnparsedInitialize)(struct XmlBlasterAccessUnparsed *xa, UpdateFp update, XmlBlasterException *exception);
+typedef bool  ( * XmlBlasterAccessUnparsedDisconnect)(struct XmlBlasterAccessUnparsed *xb, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterAccessUnparsedPublish)(struct XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
+typedef char *( * XmlBlasterAccessUnparsedSubscribe)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterAccessUnparsedUnSubscribe)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterAccessUnparsedErase)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+typedef MsgUnitArr *( * XmlBlasterAccessUnparsedGet)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterAccessUnparsedPing)(struct XmlBlasterAccessUnparsed *xb, const char * const qos);
+typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(struct XmlBlasterAccessUnparsed *xb);
 typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 
 
@@ -53,7 +57,7 @@ typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_
  * All function pointers return exception.errorCode="user.notConnected" if connection
  * to xmlBlaster is lost.
  */
-struct Dll_Export XmlBlasterAccessUnparsedStruct {
+typedef struct Dll_Export XmlBlasterAccessUnparsed {
    int argc;
    char **argv;
    Properties *props;
@@ -79,7 +83,7 @@ struct Dll_Export XmlBlasterAccessUnparsedStruct {
    pthread_t callbackThreadId;
    pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
    pthread_cond_t responseCond;
-};
+} XmlBlasterAccessUnparsed;
 
 
 /**

@@ -80,7 +80,7 @@ typedef struct MsgRequestInfoStruct {
 
 #define XMLBLASTEREXCEPTION_ERRORCODE_LEN 56
 #define XMLBLASTEREXCEPTION_MESSAGE_LEN 1024
-typedef struct XmlBlasterExceptionStruct {
+typedef struct XmlBlasterException {
    bool remote; /* true if exception is from remote */
    char errorCode[XMLBLASTEREXCEPTION_ERRORCODE_LEN];
    char message[XMLBLASTEREXCEPTION_MESSAGE_LEN];
