@@ -3,7 +3,7 @@ Name:      XMLDBProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XML:DB Proxy
-Version:   $Id: XMLDBProxy.java,v 1.1 2002/01/13 22:14:56 goetzger Exp $
+Version:   $Id: XMLDBProxy.java,v 1.2 2002/01/14 01:02:46 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -21,7 +21,7 @@ import org.dbxml.client.xmldb.services.*;
 import org.dbxml.xml.dom.*;
 
 /**
- * This class provides the connection to XML:DB-databases like	Xindice (former dbXML) or eXist.
+ * This class provides the connection to XML:DB-databases like  Xindice (former dbXML) or eXist.
  * <p />
  * There is on driver ready for testing, XindiceDriver.
  *
@@ -130,6 +130,16 @@ public class XMLDBProxy {
       if (Log.TRACE) Log.trace(ME, "Collection '" + colName + "' removed");
    } // end of deleteCollection()
 
+   /**
+    * Allows to set the path of a collection and to open it.
+    *
+    * <p />
+    * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
+    * <p />
+    * This method stops with an Log.error, if the database is open already.
+    * <p />
+    * @param path The Path of the collection i.e. xmldb:dbxml:///db/xmlBlaster
+    */
    public void openCollection(String path) throws XmlBlasterException {
       if (Log.CALL) Log.call(ME, "invoking openCollection: " + path);
       this.setCollection(path);
@@ -137,7 +147,7 @@ public class XMLDBProxy {
    } // end of openCollection
 
    /**
-    * Allows to open a collection
+    * Allows to open a collection.
     *
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
@@ -408,7 +418,7 @@ public class XMLDBProxy {
       String[] docArray = null;
 
       try {
-      	docArray = col.listResources();
+         docArray = col.listResources();
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
       }
