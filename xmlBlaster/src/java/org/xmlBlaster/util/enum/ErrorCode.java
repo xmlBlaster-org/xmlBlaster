@@ -249,6 +249,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE = new ErrorCode("communication.noConnection.callbackServer.notavailable",
+         "The callback server is not available, this usually happens when the callback server is shutdown on client side",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.update", "interface.update")
+         }
+      );
+
    public static final ErrorCode COMMUNICATION_NOCONNECTION_POLLING = new ErrorCode("communication.noConnection.polling",
          "The remote connection is not established and we are currently polling for it.",
          new ResourceInfo[] {
