@@ -6,16 +6,21 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 
 /**
- * This client connects to xmlBlaster and invokes all available methods.
+ * This client connects to xmlBlaster and invokes all available methods. 
+ * <p />
  * Invoke: java HelloWorld3
  */
 public class HelloWorld3 implements I_Callback
 {
-   public HelloWorld3(String[] args) {
+   public HelloWorld3(Global glob) {
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(args);
+         XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         ConnectQos qos = new ConnectQos("simple", "1.0", "joe", "secret");
+         // Check if other name or password was given on command line:
+         String name = glob.getProperty().get("name", "HelloWorld3");
+         String passwd = glob.getProperty().get("passwd", "secret");
+
+         ConnectQos qos = new ConnectQos("simple", "1.0", name, passwd);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
 
@@ -28,8 +33,7 @@ public class HelloWorld3 implements I_Callback
          GetKeyWrapper gk = new GetKeyWrapper("HelloWorld3");
          MessageUnit[] msgs = con.get(gk.toXml(), null);
 
-         Log.info("", "xmlBlaster has currently " + new String(msgs[0].getContent()) +
-                      " bytes of free memory");
+         Log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) + "'");
 
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorld3");
@@ -69,7 +73,25 @@ public class HelloWorld3 implements I_Callback
       return "";
    }
 
+   /**
+    * Try
+    * <pre>
+    *   java HelloWorld3 -help
+    * </pre>
+    * for usage help
+    */
    public static void main(String args[]) {
-      new HelloWorld3(args);
+      Global glob = new Global();
+      
+      if (glob.init(args) != 0) { // Get help with -help
+         Log.plain("\nAvailable options:");
+         Log.plain("   -name               The login name [HelloWorld3].");
+         Log.plain("   -passwd             The login name [secret].");
+         XmlBlasterConnection.usage();
+         Log.usage();
+         Log.exit("", "Example: java HelloWorld3 -name Jeff\n");
+      }
+
+      new HelloWorld3(glob);
    }
 }
