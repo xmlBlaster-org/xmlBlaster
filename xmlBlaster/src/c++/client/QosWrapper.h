@@ -11,7 +11,6 @@ Comment:   Handling one QoS message
 #include <string>
 using namespace std;
 
-
 namespace org { namespace xmlBlaster {
 
 /**

@@ -15,6 +15,7 @@ Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 #define _CLIENT_UPDATEQOS_H
 
 #include <util/XmlQoSBase.h>
+
 using namespace std;
 
 namespace org { namespace xmlBlaster {

@@ -9,6 +9,7 @@ Comment:   Default handling of Sax callbacks
 #define _UTIL_SAXHANDLERBASE_H
 
 #include <string>
+#include <boost/lexical_cast.hpp>
 #include <sax/DocumentHandler.hpp> // xerces xml parser (www.apache.org)
 #include <sax/ErrorHandler.hpp>
 #include <sax/DTDHandler.hpp>
@@ -20,7 +21,9 @@ Comment:   Default handling of Sax callbacks
 #include <util/Log.h>
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
+
 using namespace std;
+using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -252,12 +255,7 @@ namespace util {
             if (index != -1) systemId = systemId.substr(index + 1);
             str += systemId;
          }
-         char buffer[128];
-         ostringstream out(buffer, 127);
-         out << str;
-         out << ":" << ex.getLineNumber() << ":" << ex.getColumnNumber() 
-             << (char)0;
-         return string(buffer);
+         return str + ":" + lexical_cast<string>(ex.getLineNumber()) + ":" + lexical_cast<string>(ex.getColumnNumber());
       }
 
       /**

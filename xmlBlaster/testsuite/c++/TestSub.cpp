@@ -3,9 +3,10 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.4 2002/01/31 21:45:00 ruff Exp $
 -----------------------------------------------------------------------------*/
 
+#include <boost/lexical_cast.hpp>
 #include <client/CorbaConnection.h>
 #include <util/StopWatch.h>
 #include <util/PlatformUtils.hpp>
@@ -20,6 +21,7 @@ Version:   $Id: TestSub.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
  */
 
 using namespace std;
+using boost::lexical_cast;
 namespace org { namespace xmlBlaster {
 
 class TestSub: public I_Callback {
@@ -107,9 +109,7 @@ private:
          log_.error(me(), string("XmlBlasterException: ") + string(e.reason));
       }
       if (strArr->length() != 1) {
-         char buffer[255];
-         ostringstream out(buffer, 255);
-         out << me() << "Erased " + strArr->length() << " messages:";
+         log_.error(me(), "Erased " + lexical_cast<string>(strArr->length()) + " messages");
       }
       senderConnection_->logout();
    }
@@ -277,10 +277,7 @@ private:
             return;
          }
       }
-      char buffer[256];
-      ostringstream out(buffer, 255);
-      out << "Timeout of " << timeout << " milliseconds occured" << (char)0;
-      log_.warn(me(), buffer);
+      log_.warn(me(), "Timeout of " + lexical_cast<string>(timeout) + " milliseconds occured");
    }
    void usage()
    {

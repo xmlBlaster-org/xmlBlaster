@@ -3,14 +3,13 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.2 2001/12/16 22:47:38 ruff Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.3 2002/01/31 21:44:48 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 ----------------------------------------------------------------------------*/
 
 #include <util/CompatibleCorba.h>
 
 using namespace std;
-
 
 /*
  * Further implementor specific macros which must be called after having

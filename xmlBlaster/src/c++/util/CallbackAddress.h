@@ -9,6 +9,7 @@ Comment:   Holding callback address string and protocol string
 #define _UTIL_CALLBACKADDRESS_H
 
 #include <string>
+
 using namespace std;
 
 namespace org { namespace xmlBlaster {

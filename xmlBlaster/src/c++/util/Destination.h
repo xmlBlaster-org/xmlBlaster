@@ -11,6 +11,7 @@ Comment:   Holding destination address attributes
 #include <string>
 #include <util/Log.h>
 #include <util/XMLString.hpp> // xerces: used to compare case insensitive str.
+
 using namespace std;
 
 //  package org.xmlBlaster.util;

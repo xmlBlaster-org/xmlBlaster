@@ -1,19 +1,3 @@
-// these are now defined in the Makefile
-// #define WITH_MICO
-// #define WITH_ORBACUS
-
-//  #ifdef WITH_ORBACUS
-//  #include <OB/CORBA.h>
-//  #include <OB/CosNaming.h>
-//  #include "xmlBlaster_skel.h"
-//  #include <string>
-//  #endif
-
-//  #ifdef WITH_MICO
-//  #include <mico/CosNaming.h>
-//  #include "xmlBlaster.h"
-//  #endif
-
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING

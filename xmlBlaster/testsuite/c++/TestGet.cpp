@@ -3,12 +3,11 @@ Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.4 2002/01/31 20:57:19 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.5 2002/01/31 21:45:00 ruff Exp $
 -----------------------------------------------------------------------------*/
 
-#include <sstream>
-#include <boost/lexical_cast.hpp>
 #include <string>
+#include <boost/lexical_cast.hpp>
 #include <util/StopWatch.h>
 #include <client/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
@@ -16,7 +15,6 @@ Version:   $Id: TestGet.cpp,v 1.4 2002/01/31 20:57:19 ruff Exp $
 
 using namespace std;
 using boost::lexical_cast;
-//using namespace boost;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -118,10 +116,7 @@ public:
          log_.error(me(), "XmlBlasterException: " + string(e.reason));
       }
       if (strArr->length() != 1) {
-         char buffer[256];
-         ostringstream out(buffer, 255);
-         out << "erased" << strArr->length() << "messages" << (char)0;
-         log_.error(me(), buffer);
+         log_.error(me(), "Erased " + lexical_cast<string>(strArr->length()) + " messages");
       }
       corbaConnection_->logout();
       // Give the server some millis to finish the iiop handshake ...

@@ -10,10 +10,12 @@
 
 #include <vector>
 #include <string>
-#include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <client/QosWrapper.h>
 #include <util/Destination.h>
+
 using namespace std;
+using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
    
@@ -156,14 +158,10 @@ namespace org { namespace xmlBlaster {
          
          for (int i=0; i<nmax; i++) ret += destVec_[i].toXml("    ") + "\n";
          
-         char buffer[512];
-         ostringstream out(buffer, 511);
          if (expires_ >= 0) 
-            out << "   <expires>\n      " << expires_ << "\n   </expires>\n";
+            ret += "   <expires>\n      " + lexical_cast<string>(expires_) + "\n   </expires>\n";
          if (erase_ >= 0) 
-            out << "   <erase>\n      " << erase_ << "\n   </erase>\n";
-         out << (char)0;
-         ret += buffer;
+            ret += "   <erase>\n      " + lexical_cast<string>(erase_) + "\n   </erase>\n";
          if (isDurable_  ) ret += "   <isDurable />\n";
          if (forceUpdate_) ret += "   <forceUpdate />\n";
          if (readonly_   ) ret += "   <readonly />\n";

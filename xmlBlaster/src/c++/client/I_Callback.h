@@ -23,7 +23,7 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.6 $
+    * @version $Revision: 1.7 $
     * @author $Author: ruff $
     */
    class I_Callback {

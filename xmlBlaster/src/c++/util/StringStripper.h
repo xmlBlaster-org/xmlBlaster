@@ -11,6 +11,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #include <string>
 #include <vector>
+
 using namespace std;
 
 namespace org { namespace xmlBlaster {

@@ -3,15 +3,16 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.4 2002/01/31 21:45:00 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
-#include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <client/CorbaConnection.h>
 #include <util/StopWatch.h>
 
 using namespace std;
+using boost::lexical_cast;
 
 /**
  * This client publishes 1000 different messages to measure RAM
@@ -101,10 +102,7 @@ public:
 //      stopWatch = new StopWatch();
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
-         char buffer[256];
-         ostringstream out(buffer, 255);
-         out << "<key oid='RamTest-" << (i+1) << "'>\n" << "</key>" << (char)0;
-         string xmlKey = buffer;
+         string xmlKey = "<key oid='RamTest-" + lexical_cast<string>(i+1) + "'>\n" + "</key>";
          string qos = "<qos></qos>";
          serverIdl::StringArr* strArr = 0;
          try {
@@ -142,21 +140,9 @@ public:
       serverIdl::MessageUnitArr msgUnitArr(NUM_PUBLISH);
       msgUnitArr.length(NUM_PUBLISH);
 
-      char buffer[128];
-
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
-         ostringstream out(buffer, 127);
-         out << i+1 << (char)0;
-//           string xmlKey = string("<key oid='RamTest-") + buffer
-//          + "' contentMime='"
-//          + contentMime_ + "' contentMimeExtended='" + contentMimeExtended_
-//          + "'>\n   <RamTest-AGENT id='192.168.124.10' subId='1' "
-//          + "type='generic'>      <RamTest-DRIVER id='FileProof' "
-//          + "pollingFreq='10'>      </RamTest-DRIVER>"
-//          + "   </RamTest-AGENT></key>";
-
-         string xmlKey = string("<key oid='RamTest-") + buffer + "'></key>";
-         senderContent_ = buffer;
+         string xmlKey = string("<key oid='RamTest-") + lexical_cast<string>(i+1) + "'></key>";
+         senderContent_ = lexical_cast<string>(i+1);
          serverIdl::MessageUnit msgUnit;
          CORBA::String_var help = CORBA::string_dup(xmlKey.c_str());
          msgUnit.xmlKey  = help;
@@ -213,11 +199,7 @@ public:
 
          double elapsed = 0.001 * stopWatch_.elapsed();
          long avg = (long)((double)NUM_PUBLISH / elapsed);
-         char buffer[1024];
-         ostringstream out(buffer, 1023);
-         out << "Success: Publishing done, " << NUM_PUBLISH;
-         out << " messages sent, average messages/second = " << avg << (char)0;
-         log_.info(me(), buffer);
+         log_.info(me(), "Success: Publishing done, " + lexical_cast<string>(NUM_PUBLISH) + " messages sent, average messages/second = " + lexical_cast<string>(avg));
          if (!publishOidArr) {
             log_.error(me(), "returned publishOidArr == null");
             assert(0);

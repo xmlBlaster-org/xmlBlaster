@@ -10,9 +10,10 @@ Comment:   Handling the Client data
 
 #include <sys/timeb.h>
 #include <string>
-#include <sstream>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
+using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -77,10 +78,7 @@ namespace util {
        * @return The elapsed time in a nice formatted string
        */
       string toString() const {
-         char buffer[256];
-         ostringstream out(buffer, 255);
-         out << "elapsed time: " << elapsed() << " milliseconds" << (char)0;
-         return string(buffer);
+         return string("elapsed time: ") + lexical_cast<string>(elapsed()) + " milliseconds";
       }
 
 

@@ -9,7 +9,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define _CLIENT_DEFAULTCALLBACK_H
 
 #include <string>
-#include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <util/Log.h>
 #include <client/I_Callback.h>
 #include <client/UpdateKey.h>
@@ -20,6 +20,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <generated/xmlBlaster.h>
 
 using namespace std;
+using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
    
@@ -95,13 +96,7 @@ namespace org { namespace xmlBlaster {
        */
       void update(const serverIdl::MessageUnitArr& msgUnitArr) {
 
-         if (log_.CALL) {
-            char buffer[256];
-            ostringstream out(buffer, 255);
-            out << "Receiving update of " << msgUnitArr.length();
-            out << " message ..." << (char)0;
-            log_.call(me(), buffer);
-         }
+         if (log_.CALL) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
          
          if (msgUnitArr.length() == 0) {
             log_.warn(me(), "Entering update() with 0 messages");
