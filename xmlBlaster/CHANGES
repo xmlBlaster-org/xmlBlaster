@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #12995 Changed subscription ID to be unique over time
+
  o #12988 Bugfix in script: CDATA in content are not passed through anymore and duplication of 
    content does not happen anymore 
 
