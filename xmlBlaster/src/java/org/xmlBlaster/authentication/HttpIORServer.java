@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.3 2000/02/03 09:05:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -15,14 +15,14 @@ import java.io.*;
 
 
 /**
- * Delivering the Authentication Service IOR over HTTP. 
+ * Delivering the Authentication Service IOR over HTTP.
  * <p />
  * This little HTTP server is always running in the xmlBlaster on the
  * default port 7609.<br />
  * Clients may access through this port the AuthServer IOR if they
  * don't want to use a naming service
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -77,10 +77,10 @@ class HandleRequest extends Thread
 
    /**
     */
-   public HandleRequest(Socket sock, String ior)
+   public HandleRequest(Socket sock, String iorStr)
    {
       this.sock = sock;
-      this.ior = ior;
+      this.ior = iorStr;
       start();
    }
 
@@ -95,7 +95,8 @@ class HandleRequest extends Thread
          String clientRequest = iStream.readLine();
          if (Log.TRACE && clientRequest != null)
             Log.trace(ME, "Ignoring data from client request: '" + clientRequest + "'");
-         oStream.write(ior.getBytes());
+         // Log.trace(ME, "Sending IOR='" + ior + "'");
+         oStream.write(ior.getBytes()); // This cuts away the IOR: string under JDK 1.1.x ??!!!
          iStream.close();
          oStream.close();
          sock.close();
