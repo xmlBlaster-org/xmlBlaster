@@ -38,8 +38,6 @@ public class DirtyReadTest extends TestCase {
    private XmlBlasterConnection heronCon, avalonCon, golanCon, frodoCon, bilboCon;
 
    private int updateCounterFrodo = 0;
-   private String oid = "PublishToBilbo-DirtyRead";
-   private String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS and has dirtyRead allowed
    private String contentStr = "Lets have another game.";
 
    private String assertInUpdate = null;
@@ -55,6 +53,9 @@ public class DirtyReadTest extends TestCase {
    protected void setUp() {
       log = glob.getLog(ME);
       log.info(ME, "Entering setUp(), test starts");
+
+      assertInUpdate = null;
+      updateCounterFrodo = 0;
 
       serverHelper = new ServerHelper(glob, log, ME);
 
@@ -75,6 +76,14 @@ public class DirtyReadTest extends TestCase {
       serverHelper.tearDown();
    }
 
+   public void testDirtyRead() {
+      runIt("RUGBY_NEWS"); // heron is master for RUGBY_NEWS and has dirtyRead allowed
+   }
+
+   public void testNoDirtyRead() {
+      runIt("SOCCER_NEWS"); // heron is master for SOCCER_NEWS WITHOUT dirty read!
+   }
+
    /**
     * We start all nodes as described in requirement
     * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html" target="others">cluster</a>
@@ -82,8 +91,12 @@ public class DirtyReadTest extends TestCase {
     * Than we try to access the message at heron and check if heron has not
     * updated one to frodo because of dirtyRead configured in heron.properties
     */ 
-   public void testDirtyRead() {
-      System.err.println("***DirtyReadTest: Publish a message to a cluster slave ...");
+   public void runIt(String domain) {
+      boolean isDirtyReadTest = domain.equals("RUGBY_NEWS");
+
+      System.err.println("***DirtyReadTest: Publish a message to a cluster slave isDirtyReadTest=" + isDirtyReadTest + " ...");
+
+      final String oid = isDirtyReadTest ? "PublishToBilbo-DirtyRead" : "PublishToBilbo-NODirtyRead";
 
       SubscribeKeyWrapper sk;
       SubscribeQosWrapper sq;
@@ -153,10 +166,16 @@ public class DirtyReadTest extends TestCase {
          msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
 
          assertEquals("Command failed", 1, msgs.length);
-         assertEquals("frodo has received updates from heron but should not because of dirty read",
+         if (isDirtyReadTest) {
+            assertEquals("frodo has received updates from heron but should not because of dirty read",
                       "0", msgs[0].getContentStr());
-         log.info(ME, "Success, the update was a dirty read as heron did not send it!");
-
+            log.info(ME, "Success, the update was a dirty read as heron did not send it!");
+         }
+         else {
+            assertEquals("frodo has not received updates from its master heron",
+                      "1", msgs[0].getContentStr());
+            log.info(ME, "Success, the update was NO dirty read as heron did send it!");
+         }
 
          System.err.println("Check if heron has got the message ...");
          msgs = heronCon.get("<key oid='" + oid + "'/>", null);
