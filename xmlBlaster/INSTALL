@@ -75,6 +75,12 @@ To simplify usage, set your CLASSAPTH:
   set CLASSPATH=<pathToXmlBlaster>\lib\xmlBlaster.jar     [Windows]
 
 
+Please study the files
+  HelloWorld.java, HelloWorld2.java, HelloWorld3.java
+in the directory
+  xmlBlaster/demo/javaclients
+
+
 But - if you want to adjust some properties
 or develop with xmlBlaster, please read the following section
 how to do it.
