@@ -347,7 +347,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          }
          memset(responseSocketDataHolder, 0, sizeof(SocketDataHolder));
          responseSocketDataHolder->type = requestInfoP->responseType;
-         responseSocketDataHolder->version = XMLBLASTER_VERSION;
+         responseSocketDataHolder->version = XMLBLASTER_SOCKET_VERSION;
          strncpy0(responseSocketDataHolder->requestId, requestIdStr, MAX_REQUESTID_LEN);
          strncpy0(responseSocketDataHolder->methodName, methodName, MAX_METHODNAME_LEN);
 

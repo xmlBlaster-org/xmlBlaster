@@ -13,6 +13,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <msgUtil.h>
 
 #define DEFAULT_CALLBACK_SERVER_PORT 7611
@@ -135,4 +139,8 @@ extern const char *callbackServerRawUsage();
  */
 typedef void * (*cbFp)(void *);
 
+
+#ifdef __cplusplus
+}
+#endif
 

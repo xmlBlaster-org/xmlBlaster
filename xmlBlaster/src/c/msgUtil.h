@@ -79,6 +79,8 @@ extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterExcepti
 extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
 extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
 
+const char *getXmlBlasterVersion();
+extern const char *getStackTrace(int maxNumOfLines);
 extern void freeMsgUnitData(MsgUnit *msgUnit);
 extern void freeMsgUnit(MsgUnit *msgUnit);
 extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);

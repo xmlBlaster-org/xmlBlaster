@@ -151,7 +151,7 @@ char *encodeSocketMessage(
    rawMsg = (char *)calloc(50 + MAX_SESSIONID_LEN + MAX_METHODNAME_LEN + dataLen, sizeof(char));
 
    *(rawMsg+MSG_FLAG_POS_TYPE) = msgType;   /* e.g. MSG_TYPE_INVOKE */
-   *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_VERSION;
+   *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_SOCKET_VERSION;
 
    currpos = MSG_POS_REQESTID;
    memcpy(rawMsg+currpos, requestId, strlen(requestId)+1); /* inclusive '\0' */
@@ -268,7 +268,7 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    }
 
    socketDataHolder->version = *(rawMsg+MSG_FLAG_POS_VERSION);
-   if (socketDataHolder->version != XMLBLASTER_VERSION) {
+   if (socketDataHolder->version != XMLBLASTER_SOCKET_VERSION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "[xmlBlasterSocket] ERROR Received response message of unsupported version=%c", socketDataHolder->version);
       if (debug) { printf(exception->message); printf("\n"); }

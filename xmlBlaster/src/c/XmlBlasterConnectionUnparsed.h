@@ -11,6 +11,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <msgUtil.h>
 
 struct XmlBlasterConnectionUnparsedStruct;
@@ -74,4 +78,9 @@ extern void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xmlBl
  * Help usage
  */
 extern const char *xmlBlasterConnectionUnparsedUsage();
+
+
+#ifdef __cplusplus
+}
+#endif
 

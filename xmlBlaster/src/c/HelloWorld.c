@@ -10,6 +10,10 @@ Compile:
   Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\*.c ws2_32.lib
   Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c
         socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
+
+  Linux with shared lib:
+        g++ -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I.
+            -Wl,-rpath=../../lib -D_REENTRANT  -lpthread
 Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>

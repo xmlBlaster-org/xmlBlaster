@@ -53,7 +53,7 @@ enum MSG_FLAG_POS_ENUM {
    MSG_POS_REQESTID
 };
 
-#define XMLBLASTER_VERSION 49
+#define XMLBLASTER_SOCKET_VERSION 49
 
 
 extern ssize_t writen(int fd, char *ptr, size_t nbytes);

@@ -12,12 +12,70 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <ctype.h>
 #include "msgUtil.h"
 
+#ifdef _ENABLE_STACK_TRACE_
+# include <execinfo.h>
+#endif
+
 #ifdef _WINDOWS
 #  include <Winsock2.h> /* gethostbyname() */
 #else
 #  include <netdb.h>  /* gethostbyname_re() */
 #  include <errno.h>  /* gethostbyname_re() */
 #endif
+
+/**
+ * @return e.g. "0.848"
+ */
+const char *getXmlBlasterVersion()
+{
+   /* Is replaced by xmlBlaster/build.xml ant task */
+   return "@version@";
+}
+
+/**
+ * Add for GCC compilation: "-rdynamic -export-dynamic -D_ENABLE_STACK_TRACE_"
+ * @return The stack trace, you need to free() it.
+ */
+const char *getStackTrace(int maxNumOfLines)
+{
+#ifdef _ENABLE_STACK_TRACE_
+   int i;
+   void** arr = (void **)calloc(maxNumOfLines, sizeof(void *));
+   /*
+   > +Currently, the function name and offset can only be obtained on systems
+   > +that use the ELF binary format for programs and libraries.
+   Perhaps a reference to the addr2line program can be added here.  It
+   can be used to retrieve symbols even if the -rdynamic flag wasn't
+   passed to the linker, and it should work on non-ELF targets as well.
+   o  Under linux, gcc interprets it by setting the 
+      "-export-dynamic" option for ld, which has that effect, according
+      to the linux ld manpage.
+
+   o Under IRIX it's ignored, and the program's happy as a clam.
+
+   o Under SunOS-4.1, gcc interprets it by setting the -dc -dp
+      options for ld, which again forces the allocation of the symbol
+      table in the code produced (see ld(1) on a Sun).
+   */
+   int bt = backtrace(arr, maxNumOfLines);
+   char** list = (char **)backtrace_symbols(arr, bt); /* malloc the return pointer, the entries don't need to be freed */
+   char *ret = strcpyAlloc("");
+   for (i=0; i<bt; i++) {
+      if (list[i] != NULL) {
+         strcatAlloc(&ret, list[i]);
+         strcatAlloc(&ret, "\n");
+      }
+   }
+   free(list);
+   free(arr);
+   if (strlen(ret) < 1) {
+      strcatAlloc(&ret, "Creation of stackTrace failed");
+   }
+   return ret;
+#else
+   return strcpyAlloc("No stack trace provided in this system");
+#endif
+}
 
 /**
  * Frees everything inside MsgUnitArr and the struct MsgUnitArr itself

@@ -549,6 +549,12 @@ int main(int argc, char** argv)
       XmlBlasterAccessUnparsed *xa = 0;
       bool debug = false;
 
+      /*
+      const char *tmp = getStackTrace(20);
+      printf("[client] stackTrace=%s\n", tmp);
+      free(tmp);
+      */
+
 #     ifdef PTHREAD_THREADS_MAX
          printf("[client] Try option '-help' if you need usage informations, max %d"
                 " threads per process are supported on this OS\n", PTHREAD_THREADS_MAX);

@@ -16,10 +16,14 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <msgUtil.h>
 #include <XmlBlasterConnectionUnparsed.h>
 #include <CallbackServerUnparsed.h>
-#include <pthread.h> /* For Windows and WinCE download them from http://sources.redhat.com/pthreads-win32 */
+#include <pthread.h> /* For Windows and WinCE (downloaded from http://sources.redhat.com/pthreads-win32) */
 
 struct XmlBlasterAccessUnparsedStruct;
 typedef struct XmlBlasterAccessUnparsedStruct XmlBlasterAccessUnparsed;
@@ -80,4 +84,8 @@ extern void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAcc
  * Help usage
  */
 extern const char *xmlBlasterAccessUnparsedUsage();
+
+#ifdef __cplusplus
+}
+#endif
 
