@@ -56,7 +56,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    private Timeout expiryTimer = new Timeout("TelnetSessionTimer");
    private Timestamp timerKey = null;
-   private long sessionTimeout = 600000L; // autologout after 10 min
+   private long sessionTimeout = 3600000L; // autologout after 1 hour
 
    private ConnectionServer connectionServer = null;
 
