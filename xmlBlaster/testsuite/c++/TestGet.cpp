@@ -3,10 +3,11 @@ Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
+Version:   $Id: TestGet.cpp,v 1.4 2002/01/31 20:57:19 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <string>
 #include <util/StopWatch.h>
 #include <client/CorbaConnection.h>
@@ -14,6 +15,8 @@ Version:   $Id: TestGet.cpp,v 1.3 2002/01/31 20:34:55 ruff Exp $
 #include <client/PublishQosWrapper.h>
 
 using namespace std;
+using boost::lexical_cast;
+//using namespace boost;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -204,9 +207,7 @@ public:
     */
    void testGetMany() {
       int num = 200;
-      ostringstream out;
-      out <<  "Get " << num;
-      log_.info(me(), out.str() + " not existing messages ...");
+      log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages ...");
       string xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       string qos    = "<qos></qos>";
       for (int i=0; i < num; i++) {
@@ -221,7 +222,7 @@ public:
             log_.info(me(), string("Success, got XmlBlasterException for trying to get unknown message: ") + string(e.reason));
          }
       }
-      log_.info(me(), out.str() + " not existing messages done");
+      log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages done");
    }
 
    void usage()
