@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.5 2000/04/26 21:34:40 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.6 2000/05/05 16:57:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -180,7 +180,7 @@ public class BrowserTest extends HttpServlet
             out.println("<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>");
             out.println("<meta http-equiv='Pragma' content='no-cache'>");
             // the polling variant every 2 sec:
-            out.println("<meta http-equiv='refresh' content='2;URL=BrowserTest'>");
+            out.println("<meta http-equiv='refresh' content='2;URL=/servlets/BrowserTest?mode=poll'>");
             out.println("<TITLE>Hello World</TITLE>");
             out.println("</HEAD>");
             out.println("<BODY>");
