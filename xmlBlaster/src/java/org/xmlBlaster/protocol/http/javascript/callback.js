@@ -2,8 +2,7 @@
 Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
-Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.7 2000/03/21 00:13:12 kkrafft2 Exp $
+Author:    konrad.krafft@doubleslash.de ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -304,7 +303,7 @@ function fireMessageUpdateQueue()
    }
 
    //showListener();
-   
+
    messageQueue.length = 0;
 
 }
@@ -341,9 +340,9 @@ function fireMessageUpdateEvent( message )
 //---------------------------------------------------------------------------------------------
 function update( updateKey, content, updateQoS)
 {
-    var updateKey_d 	= unescape( updateKey.replace(/\+/g, " ") );
-    var content_d 	= unescape( content.replace(/\+/g, " ") );
-    var updateQoS_d 	= unescape( updateQoS.replace(/\+/g, " ") );
+    var updateKey_d     = unescape( updateKey.replace(/\+/g, " ") );
+    var content_d       = unescape( content.replace(/\+/g, " ") );
+    var updateQoS_d     = unescape( updateQoS.replace(/\+/g, " ") );
 
    var key = new UpdateKey(updateKey_d);
    var qos = new UpdateQos(updateQoS_d);

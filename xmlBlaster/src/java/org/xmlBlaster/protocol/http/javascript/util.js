@@ -2,8 +2,7 @@
 Name:      util.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript utility objects
-Author:    ruff@swand.lake.de
-Version:   $Id: util.js,v 1.4 2000/03/21 00:13:12 kkrafft2 Exp $
+Author:    ruff@swand.lake.de konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 
 /**
