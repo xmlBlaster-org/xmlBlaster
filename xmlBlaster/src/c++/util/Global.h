@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.32 2004/04/30 08:23:36 ruff Exp $
+Version:   $Id: Global.h,v 1.33 2004/05/19 08:44:19 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -76,7 +76,7 @@ private:
     * pattern.
     */
    Global();
-   Global(const Global &global);
+   // Global(const Global &global);
    Global& operator =(const Global &);
    ~Global();
 
@@ -91,6 +91,12 @@ private:
    }
 
 public:
+   /**
+    * Use this copy constructor with extreme care. Particularly make sure that
+    * this object is destroyed before the managed global from which it has been
+    * copied.
+    */
+   Global(const Global &global);
 
    /**
     * Returns the length of getArgs()
