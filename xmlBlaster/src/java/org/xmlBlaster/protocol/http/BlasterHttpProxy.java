@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.15 2000/05/18 17:20:01 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.16 2000/05/19 15:19:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class BlasterHttpProxy
 {
@@ -166,7 +166,7 @@ public class BlasterHttpProxy
     */
    public static CorbaConnection getCorbaConnection(HttpServletRequest req, String sessionId) throws XmlBlasterException
    {
-      if (sessionId == null && !req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
+      if (sessionId == null && req != null && !req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
          throw new XmlBlasterException(ME+".NoCookies", "Sorry, your browser\n" +
             "    " + req.getHeader("User-Agent") + "\n" +
             "does not support 'cookies or has switched them off.\n" +
