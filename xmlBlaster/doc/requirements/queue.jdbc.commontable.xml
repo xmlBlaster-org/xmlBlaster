@@ -99,9 +99,10 @@ CREATE TABLE ${Entries} (dataId ${longint},
 
      <pre>
 StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,
-                         nodeTable=XMLBLASTERNODES,
-			 queueTable=XMLBLASTERQUEUES,
-			 entryTable=XMLBLASTERENTRIES,
+                         nodesTableName=NODES,
+			 queuesTableName=QUEUES,
+			 entriesTableName=ENTRIES,
+			 tableNamePrefix=XB,
 			 dbAdmin=true
      </pre>
      <table border="1">
@@ -111,19 +112,28 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
 	  <td><b>comment</b></td>
 	</tr>
 	<tr>
-	  <td>nodeTable</td>
-	  <td>$strippedNodeId + "NODES"</td>
-	  <td>the name for the table containing the cluster nodes.</td>
+	  <td>nodeTableName</td>
+	  <td>NODES</td>
+	  <td>the name postfix for the table containing the cluster nodes.</td>
 	</tr>
 	<tr>
-	  <td>queueTable</td>
-	  <td>$strippedNodeId + "QUEUES"</td>
-	  <td>the name for the table containing the queues.</td>
+	  <td>queueTableName</td>
+	  <td>QUEUES</td>
+	  <td>the name postfix for the table containing the queues.</td>
 	</tr>
 	<tr>
-	  <td>entryTable</td>
-	  <td>$strippedNodeId + "ENTRIES"</td>
-	  <td>the name for the table containing the entries.</td>
+	  <td>entriesTableName</td>
+	  <td>ENTRIES</td>
+	  <td>the name postfix for the table containing the entries.</td>
+	</tr>
+	<tr>
+	  <td>tableNamePrefix</td>
+	  <td>XB</td>
+	  <td>the name prefix for the table containing the entries. Note that the complete names for the 
+	      tables are created by adding the tableNamePrefix to the names. So if you specify 
+	      <i>nodeTableName=NODES</i> and <i>tableNamePrefix=XB_</i> you will get the name of the table 
+	      to be <i>XB_NODES</i>.
+	  </td>
 	</tr>
 	<tr>
 	  <td>dbAdmin</td>
@@ -148,7 +158,7 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2003 01 28</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
