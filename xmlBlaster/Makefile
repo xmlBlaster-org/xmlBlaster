@@ -56,3 +56,6 @@ jar: all
 test: all
 	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test )
 
+test-console: all
+	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test-console )
+
