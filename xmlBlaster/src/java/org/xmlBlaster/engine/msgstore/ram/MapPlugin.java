@@ -37,13 +37,8 @@ public final class MapPlugin implements I_Map, I_Plugin
    private LogChannel log;
    private boolean isShutdown = false;
    private long sizeInBytes;
-   private long totalReferenceCount;
    private long durableSizeInBytes;
    private long numOfDurableEntries;
-
-   public long getTotalReferenceCount() {
-      return this.totalReferenceCount;
-   }
 
    /**
     * Is called after the instance is created.
@@ -121,7 +116,6 @@ public final class MapPlugin implements I_Map, I_Plugin
 
       String key = entry.getUniqueIdStr();
       synchronized (this.storage) {
-         this.totalReferenceCount++;
          Object old = this.storage.put(key, entry);
          this.sizeInBytes += entry.getSizeInBytes();
          if (entry.isDurable()) {
@@ -137,8 +131,6 @@ public final class MapPlugin implements I_Map, I_Plugin
          I_MapEntry entry = (I_MapEntry)this.storage.remove(mapEntry.getUniqueIdStr());
          if (entry == null)
             return 0;
-
-         this.totalReferenceCount--;
 
          if (entry.isDurable()) {
             this.numOfDurableEntries--;
@@ -161,7 +153,6 @@ public final class MapPlugin implements I_Map, I_Plugin
          long ret = (long)this.storage.size();
          this.storage.clear();
          this.sizeInBytes = 0L;
-         this.totalReferenceCount = 0L;
          this.durableSizeInBytes = 0L;
          this.numOfDurableEntries = 0L;
          return ret;

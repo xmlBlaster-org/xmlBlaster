@@ -46,9 +46,6 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
    private boolean storeNewDurableRecovery = false;
     */
    
-   private long totalReferenceCount;
-
-
    /**
     * Triggered by persistent store (JDBC) on lost connection
     * @see I_ConnectionListener#disconnected()
@@ -275,8 +272,6 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
             }
          }
 
-         // ???? this.totalReferenceCount++;
-
          if (spaceLeft(mapEntry, this.transientStore) == null) {
             this.transientStore.put(mapEntry);
          }
@@ -373,7 +368,6 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
          if (mapEntry.isDurable() || (num == 0 && numSwapped() > 0)) {
             num2 = this.persistentStore.remove(mapEntry);
          }
-         this.totalReferenceCount -= num;
          return Math.max(num, num2);
       }
    }
@@ -573,9 +567,5 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
       }
       this.transientStore.destroy();
       if (e != null) throw e;
-   }
-
-   public long getTotalReferenceCount() {
-      return this.totalReferenceCount;
    }
 }

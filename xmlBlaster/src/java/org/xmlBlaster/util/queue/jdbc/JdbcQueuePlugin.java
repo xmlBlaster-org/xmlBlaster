@@ -831,7 +831,6 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
          this.numOfBytes = 0L;
          this.numOfDurableEntries = 0L;
          this.numOfDurableBytes = 0L;
-         this.totalReferenceCount = 0L; // I_Map
          return ret.countEntries;
       }
       catch (SQLException ex)
@@ -941,12 +940,6 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /////////////////////////// I_Map implementation ///////////////////////
-   private long totalReferenceCount;
-
-   public long getTotalReferenceCount() {
-      return this.totalReferenceCount;
-   }
-
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       try {
          long[] idArr = new long[] { uniqueId };
@@ -969,7 +962,6 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+mapEntry+")");
       }
       synchronized (this.modificationMonitor) {
-         this.totalReferenceCount++;
          if (put((I_Entry)mapEntry))
             return 1;
 
@@ -980,7 +972,6 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
       int num = removeRandom(mapEntry);
       synchronized (this.modificationMonitor) {
-         this.totalReferenceCount -= num;
       }
       return num;
    }
