@@ -328,12 +328,12 @@ XMLUTF8Transcoder::transcodeFrom(const  XMLByte* const          srcData
 /*
 Converts from the internal XMLCh* encoding to the encoding of the service.
 Parameters:
-    srcData 	the source buffer to be transcoded
-    srcCount 	number of characters in the source buffer
-    toFill 	the destination buffer
-    maxBytes 	the max number of bytes in the destination buffer
-    charsEaten 	after transcoding, this will hold the number of chars that were processed from the source buffer
-    options 	options to pass to the transcoder that explain how to respond to an unrepresentable character
+    srcData     the source buffer to be transcoded
+    srcCount    number of characters in the source buffer
+    toFill      the destination buffer
+    maxBytes    the max number of bytes in the destination buffer
+    charsEaten  after transcoding, this will hold the number of chars that were processed from the source buffer
+    options     options to pass to the transcoder that explain how to respond to an unrepresentable character
 
 Returns:
     Returns the number of chars put into the target buffer 
@@ -378,6 +378,9 @@ XMLUTF8Transcoder::transcodeTo( const   XMLCh* const    srcData
    while(charsEatenFromSource < charsToRead); //charsEatenFromSource== ENCODERBUFFERSIZE || charsPutToTarget == ENCODERBUFFERSIZE);
 
    //log_.info(ME,"TRANSCODE DONE: got '" + result + "' ENCODERBUFFERSIZE= " + lexical_cast<string>(ENCODERBUFFERSIZE) + " charsEaten=" + lexical_cast<string>(charsEatenFromSource));
+
+   if (doTrim) StringTrim::trim(result);
+
    return result;
 }
 
