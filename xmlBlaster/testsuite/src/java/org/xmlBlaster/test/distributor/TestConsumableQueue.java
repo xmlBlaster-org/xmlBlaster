@@ -132,12 +132,19 @@ public class TestConsumableQueue extends TestCase {
    protected void setUp() {
       this.global = Global.instance();
       this.log = this.global.getLog("test");
+      responses.clear();
    }
 
    protected void tearDown() {
    }
+
    
-   public void testNormalFlow() {
+   /**
+    * Two subscribers log subcribe and then a publisher publishes
+    * Only one of the subscribers should get the message.
+    * This should test synchroneous distribution
+    */
+   public void testSubSubPub() {
       try {
          boolean consumable = true; 
          Client pub1 = new Client(this.global, "pub1");
@@ -150,8 +157,77 @@ public class TestConsumableQueue extends TestCase {
          
          assertEquals("wrong number of initial responses", 0, responses.size());
 
-         pub1.publish("firstMessage");
          synchronized(responses) {
+            pub1.publish("firstMessage");
+            responses.wait(5000L);
+            Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
+            assertEquals("wrong number of updates", 1, responses.size());
+         }
+         
+         sub1.shutdown(false);
+         sub2.shutdown(false);
+         pub1.shutdown(true);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue(false);
+      }
+   }
+
+   /**
+    * A publisher publishes and then one subscriber subcribe 
+    * The subscriber should get the message.
+    * This should test asynchroneous distribution
+    */
+   public void testPubSub() {
+      try {
+         boolean consumable = true; 
+         Client pub1 = new Client(this.global, "pub1");
+         pub1.init("testConsumableQueue", null, consumable);
+
+         pub1.publish("firstMessage");
+
+         Client sub1 = new Client(this.global, "sub1");
+         assertEquals("wrong number of initial responses", 0, responses.size());
+
+         synchronized(responses) {
+            sub1.init(null, "testConsumableQueue", consumable);
+
+            responses.wait(5000L);
+            Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
+            assertEquals("wrong number of updates", 1, responses.size());
+         }
+         
+         sub1.shutdown(false);
+         pub1.shutdown(true);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue(false);
+      }
+   }
+
+   /**
+    * A publisher publishes and then two subscribers log subcribe 
+    * Only one of the subscribers should get the message.
+    * This should test asynchroneous distribution
+    */
+   public void testPubSubSub() {
+      try {
+         boolean consumable = true; 
+         Client pub1 = new Client(this.global, "pub1");
+         pub1.init("testConsumableQueue", null, consumable);
+
+         pub1.publish("firstMessage");
+
+         Client sub1 = new Client(this.global, "sub1");
+         Client sub2 = new Client(this.global, "sub2");
+         assertEquals("wrong number of initial responses", 0, responses.size());
+
+         synchronized(responses) {
+            sub1.init(null, "testConsumableQueue", consumable);
+            sub2.init(null, "testConsumableQueue", consumable);
+
             responses.wait(5000L);
             Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
             assertEquals("wrong number of updates", 1, responses.size());
@@ -175,8 +251,18 @@ public class TestConsumableQueue extends TestCase {
    public static void main(String args[]) {
       TestConsumableQueue test = new TestConsumableQueue("TestConsumableQueue");
       test.prepare(args);
+
       test.setUp();
-      test.testNormalFlow();
+      test.testSubSubPub();
       test.tearDown();
+
+      test.setUp();
+      test.testPubSub();
+      test.tearDown();
+
+      test.setUp();
+      test.testPubSubSub();
+      test.tearDown();
+
    }
 }

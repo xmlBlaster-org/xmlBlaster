@@ -806,6 +806,9 @@ public final class TopicHandler implements I_Timeout
       if (isUnreferenced()) {
          toAlive();
       }
+      
+      // will be triggered by ConnectionStatusListener.toAlive() ..
+      if (this.subscriptionListener != null) return;  
 
       QueryQosData queryQos = sub.getQueryQosData();
       if (queryQos == null) {
@@ -958,15 +961,7 @@ public final class TopicHandler implements I_Timeout
       Set removeSet = null;
       for (int ii=0; ii<subInfoArr.length; ii++) {
          SubscriptionInfo sub = subInfoArr[ii];
-         if (sub == null) continue;
-         QueryQosData qos = sub.getQueryQosData();
-         if (qos == null) continue;
-         if (!qos.getWantLocal() && 
-              sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender()))
-            continue;
-         if (!qos.getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) {
-            continue;
-         }
+         if (!subscriberMayReceiveIt(sub, msgUnitWrapper)) continue;
          if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapper) < 1) {
             if (removeSet == null) removeSet = new HashSet();
             removeSet.add(sub); // We can't delete directly since we are in the iterator
@@ -1900,5 +1895,26 @@ public final class TopicHandler implements I_Timeout
          }
       }
    }
+   
+
+   public final boolean subscriberMayReceiveIt(SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper) {
+      if (sub == null) return false;
+      QueryQosData qos = sub.getQueryQosData();
+      if (qos == null) return false;
+      if (!qos.getWantLocal() && 
+           sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender())) return false;
+      if (!qos.getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) return false; 
+      if (sub.getSessionInfo() == null) return false;
+      return true;
+   }
+   
+
+
+
+
+
+
+
+
    
 }

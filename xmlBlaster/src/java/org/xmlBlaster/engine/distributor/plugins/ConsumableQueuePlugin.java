@@ -21,7 +21,6 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * ConsumableQueuePlugin
@@ -65,18 +64,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          int count = 0;
          for (int ii=0; ii<subInfoArr.length; ii++) {
             SubscriptionInfo sub = subInfoArr[ii];
-            if (sub == null) continue;
-                     QueryQosData qos = sub.getQueryQosData();
-            if (qos == null) continue;
-            if (!qos.getWantLocal() && 
-                 sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender()))
-               continue;
-            if (!qos.getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) {
-               continue;
-            }
-
-            // TODO synchronization
-            if (sub.getSessionInfo() == null) continue;
+            if (!this.topicHandler.subscriberMayReceiveIt(sub, msgUnitWrapper)) continue;
             if (!sub.getSessionInfo().hasCallback()) continue;
             if (sub.getSessionInfo().getDispatchManager() == null) continue;
             if (!sub.getSessionInfo().getDispatchManager().getDispatchConnectionsHandler().isAlive()) continue;
@@ -154,6 +142,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       if (this.log.CALL) this.log.call(ME, "onAddSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.addConnectionStatusListener(this);
+      wakeUp();
    }
    
    /**
@@ -166,9 +155,9 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       if (dispatchManager != null) dispatchManager.removeConnectionStateListener(this);
    }
 
-   synchronized public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      // TODO synchronization
-      if (this.log.CALL) this.log.call(ME, "toAlive");
+
+   synchronized private void wakeUp() {
+      if (this.log.CALL) this.log.call(ME, "wakeUp");
       if (this.status != SLEEPING) return;
       try {
          ArrayList lst = this.topicHandler.peekFromHistory(-1, -1L);
@@ -182,6 +171,11 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          ex.printStackTrace();
          this.log.error(ME, "toAlive: " + ex.getMessage());
       }
+   }
+
+   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+      if (this.log.CALL) this.log.call(ME, "wakeUp");
+      wakeUp();
    }
 
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
