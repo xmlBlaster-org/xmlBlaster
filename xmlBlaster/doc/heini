@@ -1,0 +1,17 @@
+total 84
+drwxr-xr-x    8 goetzger users        4096 Dec 22 13:45 .
+drwxr-xr-x   17 goetzger users        4096 Dec 21 17:58 ..
+-rw-r--r--    1 goetzger users           4 Dec  1  1999 .cvsignore
+-rw-r--r--    1 goetzger users         181 Jan 17  2001 BUGS
+drwxr-xr-x    2 goetzger users        4096 Dec 22 13:46 CVS
+-rw-r--r--    1 goetzger users         168 Sep  9 22:24 Change.callback
+-rw-r--r--    1 goetzger users         959 Nov 15  2000 LICENSE
+-rw-r--r--    1 goetzger users       25273 Oct 11  2000 LICENSE-LGPL
+-rw-r--r--    1 goetzger users         400 Mar 25  2000 Makefile
+-rw-r--r--    1 goetzger users         794 Oct 11  2000 ROADMAP
+drwxr-xr-x    7 goetzger users        4096 Apr 27  2001 api
+-rw-r--r--    1 goetzger users           0 Dec 22 13:53 heini
+drwxr-xr-x    4 goetzger users        4096 Aug 20 21:57 howto
+drwxr-xr-x    3 goetzger users        4096 Oct 10 19:54 requirements
+drwxr-xr-x    3 goetzger users        4096 Feb 14  2001 whitepaper
+drwxr-xr-x    3 goetzger users        4096 Feb 14  2001 xmlBlaster
