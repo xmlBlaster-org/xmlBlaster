@@ -21,6 +21,8 @@ BUGS:
 
 
 DONE:
+  - Bugfix for similar XPath subscriptions of many clients
+
   - Bugfix for volatile message deletion with multiple subscribers
 
   - Sepcific logging, examples:
