@@ -802,7 +802,7 @@ final public class Authenticate implements I_RunlevelListener
       // even the corba client should get a communication exception when the server is shutting down
       // (before this change he was getting "access denided" since the sessions were already killed).
       /* Removed check, Marcel 2003-03-26: This should be handled by loading specific plugins
-         in xmlBlasterPlugin.xml
+         in xmlBlasterPlugins.xml
       if (glob.getRunlevelManager().getCurrentRunlevel() < RunlevelManager.RUNLEVEL_STANDBY) {
          String text = "The run level " + RunlevelManager.toRunlevelStr(glob.getRunlevelManager().getCurrentRunlevel()) +
                        " of xmlBlaster is not handling any communication anymore. " + glob.getId() + ".";
