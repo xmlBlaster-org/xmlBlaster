@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.21 2002/08/12 12:54:35 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.22 2002/09/07 22:12:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -65,6 +65,18 @@ public class HandleClient extends Executor implements Runnable
       if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Schutdown connection ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
+
+      try {
+         if (sock != null) {
+            sock.close();
+            sock = null;
+         }
+      }
+      catch(Throwable e) {
+         log.warn(ME, e.toString());
+         e.printStackTrace();
+      }
+
    
       if (sessionId != null) {
          String tmp = sessionId;
