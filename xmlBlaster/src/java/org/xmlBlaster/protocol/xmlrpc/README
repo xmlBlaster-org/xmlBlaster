@@ -1,7 +1,5 @@
 This proxy allows clients to access xmlBlaster with XML-RPC.
 
-Not yet finished!
-
 See http://www.xmlrpc.com
 
 You need to download:
@@ -14,7 +12,18 @@ and add xmlrpc.jar to your CLASSPATH.
 
 
 Test the driver:
+================
 
+   $JAVA_WRAP -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.Main
+   java -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy
+
+   The $JAVA_WRAP is an environment variable which points to the correct java wrapper depending on 
+   which CORBA implementation you are using (it points to jaco for JacORB and to 
+   $XMLBLASTER_HOME/config/java_orbacus.sh for ORBACUS).
+
+
+To further Test the driver:
+===========================
    jaco -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.Main
 
    java -Dsax.driver=com.sun.xml.parser.Parser helma.xmlrpc.XmlRpcClient http://localhost:8080 authenticate.login "ben" "secret" "<qos></qos>" "mySessionId"
