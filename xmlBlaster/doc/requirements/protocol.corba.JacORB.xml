@@ -96,7 +96,14 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
          <tr>
             <td>ior.file</td>
             <td>-</td>
-            <td>Specify a file where to dump the IOR of the AuthServer (for client access).</td>
+            <td>Specify a file where to dump the IOR of the AuthServer (server side) and how to reach the server (for client access).</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ior</td>
+            <td>-</td>
+            <td>Specify the raw IOR string (for client access).</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
@@ -118,7 +125,7 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>
