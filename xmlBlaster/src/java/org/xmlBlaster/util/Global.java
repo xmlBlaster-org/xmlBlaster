@@ -294,6 +294,25 @@ public class Global implements Cloneable
    }
 
    /**
+    * Blocks until a key on the keyboard is hit. 
+    * Consumes multiple hits (for Windows DOS box)
+    * @param str If not null it will be printed on console with System.out
+    */
+   public static int waitOnKeyboardHit(String str) {
+      if (str != null) {
+         System.out.println(str);
+      }
+      int ret = 0;
+      try {
+         ret = System.in.read();
+         int num = System.in.available();
+         for(int i=0; i<num; i++)
+            System.in.read();
+      } catch(java.io.IOException e) {}
+      return ret;
+   }
+
+   /**
     * Our identifier, the cluster node we want connect to
     */
    protected void initId() {
