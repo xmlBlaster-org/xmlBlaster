@@ -1,5 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
-
+ 
+ o added a new class EncodableData (ClientProperty now extends from it)
+  
  o elimintated MsgTopicErrorHandler since used nowere
 
  o Changed build.xml for C and C++ compilation

@@ -47,7 +47,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
     */
    public MsgErrorInfo(Global glob, MsgQueueEntry[] msgQueueEntries, DispatchManager dispatchManager, Throwable throwable) {
       if (throwable == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException("MsgErrorInfo: xmlBlasterException may not be null");
       }
       this.msgQueueEntries = (msgQueueEntries == null) ? (new MsgQueueEntry[0]) : msgQueueEntries;

@@ -2,11 +2,9 @@ package org.xmlBlaster.test.classtest;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.enum.Constants;
 
-import junit.framework.*;
 import org.custommonkey.xmlunit.*;
 
 /**

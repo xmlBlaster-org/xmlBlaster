@@ -12,7 +12,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -107,7 +106,7 @@ public class SessionInfo implements I_Timeout
       if (securityCtx==null) {
          String tmp = "SessionInfo(securityCtx==null); A correct security manager must be set.";
          log.error(ME+".illegalArgument", tmp);
-         throw new XmlBlasterException(ME+".illegalArgument", tmp);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, tmp);
       }
       this.sessionInfoProtector = new SessionInfoProtector(this);
 

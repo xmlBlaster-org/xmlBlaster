@@ -3,13 +3,11 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.19 2003/12/07 11:57:14 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.20 2004/01/25 19:08:50 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import java.io.*;
 import org.xml.sax.*;
-import org.xml.sax.helpers.*;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 
@@ -87,7 +85,7 @@ public class XmlQoSBase extends SaxHandlerBase
       if (!inQos) {
          org.xmlBlaster.util.Global.instance().getLog("core").warn(ME, "Ignoring unknown element '" + name + "'.");
          character.setLength(0);
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          return true;
       }
       if (name.equalsIgnoreCase("clientProperty")) {
