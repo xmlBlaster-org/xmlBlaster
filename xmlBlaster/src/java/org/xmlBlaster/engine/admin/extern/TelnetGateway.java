@@ -114,7 +114,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    protected void finalize() {
       stopTimer();
-      expiryTimer.shutdown();
+      if (expiryTimer != null) expiryTimer.shutdown();
       disconnect();
    }
 
