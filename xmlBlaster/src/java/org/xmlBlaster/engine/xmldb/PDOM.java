@@ -125,11 +125,11 @@ public class PDOM
 
    
    
-   public final void delete(String key)
-   {
+   //public final void delete(String key)
+   //{
        /** Delete PMessageUnit in Cache. */
 //       _cache.delete(pmu.oid);
-   }
+  // }
 
 
 
