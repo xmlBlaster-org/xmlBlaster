@@ -3,7 +3,7 @@ Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine 
-Version:   $Id: PMessageUnit.java,v 1.4 2000/06/13 17:28:56 kron Exp $
+Version:   $Id: PMessageUnit.java,v 1.5 2000/06/13 17:50:29 kron Exp $
 Author:    manuel.kron@gmx.net 
 ------------------------------------------------------------------------------*/
 
@@ -28,7 +28,7 @@ public class PMessageUnit
       pubQos    = qos;
       sender    = send;
      
-      size = mu.size + qos.size + 2200;
+      size = mu.xmlKey.length() + mu.content.length  + qos.size + 2200;
    }
 
 }
