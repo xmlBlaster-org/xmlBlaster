@@ -3,7 +3,7 @@ Name:      TestXmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing xmldb
-Version:   $Id: TestXmlDb.java,v 1.3 2000/08/22 22:25:38 kron Exp $
+Version:   $Id: TestXmlDb.java,v 1.4 2000/08/23 12:30:52 kron Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -108,6 +108,60 @@ public class TestXmlDb extends TestCase
 
    public void testQuery()
    {
+      insertMsg("100");
+      insertMsg("101");
+      insertMsg("102");
+      Enumeration msgIter = xmldb.query("//key[@oid=\"101\"]");
+      PMessageUnit pmu=null;
+      while(msgIter.hasMoreElements())
+      {
+         pmu = (PMessageUnit)msgIter.nextElement();
+      }
+      if(pmu==null)
+      {
+         assert("Can't query with oid 101.",false);
+         return;
+      }
+      assertEquals("Query was not correct for oid 101.",new String("101"),pmu.oid);
+      xmldb.delete("100");
+      xmldb.delete("101");
+      xmldb.delete("102");
+   }
+
+   public void testInsertQuery()
+   {
+      for(int i=100;i<200;i++){
+         insertMsg(String.valueOf(i));
+      }
+      Enumeration msgIter = xmldb.query("//key");
+      PMessageUnit pmu=null;
+      int countMsg=0;
+      while(msgIter.hasMoreElements())
+      {
+         pmu = (PMessageUnit)msgIter.nextElement();
+         countMsg++;
+      }
+      assertEquals("Insert-Query-Test was failed.",new String("100"),String.valueOf(countMsg));
+      //Delete MessageUnits from xmldb
+      for(int i=100;i<200;i++){
+         xmldb.delete(String.valueOf(i));
+      }
+   }
+
+   public void testInsertMsgPerSecond()
+   {
+      StopWatch stop = new StopWatch();
+      for(int i=100;i<1100;i++){
+         insertMsg(String.valueOf(i));
+      }
+      if(stop.elapsed()<1000)
+      {
+         assert("Can't insert 1000 MessageUnits",false);
+      }else{
+         long msgSec = 1000 / (stop.elapsed()/1000L); 
+         Log.info(ME,"MessageUnits per Second by INSERT : "+String.valueOf(msgSec)+" Msg/sec.");
+      }
+      
    }
 
    /**
@@ -118,6 +172,9 @@ public class TestXmlDb extends TestCase
        TestSuite suite= new TestSuite();
        suite.addTest(new TestXmlDb("testGet"));
        suite.addTest(new TestXmlDb("testDelete"));
+       suite.addTest(new TestXmlDb("testQuery"));
+       suite.addTest(new TestXmlDb("testInsertQuery"));
+       suite.addTest(new TestXmlDb("testInsertMsgPerSecond"));
        return suite;
    }
 
@@ -135,6 +192,9 @@ public class TestXmlDb extends TestCase
       TestXmlDb testXmldb = new TestXmlDb("TestXmlDb");
       testXmldb.testGet();
       testXmldb.testDelete();
+      testXmldb.testQuery();
+      testXmldb.testInsertQuery();
+      testXmldb.testInsertMsgPerSecond();
       Log.exit(TestXmlDb.ME, "Good bye");
    } 
    
