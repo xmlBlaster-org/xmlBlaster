@@ -107,3 +107,8 @@ The path $HOME/NS_Ref must match the entry in jacorb.properties
 -  TestGet -ORBNamigAddr corbaname::localhost:7608#xmlBlaster-Authenticate.MOM
 -  TestGet -ORBNamigAddr corbaname:rir:/NameService#xmlBlaster-Authenticate.MOM
 
+From mico mailing list: You can use the IOR string
+directly using `-ORBNamingIOR IOR:....'. Second, you can put the IOR into
+a file, and then use `-ORBNamingIOR file:///where/is/that/file'.
+
+
