@@ -1,5 +1,8 @@
    XMLBLASTER LDAP HOWTO  09/2001 xmlBlaster@marcelruff.info
 
+   See http://www.xmlblaster.org/xmlBlaster/doc/requirements/security.ldap.html
+
+
 To get started with ldap authentication please
 setup an ldap server first.
 
