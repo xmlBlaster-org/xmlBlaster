@@ -185,8 +185,8 @@ string SessionQosData::toXml(const string& extraOffset, bool isClient) const
    if (!pubSessionId_.empty()) {
       ret += string("' publicSessionId='") + pubSessionId_;
    }
-		
-   if (isClient) ret += string("' name='")  + getSubjectId() + "'>\n";
+                
+   if (isClient) ret += string("' name='")  + getRelativeName() + "'>\n";
    else ret += string("' name='")  + getAbsoluteName() + "'>\n";
    ret += string("  <sessionId>") + getSessionId() + string("</sessionId>\n");
    ret += string("</session>\n");
