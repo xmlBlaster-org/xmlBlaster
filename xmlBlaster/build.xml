@@ -126,10 +126,11 @@ TODO
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
    <property name="cp.test" value="testsuite/org/xmlBlaster"/>
 
-   <property name="soaplib.dir" value="lib/org/xmlBlaster/protocol/soap/SoapDriver"/>
+   <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
+   <property name="soapdeploy.dir" value="./demo/soap"/>
+   <property name="soaplib.dir" value="lib/soap"/>
    <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
-   
-   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}"/>
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}:${cp.soap}"/>
 
 
    <!-- =================================================================== -->
@@ -342,7 +343,7 @@ TODO
             <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/OracleSqlFactory.java"/>
-            <exclude name="**/soap/**"/>
+            <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver -->
          </fileset>
       </copy>
 
@@ -351,6 +352,7 @@ TODO
       <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
+      <copy verbose="true" file="${soap.dir}/service.xml" tofile="${build.dest}/service.xml"/>
 
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
@@ -369,9 +371,15 @@ TODO
       <!-- include content of jutils.jar in xmlBlaster.jar -->
       <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
-      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,manifest.xmlBlaster"/>
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
+           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,manifest.xmlBlaster,*.xml"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
+
+      <echo message="Creating ${soapdeploy.dir}/webservices/${name}.sar"/>
+      <jar destfile="${soapdeploy.dir}/webservices/${name}.sar" manifest="${build.dest}/manifest.xmlBlaster"
+           basedir="${build.dest}"
+           includes="org/**/soap/*,service.xml"/>
    </target>
  
    <!-- =================================================================== -->
