@@ -187,31 +187,8 @@ End Module
            doe not seem to solve the problem entirely, so please stick to the SOCKET
            protocol until this issue is resolved.</li>
 
-         <li>Callback events don't work: They are fired in the Java bean
-           but never arrive in C#/VB.<br/>
-           Probable reasons:
-           <ul>
-            <li>I use the wrong code in C#/VB to get the event<br />
-            We can see in the object browser of Visual Studio following objects:
-            <pre>XmlScriptAccess.XmlScriptAccessSource_SinkHelper()
-XmlScriptAccess.XmlScriptAccessDispatch()
-XmlScriptAccess.XmlScriptAccessSource().update()</pre>
-            but how to use them??
-            </li>
-            <li>We could try an ActiveX control with VB 6 instead of with .net</li>
-            <li>The returned event is not multi threaded and needs to somehow enter
-                an event loop
-            </li>
-           </ul>
-           Any feedback of people knowing more about the Windows/ActiveX environment
-           is very welcome (please send it to xmlBlaster@marcelruff.info or to the xmlBlaster
-           mailing list).<br />
-           A not very smart work around could be to poll from VB/C# into java which
-           holds received messages in a list.
+         <li>Callback events don't have a return: How to transport the return value back?
          </li>
-
-         <li>How are XmlScriptAccess exceptions passed back to the VB/C# layer?
-           RuntimeExceptions arrive as expected</li>
      </ol>
    </todo>
 
@@ -224,6 +201,6 @@ XmlScriptAccess.XmlScriptAccessSource().update()</pre>
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 </requirement>
 
