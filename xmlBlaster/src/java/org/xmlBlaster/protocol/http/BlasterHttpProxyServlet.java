@@ -154,7 +154,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String sessionId = session.getId();
 
       ME += "-" + sessionId;
-      log.info(ME, "Entering servlet doGet() ...");
+      if (log.TRACE) log.trace(ME, "Entering servlet doGet() ...");
 
       if (sessionId == null) {
          PrintWriter out = res.getWriter();
