@@ -138,7 +138,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/connector.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaas.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jta-spec1_0_1.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/jms.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/javax.jms.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
    # JNDI, only needed for JDK 1.2, not for JDK 1.3
    CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/jndi-jdk1_3_1.jar
