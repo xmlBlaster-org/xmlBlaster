@@ -50,6 +50,12 @@ Changes for 0.x [200x-xx-xx]
    - Extended Property.cpp to replace ${...} variables from xmlBlaster.properties
    - Fixed duplicate holding of CallbackAddress
    - Fixed SAX parsing of literal priority in QoS
+   - Fixed wrong value when overwriting in Property.setProperty()
+   - Fixed memory leak of 8 bytes in SocketDriver wrapper class
+   - Fixed string bug in lexical_cast.h
+   - Fixed setting of 'if (log_.trace) ...' check for log4cpp embedding
+   - Fixed in SocketDriver plugin that all properties are passed to the
+     C SOCKET library instead of only the command line arguments
 
  o Fixed rare possible dead lock for PtP messages auto-creating subjectInfo
    and simultaneous login of this subject
@@ -62,10 +68,6 @@ Changes for 0.x [200x-xx-xx]
  o Tested on IBM s390: Linux 2.4.19-4 SMP s390
    Java client/server, C++ and C compiles (g++ 3.2.2) and runs fine
 
- o C++ client library:
-   - Fixed memory leak of 8 bytes in SocketDriver wrapper class
-   - Fixed string bug in lexical_cast.h
- 
  o AppletServlet is now processing binary data too (client class sends it 
    in the body of the request)
 
@@ -79,10 +81,6 @@ Changes for 0.x [200x-xx-xx]
                -1L takes all entries available in the callback RAM queue
                possibly limited by maxEntries
 
- o Bugfix: C++ client library, SocketDriver plugin
-   Fixed that all properties are passed to the C SOCKET library instead
-   of only the command line arguments
- 
  o Bugfix: C SOCKET client library, fixed uninitialized memory read in memmove call
  
  o changed the JdbcConnectionPool to be handled by Doug Lea's classes
