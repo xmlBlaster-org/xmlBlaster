@@ -359,7 +359,7 @@ void Property::replaceVariables(bool env) {
    }
 }
 
-string Property::replaceVariable(const string &key, const string &valueOrig, bool env) {
+string Property::replaceVariable(const string &/*key*/, const string &valueOrig, bool env) {
    //if (replaceVariables == false)
    //   return value;
    string value = valueOrig;
