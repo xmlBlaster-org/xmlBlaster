@@ -339,10 +339,33 @@ public class Timestamp implements Comparable, java.io.Serializable
     * Test only. 
     * <pre>
     * javac -g -d $XMLBLASTER_HOME/classes Timestamp.java
-    * java org.xmlBlaster.util.Timestamp
+    *
+    *   java org.xmlBlaster.util.Timestamp
+    *
+    * Dump a nanosecond 'long' to a string representation:
+    *    
+    *   java org.xmlBlaster.util.Timestamp 1076677832527000001
+    *
+    * Dump a a string representation to a nanosecond 'long':
+    *
+    *   java org.xmlBlaster.util.Timestamp "2004-02-13 14:10:32.527000001"
     * </pre>
     */
    public static void main(String[] args) {
+
+      if (args.length > 0) {
+         if (args[0].indexOf(":") != -1) {
+            // 2004-02-13 14:10:32.527000001
+            Timestamp tt = Timestamp.valueOf(args[0]);
+            System.out.println(tt.toXml("", true));
+         }
+         else {
+            long nanos = Long.valueOf(args[0]).longValue();
+            Timestamp tt = new Timestamp(nanos);
+            System.out.println(tt.toXml("", true));
+         }
+         System.exit(0);
+      }
 
       int count = 5;
       StringBuffer buf = new StringBuffer(count * 120);
