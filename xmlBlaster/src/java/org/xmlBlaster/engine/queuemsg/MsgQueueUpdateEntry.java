@@ -58,6 +58,13 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       }
    }
 
+   /**
+    * Copy constructor, used to get a shallow clone, we still reference the original MsgUnitWrapper. 
+    */
+   public MsgQueueUpdateEntry(MsgQueueUpdateEntry entry) throws XmlBlasterException {
+      this(entry.getGlobal(), entry.getMsgUnitWrapper(), entry.getStorageId(), entry.getReceiver(), entry.getSubscriptionId());
+   }
+
    public String getSubscriptionId() {
       return this.subscriptionId;
    }
