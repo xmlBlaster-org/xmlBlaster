@@ -16,6 +16,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -50,6 +51,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    private String sessionId;
    protected ConnectReturnQos connectReturnQos;
    protected Address clientAddress;
+   protected PluginInfo pluginInfo;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -88,6 +90,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("xmlrpc");
+      this.pluginInfo = pluginInfo;
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
@@ -108,6 +111,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       this.clientAddress = address;
+      if (this.pluginInfo != null)
+         this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       this.xmlRpcUrl = new XmlRpcUrl(glob, this.clientAddress);
       try {
          // dispatch/connection/plugin/xmlrpc/debug

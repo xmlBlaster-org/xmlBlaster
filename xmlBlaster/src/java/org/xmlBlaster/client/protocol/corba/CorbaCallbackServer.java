@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.41 2004/05/09 17:54:38 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.42 2004/10/03 19:20:36 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -25,6 +25,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 
 /**
@@ -47,6 +48,7 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
    private LogChannel log;
    private I_CallbackExtended boss;
    private CallbackAddress callbackAddress;
+   private PluginInfo pluginInfo;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -82,6 +84,8 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
          this.glob = new Global();
       this.log = this.glob.getLog("corba");
       this.callbackAddress = callbackAddress;
+      if (this.pluginInfo != null)
+         this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
 
       this.orb = OrbInstanceFactory.createOrbInstance(this.glob,(String[])null,
                                          glob.getProperty().getProperties(),this.callbackAddress);
@@ -107,6 +111,7 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+      this.pluginInfo = pluginInfo;
    }
 
    /**

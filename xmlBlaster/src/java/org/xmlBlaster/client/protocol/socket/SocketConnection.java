@@ -152,8 +152,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
  
       // TODO: USE address for configurtation
       this.clientAddress = address;
-      
-      if (log.CALL) log.call(ME, "Entering connectLowlevel(), connection with raw socket to server ...");
+      if (this.pluginInfo != null)
+         this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
+
+      if (log.CALL) log.call(ME, "Entering connectLowlevel(), connection with raw socket to server, plugin setting is: " + this.pluginInfo.dumpPluginParameters());
 
       this.socketUrl = new SocketUrl(glob, this.clientAddress);
 

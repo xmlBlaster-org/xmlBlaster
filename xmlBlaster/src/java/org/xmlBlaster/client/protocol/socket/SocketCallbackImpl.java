@@ -82,6 +82,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       this.log = this.glob.getLog("socket");
       this.ME = "SocketCallbackImpl-" + loginName;
       this.callbackAddress = callbackAddress;
+      if (this.pluginInfo != null)
+         this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       setLoginName(loginName);
       setCbClient(cbClient); // access callback client in super class Executor:callback
 

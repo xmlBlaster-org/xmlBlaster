@@ -17,6 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl;
@@ -62,6 +63,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    public static final int DEFAULT_CALLBACK_PORT = 8081; // org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_CALLBACK_PORT;
    public CallbackAddress callbackAddress;
    private WebServer webServer = null;
+   protected PluginInfo pluginInfo;
 
    /** You must call initialize after constructing me */
    public XmlRpcCallbackServer() {}
@@ -81,6 +83,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+      this.pluginInfo = pluginInfo;
    }
 
    /**
@@ -94,6 +97,8 @@ public class XmlRpcCallbackServer implements I_CallbackServer
       this.glob = glob;
       this.log = glob.getLog("xmlrpc");
       this.callbackAddress = callbackAddress;
+      if (this.pluginInfo != null)
+         this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       this.client = client;
       this.loginName = name;
       createCallbackServer();

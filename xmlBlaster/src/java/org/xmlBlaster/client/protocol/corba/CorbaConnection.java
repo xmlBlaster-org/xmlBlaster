@@ -88,6 +88,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    private Address clientAddress;
    private String sessionId;
    private boolean verbose = true;
+   private PluginInfo pluginInfo;
 
 
    /**
@@ -155,6 +156,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("corba");
+      this.pluginInfo = pluginInfo;
       resetConnection();
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
@@ -234,7 +236,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", text);
       }
       if (nameServiceObj == null) {
-         throw new XmlBlasterException("NoNameService", "Can't access naming service (null), is there any running?");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", "Can't access naming service (null), is there any running?");
       }
       // if (log.TRACE) log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
@@ -281,6 +283,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       }
 
       address = (address == null) ? new Address(glob) : address;
+      if (this.pluginInfo != null)
+         address.setPluginInfoParameters(this.pluginInfo.getParameters());
 
       try {
          // 0) Check if programmer has given the IOR hardcoded
