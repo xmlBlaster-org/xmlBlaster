@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
+ o Fixed internal error dump when expired history entry
+   is subscribed.
+
  o XmlBlasterException now dumps an online URL with
    detailed informations
    Please use new xmlBlaster.properties.template
