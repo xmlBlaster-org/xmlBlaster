@@ -13,6 +13,7 @@ import org.xmlBlaster.util.cluster.NodeId;
 /**
  * Handles unified naming convention of login names and user sessions. 
  *
+ * Instances are immutable.
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.SessionNameTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">The client.failsafe requirement</a>
