@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.8 2003/02/18 21:24:26 laghi Exp $
+Version:   $Id: AddressFactory.cpp,v 1.9 2003/02/19 08:53:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -54,7 +54,7 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
    if (log_.trace()) {
      char* txt = XMLString::transcode(name);
      log_.trace(ME, string("::startElement: '") + string(txt) + string("'"));
-     XMLString::release(&txt);
+     SaxHandlerBase::releaseXMLCh(&txt);
    }
 
    if (character_.length() > 0) {
@@ -178,7 +178,7 @@ void AddressFactory::endElement(const XMLCh* const name)
    if (log_.trace()) {
      char* txt = XMLString::transcode(name);
      log_.trace(ME, string("::endElement: '") + string(txt) + string("'"));
-     XMLString::release(&txt);
+     SaxHandlerBase::releaseXMLCh(&txt);
    }
    if (SaxHandlerBase::caseCompare(name, address_->rootTag_.c_str())) { // callback
       StringTrim::trim(character_);

@@ -24,10 +24,10 @@ MsgKeyFactory::MsgKeyFactory(Global& global)
 
 MsgKeyFactory::~MsgKeyFactory() 
 {
-   XMLString::release(&OID);
-   XMLString::release(&CONTENT_MIME);
-   XMLString::release(&CONTENT_MIME_EXTENDED);
-   XMLString::release(&D_O_M_A_I_N);
+   SaxHandlerBase::releaseXMLCh(&OID);
+   SaxHandlerBase::releaseXMLCh(&CONTENT_MIME);
+   SaxHandlerBase::releaseXMLCh(&CONTENT_MIME_EXTENDED);
+   SaxHandlerBase::releaseXMLCh(&D_O_M_A_I_N);
 }
 
 MsgKeyData MsgKeyFactory::readObject(const string& xmlKey)

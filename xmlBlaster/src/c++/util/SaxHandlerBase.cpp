@@ -212,8 +212,8 @@ SaxHandlerBase::caseCompare(const XMLCh *name1, const char *name2)
   XMLCh* name2Helper = XMLString::transcode(name2);
   XMLString::upperCase(name2Helper);
   bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
-  XMLString::release(&name1Helper);
-  XMLString::release(&name2Helper);
+  SaxHandlerBase::releaseXMLCh(&name1Helper);
+  SaxHandlerBase::releaseXMLCh(&name2Helper);
   return ret;
 }
 
@@ -244,13 +244,13 @@ string SaxHandlerBase::getStringValue(const XMLCh* const value) const
       help = XMLString::transcode(value);
       if (help != 0) {
          string ret = StringTrim::trim(help);
-         XMLString::release(&help);
+         SaxHandlerBase::releaseXMLCh(&help);
          return ret;
       }
    }
    catch (...) {
       if (help != 0)
-         XMLString::release(&help);
+         SaxHandlerBase::releaseXMLCh(&help);
       cerr << "Caught exception in getStringValue(XMLCh=" << value << ")" << endl;
       // throw;
    }
@@ -279,7 +279,7 @@ bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const
       else value.assign(help1);
    }
    catch (...) {}
-   XMLString::release(&help1);
+   SaxHandlerBase::releaseXMLCh(&help1);
    return true;
 }
 
@@ -416,12 +416,23 @@ bool SaxHandlerBase::getBoolValue(const XMLCh* const value) const
 }
 
 
-void SaxHandlerBase::releaseXMLCh(XMLCh** data) const
+void SaxHandlerBase::releaseXMLCh(XMLCh** data)
 {
-#ifdef OLDXERCES
-   delete[] data;
+#if XERCES_VERSION_MAJOR > 1 && XERCES_VERSION_MINOR > 1
+   XMLString::releaseXMLCh(data);
 #else
-   XMLString::release(data);
+   delete [] *data;
+   *data = 0;
+#endif
+}
+
+void SaxHandlerBase::releaseXMLCh(char** data)
+{
+#if XERCES_VERSION_MAJOR > 1 && XERCES_VERSION_MINOR > 1
+   XMLString::releaseXMLCh(data);
+#else
+   delete [] *data;
+   *data = 0;
 #endif
 }
 

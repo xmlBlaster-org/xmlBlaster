@@ -60,19 +60,19 @@ MsgQosFactory::MsgQosFactory(Global& global)
 
 MsgQosFactory::~MsgQosFactory() 
 {
-   XMLString::release(&LIFE_TIME);
-   XMLString::release(&FORCE_DESTROY);
-   XMLString::release(&REMAINING_LIFE);
-   XMLString::release(&READ_ONLY);
-   XMLString::release(&DESTROY_DELAY);
-   XMLString::release(&CREATE_DOM_ENTRY);
-   XMLString::release(&NANOS);
-   XMLString::release(&ID);
-   XMLString::release(&STRATUM);
-   XMLString::release(&TIMESTAMP);
-   XMLString::release(&DIRTY_READ);
-   XMLString::release(&INDEX);
-   XMLString::release(&SIZE);
+   SaxHandlerBase::releaseXMLCh(&LIFE_TIME);
+   SaxHandlerBase::releaseXMLCh(&FORCE_DESTROY);
+   SaxHandlerBase::releaseXMLCh(&REMAINING_LIFE);
+   SaxHandlerBase::releaseXMLCh(&READ_ONLY);
+   SaxHandlerBase::releaseXMLCh(&DESTROY_DELAY);
+   SaxHandlerBase::releaseXMLCh(&CREATE_DOM_ENTRY);
+   SaxHandlerBase::releaseXMLCh(&NANOS);
+   SaxHandlerBase::releaseXMLCh(&ID);
+   SaxHandlerBase::releaseXMLCh(&STRATUM);
+   SaxHandlerBase::releaseXMLCh(&TIMESTAMP);
+   SaxHandlerBase::releaseXMLCh(&DIRTY_READ);
+   SaxHandlerBase::releaseXMLCh(&INDEX);
+   SaxHandlerBase::releaseXMLCh(&SIZE);
 }                
 
 MsgQosData MsgQosFactory::readObject(const string& xmlQos)

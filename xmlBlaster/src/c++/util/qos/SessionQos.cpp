@@ -248,7 +248,7 @@ void SessionQosFactory::characters(const XMLCh* const ch, const unsigned int)
    char *chHelper = XMLString::transcode(ch);
    if (chHelper != NULL) {
       string trimmedCh = StringTrim::trim(chHelper);
-      XMLString::release(&chHelper);
+      SaxHandlerBase::releaseXMLCh(&chHelper);
       character_ += trimmedCh;
       if (log_.trace())
          log_.trace(ME, string("characters, character:'") + character_ + string("'"));
@@ -260,7 +260,7 @@ void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& att
    if (log_.trace()) {
       char *help = XMLString::transcode(name);
       log_.trace(ME, string("startElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
-      XMLString::release(&help);
+      SaxHandlerBase::releaseXMLCh(&help);
    }
 
    if (util::XmlQoSBase::startElementBase(name, attrs)) return;

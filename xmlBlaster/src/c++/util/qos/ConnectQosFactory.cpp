@@ -56,7 +56,7 @@ void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int len
    char *chHelper = XMLString::transcode(ch);
    if (chHelper != NULL) {
       character_ += StringTrim::trim(chHelper);
-      XMLString::release(&chHelper);
+      SaxHandlerBase::releaseXMLCh(&chHelper);
       if (log_.trace())
          log_.trace(ME, string("characters, character:'") + character_ + string("'"));
    }
@@ -67,7 +67,7 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
    if (log_.trace()) {
       char *help = XMLString::transcode(name);
       log_.trace(ME, string("startElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
-      XMLString::release(&help);
+      SaxHandlerBase::releaseXMLCh(&help);
    }
 
    if (SaxHandlerBase::caseCompare(name, "qos")) {
@@ -134,7 +134,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
    if (log_.trace()) {
       char *help = XMLString::transcode(name);
       log_.trace(ME, string("endElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
-      XMLString::release(&help);
+      SaxHandlerBase::releaseXMLCh(&help);
    }
 
    if (subFactory_) {
