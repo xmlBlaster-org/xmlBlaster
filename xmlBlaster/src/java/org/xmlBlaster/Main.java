@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.103 2002/08/03 10:14:45 ruff Exp $
+Version:   $Id: Main.java,v 1.104 2002/09/07 19:05:35 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -54,9 +54,9 @@ import java.lang.reflect.Method;
 public class Main implements I_RunlevelListener
 {
    final private String ME = "Main";
-   
+
    private Global glob = null;
-   
+
    private LogChannel log;
 
    /** Starts/stops xmlBlaster */
@@ -72,6 +72,10 @@ public class Main implements I_RunlevelListener
     * false: running without GUI
     */
    static MainGUI controlPanel = null;
+
+   public Main() {
+      System.out.println("Default constructor called...");
+   }
 
 
    public Main(Global glob, MainGUI controlPanel)
@@ -104,7 +108,7 @@ public class Main implements I_RunlevelListener
       return this.glob;
    }
 
-   private void init(Global glob)
+   public void init(Global glob)
    {
       this.glob = glob;
       this.log = glob.getLog("core");
@@ -164,7 +168,7 @@ public class Main implements I_RunlevelListener
    {
       if (inShutdownProcess)
          return;
-      
+
       inShutdownProcess = true;
 
       int errors = 0;
@@ -268,7 +272,7 @@ public class Main implements I_RunlevelListener
    }
 
    /**
-    * Generate a unique xmlBlaster instance ID. 
+    * Generate a unique xmlBlaster instance ID.
     * This is the last fallback to create a cluster node id:
     * <ol>
     *   <li>cluster.node.id : The environment is checked for a given cluster node id</li>
@@ -346,11 +350,13 @@ public class Main implements I_RunlevelListener
    }
 
    public boolean isHalted() {
-      return runlevelManager.isHalted();
+      if( runlevelManager != null )
+         return runlevelManager.isHalted();
+      else return true;
    }
 
    /**
-    * A human readable name of the listener for logging. 
+    * A human readable name of the listener for logging.
     * <p />
     * Enforced by I_RunlevelListener
     */
