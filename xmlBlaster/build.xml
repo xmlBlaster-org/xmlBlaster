@@ -1549,10 +1549,6 @@ TODO
          <linker name="CC"  if="use-CC">
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
-
-            <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
-            <!-- build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log -->
-            <!-- syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" / -->
          </linker>
       </cc>
 
@@ -1725,12 +1721,12 @@ TODO
          <linker name="bcc"  if="use-bcc" />
 
          <linker name="CC"> <!-- SunOS -->
+            <!-- build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp -->
             <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
             <syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" /> <!-- ORBIX only? -->
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
-            <!-- libset dir="${CORBACPP_HOME}/shlib" libs="it_art_sc52" if="PURIFY" / -->
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
