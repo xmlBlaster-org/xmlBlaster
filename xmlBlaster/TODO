@@ -1,8 +1,6 @@
 FEATURES
 --------
 
-o Add support to reconnect to previous session again on reconnect
-
 o Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 
 o Change to Sun coding convention: http://checkstyle.sourceforge.net/
@@ -46,7 +44,7 @@ o Journaled Communication (History)
 
 o Allowing compound messages
 
-o Online demos'
+o Online demos
 
 o Choosing the port for the server/callback server (e.g. XmlRpl):
   Java has a feature whereby you can specify Port 0 when opening a
