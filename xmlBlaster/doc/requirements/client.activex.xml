@@ -289,7 +289,7 @@ Private Sub XmlScriptAccess_update(ByVal msg As Object) _
    </example>
 
    <example lang="VisualBasic" type="HTML">
-      <h3><a NAME="example"></a>VisualBasic.net example</h3>
+      <h3><a NAME="VisualBasic.net"></a>VisualBasic.net example</h3>
    <pre><style type="text/css">
 <!--
               .LINE_NO {color: #000000; background: #ffffff}
@@ -357,7 +357,7 @@ Private Sub XmlScriptAccess_update(ByVal msg As Object) _
    </example>
 
    <example lang="VisualBasic" type="HTML">
-      <h3><a NAME="example"></a>VisualBasic.net example with asynchronous callbacks</h3>
+      <h3><a NAME="VisualBasic.netCB"></a>VisualBasic.net example with asynchronous callbacks</h3>
    <pre><style type="text/css">
 <!--
               .LINE_NO {color: #000000; background: #ffffff}
