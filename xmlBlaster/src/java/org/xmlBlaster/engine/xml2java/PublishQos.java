@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.16 2002/09/19 14:23:27 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.17 2002/10/16 11:32:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -767,7 +767,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if(name.equalsIgnoreCase("expiration")) {
+      if(name.equalsIgnoreCase("route")) {
          inRoute = false;
          character.setLength(0);
          return;
@@ -827,12 +827,6 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
       if (name.equalsIgnoreCase("node")) {
          addRouteInfo(routeInfo);
-         character.setLength(0);
-         return;
-      }
-
-      if (name.equalsIgnoreCase("route")) {
-         inRoute = false;
          character.setLength(0);
          return;
       }
