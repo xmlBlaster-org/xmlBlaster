@@ -8,7 +8,7 @@ import java.util.*;
 import junit.framework.*;
 
 /**
- * Test org.jutils.pool.PoolManager
+ * Test org.xmlBlaster.util.pool.PoolManager
  * <p />
  * All methods starting with 'test' and without arguments are invoked automatically
  * <p />
