@@ -521,3 +521,45 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
 #endif /* !_WINDOWS */
 #endif /* _WINDOWS */
 }
+
+
+/*
+#include <sys/types.h>
+#include <sys/times.h>
+
+main()
+{
+    struct tms before, after;
+
+    times(&before);
+
+    ... place code to be timed here ...
+
+    times(&after);
+
+    printf("User time: %ld seconds\n", after.tms_utime -
+        before.tms_utime);
+    printf("System time: %ld seconds\n", after.tms_stime -
+        before.tms_stime);
+
+    exit(0);
+}
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <time.h>
+
+main()
+{ int i;
+  time_t t1,t2;
+
+  (void) time(&t1);
+  
+   for (i=1;i<=300;++i) printf("%d %d %d\n",i, i*i, i*i*i);
+   
+   
+   (void) time(&t2);
+   
+   printf("\nTime to do 300 squares and cubes= %d seconds\n", (int) t2-t1);
+}
+*/
