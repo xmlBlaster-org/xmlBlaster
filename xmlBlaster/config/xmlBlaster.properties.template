@@ -379,7 +379,7 @@ XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideExce
 # <timestamp>:<levelStr>:<instance>:<text>
 #
 # Apr 29, 2000 4:43:35 PM:INFO :Main:Published AuthServer IOR on bootstrapPort 3412
-LogFormat=[{0} {1} {2} {3}] {4}
+LogFormat=[{0} {1} {4} {2}] {3}
 #LogFormat={0}:{1}:{2}:{3}
 #
 # Apr 29, 2000 5:36:21 PM INFO  Published AuthServer IOR on bootstrapPort 3412
