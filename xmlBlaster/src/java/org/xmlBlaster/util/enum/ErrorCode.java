@@ -576,10 +576,10 @@ public final class ErrorCode implements java.io.Serializable
     */
    public static void main (String [] args) {
       System.out.println(toXmlAll(""));
-      //verifiySerialization();
+      //verifySerialization();
    }
 
-   private static void verifiySerialization() {
+   private static void verifySerialization() {
       String fileName = "ErrorCode.ser";
       ErrorCode pOrig = ErrorCode.USER_PTP_UNKNOWNSESSION;
       {
