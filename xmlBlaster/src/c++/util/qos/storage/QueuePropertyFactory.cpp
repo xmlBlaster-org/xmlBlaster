@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.9 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.10 2003/03/25 09:40:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -213,7 +213,7 @@ QueuePropertyBase QueuePropertyFactory::readObject(const string& literal)
 #ifdef _XMLBLASTER_CLASSTEST
 
 #include <util/PlatformUtils.hpp>
-#include <util/qos/storage/QueueProperty.h>
+#include <util/qos/storage/ClientQueueProperty.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util::qos::storage;
@@ -226,7 +226,7 @@ int main(int args, char* argv[])
 
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
-      QueueProperty prop(glob, "");
+      ClientQueueProperty prop(glob, "");
       cout << prop.toXml() << endl;
       Address adr(glob, "EMAIL");
       adr.setAddress("et@mars.sun");
@@ -235,7 +235,7 @@ int main(int args, char* argv[])
       cout << literal << endl;
 
       QueuePropertyFactory factory(glob);
-//      QueueProperty prop1(glob, "");
+//      ClientQueueProperty prop1(glob, "");
 
       QueuePropertyBase base= factory.readObject(literal);
       cout << "after reparsing the same object : " << endl;

@@ -170,15 +170,15 @@ CallbackAddress ConnectQosData::getCbAddress() const
    return *(cbAddresses_.begin());
 }
 
-void ConnectQosData::addClientQueueProperty(const QueueProperty& prop)
+void ConnectQosData::addClientQueueProperty(const ClientQueueProperty& prop)
 {
    clientQueueProperties_.insert(clientQueueProperties_.begin(), prop);
 }
 
-QueueProperty ConnectQosData::getClientQueueProperty() const
+ClientQueueProperty ConnectQosData::getClientQueueProperty() const
 {
    if (clientQueueProperties_.empty())
-      return QueueProperty(global_, "");
+      return ClientQueueProperty(global_, "");
    return *(clientQueueProperties_.begin());
 }
 
@@ -217,7 +217,7 @@ string ConnectQosData::toXml(const string& extraOffset) const
       ret += sessionQos_.toXml(extraOffset);
 
       {  // client queue properties 
-         vector<QueueProperty>::const_iterator
+         vector<ClientQueueProperty>::const_iterator
             iter = clientQueueProperties_.begin();
          while (iter != clientQueueProperties_.end()) {
             ret += (*iter).toXml(extraOffset);

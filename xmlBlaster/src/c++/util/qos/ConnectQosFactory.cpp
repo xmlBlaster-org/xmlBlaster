@@ -143,7 +143,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
          // determine wether it is a callback or a client queue ...
          QueuePropertyBase help = queuePropertyFactory_.getQueueProperty();
          if (help.getRelating() == Constants::RELATING_CLIENT) {
-            QueueProperty prop = help;
+            ClientQueueProperty prop = help;
             connectQos_.addClientQueueProperty(prop);
          }
          else {

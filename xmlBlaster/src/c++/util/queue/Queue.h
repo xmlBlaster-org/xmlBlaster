@@ -40,13 +40,13 @@ protected:
    string        ME;
    Global&       global_;
    Log&          log_;
-   QueueProperty property_;
+   ClientQueueProperty property_;
    StorageType   storage_;
    long          numOfBytes_;
    Mutex         accessMutex_;
 
 public:
-   Queue(Global& global, const QueueProperty& property);
+   Queue(Global& global, const ClientQueueProperty& property);
 
    Queue(const Queue& queue);
 

@@ -37,7 +37,7 @@ class Dll_Export MsgQueue : public Queue
 {
 
 public:
-   MsgQueue(Global& global, const QueueProperty& property);
+   MsgQueue(Global& global, const ClientQueueProperty& property);
 
    MsgQueue(const MsgQueue& queue);
 

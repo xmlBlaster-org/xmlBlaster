@@ -27,7 +27,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
      publishMutex_(),
      instanceName_(instanceName)
 {
-   QueueProperty prop(global_, "");
+   ClientQueueProperty prop(global_, "");
    adminQueue_ = new MsgQueue(global, prop);
    connectQos_         = NULL;
    connectionProblems_ = NULL;

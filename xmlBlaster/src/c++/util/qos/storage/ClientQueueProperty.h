@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      QueueProperty.h
+Name:      ClientQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
@@ -30,7 +30,7 @@ using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-class Dll_Export QueueProperty : public QueuePropertyBase
+class Dll_Export ClientQueueProperty : public QueuePropertyBase
 {
 protected:
 
@@ -39,11 +39,11 @@ public:
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
-   QueueProperty(Global& global, const string& nodeId);
+   ClientQueueProperty(Global& global, const string& nodeId);
 
-   QueueProperty(const QueuePropertyBase& prop);
+   ClientQueueProperty(const QueuePropertyBase& prop);
 
-   QueueProperty& operator =(const QueuePropertyBase& prop);
+   ClientQueueProperty& operator =(const QueuePropertyBase& prop);
 
    /**
     * Show some important settings for logging

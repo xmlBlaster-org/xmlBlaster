@@ -14,7 +14,7 @@ using namespace org::xmlBlaster::util::qos::storage;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-MsgQueue::MsgQueue(Global& global, const QueueProperty& property)
+MsgQueue::MsgQueue(Global& global, const ClientQueueProperty& property)
    : Queue(global, property)
 {
     ME = "MsgQueue";

@@ -124,7 +124,7 @@ public:
       string me = ME + "::testWithOneEntry";
       log_.info(me, "");
       log_.info(me, "this test creates a queue. The following checks are done:");
-      QueueProperty prop(global_, "");
+      ClientQueueProperty prop(global_, "");
       queue_ = new MsgQueue(global_, prop);
       assertEquals(log_, me, true, queue_->empty(), " 1. the queue must be empty after creation");
       ConnectQos connQos(global_);
@@ -144,7 +144,7 @@ public:
       string me = ME + "::testOrder";
       log_.info(me, "");
       log_.info(me, "this test checks the order in which entries are returned from the queue");
-      QueueProperty prop(global_, "");
+      ClientQueueProperty prop(global_, "");
       queue_ = new MsgQueue(global_, prop);
       ConnectQos connQos(global_);
       ConnectQueueEntry   entry(global_, connQos, "7", 1);
@@ -198,7 +198,7 @@ public:
       string me = ME + "::testMaxMsg";
       log_.info(me, "");
       log_.info(me, "this test checks that an excess of entries really throws an exception");
-      QueueProperty prop(global_, "");
+      ClientQueueProperty prop(global_, "");
       prop.setMaxEntries(10);
       queue_ = new MsgQueue(global_, prop);
       ConnectQos connQos(global_);
@@ -232,7 +232,7 @@ public:
       string me = ME + "::testMaxEntries";
       log_.info(me, "");
       log_.info(me, "this test checks that an excess of size in bytes really throws an exception");
-      QueueProperty prop(global_, "");
+      ClientQueueProperty prop(global_, "");
       ConnectQos connQos(global_);
       ConnectQueueEntry entry(global_, connQos);
       prop.setMaxBytes(10 * entry.getSizeInBytes());

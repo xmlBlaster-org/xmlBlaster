@@ -20,7 +20,7 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/qos/address/Address.h>
 #include <util/qos/address/CallbackAddress.h>
 #include <util/qos/storage/QueuePropertyFactory.h>
-#include <util/qos/storage/QueueProperty.h>
+#include <util/qos/storage/ClientQueueProperty.h>
 #include <util/qos/storage/CbQueueProperty.h>
 
 #include <vector>
@@ -73,7 +73,7 @@ private:
 
    vector<Address>         addresses_;
    vector<CallbackAddress> cbAddresses_;
-   vector<QueueProperty>   clientQueueProperties_;
+   vector<ClientQueueProperty>   clientQueueProperties_;
 //   vector<CbQueueProperty> cbQueueProperties_;
    CbQueueProperty         sessionCbQueueProperty_;
    vector<ServerRef>       serverReferences_;
@@ -130,8 +130,8 @@ public:
    void addCbAddress(const CallbackAddress& cbAddress);
    CallbackAddress getCbAddress() const;
 
-   void addClientQueueProperty(const QueueProperty& prop);
-   QueueProperty getClientQueueProperty() const;
+   void addClientQueueProperty(const ClientQueueProperty& prop);
+   ClientQueueProperty getClientQueueProperty() const;
 
    void setSessionCbQueueProperty(const CbQueueProperty& prop);
    CbQueueProperty getSessionCbQueueProperty() const;

@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------------------
-Name:      QueueProperty.cpp
+Name:      ClientQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
 ------------------------------------------------------------------------------*/
 
-#include <util/qos/storage/QueueProperty.h>
+#include <util/qos/storage/ClientQueueProperty.h>
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
@@ -16,20 +16,20 @@ using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-   QueueProperty::QueueProperty(Global& global, const string& nodeId) :
+   ClientQueueProperty::ClientQueueProperty(Global& global, const string& nodeId) :
       QueuePropertyBase(global, nodeId)
    {
-      ME = "QueueProperty";
+      ME = "ClientQueueProperty";
       relating_ = Constants::RELATING_CLIENT;
       QueuePropertyBase::initialize(Constants::RELATING_CLIENT);
    }
 
-   QueueProperty::QueueProperty(const QueuePropertyBase& prop)
+   ClientQueueProperty::ClientQueueProperty(const QueuePropertyBase& prop)
       : QueuePropertyBase(prop)
    {
    }
 
-   QueueProperty& QueueProperty::operator =(const QueuePropertyBase& prop)
+   ClientQueueProperty& ClientQueueProperty::operator =(const QueuePropertyBase& prop)
    {
       copy(prop);
       return *this;
@@ -38,7 +38,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    /**
     * Show some important settings for logging
     */
-   string QueueProperty::getSettings()
+   string ClientQueueProperty::getSettings()
    {
       string ret;
       ret += string("type=") + getType() + string(" onOverflow=") +
@@ -51,7 +51,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 
    /**
     */
-   void QueueProperty::setAddress(const AddressBase& address)
+   void ClientQueueProperty::setAddress(const AddressBase& address)
    {
       // this differes from the current java code (2002-12-07) since it allows
       // multiple addresses
@@ -61,7 +61,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    /**
     * clears up all addresses and allocates new ones.
     */
-   void QueueProperty::setAddresses(const AddressVector& addresses)
+   void ClientQueueProperty::setAddresses(const AddressVector& addresses)
    {
       addressArr_ = AddressVector(addresses);
    }
@@ -77,7 +77,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    /**
     * @return null if none available
     */
-   AddressBase QueueProperty::getCurrentAddress()
+   AddressBase ClientQueueProperty::getCurrentAddress()
    {
       if (addressArr_.empty()) return Address(global_);
       // otherwise get the last one added
@@ -87,7 +87,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    /**
     * Get a usage string for the connection parameters
     */
-   string QueueProperty::usage()
+   string ClientQueueProperty::usage()
    {
       string text = "";
       text += string("Control client side fail save queue properties (message recorder):\n");
@@ -121,7 +121,7 @@ int main(int args, char* argv[])
 {
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
-   QueueProperty prop(glob, "");
+   ClientQueueProperty prop(glob, "");
    cout << prop.toXml() << endl;
    Address adr(glob, "EMAIL");
    adr.setAddress("et@mars.sun");

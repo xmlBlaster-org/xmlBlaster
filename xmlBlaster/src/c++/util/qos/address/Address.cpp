@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.6 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: Address.cpp,v 1.7 2003/03/25 09:40:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -64,7 +64,7 @@ inline void Address::initialize()
       setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin.defaultPlugin["+nodeId_+"]", dispatchPlugin_));
    }
 
-   // TODO: This is handled in QueueProperty.java already ->
+   // TODO: This is handled in ClientQueueProperty.java already ->
    //      long maxEntries = global_.getProperty().getLongProperty("queue.maxEntries", CbQueueProperty.DEFAULT_maxEntriesDefault);
    long maxEntries = global_.getProperty().getLongProperty("queue/maxEntries", 10000l);
    setMaxEntries(maxEntries);
@@ -135,7 +135,7 @@ string Address::usage()
 {
    string text = "";
    text += string("Control fail save connection to xmlBlaster server:\n");
-   // is in QueueProperty.java: text += "   -queue.maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
+   // is in ClientQueueProperty.java: text += "   -queue.maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
    text += string("   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + lexical_cast<string>(DEFAULT_collectTime) + "].\n");

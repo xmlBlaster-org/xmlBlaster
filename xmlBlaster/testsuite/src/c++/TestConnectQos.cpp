@@ -131,7 +131,7 @@ public:
       QueuePropertyFactory factory(global_);
       for (int i=0; i < 2; i++) {
          QueuePropertyBase propBase = factory.readObject(qos);
-         QueueProperty prop(propBase);
+         ClientQueueProperty prop(propBase);
          assertEquals(log_, me, string("client"), prop.getRelating(), "relating check");
          assertEquals(log_, me, 1468006L, prop.getStoreSwapLevel(), "storeSwapLevel check");
          assertEquals(log_, me, 524288L, prop.getStoreSwapBytes(), "storeSwapBytes check");
