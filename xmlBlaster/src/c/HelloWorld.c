@@ -5,16 +5,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HelloWorld connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  Linux C: gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+  Linux C: gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
    util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
-  Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+  Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
    util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
             -DXMLBLASTER_C_COMPILE_AS_CPP
   Linux Intel compiler:
-        icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+        icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
    util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
   Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c util\*.c socket\*.c ws2_32.lib
-  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
         util/Properties.c socket/xmlBlasterSocket.c
         socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
 
@@ -31,7 +31,7 @@ Date:      05/2003
 /**
  * Access the free memory in the server. 
  */
-int main(int argc, char** argv)
+int main(int argc, const char* const* argv)
 {
    MsgUnitArr *msgUnitArr;
    XmlBlasterException exception;
