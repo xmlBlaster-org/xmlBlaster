@@ -3,10 +3,10 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $
+Version:   $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
-#include <util/dispatch/DeliveryManager.h>
+#include <util/dispatch/DispatchManager.h>
 #include <util/Timeout.h>
 #include <algorithm>
 #include <util/lexical_cast.h>
@@ -15,9 +15,9 @@ Version:   $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.47 2003/10/05 18:47:43 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.48 2003/10/15 13:13:07 laghi Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -30,7 +30,7 @@ Global::Global() : ME("Global"), logMap_(), pingerMutex_()
 {
    cbServerPluginManager_ = 0;
    pingTimer_             = 0;
-   deliveryManager_       = 0;
+   dispatchManager_       = 0;
    property_              = 0;
    copy();
    isInitialized_ = false;
@@ -178,12 +178,12 @@ CbServerPluginManager& Global::getCbServerPluginManager()
    return *cbServerPluginManager_;
 }
 
-DeliveryManager& Global::getDeliveryManager()
+DispatchManager& Global::getDispatchManager()
 {
-   if (deliveryManager_ == NULL) {
-      deliveryManager_ = new DeliveryManager(*this);
+   if (dispatchManager_ == NULL) {
+      dispatchManager_ = new DispatchManager(*this);
    }
-   return *deliveryManager_;
+   return *dispatchManager_;
 }
 
 Timeout& Global::getPingTimer()

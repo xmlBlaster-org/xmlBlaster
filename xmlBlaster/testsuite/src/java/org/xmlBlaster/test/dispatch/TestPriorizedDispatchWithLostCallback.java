@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TestPriorizedDeliveryWithLostCallback.java
+Name:      TestPriorizedDispatchWithLostCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -58,14 +58,14 @@ import junit.framework.*;
  * </p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback
- *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback
+ *    java junit.textui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback
  * </pre>
- * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+ * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
  */
-public class TestPriorizedDeliveryWithLostCallback extends TestCase
+public class TestPriorizedDispatchWithLostCallback extends TestCase
 {
-   private static String ME = "TestPriorizedDeliveryWithLostCallback";
+   private static String ME = "TestPriorizedDispatchWithLostCallback";
    private Global glob;
    private LogChannel log;
 
@@ -91,12 +91,12 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
    private boolean connected;
 
    /**
-    * Constructs the TestPriorizedDeliveryWithLostCallback object.
+    * Constructs the TestPriorizedDispatchWithLostCallback object.
     * <p />
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestPriorizedDeliveryWithLostCallback(Global glob, String testName, String name) {
+   public TestPriorizedDispatchWithLostCallback(Global glob, String testName, String name) {
       super(testName);
       this.glob = glob;
       this.log = glob.getLog("test");
@@ -122,11 +122,11 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
         "-dispatch/callback/protocol", "XMLRPC",
         "-plugin/xmlrpc/port", ""+(serverPort+1),
         "-dispatch/callback/plugin/xmlrpc/port", ""+(serverPort+1),
-        "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
+        "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin",
         "-DispatchPlugin/defaultPlugin", "undef",  // configure "Priority,1.0" below with CallbackAddress
-        "-PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin",
-        "-"+org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY, "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'/>\n"
-        // "PriorizedDeliveryPlugin/config"
+        "-PriorizedDispatchPlugin.user", "_PriorizedDispatchPlugin",
+        "-"+org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin.CONFIG_PROPERTY_KEY, "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'/>\n"
+        // "PriorizedDispatchPlugin/config"
          };
       glob.init(args);
 
@@ -197,7 +197,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
     * Change the configuration of the plugin
     */
    private void publishNewConfig(String config) {
-      String configKey = org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY; // -PriorizedDeliveryPlugin/config=
+      String configKey = org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin.CONFIG_PROPERTY_KEY; // -PriorizedDispatchPlugin/config=
       try {
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
@@ -214,7 +214,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
 
       /* Does not work as Main.java creates a new engine.Global for the server
       try {
-         glob.getProperty().set(PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY, config);
+         glob.getProperty().set(PriorizedDispatchPlugin.CONFIG_PROPERTY_KEY, config);
       }
       catch (org.jutils.JUtilsException e) {
          fail(e.toString());
@@ -238,8 +238,8 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
     * Tests what happens if dispatcher frameworks looses the callback connection to us
     * and starts polling
     */
-   public void testPriorizedDeliveryPluginConnectionState() {
-      log.info(ME, "testPriorizedDeliveryPluginConnectionState() ...");
+   public void testPriorizedDispatchPluginConnectionState() {
+      log.info(ME, "testPriorizedDispatchPluginConnectionState() ...");
       String config = 
             "<msgDispatch defaultStatus='" + NORMAL_LINE + "' defaultAction='send'>\n"+
             "  <onStatus oid='" + statusOid + "' content='" + NORMAL_LINE + "' defaultAction='send'>\n" +
@@ -349,7 +349,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          }
       }
 
-      log.info(ME, "Success in testPriorizedDeliveryPluginConnectionState()");
+      log.info(ME, "Success in testPriorizedDispatchPluginConnectionState()");
    }
 
    /**
@@ -384,16 +384,16 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "PriorizedDeliveryPlugin";
-       suite.addTest(new TestPriorizedDeliveryWithLostCallback(Global.instance(), "testPriorizedDeliveryPluginConnectionState", "PriorizedDeliveryPluginRecovery"));
+       String loginName = "PriorizedDispatchPlugin";
+       suite.addTest(new TestPriorizedDispatchWithLostCallback(Global.instance(), "testPriorizedDispatchPluginConnectionState", "PriorizedDispatchPluginRecovery"));
        return suite;
    }
 
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback -trace[dispatch] true -call[core] true
-    *  java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback
+    *  java org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback -trace[dispatch] true -call[core] true
+    *  java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback
     * <pre>
     */
    public static void main(String args[]) {
@@ -401,9 +401,9 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       if (glob.init(args) != 0) {
          System.exit(0);
       }
-      TestPriorizedDeliveryWithLostCallback testSub = new TestPriorizedDeliveryWithLostCallback(glob, "TestPriorizedDeliveryWithLostCallback", "TestPriorizedDeliveryWithLostCallback");
+      TestPriorizedDispatchWithLostCallback testSub = new TestPriorizedDispatchWithLostCallback(glob, "TestPriorizedDispatchWithLostCallback", "TestPriorizedDispatchWithLostCallback");
       testSub.setUp();
-      testSub.testPriorizedDeliveryPluginConnectionState();
+      testSub.testPriorizedDispatchPluginConnectionState();
       testSub.tearDown();
    }
 }

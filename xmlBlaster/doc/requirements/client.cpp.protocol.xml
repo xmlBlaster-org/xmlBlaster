@@ -35,8 +35,8 @@
      </li>
      <li>
      Add the code for the creation of an instance of the sender in the method 
-     <b>DeliveryManager::getPlugin(...)</b>  and the removal or deletion of that instance in the method
-     <b>DeliveryManager::releasePlugin(...)</b>.
+     <b>DispatchManager::getPlugin(...)</b>  and the removal or deletion of that instance in the method
+     <b>DispatchManager::releasePlugin(...)</b>.
      </li>
      <li>
      Add the code for the creation of an instance of the receiver in 
@@ -92,6 +92,6 @@
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 </requirement>
 

@@ -140,7 +140,7 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
    /**
     * Access the configuration for the given state of the dispatcher connection
     * @return null if no configuration is found
-    * @see org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler
+    * @see org.xmlBlaster.util.dispatch.DispatchConnectionsHandler
     */
    public final StatusConfiguration getStatusConfiguration(ConnectionStateEnum currConnectionState) {
       if (currConnectionState == null) {

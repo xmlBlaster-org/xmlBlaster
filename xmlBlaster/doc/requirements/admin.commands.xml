@@ -62,7 +62,7 @@
 
       <!-- A typical plugin which is loaded by client request -->
       <plugin id='dispatchPriority'
-              className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+              className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin'
               jar='/tmp/my.jar'>
          <attribute id='config'>
             &lt;![CDATA[
@@ -701,7 +701,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.51 $</revision>
+   <revision>$Revision: 1.52 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TestPriorizedDeliveryPlugin.java
+Name:      TestPriorizedDispatchPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -46,14 +46,14 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDeliveryPlugin
- *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDeliveryPlugin
+ *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin
  * </pre>
- * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+ * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
  */
-public class TestPriorizedDeliveryPlugin extends TestCase
+public class TestPriorizedDispatchPlugin extends TestCase
 {
-   private static String ME = "TestPriorizedDeliveryPlugin";
+   private static String ME = "TestPriorizedDispatchPlugin";
    private Global glob;
    private LogChannel log;
 
@@ -82,12 +82,12 @@ public class TestPriorizedDeliveryPlugin extends TestCase
     };
 
    /**
-    * Constructs the TestPriorizedDeliveryPlugin object.
+    * Constructs the TestPriorizedDispatchPlugin object.
     * <p />
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestPriorizedDeliveryPlugin(Global glob, String testName, String name) {
+   public TestPriorizedDispatchPlugin(Global glob, String testName, String name) {
       super(testName);
       this.glob = glob;
       this.log = glob.getLog("test");
@@ -107,10 +107,10 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
-        "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
+        "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin",
         "-DispatchPlugin/defaultPlugin", "undef", 
-        "-PriorizedDeliveryPlugin/user", "_PriorizedDeliveryPlugin",
-        "-"+org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY, //"-PriorizedDeliveryPlugin/config", 
+        "-PriorizedDispatchPlugin/user", "_PriorizedDispatchPlugin",
+        "-"+org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin.CONFIG_PROPERTY_KEY, //"-PriorizedDispatchPlugin/config", 
             "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'>\n"+
             "  <onStatus oid='" + statusOid + "' content='" + NORMAL_LINE + "' defaultAction='send'>\n" +
             //"    <action do='send'  ifPriority='0-9'/>\n" +
@@ -204,8 +204,8 @@ public class TestPriorizedDeliveryPlugin extends TestCase
    /**
     * Test all tuples of possibilities
     */
-   public void testPriorizedDeliveryPlugin() {
-      log.info(ME, "testPriorizedDeliveryPlugin() ...");
+   public void testPriorizedDispatchPlugin() {
+      log.info(ME, "testPriorizedDispatchPlugin() ...");
       long sleep = 1000L;
       String text;
 
@@ -247,7 +247,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                   int count = expectsNotify ? 1 : 0;
                   assertEquals(text, count, this.update.count());
                   if (expectsNotify) {
-                     assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
+                     assertEquals(text, "_PriorizedDispatchPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
                   }
                }
                else if (action.startsWith("destroy")) {
@@ -257,7 +257,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                   int count = expectsNotify ? 1 : 0;
                   assertEquals(text, count, this.update.count());
                   if (expectsNotify) {
-                     assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
+                     assertEquals(text, "_PriorizedDispatchPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
                   }
                }
                else {
@@ -297,14 +297,14 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       catch (XmlBlasterException e) {
          fail(e.toString());
       }
-      log.info(ME, "Success in testPriorizedDeliveryPlugin()");
+      log.info(ME, "Success in testPriorizedDispatchPlugin()");
    }
 
    /**
     * Tests to change the plugin configuration and different status message oids. 
     */
-   public void testPriorizedDeliveryPluginReconfigure() {
-      log.info(ME, "testPriorizedDeliveryPluginReconfigure() ...");
+   public void testPriorizedDispatchPluginReconfigure() {
+      log.info(ME, "testPriorizedDispatchPluginReconfigure() ...");
       String statusOid2 = statusOid+"-2";
       String config = 
             "<msgDispatch defaultStatus='GO' defaultAction='send'>\n"+
@@ -364,14 +364,14 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       catch (XmlBlasterException e) {
          fail(e.toString());
       }    */
-      log.info(ME, "Success in testPriorizedDeliveryPluginReconfigure()");
+      log.info(ME, "Success in testPriorizedDispatchPluginReconfigure()");
    }
 
    /**
     * Change the configuration of the plugin
     */
    private void publishNewConfig(String config) {
-      String configKey = org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY; // "PriorizedDeliveryPlugin/config"
+      String configKey = org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin.CONFIG_PROPERTY_KEY; // "PriorizedDispatchPlugin/config"
       try {
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
@@ -401,8 +401,8 @@ public class TestPriorizedDeliveryPlugin extends TestCase
     * 2. change state to 64k
     * 3. send a message with prio 6 which should trigger a notify PtP message
     */
-   public void testPriorizedDeliveryPluginOne() {
-      log.info(ME, "testPriorizedDeliveryPluginOne() ...");
+   public void testPriorizedDispatchPluginOne() {
+      log.info(ME, "testPriorizedDispatchPluginOne() ...");
 
       long sleep = 2000L;
       String text = "state=" + BACKUP_LINE + " action=queue,notifySender";
@@ -421,7 +421,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       publish(msgOid, priority);
       assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
       assertEquals(text, 1, this.update.count());
-      assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
+      assertEquals(text, "_PriorizedDispatchPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
 
       this.update.clear();
 
@@ -429,7 +429,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       log.info(ME, text + ": Expecting queued message");
       assertEquals(text, 1, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
 
-      log.info(ME, "Success in testPriorizedDeliveryPluginOne()");
+      log.info(ME, "Success in testPriorizedDispatchPluginOne()");
    }
 
    /**
@@ -463,18 +463,18 @@ public class TestPriorizedDeliveryPlugin extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "PriorizedDeliveryPlugin";
-       suite.addTest(new TestPriorizedDeliveryPlugin(Global.instance(), "testPriorizedDeliveryPluginOne", "PriorizedDeliveryPluginOne"));
-       suite.addTest(new TestPriorizedDeliveryPlugin(Global.instance(), "testPriorizedDeliveryPlugin", "PriorizedDeliveryPlugin"));
-       suite.addTest(new TestPriorizedDeliveryPlugin(Global.instance(), "testPriorizedDeliveryPluginReconfigure", "PriorizedDeliveryPluginRecovery"));
+       String loginName = "PriorizedDispatchPlugin";
+       suite.addTest(new TestPriorizedDispatchPlugin(Global.instance(), "testPriorizedDispatchPluginOne", "PriorizedDispatchPluginOne"));
+       suite.addTest(new TestPriorizedDispatchPlugin(Global.instance(), "testPriorizedDispatchPlugin", "PriorizedDispatchPlugin"));
+       suite.addTest(new TestPriorizedDispatchPlugin(Global.instance(), "testPriorizedDispatchPluginReconfigure", "PriorizedDispatchPluginRecovery"));
        return suite;
    }
 
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.dispatch.TestPriorizedDeliveryPlugin -trace[dispatch] true -call[core] true
-    *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDeliveryPlugin
+    *  java org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin -trace[dispatch] true -call[core] true
+    *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin
     * <pre>
     */
    public static void main(String args[]) {
@@ -482,11 +482,11 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       if (glob.init(args) != 0) {
          System.exit(0);
       }
-      TestPriorizedDeliveryPlugin testSub = new TestPriorizedDeliveryPlugin(glob, "TestPriorizedDeliveryPlugin", "TestPriorizedDeliveryPlugin");
+      TestPriorizedDispatchPlugin testSub = new TestPriorizedDispatchPlugin(glob, "TestPriorizedDispatchPlugin", "TestPriorizedDispatchPlugin");
       testSub.setUp();
-      testSub.testPriorizedDeliveryPlugin();
-      //testSub.testPriorizedDeliveryPluginReconfigure();
-      //testSub.testPriorizedDeliveryPluginOne();
+      testSub.testPriorizedDispatchPlugin();
+      //testSub.testPriorizedDispatchPluginReconfigure();
+      //testSub.testPriorizedDispatchPluginOne();
       testSub.tearDown();
    }
 }

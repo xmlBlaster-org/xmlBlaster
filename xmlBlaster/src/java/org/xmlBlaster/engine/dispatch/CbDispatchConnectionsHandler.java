@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      CbDeliveryConnectionsHandler.java
+Name:      CbDispatchConnectionsHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -8,9 +8,9 @@ package org.xmlBlaster.engine.dispatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.dispatch.DeliveryConnection;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -20,27 +20,27 @@ import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 /**
  * Holding all necessary infos to establish a remote
  * connection and invoke update()/updateOneway()/ping(). 
- * @see DeliveryConnectionsHandler
+ * @see DispatchConnectionsHandler
  * @author xmlBlaster@marcelruff.info
  */
-public final class CbDeliveryConnectionsHandler extends DeliveryConnectionsHandler
+public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandler
 {
    public final String ME;
    
    /**
-    * @param deliveryManager The message queue witch i belong to
+    * @param dispatchManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public CbDeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager) throws XmlBlasterException {
-      super(glob, deliveryManager);
-      this.ME = "CbDeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
+   public CbDispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
+      super(glob, dispatchManager);
+      this.ME = "CbDispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
    }
 
    /**
-    * @return a new CbDeliveryConnection instance which has its plugin loaded
+    * @return a new CbDispatchConnection instance which has its plugin loaded
     */
-   public DeliveryConnection createDeliveryConnection(AddressBase address) throws XmlBlasterException {
-      CbDeliveryConnection c = new CbDeliveryConnection(glob, this, address);
+   public DispatchConnection createDispatchConnection(AddressBase address) throws XmlBlasterException {
+      CbDispatchConnection c = new CbDispatchConnection(glob, this, address);
       c.loadPlugin();
       return c;
    }

@@ -184,7 +184,7 @@ public class RunLevelTest extends TestCase {
          xml += "<xmlBlaster>\n" +
                 "   <!-- A typical plugin which is loaded by client request -->\n" +
                 "   <plugin id='dispatchPriority'\n" +
-                "           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'\n" +
+                "           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin'\n" +
                 "           jar='/tmp/my.jar'>\n" +
                 "      <attribute id='config'>\n" +
                 "         <![CDATA[\n" +
@@ -277,7 +277,7 @@ public class RunLevelTest extends TestCase {
             String id = pluginConfig.getId();
             assertEquals(me + " id for avalon/dispatchPriority", "dispatchPriority", id);
             String className = pluginConfig.getClassName();
-            assertEquals(me + " className for avalon/dispatchPriority", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin", className);
+            assertEquals(me + " className for avalon/dispatchPriority", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin", className);
 
             pluginConfig = pluginHolder.getPluginConfig("avalon","queueCACHE");
             pluginConfig = pluginHolder.getPluginConfig("avalon","queueRAM");

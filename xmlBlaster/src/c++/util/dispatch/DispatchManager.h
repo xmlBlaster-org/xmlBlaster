@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryManager.h
+Name:      DispatchManager.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Manager to retrieve the correct delivery protocol
@@ -29,7 +29,7 @@ Comment:   Manager to retrieve the correct delivery protocol
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-class Dll_Export DeliveryManager
+class Dll_Export DispatchManager
 {
 
 private:
@@ -38,9 +38,9 @@ private:
    org::xmlBlaster::util::Log&                log_;
 
 public:
-   DeliveryManager(org::xmlBlaster::util::Global& global);
+   DispatchManager(org::xmlBlaster::util::Global& global);
 
-   ~DeliveryManager();
+   ~DispatchManager();
 
    org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getPlugin(const std::string& instanceName, const std::string& type, const std::string& version);
 

@@ -14,7 +14,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
@@ -83,7 +83,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       ErrorCode errorCode = xmlBlasterException.getErrorCode();
       String message = xmlBlasterException.getMessage();
       MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
-      DeliveryManager deliveryManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDeliveryManager();
+      DispatchManager dispatchManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDispatchManager();
       I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
 
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
@@ -153,10 +153,10 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          }
       }
 
-      if (deliveryManager == null || deliveryManager.isDead()) {
+      if (dispatchManager == null || dispatchManager.isDead()) {
          if (log.TRACE) log.trace(ME, "Doing error handling for dead connection state ...");
 
-         if (deliveryManager!=null) deliveryManager.shutdown();
+         if (dispatchManager!=null) dispatchManager.shutdown();
 
          // 3. Kill login session
          if (this.sessionInfo != null) {
@@ -241,7 +241,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       }
       catch (Throwable e) {
          log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.toString() +
-                 ((sessionInfo.getDeliveryManager() != null) ? sessionInfo.getDeliveryManager().toXml("") : ""));
+                 ((sessionInfo.getDispatchManager() != null) ? sessionInfo.getDispatchManager().toXml("") : ""));
          return entries;
       }
    }

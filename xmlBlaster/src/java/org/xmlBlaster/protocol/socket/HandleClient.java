@@ -232,7 +232,7 @@ public class HandleClient extends Executor implements Runnable
                         else {
                            log.error(ME, "Creating SEPARATE callback SOCKET connection to '" + remoteUrl.getUrl() + "'");
                            this.callback = new CallbackSocketDriver(this.loginName);
-                           // DeliveryConnection.initialize() -> CbDeliveryConnection.connectLowlevel()
+                           // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
                            // will later call callback.initialize(loginName, callbackAddress)
                         }
                      }

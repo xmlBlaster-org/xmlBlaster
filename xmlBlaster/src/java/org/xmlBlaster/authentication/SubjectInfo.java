@@ -27,8 +27,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.dispatch.DeliveryStatistic;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -85,7 +85,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
    private MsgErrorHandler msgErrorHandler;
 
-   private final DeliveryStatistic deliveryStatistic;
+   private final DispatchStatistic dispatchStatistic;
 
    private final SubjectInfoProtector subjectInfoProtector;
 
@@ -142,7 +142,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
          Thread.currentThread().dumpStack();
       }
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
-      this.deliveryStatistic = new DeliveryStatistic();
+      this.dispatchStatistic = new DispatchStatistic();
 
       this.authenticate.addLoginName(this); // register myself
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
@@ -750,7 +750,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
          this.callbackAddressCache = null;
       }
       if (sessionInfo != null) {
-         this.deliveryStatistic.incrNumUpdate(sessionInfo.getNumUpdates());
+         this.dispatchStatistic.incrNumUpdate(sessionInfo.getNumUpdates());
       }
       else {
          log.warn(ME, "Lookup of session with absoluteSessionName=" + absoluteSessionName + " failed");
@@ -899,7 +899,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * subject queues of this clients.
     */
    long getNumUpdates() {
-      long numUpdates = this.deliveryStatistic.getNumUpdate(); // The sessions which disappeared already are remembered here
+      long numUpdates = this.dispatchStatistic.getNumUpdate(); // The sessions which disappeared already are remembered here
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];

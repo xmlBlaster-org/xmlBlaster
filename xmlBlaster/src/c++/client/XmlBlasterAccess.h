@@ -9,7 +9,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/ConnectQos.h>
 #include <util/MessageUnit.h>
-#include <util/dispatch/DeliveryManager.h>
+#include <util/dispatch/DispatchManager.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/ConnectionsHandler.h>
@@ -38,7 +38,7 @@ private:
    /** The return from connect() */
    org::xmlBlaster::util::qos::ConnectReturnQos connectReturnQos_;
    /** The dispatcher framework **/
-   org::xmlBlaster::util::dispatch::DeliveryManager* deliveryManager_;
+   org::xmlBlaster::util::dispatch::DispatchManager* dispatchManager_;
    /** The callback server */
    org::xmlBlaster::client::protocol::I_CallbackServer* cbServer_;
    /** The connection server for this address */

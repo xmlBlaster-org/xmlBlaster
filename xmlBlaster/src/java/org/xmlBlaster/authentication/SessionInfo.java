@@ -30,7 +30,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 //import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -77,7 +77,7 @@ public class SessionInfo implements I_Timeout
    /** Do error recovery if message can't be delivered and we give it up */
    private final MsgErrorHandler msgErrorHandler;
    /** manager for sending callback messages */
-   private final DeliveryManager deliveryManager;
+   private final DispatchManager dispatchManager;
    private boolean isShutdown = false;
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
@@ -142,14 +142,14 @@ public class SessionInfo implements I_Timeout
          this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
          this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
-         this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
+         this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 this.connectQos.getSessionCbQueueProperty().getCallbackAddresses());
       }
       else { // No callback configured
          this.msgErrorHandler = null;
          this.sessionQueue = null;
-         this.deliveryManager = null;
+         this.dispatchManager = null;
       }
 
       this.expiryTimer = glob.getSessionTimer();
@@ -184,7 +184,7 @@ public class SessionInfo implements I_Timeout
     * Check if a callback was configured (if client has passed a callback address on connect).
     */
    public final boolean hasCallback() {
-      return this.deliveryManager != null && this.isShutdown == false;
+      return this.dispatchManager != null && this.isShutdown == false;
    }
 
    public final I_MsgErrorHandler getMsgErrorHandler() {
@@ -230,8 +230,8 @@ public class SessionInfo implements I_Timeout
       }
       if (this.msgErrorHandler != null)
          this.msgErrorHandler.shutdown();
-      if (this.deliveryManager != null)
-         this.deliveryManager.shutdown();
+      if (this.dispatchManager != null)
+         this.dispatchManager.shutdown();
       this.subjectInfo = null;
       // this.securityCtx = null; We need it in finalize() getSecretSessionId()
       this.connectQos = null;
@@ -241,8 +241,8 @@ public class SessionInfo implements I_Timeout
    /**
     * @return null if no callback is configured
     */
-   public final DeliveryManager getDeliveryManager() {
-      return this.deliveryManager;
+   public final DispatchManager getDispatchManager() {
+      return this.dispatchManager;
    }
 
    /**
@@ -327,9 +327,9 @@ public class SessionInfo implements I_Timeout
    public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
       if (hasCallback()) {
-         this.deliveryManager.updateProperty(cbQueueProperty);
+         this.dispatchManager.updateProperty(cbQueueProperty);
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
-         this.deliveryManager.notifyAboutNewEntry();
+         this.dispatchManager.notifyAboutNewEntry();
       }
    }
 
@@ -442,8 +442,8 @@ public class SessionInfo implements I_Timeout
     * subject queues of this clients.
     */
    public final long getNumUpdates() {
-      if (this.deliveryManager == null) return 0L;
-      return this.deliveryManager.getDeliveryStatistic().getNumUpdate();
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumUpdate();
    }
 
    public final long getCbQueueNumMsgs() {

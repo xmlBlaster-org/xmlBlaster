@@ -1,4 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+
+ o changed nomenclature from 'Delivery' to 'Dispatch' to avoid confusion.
+   Need to take the new xmlBlaster.properties
  
 Changes for 0.85d (beta) [2003-10-12]
 =====================================

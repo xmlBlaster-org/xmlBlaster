@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryWorkerPool.java
+Name:      DispatchWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
@@ -10,7 +10,7 @@ package org.xmlBlaster.util.dispatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 //import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 //import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.jutils.runtime.Sleeper;
@@ -23,9 +23,9 @@ import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
 /**
  * Pool of threads doing a callback.
  */
-public class DeliveryWorkerPool //implements I_RunlevelListener
+public class DispatchWorkerPool //implements I_RunlevelListener
 {
-   public final String ME = "DeliveryWorkerPool";
+   public final String ME = "DispatchWorkerPool";
    private Global glob;
    private LogChannel log;
    private PooledExecutor pool;
@@ -40,9 +40,9 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
          this.id = id;
       }
       public Thread newThread(Runnable command) {
-         Thread t = new Thread(command, "XmlBlaster.DeliveryWorkerPool."+id);
+         Thread t = new Thread(command, "XmlBlaster.DispatchWorkerPool."+id);
          t.setDaemon(true);
-         //System.out.println("Created new daemon thread instance for DeliveryWorkerPool");
+         //System.out.println("Created new daemon thread instance for DispatchWorkerPool");
          return t;
       }
    }
@@ -50,7 +50,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    /**
     * @param maxWorkers Maximum allowed callback threads
     */
-   public DeliveryWorkerPool(Global glob) {
+   public DispatchWorkerPool(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("dispatch");
       initialize();
@@ -85,7 +85,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
       return this.isShutdown;
    }
 
-   final synchronized void execute(DeliveryManager deliveryManager, java.lang.Runnable command) 
+   final synchronized void execute(DispatchManager dispatchManager, java.lang.Runnable command) 
                                    throws java.lang.InterruptedException {
       if (this.isShutdown) {
          log.trace(ME, "The pool is shudown, ignoring execute()");

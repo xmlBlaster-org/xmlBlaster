@@ -131,7 +131,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
       if (this.isFirstPing_hack) {
          // Ingore first ping (which is triggered by dispatch framework after plugin creation
          // It leads to a deadlock since we are working on a connec() and should first return the ConnectReturnQos
-         // See CbDeliveryConnection.java this.cbDriver.ping("");
+         // See CbDispatchConnection.java this.cbDriver.ping("");
          this.isFirstPing_hack = false;
          return "";
       }

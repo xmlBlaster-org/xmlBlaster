@@ -11,7 +11,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 /**
  * You need to implement this interface to be notified on unrecoverable errors. 
  * <p>
- * For example called by deliveryManager if a message is lost or the queue overflows
+ * For example called by dispatchManager if a message is lost or the queue overflows
  *
  * @author xmlBlaster@marcelruff.info
  */
@@ -21,7 +21,7 @@ public interface I_MsgErrorHandler
     * The final recovery, all informations necessary are transported in msgErrorInfo. 
     * <p>
     * This handler is called for example from the 'put' side of a queue if the queue is full
-    * or from the 'take' side from the queue e.g. if DeliveryManager exhausted to reconnect.
+    * or from the 'take' side from the queue e.g. if DispatchManager exhausted to reconnect.
     * </p>
     * <p>
     * This method never throws an exception but handles the error itself.
@@ -33,7 +33,7 @@ public interface I_MsgErrorHandler
     * The final recovery, all informations necessary are transported in msgErrorInfo. 
     * <p>
     * This handler is called for example from the 'put' side of a queue if the queue is full
-    * or from the 'take' side from the queue e.g. if DeliveryManager exhausted to reconnect.
+    * or from the 'take' side from the queue e.g. if DispatchManager exhausted to reconnect.
     * </p>
     * <p>
     * This method can throw an exception, the caller usually passes this back

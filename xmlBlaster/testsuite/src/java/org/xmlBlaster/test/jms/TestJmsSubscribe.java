@@ -53,6 +53,34 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    private String[] args;
    private NamingService namingService;
 
+   class PublisherThread extends Thread {
+         
+      private MessageProducer producer;
+      private int numOfPublishes;
+      private long delayBetweenPublishes;
+      private Message msg;
+      
+      public PublisherThread(MessageProducer producer, Message msg, int numOfPublishes, long delayBetweenPublishes) {
+         this.producer = producer;
+         this.numOfPublishes = numOfPublishes;
+         this.delayBetweenPublishes = delayBetweenPublishes;
+         this.msg = msg;
+      }
+      
+      public void run() {
+         for (int i=0; i < this.numOfPublishes; i++) {
+            try {
+               Thread.sleep(this.delayBetweenPublishes);
+               this.producer.send(this.msg);
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+               assertTrue("Exception in publisher thread " + ex.getMessage() , false);
+            }
+         }
+      }
+   }
+
    public TestJmsSubscribe(String name) {
       super(name);
       try {
@@ -234,6 +262,33 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       }
    }
 
+   public void testSyncReceiver() {
+      try {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer subscriber = session.createConsumer(this.topic);
+         subscriber.setMessageListener(this);
+         Session session2 = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer publisher = session2.createProducer(this.topic);
+         TextMessage msg = session2.createTextMessage();
+         msg.setText("this message will be consumed synchronously");
+         PublisherThread pub = new PublisherThread(publisher, msg, 6, 100L);
+         pub.start();
+         for (int i=0; i < 3; i++) {
+            Message msg2 = subscriber.receive();
+            assertEquals("receive(): messages are not the same", msg, msg2);         
+         }
+
+         for (int i=0; i < 3; i++) {
+            Message msg2 = subscriber.receive(300L);         
+            assertEquals("receive(delay): messages are not the same", msg, msg2);         
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue(false);
+      }
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.TestJmsSubscribe
@@ -248,6 +303,9 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       test.tearDown();
       test.setUp();
       test.testSubClientAck();
+      test.tearDown();
+      test.setUp();
+      test.testSyncReceiver();
       test.tearDown();
    }
 }

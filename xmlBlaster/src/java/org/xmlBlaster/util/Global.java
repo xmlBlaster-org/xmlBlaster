@@ -37,10 +37,10 @@ import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
 import org.xmlBlaster.util.XmlProcessor;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
-import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
-import org.xmlBlaster.client.dispatch.ClientDeliveryConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
+import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.protocol.CbServerPluginManager;
 import org.xmlBlaster.authentication.HttpIORServer;
@@ -163,7 +163,7 @@ public class Global implements Cloneable
    protected Timeout burstModeTimer;
    protected Timeout messageTimer;
    protected Timeout jdbcConnectionPoolTimer;
-   protected DeliveryWorkerPool deliveryWorkerPool;
+   protected DispatchWorkerPool dispatchWorkerPool;
 
    protected LogDevicePluginManager logDevicePluginManager = null;
    /** used to guard agains log device plugin loading making cirkular calls*/
@@ -1561,23 +1561,23 @@ public class Global implements Cloneable
 
    /**
     * Access the handle of the callback thread pool.
-    * @return The DeliveryWorkerPool instance
+    * @return The DispatchWorkerPool instance
     */
-   public final DeliveryWorkerPool getDeliveryWorkerPool() {
-      if (this.deliveryWorkerPool == null) {
+   public final DispatchWorkerPool getDispatchWorkerPool() {
+      if (this.dispatchWorkerPool == null) {
          synchronized(this) {
-            if (this.deliveryWorkerPool == null)
-               this.deliveryWorkerPool = new DeliveryWorkerPool(this);
+            if (this.dispatchWorkerPool == null)
+               this.dispatchWorkerPool = new DispatchWorkerPool(this);
          }
       }
-      return this.deliveryWorkerPool;
+      return this.dispatchWorkerPool;
    }
 
    /**
-    * Returns the client access layer implementations 'ClientDeliveryConnectionsHandler'
+    * Returns the client access layer implementations 'ClientDispatchConnectionsHandler'
     */
-   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager) throws XmlBlasterException {
-      return new ClientDeliveryConnectionsHandler(this, deliveryManager);
+   public DispatchConnectionsHandler createDispatchConnectionsHandler(DispatchManager dispatchManager) throws XmlBlasterException {
+      return new ClientDispatchConnectionsHandler(this, dispatchManager);
    }
 
    public void finalize() {
@@ -1595,10 +1595,10 @@ public class Global implements Cloneable
 
 
       //Thread.currentThread().dumpStack();
-      if (this.deliveryWorkerPool != null) {
-         this.deliveryWorkerPool.shutdown();
-         // registered itself to Runlevel changes deliveryWorkerPool.shutdown();?
-         this.deliveryWorkerPool = null;
+      if (this.dispatchWorkerPool != null) {
+         this.dispatchWorkerPool.shutdown();
+         // registered itself to Runlevel changes dispatchWorkerPool.shutdown();?
+         this.dispatchWorkerPool = null;
       }
       if (this.burstModeTimer != null) {
          this.burstModeTimer.shutdown();

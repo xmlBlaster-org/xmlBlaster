@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryStatistic.java
+Name:      DispatchStatistic.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -10,7 +10,7 @@ import org.xmlBlaster.util.enum.Constants;
 /**
  * Collecting data on how many messages are successfully delivered. 
  */
-public class DeliveryStatistic
+public class DispatchStatistic
 {
    private long numUpdate = 0L;
    private long numPublish = 0L;
@@ -26,7 +26,7 @@ public class DeliveryStatistic
     * @param count The additional number of messages
     */
    public final void incrNumUpdate(long count) {
-      this.numUpdate += count; // Not synchronized since we have only one DeliveryWorker thread
+      this.numUpdate += count; // Not synchronized since we have only one DispatchWorker thread
    }
 
    /**
@@ -42,7 +42,7 @@ public class DeliveryStatistic
     * @param count The additional number of messages
     */
    public final void incrNumPublish(long count) {
-      this.numPublish += count; // Not synchronized since we have only one DeliveryWorker thread
+      this.numPublish += count; // Not synchronized since we have only one DispatchWorker thread
    }
 
    /**
@@ -152,7 +152,7 @@ public class DeliveryStatistic
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
-      sb.append(offset).append("<DeliveryStatistic");
+      sb.append(offset).append("<DispatchStatistic");
       if (getNumUpdate() > 0) {
          sb.append("' numUpdate='").append(getNumUpdate());
       }

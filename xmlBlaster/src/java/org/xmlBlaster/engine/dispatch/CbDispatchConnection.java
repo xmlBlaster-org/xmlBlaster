@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      CbDeliveryConnection.java
+Name:      CbDispatchConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -19,9 +19,9 @@ import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.util.dispatch.DeliveryConnection;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.enum.MethodName;
 
@@ -29,11 +29,11 @@ import org.xmlBlaster.util.enum.MethodName;
 /**
  * Holding all necessary infos to establish callback
  * connections and invoke their update().
- * @see DeliveryConnection
+ * @see DispatchConnection
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-public final class CbDeliveryConnection extends DeliveryConnection
+public final class CbDispatchConnection extends DispatchConnection
 {
    public final String ME;
    private I_CallbackDriver cbDriver = null;
@@ -43,9 +43,9 @@ public final class CbDeliveryConnection extends DeliveryConnection
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
     * @param address The address i shall connect to
     */
-   public CbDeliveryConnection(Global glob, CbDeliveryConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
+   public CbDispatchConnection(Global glob, CbDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
-      this.ME = "CbDeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getStorageId();
+      this.ME = "CbDispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
    }
 
    /**
@@ -82,7 +82,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
    }
 
    /**
-    * @see DeliveryConnection#connectLowlevel()
+    * @see DispatchConnection#connectLowlevel()
     */
    public final void connectLowlevel() throws XmlBlasterException {
       // Initialize the driver (connect on lowlevel layer) ...
@@ -124,7 +124,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
       }
 
       // We export/encrypt the message (call the interceptor)
-      I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDeliveryManager().getMsgSecurityInterceptor();
+      I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
       if (securityInterceptor != null) {
          for (int i=0; i<msgUnitRawArr.length; i++) {
             msgUnitRawArr[i] = securityInterceptor.exportMessage(msgUnitRawArr[i], MethodName.UNKNOWN);
@@ -146,7 +146,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
          if (log.TRACE) log.trace(ME, "Success, sent " + msgUnitRawArr.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
       }
 
-      connectionsHandler.getDeliveryStatistic().incrNumUpdate(rawReturnVal.length);
+      connectionsHandler.getDispatchStatistic().incrNumUpdate(rawReturnVal.length);
 
       if (rawReturnVal != null) {
          for (int i=0; i<rawReturnVal.length; i++) {
@@ -216,13 +216,13 @@ public final class CbDeliveryConnection extends DeliveryConnection
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<CbDeliveryConnection>");
+      sb.append(offset + "<CbDispatchConnection>");
       address.toXml("   " + offset);
       if (this.cbDriver == null)
          sb.append(offset).append("   <noCallbackDriver />");
       else
          sb.append(offset).append("   <callback type='" + getDriverName() + "' state='" + getState() + "'/>");
-      sb.append(offset).append("</CbDeliveryConnection>");
+      sb.append(offset).append("</CbDispatchConnection>");
 
       return sb.toString();
    }

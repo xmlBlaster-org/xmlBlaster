@@ -9,10 +9,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
-
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 
 /**
  * XBTopicPublisher
@@ -32,58 +29,22 @@ public class XBTopicPublisher extends XBMessageProducer implements TopicPublishe
       return (Topic)this.destination;
    }
 
-   public void publish(Message message) throws JMSException {
-      if (message instanceof XBMessage) {
-         XBMessage msg = (XBMessage)message;
-/*
-         if (!msg.isDeliveryModeSet()) {
-            msg.setJMSDeliveryMode(this.deliveryMode, false);
-         }
-         if (!msg.isPrioritySet()) {
-            msg.setJMSPriority(this.priority, false);
-         }
-         if (!msg.isTimeToLiveSet()) {
-            msg.setJMSExpiration(this.timeToLive, false);
-         }
-         if (!msg.isDestinationSet()) {
-            if (destination == null) 
-               throw new JMSException(ME + ".publish of message needs a destination topic to be set", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-            msg.setJMSDestination(this.destination, false);
-         }
-         */
-         try {
-            this.publishReturnQos = this.access.publish(msg.getMsgUnit()); // what to do whith the publish return qos ?
-         }
-         catch (XmlBlasterException ex) {
-            throw XBConnectionFactory.convert(ex, ME + ".publish: ");         
-         }
-      }
-      else {
-         throw new JMSException(ME + ".publish of message from other provider is not supported.", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+   public void publish(Message msg) throws JMSException {
+      send(msg);
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.TopicPublisher#publish(javax.jms.Message, int, int, long)
-    */
-   public void publish(Message arg0, int arg1, int arg2, long arg3)
+   public void publish(Message msg, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
-      // TODO Auto-generated method stub
+      send(this.destination, msg, deliveryMode, priority, timeToLive);
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.TopicPublisher#publish(javax.jms.Topic, javax.jms.Message)
-    */
-   public void publish(Topic arg0, Message arg1) throws JMSException {
-      // TODO Auto-generated method stub
+   public void publish(Topic topic, Message msg) throws JMSException {
+      send(topic, msg);
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.TopicPublisher#publish(javax.jms.Topic, javax.jms.Message, int, int, long)
-    */
-   public void publish(Topic arg0, Message arg1, int arg2, int arg3, long arg4)
+   public void publish(Topic topic, Message msg, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
-      // TODO Auto-generated method stub
+      send(topic, msg, deliveryMode, priority, timeToLive);
    }
 
 }

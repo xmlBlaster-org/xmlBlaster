@@ -21,7 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
-import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
+import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.Global;

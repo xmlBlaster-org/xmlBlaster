@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryManager.java
+Name:      DispatchManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropString;
@@ -36,25 +36,25 @@ import java.util.ArrayList;
  * There is one instance of this class per queue and remote connection.
  * @author xmlBlaster@marcelruff.info
  */
-public final class DeliveryManager implements I_Timeout, I_QueuePutListener
+public final class DispatchManager implements I_Timeout, I_QueuePutListener
 {
    public final String ME;
    private final Global glob;
    private final LogChannel log;
    private final I_Queue msgQueue;
-   private final DeliveryConnectionsHandler deliveryConnectionsHandler;
+   private final DispatchConnectionsHandler dispatchConnectionsHandler;
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
-   private final I_MsgDeliveryInterceptor msgInterceptor;
+   private final I_MsgDispatchInterceptor msgInterceptor;
    private I_ConnectionStatusListener connectionStatusListener;
    private final String typeVersion;
    /** If > 0 does burst mode */
    private long collectTime = -1L;
 
-   private boolean deliveryWorkerIsActive = false;
+   private boolean dispatchWorkerIsActive = false;
 
    /** The worker for synchronous invocations */
-   private DeliveryWorker syncDeliveryWorker;
+   private DispatchWorker syncDispatchWorker;
 
    private Timestamp timerKey = null;
 
@@ -72,21 +72,21 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */
-   public DeliveryManager(Global glob, I_MsgErrorHandler failureListener, I_MsgSecurityInterceptor securityInterceptor,
+   public DispatchManager(Global glob, I_MsgErrorHandler failureListener, I_MsgSecurityInterceptor securityInterceptor,
                           I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener, AddressBase[] addrArr) throws XmlBlasterException {
       if (failureListener == null || msgQueue == null)
-         throw new IllegalArgumentException("DeliveryManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
+         throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
 
-      this.ME = "DeliveryManager-" + msgQueue.getStorageId().getId();
+      this.ME = "DispatchManager-" + msgQueue.getStorageId().getId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
 
-      if (log.TRACE) log.trace(ME, "Loading DeliveryManager ...");
+      if (log.TRACE) log.trace(ME, "Loading DispatchManager ...");
 
       this.msgQueue = msgQueue;
       this.failureListener = failureListener;
       this.securityInterceptor = securityInterceptor;
-      this.deliveryConnectionsHandler = this.glob.createDeliveryConnectionsHandler(this);
+      this.dispatchConnectionsHandler = this.glob.createDispatchConnectionsHandler(this);
       this.connectionStatusListener = connectionStatusListener;
 
       /*
@@ -102,13 +102,13 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       this.msgInterceptor = glob.getDispatchPluginManager().getPlugin(this.typeVersion); // usually from cache
       if (log.TRACE) log.trace(ME, "DispatchPlugin/defaultPlugin=" + propString.getValue() + " this.msgInterceptor="  + this.msgInterceptor);
       if (this.msgInterceptor != null) {
-         this.msgInterceptor.addDeliveryManager(this);
+         this.msgInterceptor.addDispatchManager(this);
          if (log.TRACE) log.trace(ME, "Activated dispatcher plugin '" + this.typeVersion + "'");
       }
 
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
 
-      this.deliveryConnectionsHandler.initialize(addrArr);
+      this.dispatchConnectionsHandler.initialize(addrArr);
    }
 
    /**
@@ -122,7 +122,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    public final void updateProperty(CbQueueProperty cbQueueProperty) throws XmlBlasterException {
-      this.deliveryConnectionsHandler.initialize(cbQueueProperty.getCallbackAddresses());
+      this.dispatchConnectionsHandler.initialize(cbQueueProperty.getCallbackAddresses());
    }
 
    public void finalize() {
@@ -169,12 +169,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    /**
     * @return The handler of all callback plugins, is never null
     */
-   public DeliveryConnectionsHandler getDeliveryConnectionsHandler() {
-      return this.deliveryConnectionsHandler;
+   public DispatchConnectionsHandler getDispatchConnectionsHandler() {
+      return this.dispatchConnectionsHandler;
    }
 
    /**
-    * Call by DeliveryConnectionsHandler on state transition
+    * Call by DispatchConnectionsHandler on state transition
     * NOTE: toAlive is called initially when a protocol plugin is successfully loaded
     * but we don't know yet if it ever is able to connect
     */
@@ -183,7 +183,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to ALIVE");
 
       // Remember the current collectTime
-      AddressBase addr = this.deliveryConnectionsHandler.getAliveAddress();
+      AddressBase addr = this.dispatchConnectionsHandler.getAliveAddress();
       if (addr == null) {
          log.error(ME, "toAlive action has no alive address");
          return;
@@ -209,10 +209,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       collectTime = addr.getCollectTime(); // burst mode if > 0L
 
       // 3. Deliver. Will be delayed if burst mode timer is activated, will switch to sync mode if necessary
-      activateDeliveryWorker();
+      activateDispatchWorker();
    }
 
-   /** Call by DeliveryConnectionsHandler on state transition */
+   /** Call by DispatchConnectionsHandler on state transition */
    void toPolling(ConnectionStateEnum oldState) {
 
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to POLLING");
@@ -227,7 +227,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          this.msgInterceptor.toPolling(this, oldState);
    }
 
-   /** Call by DeliveryConnectionsHandler on state transition */
+   /** Call by DispatchConnectionsHandler on state transition */
    public void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to DEAD");
       if (oldState == ConnectionStateEnum.DEAD) return;
@@ -246,7 +246,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    private void givingUpDelivery(XmlBlasterException ex) {
-      if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.deliveryConnectionsHandler.getState());
+      if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.dispatchConnectionsHandler.getState());
       removeBurstModeTimer();
       // The error handler flushed the queue and does error handling with them
       this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
@@ -254,11 +254,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
    
    /**
-    * Called by DeliveryWorker if an Exception occured in sync mode
+    * Called by DispatchWorker if an Exception occured in sync mode
     */
    void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
 
-      if (log.CALL) log.call(ME, "Sync delivery failed connection state is " + this.deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (log.CALL) log.call(ME, "Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
       
       XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,ME,null,throwable);
 
@@ -289,7 +289,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          }
 
          // Exception from connection to remote client (e.g. from Corba layer)
-         // DeliveryManager handles this
+         // DispatchManager handles this
          // Error handling in sync mode
          // 1. throwExceptionBackToPusher
          // 2. Switch to async mode and collect message (wait on better times)
@@ -299,7 +299,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
          // Simulate return values, and manipulate missing informations into entries ...
          I_QueueEntry[] entries = (I_QueueEntry[])entryList.toArray(new I_QueueEntry[entryList.size()]);
-         getDeliveryConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
+         getDispatchConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
          msgQueue.put(entries, I_Queue.IGNORE_PUT_INTERCEPTOR);
 
          if (log.TRACE) log.trace(ME, "Delivery failed, pushed " + entries.length + " entries into tail back queue");
@@ -311,12 +311,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Called by DeliveryWorker if an Exception occurred
+    * Called by DispatchWorker if an Exception occurred
     */
    void handleWorkerException(ArrayList entryList, Throwable throwable) {
-      // Note: The DeliveryManager is notified about connection problems directly by its DeliveryConnectionsHandler
+      // Note: The DispatchManager is notified about connection problems directly by its DispatchConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
-      if (log.CALL) log.call(ME, "Async delivery failed connection state is " + this.deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (log.CALL) log.call(ME, "Async delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
       //Thread.currentThread().dumpStack();
       if (entryList == null) {
          if (!this.isShutdown)
@@ -352,7 +352,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             }
 
             // Exception from connection to remote client (e.g. from Corba layer)
-            // DeliveryManager handles this
+            // DispatchManager handles this
          }
          else {
             log.error(ME, "Callback failed: " + ex.toString());
@@ -383,7 +383,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
       synchronized (this) {
          if (this.isSyncMode) return;
-         if (this.syncDeliveryWorker == null) this.syncDeliveryWorker = new DeliveryWorker(glob, this);
+         if (this.syncDispatchWorker == null) this.syncDispatchWorker = new DispatchWorker(glob, this);
 
          this.isSyncMode = true;
          log.info(ME, "Switched to synchronous message delivery");
@@ -407,7 +407,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          if (!this.isSyncMode) return;
          //this.msgQueue.removePutListener(this);
          this.isSyncMode = false;
-         activateDeliveryWorker(); // just in case there are some messages pending in the queue
+         activateDispatchWorker(); // just in case there are some messages pending in the queue
          log.info(ME, "Switched to asynchronous message delivery");
       }
    }
@@ -439,7 +439,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (log.TRACE) log.trace(ME, "putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
       ArrayList entryList = new ArrayList(queueEntries.length);
       for (int ii=0; ii<queueEntries.length; ii++) entryList.add(queueEntries[ii]);
-      this.syncDeliveryWorker.run(entryList);
+      this.syncDispatchWorker.run(entryList);
       return false;
    }
 
@@ -453,7 +453,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          if (((MsgQueueEntry)queueEntry).wantReturnObj()) {
             // Simulate return values, and manipulate missing informations into entries ...
             I_QueueEntry[] entries = new I_QueueEntry[] { queueEntry };
-            getDeliveryConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
+            getDispatchConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
          }
       }
    }
@@ -468,7 +468,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          notifyAboutNewEntry();
          if (queueEntries.length > 0 && ((MsgQueueEntry)queueEntries[0]).wantReturnObj()) {
             // Simulate return values, and manipulate missing informations into entries ...
-            getDeliveryConnectionsHandler().createFakedReturnObjects(queueEntries, Constants.STATE_OK, Constants.INFO_QUEUED);
+            getDispatchConnectionsHandler().createFakedReturnObjects(queueEntries, Constants.STATE_OK, Constants.INFO_QUEUED);
          }
       }
    }
@@ -523,7 +523,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    public void notifyAboutNewEntry() {
       if (log.CALL) log.call(ME, "Entering notifyAboutNewEntry("+this.notifyCounter+")");
       this.notifyCounter++;
-      activateDeliveryWorker();
+      activateDispatchWorker();
    }
 
    /**
@@ -537,7 +537,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * Give the callback worker thread a kick to deliver the messages. 
     * Throws no exception.
     */
-   private void activateDeliveryWorker() {
+   private void activateDispatchWorker() {
 
       if (checkSending() == false)
          return;
@@ -556,7 +556,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       
       // Messages are sent delayed on timeout (burst mode)
 
-      if (log.TRACE) log.trace(ME, "Executing useBurstModeTimer() collectTime=" + collectTime + " deliveryWorkerIsActive=" + deliveryWorkerIsActive);
+      if (log.TRACE) log.trace(ME, "Executing useBurstModeTimer() collectTime=" + collectTime + " dispatchWorkerIsActive=" + dispatchWorkerIsActive);
       synchronized (this) {
          if (this.isShutdown) return false;
          if (this.timerKey == null) {
@@ -583,22 +583,22 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @param fromTimeout for logging only
     */
    private void startWorkerThread(boolean fromTimeout) {
-      if (this.deliveryWorkerIsActive == false) {
+      if (this.dispatchWorkerIsActive == false) {
          //if (log.TRACE) log.trace(ME, "Doing startWorkerThread("+fromTimeout+")");
          synchronized (this) {
-            //if (log.TRACE) log.trace(ME, "Doing startWorkerThread(isShutdown="+this.isShutdown+", deliveryWorkerIsActive="+this.deliveryWorkerIsActive+") inside sync");
+            //if (log.TRACE) log.trace(ME, "Doing startWorkerThread(isShutdown="+this.isShutdown+", dispatchWorkerIsActive="+this.dispatchWorkerIsActive+") inside sync");
             if (this.isShutdown) {
                if (log.TRACE) log.trace(ME, "startWorkerThread() failed, we are shutdown: " + toXml(""));
                return;
             }
-            if (this.deliveryWorkerIsActive == false) { // send message directly
-               this.deliveryWorkerIsActive = true;
+            if (this.dispatchWorkerIsActive == false) { // send message directly
+               this.dispatchWorkerIsActive = true;
                this.notifyCounter = 0;
                try {
-                  this.glob.getDeliveryWorkerPool().execute(this, new DeliveryWorker(glob, this));
+                  this.glob.getDispatchWorkerPool().execute(this, new DispatchWorker(glob, this));
                }
                catch (Throwable e) {
-                  this.deliveryWorkerIsActive = false;
+                  this.dispatchWorkerIsActive = false;
                   log.error(ME, "Unexpected error occurred: " + e.toString());
                   e.printStackTrace();
                }
@@ -616,11 +616,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    public boolean isDead() {
-      return this.deliveryConnectionsHandler.isDead();
+      return this.dispatchConnectionsHandler.isDead();
    }
 
    public boolean isPolling() {
-      return this.deliveryConnectionsHandler.isPolling();
+      return this.dispatchConnectionsHandler.isPolling();
    }
 
    /**
@@ -644,12 +644,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          return false;
       }
 
-      if (this.deliveryConnectionsHandler.isUndef()) {
+      if (this.dispatchConnectionsHandler.isUndef()) {
          if (log.TRACE) log.trace(ME, "Not connected yet, state is UNDEF");
          return false;
       }
 
-      if (this.deliveryConnectionsHandler.isDead()) {
+      if (this.dispatchConnectionsHandler.isDead()) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
          if (log.TRACE) log.trace(ME, text);
          givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
@@ -669,7 +669,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          return true;
       }
 
-      if (this.deliveryConnectionsHandler.isPolling()) {
+      if (this.dispatchConnectionsHandler.isPolling()) {
          if (log.TRACE) log.trace(ME, "Can't send message as connection is lost and we are polling");
          return false;
       }
@@ -693,7 +693,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    /**
     * @return The interceptor plugin if available, otherwise null
     */
-   public I_MsgDeliveryInterceptor getMsgDeliveryInterceptor() {
+   public I_MsgDispatchInterceptor getMsgDeliveryInterceptor() {
       return this.msgInterceptor;
    }
 
@@ -701,25 +701,25 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * Set new callback addresses, typically after a session login/logout
     */
    public void setAddresses(AddressBase[] addr) throws XmlBlasterException {
-      this.deliveryConnectionsHandler.initialize(addr);
+      this.dispatchConnectionsHandler.initialize(addr);
    }
 
    /**
     * The worker notifies us that it is finished, if messages are available
     * it is triggered again.
     */
-   void setDeliveryWorkerIsActive(boolean val) {
-      this.deliveryWorkerIsActive = val;
+   void setDispatchWorkerIsActive(boolean val) {
+      this.dispatchWorkerIsActive = val;
       if (val == false) {
          if (this.isShutdown) {
-            if (log.TRACE) log.trace(ME, "setDeliveryWorkerIsActive(" + val + ") failed, we are shutdown: " + toXml(""));
+            if (log.TRACE) log.trace(ME, "setDispatchWorkerIsActive(" + val + ") failed, we are shutdown: " + toXml(""));
             return;
          }
 
          if (msgQueue.getNumOfEntries() > 0) {
             if (log.TRACE) log.trace(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.getNumOfEntries() + " messages.");
             try {
-               activateDeliveryWorker();
+               activateDispatchWorker();
             }
             catch(Throwable e) {
                log.error(ME, e.toString()); e.printStackTrace(); // Assure the queue is flushed with another worker
@@ -746,8 +746,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    /**
     * @return A container holding some statistical delivery information
     */
-   public DeliveryStatistic getDeliveryStatistic() {
-      return this.deliveryConnectionsHandler.getDeliveryStatistic();
+   public DispatchStatistic getDispatchStatistic() {
+      return this.dispatchConnectionsHandler.getDispatchStatistic();
    }
 
    /**
@@ -775,22 +775,22 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             }
             //this.msgInterceptor = null;
          }
-         if (this.deliveryConnectionsHandler != null) {
-            this.deliveryConnectionsHandler.shutdown();
-            //this.deliveryConnectionsHandler = null;
+         if (this.dispatchConnectionsHandler != null) {
+            this.dispatchConnectionsHandler.shutdown();
+            //this.dispatchConnectionsHandler = null;
          }
          removeBurstModeTimer();
          //this.msgQueue = null;
          //this.failureListener = null;
          //this.securityInterceptor = null;
 
-         //if (this.deliveryWorkerPool != null) {
-         //   this.deliveryWorkerPool.shutdown(); NO: not here, is the scope and duty of Global
-         //   this.deliveryWorkerPool = null;
+         //if (this.dispatchWorkerPool != null) {
+         //   this.dispatchWorkerPool.shutdown(); NO: not here, is the scope and duty of Global
+         //   this.dispatchWorkerPool = null;
          //}
 
-         if (this.syncDeliveryWorker != null)
-            this.syncDeliveryWorker.shutdown();
+         if (this.syncDispatchWorker != null)
+            this.syncDispatchWorker.shutdown();
       }
    }
 
@@ -812,13 +812,13 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<DeliveryManager id='").append(getId());
+      sb.append(offset).append("<DispatchManager id='").append(getId());
       if (this.msgQueue != null)
          sb.append(offset).append("' numEntries='").append(this.msgQueue.getNumOfEntries());
       sb.append("' isShutdown='").append(this.isShutdown).append("'>");
-      sb.append(this.deliveryConnectionsHandler.toXml(extraOffset+Constants.INDENT));
-      sb.append(offset).append(" <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
-      sb.append(offset).append("</DeliveryManager>");
+      sb.append(this.dispatchConnectionsHandler.toXml(extraOffset+Constants.INDENT));
+      sb.append(offset).append(" <dispatchWorkerIsActive>").append(dispatchWorkerIsActive).append("</dispatchWorkerIsActive>");
+      sb.append(offset).append("</DispatchManager>");
 
       return sb.toString();
    }

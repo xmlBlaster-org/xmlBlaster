@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 
 /**
- * Helper class encapsulates xmlBlaster access for PriorizedDeliveryPlugin. 
+ * Helper class encapsulates xmlBlaster access for PriorizedDispatchPlugin. 
  * <p>
  * We subscribe to a status message which describes the current connection to the remote side.
  * </p>
@@ -56,7 +56,7 @@ public final class XmlBlasterNativeClient implements I_Callback
    private String ME = "dispatch.plugins.prio.XmlBlasterNativeClient";
    private Global glob;
    private LogChannel log;
-   private PriorizedDeliveryPlugin plugin;
+   private PriorizedDispatchPlugin plugin;
    /* // Native xmlBlaster access currently not implemented, using remote client xmlBlasterConnection access instead
    private final I_Authenticate authenticate;
    private final I_XmlBlaster xmlBlasterImpl;
@@ -77,7 +77,7 @@ public final class XmlBlasterNativeClient implements I_Callback
    /**
     * Creates a remote client to xmlBlaster. 
     */
-   public XmlBlasterNativeClient(final Global glob_, PriorizedDeliveryPlugin plugin, String sessionId) throws XmlBlasterException {
+   public XmlBlasterNativeClient(final Global glob_, PriorizedDispatchPlugin plugin, String sessionId) throws XmlBlasterException {
       this.glob = glob_.getClone(null);
       this.log = this.glob.getLog("dispatch");
       this.plugin = plugin;
@@ -93,12 +93,12 @@ public final class XmlBlasterNativeClient implements I_Callback
 
       // Connect as a remote client ...
       xmlBlasterCon = this.glob.getXmlBlasterAccess();
-      this.loginName = this.glob.getProperty().get("PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin");
-      String passwd = this.glob.getProperty().get("PriorizedDeliveryPlugin.password", "secret");
+      this.loginName = this.glob.getProperty().get("PriorizedDispatchPlugin.user", "_PriorizedDispatchPlugin");
+      String passwd = this.glob.getProperty().get("PriorizedDispatchPlugin.password", "secret");
       this.cbSessionId = passwd;
       this.connectQos = new ConnectQos(this.glob, loginName, passwd);
       this.connectQos.setSessionTimeout(0L);
-      this.connectQos.setMaxSessions(this.glob.getProperty().get("PriorizedDeliveryPlugin.session.maxSessions", 10));
+      this.connectQos.setMaxSessions(this.glob.getProperty().get("PriorizedDispatchPlugin.session.maxSessions", 10));
 
       Address address = new Address(this.glob);
       address.setDispatchPlugin("undef");  // To avoid recursive loading of this PRIO plugin
@@ -330,7 +330,7 @@ public final class XmlBlasterNativeClient implements I_Callback
    }
    
    /**
-    * @see I_MsgDeliveryInterceptor#shutdown()
+    * @see I_MsgDispatchInterceptor#shutdown()
     */ 
    synchronized void shutdown() {
       if (log.TRACE) log.trace(ME, "shutdown()");

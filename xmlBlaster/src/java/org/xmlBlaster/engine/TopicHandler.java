@@ -19,7 +19,6 @@ import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -36,17 +35,13 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.engine.qos.UpdateQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -166,7 +161,7 @@ public final class TopicHandler implements I_Timeout
       TopicHandler t = this.requestBroker.addTopicHandler(this);
       if (t != null) {
          log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
       
       if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
@@ -200,7 +195,7 @@ public final class TopicHandler implements I_Timeout
       TopicHandler t = requestBroker.addTopicHandler(this);
       if (t != null) {
          log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
       if (log.CALL) log.trace(ME, "Creating new TopicHandler.");
    }
@@ -561,7 +556,7 @@ public final class TopicHandler implements I_Timeout
          } // synchronized
 
          // NOTE: Putting entries into callback queues must be outside of a synchronized(topicHandler) to avoid deadlock
-         //       The DeliveryWorker removes a MsgUnitWrapper entry from the msgstore (see entryDestroyed()) and would deadlock
+         //       The DispatchWorker removes a MsgUnitWrapper entry from the msgstore (see entryDestroyed()) and would deadlock
 
          //----- 2a. now we can send updates to all destination clients:
          if (publishQosServer.isPtp()) {
@@ -832,7 +827,7 @@ public final class TopicHandler implements I_Timeout
    /**
     * If a callback fails, we remove it from the subscription. 
     * <p />
-    * Generating dead letter and auto-logout to release all resources is done by DeliveryWorker.
+    * Generating dead letter and auto-logout to release all resources is done by DispatchWorker.
     */
    private void handleCallbackFailed(Set removeSet) throws XmlBlasterException {
       if (removeSet != null) {
@@ -930,7 +925,7 @@ public final class TopicHandler implements I_Timeout
     */
    private final void invokeCallback(SessionInfo publisherSessionInfo, MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
       if (log.TRACE) log.trace(ME, "Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
@@ -971,7 +966,7 @@ public final class TopicHandler implements I_Timeout
       if (!sub.getSessionInfo().hasCallback()) {
          log.error(ME, "Internal problem: A client which subcribes should have a callback server: "
                        + ((publisherSessionInfo != null) ? publisherSessionInfo.toXml("") : ""));
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          return 0;
       }
       if (isUnconfigured()) {
@@ -980,7 +975,7 @@ public final class TopicHandler implements I_Timeout
       }
       if (isUnreferenced()) {
          log.error(ME, "PANIC: invoke callback is strange in state 'UNREFERENCED'");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          return 0;
       }
 
@@ -989,7 +984,7 @@ public final class TopicHandler implements I_Timeout
                        ((publisherSessionInfo != null) ? publisherSessionInfo.toXml() + "\n" : "") +
                        ((sub != null) ? sub.toXml() + "\n" : "") +
                        ((this.historyQueue != null) ? this.historyQueue.toXml("") : ""));
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
 
@@ -1041,7 +1036,7 @@ public final class TopicHandler implements I_Timeout
                      requestBroker.deadMessage(entries, null, reason);
                      
                      // 2. This error handling is wrong as the plugin should not invalidate the subscribe:
-                     //sub.getSessionInfo().getDeliveryManager().internalError(e); // calls MsgErrorHandler
+                     //sub.getSessionInfo().getDispatchManager().internalError(e); // calls MsgErrorHandler
                      
                      // 3. This error handling is wrong as we handle a subscribe and not a publish:
                      /*
@@ -1075,7 +1070,7 @@ public final class TopicHandler implements I_Timeout
                                         msgUnitWrapper.getMsgQosData().getSender();
             if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
                                sub.getSessionInfo().getId() + " failed: " + e.toString());
-            sub.getSessionInfo().getDeliveryManager().internalError(e); // calls MsgErrorHandler
+            sub.getSessionInfo().getDispatchManager().internalError(e); // calls MsgErrorHandler
             //retCount does not change
          }
       } // for iMsg
@@ -1172,7 +1167,7 @@ public final class TopicHandler implements I_Timeout
       if (num > 0L && !this.dyingInProgress && !isAlive() && !isUnconfigured()) { // assert
          // isUnconfigured is possible on administrative startup with persistent messages
          log.error(ME, "Internal problem: we have messages but are not alive: " + toXml());
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
       return num;
    }
@@ -1232,7 +1227,7 @@ public final class TopicHandler implements I_Timeout
                      ((this.msgUnitCache != null) ? this.msgUnitCache.toXml("") + "\n" : "") +
                      ((this.historyQueue != null) ? this.historyQueue.toXml("") : "")
                      );
-                  Thread.currentThread().dumpStack();
+                  Thread.dumpStack();
                }
                if (historyDestroyList == null) historyDestroyList = new ArrayList();
                historyDestroyList.add(entry);
@@ -1477,7 +1472,7 @@ public final class TopicHandler implements I_Timeout
             else {
                if (!isUnconfigured()) {
                   log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
-                  Thread.currentThread().dumpStack();
+                  Thread.dumpStack();
                   return;
                }
             }

@@ -60,7 +60,7 @@
       </p>
       <ul>
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
-         <li>I_MsgDeliveryInterceptor: Which forces you to implement some methods which allows you to control the message flow</li>
+         <li>I_MsgDispatchInterceptor: Which forces you to implement some methods which allows you to control the message flow</li>
       </ul>
       This is simple and straight forward (see requirement delivery.plugin.priorizedDelivery).
       </p>
@@ -75,7 +75,7 @@
       </p>
       <p>
       For the above example exists an implementation which you can use or change
-      to your needs, see the <i>PriorizedDeliveryPlugin</i> link below.
+      to your needs, see the <i>PriorizedDispatchPlugin</i> link below.
       </p>
    </description>
    <configuration where="server">
@@ -116,14 +116,14 @@
       requirement delivery.plugin.priorizedDelivery (see link below)
       </p -->
    </configuration>
-   <see type="API">org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor</see>
-   <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin</see>
+   <see type="API">org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor</see>
+   <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">delivery.plugin.priorizedDelivery</see>
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 10 30</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

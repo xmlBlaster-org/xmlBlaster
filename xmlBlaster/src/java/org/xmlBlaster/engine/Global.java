@@ -19,9 +19,9 @@ import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.protocol.CbProtocolManager;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
-import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
+import org.xmlBlaster.engine.dispatch.CbDispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
@@ -525,12 +525,12 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Returns the callback layer implementation 'CbDeliveryConnectionsHandler' on server side.
-    * In util.Global we return the client side implementation 'ClientDeliveryConnectionsHandler'
-    * @return A new instance of CbDeliveryConnectionsHandler
+    * Returns the callback layer implementation 'CbDispatchConnectionsHandler' on server side.
+    * In util.Global we return the client side implementation 'ClientDispatchConnectionsHandler'
+    * @return A new instance of CbDispatchConnectionsHandler
     */
-   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager) throws XmlBlasterException {
-      return new CbDeliveryConnectionsHandler(this, deliveryManager);
+   public DispatchConnectionsHandler createDispatchConnectionsHandler(DispatchManager dispatchManager) throws XmlBlasterException {
+      return new CbDispatchConnectionsHandler(this, dispatchManager);
    }
 
    /**

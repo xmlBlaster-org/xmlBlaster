@@ -48,19 +48,17 @@ public class XBMessageProducer implements MessageProducer {
       return this.deliveryMode;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getDisableMessageID()
+   /**
+    * xmlBlaster always creates a unique message id (the unique timestamp)
     */
    public boolean getDisableMessageID() throws JMSException {
-      // TODO Auto-generated method stub
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getDisableMessageTimestamp()
+   /**
+    * Ignored here since we always send the timestamp
     */
    public boolean getDisableMessageTimestamp() throws JMSException {
-      // TODO Auto-generated method stub
       return false;
    }
 

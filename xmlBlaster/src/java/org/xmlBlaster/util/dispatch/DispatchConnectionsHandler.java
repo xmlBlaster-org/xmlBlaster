@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryConnectionsHandler.java
+Name:      DispatchConnectionsHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
@@ -24,10 +24,10 @@ import java.util.ArrayList;
  * connection and invoke update()/updateOneway()/ping(). 
  * <p>
  * This instance is a 'logical connection' hiding multiple
- * 'physical' connections (called DeliveryConnection).
+ * 'physical' connections (called DispatchConnection).
  * </p>
  * <p>
- * One instance of this is used for each DeliveryManager (one logical connection).
+ * One instance of this is used for each DispatchManager (one logical connection).
  * </p>
  * <pre>
  *    State chart of the 'logical connection':
@@ -55,39 +55,39 @@ import java.util.ArrayList;
  * </p>
  * <p>
  * Note: toAlive(), toPolling() and toDead() are called
- *       by a single DeliveryConnection only, telling its state change.
+ *       by a single DispatchConnection only, telling its state change.
  * </p>
  * @author xmlBlaster@marcelruff.info
  */
-abstract public class DeliveryConnectionsHandler
+abstract public class DispatchConnectionsHandler
 {
    public final String ME;
    protected final Global glob;
    protected final LogChannel log;
-   protected final DeliveryManager deliveryManager;
-   protected final DeliveryStatistic statistic;
+   protected final DispatchManager dispatchManager;
+   protected final DispatchStatistic statistic;
 
-   /** holds all DeliveryConnection instances */
+   /** holds all DispatchConnection instances */
    private ArrayList conList = new ArrayList();
-   private final DeliveryConnection[] DUMMY_ARR = new DeliveryConnection[0];
+   private final DispatchConnection[] DUMMY_ARR = new DispatchConnection[0];
 
    private ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
    
    /**
     * You need to call initialize() after construction. 
-    * @param deliveryManager The message queue witch i belong to
+    * @param dispatchManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public DeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager) throws XmlBlasterException {
-      this.ME = "DeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
+   public DispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
+      this.ME = "DispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
-      this.deliveryManager = deliveryManager;
-      this.statistic = new DeliveryStatistic();
+      this.dispatchManager = dispatchManager;
+      this.statistic = new DispatchStatistic();
    }
 
-   public final DeliveryManager getDeliveryManager() {
-      return this.deliveryManager;
+   public final DispatchManager getDispatchManager() {
+      return this.dispatchManager;
    }
 
    /**
@@ -100,7 +100,7 @@ abstract public class DeliveryConnectionsHandler
          
          if (cbAddr == null || cbAddr.length==0) {
             for (int ii=0; ii<conList.size(); ii++)
-               ((DeliveryConnection)conList.get(ii)).shutdown();
+               ((DispatchConnection)conList.get(ii)).shutdown();
             conList.clear();
             updateState(null);
             return;
@@ -113,13 +113,13 @@ abstract public class DeliveryConnectionsHandler
          for (int ii=0; ii<tmpList.size(); ii++) {
             boolean found = false;
             for (int jj=0; jj<cbAddr.length; jj++) {
-               if (((DeliveryConnection)tmpList.get(ii)).getAddress().equals(cbAddr[jj])) {
+               if (((DispatchConnection)tmpList.get(ii)).getAddress().equals(cbAddr[jj])) {
                   found = true;
                   break;
                }
             }
             if (!found) {
-               DeliveryConnection con = (DeliveryConnection)tmpList.get(ii);
+               DispatchConnection con = (DispatchConnection)tmpList.get(ii);
                log.info(ME, "Shutting down callback connection '" + con.getName() + "' because of new configuration.");
                con.shutdown();
             }
@@ -129,7 +129,7 @@ abstract public class DeliveryConnectionsHandler
          for (int ii=0; ii<cbAddr.length; ii++) {
             boolean found = false;
             for (int jj=0; jj<tmpList.size(); jj++) {
-               if (cbAddr[ii].equals(((DeliveryConnection)tmpList.get(jj)).getAddress())) {
+               if (cbAddr[ii].equals(((DispatchConnection)tmpList.get(jj)).getAddress())) {
                   found = true;
                   conList.add(tmpList.get(jj)); // reuse
                   break;
@@ -137,7 +137,7 @@ abstract public class DeliveryConnectionsHandler
             }
             if (!found) {
                try {  // This creates a client or cb instance with its plugin
-                  DeliveryConnection con = createDeliveryConnection(cbAddr[ii]);
+                  DispatchConnection con = createDispatchConnection(cbAddr[ii]);
                   try {
                      conList.add(con);
                      con.initialize();
@@ -161,7 +161,7 @@ abstract public class DeliveryConnectionsHandler
                   log.error(ME, "Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
                   throw XmlBlasterException.convert(glob, ME, "", e);
                }
-               // TODO: cleanup if exception is thrown by createDeliveryConnection()
+               // TODO: cleanup if exception is thrown by createDispatchConnection()
             }
          }
          
@@ -174,18 +174,18 @@ abstract public class DeliveryConnectionsHandler
    }
 
    /**
-    * Create a DeliveryConnection instance and load the protocol plugin. 
+    * Create a DispatchConnection instance and load the protocol plugin. 
     * You should call initialie() later.
     */
-   abstract public DeliveryConnection createDeliveryConnection(AddressBase address) throws XmlBlasterException;
+   abstract public DispatchConnection createDispatchConnection(AddressBase address) throws XmlBlasterException;
 
 
    /** @return a currently alive callback connection or null */
-   public final DeliveryConnection getAliveDeliveryConnection() {
+   public final DispatchConnection getAliveDispatchConnection() {
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
-            if (((DeliveryConnection)conList.get(ii)).isAlive())
-               return ((DeliveryConnection)conList.get(ii));
+            if (((DispatchConnection)conList.get(ii)).isAlive())
+               return ((DispatchConnection)conList.get(ii));
          }
       }
       return null;
@@ -193,49 +193,49 @@ abstract public class DeliveryConnectionsHandler
 
    /** @return a currently alive callback connection or null */
    public final AddressBase getAliveAddress() {
-      DeliveryConnection con = getAliveDeliveryConnection();
+      DispatchConnection con = getAliveDispatchConnection();
       return (con == null) ? null : con.getAddress();
    }
 
    /** @return a currently dead callback connection or null */
    public final AddressBase getDeadAddress() {
-      DeliveryConnection con = getDeadDeliveryConnection();
+      DispatchConnection con = getDeadDispatchConnection();
       return (con == null) ? null : con.getAddress();
    }
 
    /** @return a dead callback connection or null */
-   public final DeliveryConnection getDeadDeliveryConnection() {
+   public final DispatchConnection getDeadDispatchConnection() {
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
-            if (((DeliveryConnection)conList.get(ii)).isDead())
-               return ((DeliveryConnection)conList.get(ii));
+            if (((DispatchConnection)conList.get(ii)).isDead())
+               return ((DispatchConnection)conList.get(ii));
          }
       }
       return null;
    }
 
    /** @return a copy snapshot of the current connections */
-   public final DeliveryConnection[] getConnectionsArrCopy() {
-      DeliveryConnection[] dest = null;
+   public final DispatchConnection[] getConnectionsArrCopy() {
+      DispatchConnection[] dest = null;
       synchronized (conList) {
-         dest = (DeliveryConnection[])conList.toArray(DUMMY_ARR);
+         dest = (DispatchConnection[])conList.toArray(DUMMY_ARR);
       }
       return dest;
    }
 
-   /** Call by DeliveryConnection on state transition */
-   final void toAlive(DeliveryConnection con) {
+   /** Call by DispatchConnection on state transition */
+   final void toAlive(DispatchConnection con) {
       updateState(null);
    }
 
-   /** Call by DeliveryConnection on state transition */
-   final void toPolling(DeliveryConnection con) {
+   /** Call by DispatchConnection on state transition */
+   final void toPolling(DispatchConnection con) {
       updateState(null);
    }
 
-   /** Call by DeliveryConnection on state transition */
-   final void toDead(DeliveryConnection con, XmlBlasterException ex) {
-      removeDeliveryConnection(con); // does updateState()
+   /** Call by DispatchConnection on state transition */
+   final void toDead(DispatchConnection con, XmlBlasterException ex) {
+      removeDispatchConnection(con); // does updateState()
       updateState(ex);
    }
 
@@ -250,13 +250,13 @@ abstract public class DeliveryConnectionsHandler
       //Thread.currentThread().dumpStack();
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
-            if (((DeliveryConnection)conList.get(ii)).isAlive()) {
+            if (((DispatchConnection)conList.get(ii)).isAlive()) {
                this.state = ConnectionStateEnum.ALIVE;
                if (oldState != this.state)
-                  deliveryManager.toAlive(oldState);
+                  dispatchManager.toAlive(oldState);
                return;
             }
-            else if (((DeliveryConnection)conList.get(ii)).isPolling()) {
+            else if (((DispatchConnection)conList.get(ii)).isPolling()) {
                tmp = ConnectionStateEnum.POLLING;
             }
          }
@@ -264,12 +264,12 @@ abstract public class DeliveryConnectionsHandler
       if (tmp == ConnectionStateEnum.POLLING) {
          this.state = ConnectionStateEnum.POLLING;
          if (oldState != this.state)
-            deliveryManager.toPolling(oldState);
+            dispatchManager.toPolling(oldState);
       }
       else if (tmp == ConnectionStateEnum.DEAD) {
          this.state = ConnectionStateEnum.DEAD;
          if (oldState != this.state)
-            deliveryManager.toDead(oldState, ex);
+            dispatchManager.toDead(oldState, ex);
       }
       else {
          this.state = tmp;
@@ -310,14 +310,14 @@ abstract public class DeliveryConnectionsHandler
       return this.state;
    }
 
-   private final void removeDeliveryConnection(DeliveryConnection con) {
-      if (log.CALL) log.call(ME, "removeDeliveryConnection(" + con.getName() + ") ...");
+   private final void removeDispatchConnection(DispatchConnection con) {
+      if (log.CALL) log.call(ME, "removeDispatchConnection(" + con.getName() + ") ...");
       synchronized (conList) {
          try {
             con.shutdown();
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "removeDeliveryConnection() could not shutdown properly. " + ex.getMessage());
+            this.log.error(ME, "removeDispatchConnection() could not shutdown properly. " + ex.getMessage());
          }
          conList.remove(con);
       }
@@ -348,9 +348,9 @@ abstract public class DeliveryConnectionsHandler
          // Try to find a connection which delivers the message ...
          // PtP messages from the subject Queue are delivered to all reachable sessions of this user ...
 
-      DeliveryConnection[] cons = getConnectionsArrCopy(); // take a snapshot
+      DispatchConnection[] cons = getConnectionsArrCopy(); // take a snapshot
       for (int ii=0; ii<cons.length; ii++) {
-         DeliveryConnection con = cons[ii];
+         DispatchConnection con = cons[ii];
          if (log.TRACE) log.trace(ME, "Trying cb# " + ii + " state=" + con.getState().toString() + " ...");
          if (con.isAlive()) {
             try {
@@ -395,7 +395,7 @@ abstract public class DeliveryConnectionsHandler
    /**
     * @return A container holding some statistical delivery information
     */
-   public final DeliveryStatistic getDeliveryStatistic() {
+   public final DispatchStatistic getDispatchStatistic() {
       return this.statistic; 
    }
 
@@ -407,7 +407,7 @@ abstract public class DeliveryConnectionsHandler
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
             try {
-               ((DeliveryConnection)conList.get(ii)).shutdown();
+               ((DispatchConnection)conList.get(ii)).shutdown();
             }
             catch (XmlBlasterException ex) {
                this.log.error(ME, "shutdown() could not shutdown properly. " + ex.getMessage());
@@ -428,16 +428,16 @@ abstract public class DeliveryConnectionsHandler
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<DeliveryConnectionsHandler state='").append(this.state.toString()).append("'>");
+      sb.append(offset).append("<DispatchConnectionsHandler state='").append(this.state.toString()).append("'>");
       if (this.conList.size() < 1)
-         sb.append(offset).append(" <noDeliveryConnection/>");
+         sb.append(offset).append(" <noDispatchConnection/>");
       else {
-         DeliveryConnection[] arr = getConnectionsArrCopy();
+         DispatchConnection[] arr = getConnectionsArrCopy();
          for (int ii=0; ii<arr.length; ii++) {
             sb.append(offset).append(" <" + arr[ii].getDriverName() + " />");
          }
       }
-      sb.append(offset).append("</DeliveryConnectionsHandler>");
+      sb.append(offset).append("</DispatchConnectionsHandler>");
 
       return sb.toString();
    }

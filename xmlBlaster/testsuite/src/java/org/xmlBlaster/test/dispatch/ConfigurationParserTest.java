@@ -20,7 +20,7 @@ import junit.framework.*;
  * <p />
  * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.dispatch.ConfigurationParserTest
  * @see org.xmlBlaster.util.dispatch.plugins.prio.ConfigurationParser
- * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+ * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.priorizedDelivery.html" target="others">the dispatch.plugin.priorizedDelivery requirement</a>
  * @author xmlBlaster@marcelruff.info
  */

@@ -111,7 +111,7 @@ EmailDriver.from=xmlblast@localhost
 #------------------------------------------------------------------------------
 # Customize dispatcher plugin
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html
-DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
 #DispatchPlugin/defaultPlugin=Priority,1.0
 dispatch/connection/DispatchPlugin/defaultPlugin=undef
 dispatch/callback/DispatchPlugin/defaultPlugin=undef
@@ -121,8 +121,8 @@ dispatch/callback/DispatchPlugin/defaultPlugin=undef
 #dispatch/callback/DispatchPlugin/defaultPlugin=Priority,1.0
 #dispatch/callback/DispatchPlugin/defaultPlugin=undef
 
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.plugin.priorizedDelivery.html
-PriorizedDeliveryPlugin/config=<msgDispatch defaultStatus='64k' defaultAction='send'> \
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.priorizedDispatch.html
+PriorizedDispatchPlugin/config=<msgDispatch defaultStatus='64k' defaultAction='send'> \
    <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'> \
      <action do='send'  ifPriority='7-9'/> \
      <action do='queue'  ifPriority='2-6'/> \

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      I_MsgDeliveryInterceptor.java
+Name:      I_MsgDispatchInterceptor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ package org.xmlBlaster.util.dispatch.plugins;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * </p>
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
+public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
 {
    //public void initClientAccess(Global glob, I_XmlBlasterAccess con, I_CallbackDriver driver) throws XmlBlasterException;
 
@@ -33,7 +33,7 @@ public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
    /**
     * This is called once for each delivery manager using this plugin. 
     */
-   public void addDeliveryManager(DeliveryManager deliveryManager);
+   public void addDispatchManager(DispatchManager dispatchManager);
 
    /**
     * If there are new messages available in the queue, you get invoked
@@ -43,11 +43,11 @@ public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
     *               where we can decide which messages it will process<br />
     *         false: abort, don't start worker thread
     */
-   public boolean doActivate(DeliveryManager deliveryManager);
+   public boolean doActivate(DispatchManager dispatchManager);
 
    /**
     * If you returned true from doActivate() the worker thread will
-    * ask us to retrieve the next messages from the queue (deliveryManager.getQueue()). 
+    * ask us to retrieve the next messages from the queue (dispatchManager.getQueue()). 
     * <p>
     * This is where this plugin comes in action. The plugin may
     * filter the queue entries and for example only return high priority messages
@@ -61,11 +61,11 @@ public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
     * <pre>
     *  // take messages from queue (none blocking)
     *  // we take all messages with same priority as a bulk ...
-    *  ArrayList entryList = deliveryManager.getQueue().peekSamePriority(-1);
+    *  ArrayList entryList = dispatchManager.getQueue().peekSamePriority(-1);
     *
     *  // filter expired entries etc. ...
     *  // you should always call this method after taking messages from queue
-    *  entryList = deliveryManager.prepareMsgsFromQueue(entryList);
+    *  entryList = dispatchManager.prepareMsgsFromQueue(entryList);
     *
     *  // ... do plugin specific work ...
     *
@@ -80,12 +80,12 @@ public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
     *            other exceptions giving up delivery (as configured with I_MsgErrorHandler,
     *            usually shutdown queue and sending dead messages).
     */
-   public ArrayList handleNextMessages(DeliveryManager deliveryManager, ArrayList pushEntries) throws XmlBlasterException;
+   public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException;
 
    /**
-    * Deregister the given deliveryManager
+    * Deregister the given dispatchManager
     */
-   public void shutdown(DeliveryManager deliveryManager) throws XmlBlasterException;
+   public void shutdown(DispatchManager dispatchManager) throws XmlBlasterException;
 
    /**
     * Shutdown the implementation, sync with data store

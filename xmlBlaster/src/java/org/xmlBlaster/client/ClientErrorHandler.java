@@ -15,7 +15,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
@@ -73,11 +73,11 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
 
       if (shutdown) {
          log.error(ME, "Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
-         if (msgErrorInfo.getDeliveryManager() != null) {
-            msgErrorInfo.getDeliveryManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
+         if (msgErrorInfo.getDispatchManager() != null) {
+            msgErrorInfo.getDispatchManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
             if (xmlBlasterAccess.getQueue() != null)
                xmlBlasterAccess.getQueue().clear();
-            msgErrorInfo.getDeliveryManager().shutdown();
+            msgErrorInfo.getDispatchManager().shutdown();
             return;
          }
       }

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.23 2003/07/07 12:07:39 ruff Exp $
+Version:   $Id: Global.h,v 1.24 2003/10/15 13:13:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -15,7 +15,7 @@ Version:   $Id: Global.h,v 1.23 2003/07/07 12:07:39 ruff Exp $
 #include <util/Property.h>
 
 #include <client/protocol/CbServerPluginManager.h>
-#include <util/dispatch/DeliveryManager.h>
+#include <util/dispatch/DispatchManager.h>
 #include <util/Timeout.h>
 
 #include <string>
@@ -47,7 +47,7 @@ private:
    const char * const*    argc_;
    bool                   isInitialized_;
    org::xmlBlaster::client::protocol::CbServerPluginManager* cbServerPluginManager_;
-   org::xmlBlaster::util::dispatch::DeliveryManager* deliveryManager_;
+   org::xmlBlaster::util::dispatch::DispatchManager* dispatchManager_;
    Timeout*               pingTimer_;
    std::string            id_;
    thread::Mutex          pingerMutex_;
@@ -126,7 +126,7 @@ public:
 
     org::xmlBlaster::client::protocol::CbServerPluginManager& getCbServerPluginManager();
 
-    org::xmlBlaster::util::dispatch::DeliveryManager& getDeliveryManager();
+    org::xmlBlaster::util::dispatch::DispatchManager& getDispatchManager();
 
     Timeout& getPingTimer();
 

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryManagerEntry.java
+Name:      DispatchManagerEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -8,37 +8,37 @@ package org.xmlBlaster.util.dispatch.plugins.prio;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.queue.I_Queue;
 
 /**
- * Holds a deliveryManager and a plugin holdback queue. 
+ * Holds a dispatchManager and a plugin holdback queue. 
  * <p>
- * The plugin is used for many DeliveryManager instances. If
+ * The plugin is used for many DispatchManager instances. If
  * the plugin needs to hold back a message it is put into the holdback queue.
  * When the connection is fine again, the holdback queue is flushed to the
- * real queue of the DeliveryManager.
+ * real queue of the DispatchManager.
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html" target="others">the delivery.control.plugin requirement</a>
  * @author xmlBlaster@marcelruff.info
  */
-public final class DeliveryManagerEntry
+public final class DispatchManagerEntry
 {
-   private String ME = "DeliveryManagerEntry";
-   private final DeliveryManager deliveryManager;
+   private String ME = "DispatchManagerEntry";
+   private final DispatchManager dispatchManager;
    private I_Queue holdbackQueue;
    /** This is the configuration for the current connection state of the dispatcher framework or null: */
    private StatusConfiguration currConnectionStateConfiguration;
    private ConnectionStateEnum currConnectionState;
 
 
-   public DeliveryManagerEntry(DeliveryManager deliveryManager) {
-      this.deliveryManager = deliveryManager;
+   public DispatchManagerEntry(DispatchManager dispatchManager) {
+      this.dispatchManager = dispatchManager;
    }
 
-   public DeliveryManager getDeliveryManager() {
-      return this.deliveryManager;
+   public DispatchManager getDispatchManager() {
+      return this.dispatchManager;
    }
 
    public void setCurrConnectionStateConfiguration(StatusConfiguration conf) {

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      ClientDeliveryConnection.java
+Name:      ClientDispatchConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -19,8 +19,8 @@ import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.util.dispatch.DeliveryConnection;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -41,10 +41,10 @@ import java.io.IOException;
 /**
  * Holding all necessary infos to establish callback
  * connections and invoke their update().
- * @see DeliveryConnection
+ * @see DispatchConnection
  * @author xmlBlaster@marcelruff.info
  */
-public final class ClientDeliveryConnection extends DeliveryConnection
+public final class ClientDispatchConnection extends DispatchConnection
 {
    private final String ME;
    private I_XmlBlasterConnection driver;
@@ -55,10 +55,10 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
     * @param aAddress The address i shall connect to
     */
-   public ClientDeliveryConnection(Global glob, ClientDeliveryConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
+   public ClientDispatchConnection(Global glob, ClientDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
-      this.ME = "ClientDeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getStorageId();
-      this.securityInterceptor = connectionsHandler.getDeliveryManager().getMsgSecurityInterceptor();
+      this.ME = "ClientDispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
+      this.securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
    }
 
    public final String getDriverName() {
@@ -86,7 +86,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
    }
 
    /**
-    * @see DeliveryConnection#connectLowlevel()
+    * @see DispatchConnection#connectLowlevel()
     */
    public final void connectLowlevel() throws XmlBlasterException {
       if (this.driver == null)
@@ -178,7 +178,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
 
       if (MethodName.PUBLISH_ONEWAY == msgArr_[0].getMethodName()) {
          this.driver.publishOneway(msgUnitRawArr);
-         connectionsHandler.getDeliveryStatistic().incrNumPublish(msgUnitRawArr.length);
+         connectionsHandler.getDispatchStatistic().incrNumPublish(msgUnitRawArr.length);
          if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " oneway publish messages.");
          return;
       }
@@ -186,7 +186,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       if (log.TRACE) log.trace(ME, "Before publish " + msgArr.length + " acknowledged messages ...");
 
       String[] rawReturnVal = this.driver.publishArr(msgUnitRawArr);
-      connectionsHandler.getDeliveryStatistic().incrNumPublish(rawReturnVal.length);
+      connectionsHandler.getDispatchStatistic().incrNumPublish(rawReturnVal.length);
 
       if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " acknowledged publish messages, return value #1 is '" + rawReturnVal[0] + "'");
 
@@ -233,7 +233,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
 
       String rawReturnVal = this.driver.subscribe(key, qos); // Invoke remote server
 
-      connectionsHandler.getDeliveryStatistic().incrNumSubscribe(1);
+      connectionsHandler.getDispatchStatistic().incrNumSubscribe(1);
       
       if (subscribeEntry.wantReturnObj()) {
          if (securityInterceptor != null) { // decrypt return value ...
@@ -268,7 +268,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
 
       String[] rawReturnValArr = this.driver.unSubscribe(key, qos); // Invoke remote server
 
-      connectionsHandler.getDeliveryStatistic().incrNumUnSubscribe(1);
+      connectionsHandler.getDispatchStatistic().incrNumUnSubscribe(1);
       
       if (unSubscribeEntry.wantReturnObj()) {
          UnSubscribeReturnQos[] retQosArr = new UnSubscribeReturnQos[rawReturnValArr.length];
@@ -311,7 +311,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
 
       MsgUnitRaw[] rawReturnValArr = this.driver.get(key, qos); // Invoke remote server
 
-      connectionsHandler.getDeliveryStatistic().incrNumGet(1);
+      connectionsHandler.getDispatchStatistic().incrNumGet(1);
       
       MsgUnit[] msgUnitArr = new MsgUnit[rawReturnValArr.length];
       if (getEntry.wantReturnObj()) {
@@ -346,7 +346,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
 
       String[] rawReturnValArr = this.driver.erase(key, qos); // Invoke remote server
 
-      connectionsHandler.getDeliveryStatistic().incrNumErase(1);
+      connectionsHandler.getDispatchStatistic().incrNumErase(1);
       
       if (eraseEntry.wantReturnObj()) {
          EraseReturnQos[] retQosArr = new EraseReturnQos[rawReturnValArr.length];
@@ -389,7 +389,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       this.encryptedConnectQos = qos;
       String rawReturnVal = this.driver.connect(qos); // Invoke remote server
 
-      connectionsHandler.getDeliveryStatistic().incrNumConnect(1);
+      connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       
       if (securityInterceptor != null) { // decrypt return value ...
          rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
@@ -460,7 +460,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       // low level connect (e.g. on TCP/IP layer) and remote invoke method connect()
       String rawReturnVal = this.driver.connect(this.encryptedConnectQos); // Invoke remote server
 
-      connectionsHandler.getDeliveryStatistic().incrNumConnect(1);
+      connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       
       if (securityInterceptor != null) { // decrypt return value ...
          rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
@@ -498,13 +498,13 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset + "<ClientDeliveryConnection>");
+      sb.append(offset + "<ClientDispatchConnection>");
       super.address.toXml(" " + offset);
       if (driver == null)
          sb.append(offset).append(" <noProtocolDriver />");
       else
          sb.append(offset).append(" <address type='" + driver.getProtocol() + "' state='" + getState() + "'/>");
-      sb.append(offset).append("</ClientDeliveryConnection>");
+      sb.append(offset).append("</ClientDispatchConnection>");
 
       return sb.toString();
    }

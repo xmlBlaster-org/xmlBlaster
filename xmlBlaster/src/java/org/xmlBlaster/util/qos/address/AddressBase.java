@@ -111,7 +111,7 @@ public abstract class AddressBase
    /**
     * Does client whish a dispatcher plugin. 
     * <p>
-    * Set to "undef" forces to switch off, or e.g. "Priority,1.0" to access the PriorizedDeliveryPlugin
+    * Set to "undef" forces to switch off, or e.g. "Priority,1.0" to access the PriorizedDispatchPlugin
     * </p>
     * <p>
     * Setting it to 'null' (which is the default) lets the server choose the plugin
@@ -670,12 +670,12 @@ public abstract class AddressBase
    /**
     * Specify your dispatcher plugin configuration. 
     * <p>
-    * Set to "undef" to switch off, or to e.g. "Priority,1.0" to access the PriorizedDeliveryPlugin
+    * Set to "undef" to switch off, or to e.g. "Priority,1.0" to access the PriorizedDispatchPlugin
     * </p>
     * <p>
     * This overwrites the xmlBlaster.properties default setting e.g.:
     * <pre>
-    * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+    * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
     * DispatchPlugin[SlowMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.SlowMotion
     * DispatchPlugin/defaultPlugin=Priority,1.0
     * </pre>

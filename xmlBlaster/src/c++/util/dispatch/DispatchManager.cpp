@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryManager.cpp
+Name:      DispatchManager.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Manager to retrieve the correct callback protocol implementation
@@ -14,7 +14,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 
-#include <util/dispatch/DeliveryManager.h>
+#include <util/dispatch/DispatchManager.h>
 //  #include <util/dispatch/ConnectionsHandler.h>
 #ifdef COMPILE_CORBA_PLUGIN
 #  include <client/protocol/corba/CorbaDriverFactory.h>
@@ -30,8 +30,8 @@ using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::protocol;
 
-DeliveryManager::DeliveryManager(Global& global)
-   : ME("DeliveryManager"),
+DispatchManager::DispatchManager(Global& global)
+   : ME("DispatchManager"),
      global_(global),
      log_(global.getLog("dispatch"))
 {
@@ -39,12 +39,12 @@ DeliveryManager::DeliveryManager(Global& global)
 }
 
 
-DeliveryManager::~DeliveryManager()
+DispatchManager::~DispatchManager()
 {
    if (log_.call()) log_.call(ME, "::destructor");
 }
 
-void DeliveryManager::releasePlugin(const string& instanceName, const string& type, const string& version)
+void DispatchManager::releasePlugin(const string& instanceName, const string& type, const string& version)
 {
    if (log_.call()) log_.call(ME, "::releasePlugin");
    if (log_.trace())
@@ -74,7 +74,7 @@ void DeliveryManager::releasePlugin(const string& instanceName, const string& ty
                     embeddedMsg);
 }
 
-I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, const string& type, const string& version)
+I_XmlBlasterConnection& DispatchManager::getPlugin(const string& instanceName, const string& type, const string& version)
 {
    if (log_.call()) log_.call(ME, "::getPlugin");
    if (log_.trace())
@@ -107,7 +107,7 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, c
 }
 
 
-ConnectionsHandler* DeliveryManager::getConnectionsHandler(const string& instanceName)
+ConnectionsHandler* DispatchManager::getConnectionsHandler(const string& instanceName)
 {
    // it makes sense to have one per XmlBlasterAccess (must be destructed by the invoker of this method !!!)
    return new ConnectionsHandler(global_, instanceName);
@@ -130,7 +130,7 @@ int main(int args, char* argv[])
 {
     Global& glob = Global::getInstance();
     glob.initialize(args, argv);
-    DeliveryManager manager = glob.getDeliveryManager();
+    DispatchManager manager = glob.getDispatchManager();
     try {
        I_XmlBlasterConnection& conn = manager.getPlugin("IOR", "1.0");
     }

@@ -27,7 +27,10 @@ public class XBMessageConsumer implements MessageConsumer, MessageListener {
    protected String msgSelector;
    protected MessageListener msgListener;
    protected XBSession session;
-
+   protected boolean listenerStarted;
+   protected boolean waitingForReceive;
+   protected Message msg;
+   
    /**
     * 
     * @param access the connection to the xmlBlaster
@@ -43,6 +46,12 @@ public class XBMessageConsumer implements MessageConsumer, MessageListener {
       this.log = this.global.getLog("jms");
       this.msgSelector = msgSelector;
    }
+   
+   final protected synchronized void startToListen() throws JMSException {
+      if (this.listenerStarted) return;
+      if (this.session != null) this.session.setMessageListener(this);
+      this.listenerStarted = true;;
+   }
 
    public void close() throws JMSException {
       if (this.session != null) this.session.close();
@@ -56,41 +65,76 @@ public class XBMessageConsumer implements MessageConsumer, MessageListener {
       return this.msgSelector;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageConsumer#receive()
-    */
    public Message receive() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      return receive(-1L);
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageConsumer#receive(long)
-    */
-   public Message receive(long arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+   synchronized public Message receive(long delay) throws JMSException {
+      startToListen();
+      this.waitingForReceive = true;
+      try {
+         if (delay > -1L) wait(delay);
+         else wait();
+      }
+      catch (InterruptedException ex) {
+      }
+      this.waitingForReceive = false;
+      return this.msg;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageConsumer#receiveNoWait()
+   /**
+    * Currently the implementation is such that if no msgListener has been
+    * associated to this consumer, the onMessage blocks until receiveNoWait has
+    * been invoked (if there is a message pending). This has the disadvantage
+    * of blocking subscriptions of other sessions (or subscriptions on 
+    * other topics). Using the get() method of XmlBlasterAccess would always
+    * return the last message (which is not wanted here).
+    * TODO we would need something as 'noInitialUpdates' for the getQos. 
     */
-   public Message receiveNoWait() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+   synchronized public Message receiveNoWait() throws JMSException {
+      startToListen();
+      if (this.waitingForReceive) return null;
+      notify();
+      return this.msg;
    }
 
    synchronized public void setMessageListener(MessageListener msgListener) throws JMSException {
       if (this.msgListener == null) {
          this.msgListener = msgListener;
-         if (this.session != null) this.session.setMessageListener(this);
+         startToListen();
       }
       else this.msgListener = msgListener;
    }
 
+   public void onMessage1(Message msg) {
+      if (this.msgListener != null) {
+         this.msgListener.onMessage(msg);
+      }
+   }
+
    public void onMessage(Message msg) {
-      if (this.msgListener != null) this.msgListener.onMessage(msg);
-      // TODO the other stuff like notify receiveNoWait or receive ...
+      this.msg = msg;
+      if (this.waitingForReceive) {
+         synchronized (this) {
+            if (this.waitingForReceive) notify();
+         }
+      }
+      else {
+         if (this.msgListener != null) {
+            this.msgListener.onMessage(this.msg);
+         }
+         else { // TODO: see comments on receiveNoWait 
+            synchronized (this) {
+               if (this.msgListener != null) return;
+               try {
+                  wait();
+               }
+               catch (InterruptedException ex) {
+               }
+            }   
+         } 
+      }
+      this.msg = null;
    }
 
 }

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DeliveryWorker.java
+Name:      DispatchWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 
 import java.util.ArrayList;
@@ -24,21 +24,21 @@ import java.util.ArrayList;
  * Takes messages from the queue and tries to send them back to a client. 
  * @author xmlBlaster@marcelruff.info
  */
-public final class DeliveryWorker implements Runnable
+public final class DispatchWorker implements Runnable
 {
    public final String ME;
    private final Global glob;
    private final LogChannel log;
 
-   private DeliveryManager deliveryManager;
+   private DispatchManager dispatchManager;
    private I_Queue msgQueue;
 
-   public DeliveryWorker(Global glob, DeliveryManager mgr) {
+   public DispatchWorker(Global glob, DispatchManager mgr) {
       this.glob = glob;
       this.log = glob.getLog("dispatch");
-      this.deliveryManager = mgr;
+      this.dispatchManager = mgr;
       this.msgQueue = mgr.getQueue();
-      ME = "DeliveryWorker-" + this.msgQueue.getStorageId(); 
+      ME = "DispatchWorker-" + this.msgQueue.getStorageId(); 
    }
 
    /**
@@ -50,12 +50,12 @@ public final class DeliveryWorker implements Runnable
       if (log.CALL) log.call(ME, "Starting push remote delivery of " + ((entryList!=null)?entryList.size():0) + " entries.");
       MsgQueueEntry[] entries = null;
       try {
-         I_MsgDeliveryInterceptor msgInterceptor = deliveryManager.getMsgDeliveryInterceptor();
+         I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDeliveryInterceptor();
          if (msgInterceptor != null) {
             log.error(ME, "Communication dispatch plugin support is missing in sync mode - not implemented");
             /*!!! filter or whatever
             try {
-               entryList = msgInterceptor.handleNextMessages(deliveryManager, entryList); // should call prepareMsgsFromQueue() immediately
+               entryList = msgInterceptor.handleNextMessages(dispatchManager, entryList); // should call prepareMsgsFromQueue() immediately
             }
             catch (Throwable e) {
                entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
@@ -73,24 +73,24 @@ public final class DeliveryWorker implements Runnable
          
          if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ...");
          
-         deliveryManager.getDeliveryConnectionsHandler().send(entries); // entries are filled with return values
+         dispatchManager.getDispatchConnectionsHandler().send(entries); // entries are filled with return values
       }
       catch(Throwable throwable) {
-         deliveryManager.handleSyncWorkerException(entryList, throwable);
+         dispatchManager.handleSyncWorkerException(entryList, throwable);
       }
    }
 
    /**
-    * Asynchronous pull mode, invoked by DeliveryWorkerPool.execute() -> see DeliveryManager calling it
+    * Asynchronous pull mode, invoked by DispatchWorkerPool.execute() -> see DispatchManager calling it
     */
    public void run() {
       if (log.CALL) log.call(ME, "Starting remote delivery with " + this.msgQueue.getNumOfEntries() + " entries.");
       ArrayList entryList = null;
       ArrayList entryListChecked = null;
       try {
-         I_MsgDeliveryInterceptor msgInterceptor = deliveryManager.getMsgDeliveryInterceptor();
+         I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDeliveryInterceptor();
          if (msgInterceptor != null) {
-               entryListChecked = msgInterceptor.handleNextMessages(deliveryManager, null); // should call prepareMsgsFromQueue() immediately
+               entryListChecked = msgInterceptor.handleNextMessages(dispatchManager, null); // should call prepareMsgsFromQueue() immediately
                entryList = entryListChecked;
          }
          else {
@@ -98,7 +98,7 @@ public final class DeliveryWorker implements Runnable
                //entryList = (MsgQueueEntry[])this.msgQueue.take(-1); --> get()
                // not blocking and only all of the same priority:
                entryList = this.msgQueue.peekSamePriority(-1, -1L);
-               entryListChecked = deliveryManager.prepareMsgsFromQueue(entryList);
+               entryListChecked = dispatchManager.prepareMsgsFromQueue(entryList);
             }
          }
 
@@ -112,7 +112,7 @@ public final class DeliveryWorker implements Runnable
             
             if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
             
-            deliveryManager.getDeliveryConnectionsHandler().send(entries);
+            dispatchManager.getDispatchConnectionsHandler().send(entries);
             
             if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
          }
@@ -133,10 +133,10 @@ public final class DeliveryWorker implements Runnable
          if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
       }
       catch(Throwable throwable) {
-         deliveryManager.handleWorkerException(entryList, throwable);
+         dispatchManager.handleWorkerException(entryList, throwable);
       }
       finally {
-         this.deliveryManager.setDeliveryWorkerIsActive(false);
+         this.dispatchManager.setDispatchWorkerIsActive(false);
          entryList = null;
          shutdown();
       }
@@ -144,7 +144,7 @@ public final class DeliveryWorker implements Runnable
 
    void shutdown() {
       // Commented out to avoid NPE
-      //this.deliveryManager = null;
+      //this.dispatchManager = null;
       //this.msgQueue = null;
    }
 }

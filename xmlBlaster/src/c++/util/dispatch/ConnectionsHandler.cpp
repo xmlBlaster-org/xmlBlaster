@@ -59,7 +59,7 @@ ConnectionsHandler::~ConnectionsHandler()
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
    if (connection_) {
-      global_.getDeliveryManager().releasePlugin(instanceName_, type, version);
+      global_.getDispatchManager().releasePlugin(instanceName_, type, version);
       connection_ = NULL;
    }
 
@@ -106,7 +106,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
    if (!connection_) {
-      connection_ = &(global_.getDeliveryManager().getPlugin(instanceName_, type, version));
+      connection_ = &(global_.getDispatchManager().getPlugin(instanceName_, type, version));
    }
    if (connectReturnQos_) {
       delete connectReturnQos_;

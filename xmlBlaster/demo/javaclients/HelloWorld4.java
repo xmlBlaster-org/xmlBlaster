@@ -62,11 +62,11 @@ public class HelloWorld4
                   XmlBlasterException ex = msgErrorInfo.getXmlBlasterException();
                   if (ex.isUser()) {
                      log.error(ME, "Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
-                     if (msgErrorInfo.getDeliveryManager() != null) {
-                        msgErrorInfo.getDeliveryManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
+                     if (msgErrorInfo.getDispatchManager() != null) {
+                        msgErrorInfo.getDispatchManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
                         if (msgErrorInfo.getQueue() != null)
                            msgErrorInfo.getQueue().clear();
-                        msgErrorInfo.getDeliveryManager().shutdown();
+                        msgErrorInfo.getDispatchManager().shutdown();
                         return;
                      }
                   }

@@ -66,7 +66,6 @@ public class XBSession implements Session, I_Callback {
    protected SubscribeReturnQos subscribeReturnQos;
    protected boolean durable = durableDefault;
 
-
    private class UpdateThread extends Thread {
       private XBMessage msg;
       private XBSession parent;
@@ -127,8 +126,7 @@ public class XBSession implements Session, I_Callback {
             }
             catch (Exception e) {
             }
-            
-            XBMessage msg = null;
+            XBMessage msg;
             switch (type) {
                case XBMessage.TEXT: msg = new XBTextMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
                case XBMessage.BYTES: msg = new XBBytesMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
@@ -149,6 +147,7 @@ public class XBSession implements Session, I_Callback {
                      if (this.ackMode == Session.CLIENT_ACKNOWLEDGE) this.log.trace(ME, "update: ack mode: CLIENT");
                      else this.log.trace(ME, "update: ack mode: DUPL");
                   } 
+
                   UpdateThread thread = new UpdateThread(this, msg);
                   synchronized (msg) {
                      if (this.log.TRACE) this.log.trace(ME, "update: starting the thread");

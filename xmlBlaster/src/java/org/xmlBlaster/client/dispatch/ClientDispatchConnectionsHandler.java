@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      ClientDeliveryConnectionsHandler.java
+Name:      ClientDispatchConnectionsHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -8,9 +8,9 @@ package org.xmlBlaster.client.dispatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
-import org.xmlBlaster.util.dispatch.DeliveryConnection;
-import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
@@ -35,27 +35,27 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 /**
  * Holding all necessary infos to establish a remote
  * connection and invoke publish(), subscribe(), connect() etc.
- * @see DeliveryConnectionsHandler
+ * @see DispatchConnectionsHandler
  * @author xmlBlaster@marcelruff.info
  */
-public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsHandler
+public final class ClientDispatchConnectionsHandler extends DispatchConnectionsHandler
 {
    public final String ME;
    
    /**
-    * @param deliveryManager The message queue witch i belong to
+    * @param dispatchManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public ClientDeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager) throws XmlBlasterException {
-      super(glob, deliveryManager);
-      this.ME = "ClientDeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
+   public ClientDispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
+      super(glob, dispatchManager);
+      this.ME = "ClientDispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
    }
 
    /**
-    * @return a new ClientDeliveryConnection instance which has its plugin loaded
+    * @return a new ClientDispatchConnection instance which has its plugin loaded
     */
-   public DeliveryConnection createDeliveryConnection(AddressBase address) throws XmlBlasterException {
-      ClientDeliveryConnection c = new ClientDeliveryConnection(glob, this, address);
+   public DispatchConnection createDispatchConnection(AddressBase address) throws XmlBlasterException {
+      ClientDispatchConnection c = new ClientDispatchConnection(glob, this, address);
       c.loadPlugin();
       return c;
    }
@@ -97,7 +97,7 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
          else if (MethodName.SUBSCRIBE == msgQueueEntry.getMethodName()) {
             MsgQueueSubscribeEntry entry = (MsgQueueSubscribeEntry)msgQueueEntry;
             if (entry.getSubscribeQos().getData().getSubscriptionId() == null) {
-               String subscriptionId = QueryKeyData.generateSubscriptionId(deliveryManager.getQueue().getStorageId().getPostfix());
+               String subscriptionId = QueryKeyData.generateSubscriptionId(dispatchManager.getQueue().getStorageId().getPostfix());
                entry.getSubscribeQos().setSubscriptionId(subscriptionId);
             }
             statRetQos.setSubscriptionId(entry.getSubscribeQos().getData().getSubscriptionId());

@@ -16,7 +16,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -84,7 +84,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    /** Client side queue during connection failure */
    private I_Queue clientQueue;
    /** The dispatcher framework **/
-   private DeliveryManager deliveryManager;
+   private DispatchManager dispatchManager;
    /** The object handling message delivery problems */
    private I_MsgErrorHandler msgErrorHandler;
    /** Client side helper classes to load the authentication xml string */
@@ -224,12 +224,12 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                   this.msgErrorHandler = new ClientErrorHandler(glob, this);
                }
 
-               this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
+               this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses());
 
                if (log.TRACE) log.trace(ME, "Switching to synchronous delivery mode ...");
-               this.deliveryManager.trySyncMode(true);
+               this.dispatchManager.trySyncMode(true);
 
                if (this.updateListener != null) { // Start a default callback server using same protocol
                   createDefaultCbServer();
@@ -239,7 +239,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
                // Try to connect to xmlBlaster ...
                this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
-               this.connectReturnQos.getData().setInitialConnectionState(this.deliveryManager.getDeliveryConnectionsHandler().getState());
+               this.connectReturnQos.getData().setInitialConnectionState(this.dispatchManager.getDispatchConnectionsHandler().getState());
             }
             catch (XmlBlasterException e) {
                if (isConnected()) disconnect(null);
@@ -264,12 +264,12 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.clientQueue.getNumOfEntries() > 0) {
             long num = this.clientQueue.getNumOfEntries();
             log.info(ME, "Sending now our " + num + " client side queued tail back messages");
-            this.deliveryManager.switchToASyncMode();
+            this.dispatchManager.switchToASyncMode();
             while (this.clientQueue.getNumOfEntries() > 0) {
                try { Thread.currentThread().sleep(20L); } catch( InterruptedException i) {}
             }
             log.info(ME, (num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
-            this.deliveryManager.switchToSyncMode();
+            this.dispatchManager.switchToSyncMode();
          }
       }
       else {
@@ -447,9 +447,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       if (disconnectQos.shutdownDispatcher()) {
-         if (this.deliveryManager != null) {
-            this.deliveryManager.shutdown();
-            this.deliveryManager = null;
+         if (this.dispatchManager != null) {
+            this.dispatchManager.shutdown();
+            this.dispatchManager = null;
          }
          if (this.clientQueue != null) {
             this.clientQueue.shutdown(); // added to make hsqldb shutdown 
@@ -788,11 +788,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Call by DeliveryManager on connection state transition. 
+    * Call by DispatchManager on connection state transition. 
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public void toAlive(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
+   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " connectInProgress=" + this.connectInProgress);
       if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
          log.info(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE +
@@ -800,7 +800,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                       " with " + this.clientQueue.getNumOfEntries() + " client side queued messages");
       }
       if (this.connectInProgress) {
-         deliveryManager.trySyncMode(true);
+         dispatchManager.trySyncMode(true);
          if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
             try {
                MsgQueueEntry entry = (MsgQueueEntry)this.clientQueue.peek();
@@ -847,11 +847,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Call by DeliveryManager on connection state transition. 
+    * Call by DispatchManager on connection state transition. 
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public void toPolling(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
+   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING + " connectInProgress=" + this.connectInProgress);
       if (this.connectInProgress) return;
       if (this.connectionListener != null) {
@@ -860,10 +860,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Call by DeliveryManager on connection state transition. 
+    * Call by DispatchManager on connection state transition. 
     * <p>Enforced by interface I_ConnectionStatusListener</p>
     */
-   public void toDead(DeliveryManager deliveryManager, ConnectionStateEnum oldState, String errorText) {
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
       if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD + " connectInProgress=" + this.connectInProgress);
       if (this.connectionListener != null) {
          this.connectionListener.reachedDead(oldState, this);
@@ -893,7 +893,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public ConnectionStateEnum getState() {
       if (!isConnected()) return ConnectionStateEnum.UNDEF;
-      return this.deliveryManager.getDeliveryConnectionsHandler().getState();
+      return this.dispatchManager.getDispatchConnectionsHandler().getState();
    }
 
    /**
@@ -902,7 +902,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public boolean isAlive() {
       if (!isConnected()) return false;
-      return this.deliveryManager.getDeliveryConnectionsHandler().isAlive();
+      return this.dispatchManager.getDispatchConnectionsHandler().isAlive();
    }
 
    /**
@@ -911,7 +911,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public boolean isPolling() {
       if (!isConnected()) return false;
-      return this.deliveryManager.getDeliveryConnectionsHandler().isPolling();
+      return this.dispatchManager.getDispatchConnectionsHandler().isPolling();
    }
 
    /**
@@ -920,7 +920,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public boolean isDead() {
       if (!isConnected()) return false;
-      return this.deliveryManager.getDeliveryConnectionsHandler().isDead();
+      return this.dispatchManager.getDispatchConnectionsHandler().isDead();
    }
 
    /**
@@ -998,8 +998,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<XmlBlasterAccess id='").append(this.getId());
-      if (this.deliveryManager != null && this.deliveryManager.getDeliveryConnectionsHandler() != null) {
-         sb.append("' state='").append(this.deliveryManager.getDeliveryConnectionsHandler().getState());
+      if (this.dispatchManager != null && this.dispatchManager.getDispatchConnectionsHandler() != null) {
+         sb.append("' state='").append(this.dispatchManager.getDispatchConnectionsHandler().getState());
       }
       sb.append("'>");
       sb.append(offset).append(" <connected>").append(isConnected()).append("</connected>");

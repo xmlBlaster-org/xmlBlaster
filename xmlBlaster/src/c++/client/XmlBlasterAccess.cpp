@@ -35,7 +35,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    cbServer_           = NULL;
    updateClient_       = NULL;
    connection_         = NULL;
-   deliveryManager_    = NULL;
+   dispatchManager_    = NULL;
    connectionProblems_ = NULL;
    instanceName_       = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
 }
@@ -55,7 +55,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
       delete connection_;
       connection_ = NULL;
    }
-   deliveryManager_    = NULL;
+   dispatchManager_    = NULL;
    updateClient_       = NULL;
    connectionProblems_ = NULL;
    if (log_.trace()) log_.trace(ME, "destructor ended");
@@ -81,15 +81,15 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
 
    if (log_.trace()) log_.trace(ME, string("::connect. CbServer done"));
    // currently the simple version will do it ...
-   if (!deliveryManager_) deliveryManager_ = &(global_.getDeliveryManager());
+   if (!dispatchManager_) dispatchManager_ = &(global_.getDispatchManager());
 
 /*
    string type = connectQos_.getServerRef().getType();
    string version = "1.0";
-   connection_ = &(deliveryManager_->getPlugin(type, version));
+   connection_ = &(dispatchManager_->getPlugin(type, version));
 */
    if (!connection_) {
-      connection_ = deliveryManager_->getConnectionsHandler(instanceName_);
+      connection_ = dispatchManager_->getConnectionsHandler(instanceName_);
    }
 
    if (connectionProblems_) {
