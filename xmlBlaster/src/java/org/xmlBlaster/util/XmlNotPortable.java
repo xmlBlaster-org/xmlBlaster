@@ -3,7 +3,7 @@ Name:      XmlNotPortable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlNotPortable hold none portable xml code
-Version:   $Id: XmlNotPortable.java,v 1.3 2002/04/19 10:58:01 ruff Exp $
+Version:   $Id: XmlNotPortable.java,v 1.4 2002/04/24 06:39:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -88,7 +88,8 @@ public class XmlNotPortable
     */
    public static final void mergeNode(org.w3c.dom.Document document, org.w3c.dom.Node node)
    {
-      if (Log.TRACE) Log.trace(ME, "mergeNode=" + node.toString());
+      if (Log.CALL) Log.call(ME, "mergeNode()");
+      if (Log.DUMP) Log.dump(ME, "mergeNode=" + node.toString());
 
       if (document instanceof org.apache.crimson.tree.XmlDocument) {
          ((org.apache.crimson.tree.XmlDocument)document).changeNodeOwner(node); // not DOM portable
@@ -99,7 +100,7 @@ public class XmlNotPortable
 
       document.getDocumentElement().appendChild(node);
 
-      if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
+      if (Log.CALL) Log.call(ME, "Successfully merged tree");
    }
 
 
