@@ -27,13 +27,16 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
 
 /**
- * This is an xmlBlaster proxy. It implements the interface I_XmlBlasterConnection. 
- * The client can invoke it as if the
- * xmlBlaster would be on the same VM, making this way the xml-rpc protocol
- * totally transparent.
- * <p />
+ * A local connections.
+ * <p>This driver may be used to get in vm direct calls into XmlBlaster. Some sutiations this may be used is to write a plgin for the client that gets started in the standalone XmlBlaster, or to be used when XMlBlaster is access in the same embedded anvironment, such as JBoss.</p>
+ * <p>There is one very important requirement for this to work: The client
+ that gets the XmlBlasterAccess from wich this driver is instantiated MUST
+ have access to the serverside engine.Global singleton, it MUST use a cloned Global for each connection that contains the engine.Global in the cloned globals objectEntry at key: ServerNodeScope.</p>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
+ * @author <a href="mailto:pra@tim.se">Peter Antman</a>.
+ * @see LocalCallbackImpl
+ * @see org.xmlBlaster.protocol.local.CallbackLocalDriver
  */
 public class LocalConnection implements I_XmlBlasterConnection
 {
@@ -63,7 +66,8 @@ public class LocalConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * This method is called by the PluginManager (enforced by I_Plugin).
+    * <p>The given global must contain the serverside org.xmlBlaster.engine.Global in its ObjectEntry "ServerNodeScope"</p>
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
@@ -88,9 +92,7 @@ public class LocalConnection implements I_XmlBlasterConnection
       catch (Throwable ex) {
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize the driver.", ex);
       }
-
-      this.glob.addObjectEntry("org.xmlBlaster.client.protocol.local.LocalConnection", this);
-
+      
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
