@@ -46,6 +46,7 @@ public class TestAll
       suite.addTest(TestSubXPath.suite());
       suite.addTest(TestSubMulti.suite());
       suite.addTest(TestUnSub.suite());
+      suite.addTest(TestSubscribeFilter.suite());
       suite.addTest(TestPtD.suite());
       suite.addTest(TestPtDQueue.suite());
       suite.addTest(TestPersistence.suite());
