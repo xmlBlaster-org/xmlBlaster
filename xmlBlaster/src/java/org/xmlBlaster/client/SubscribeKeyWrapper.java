@@ -3,11 +3,11 @@ Name:      SubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.java,v 1.7 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: SubscribeKeyWrapper.java,v 1.8 2002/05/16 15:42:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -59,9 +59,13 @@ public class SubscribeKeyWrapper extends KeyWrapper
    {
       super("");
       this.queryType = queryType;
-      if (queryType == "EXACT")
+      if (queryType.equals(Constants.EXACT))
          oid = queryString;
-      else if (queryType == "XPATH")
+      /*
+      else if (queryType.equals(Constants.DOMAIN))
+         this.domain = queryString;
+      */
+      else if (queryType.equals(Constants.XPATH))
          this.queryString = queryString;
       else
          throw new XmlBlasterException(ME, "Your queryType=" + queryType + " is invalid, use one of \"EXACT\", \"XPATH\"");
@@ -98,12 +102,23 @@ public class SubscribeKeyWrapper extends KeyWrapper
    {
       queryString = str;
 
-      StringBuffer sb = new StringBuffer();
-      sb.append("<key oid='").append(oid).append("'");
-      sb.append(" queryType='").append(queryType).append("'");
-      sb.append(">\n");
-      sb.append(queryString);
-      sb.append("\n</key>");
+      StringBuffer sb = new StringBuffer(256);
+      sb.append("<key");
+      if (queryType.equals(Constants.EXACT)) {
+         sb.append(" oid='").append(oid).append("'");
+      }
+      if (domain.length() > 0) {
+         sb.append(" domain='").append(domain).append("'");
+      }
+      if (queryType.equals(Constants.XPATH)) {
+         sb.append(" queryType='").append(queryType).append("'>\n");
+         sb.append(queryString);
+         sb.append("\n</key>");
+      }
+      else {
+         sb.append("/>");
+      }
+
       return sb.toString();
    }
 }

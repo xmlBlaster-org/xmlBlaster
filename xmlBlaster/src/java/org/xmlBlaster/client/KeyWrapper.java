@@ -3,7 +3,7 @@ Name:      KeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: KeyWrapper.java,v 1.8 2002/05/15 17:30:43 ruff Exp $
+Version:   $Id: KeyWrapper.java,v 1.9 2002/05/16 15:41:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -31,6 +31,8 @@ public class KeyWrapper
 
    /** The default oid value is an empty string, in which case xmlBlaster generates an oid for you */
    protected String oid = "";
+   /** A hint to which cluster domain this subscribe belongs */
+   protected String domain = "";
 
 
    /**
@@ -68,17 +70,32 @@ public class KeyWrapper
    }
 
    /**
+    * Give a hint to which cluster domain this Key belongs. 
+    */
+   public void setDomain(String domain)
+   {
+      if (domain != null)
+         this.domain = domain;
+   }
+
+   /**
     * Converts the data in XML ASCII string.
     * <p />
     * This is the minimal key representation.<br />
     * You should provide your own toString() method.
     * @return An XML ASCII string
     */
-   public String toString()
+   public String toXml()
    {
-      StringBuffer sb = new StringBuffer();
-      sb.append("<key oid='").append(oid).append("'>\n");
-      sb.append("</key>");
+      StringBuffer sb = new StringBuffer(128);
+      sb.append("<key");
+      if (oid.length() > 0) {
+         sb.append(" oid='").append(oid).append("'");
+      }
+      if (domain.length() > 0) {
+         sb.append(" domain='").append(domain).append("'");
+      }
+      sb.append("/>");
       return sb.toString();
    }
 }
