@@ -3,6 +3,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o CorbaDriverFactory and SocketDriverFactory in c++ client keep now
+   driver instances with Global* as key instead of instanceName. 
+ 
+ o added individual callbacks for subscriptions in c++ client library
+ 
+ o added DisconnectQos::setClearClientQueue to c++ client library
+
  o Fixed C demo clients to use xmlBlasterFree() instead of free() directly
    Thanks to Martin Johnson <mjohnson@quickcut.com.au>
 
