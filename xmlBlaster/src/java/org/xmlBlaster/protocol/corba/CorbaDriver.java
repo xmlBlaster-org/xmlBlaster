@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.1 2000/06/04 23:44:46 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.2 2000/06/05 11:41:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -34,7 +34,7 @@ public class CorbaDriver implements I_Driver
    /** XmlBlaster internal http listen port is 7609, to access IOR for bootstrapping */
    public static final int DEFAULT_HTTP_PORT = 7609;
    /** The singleton handle for this xmlBlaster server */
-   private AuthServerImpl authServer = null; // !!!!! remove
+   private AuthServerImpl authServer = null;
    /** The singleton handle for this xmlBlaster server */
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -64,7 +64,6 @@ public class CorbaDriver implements I_Driver
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
 
-         // !!!!!!!!! This is all protocol specific !!! move away
          authServer = new AuthServerImpl(orb, authenticate, xmlBlasterImpl);
 
          // USING TIE:
