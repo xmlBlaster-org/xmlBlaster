@@ -1,4 +1,4 @@
-# $Id: jacorb.sh,v 1.6 2002/01/07 10:48:50 goetzger Exp $
+# $Id: jacorb.sh,v 1.7 2002/07/13 20:01:45 goetzger Exp $
 #-------- Checking JacORB --------
 # Is JacORB home not set already? Try to find where JacORB is:
 if [ "${JacORB_HOME}" = "" ] ; then
@@ -51,4 +51,5 @@ JACO_EXE=`${WHICH} jaco`
 JACO_BIN=`dirname ${JACO_EXE}`
 export IDL_OUTDIR="-d"
 export IDL2JAVA="${JACO_BIN}/idl -p org.xmlBlaster.protocol.corba"
-export JAVA_WRAP=jaco
+export JAVA_WRAP=java
+#export JAVA_WRAP=jaco
