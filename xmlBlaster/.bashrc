@@ -13,6 +13,9 @@
 #
 # If you want to access xmlBlaster using cvs, un comment following line:
 #   export CVSROOT=:pserver:reader@server.xmlBlaster.org:/opt/cvsroot
+#
+# Tested on Linux, HPUX and Solaris with sh, ksh and bash
+# Thanks to Heinrich Goetzger
 #-----------------------------------------------------------
 
 
@@ -22,20 +25,17 @@ ESC="\033[0m"
 
 OS="`uname -s`"
 
-if [ ${OS} = "Linux" ]; then
-   ECHO="echo -e"
-elif [ ${OS} = "SunOS" ]; then
-   # Works only with bash on SunOS. Bourne shell and ksh ignore '-e'
-   ECHO="echo -e"
+if [ `basename ${SHELL}` = "bash" ]; then
+	ECHO="echo -e"
 else
-   ECHO="echo"
+	ECHO="echo"
 fi
 
 
 #-------- Checking xmlBlaster --------
-if [ "x${XMLBLASTER_HOME}" = "x" ] ; then
+if [ ${XMLBLASTER_HOME:=""} = "" ] ; then
    ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
-   ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=/home/paul/xmlBlaster'   $ESC"
+	${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
    return
 fi
 
@@ -88,16 +88,16 @@ fi
 
 #-------- Checking JacORB --------
 # Is JacORB home not set already? Try to find where JacORB is:
-if [ "x${JacORB_HOME}" = "x" ] ; then
+if [ ${JacORB_HOME:=""} = "" ] ; then
    JACO_EXE=`which jaco`
-   if [ "x${JACO_EXE}" != "x" ] ; then
+   if [ ${JACO_EXE:=""} != "" ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
    fi
 fi
 
-if [ "x${JacORB_HOME}" = "x" ] ; then
+if [ ${JacORB_HOME:=""} = "" ] ; then
    # No external JacORB found, use the with xmlBlaster delivered JacORB:
    JacORB_HOME=${XMLBLASTER_HOME}
    export JacORB_HOME
@@ -135,7 +135,7 @@ fi
 
 
 #-------- Checking MICO --------
-if [ "x${MICO_HOME}" = "x" ] || [ ! -d ${MICO_HOME} ] ; then
+if [ ${MICO_HOME:=""} = "" ] || [ ! -d ${MICO_HOME} ] ; then
    ${ECHO} "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
    ${ECHO} "         Example: 'export MICO_HOME=/usr/local/mico'"
 else
@@ -145,7 +145,7 @@ fi
 
 
 #-------- Checking JDK version -
-if [ "x${JDK_HOME}" != "x" ] ; then
+if [ ${JDK_HOME:=""} != "" ] ; then
    if [ -d ${JDK_HOME} ] ; then
       if [ -f ${JDK_HOME}/lib/classes.zip ]; then
          # JDK 1.1.x
@@ -174,7 +174,7 @@ fi
 
 #-------- Checking jikes version -
 # use jikes 1.06 or better
-if [ "x${JIKES_HOME}" != "x" ] ; then
+if [ ${JIKES_HOME:=""} != "" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
