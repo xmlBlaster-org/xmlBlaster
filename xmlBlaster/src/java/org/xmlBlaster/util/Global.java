@@ -620,6 +620,7 @@ public class Global implements Cloneable
     * @param loadPropFile if loading of xmlBlaster.properties 
     *        file should be done, if false no loading of the file is done.
     * @return -1 on error
+    * @exception If no Property instance can be created
     */
    private int initProps(String[] args, boolean loadPropFile) {
       if (property == null) {
@@ -646,6 +647,8 @@ public class Global implements Cloneable
                      catch (JUtilsException e3) {
                         errorText = ME + " ERROR: " + e3.toString();
                         System.err.println(errorText);
+                        e3.printStackTrace();
+                        throw new IllegalArgumentException("Can't create Property instance: " + errorText);
                      }
                   }
                   return -1;
