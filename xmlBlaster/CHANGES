@@ -39,9 +39,8 @@ Changes for 0.79c [Sep, 05 2001]
    Please copy the modified config/xmlBlaster.properties.template
    to $HOME/xmlBlaster.properties
 
-   In xmlBlaster.properties uncomment the lines
-      Security.Client.ForcePlugin=gui,1.0
-      Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
+   In xmlBlaster.properties uncomment the line
+      Security.Client.DefaultPlugin=gui,1.0
    and start for example "java javaclients.ClientSub" to see xmlBlaster
    with GUI based manual authentication/authorization.
 
