@@ -10,6 +10,7 @@
             <xsd:element ref="topic"/>
             <xsd:element ref="description"/>
             <xsd:element ref="example" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="configuration" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="todo" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="done" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="see" minOccurs="0" maxOccurs="unbounded"/>
@@ -77,6 +78,18 @@
                   <xsd:enumeration value="Python"/>
                   <xsd:enumeration value="TCL"/>
                   <xsd:enumeration value="Javascript"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="configuration">
+      <xsd:complexType>
+         <xsd:attribute name="where" use="default" value="server">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="server"/>
+                  <xsd:enumeration value="client"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>

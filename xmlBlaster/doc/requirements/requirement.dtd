@@ -5,13 +5,14 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.14 2001/12/08 23:02:25 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.15 2002/03/13 06:17:40 ruff Exp $
 -->
 
 <!ELEMENT requirement (
    topic,
    description,
    example*,
+   configuration*,
    todo*,
    done*,
    see*,
@@ -30,6 +31,7 @@ Version:   $Id: requirement.dtd,v 1.14 2001/12/08 23:02:25 ruff Exp $
 <!ELEMENT topic  (%text;)>
 <!ELEMENT description  (%text;)>
 <!ELEMENT example  (%text;)> <!-- a nice example for the users -->
+<!ELEMENT configuration (%text;)> <!-- which parameters are how configurable -->
 <!ELEMENT todo  (%text;)>    <!-- even in CLOSED mode, is there something left to do? -->
 <!ELEMENT done  (%text;)>    <!-- change the 'todo' element to 'done' if it is implemented -->
 <!ELEMENT see  (%text;)>     <!-- a link to related topics -->
@@ -68,6 +70,8 @@ Version:   $Id: requirement.dtd,v 1.14 2001/12/08 23:02:25 ruff Exp $
           status (OPEN | INWORK | CLOSED) "OPEN">
 
 <!ATTLIST example lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript) "Java">
+
+<!ATTLIST configuration where (server | client) "server">
 
 <!--
    The type API allows the XSL to create a link into the xmlBlaster javadoc
