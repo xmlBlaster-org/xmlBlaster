@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.15 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.16 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,8 +16,7 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -124,9 +123,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
                       "</qos>";
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
-            publishOid = senderConnection.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit);
             Log.error(ME, "Publishing to a not logged in client should throw an exception");
             assert("Publishing to a not logged in client should throw an exception", false);
          } catch(XmlBlasterException e) {
@@ -153,9 +152,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
                       "</qos>";
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
-            publishOid = senderConnection.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit);
             Log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.error(ME, "publish() XmlBlasterException: " + e.reason);

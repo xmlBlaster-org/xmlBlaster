@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.9 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.10 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,8 +12,7 @@ import org.jutils.init.Property;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.*;
 
 import test.framework.*;
@@ -174,10 +173,10 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
                       "   </TestFailSavePing-AGENT>" +
                       "</key>";
       String content = "" + counter;
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
-      corbaConnection.publish(msgUnit, qosWrapper.toXml());
+      corbaConnection.publish(msgUnit);
       Log.info(ME, "Success: Publishing of " + oid + " done");
    }
 

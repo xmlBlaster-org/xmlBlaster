@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.5 2000/06/20 13:32:59 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.6 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,13 +11,13 @@ import org.jutils.log.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -38,7 +38,6 @@ import test.framework.*;
  */
 public class TestSubXPath extends TestCase implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
    private boolean messageArrived = false;
 
@@ -75,7 +74,7 @@ public class TestSubXPath extends TestCase implements I_Callback
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
@@ -99,7 +98,7 @@ public class TestSubXPath extends TestCase implements I_Callback
       String[] strArr = null;
       try {
          Log.info(ME, "Erasing the " + numPublish + " messages again");
-         strArr = xmlBlaster.erase(xmlKey, qos);
+         strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       assertEquals("Couldn't erase the correct number of messages", numPublish, strArr.length);
 
@@ -122,7 +121,7 @@ public class TestSubXPath extends TestCase implements I_Callback
       String subscribeOid = null;
       numReceived = 0;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done:\n" + xmlKey);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -151,9 +150,9 @@ public class TestSubXPath extends TestCase implements I_Callback
                          "</AGENT>" +
                          "</key>";
          String content = "Content: message_" + counter;
-         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          try {
-            publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+            publishOid = senderConnection.publish(msgUnit);
             Log.info(ME, "Success: Publishing #" + counter + " done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);

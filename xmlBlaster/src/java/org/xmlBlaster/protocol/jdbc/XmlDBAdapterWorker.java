@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.6 2000/06/18 15:22:01 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.7 2000/06/25 18:32:42 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -14,8 +14,8 @@ package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.Log;
 import org.xmlBlaster.util.pool.jdbc.*;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateQoS;
 import java.io.*;
@@ -39,7 +39,7 @@ public class XmlDBAdapterWorker extends Thread {
    private String                cust;
    private byte[]                content;
    private String                qos;
-   private Server                xmlBlaster;
+   private CorbaConnection       xmlBlaster = null;
 
    private XmlDocument           erorDocument = null;
 
@@ -56,7 +56,7 @@ public class XmlDBAdapterWorker extends Thread {
     * @see
     */
    public XmlDBAdapterWorker(String[] args, String cust, byte[] content,
-                             String qos, Server xmlBlaster) {
+                             String qos, CorbaConnection xmlBlaster) {
       this.args = args;
       this.cust = cust;
       this.content = content;
@@ -234,12 +234,12 @@ public class XmlDBAdapterWorker extends Thread {
       try {
          doc.write(bais);
 
-         MessageUnit mu = new MessageUnit(xmlKey, bais.toByteArray());
-         String      oid = xmlBlaster.publish(mu, qos);
+         MessageUnit mu = new MessageUnit(xmlKey, bais.toByteArray(), qos);
+         String      oid = xmlBlaster.publish(mu);
 
          System.out.println("Delivered Results...\n" + bais);
       }
-      catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      catch (XmlBlasterException e) {
          System.out.println("Exception in notify: " + e.reason);
       }
       catch (Exception e) {

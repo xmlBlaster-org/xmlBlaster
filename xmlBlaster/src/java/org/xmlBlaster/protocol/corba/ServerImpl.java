@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.10 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.11 2000/06/25 18:32:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -98,13 +98,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
+   public String publish(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit) throws XmlBlasterException
    {
       try {
          if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
          if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + blaster.toXml());
 
-         String retVal = blaster.publish(getSessionId(), msgUnit, qos_literal);
+         String retVal = blaster.publish(getSessionId(), CorbaDriver.convert(msgUnit));
 
          if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + blaster.toXml());
 
@@ -119,7 +119,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
       try {
          if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
@@ -133,7 +133,9 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          }
          if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
 
-         String[] strArr = blaster.publishArr(getSessionId(), msgUnitArr, qos_literal_Arr);
+         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(msgUnitArr);   // convert Corba to internal ...
+
+         String[] strArr = blaster.publishArr(getSessionId(), internalUnitArr);
 
          if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + blaster.toXml());
          return strArr;
@@ -170,19 +172,21 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     * @return content
     * @see xmlBlaster.idl
     */
-   public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
          if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
          if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + blaster.toXml());
          StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-         MessageUnitContainer[] msgUnitContainerArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
+         org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
+
+         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = CorbaDriver.convert(msgUnitArr);  // convert internal to Corba ...
 
          if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
          if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + blaster.toXml());
 
-         return msgUnitContainerArr;
+         return corbaUnitArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
@@ -191,48 +195,9 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * Setting attributes for a client.
-    * <p>
-    *
-    * @param clientName  The client which shall be administered
-    * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
-    *                    They are later queryable with XPath syntax<p>
-    *     <pre>
-    *        &lt;client name='tim'>
-    *           &lt;group>
-    *              Marketing
-    *           &lt;/group>
-    *           &lt;role>
-    *              Managing director
-    *           &lt;/role>
-    *        &lt;/client>
-    *     </pre>
-    * @param qos         Quality of Service, flags for additional informations to control administration
-    */
-   public void setClientAttributes(String clientName, String xmlAttr_literal,
-                            String qos_literal) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "Entering setClientAttributes(clientName=" + clientName/* + ", qos=" + qos_literal + ")"*/);
-
-      if (clientName==null || xmlAttr_literal==null || qos_literal==null) {
-         Log.error(ME+"InvalidArguments", "setClientAttributes failed: please use no null arguments for setClientAttributes()");
-         throw new XmlBlasterException(ME+"InvalidArguments", "setClientAttributes failed: please use no null arguments for setClientAttributes()");
-      }
-
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
-
-      // !!! TODO
-      Log.warning(ME, "Checking administrator privileges is not yet implemented");
-      throw new XmlBlasterException("NotImplemented", "Checking administrator privileges is not yet implemented");
-
-      // !? blaster.setClientAttributes(clientName, xmlAttr_literal, qos_literal);
-
-      //if (Log.TIME) Log.time(ME, "Elapsed time in setClientAttributes()" + stop.nice());
-   }
-
-
-   /**
-    * Extract the user session ID from POA
+    * Extract the user session ID from POA.
+    * <p />
+    * This is a nice feature with CORBA-POA not available with RMI et al.
     */
    private String getSessionId() throws XmlBlasterException
    {
@@ -246,7 +211,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
                                                       orb.resolve_initial_references("POACurrent"));
          active_oid = poa_current.get_object_id();
-         sessionId = ServerImpl.convert(active_oid);
+         sessionId = convert(active_oid);
       } catch (Exception e) {
          Log.error(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
          throw new XmlBlasterException("AccessCheckProblem", "Sorry, can't find out who you are, access denied");
@@ -279,10 +244,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * Ping to check if xmlBlaster is alive
+    * Ping to check if xmlBlaster is alive. 
+    * @return true
     */
-   public void ping()
+   public boolean ping()
    {
+      return true;
       // if (Log.CALLS) Log.calls(ME, "Entering ping() ...");
    }
 }

@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.3 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.4 2000/06/25 18:32:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -11,8 +11,7 @@ package org.xmlBlaster.protocol.rmi;
 import org.jutils.log.Log;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -81,12 +80,12 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * @see xmlBlaster.idl
     */
-   public String publish(String sessionId, MessageUnit msgUnit, String qos_literal) throws RemoteException, XmlBlasterException
+   public String publish(String sessionId, MessageUnit msgUnit) throws RemoteException, XmlBlasterException
    {
       try {
          if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
 
-         String retVal = blasterNative.publish(sessionId, msgUnit, qos_literal);
+         String retVal = blasterNative.publish(sessionId, msgUnit);
 
 
          return retVal;
@@ -100,7 +99,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr, String [] qos_literal_Arr) throws RemoteException, XmlBlasterException
+   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
       try {
          if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
@@ -113,7 +112,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
          }
          if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
 
-         String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr, qos_literal_Arr);
+         String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr);
 
          return strArr;
       }
@@ -147,17 +146,17 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     * @return content
     * @see xmlBlaster.idl
     */
-   public MessageUnitContainer[] get(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
+   public MessageUnit[] get(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
       try {
          if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
          StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-         MessageUnitContainer[] msgUnitContainerArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
+         MessageUnit[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
 
          if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
 
-         return msgUnitContainerArr;
+         return msgUnitArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception

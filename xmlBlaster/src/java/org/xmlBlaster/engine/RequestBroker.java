@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.74 2000/06/19 15:48:38 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.75 2000/06/25 18:32:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,12 +15,11 @@ import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
-import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
+import org.xmlBlaster.engine.I_PersistenceDriver;
 
 import java.util.*;
 import java.io.*;
@@ -33,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.74 $
+ * @version $Revision: 1.75 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -92,20 +91,8 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /** Flag for performance reasons only */
    private boolean usePersistence = true;
 
-   /** Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login) */
-   private String xmlKeyLoginEvent = null;
-
-   /** QoS for '__sys__Login' login event */
-   private PublishQoS publishQosLoginEvent = null;
-
    /** The messageUnit for a login event */
    private MessageUnit msgUnitLoginEvent = null;
-
-   /** Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout) */
-   private String xmlKeyLogoutEvent = null;
-
-   /** QoS for '__sys__Logout' logout event */
-   private PublishQoS publishQosLogoutEvent = null;
 
    /** The messageUnit for a logout event */
    private MessageUnit msgUnitLogoutEvent = null;
@@ -117,15 +104,17 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
-      this.xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
-      this.publishQosLoginEvent = new PublishQoS("<qos>\n   <forceUpdate/>\n</qos>");
-      this.msgUnitLoginEvent = new MessageUnit(xmlKeyLoginEvent, new byte[0]);
-
-      this.xmlKeyLogoutEvent = "<key oid='__sys__Logout' contentMime='text/plain'>\n</key>";
-      this.publishQosLogoutEvent = new PublishQoS("<qos>\n   <forceUpdate/>\n</qos>");
-      this.msgUnitLogoutEvent = new MessageUnit(xmlKeyLogoutEvent, new byte[0]);
-
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
+
+      // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
+      String xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
+      String publishQosLoginEvent = "<qos>\n   <forceUpdate/>\n</qos>";
+      this.msgUnitLoginEvent = new MessageUnit(xmlKeyLoginEvent, new byte[0], publishQosLoginEvent);
+
+      // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
+      String xmlKeyLogoutEvent = "<key oid='__sys__Logout' contentMime='text/plain'>\n</key>";
+      String publishQosLogoutEvent = "<qos>\n   <forceUpdate/>\n</qos>";
+      this.msgUnitLogoutEvent = new MessageUnit(xmlKeyLogoutEvent, new byte[0], publishQosLogoutEvent);
 
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
@@ -302,14 +291,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * </pre>
     * @return A sequence of 0 - n MessageUnit structs
     */
-   MessageUnitContainer[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
+   MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
 
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
-      MessageUnitContainer[] msgUnitContainerArr = new MessageUnitContainer[xmlKeyVec.size()];
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qos);
+      MessageUnit[] msgUnitArr = new MessageUnit[xmlKeyVec.size()];
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
@@ -323,15 +312,12 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
          }
 
-         // wrap msgUnit and qos into a MessageUnitContainer
-         MessageUnitContainer msgUnitContainer = new MessageUnitContainer();
-         msgUnitContainer.msgUnit = msgUnitHandler.getMessageUnit();
-         msgUnitContainer.qos = "<qos></qos>";
-         msgUnitContainerArr[ii] = msgUnitContainer;
+         msgUnitArr[ii] = msgUnitHandler.getMessageUnit().getClone();
+         msgUnitArr[ii].qos = "<qos></qos>";
       }
 
       getMessages += xmlKeyVec.size();
-      return msgUnitContainerArr;
+      return msgUnitArr;
    }
 
 
@@ -356,7 +342,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * </pre>
     *
     * @param clientInfo The client who triggered the refresh
-    * @return A sequence of 0...n MessageUnitContainer structs
+    * @return A sequence of 0...n MessageUnit structs
     */
    private void updateInternalStateInfo(ClientInfo clientInfo) throws XmlBlasterException
    {
@@ -381,15 +367,20 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    private void updateInternalStateInfoHelper(ClientInfo clientInfo, String oid, String content) throws XmlBlasterException
    {
-      String xmlKey = "<key oid='" + oid + "' contentMime='text/plain'>\n   <__sys__internal>\n   </__sys__internal>\n</key>";
-
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
-
-      PublishQoS publishQoS = new PublishQoS("<qos></qos>");
-
-      publish(clientInfo, msgUnit, publishQoS);
-
+      String xmlKey_literal = "<key oid='" + oid + "' contentMime='text/plain'>\n   <__sys__internal>\n   </__sys__internal>\n</key>";
+      String qos_literal = "<qos></qos>";
+      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), qos_literal);
+      publish(clientInfo, msgUnit); // can we could reuse the PublishQoS? -> better performing.
       if (Log.TRACE) Log.trace(ME, "Refreshed internal state for '" + oid + "'");
+   }
+
+
+   /**
+    * Internal publishing helper.
+    */
+   private String publish(ClientInfo clientInfo, MessageUnit msgUnit) throws XmlBlasterException
+   {
+      return publish(clientInfo, new XmlKey(msgUnit.xmlKey, true), msgUnit, new PublishQoS(msgUnit.qos));
    }
 
 
@@ -631,16 +622,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *
     * @see xmlBlaster.idl for comments
     */
-   public String publish(ClientInfo clientInfo, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
-   {  // !!! remove public
+   String publish(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
+   {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
 
-      if (msgUnit == null || publishQoS==null) {
+      if (msgUnit == null || publishQoS==null || xmlKey==null) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
       }
-
-      XmlKey xmlKey = new XmlKey(msgUnit.xmlKey, true);
 
       if (Log.CALLS) Log.calls(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
 
@@ -771,39 +760,6 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
 
    /**
-    * Write-Access method to publish many messages from a data source.
-    * <p />
-    * This method invokes the other publish() method for every message in the array.<br />
-    * Please consult this method for more informations
-    * <p />
-    *
-    * @param msgUnitArr Contains an array of MessageUnit structs
-    * @param qosArr         Quality of Service for every MessageUnit
-    *
-    * @return Array of Strings with the key oid of the msgUnit<br />
-    *         If you let the oid be generated, you need this information
-    *         for further publishing to the same MessageUnit<br />
-    *         Rejected Messages will contain an empty string ""
-    */
-   public String[] publish(ClientInfo clientInfo, MessageUnit[] msgUnitArr, PublishQoS[] qosArr) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "Entering publish(array.length='" + msgUnitArr.length + "') ...");
-
-      if (msgUnitArr == null || qosArr==null || msgUnitArr.length != qosArr.length) {
-         Log.error(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
-         throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
-      }
-
-      String[] returnArr = new String[msgUnitArr.length];
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         returnArr[ii] = publish(clientInfo, msgUnitArr[ii], qosArr[ii]);
-      }
-
-      return returnArr;
-   }
-
-
-   /**
     * Client wants to erase a message.
     * <p />
     * @param clientInfo  The ClientInfo object, describing the invoking client
@@ -881,7 +837,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (Log.TRACE) Log.trace(ME, "Login event for client " + clientInfo.toString());
       synchronized (msgUnitLoginEvent.content) {
          msgUnitLoginEvent.content = clientInfo.getLoginName().getBytes();
-         publish(clientInfo, msgUnitLoginEvent, publishQosLoginEvent); // publish that this client logged in
+         publish(clientInfo, msgUnitLoginEvent); // publish that this client logged in
       }
    }
 
@@ -901,7 +857,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString());
       synchronized (msgUnitLogoutEvent.content) {
          msgUnitLogoutEvent.content = clientInfo.getLoginName().getBytes();
-         publish(clientInfo, msgUnitLogoutEvent, publishQosLogoutEvent); // publish that this client logged out
+         publish(clientInfo, msgUnitLogoutEvent); // publish that this client logged out
       }
    }
 

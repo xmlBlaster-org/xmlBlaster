@@ -3,7 +3,7 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.3 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.4 2000/06/25 18:32:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -13,7 +13,7 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.jutils.log.Log;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 
 import java.rmi.Naming;
@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -100,25 +100,14 @@ public class CallbackRmiDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException
+   public void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
-      MessageUnit[] updateMsgArr = new MessageUnit[1];
-      updateMsgArr[0] = msgUnitWrapper.getMessageUnit();
-
-      String[] qarr = new String[1];
-      qarr[0] = updateQoS;
-
-      /* not performing enough, but better OOD
-         UpdateQoS xmlQoS = new UpdateQoS(clientInfo.getLoginName(), xytag);
-         qarr[0] = xmlQoS.toString();
-      */
-
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getXmlKey().getUniqueKey() + ") to " + clientInfo.toString());
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getUniqueKey() + ") to " + clientInfo.toString());
 
       try {
-         cb.update(updateMsgArr, qarr);
+         cb.update(msgUnitArr);
       } catch (RemoteException e) {
-         throw new XmlBlasterException("CallbackFailed", "RMI Callback of message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString());
+         throw new XmlBlasterException("CallbackFailed", "RMI Callback of message '" + msgUnitWrapper.getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString());
       }
    }
 

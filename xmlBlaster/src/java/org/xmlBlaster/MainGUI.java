@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.32 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.33 2000/06/25 18:32:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -16,8 +16,7 @@ import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.util.Vector;
 import java.awt.*;
@@ -619,16 +618,16 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
                      clientQuery = new ClientQuery("ClientQuery-local", "secret");
                   queryOutput.setText("");
                   getQueryHistory().changedHistory(inputTextField.getText());
-                  MessageUnitContainer[] msgArr = clientQuery.get(inputTextField.getText());
+                  MessageUnit[] msgArr = clientQuery.get(inputTextField.getText());
                   for (int ii=0; ii<msgArr.length; ii++) {
                      /*
                      UpdateKey updateKey = new UpdateKey();
                      updateKey.init(msgArr[ii].xmlKey);
                      queryOutput.append("### UpdateKey:\n" + updateKey.printOn().toString());
                      */
-                     queryOutput.append("### XmlKey:\n" + msgArr[ii].msgUnit.xmlKey);
+                     queryOutput.append("### XmlKey:\n" + msgArr[ii].xmlKey);
                      queryOutput.append("\n");
-                     queryOutput.append("### Content:\n" + new String(msgArr[ii].msgUnit.content) + "\n");
+                     queryOutput.append("### Content:\n" + new String(msgArr[ii].content) + "\n");
                      queryOutput.append("======================================================\n");
                   }
                   if (msgArr.length == 0) {
@@ -680,7 +679,6 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    private class ClientQuery
    {
       // !!! change to native access !!!
-      private org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = null;
       private CorbaConnection corbaConnection = null;
       private final String ME = "ClientQuery";
       private String queryType = "XPATH";
@@ -694,7 +692,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
       {
          try {
             corbaConnection = new CorbaConnection();
-            xmlBlaster = corbaConnection.login(loginName, passwd, null);
+            corbaConnection.login(loginName, passwd, null);
          }
          catch (XmlBlasterException e) {
              Log.error(ME, "Error occurred: " + e.toString());
@@ -706,7 +704,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
       /**
        * Query xmlBlaster.
        */
-      MessageUnitContainer[] get(String queryString)
+      MessageUnit[] get(String queryString)
       {
          try {
             String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
@@ -714,12 +712,12 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
                             "</key>";
             String qos = "<qos>\n</qos>";
             stop.restart();
-            MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+            MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
-         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
-            return new MessageUnitContainer[0];
+            return new MessageUnit[0];
          }
       }
 

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.36 2000/06/19 15:48:37 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.37 2000/06/25 18:32:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -12,6 +12,7 @@ import org.jutils.log.Log;
 import org.jutils.init.Property;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Destination;
@@ -34,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -140,8 +141,12 @@ public class ClientInfo
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + callbackDrivers.length + " callback drivers, sending message");
          try {
+            MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
+            msg.qos = getUpdateQoS((String)null, msgUnitWrapper);
+            MessageUnit[] arr = new MessageUnit[1];
+            arr[0] = msg;
             for (int ii=0; ii<callbackDrivers.length; ii++) {
-               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, arr);
             }
             sentMessages++;
          } catch(XmlBlasterException e) {
@@ -190,8 +195,12 @@ public class ClientInfo
       MessageUnitWrapper msgUnitWrapper = subInfo.getMessageUnitWrapper();
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + callbackDrivers.length + " callback drivers, sending message");
+         MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
+         msg.qos = getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper());
+         MessageUnit[] arr = new MessageUnit[1];
+         arr[0] = msg;
          for (int ii=0; ii<callbackDrivers.length; ii++) {
-            callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper()));
+            callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, arr);
          }
          sentMessages++;
       }
@@ -275,10 +284,13 @@ public class ClientInfo
             MessageUnitWrapper msgUnitWrapper = messageQueue.pull();
             if (msgUnitWrapper == null)
                break;
-
+            MessageUnit msg = msgUnitWrapper.getMessageUnitClone();
+            msg.qos = getUpdateQoS((String)null, msgUnitWrapper);
+            MessageUnit[] arr = new MessageUnit[1];
+            arr[0] = msg;
             for (int ii=0; ii<callbackDrivers.length; ii++) {
                // TODO: emails can also be sent to the logged off client!
-               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper,arr);
             }
             sentMessages++;
          }

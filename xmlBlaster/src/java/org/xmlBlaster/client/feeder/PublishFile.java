@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.12 2000/06/20 13:32:57 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.13 2000/06/25 18:32:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -12,8 +12,7 @@ import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import org.jutils.log.Log;
@@ -36,7 +35,6 @@ import java.io.File;
  */
 public class PublishFile
 {
-   private Server xmlBlaster = null;
    private static final String ME = "PublishFile";
    private CorbaConnection senderConnection;
    private String loginName;
@@ -179,7 +177,7 @@ public class PublishFile
    {
       try {
          senderConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
+         senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -204,12 +202,12 @@ public class PublishFile
    {
       if (Log.TRACE) Log.trace(ME, "Publishing the message ...\nKEY:\n" + xmlKey + "\nCONTENT-LENGTH=" + content.length + "\nQOS:\n" + qos);
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content);
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content, qos);
       try {
          StopWatch stop = new StopWatch();
-         String publishOid = xmlBlaster.publish(msgUnit, qos);
+         String publishOid = senderConnection.publish(msgUnit);
          Log.info(ME, "Success: Publishing done, returned message oid=" + publishOid + stop.nice());
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
       }
    }

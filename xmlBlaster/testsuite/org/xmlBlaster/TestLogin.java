@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.13 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.14 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,12 +12,13 @@ import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -42,12 +43,10 @@ public class TestLogin extends TestCase implements I_Callback
    private String publishOid = "";
    private String oid = "TestLogin";
    private CorbaConnection senderConnection;
-   private Server xmlBlaster = null;
    private String senderName;
    private String senderContent;
 
    private CorbaConnection secondConnection;
-   private Server secondBlaster;
    private String secondName;
    private String secondOid = "SecondOid";
 
@@ -83,10 +82,10 @@ public class TestLogin extends TestCase implements I_Callback
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
 
-         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
 
          secondConnection = new CorbaConnection(); // Find orb
-         secondBlaster = secondConnection.login(secondName, passwd, null, this); // Login to xmlBlaster
+         secondConnection.login(secondName, passwd, null, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -94,7 +93,7 @@ public class TestLogin extends TestCase implements I_Callback
                          "   </TestLogin-AGENT>" +
                          "</key>";
          senderContent = "Some content";
-         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -116,7 +115,7 @@ public class TestLogin extends TestCase implements I_Callback
          String qos = "<qos></qos>";
          String[] strArr = null;
          try {
-            strArr = xmlBlaster.erase(xmlKey, qos);
+            strArr = senderConnection.erase(xmlKey, qos);
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       }
@@ -126,7 +125,7 @@ public class TestLogin extends TestCase implements I_Callback
          String qos = "<qos></qos>";
          String[] strArr = null;
          try {
-            strArr = xmlBlaster.erase(xmlKey, qos);
+            strArr = senderConnection.erase(xmlKey, qos);
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       }
@@ -152,7 +151,7 @@ public class TestLogin extends TestCase implements I_Callback
       numReceived = 0;
       String subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-testSubscribeXPath", "XmlBlasterException: " + e.reason);
@@ -174,11 +173,11 @@ public class TestLogin extends TestCase implements I_Callback
       if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
-      String qos = "<qos></qos>";
+      msgUnit.qos = "<qos></qos>";
       if (ptp)
-         qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
+         msgUnit.qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
       try {
-         publishOid = xmlBlaster.publish(msgUnit, qos);
+         publishOid = senderConnection.publish(msgUnit);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-testPublish", "XmlBlasterException: " + e.reason);
@@ -225,8 +224,8 @@ public class TestLogin extends TestCase implements I_Callback
                          "   </TestLogin-AGENT>" +
                          "</key>";
          String content = "Some content";
-         MessageUnit mu = new MessageUnit(xmlKey, content.getBytes());
-         publishOid = secondBlaster.publish(mu, "<qos></qos>");
+         MessageUnit mu = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+         publishOid = secondConnection.publish(mu);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
          assert("second - publish - XmlBlasterException: " + e.reason, false);
@@ -239,7 +238,7 @@ public class TestLogin extends TestCase implements I_Callback
       // test logout with following subscribe()
       senderConnection.logout();
       try {
-         publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+         publishOid = senderConnection.publish(msgUnit);
          assert("Didn't expect successful subscribe after logout", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success: " + e.toString());

@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.9 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.10 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,11 +17,10 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -39,7 +38,7 @@ import test.framework.*;
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
  * </pre>
  */
-public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, BlasterCallbackOperations
+public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, I_CallbackRaw
 {
    private static String ME = "TestInvocationRecorder";
 
@@ -48,8 +47,8 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
    private String subscribeOid;
    private String publishOid = "";
 
-   private int numSubscribe, numUnSubscribe, numPublish, numPublishArr, numErase, numGet, numSetClientAttributes, numUpdate;
-   private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
+   private int numSubscribe, numUnSubscribe, numPublish, numPublishArr, numErase, numGet, numUpdate;
+   private MessageUnit[] dummyMArr = new MessageUnit[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
@@ -78,7 +77,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
    protected void setUp()
    {
       Log.info(ME, "setup test");
-      numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numSetClientAttributes = numUpdate = 0;
+      numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numUpdate = 0;
       recorder = new InvocationRecorder(1000, this, this);
    }
 
@@ -102,10 +101,8 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
    {
       String xmlKey = "<key oid='Hello' queryType='XPATH'>\n   //TestInvocationRecorder-AGENT\n</key>";
       String qos = "<qos></qos>";
-      String[] qosArr = new String[1];
-      qosArr[0] = qos;
       String content = "The content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
       MessageUnit[] msgUnitArr = new MessageUnit[1];
       msgUnitArr[0] = msgUnit;
       String clientName = "Gonzales";
@@ -115,11 +112,10 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
          recorder.subscribe(xmlKey_subscribe, qos_subscribe);
          recorder.get(xmlKey_get, qos_get);
          recorder.unSubscribe(xmlKey, qos);
-         recorder.publish(msgUnit, qos);
-         recorder.publishArr(msgUnitArr, qosArr);
+         recorder.publish(msgUnit);
+         recorder.publishArr(msgUnitArr);
          recorder.erase(xmlKey, qos);
-         recorder.setClientAttributes(clientName, xmlAttr, qos);
-         recorder.update(msgUnitArr, qosArr);
+         recorder.update(msgUnitArr);
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "problems feeding the recorder: " + e.reason);
@@ -140,7 +136,6 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
       assertEquals("numPublishArr: ", 1, numPublishArr);
       assertEquals("numErase: ", 1, numErase);
       assertEquals("numGet: ", 1, numGet);
-      assertEquals("numSetClientAttributes: ", 1, numSetClientAttributes);
       assertEquals("numUpdate: ", 1, numUpdate);
    }
 
@@ -174,7 +169,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
+   public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publish() ...");
       numPublish++;
@@ -186,7 +181,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
       numPublishArr++;
@@ -210,7 +205,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
-   public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "get() ...");
       numGet++;
@@ -221,36 +216,11 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
 
 
    /**
-    * For I_InvocationRecorder interface
-    * @see xmlBlaster.idl
-    */
-   public void setClientAttributes(String clientName, String xmlAttr_literal, String qos_literal) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
-      numSetClientAttributes++;
-   }
-
-
-   /**
-    * Enforced by I_InvocationRecorder interface
-    * @see xmlBlaster.idl
-    */
-   public void ping() {}
-
-
-   /**
-    * This is the callback method (I_Callback) invoked from CorbaConnection
-    * informing the client in an asynchronous mode about a new message.
+    * This is the callback method enforced by interface I_CallbackRaw. 
     * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * @param MessageUnit Container for the Message
     */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr, java.lang.String[] qosArr)
+   public void update(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
    {
       if (Log.CALLS) Log.calls(ME, "update() ...");
       numUpdate++;

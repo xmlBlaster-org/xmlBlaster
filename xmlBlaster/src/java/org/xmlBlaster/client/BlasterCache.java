@@ -3,7 +3,7 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.6 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: BlasterCache.java,v 1.7 2000/06/25 18:32:40 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -11,8 +11,7 @@ package org.xmlBlaster.client;
 import org.jutils.log.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.util.*;
 
@@ -69,9 +68,9 @@ public class BlasterCache
    }
 
 
-   public MessageUnitContainer[] get( String xmlKey, String xmlQos ) throws XmlBlasterException
+   public MessageUnit[] get( String xmlKey, String xmlQos ) throws XmlBlasterException
    {
-      MessageUnitContainer[] units = null;
+      MessageUnit[] units = null;
 
       //Look into cache if xmlKey is already there
       String subId = (String)query2SubId.get(xmlKey);
@@ -79,16 +78,12 @@ public class BlasterCache
       //if yes, return the content of the cache entry
       if(subId != null) {
          Hashtable messages = (Hashtable)subscriptions.get( subId );
-         units = new MessageUnitContainer[messages.size()];
+         units = new MessageUnit[messages.size()];
          int i = 0;
          Enumeration keys = messages.keys();
          Enumeration content = messages.elements();
          while( keys.hasMoreElements() && content.hasMoreElements() ) {
-            units[i] = new MessageUnitContainer();
-            units[i].msgUnit = new MessageUnit();
-            units[i].msgUnit.xmlKey=(String)keys.nextElement();
-            units[i].msgUnit.content=(byte[])content.nextElement();
-            units[i].qos="<qos></qos>";
+            units[i] = new MessageUnit((String)keys.nextElement(), (byte[])content.nextElement(), "<qos></qos>");
             i++;
          }
       }
@@ -103,12 +98,12 @@ public class BlasterCache
     * @return true - entry has been created
     *         false- cache is full
     */
-   public boolean newEntry( String subId, String xmlKey, MessageUnitContainer[] units )
+   public boolean newEntry( String subId, String xmlKey, MessageUnit[] units )
    {
       if(query2SubId.size() < size) {
          addSubscription( xmlKey, subId );
          for( int i = 0; i < units.length; i++ )
-            update( subId, units[i].msgUnit.xmlKey, units[i].msgUnit.content );
+            update( subId, units[i].xmlKey, units[i].content );
          return true;
       }
       else

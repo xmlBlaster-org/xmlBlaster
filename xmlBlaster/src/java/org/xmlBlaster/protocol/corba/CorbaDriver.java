@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.5 2000/06/19 15:48:38 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.6 2000/06/25 18:32:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -153,7 +153,7 @@ public class CorbaDriver implements I_Driver
     */
    public void shutdown()
    {
-      Log.info(ME, "Shutting down POA and ORB ...");
+      if (Log.CALLS) Log.calls(ME, "Shutting down ...");
       boolean wait_for_completion = true;
 
       try {
@@ -161,19 +161,21 @@ public class CorbaDriver implements I_Driver
          if (nc != null) nc.unbind(name);
          if (iorFile != null) FileUtil.deleteFile(null, iorFile);
       }
-      catch (Exception e) {
+      catch (Throwable e) {
          Log.warning(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
 
       if (rootPOA != null && authRef != null) {
          try {
+            Log.trace(ME, "Deactivate POA ...");
             rootPOA.deactivate_object(rootPOA.reference_to_id(authRef));
          } catch(Exception e) { Log.warning(ME, "POA deactivate authentication servant failed"); }
       }
 
       if (rootPOA != null) {
          try {
+            Log.trace(ME, "Deactivate POA Manager ...");
             rootPOA.the_POAManager().deactivate(false, true);
          } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
          rootPOA = null;
@@ -182,7 +184,8 @@ public class CorbaDriver implements I_Driver
       authRef = null;
 
       orb.shutdown(wait_for_completion);
-      if (Log.TRACE) Log.trace(ME, "POA and ORB are down, CORBA resources released.");
+
+      Log.info(ME, "POA and ORB are down, CORBA resources released.");
    }
 
 
@@ -240,6 +243,52 @@ public class CorbaDriver implements I_Driver
          return orb;
       Log.warning(ME, "orb was not initialized");
       return org.omg.CORBA.ORB.init(new String[0], null);
+   }
+
+
+   /**
+    * Converts the internal CORBA message unit to the internal representation.
+    */
+   public static final org.xmlBlaster.engine.helper.MessageUnit convert(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu)
+   {
+      return new org.xmlBlaster.engine.helper.MessageUnit(mu.xmlKey, mu.content, mu.qos);
+   }
+
+
+   /**
+    * Converts the internal CORBA message unit array to the internal representation.
+    */
+   public static final org.xmlBlaster.engine.helper.MessageUnit[] convert(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   {
+      // convert Corba to internal ...
+      org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = new org.xmlBlaster.engine.helper.MessageUnit[msgUnitArr.length];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         internalUnitArr[ii] = CorbaDriver.convert(msgUnitArr[ii]);
+      }
+      return internalUnitArr;
+   }
+
+
+   /**
+    * Converts the internal MessageUnit to the CORBA message unit.
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.engine.helper.MessageUnit mu)
+   {
+      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.xmlKey, mu.content, mu.qos);
+   }
+
+
+   /**
+    * Converts the internal MessageUnit array to the CORBA message unit array.
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] convert(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   {
+      // convert internal to Corba ...
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgUnitArr.length];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         corbaUnitArr[ii] = CorbaDriver.convert(msgUnitArr[ii]);
+      }
+      return corbaUnitArr;
    }
 
 

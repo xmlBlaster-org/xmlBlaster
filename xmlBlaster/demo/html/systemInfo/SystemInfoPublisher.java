@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.8 2000/06/20 13:32:56 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.9 2000/06/25 18:32:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
@@ -14,11 +14,11 @@ import org.jutils.time.StopWatch;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.io.File;
 import java.util.Random;
@@ -38,9 +38,8 @@ import java.util.Random;
  */
 public class SystemInfoPublisher
 {
-   private Server xmlBlaster = null;
    private static final String ME = "SystemInfoPublisher";
-   private CorbaConnection senderConnection;
+   private CorbaConnection corbaConnection;
    private String loginName;
    private String passwd;
    private Random random = new Random();
@@ -131,8 +130,8 @@ public class SystemInfoPublisher
    private void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
+         corbaConnection = new CorbaConnection(); // Find orb
+         corbaConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -146,7 +145,7 @@ public class SystemInfoPublisher
     */
    private void tearDown()
    {
-      senderConnection.logout();
+      corbaConnection.logout();
    }
 
 
@@ -155,19 +154,19 @@ public class SystemInfoPublisher
     */
    private void publish(String oid, int value)
    {
-      if (xmlBlaster == null)
+      if (corbaConnection == null)
          return;
 
       String content = "" + value;
       String xmlKey = "<key oid='" + oid + "' contentMime='text/plain' contentMimeExtended='systemInfo'>\n" +
                       "   <systemInfo />" +
                       "</key>";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
       String qos = qosWrapper.toXml(); // == "<qos></qos>"
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
 
       try {
-         xmlBlaster.publish(msgUnit, qos);
+         corbaConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
       }

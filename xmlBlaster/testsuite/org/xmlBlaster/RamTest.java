@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.10 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: RamTest.java,v 1.11 2000/06/25 18:32:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -125,7 +125,6 @@ public class RamTest extends TestCase
       long usedMemBefore = 0L;
 
       MessageUnit[] msgUnitArr = new MessageUnit[NUM_PUBLISH];
-      String[] qosArr = new String[NUM_PUBLISH];
       for (int ii=0; ii<NUM_PUBLISH; ii++) {
          String xmlKey = "<key oid='RamTest-" + (ii+1) + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                          "   <RamTest-AGENT id='192.168.124.10' subId='1' type='generic'>" +
@@ -134,30 +133,29 @@ public class RamTest extends TestCase
                          "   </RamTest-AGENT>" +
                          "</key>";
          senderContent = "" + (ii+1);
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          msgUnitArr[ii] = msgUnit;
-         qosArr[ii] = "<qos></qos>";
       }
 
       try {
          // 1. Query the current memory allocated in xmlBlaster
          String xmlKey = "<key oid='__sys__UsedMem' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+         MessageUnit[] msgArr = xmlBlaster.get(xmlKey, qos);
 
          assertNotEquals("returned msgArr == null", null, msgArr);
          assertEquals("msgArr.length!=1", 1, msgArr.length);
-         assertNotEquals("returned msgArr[0].msgUnit == null", null, msgArr[0].msgUnit);
-         assertNotEquals("returned msgArr[0].msgUnit.content == null", null, msgArr[0].msgUnit.content);
-         assertNotEquals("returned msgArr[0].msgUnit.content.length == 0", 0, msgArr[0].msgUnit.content.length);
-         String mem = new String(msgArr[0].msgUnit.content);
+         assertNotEquals("returned msgArr[0].msgUnit == null", null, msgArr[0]);
+         assertNotEquals("returned msgArr[0].msgUnit.content == null", null, msgArr[0].content);
+         assertNotEquals("returned msgArr[0].msgUnit.content.length == 0", 0, msgArr[0].content.length);
+         String mem = new String(msgArr[0].content);
          usedMemBefore = new Long(mem).longValue();
          Log.info(ME, "xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
 
 
          stopWatch = new StopWatch();
          // 2. publish all the messages
-         String[] publishOidArr = xmlBlaster.publishArr(msgUnitArr, qosArr);
+         String[] publishOidArr = xmlBlaster.publishArr(msgUnitArr);
 
          long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
          Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
@@ -168,7 +166,7 @@ public class RamTest extends TestCase
 
          // 3. Query the memory allocated in xmlBlaster after publishing all the messages
          msgArr = xmlBlaster.get(xmlKey, qos);
-         long usedMemAfter = new Long(new String(msgArr[0].msgUnit.content)).longValue();
+         long usedMemAfter = new Long(new String(msgArr[0].content)).longValue();
          Log.info(ME, "xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
          Log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/NUM_PUBLISH));
 

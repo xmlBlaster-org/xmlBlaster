@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.7 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.8 2000/06/25 18:32:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.util.CallbackAddress;
  * <p>
  * THIS DRIVER IS NOT YET IMPLEMENTED
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
 public class CallbackEmailDriver implements I_CallbackDriver
@@ -47,7 +47,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
    /**
     * This sends the update to the client.
     */
-   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException
+   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, org.xmlBlaster.engine.helper.MessageUnit[] messageUnitArr) throws XmlBlasterException
    {
       Log.error(ME + ".NoEmailProtocol", "Sorry, email callbacks are not yet supported, no mail sent to " + callbackAddress.getAddress());
       throw new XmlBlasterException(ME + ".NoEmailProtocol", "Sorry, email callbacks are not yet supported, no mail sent to " + callbackAddress.getAddress());

@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.13 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.14 2000/06/25 18:32:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
 import org.xmlBlaster.protocol.http.HttpPushHandler;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.*;
 
 import javax.servlet.*;
@@ -113,9 +113,9 @@ public class SystemInfo extends HttpServlet
          // We could as well have used corbaConnection.subscribe() here.
          // Usually you would use this get() when you need the result here
          // synchronously, for example to process it with a XSL style sheet ...
-         MessageUnitContainer[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
+         MessageUnit[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
          if (msgUnitArr.length == 1) {
-            String ret = new String(msgUnitArr[0].msgUnit.content);
+            String ret = new String(msgUnitArr[0].content);
             Log.info(ME, "Accessed " + actionType + "=" + ret);
          }
       }

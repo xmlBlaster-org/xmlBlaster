@@ -2,6 +2,18 @@
 
 Changes for 0.78 [???     2000]
 ==============================
+  - Changed package names:
+    org.xmlBlaster.engine.persistence.I_PersistenceDriver -> org.xmlBlaster.engine.I_PersistenceDriver
+    org.xmlBlaster.engine.persistence.FileDriver          -> org.xmlBlaster.engine.FileDriver
+    NOTE: You need to replace your xmlBlaster.properties
+    with the new xmlBlaster.properties.template!
+
+  - Changed classes:
+    MessageUnit now contains the qos
+    MessageUnitContainer is removed.
+    Note that there is a CORBA MessageUnit and a engine.helper.MessageUnit
+    class (same name, same members).
+
   - xmlBlaster.properties allows variables ${...} replacement.
     see util.property.args.xml, util.property.env.xml, util.property.xml
     NOTE: You need to replace your xmlBlaster.properties

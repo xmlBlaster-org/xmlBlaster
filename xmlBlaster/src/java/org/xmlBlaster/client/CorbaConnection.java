@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.57 2000/06/19 15:48:37 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.58 2000/06/25 18:32:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -18,10 +18,12 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.util.CallbackAddress;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
@@ -76,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.57 $
+ * @version $Revision: 1.58 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -133,7 +135,7 @@ public class CorbaConnection implements I_InvocationRecorder
    /** Remember the number of successful logins */
    private long numLogins = 0L;
 
-   private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
+   private MessageUnit[] dummyMArr = new MessageUnit[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
@@ -477,35 +479,6 @@ public class CorbaConnection implements I_InvocationRecorder
 
 
    /**
-    * Login to the server, providing your own BlasterCallback implementation
-    * with default Quality of Service for this client.
-    * <p />
-    * @param loginName The login name for xmlBlaster
-    * @param passwd    The login password for xmlBlaster
-    * @param callback  The Callback interface of this client or null if none is used
-    * @exception       XmlBlasterException if login fails
-    */
-    /*  !!! old stuff
-   public Server login(String loginName, String passwd, BlasterCallback callback) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
-      if (xmlBlaster != null) {
-         Log.warning(ME, "You are already logged in, returning cached handle on xmlBlaster");
-         return xmlBlaster;
-      }
-
-      this.callback = callback;
-      this.loginName = loginName;
-      this.passwd = passwd;
-      this.loginQos = qos;
-
-      loginRaw();
-      return xmlBlaster;
-   }
-      */
-
-
-   /**
     * Login to the server, using the default BlasterCallback implementation.
     * <p />
     * You need to implement the I_Callback interface, which informs you about arrived
@@ -718,7 +691,7 @@ public class CorbaConnection implements I_InvocationRecorder
     * @exception XmlBlasterException if the BlasterCallback server can't be created
     *            id="CallbackCreationError"
     */
-   public BlasterCallback createCallbackServer(BlasterCallbackOperations callbackImpl) throws XmlBlasterException
+   public BlasterCallback createCallbackServer(org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations callbackImpl) throws XmlBlasterException
    {
       BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(callbackImpl);
 
@@ -848,17 +821,17 @@ public class CorbaConnection implements I_InvocationRecorder
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final String publish(MessageUnit msgUnit, String qos) throws XmlBlasterException
+   public final String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {
-         return getXmlBlaster().publish(msgUnit, qos);
+         return getXmlBlaster().publish(CorbaDriver.convert(msgUnit));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) { // org.omg.CORBA.COMM_FAILURE (others as well??)
                              // NullPointerException the following calls, because of xmlBlaster is set to null
-         if (recorder != null) recorder.publish(msgUnit, qos);
+         if (recorder != null) recorder.publish(msgUnit);
          handleConnectionException(e);
       }
       return dummyS; // never reached, there is always an exception thrown
@@ -869,16 +842,16 @@ public class CorbaConnection implements I_InvocationRecorder
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qosArr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
       try {
-         return getXmlBlaster().publishArr(msgUnitArr, qosArr);
+         return getXmlBlaster().publishArr(CorbaDriver.convert(msgUnitArr));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
-         if (recorder != null) recorder.publishArr(msgUnitArr, qosArr);
+         if (recorder != null) recorder.publishArr(msgUnitArr);
          handleConnectionException(e);
       }
       return dummySArr;
@@ -908,9 +881,9 @@ public class CorbaConnection implements I_InvocationRecorder
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final MessageUnitContainer[] get(String xmlKey, String qos) throws XmlBlasterException
+   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
    {
-      MessageUnitContainer[] units = null;
+      MessageUnit[] units = null;
       if (Log.CALLS) Log.calls(ME, "get() ...");
       try {
          //Is cache installed?
@@ -918,14 +891,14 @@ public class CorbaConnection implements I_InvocationRecorder
             units = cache.get( xmlKey, qos );
             //not found in cache
             if( units == null ) {
-               units = getXmlBlaster().get(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
+               units = CorbaDriver.convert(getXmlBlaster().get(xmlKey, qos)); //get messages from xmlBlaster (synchronous)
                String subId = getXmlBlaster().subscribe(xmlKey, qos); //subscribe to this messages (asynchronous)
                cache.newEntry(subId, xmlKey, units);             //fill messages to cache
                Log.info(ME,"New Entry in Cache created (subId="+subId+")");
             }
          }
          else
-            units = getXmlBlaster().get(xmlKey, qos);
+            units = CorbaDriver.convert(getXmlBlaster().get(xmlKey, qos));
          return units;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
@@ -935,24 +908,6 @@ public class CorbaConnection implements I_InvocationRecorder
          handleConnectionException(e);
       }
       return dummyMArr;
-   }
-
-
-   /**
-    * Enforced by I_InvocationRecorder interface (fail save mode)
-    * @see xmlBlaster.idl
-    */
-   public final void setClientAttributes(String clientName, String xmlAttr, String qos) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
-      try {
-         getXmlBlaster().setClientAttributes(clientName, xmlAttr, qos);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
-         if (recorder != null) recorder.setClientAttributes(clientName, xmlAttr, qos);
-         handleConnectionException(e);
-      }
    }
 
 
@@ -1116,8 +1071,11 @@ public class CorbaConnection implements I_InvocationRecorder
  * You can use this default callback handling with your clients,
  * but if you need other handling of callbacks, take a copy
  * of this Callback implementation and add your own code.
+ * <p />
+ * The interface I_CallbackRaw is for the InvocationRecorder
+ * to playback locally queued messages.
  */
-class DefaultCallback implements BlasterCallbackOperations
+class DefaultCallback implements I_CallbackRaw, org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations
 {
    private final String ME;
    private final I_Callback boss;
@@ -1138,29 +1096,50 @@ class DefaultCallback implements BlasterCallbackOperations
 
 
    /**
-    * This is the callback method invoked from the server
+    * This is the callback method invoked from the CORBA server
+    * informing the client in an asynchronous mode about new messages. 
+    * <p />
+    * It implements the interface BlasterCallbackOperations.
+    * <p />
+    * The call is converted to the native MessageUnit, and the other update()
+    * method of this class is invoked.
+    *
+    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @see xmlBlaster.idl
+    */
+   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   {
+      if (msgUnitArr == null) return;
+
+      // convert Corba to internal MessageUnit and call update() ...
+      update(CorbaDriver.convert(msgUnitArr));
+   }
+
+
+   /**
+    * This is the callback method invoked natively
     * informing the client in an asynchronous mode about new messages.
     * <p />
-    * You don't need to use this little method, but it nicely converts
-    * the raw CORBA BlasterCallback.update() with raw Strings and arrays
-    * in corresponding objects and calls for every received message
-    * the I_Callback.update().
+    * It implements the interface I_CallbackRaw, used for example by the
+    * InvocationRecorder
     * <p />
-    * So you should implement in your client the I_Callback interface -
-    * suppling the update() method.
+    * It nicely converts the raw MessageUnit with raw Strings and arrays
+    * in corresponding objects and calls for every received message
+    * the I_Callback.update(), which you need to implement in your code.
     *
-    * @param loginName        The name to whom the callback belongs
-    * @param msgUnit      Contains a MessageUnit structs (your message)
-    * @param qos              Quality of Service of the MessageUnit
+    * @param msgUnitArr Contains MessageUnit structs (your message) in native form
     */
-   public void update(MessageUnit[] msgUnitArr, String[] qos_literal_Arr)
+   public void update(MessageUnit [] msgUnitArr)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of " + msgUnitArr.length + " message ...");
-
-      if (msgUnitArr.length == 0) {
-         Log.warning(ME, "Entering update() with 0 messages");
+      if (msgUnitArr == null) {
+         Log.warning(ME, "Entering update() with null array.");
          return;
       }
+      if (msgUnitArr.length == 0) {
+         Log.warning(ME, "Entering update() with 0 messages.");
+         return;
+      }
+      if (Log.CALLS) Log.calls(ME, "Receiving update of " + msgUnitArr.length + " message ...");
 
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MessageUnit msgUnit = msgUnitArr[ii];
@@ -1170,7 +1149,7 @@ class DefaultCallback implements BlasterCallbackOperations
          try {
             updateKey = new UpdateKey();
             updateKey.init(msgUnit.xmlKey);
-            updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
+            updateQoS = new UpdateQoS(msgUnit.qos);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }

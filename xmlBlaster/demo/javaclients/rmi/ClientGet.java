@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.4 2000/06/20 13:32:57 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.5 2000/06/25 18:32:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -13,8 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 import org.xmlBlaster.protocol.rmi.I_AuthServer;
@@ -93,11 +92,11 @@ public class ClientGet
                             "   </AGENT>" +
                             "</key>";
             String content = "<file><size>1024 kBytes</size><creation>1.1.2000</creation></file>";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = blasterServer.publish(sessionId, msgUnit, "<qos></qos>");
+               publishOid = blasterServer.publish(sessionId, msgUnit);
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -113,7 +112,7 @@ public class ClientGet
                             "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
             stop.restart();
-            MessageUnitContainer[] msgArr = null;
+            MessageUnit[] msgArr = null;
             try {
                msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
@@ -122,9 +121,9 @@ public class ClientGet
 
             Log.info(ME, "Got " + msgArr.length + " messages:");
             for (int ii=0; ii<msgArr.length; ii++) {
-               Log.plain(ME, msgArr[ii].msgUnit.xmlKey +
+               Log.plain(ME, msgArr[ii].xmlKey +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                           new String(msgArr[ii].msgUnit.content) +
+                           new String(msgArr[ii].content) +
                           "\n\n#######################################");
             }
          }
@@ -142,11 +141,11 @@ public class ClientGet
                             "</AGENT>" +
                             "</key>";
             String content = "Export program started";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = blasterServer.publish(sessionId, msgUnit, "<qos></qos>");
+               publishOid = blasterServer.publish(sessionId, msgUnit);
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -161,7 +160,7 @@ public class ClientGet
                          "   //DRIVER[@id='ProgramExecute']" +
                          "</key>";
          stop.restart();
-         MessageUnitContainer[] msgArr = null;
+         MessageUnit[] msgArr = null;
          try {
             msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
@@ -173,9 +172,9 @@ public class ClientGet
          else
             Log.error(ME, "Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
-            Log.plain(ME, msgArr[ii].msgUnit.xmlKey +
+            Log.plain(ME, msgArr[ii].xmlKey +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                          new String(msgArr[ii].msgUnit.content) +
+                          new String(msgArr[ii].content) +
                           "\n\n#######################################");
          }
 

@@ -3,7 +3,7 @@ Name:      TestSubExact.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubExact.java,v 1.5 2000/06/20 13:32:59 ruff Exp $
+Version:   $Id: TestSubExact.java,v 1.6 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,14 +11,14 @@ import org.jutils.log.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -39,7 +39,6 @@ import test.framework.*;
  */
 public class TestSubExact extends TestCase implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
    private boolean messageArrived = false;
 
@@ -80,7 +79,7 @@ public class TestSubExact extends TestCase implements I_Callback
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, "Login failed: " + e.toString());
@@ -102,7 +101,7 @@ public class TestSubExact extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
+         strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
@@ -125,7 +124,7 @@ public class TestSubExact extends TestCase implements I_Callback
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -150,9 +149,9 @@ public class TestSubExact extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+         publishOid = senderConnection.publish(msgUnit);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);

@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.18 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.19 2000/06/25 18:32:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -12,8 +12,8 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.I_PersistenceDriver;
 import java.util.*;
 
 
@@ -59,7 +59,7 @@ public class MessageUnitWrapper
     * @param publishQoS the quality of service
     * @param publisherName the unique loginName of the publisher
     */
-   public MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
+   MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
    {
       if (xmlKey == null || msgUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
@@ -94,7 +94,7 @@ public class MessageUnitWrapper
    /**
     * Accessing the key of this message
     */
-   public final XmlKey getXmlKey()
+   final XmlKey getXmlKey()
    {
       return xmlKey;
    }
@@ -108,7 +108,7 @@ public class MessageUnitWrapper
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public final boolean setContent(byte[] newContent, String publisherName) throws XmlBlasterException
+   final boolean setContent(byte[] newContent, String publisherName) throws XmlBlasterException
    {
       // if (Log.TRACE) Log.trace(ME, "Updating xmlKey " + uniqueKey + " from " + publisherName + ", new newContent=" + new String(newContent));
 
@@ -168,7 +168,7 @@ public class MessageUnitWrapper
    /**
     * Access the flags from the publisher
     */
-   public final PublishQoS getPublishQoS()
+   final PublishQoS getPublishQoS()
    {
       return publishQoS;
    }
@@ -187,7 +187,7 @@ public class MessageUnitWrapper
    /**
     * This is the unique key of the msgUnit
     */
-   public final void setXmlKey(XmlKey xmlKey)
+   final void setXmlKey(XmlKey xmlKey)
    {
       this.xmlKey = xmlKey;
       this.msgUnit.xmlKey = xmlKey.literal();
@@ -207,9 +207,11 @@ public class MessageUnitWrapper
 
 
    /**
-    * This is the unique key of the msgUnit
+    * Get the message unit.
+    * Note it has package scope access only.
+    * If you want to access it from elsewhere, use the getMessageUnitClone() method
     */
-   public final MessageUnit getMessageUnit() throws XmlBlasterException
+   final MessageUnit getMessageUnit() throws XmlBlasterException
    {
       if (msgUnit == null) {
          Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
@@ -220,13 +222,26 @@ public class MessageUnitWrapper
 
 
    /**
+    * Get the cloned message unit.
+    */
+   public final MessageUnit getMessageUnitClone() throws XmlBlasterException
+   {
+      if (msgUnit == null) {
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+      }
+      return msgUnit.getClone();
+   }
+
+
+   /**
     * Clones this MessageUnitWrapper to a new one, the only attributes
     * which is cloned is the MessageUnit.content. <p />
     * All other attributes are references to the original ones
     *
     * @return a new MessageUnitWrapper with a cloned MessageUnit.content
     */
-   public MessageUnitWrapper cloneContent() throws XmlBlasterException
+   MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
       MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQoS, publisherName);
 

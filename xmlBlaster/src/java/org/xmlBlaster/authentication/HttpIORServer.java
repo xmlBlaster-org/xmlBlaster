@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.7 2000/06/18 15:21:58 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.8 2000/06/25 18:32:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -22,7 +22,7 @@ import java.io.*;
  * Clients may access through this port the AuthServer IOR if they
  * don't want to use a naming service
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -57,8 +57,8 @@ public class HttpIORServer extends Thread
          while (running) {
             Socket accept = listen.accept();
             if (!running) {
-               Log.info(ME, "Closing http server port");
-               return;
+               Log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
+               break;
             }
             HandleRequest hh = new HandleRequest(accept, ior);
          }
@@ -72,16 +72,42 @@ public class HttpIORServer extends Thread
       catch (IOException e) {
          Log.error(ME, "HTTP server problem: " + e.toString());
       }
+
+      if (listen != null) {
+         try { listen.close(); } catch (java.io.IOException e) { Log.warning(ME, "listen.close()" + e.toString()); }
+         listen = null;
+      }
    }
 
 
    /**
     * Close the listener port
     */
-   public void shutdown() throws IOException
+   public void shutdown()// throws IOException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering shutdown");
       running = false;
-      listen.close();
+
+      boolean closeHack = true;
+      if (listen != null && closeHack) {
+         // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
+         // force closing by invoking server with this temporary client:
+         try {
+            java.net.Socket socket = new Socket(listen.getInetAddress(), HTTP_PORT);
+            socket.close();
+         } catch (java.io.IOException e) {
+            Log.warning(ME, "shutdown problem: " + e.toString());
+         }
+      }
+
+      try {
+         if (listen != null) {
+            listen.close();
+            listen = null;
+         }
+      } catch (java.io.IOException e) {
+         Log.warning(ME, "shutdown problem: " + e.toString());
+      }
    }
 }
 

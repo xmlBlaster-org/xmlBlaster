@@ -3,14 +3,13 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.1 2000/06/13 15:14:45 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.2 2000/06/25 18:32:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.rmi.RemoteException;
 
@@ -49,7 +48,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String publish(String sessionId, MessageUnit msgUnit, String publishQoS_literal)
+   public String publish(String sessionId, MessageUnit msgUnit)
                            throws RemoteException, XmlBlasterException;
 
 
@@ -58,7 +57,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr, String[] qos_literal_Arr)
+   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr)
                            throws RemoteException, XmlBlasterException;
 
 
@@ -76,7 +75,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public MessageUnitContainer[] get(String sessionId, String xmlKey_literal, String getQoS_literal)
+   public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal)
                            throws RemoteException, XmlBlasterException;
 
 

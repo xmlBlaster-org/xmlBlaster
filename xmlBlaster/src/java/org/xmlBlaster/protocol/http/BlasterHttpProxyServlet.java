@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.35 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.36 2000/06/25 18:32:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -15,8 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.client.*;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.rmi.RemoteException;
 import java.io.*;
@@ -41,7 +40,7 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogListener
 {
@@ -296,7 +295,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String sessionId = req.getRequestedSessionId();
       Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
       ProxyConnection proxyConnection = null;
-      Server xmlBlaster = null;
+      CorbaConnection xmlBlaster = null;
       HttpPushHandler pushHandler = null;
 
       try {
@@ -304,7 +303,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          if( proxyConnection == null ) {
             throw new XmlBlasterException(ME, "Session not registered yet (sessionId="+sessionId+")");
          }
-         xmlBlaster = proxyConnection.getXmlBlaster();
+         xmlBlaster = proxyConnection.getCorbaConnection();
          pushHandler = proxyConnection.getHttpPushHandler(sessionId);
       }
       catch (XmlBlasterException e) {
@@ -326,7 +325,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             try {
                String subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
                Log.trace(ME, "Success: Subscribe on " + subscribeOid + " done");
-            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+            } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }
@@ -346,11 +345,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                       "</key>";
             String qos = "<qos></qos>";
             String content = "Hello world";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
             try {
-               String publishOid = xmlBlaster.publish(msgUnit, qos);
+               String publishOid = xmlBlaster.publish(msgUnit);
                Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
-            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+            } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }

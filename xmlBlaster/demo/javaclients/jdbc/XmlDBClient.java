@@ -187,8 +187,8 @@ public class XmlDBClient implements I_Callback
 
       try
        {
-         MessageUnit mu = new MessageUnit(xmlKey, query.getBytes());
-         String      oid = xmlBlaster.publish(mu, qos);
+         MessageUnit mu = new MessageUnit(xmlKey, query.getBytes(), qos);
+         String      oid = xmlBlaster.publish(mu);
 
          System.out.println("Published query...");
          System.out.println("qos =>" + qos);

@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 # Persistent store (see javadoc of FileDriver)
 # Lazy recover (not at server startup but on demand) is not yet supported.
-Persistence.Driver=org.xmlBlaster.engine.persistence.FileDriver
+Persistence.Driver=org.xmlBlaster.engine.FileDriver
 Persistence.Path=${user.home}/tmp
 Persistence.LazyRecovery=false
 #------------------------------------------------------------------------------

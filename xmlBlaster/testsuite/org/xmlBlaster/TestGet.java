@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.11 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestGet.java,v 1.12 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,8 +14,7 @@ import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -113,7 +112,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnitContainer[] msgArr = corbaConnection.get(xmlKey, qos);
+         MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
          assert("get of not existing message is not possible", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
@@ -122,9 +121,9 @@ public class TestGet extends TestCase
       if (Log.TRACE) Log.trace(ME, "2. Publish a message ...");
       try {
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
-         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          PublishQosWrapper qosWrapper = new PublishQosWrapper(); // the same as "<qos></qos>"
-         corbaConnection.publish(msgUnit, qosWrapper.toXml());
+         MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qosWrapper.toXml());
+         corbaConnection.publish(msgUnit);
          Log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
          assert("publish - XmlBlasterException: " + e.reason, false);
@@ -134,9 +133,9 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnitContainer[] msgArr = corbaConnection.get(xmlKey, qos);
+         MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
          Log.info(ME, "Success, got the message");
-         assertEquals("Corrupted content", senderContent, new String(msgArr[0].msgUnit.content));
+         assertEquals("Corrupted content", senderContent, new String(msgArr[0].content));
       } catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
          assert("Couldn't get() an existing message", false);
@@ -155,7 +154,7 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       for (int ii=0; ii<num; ii++) {
          try {
-            MessageUnitContainer[] msgArr = corbaConnection.get(xmlKey, qos);
+            MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
             assert("get of not existing message is not possible", false);
          } catch(XmlBlasterException e) {
             // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);

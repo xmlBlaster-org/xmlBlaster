@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.10 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestPub.java,v 1.11 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,8 +17,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -146,14 +145,15 @@ public class TestPub extends TestCase implements I_Callback
                       "   <TestPub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestPub-AGENT>" +
                       "</key>";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
       qosWrapper.setReadonly();
       String qos = qosWrapper.toXml(); // == "<qos><readonly /></qos>"
 
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
+
       if (first) {
          try {
-            publishOid = senderConnection.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit);
             Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -164,7 +164,7 @@ public class TestPub extends TestCase implements I_Callback
       }
       else {
          try {
-            publishOid = senderConnection.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit);
             assert("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
             Log.info(ME, "Success: Publishing again throws an exception");

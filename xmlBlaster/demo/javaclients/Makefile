@@ -12,22 +12,12 @@ SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-SUB_DIRS = chat jdbc HelloWorldApplet rmi
+SUB_DIRS = corba chat jdbc HelloWorldApplet rmi
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
-LOCAL_FILES = \
-			$(CLASS_DIR)/Util.class \
-			$(CLASS_DIR)/BlasterCallbackImpl.class \
-			$(CLASS_DIR)/ClientOid.class \
-			$(CLASS_DIR)/ClientGet.class \
-			$(CLASS_DIR)/ClientXml.class \
-			$(CLASS_DIR)/ClientSub.class \
-			$(CLASS_DIR)/ClientQuery.class \
-			$(CLASS_DIR)/ClientRaw.class \
-			$(CLASS_DIR)/ClientErase.class \
-			$(CLASS_DIR)/ClientPubDestination.class 
+LOCAL_FILES = 
 #------------------------------------------------------------------------------
 
 

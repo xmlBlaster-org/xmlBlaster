@@ -3,7 +3,7 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.7 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.8 2000/06/25 18:32:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -12,9 +12,8 @@ import org.jutils.log.Log;
 import org.jutils.collection.Queue;
 import org.jutils.JUtilsException;
 
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.I_CallbackRaw;
 
 import java.util.*;
 
@@ -26,10 +25,10 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
-public class InvocationRecorder implements I_InvocationRecorder, BlasterCallbackOperations
+public class InvocationRecorder implements I_InvocationRecorder
 {
    private String ME = "InvocationRecorder";
 
@@ -44,9 +43,9 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     * The recorder calls these methods when doing a playback
     */
    private I_InvocationRecorder serverCallback = null;
-   private BlasterCallbackOperations clientCallback = null;
+   private I_CallbackRaw clientCallback = null;
 
-   private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
+   private MessageUnit[] dummyMArr = new MessageUnit[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
@@ -55,11 +54,11 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     * @param maxEntries The maximum number of invocations to store
     * @param serverCallback You need to implement I_InvocationRecorder to receive the invocations on playback
     *                       null if you are not interested in those
-    * @param serverCallback You need to implement clientIdl.BlasterCallbackOperations to receive the invocations on playback
+    * @param clientCallback You need to implement I_CallbackRaw to receive the invocations on playback
     *                       null if you are not interested in those
     */
    public InvocationRecorder(int maxEntries, I_InvocationRecorder serverCallback,
-                              BlasterCallbackOperations clientCallback)
+                             I_CallbackRaw clientCallback)
    {
       init(maxEntries, serverCallback, clientCallback);
    }
@@ -69,7 +68,7 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     * @param maxEntries The maximum number of invocations to store
     */
    private void init(int maxEntries, I_InvocationRecorder serverCallback,
-                              BlasterCallbackOperations clientCallback)
+                              I_CallbackRaw clientCallback)
    {
       if (Log.CALLS) Log.calls(ME, "Creating new InvocationRecorder(" + maxEntries + ") ...");
       this.queue = new Queue(ME, maxEntries);
@@ -109,7 +108,7 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
    /**
     * Playback the stored messages, the are removed from the recorder after the callback.
     * <p />
-    * Every message is chronologically sent through the Operations interface to the client.
+    * Every message is chronologically sent through the interface to the client.
     * @param startDate Start date for playback, 0 means from the very start
     * @param endDate End date to stop playback, pass 0 to go to the very end
     * @param motionFactor for fast motion choose for example 4.0
@@ -189,14 +188,14 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
 
 
    /**
-    * Call back the client through the Operations interface
+    * Call back the client through the interfaces
     */
    private void callback(InvocationContainer cont) throws XmlBlasterException
    {
       if (serverCallback != null) {
          // This should be faster then reflection
          if (cont.method.equals("publish")) {
-            serverCallback.publish(cont.msgUnit, cont.xmlQos);
+            serverCallback.publish(cont.msgUnit);
             return;
          }
          else if (cont.method.equals("get")) {
@@ -212,15 +211,11 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
             return;
          }
          else if (cont.method.equals("publishArr")) {
-            serverCallback.publishArr(cont.msgUnitArr, cont.qosArr);
+            serverCallback.publishArr(cont.msgUnitArr);
             return;
          }
          else if (cont.method.equals("erase")) {
             serverCallback.erase(cont.xmlKey, cont.xmlQos);
-            return;
-         }
-         else if (cont.method.equals("setClientAttributes")) {
-            serverCallback.setClientAttributes(cont.clientName, cont.xmlKey, cont.xmlQos);
             return;
          }
       }
@@ -228,7 +223,7 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       if (clientCallback != null) {
          // This should be faster then reflection
          if (cont.method.equals("update")) {
-            clientCallback.update(cont.msgUnitArr, cont.qosArr);
+            clientCallback.update(cont.msgUnitArr);
             return;
          }
       }
@@ -281,12 +276,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
+   public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publish";
       cont.msgUnit = msgUnit;
-      cont.xmlQos = qos_literal;
+      cont.xmlQos = msgUnit.qos;
       try {
          queue.push(cont);
       }
@@ -301,12 +296,11 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishArr";
       cont.msgUnitArr = msgUnitArr;
-      cont.qosArr = qos_literal_Arr;
       try {
          queue.push(cont);
       }
@@ -341,7 +335,7 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
-   public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "get";
@@ -359,42 +353,24 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
 
    /**
     * For I_InvocationRecorder interface
+    * @return false No connection to server, off line recording messages.
     * @see xmlBlaster.idl
     */
-   public void setClientAttributes(String clientName, String xmlAttr_literal,
-                            String qos_literal) throws XmlBlasterException
+   public boolean ping()
    {
-      InvocationContainer cont = new InvocationContainer();
-      cont.method = "setClientAttributes";
-      cont.clientName = clientName;
-      cont.xmlKey = xmlAttr_literal;
-      cont.xmlQos = qos_literal;
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
-      }
+      return false;
    }
 
 
    /**
-    * For I_InvocationRecorder interface
+    * For I_CallbackRaw interface. 
     * @see xmlBlaster.idl
     */
-   public void ping() {}
-
-
-   /**
-    * For BlasterCallbackOperations interface
-    * @see xmlBlaster.idl
-    */
-   public void update(MessageUnit [] msgUnitArr, String [] qos_literal_Arr)
+   public void update(MessageUnit [] msgUnitArr)
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "update";
       cont.msgUnitArr = msgUnitArr;
-      cont.qosArr = qos_literal_Arr;
       try {
          queue.push(cont);
       } catch (JUtilsException e) {
@@ -418,7 +394,6 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       String xmlQos;
       MessageUnit msgUnit;
       MessageUnit[] msgUnitArr;
-      String[] qosArr;
 
       InvocationContainer() {
          timestamp = System.currentTimeMillis();

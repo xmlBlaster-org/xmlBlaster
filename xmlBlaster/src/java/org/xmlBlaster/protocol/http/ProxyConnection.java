@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.20 2000/06/18 15:22:01 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.21 2000/06/25 18:32:42 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.client.LoginQosWrapper;
 
 import java.io.*;
 import java.util.*;
@@ -38,7 +38,7 @@ import javax.servlet.http.*;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -47,7 +47,6 @@ public class ProxyConnection implements I_Callback
    private final String loginName;
    private final String passwd;
    private CorbaConnection corbaConnection = null;
-   private Server       xmlBlaster         = null;
    private Hashtable httpConnections       = null;
    private I_ProxyInterceptor interceptor  = null;
 
@@ -66,7 +65,9 @@ public class ProxyConnection implements I_Callback
       //establish connection to server
       corbaConnection = new CorbaConnection();
 
-      xmlBlaster = corbaConnection.login(loginName, passwd, null, this);
+      // initFailSave() ???
+
+      corbaConnection.login(loginName, passwd, new LoginQosWrapper(), this);
       httpConnections = new Hashtable();
    }
 
@@ -161,10 +162,6 @@ public class ProxyConnection implements I_Callback
    }
 
 
-   public Server getXmlBlaster()
-   {
-      return xmlBlaster;
-   }
    public CorbaConnection getCorbaConnection()
    {
       return corbaConnection;

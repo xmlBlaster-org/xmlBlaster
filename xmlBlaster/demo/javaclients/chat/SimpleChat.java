@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.10 2000/06/20 13:32:57 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.11 2000/06/25 18:32:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -16,7 +16,6 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
@@ -143,10 +142,10 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                          "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                          "</key>";
-         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          Log.trace(ME, "Publishing ...");
          try {
-            String str = xmlBlaster.publish(msgUnit, "");
+            String str = xmlBlaster.publish(msgUnit);
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -161,16 +160,16 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    }
 
    /** CallBack of xmlBlaster */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr, java.lang.String[] qosArr)
+   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {
 
       for (int ii=0; ii<msgUnitArr.length; ii++) {
-         MessageUnit msgUnit = msgUnitArr[ii];
+         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit = msgUnitArr[ii];
          XmlKeyBase xmlKey = null;
          UpdateQoS updateQoS = null;
          try {
             xmlKey = new XmlKeyBase(msgUnit.xmlKey);
-            updateQoS = new UpdateQoS(qosArr[ii]);
+            updateQoS = new UpdateQoS(msgUnit.qos);
             String tmp = updateQoS.printOn().toString();
 
          } catch (XmlBlasterException e) {

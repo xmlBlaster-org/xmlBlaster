@@ -3,15 +3,14 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.3 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.4 2000/06/25 18:32:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 
 /**
@@ -57,19 +56,13 @@ public interface I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String publish(String sessionId, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException;
+   public String publish(String sessionId, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException;
    /**
     * Publish a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String publish(String sessionId, MessageUnit msgUnit, String publishQoS_literal) throws XmlBlasterException;
-   /**
-    * Publish a message.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public String publish(String sessionId, String xmlKey_literal, byte[] content, String publishQoS_literal) throws XmlBlasterException;
+   public String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException;
 
 
    /**
@@ -77,13 +70,7 @@ public interface I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr, PublishQoS[] publishQosArr) throws XmlBlasterException;
-   /**
-    * Publish messages.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr, String[] qos_literal_Arr) throws XmlBlasterException;
+   public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException;
 
 
    /**
@@ -105,13 +92,13 @@ public interface I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public MessageUnitContainer[] get(String sessionId, XmlKey xmlKey, GetQoS getQoS) throws XmlBlasterException;
+   public MessageUnit[] get(String sessionId, XmlKey xmlKey, GetQoS getQoS) throws XmlBlasterException;
    /**
     * Synchronous access a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public MessageUnitContainer[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
+   public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
 
 
    public String toXml() throws XmlBlasterException;

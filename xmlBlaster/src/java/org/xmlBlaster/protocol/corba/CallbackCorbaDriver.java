@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.11 2000/06/18 15:22:00 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.12 2000/06/25 18:32:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -14,7 +14,6 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.jutils.log.Log;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 
@@ -24,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -64,26 +63,28 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException
+   public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, org.xmlBlaster.engine.helper.MessageUnit[] messageUnitArr) throws XmlBlasterException
    {
-      MessageUnit[] updateMsgArr = new MessageUnit[1];
-      updateMsgArr[0] = msgUnitWrapper.getMessageUnit();
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getUniqueKey() + ") to " + clientInfo.toString());
 
-      String[] qarr = new String[1];
-      qarr[0] = updateQoS;
-
-      /* not performing enough, but better OOD
-         UpdateQoS xmlQoS = new UpdateQoS(clientInfo.getLoginName(), xytag);
-         qarr[0] = xmlQoS.toString();
-      */
-
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getXmlKey().getUniqueKey() + ") to " + clientInfo.toString());
-
-      try {
-         cb.update(updateMsgArr, qarr);
-      } catch (Exception e) {
-         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString());
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[messageUnitArr.length];
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+         updateArr[ii] = convert(messageUnitArr[ii]);
       }
+      try {
+         cb.update(updateArr);
+      } catch (Exception e) {
+         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of message '" + msgUnitWrapper.getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString());
+      }
+   }
+
+
+   /**
+    * Converts the internal MessageUnit to the CORBA message unit.
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.engine.helper.MessageUnit mu)
+   {
+      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.xmlKey, mu.content, mu.qos);
    }
 
 

@@ -3,13 +3,14 @@ Name:      I_CallbackDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_CallbackDriver.java,v 1.7 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: I_CallbackDriver.java,v 1.8 2000/06/25 18:32:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -18,7 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * This interface hides the real protocol used to send a client a callback message
  * <p>
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
 public interface I_CallbackDriver
@@ -43,7 +44,7 @@ public interface I_CallbackDriver
     * @exception On callback problems you need to throw a XmlBlasterException e.id="CallbackFailed",
     *            the message will queued until the client logs in again
     */
-   public void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException;
+   public void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException;
 
 
    /**

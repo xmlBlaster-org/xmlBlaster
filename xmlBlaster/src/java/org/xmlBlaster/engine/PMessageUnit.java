@@ -3,14 +3,14 @@ Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine
-Version:   $Id: PMessageUnit.java,v 1.7 2000/06/18 15:21:59 ruff Exp $
+Version:   $Id: PMessageUnit.java,v 1.8 2000/06/25 18:32:41 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.engine;
 import java.io.*;
 
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.jutils.log.Log;
 

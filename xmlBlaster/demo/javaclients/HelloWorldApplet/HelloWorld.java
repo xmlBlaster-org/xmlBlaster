@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.8 2000/06/18 15:21:57 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.9 2000/06/25 18:32:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -11,11 +11,12 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.MessageUnit;
+
 import org.jutils.log.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import java.applet.*;
 import java.awt.event.*;
@@ -41,8 +42,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    public static HelloWorld helloWorld = null; // reference to myself (only for main)
 
    private String oid = "HelloWorld-Message";
-   private CorbaConnection senderConnection;
-   private Server xmlBlaster = null;
+   private CorbaConnection corbaConnection;
    private String senderName = "HelloWorld-Applet";
 
    private MessageUnit msgUnit;     // a message to play with
@@ -122,16 +122,17 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          String passwd = "secret";
 
          if (isApplet)
-            senderConnection = new CorbaConnection(this); // Find orb
+            corbaConnection = new CorbaConnection(this); // Find orb
          else
-            senderConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+            corbaConnection = new CorbaConnection(); // Find orb
+         corbaConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                          "</key>";
          String senderContent = "Hello world!";
-         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+         String qos = "<qos><forceUpdate /></qos>";
+         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
 
          doSubscribe();
       }
@@ -148,17 +149,17 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     */
    protected void tearDown()
    {
-      if (xmlBlaster != null) {
+      if (corbaConnection != null) {
          String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
          String[] strArr = null;
          try {
-            strArr = xmlBlaster.erase(xmlKey, qos);
+            strArr = corbaConnection.erase(xmlKey, qos);
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
       }
 
-      if (senderConnection != null)
-         senderConnection.logout();
+      if (corbaConnection != null)
+         corbaConnection.logout();
       Log.info(ME+"-tearDown", "Success: Logged out");
    }
 
@@ -172,7 +173,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         xmlBlaster.subscribe(xmlKey, qos);
+         corbaConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + oid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-doSubscribe", "XmlBlasterException: " + e.reason);
@@ -187,8 +188,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    {
       try {
          // With ForceUpdate, following messages with the same content will be updated
-         String qos = "<qos><forceUpdate /></qos>";
-         xmlBlaster.publish(msgUnit, qos);
+         corbaConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-doPublish", "XmlBlasterException: " + e.reason);
       }

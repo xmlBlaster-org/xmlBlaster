@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.6 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.7 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,9 +17,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -39,7 +37,6 @@ import test.framework.*;
  */
 public class TestPubForce extends TestCase implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
    private boolean messageArrived = false;
 
@@ -79,7 +76,7 @@ public class TestPubForce extends TestCase implements I_Callback
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -101,8 +98,8 @@ public class TestPubForce extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         strArr = senderConnection.erase(xmlKey, qos);
+      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
       senderConnection.logout();
@@ -123,9 +120,9 @@ public class TestPubForce extends TestCase implements I_Callback
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
@@ -148,16 +145,16 @@ public class TestPubForce extends TestCase implements I_Callback
                       "   <TestPubForce-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestPubForce-AGENT>" +
                       "</key>";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
       if (forceUpdate)
          qosWrapper.setForceUpdate();
       String qos = qosWrapper.toXml(); // == "<qos><forceUpdate/></qos>"
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
 
       try {
-         publishOid = xmlBlaster.publish(msgUnit, qos);
+         publishOid = senderConnection.publish(msgUnit);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
          assert("publish - XmlBlasterException: " + e.reason, false);
       }

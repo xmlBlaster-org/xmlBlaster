@@ -1,0 +1,25 @@
+   Start xmlBlaster server:
+
+      jaco org.xmlBlaster.Main
+
+
+   Start one of the clients, for example:
+
+      jaco javaclients.corba.ClientSub
+
+
+   To get some more logging infos try:
+
+      jaco javaclients.corba.ClientSub -trace true
+
+
+   This displays the usage:
+
+     jaco javaclients.corba.ClientSub -?
+
+
+   Query xmlBlaster:
+
+      jaco javaclients.corba.ClientQuery -queryXpath "/xmlBlaster/key"
+
+      jaco javaclients.corba.ClientQuery -queryXpath "//AGENT/DRIVER"

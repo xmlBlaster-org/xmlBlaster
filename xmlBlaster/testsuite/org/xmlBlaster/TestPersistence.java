@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.10 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.11 2000/06/25 18:32:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,8 +20,6 @@ import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
 import test.framework.*;
 
@@ -119,9 +117,10 @@ public class TestPersistence extends TestCase implements I_Callback
                    "   <isDurable />" +
                    "</qos>";
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit =
+            new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderXmlBlaster.publish(msgUnit, qos);
+         String returnedOid = senderXmlBlaster.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {

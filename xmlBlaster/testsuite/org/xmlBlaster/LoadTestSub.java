@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.17 2000/06/20 13:32:57 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.18 2000/06/25 18:32:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -159,13 +159,13 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "   </LoadTestSub-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       stopWatch = new StopWatch();
       try {
          for (int ii=0; ii<NUM_PUBLISH; ii++) {
             senderContent = "Yeahh, i'm the new content number " + (ii+1);
             msgUnit.content = senderContent.getBytes();
-            publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+            publishOid = xmlBlaster.publish(msgUnit);
             /*
             if (((ii+1) % 1) == 0)
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");

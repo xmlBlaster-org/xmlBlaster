@@ -5,7 +5,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.8 2000/06/20 13:32:57 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.9 2000/06/25 18:32:42 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -16,7 +16,6 @@ import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 
 import java.io.*;
 import java.util.*;
@@ -30,7 +29,6 @@ import java.util.*;
  */
 public class XmlDBAdapter implements I_Callback {
 
-   private Server          xmlBlaster = null;
    private static String   ME = "XmlDBAdapter";
    private static String   passwd = "some";
    private String          publishOid = "XmlDBAdapter";
@@ -71,7 +69,7 @@ public class XmlDBAdapter implements I_Callback {
       String               cust = updateQos.getSender();
       String               qos = updateQos.printOn().toString();
       XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(args, cust,
-              content, qos, xmlBlaster);
+              content, qos, corbaConnection);
 
       worker.start();
    }
@@ -91,7 +89,7 @@ public class XmlDBAdapter implements I_Callback {
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
 
          // ----------- Login to xmlBlaster -----------------------
-         xmlBlaster = corbaConnection.login(ME, passwd, null, this);
+         corbaConnection.login(ME, passwd, null, this);
 
       }
       catch (Exception e) {
@@ -104,13 +102,6 @@ public class XmlDBAdapter implements I_Callback {
     */
    public void logout() {
       ConnectionManager.getInstance().release();
-
-      if (xmlBlaster == null) {
-         return;
-
-         // ----------- Logout --------------------------------------
-      }
-
       Log.trace(ME, "Logout ...");
       corbaConnection.logout();
    }
