@@ -271,7 +271,7 @@ abstract public class DeliveryConnection implements I_Timeout
       boolean isPing = (userData == null);
 
       if (isPing) {
-         if (log.TRACE) log.trace(ME, "timeout -> Going to ping client callback server ...");
+         if (log.TRACE) log.trace(ME, "timeout -> Going to ping remote server ...");
          try { String result = ping("", false); } catch (XmlBlasterException e) { e.printStackTrace(); log.error(ME, "PANIC: " + e.toString()); } // is handled in ping() itself
       }
       else { // reconnect polling
