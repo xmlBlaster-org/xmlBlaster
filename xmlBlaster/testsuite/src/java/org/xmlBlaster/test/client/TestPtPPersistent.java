@@ -9,9 +9,11 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.property.PropString;
@@ -281,6 +283,18 @@ public class TestPtPPersistent extends TestCase  {
       if (oid != null) { // if oid is different sequence is not garanteed
          for (int i=0; i < msg.length; i++) {
             assertEquals("wrong message sequence (number of entries arrived: " + msg.length + ") ", i+(int)exLimit, msg[i].getContentInt());
+         }
+      }
+      if ((long)msg.length != exLimit*2) {
+         try {
+            GetKey getKey = new GetKey(this.glob, "__cmd?dump");
+            GetQos getQos = new GetQos(this.glob); 
+            MsgUnit[] tmp = this.glob.getXmlBlasterAccess().get(getKey, getQos);
+            if (tmp.length > 0) 
+               this.log.info(ME, tmp[0].getContentStr());
+         }
+         catch (XmlBlasterException ex) {
+            ex.printStackTrace();
          }
       }
       assertEquals("wrong number of entries arrived", exLimit*2, (long)msg.length);
