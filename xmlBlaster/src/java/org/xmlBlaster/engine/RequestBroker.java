@@ -1554,7 +1554,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       }
       sb.append(bigXmlKeyDOM.printOn(extraOffset + "   ").toString());
       sb.append(clientSubscriptions.toXml(extraOffset + "   "));
-      sb.append(glob.getClusterManager().toXml(extraOffset + "   "));
+      if (useCluster) {
+         sb.append(glob.getClusterManager().toXml(extraOffset + "   "));
+      }
       sb.append(offset + "</RequestBroker>\n");
 
       return sb.toString();
