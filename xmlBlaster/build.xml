@@ -1004,6 +1004,8 @@ TODO
                <include name="**/*.inc"/>
                <include name="**/*.js"/>
                <include name="**/*.tcl"/>
+               <include name="**/*.vb"/>
+               <include name="**/*.cs"/>
                <exclude name="build/**"/>
                <exclude name="classes/**"/>
             </patternset>
