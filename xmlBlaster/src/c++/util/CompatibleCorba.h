@@ -16,6 +16,30 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
  */
 
 /******************************************************************
+ *                      OMNIORB (Nils.Nilson@in-gmbh.de)
+ ******************************************************************/
+#ifdef  OMNIORB
+#define CLIENT_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
+#define SERVER_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
+#define CORBA_HEADER              <omniORB3/CORBA.h>
+#define COSCONTAINEMENT           <not_implemented.h>
+#define COSOBJECTIDENTITY         <not_implemented.h>
+#define COSREFERENCE              <not_implemented.h>
+#define COSEVENTCHANNELADMIN      <not_implemented.h>
+#define COSEVENTCOMM              <not_implemented.h>
+#define COSRELATIONSHIPS          <not_implemented.h>
+#define COSGRAPHS                 <not_implemented.h>
+#define COSTIME                   <not_implemented.h>
+#define COSGRAPHEXTENTSION        <not_implemented.h>
+#define COSTRADING                <not_implemented.h>
+#define COSNAMING                 <omniORB3/naming.hh>
+#define COSPROPERTY               <not_implemented.h>
+#define COSTRADINGREPOS           <not_implemented.h>
+#define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
+#define COSTYPEDEVENT             <not_implemented.h>
+#endif  // OMNIORB
+
+/******************************************************************
  *                      ORBACUS (OB-4.03)
  ******************************************************************/
 #ifdef  ORBACUS
