@@ -362,7 +362,7 @@ public:
        * These variables may be set in xmlBlaster.properties as well.
        * Don't use the "-" prefix there.
        */
-      static void usage();
+      static std::string usage();
    
    }; // class CorbaConnection
 }}}}} // namespace

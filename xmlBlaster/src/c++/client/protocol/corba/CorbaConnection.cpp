@@ -888,25 +888,23 @@ void CorbaConnection::copyFromCorba(util::MessageUnit &msgUnitUtil, serverIdl::M
 }
 */
 
-void CorbaConnection::usage() 
+std::string CorbaConnection::usage() 
 {
-  Global& glob = Global::getInstance();
-  glob.initialize();
-  Log& log = glob.getLog("client");
-  string me="";
-  log.plain(me, "");
-  log.plain(me, "Client connection options:");
-  log.plain(me, "  -bootstrapHostname <host>");
-  log.plain(me, "                      The host where to find xmlBlaster [localhost]");
-  log.plain(me, "  -bootstrapPort     <port>");
-  log.plain(me, "                      The bootstrap port where xmlBlaster publishes its IOR [3412]");
-  log.plain(me, "  -dispatch/connection/plugin/ior/iorString <IOR:00...>");
-  log.plain(me, "                      The IOR string of the xmlBlaster-authentication server.");
-  log.plain(me, "  -dispatch/connection/plugin/ior/iorFile <file>");
-  log.plain(me, "                      A file with the xmlBlaster-authentication server IOR.");
-  log.plain(me, "  -dispatch/connection/plugin/ior/useNameService <true/false>");
-  log.plain(me, "                      Try to access xmlBlaster through a naming service [true]");
-  log.plain(me, "");
+   std::string text = string("\n");
+   text += string("");
+   text += string("Client connection options:");
+   text += string("  -bootstrapHostname <host>");
+   text += string("                      The host where to find xmlBlaster [localhost]");
+   text += string("  -bootstrapPort     <port>");
+   text += string("                      The bootstrap port where xmlBlaster publishes its IOR [3412]");
+   text += string("  -dispatch/connection/plugin/ior/iorString <IOR:00...>");
+   text += string("                      The IOR string of the xmlBlaster-authentication server.");
+   text += string("  -dispatch/connection/plugin/ior/iorFile <file>");
+   text += string("                      A file with the xmlBlaster-authentication server IOR.");
+   text += string("  -dispatch/connection/plugin/ior/useNameService <true/false>");
+   text += string("                      Try to access xmlBlaster through a naming service [true]");
+   text += string("");
+   return text;
 }
 
 // CORBA::ORB_ptr CorbaConnection::orb_           = 0;

@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/I_ConnectionsHandler.h>
 #include <util/Global.h>
 #include <util/lexical_cast.h>
+#include <cstddef> //<stddef.h>
 
 /**
  * Class embedding messages or information to be stored on the client queues

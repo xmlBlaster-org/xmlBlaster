@@ -3,7 +3,10 @@
 #define _UTIL_PROPERTY_C
 
 #include "Property.h"
+#include <cstdlib> //<stdlib.h>
+#include <fstream>
 #include <util/lexical_cast.h>
+#include <util/PropertyDef.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

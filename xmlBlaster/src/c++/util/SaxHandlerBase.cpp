@@ -17,8 +17,9 @@ Comment:   Default handling of Sax callbacks
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/StopWatch.h>
-
 #include <util/lexical_cast.h>
+#include <iostream>
+//#include <cstdlib> //<stdlib.h>
 
 namespace org { namespace xmlBlaster { namespace util {
 

@@ -198,7 +198,7 @@ public:
    /**
     * Command line usage.
     */
-   static void usage();
+   static std::string usage();
 
    /**
     * used to initialize the failsafe behaviour of the client.

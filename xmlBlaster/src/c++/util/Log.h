@@ -9,9 +9,6 @@ Comment:   Handling the Client data
 #define _UTIL_LOG_H
 
 #include <util/xmlBlasterDef.h>
-#include <iostream>
-#include <time.h>
-#include <stdlib.h>
 #include <util/Property.h>
 
 /**
@@ -22,9 +19,6 @@ Comment:   Handling the Client data
  * to CALL/TIME/TRACE/DUMP variables to achieve dead code elimination (see 
  * code below).
  */
-
-
-
 namespace org { namespace xmlBlaster { namespace util {
    
    class Dll_Export Log {
@@ -298,7 +292,7 @@ namespace org { namespace xmlBlaster { namespace util {
        * These variables may be set in xmlBlaster.properties as well.
        * Don't use the "-" or "+" prefix there.
        */
-      void usage();
+      std::string usage();
 
       /**
        * Display some statistic on exit

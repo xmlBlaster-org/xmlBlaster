@@ -18,7 +18,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/QueryQosData.h>
 #include <util/key/QueryKeyData.h>
 #include <util/Log.h>
-#include <stddef.h>
 
 // circular dependency I_ConnectionsHandler -> Queue -> MsgQueueEntry
 #ifndef _UTIL_DISPATCH_ICONNECTIONSHANDLER_H

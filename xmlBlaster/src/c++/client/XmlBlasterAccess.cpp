@@ -308,7 +308,7 @@ XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, void *co
    return "<qos><state id='OK'/></qos>";
 }
 
-void XmlBlasterAccess::usage()
+std::string XmlBlasterAccess::usage()
 {
    string text = string("\n");
    text += string("Choose a connection protocol:\n");
@@ -321,7 +321,7 @@ void XmlBlasterAccess::usage()
    text += string("                       Force the given authentication schema, here the GUI is enforced\n");
    text += string("                       Clients can overwrite this with ConnectQos.java\n");
 
-   std::cout << text << std::endl;
+   return text; // std::cout << text << std::endl;
 }
 
 void XmlBlasterAccess::initFailsafe(I_ConnectionProblems* connectionProblems)

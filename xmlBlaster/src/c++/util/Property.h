@@ -8,15 +8,8 @@ Comment:   Class used to read, store & write (java) properties.
 #define _UTIL_PROPERTY_H
 
 #include <util/xmlBlasterDef.h>
-#include <iostream>
-#include <fstream>
 #include <map>
 #include <string>
-
-#include <stdlib.h>
-#include <util/PropertyDef.h>
-
-
 
 namespace org { namespace xmlBlaster {
 namespace util {

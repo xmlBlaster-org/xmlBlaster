@@ -3,15 +3,14 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.19 2003/07/04 18:52:08 ruff Exp $
 ----------------------------------------------------------------------------*/
-
 #include <util/Log.h>
-#include <time.h>
+#include <iostream>
+#include <ctime>   //<time.h>
+#include <cstdlib> //<stdlib.h>
 #include <util/lexical_cast.h>
 
 using namespace std;
-
 
 namespace org { namespace xmlBlaster {
 namespace util {
@@ -90,7 +89,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    void Log::setLogLevel(int argc, const char * const args[]) {
       if ((properties_.findArgument(argc, args, "-?") > 0) ||
           (properties_.findArgument(argc, args, "-h") > 0)) {
-         usage();
+         std::cout << usage() << std::endl;
          return;
       }
       initialize();
@@ -260,15 +259,16 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
           cout << logEntry << instance << " " << text << endl;
     }
 
-   void Log::usage() {
-      plain(ME, "");
-      plain(ME, "Logging options:");
-      plain(ME, "  -trace true         Show code trace.");
-      plain(ME, "  -dump true          Dump internal state.");
-      plain(ME, "  -call true          Show important method entries");
-      plain(ME, "  -time true          Display some performance data.");
-      //plain(ME, "  -logFile <fileName> Log to given file instead to console.");
-      plain(ME, "");
+   std::string Log::usage() {
+      std::string text = string("\n");
+      text += string("Logging options:");
+      text += string("  -trace true         Show code trace.");
+      text += string("  -dump true          Dump internal state.");
+      text += string("  -call true          Show important method entries");
+      text += string("  -time true          Display some performance data.");
+      //text += string("  -logFile <fileName> Log to given file instead to console.");
+      text += string("");
+      return text;
    }
 
 

@@ -122,7 +122,7 @@ namespace org {
 
 
       // following methods are not defined in any parent class
-      static void usage();
+      static std::string usage();
       // Exception conversion ....
       static org::xmlBlaster::util::XmlBlasterException
         convertFromCorbaException(const serverIdl::XmlBlasterException& ex);

@@ -2,6 +2,7 @@
 #include <util/xmlBlasterDef.h>
 #include <util/objman.h>
 #include <util/Global.h>
+#include <cstdlib> //<stdlib.h>
 
 using namespace std;
 using namespace org::xmlBlaster::client::protocol;

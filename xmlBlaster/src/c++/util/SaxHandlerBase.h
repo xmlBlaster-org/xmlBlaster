@@ -23,10 +23,6 @@ Comment:   Default handling of Sax callbacks
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
 
-#include <stdlib.h>
-
-
-
 #if defined(XERCES_HAS_CPP_NAMESPACE)
         // Since Xerces 2.2 namespace is introduced:
    XERCES_CPP_NAMESPACE_USE

@@ -21,7 +21,6 @@
 #define _Object_Lifetime_Manager_
 
 #include <util/XmlBCfg.h>
-#include <stdlib.h>
 #include <list>
 
 extern "C"

@@ -264,7 +264,7 @@ bool CorbaDriver::shutdown()
 
 void CorbaDriver::resetConnection()
 {
-   std::cerr << "'CorbaDriver::resetConnection' not implemented" << std::endl;
+   log_.error(ME, "'CorbaDriver::resetConnection' not implemented");
 }
 
 string CorbaDriver::getLoginName()
@@ -371,9 +371,9 @@ vector<EraseReturnQos> CorbaDriver::erase(const EraseKey& key, const EraseQos& q
    _COMM_CATCH("::erase", false, false)
 }
 
-void CorbaDriver::usage()
+std::string CorbaDriver::usage()
 {
-      CorbaConnection::usage();
+   return CorbaConnection::usage();
 }
 
 

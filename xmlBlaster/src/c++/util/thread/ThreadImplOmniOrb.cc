@@ -9,6 +9,7 @@ Comment:   Encapsulates (and hides) threads for the omnithread
 #include <util/thread/ThreadBase.h>
 #include <util/Constants.h>
 #include <util/Global.h>
+#include <iostream>
 
 // namespace org { namespace xmlBlaster { namespace util { namespace thread {
 using namespace std;

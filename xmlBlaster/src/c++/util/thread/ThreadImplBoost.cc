@@ -13,6 +13,7 @@ Comment:   Encapsulates (and hides) threads
 #include <util/thread/ThreadBase.h>
 #include <util/Constants.h>
 #include <util/Global.h>
+#include <iostream>
 
 // namespace org { namespace xmlBlaster { namespace util { namespace thread {
 using namespace org::xmlBlaster::util::thread;

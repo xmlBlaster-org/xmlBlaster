@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.22 2003/07/03 20:54:44 ruff Exp $
+Version:   $Id: Global.h,v 1.23 2003/07/07 12:07:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -24,13 +24,6 @@ Version:   $Id: Global.h,v 1.22 2003/07/03 20:54:44 ruff Exp $
 // for managed objects
 #include <util/objman.h>
 
-//----------------
-// Global.h modification
-
-
-
-
-
 namespace org { namespace xmlBlaster { namespace util {
 
 /**
@@ -47,7 +40,7 @@ template <class TYPE> friend class ManagedObject;
 friend class Object_Lifetime_Manager;
 
 private:
-   const std::string           ME;
+   const std::string      ME;
    LogMap                 logMap_;
    Property*              property_;
    int                    args_;
@@ -56,7 +49,7 @@ private:
    org::xmlBlaster::client::protocol::CbServerPluginManager* cbServerPluginManager_;
    org::xmlBlaster::util::dispatch::DeliveryManager* deliveryManager_;
    Timeout*               pingTimer_;
-   std::string                 id_;
+   std::string            id_;
    thread::Mutex          pingerMutex_;
    // added for managed objects.
    static Global*         global_; // becomes pointer
