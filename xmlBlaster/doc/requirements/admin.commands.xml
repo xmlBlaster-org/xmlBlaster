@@ -34,19 +34,19 @@
       <client>
          <joe>
             <uptime>10050</uptime>
-            <cb.queue.numMsgs>247</cb.queue.numMsgs>
-            <cb.queue.maxMsg>1000</cb.queue.maxMsg>
+            <cbQueueNumMsgs>247</cbQueueMumMsgs>
+            <cbQueueMaxMsg>1000</cbQueueMaxMsg>
 
             <numSessions>2</numSessions>
             <maxSessions>10</maxSessions>
             <sessionList>ses3,ses17</sessionList>
             <ses17>
                <uptime>10050</uptime>
-               <cb.queue.numMsgs>37</cb.queue.numMsgs>
-               <cb.queue.maxMsg>1000</cb.queue.maxMsg>
-               <cb.queue.threshold>80</cb.queue.threshold> <!-- 80% -->
-               <cb.queue.thresholdOverflow>numMsg=199,
-                 maxMsg=203</cb.queue.thresholdOverflow> <!-- a trap -->
+               <cbQueueNumMsgs>37</cbQueueNumMsgs>
+               <cbQueueMaxMsg>1000</cbQueueMaxMsg>
+               <cbQueueThreshold>80</cbQueueThreshold> <!-- 80% -->
+               <cbQueueThresholdOverflow>numMsg=199,
+                 maxMsg=203</cbQueueThresholdOverflow> <!-- a trap -->
             </ses17>
 
             <ses32>
@@ -214,7 +214,7 @@
             <td>The uptime of all users (in seconds)</td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?cb.queue.maxMsg=30000</td>
+            <td>client/joe/ses17/?cbQueueMaxMsg=30000</td>
             <td>Change to max. callback queue size of joe-session-ID 17 to 30 thousand messages</td>
          </tr>
          <tr>
@@ -331,7 +331,7 @@
             <td>Description</td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?cb.queue.maxMsg=30000</td>
+            <td>client/joe/ses17/?cbQueueMaxMsg=30000</td>
             <td>
                <pre><![CDATA[
 <qos>
@@ -485,13 +485,19 @@ UserInfo: joe:mypasswd
       </table>
    </configuration>
 
+   <todo type="HTML">
+      Read access with telnet on system properties and internal states
+      is implemented.<br />
+      The rest is missing.
+   </todo>
+
    <see type="REQ">admin</see>
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
