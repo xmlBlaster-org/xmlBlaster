@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Fixed HSQLDB plugin to create a seperate DB instance for each
+   client or server instance in directory ${user.home}/tmp
+
+ o Added Property replacement variant $_{XYZ} which does NOT throw an
+   exception if XYZ is not found
+
  o C++: Added first code to embedd C SOCKET lib as a C++ protocol plugin,
    see COMPILE_SOCKET_PLUGIN and COMPILE_CORBA_PLUGIN switches in build.xml
 
