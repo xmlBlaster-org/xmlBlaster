@@ -59,7 +59,7 @@ import java.io.*;
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public final class RequestBroker implements I_ClientListener, MessageEraseListener, I_AdminNode
+public final class RequestBroker implements I_ClientListener, MessageEraseListener, I_AdminNode, I_RunlevelListener
 {
    private String ME = "RequestBroker";
    private final Global glob;
@@ -155,10 +155,20 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
       this.uptime = System.currentTimeMillis();
+
+      glob.getRunlevelManager().addRunlevelListener(this);
+
       this.burstModeTimer = new Timeout("BurstmodeTimer");
 
       myselfLoginName = internalLoginNamePraefix + "[" + glob.getId() + "]";
-      unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
+      this.unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
+
+      try {
+         CommandManager manager = glob.getCommandManager(this.unsecureSessionInfo);
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, e.toString());
+      }
 
       useCluster = glob.useCluster();
       if (useCluster) {
@@ -203,22 +213,37 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       addMessageEraseListener(this);
    }
 
-   public void postInit() throws XmlBlasterException
-   {
-      if (useCluster)
-         glob.getClusterManager().postInit();
-
-      loadPersistentMessages();
-
-
-      try {
-         CommandManager manager = glob.getCommandManager(this.unsecureSessionInfo);
-      }
-      catch(XmlBlasterException e) {
-         log.error(ME, e.toString());
-      }
+   /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
    }
 
+   /**
+    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (to == from)
+         return;
+
+      if (to > from) { // startup
+         if (to == RunlevelManager.RUNLEVEL_CLEANUP_PRE) {
+            loadPersistentMessages();
+         }
+      }
+
+      if (to < from) { // shutdown
+         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            //
+         }
+      }
+   }
 
    /**
     * Access the global handle. 
@@ -320,9 +345,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
    private void loadPersistentMessages()
    {
-      if(log.CALL) log.call(ME,"Loding messages from persistence to Memory.....");
+      if(log.CALL) log.call(ME,"Loading messages from persistence to Memory ...");
       persistenceDriver = getPersistenceDriver(); // Load persistence driver
       if (persistenceDriver == null) return;
+      int num=0;
       try {
          boolean lazyRecovery = glob.getProperty().get("Persistence.LazyRecovery", true);
          if(log.TRACE) log.trace(ME,"LazyRecovery is switched="+lazyRecovery);
@@ -348,12 +374,17 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
                // RequestBroker publishes messages self
                this.publish(unsecureSessionInfo, xmlKey, msgUnit, publishQos);
+
+               num++;
             }
          }
       }
       catch (Exception e) {
          log.error(ME, "Complete recover from persistence store failed: " + e.toString());
       }
+
+      if (num > 0)
+         log.info(ME,"Loaded " + num + " durable messages from persistence to Memory.");
    }
 
 
@@ -410,7 +441,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          }
 
          //log.info(ME, "Loaded persistence driver '" + persistenceDriver.getName() + "[" + pluginType + "][" + pluginVersion +"]'");
-         log.info(ME, "Loaded persistence driver '[" + pluginType + "][" + pluginVersion +"]'");
+         log.info(ME, "Loaded persistence driver plugin '[" + pluginType + "][" + pluginVersion +"]'");
+         //Thread.currentThread().dumpStack();
       }
       return persistenceDriver;
    }
@@ -1062,7 +1094,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          if (publishQos.isPubSubStyle()) {
             if (log.TRACE) log.trace(ME, "Doing publish() in Pub/Sub style");
-
+synchronized (this) {
             //----- 1. set new value or create the new message:
             MessageUnitHandler msgUnitHandler = null;
             boolean contentChanged = true;
@@ -1167,6 +1199,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
             // We can't do it here, first all callback calls must be successful - the CbWorker does it
             //eraseVolatile(sessionInfo, msgUnitHandler);
+} // synchronized
          }
          else if (publishQos.isPTP_Style()) {
             if (log.TRACE) log.trace(ME, "Doing publish() in PtP or broadcast style");
@@ -1642,6 +1675,13 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    }
 
    //====== These methods satisfy the I_AdminNode administration interface =======
+
+   public int getRunlevel() {
+      return glob.getRunlevelManager().getCurrentRunlevel();
+   }
+   public void setRunlevel(int level) throws XmlBlasterException {
+      glob.getRunlevelManager().changeRunlevel(level, true);
+   }
    /** How long is the server running (in seconds) */
    public long getUptime() {
       return (System.currentTimeMillis() - this.uptime)/1000L;
