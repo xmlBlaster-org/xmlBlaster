@@ -9,6 +9,7 @@ package org.xmlBlaster.util.classloader;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.net.URL;
@@ -27,10 +28,10 @@ public class PluginClassLoader extends URLClassLoader {
    private String pluginPackage;
    private final LogChannel log;
 
-   public PluginClassLoader(Global glob, URL[] urls, String pluginName) {
+   public PluginClassLoader(Global glob, URL[] urls, PluginInfo pluginInfo) {
       super(urls);
       log = glob.getLog("classloader");
-      this.pluginName = pluginName;
+      this.pluginName = pluginInfo.getClassName();
       this.pluginPackage = pluginName.substring(0, pluginName.lastIndexOf("."));
       this.ME = "PluginClassLoader-" + pluginName.substring(pluginName.lastIndexOf('.') + 1);
    }
@@ -41,7 +42,7 @@ public class PluginClassLoader extends URLClassLoader {
          if (log.TRACE) log.trace(ME, "Using default JVM class loader for java class " + name);
          return parent.loadClass(name);
       }
-      if (name.startsWith("org.xmlBlaster") || name.startsWith("org.jutils")) {
+      if (name.startsWith("org.xmlBlaster") || name.startsWith("org.jutils") || name.startsWith("org.omg")) {
          if (!name.startsWith(pluginPackage)) {
             if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name);
             return parent.loadClass(name);
