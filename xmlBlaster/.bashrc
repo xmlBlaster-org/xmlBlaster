@@ -104,7 +104,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/concurrent.jar:${CLASSPATH}
