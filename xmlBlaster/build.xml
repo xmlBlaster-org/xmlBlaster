@@ -73,7 +73,7 @@ TODO
    <property file="build.properties" />
  
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="0.79dev"/>
+   <property name="version" value="0.80"/>
    <property name="year" value="1999-2002"/>
  
    <!-- property name="build.compiler" value="classic"/ -->
@@ -471,26 +471,26 @@ TODO
       <copy file="./config/xmlBlaster-jmx.properties.template" tofile="${build.dir}/sar/xmlBlaster.properties" filtering="true"/>
      <jar destfile="${build.dir}/xmlBlaster.sar">
        <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
-		   includes="jboss-service.xml"
-		   prefix="META-INF"/>
+                   includes="jboss-service.xml"
+                   prefix="META-INF"/>
        <fileset dir="${build.dir}"
                 includes="xmlBlaster.jar"
-	/>
+        />
         <fileset dir="${lib.dir}"
                 includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
-	/>
+        />
        <fileset dir="${build.dir}/sar"
                 includes="xmlBlaster.properties"
-	/>
+        />
      </jar>
 
      <ear destfile="${build.dir}/xmlBlaster-sar.ear" appxml="${src.java.dir}/org/xmlBlaster/j2ee/jmx/application.xml">
          <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
-		   includes="jboss-app.xml"
-		   prefix="META-INF"/>
+                   includes="jboss-app.xml"
+                   prefix="META-INF"/>
          <fileset dir="${build.dir}/"
                 includes="xmlBlaster.sar"
-	/>
+        />
      </ear>
      <copy file="${build.dir}/xmlBlaster-sar.ear" tofile="${lib.dir}/xmlBlaster-sar.ear"/>
      <delete dir="${build.dir}/sar"/>
@@ -769,7 +769,7 @@ TODO
       <pathconvert  dirsep="/" pathsep="&lt;/url>" property="files" refid="req.files">
         <map from="${basedir}/doc/requirements/" to="&lt;url>"/>
       </pathconvert>
-      <echo file="${req.dir}/all.xml"><![CDATA[<files>${files}</url></files>]]></echo>									
+      <echo file="${req.dir}/all.xml"><![CDATA[<files>${files}</url></files>]]></echo>                                                                  
       <!-- Create the overview -->
       <style processor="trax" basedir="${req.dir}"
              in="${req.dir}/all.xml"
@@ -779,12 +779,12 @@ TODO
        </style>
       <!-- generate each req -->
       <style processor="trax" basedir="${req.dir}" 
-	     destdir="${req.dir}"
+             destdir="${req.dir}"
              extension=".html" style="${req.dir}/detail.xsl"
-	     includes="*.xml"
+             includes="*.xml"
              excludes= "all.xml"
              force="true">
-       </style>											      
+       </style>                                                                                       
    </target>
    <target name="requirements-delete" description="Removes html requirements">
       <echo message="Deleting all requirement html pages"/>

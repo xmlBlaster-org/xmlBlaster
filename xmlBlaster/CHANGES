@@ -1,51 +1,20 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for x.xxx [xxx, xx xxxx]
-================================
 
-TODO:
-
-* Compile next release with ant instead of Makefile as ant replaces
-  version number and timestamp in util.Global.java
-* Test message expiry lifecycle (some implementation is missing)
-* Add support to reconnect to previous session again on reconnect
-* PtP with session destination
-* PtP in cluster environment
-* RequestBroker.get() the return QoS should be merged with UpdateQos
-* Test (implement?) forceUpdate=false with same content
-* Remove thread save gap in RequestBroker:publish() for PtP messages
-* Test: Perl client ...
-* Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
-* Change to Sun coding convention: http://checkstyle.sourceforge.net/
-* Handle QueueProperty.java similar to CbQueueProprty.java in ConnectQos.java
-* Implement cb.burstMode.collectTimeOneway
-* Use XMLunit http://xmlunit.sourceforge.net/ in testsuite.
-* XmlBlaster internal statistic overview with http://www.object-refinery.com/jfreechart/
-* SMS protocol driver with http://www.imail.gr/jsmsengine/index.php
-* Performance analysis with garbage collector http://wireless.java.sun.com/midp/articles/garbage/
-  - Port to http://gongolo.usr.dsi.unimi.it/~vigna/fastUtil/?
-  - Port to use Piccolo SAX parser ?
-  - http://www.thoughtcrime.org/profiler.html
-* Embeed RDBMS http://axion.tigris.org/features.html
-* RMI-SOAP gateway: http://www.sys-con.com/java/articleprint.cfm?id=1479
-  Or embeed SOAP: http://www.soapanywhere.org/saw/index.jsp
-     (uses mixture of LGPL and APACHE)
-* Use http://xdoclet.sourceforge.net/ for our xmlBlaster.war (web archive)
-* Use xdoc http://jakarta.apache.org/site/jakarta-site2.htmfor homepage
-* Add a rule engine like
-  - http://herzberg.ca.sandia.gov/jess/
-  - http://jcp.org/aboutJava/communityprocess/review/jsr094/   
-  - http://www.dfki.uni-kl.de/ruleml/
-* xmlBlaster mirroring / object persistence with object persistence
-  - http://www.prevayler.org/wiki.jsp?topic=StartingPoints
-
-BUGS:
-
-* PtP isDurable redelivery
-
-
-Changes for 0.80 [Sep, xx 2002]
+Changes for 0.80 [Sep, 25 2002]
 ===============================
+
+  - New client feature matrix by Michele Laghi, see
+      http://www.xmlblaster.org/FeatureMatrix.html
+
+  - J2EE support updated by Peter Antman
+    Integration example with JBoss 3.x series
+    See
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/j2ee.k2.html
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/j2ee.jmx.html
+
+  - Added possibility to specify the subscriptionId on client side, see
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html
 
   - Bugifx in Timeout class:
     On seldom occasions the addTimeoutListener() was faster than
@@ -75,6 +44,7 @@ Changes for 0.80 [Sep, xx 2002]
       This is solved with a Thread per request approach on client side
     * Bugfix: Avoid blocking client thread on lost connection waiting
       for return value (freePendingThreads())
+    * Bugfix: Callback memory leak in disconnect fixed
 
   - Renamed ServerThread.java -> EmbeddedXmlBlaster.java
 
@@ -82,20 +52,23 @@ Changes for 0.80 [Sep, xx 2002]
     user environment.
     This feature is usable by integrating the org.xmlBlaster.util.EmbeddedXmlBlaster
     in another application.
+    Added by Heinrich Goetzger, Konrad Krafft and Marcel Ruff, see
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.classloader.XmlBlasterClassLoader.html 
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.classloader.ClassLoaderFactory.html
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.classloader.PluginClassLoader.html
   
   - Fixed memory leaks
     * For unsuscessful logins
     * Removed allocation of SubjectInfo in htpasswd
 
-
-  - INCOMPATIBLE mime access plugin interface change
+  - INCOMPATIBLE mime access plugin interface change.
     This is of importance only if you use your own mime based plugins.
     The I_AccessFilter interface method 'match()' changed from
       match(SubjectInfo publisher, SubjectInfo receiver, ...
     to
       match(SessionInfo publisher, SessionInfo receiver, ...
 
-  - INCOMPATIBLE plugin interface change!
+  - INCOMPATIBLE plugin interface change.
     This is of importance only if you use your own plugins.
     The I_Plugin interface method changed from
       public void init(org.xmlBlaster.util.Global glob, String[] options)
@@ -106,7 +79,7 @@ Changes for 0.80 [Sep, xx 2002]
     to
      org.xmlBlaster.util.plugin.I_Plugin
 
-  - INCOMPATIBLE property change!
+  - INCOMPATIBLE property change.
     To load protocol plugins this form is not supported anymore:
       Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
       Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
@@ -119,7 +92,7 @@ Changes for 0.80 [Sep, xx 2002]
     
   - Updated to JacORB_1_4_1
     -> NO: moved back to 1.3.30, the new version blocked
-	 in some cases.
+    in some cases.
 
   - Some minor, incompatible changes to the C++ xmlBlaster client lib
     * There is now a CORBA independend util::MessageUnit
@@ -165,7 +138,7 @@ Changes for 0.80 [Sep, xx 2002]
     Changed to if( address_string.indexOf( "/" ) >= 0 )
     to fix bug when IP has no DNS entry
 
-  - Updated to use newest JUnit from cvs
+  - Updated to use newest JUnit 3.8.1
 
   - Added new documentation (all are CLOSED), see
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
@@ -382,6 +355,10 @@ Changes for 0.79e [Mar, 27 2002]
     in java client helper classes.
     See -client.publishOneway.collectTime 500
 
+  - Added dBase JDBC driver 'tinySQL' to allow regression test, see
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.jdbcpool.html
+
   - Extended Perl support (from Cyrille)
 
   - RMI and XmlRpc interface changes.
@@ -491,6 +468,8 @@ Changes for 0.79e [Mar, 27 2002]
     Heinrich has added Xindice (a native XML DB) support as persistence
     layer of xmlBlaster.
     See xmlBlaster/src/java/org/xmlBlaster/engine/persistence/xmldb/README
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.xmldb.html
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.xmldb.xindice.html
 
   - build.sh and build.bat have new targets:
        build.sh dist          (collect xmlblaster server files)
