@@ -1,4 +1,4 @@
-<?xml version="1.0"?>									    
+<?xml version="1.0"?>                                                                       
 
 <!-- ===========================================================================
 
@@ -902,7 +902,7 @@ TODO
       <echo message="Creating javadoc documentation"/>
       <mkdir dir="${javadoc.dir}"/>
       <javadoc packagenames="org.xmlBlaster.*,javaclients"
-               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.java.dir}"
+               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.java.dir}:${demo.dir}"
                excludepackagenames="org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap"
                classpath="${cp}"
                destdir="${javadoc.dir}"
