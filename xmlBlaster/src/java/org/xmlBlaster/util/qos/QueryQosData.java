@@ -59,6 +59,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    /** for erase(): Notify the subscribers on erase? */
    private PropBoolean notify = new PropBoolean(true);
 
+   /** Set for each subscription if you want updateOneway() instead of update()
+       currently this is a flag of the connectQos as well */
+   private PropBoolean updateOneway = new PropBoolean(false);
+
    /** Mime based filter rules */
    private ArrayList filters = null;
    private transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
@@ -141,7 +145,30 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
+    * Do we want the callback message delivered with update() or with updateOneway()?
+    * Defaults to false. 
+    * @return true if oneway callback wanted
+    *         false to use update() with ACK return
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+    */
+   public void setWantUpdateOneway(boolean updateOneway) {
+      this.updateOneway.setValue(updateOneway);
+   }
+
+   /**
     * Defaults to true. 
+    */
+   public boolean getWantUpdateOneway() {
+      return this.updateOneway.getValue();
+   }
+
+   public PropBoolean getUpdateOnewayProp() {
+      return this.updateOneway;
+   }
+
+   /**
+    * Set to true if you want an erase notification if the topic is explicitly erased.
+    * @param notify Defaults to true. 
     */
    public void setWantNotify(boolean notify) {
       this.notify.setValue(notify);

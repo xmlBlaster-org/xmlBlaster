@@ -25,6 +25,7 @@ import org.xml.sax.*;
  *   &lt;multiSubscribe>false&lt;/multiSubscribe> &lt;!-- Ignore a second subscribe on same oid or XPATH -->
  *   &lt;local>false&lt;/local>       &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *   &lt;initialUpdate>false&lt;/initialUpdate> <!-- don't send an initial message after subscribe -->
+ *   &lt;updateOneway>false&lt;/updateOneway> <!-- use the acknowledged update() or updateOneway() for callbacks -->
  *   &lt;notify>false&lt;/notify>     &lt;!-- Suppress erase event to subcribers -->
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
  *                                    &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
@@ -51,6 +52,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    private boolean inMultiSubscribe = false;
    private boolean inLocal = false;
    private boolean inInitialUpdate = false;
+   private boolean inUpdateOneway = false;
    private boolean inNotify = false;
    private boolean inFilter = false;
    private boolean inQuerySpec = false;
@@ -188,6 +190,20 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("updateOneway")) {
+         if (!inQos)
+            return;
+         inUpdateOneway = true;
+         queryQosData.setWantUpdateOneway(true);
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               log.warn(ME, "Ignoring sent <updateOneway> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("notify")) {
          if (!inQos)
             return;
@@ -289,16 +305,19 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("subscribe")) {
+         inSubscribe = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("erase")) {
+         inErase = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("meta")) {
+         inMeta = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantMeta(new Boolean(tmp).booleanValue());
@@ -307,6 +326,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("content")) {
+         inContent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantContent(new Boolean(tmp).booleanValue());
@@ -315,6 +335,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("multiSubscribe")) {
+         inMultiSubscribe = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setMultiSubscribe(new Boolean(tmp).booleanValue());
@@ -323,6 +344,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("local")) {
+         inLocal = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantLocal(new Boolean(tmp).booleanValue());
@@ -331,6 +353,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("initialUpdate")) {
+         inInitialUpdate = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantInitialUpdate(new Boolean(tmp).booleanValue());
@@ -338,7 +361,17 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("updateOneway")) {
+         inUpdateOneway = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            queryQosData.setWantUpdateOneway(new Boolean(tmp).booleanValue());
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("notify")) {
+         inNotify = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantNotify(new Boolean(tmp).booleanValue());
@@ -453,6 +486,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
             sb.append(offset).append(" <initialUpdate/>");
          else
             sb.append(offset).append(" <initialUpdate>false</initialUpdate>");
+      }
+
+      if (queryQosData.getUpdateOnewayProp().isModified()) {
+         if (queryQosData.getWantUpdateOneway())
+            sb.append(offset).append(" <updateOneway/>");
+         else
+            sb.append(offset).append(" <updateOneway>false</updateOneway>");
       }
 
       if (queryQosData.getNotifyProp().isModified()) {
