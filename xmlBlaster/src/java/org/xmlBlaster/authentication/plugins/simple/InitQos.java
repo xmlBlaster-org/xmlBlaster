@@ -39,6 +39,14 @@ public class InitQos extends SaxHandlerBase {
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
+   public InitQos(String loginName, String password)
+   {
+      this.user = loginName;
+      this.password = password;
+      this.type = "simple";
+      this.version = "1.0";
+   }
+
    public String getVersion() {
       return version;
    }
