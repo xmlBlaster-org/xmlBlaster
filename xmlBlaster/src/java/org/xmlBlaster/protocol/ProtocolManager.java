@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.2 2002/06/15 16:47:09 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.3 2002/06/17 07:39:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -366,11 +366,11 @@ public class ProtocolManager implements I_RunlevelListener
             deactivateDrivers(force);
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            shutdownDrivers(force);
             deactivateCbDrivers(force); // not implemented: is done for each client on callback
-            shutdownCbDrivers(force);  // not implemented: is done for each client on callback
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            shutdownDrivers(force);
+            shutdownCbDrivers(force);  // not implemented: is done for each client on callback
             protocols.clear();
             cbProtocolClasses.clear();
             glob.shutdownHttpServer();
