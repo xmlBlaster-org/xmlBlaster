@@ -1,24 +1,28 @@
 These are examples on how to access xmlBlaster from a C++ client
 
-- clientBOA.cpp and clientPOA.cpp use the MICO (C++) CORBA library
+* The C++ clients use the MICO (C++) CORBA library
+  and the XML Xerces C++ library.
 
-- xmlBlaster runs with JacORB (Java)
+* IMPORTANT:
+  See xmlBlaster/src/c++/README how to build the
+     xmlBlasterClient.dll (shared library)
+  first!
 
--  clientPOA -ORBNamigAddr corbaname::localhost:7608#MyService
--  TestGet -ORBNamigAddr corbaname::localhost:7608#xmlBlaster-Authenticate.MOM
--  TestGet -ORBNamigAddr corbaname:rir:/NameService#xmlBlaster-Authenticate.MOM
+* xmlBlaster runs with JacORB (Java)
 
+* C++ Compilation is done with ant, go to xmlBlaster root directory and type:
 
+     build.bat cpp-test
+  
+  or
 
-1.) Install MICO (2.3) and set the environment variable to point to MICO
+     build.sh cpp-test
 
-   export CORBACPP_HOME=/opt/local/mico
+  which will first compile the xmlBlasterClient shared library (dll) and then
+  some C++ executables to test C++ access to xmlBlaster.
 
-
-2) Compile the clients with
-
-   make all
-
+  This should compile with g++ on all OS (tested on Linux),
+  and with MS Visual C++ 6.
 
 
 To run the clients, change to the 'bin' directory:
@@ -98,4 +102,8 @@ mico name service with JacORB:
 nsd --ior $HOME/NS_Ref -ORBNoCodeSets -ORBIIOAddr inet:155.157.20.64:12456 &
 
 The path $HOME/NS_Ref must match the entry in jacorb.properties
+
+-  clientPOA -ORBNamigAddr corbaname::localhost:7608#MyService
+-  TestGet -ORBNamigAddr corbaname::localhost:7608#xmlBlaster-Authenticate.MOM
+-  TestGet -ORBNamigAddr corbaname:rir:/NameService#xmlBlaster-Authenticate.MOM
 
