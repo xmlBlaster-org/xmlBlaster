@@ -3,7 +3,7 @@ Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueueProperty.java,v 1.8 2002/05/11 09:36:26 ruff Exp $
+Version:   $Id: QueueProperty.java,v 1.9 2002/06/03 17:29:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -98,8 +98,15 @@ public class QueueProperty extends QueuePropertyBase
     */
    public final String usage() {
       String text = "";
-      text += "Control fail save queue properties:\n";
+      text += "Control client side fail save queue properties (message recorder):\n";
       text += "   -queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
+      text += "                       0 switches recording of invocations off.\n";
+      text += "                       -1 sets it to unlimited.\n";
+      text += "   -recorder.type      The plugin type to use for tail back messages in fail save mode [FileRecorder]\n";
+      text += "   -recorder.version   The version of the plugin [1.0]\n";
+      text += "   -recorder.path      The path (without file name) for the file for FileRecorder [<is generated>]\n";
+      text += "   -recorder.fn        The file name (without path) for the file for FileRecorder [<is generated unique>]\n";
+      text += "   -recorder.rate      The playback rate in msg/sec on reconnect e.g. 200 is 200 msg/sec, -1 is as fast as possible [-1]\n";
     //text += "   -queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
     //text += "   -queue.expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += "   -queue.onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADLETTER + " [" + DEFAULT_onOverflow + "]\n";
