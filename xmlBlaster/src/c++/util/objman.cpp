@@ -13,9 +13,11 @@ static int gObjectManagerState = 0;
 // Cleanup routine for atexit
 extern "C" void object_manager_cleanup()
    { 
+	/*
      if(gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUT_DOWN &&
         gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUTTING_DOWN)
        ;//Object_Lifetime_Manager::instance()->fini();
+	*/
    }
 
 namespace org { namespace xmlBlaster { namespace util {
