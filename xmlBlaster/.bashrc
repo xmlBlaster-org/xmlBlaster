@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.74 $
+# $Revision: 1.75 $
 #-----------------------------------------------------------
 
 
@@ -137,6 +137,7 @@ fi
 if [ ${JAVA_HOME:=""} = "" ] ; then
    # xmlBlaster release < 0.78 used JDK_HOME, try this variable:
    JAVA_HOME=$JDK_HOME
+   export JAVA_HOME
 fi
 if [ ${JAVA_HOME:=""} != "" ] ; then
    if [ -d ${JAVA_HOME} ] ; then
