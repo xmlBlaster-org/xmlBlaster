@@ -246,7 +246,7 @@ public final class RunlevelManager
                else this.log.call(ME, "fireRunlevelEvent: the pluginInfo is null");
             }
             this.glob.getPluginManager().getPluginObject(pluginInfo);
-            this.log.info(ME, "fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' loaded");
+            this.log.info(ME, "fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getUpAction().getOnFail();

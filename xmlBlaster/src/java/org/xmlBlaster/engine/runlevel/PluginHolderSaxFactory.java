@@ -217,7 +217,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          InputStream fis = url.openStream();
          InputSource inSource = new InputSource(fis);
          reset();
-         init(inSource);
+         init(url.toString(), inSource);
          PluginHolder ret = getObject();
          if (this.log.DUMP) this.log.dump(ME, ".readConfigFile. The content: \n" + ret.toXml());
          return ret;
