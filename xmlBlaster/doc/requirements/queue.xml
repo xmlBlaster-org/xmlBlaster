@@ -12,9 +12,9 @@
      <p>Queues can (and are) used in different parts in xmlBlaster. On client side
       they are used to store the messages waiting to be delivered to xmlBlaster.
       This is commonly the case when the communication between client and server
-      is temporarly down.</p>
+      is temporarily down.</p>
       <p>On the server side there are callback queues (also called update queues) to
-      <b>temporarly</b> store messages waiting to be delivered, for example callbacks to client
+      <b>temporarily</b> store messages waiting to be delivered, for example callbacks to client
       subscriptions or PtP messages, or to <b>persistently</b> store the messages in order
       to be able to recover after a server crash.</p>
       <p>Another usage of queues within xmlBlaster is the storage of the history of
@@ -23,8 +23,8 @@
       is high.</p>
       <p>The different queue implementations used within xmlBlaster are plugins, so if you want some 
       specific feature, or if you want to implement your own queue, this can be done.</p>
-      <p>Queue entries have priorities (from 0 to 9) and a garanteed order of delivery within the same 
-      priority. This means that messages are sorted primarly by priority: higher priority messages are the 
+      <p>Queue entries have priorities (from 0 to 9) and a guaranteed order of delivery within the same 
+      priority. This means that messages are sorted primary by priority: higher priority messages are the 
       first ones extracted by a take, peek or remove action. The second ordering criteria applied is the 
       uniqueId of the entry. The lower uniqueId are returned first (since normally this uniqueId is
       related to the timestamp, older entries are returned first).</p>
@@ -34,9 +34,9 @@
     <example lang="Java" type="HTML">
        These are example QoS of subscribe() invocations:
        <pre>    
-           &lt;qos>
-               &lt;queue maxMsg='1000' maxSize='4000'  onOverflow='deadMessage'/>
-           &lt;/queue>
+&lt;qos>
+   &lt;queue maxMsg='1000' maxSize='4000'  onOverflow='deadMessage'/>
+&lt;/queue>
        </pre>
    </example>
    <configuration where="server">
@@ -63,7 +63,7 @@
 
          <tr>
             <td>QueuePlugin[CACHE][1.0]</td>
-            <td>org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</td>
+            <td>org.xmlBlaster.util.queue.cache. CacheQueueInterceptorPlugin</td>
             <td>specifies the class to be used for this particular queue plugin (in this case the plugin offering caching facilities)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -101,7 +101,9 @@
         </table>
    </configuration>
 
-
+   <see type="REQ">queue.cache</see>
+   <see type="REQ">queue.jdbc</see>
+   <see type="REQ">queue.ram</see>
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
    <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
    <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
@@ -112,7 +114,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 15</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
