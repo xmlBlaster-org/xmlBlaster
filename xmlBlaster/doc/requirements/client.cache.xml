@@ -39,18 +39,20 @@
    <example lang="Java">
       <![CDATA[
       try {
-         xmlBlasterAccess = glob.getXmlBlasterAccess(); // Hides Corba stuff
+         xmlBlasterAccess = glob.getXmlBlasterAccess(); // Hides Corba/RMI stuff
 
          // Setup cache ...
-         xmlBlasterAccess.registerConnectionListener(10);
+         xmlBlasterAccess.createSynchronousCache(10);
 
          // and do the login ...
          xmlBlasterAccess.connect(null, this);
 
+         GetKey getKey = new GetKey(glob, "HelloMessage");
+         GetQos getQos = new GetQos(glob);
+
          // This getCached() is only on the first call a write through to xmlBlaster
          // Following calls retrieve the up to date data from the local cache:
-         MsgUnit[] msgUnitArr =
-               xmlBlasterAccess.getCached(xmlKey, xmlQos);
+         MsgUnit[] msgUnitArr = xmlBlasterAccess.getCached(getKey, getQos);
       }
       catch (XmlBlasterException e) {
           System.out.println("ERROR: " + e.getMessage());
@@ -63,7 +65,7 @@
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
