@@ -131,7 +131,7 @@ final public class Authenticate implements I_RunlevelListener
     * Use this to create a user and session for internal users only.
     * This method is a security risk never allow external code to call it (there is no
     * passwd needed).
-    * Note that for loginNames starting with "__" only the security instances are created,
+    * Note that the security instances are created rawish,
     * they are not registered with the Authentication server.
     */
    public SessionInfo unsecureCreateSession(org.xmlBlaster.client.qos.ConnectQos connectQos) throws XmlBlasterException
@@ -224,7 +224,7 @@ final public class Authenticate implements I_RunlevelListener
       // [2] Try reconnecting with publicSessionId
       if (connectQos.hasPublicSessionId()) {
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
-         if (info != null && !info.isShutdown()) {
+         if (info != null && !info.isShutdown() && !info.getConnectQos().bypassCredentialCheck()) {
             if (connectQos.getSessionQos().reconnectSameClientOnly()) {
                String text = "Only the creator of session " + connectQos.getSessionName().toString() + " may reconnect, access denied.";
                log.warn(ME+".connect()", text);
@@ -287,9 +287,16 @@ final public class Authenticate implements I_RunlevelListener
             log.warn(ME, "Access is denied, there is no security manager configured for this connect QoS: " + connectQos.toXml());
             throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "There is no security manager configured with the given connect QoS");
          }
-         sessionCtx = securityMgr.reserveSession(secretSessionId);  // allways creates a new I_Session instance
-         String securityInfo = sessionCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions if authentication fails
-         if (securityInfo != null && securityInfo.length() > 1) log.warn(ME, "Ignoring security info: " + securityInfo);
+         sessionCtx = securityMgr.reserveSession(secretSessionId);  // always creates a new I_Session instance
+         if (connectQos.bypassCredentialCheck()) {
+            // This happens when a session is auto created by a PtP message
+            // Only ConnectQosServer (which is under control of the core) can set this flag
+            if (log.TRACE) log.trace(ME+".connect()", "SECURITY SWITCH OFF: Granted access to xmlBlaster without password, bypassCredentialCheck=true");
+         }
+         else {
+            String securityInfo = sessionCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions if authentication fails
+            if (securityInfo != null && securityInfo.length() > 1) log.warn(ME, "Ignoring security info: " + securityInfo);
+         }
          // Now the client is authenticated
       }
       catch (XmlBlasterException e) {
@@ -331,7 +338,7 @@ final public class Authenticate implements I_RunlevelListener
          synchronized(subjectInfo) {
             if (subjectIsAlive) {
                // TODO: Reconfigure subject queue only when queue relating='subject' was used
-               subjectInfo.setCbQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
+               subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
             // Check if client does a relogin and wants to destroy old sessions
             if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {
@@ -347,11 +354,29 @@ final public class Authenticate implements I_RunlevelListener
 
             if (log.TRACE) log.trace(ME, "Creating sessionInfo for " + subjectInfo.getId());
 
-            // Create the new sessionInfo instance
-            if (this.log.TRACE) this.log.trace(ME, "connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
-            sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
-            synchronized(this.sessionInfoMap) {
-               this.sessionInfoMap.put(secretSessionId, sessionInfo);
+            sessionInfo = getSessionInfo(connectQos.getSessionName());
+            if (sessionInfo != null && !sessionInfo.isShutdown() && sessionInfo.getConnectQos().bypassCredentialCheck()) {
+               if (this.log.TRACE) this.log.trace(ME, "connect: Reused session with had bypassCredentialCheck=true");
+               String oldSecretSessionId = sessionInfo.getSecretSessionId();
+               sessionInfo.setSecuritySession(sessionCtx);
+               if (secretSessionId == null || secretSessionId.length() < 2) {
+                  // Keep the old secretSessionId
+                  connectQos.getSessionQos().setSecretSessionId(oldSecretSessionId);
+               }
+               else {
+                  // The CORBA driver insists in a new secretSessionId
+                  changeSecretSessionId(oldSecretSessionId, secretSessionId);
+                  connectQos.getSessionQos().setSecretSessionId(secretSessionId);
+               }
+               sessionInfo.updateConnectQos(connectQos);
+            }
+            else {
+               // Create the new sessionInfo instance
+               if (this.log.TRACE) this.log.trace(ME, "connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
+               sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
+               synchronized(this.sessionInfoMap) {
+                  this.sessionInfoMap.put(secretSessionId, sessionInfo);
+               }
             }
 
             connectQos.getSessionQos().setSecretSessionId(secretSessionId);
@@ -367,7 +392,11 @@ final public class Authenticate implements I_RunlevelListener
 
          // Now some nice logging ...
          StringBuffer sb = new StringBuffer(256);
-         sb.append("Successful login for client ").append(sessionInfo.getSessionName().getAbsoluteName());
+         if (connectQos.bypassCredentialCheck())
+            sb.append("Created tempory session for client ");
+         else
+            sb.append("Successful login for client ");
+         sb.append(sessionInfo.getSessionName().getAbsoluteName());
          sb.append(", session");
          sb.append(((connectQos.getSessionTimeout() > 0L) ?
                          " expires after"+org.jutils.time.TimeHelper.millisToNice(connectQos.getSessionTimeout()) :
