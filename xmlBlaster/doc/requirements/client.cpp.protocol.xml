@@ -53,27 +53,27 @@
      </ul>
      </p>
      <p>
-	Normally, that is if the communication protocol driver is handled and controlled internally by the
-	XmlBlasterAccess class, you don't need to bother about the underlying protocol. An example is if you
-	are using the CORBA protocol and you you don't need/want to bother about CORBA, then you can 
-	instantiate XmlBlasterAccess and directly work with it. In such a case XmlBlasterAccess will 
-	create an orb instance, it will start the orb performing thread and it will clean up all corba
-	resources on destruction.<br/>
-	There are usages where this is not sufficient. Suppose you have already an application which
-	communicates with some other software via a particular CORBA implementation and you want to use the
-	same orb instance for the communication to xmlBlaster. In such a case you need to
-	<ul>
-   	  <li>Instantiate the orb outside XmlBlasterAccess</li>
-	  <li>invoke orb->run() or orb->perform_work() yourself</li>
-	  <li>make a duplicate of the orb and pass it to <b>CorbaDriverFactory::getFactory(global, orb)</b>.
-	      It is important that you do that <b>before</b> you create the first instance of
-	      <b>XmlBlasterAccess</b>. This way it is garanteed that XmlBlasterAccess will use the 
-	      CorbaDriverFactory (which is a singleton) with the orb you passed to it.
-	  </li>
-	  <li>You must cleanup the corba resources yourself (i.e. you need to invoke shutdown and destroy.</li>
-	</ul>
+        Normally, that is if the communication protocol driver is handled and controlled internally by the
+        XmlBlasterAccess class, you don't need to bother about the underlying protocol. An example is if you
+        are using the CORBA protocol and you you don't need/want to bother about CORBA, then you can 
+        instantiate XmlBlasterAccess and directly work with it. In such a case XmlBlasterAccess will 
+        create an orb instance, it will start the orb performing thread and it will clean up all corba
+        resources on destruction.<br/>
+        There are usages where this is not sufficient. Suppose you have already an application which
+        communicates with some other software via a particular CORBA implementation and you want to use the
+        same orb instance for the communication to xmlBlaster. In such a case you need to
+        <ul>
+          <li>Instantiate the orb outside XmlBlasterAccess</li>
+          <li>invoke orb->run() or orb->perform_work() yourself</li>
+          <li>make a duplicate of the orb and pass it to <b>CorbaDriverFactory::getFactory(global, orb)</b>.
+              It is important that you do that <b>before</b> you create the first instance of
+              <b>XmlBlasterAccess</b>. This way it is garanteed that XmlBlasterAccess will use the 
+              CorbaDriverFactory (which is a singleton) with the orb you passed to it.
+          </li>
+          <li>You must cleanup the corba resources yourself (i.e. you need to invoke shutdown and destroy.</li>
+        </ul>
 
-	for example you 
+        for example you 
         For situations where you have to configure and instantiate protocol specific stuff, for example as
         if you would want to use an instance of an orb which you have instantiated outside XmlBlaster, you
         must make sure to instantiate the protocol driver by passing all external parameters. In the 
@@ -86,12 +86,12 @@
    </description>
 
 
-   <see type="REQ">client.cpp.precondition</see>
+   <see type="REQ">client.cpp</see>
    <see type="CODE" lang="CPP">org::xmlBlaster::demo::ExternOrb</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 </requirement>
 

@@ -76,21 +76,21 @@ class HelloWorld2 : public I_Callback,
       try {
          XmlBlasterAccess con(global_);
 
-	 // here you initialize the failsafe behaviour by giving
-	 // a pointer to the instance to notify when a state change
-	 // occcurs (which in this case is the 'this' object)
+         // here you initialize the failsafe behaviour by giving
+         // a pointer to the instance to notify when a state change
+         // occcurs (which in this case is the 'this' object)
 
          con.initFailsafe(this);
-	 
-	 // do what you want to do here (connect publish subscribe)
-	 .....
+         
+         // do what you want to do here (connect publish subscribe)
+         .....
    }
 
    string update(const string& sessionId, 
                  UpdateKey& updateKey, 
-		 void *content, 
-		 long contentSize, 
-		 UpdateQos& updateQos)
+                 void *content, 
+                 long contentSize, 
+                 UpdateQos& updateQos)
    {
       log_.info(ME, "update: key: " + updateKey.toXml());
       log_.info(ME, "update: qos: " + updateQos.toXml());
@@ -106,13 +106,12 @@ class HelloWorld2 : public I_Callback,
    </example>
 
 
-   <see type="REQ">client.cpp.precondition</see>
    <see type="REQ">client.cpp</see>
    <see type="REQ">client.failsafe</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 20</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 

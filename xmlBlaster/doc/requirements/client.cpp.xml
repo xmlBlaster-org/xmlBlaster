@@ -314,15 +314,14 @@ Particularly interesting it would be the INTEL compiler on Linux and Windows and
    <see type="API" lang="CPP">HelloWorld2</see>
    <see type="API" lang="CPP">org::xmlBlaster::client::XmlBlasterAccess</see>
    <see type="OTHER">http://www.xmlBlaster.org/xmlBlaster/doc/doxygen/c++/namespaces.html</see>
-   <see type="REQ">client.cpp.precondition</see>
-   <see type="REQ">client.cpp.tao</see>
    <see type="REQ">client.cpp.compile</see>
+   <see type="REQ">client.cpp.tao</see>
    <see type="REQ">client.cpp.failsafe</see>
    <see type="REQ">client.cpp.protocol</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 </requirement>
 
