@@ -79,12 +79,12 @@ void Sax2Parser::parse(const string &xmlData)
       string msg = getStringValue(err.getMessage());
       delete parser;
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXNotRecognizedException: ") + msg);
-	}
+        }
    catch (SAXNotSupportedException &err) {
       string msg = getStringValue(err.getMessage());
       delete parser;
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXNotSupportedException: ") + msg);
-	}
+        }
    catch (const XMLException &err) {
       string msg = getStringValue(err.getMessage());
       delete parser;
@@ -94,6 +94,21 @@ void Sax2Parser::parse(const string &xmlData)
       string msg = getStringValue(err.getMessage());
       delete parser;
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXException: ") + msg);
+   }
+   catch (const std::exception& err) { // catches all of bad_alloc, bad_cast, runtime_error, ...
+      string msg = err.what();
+      delete parser;
+      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("std:exception: ") + msg);
+   }
+   catch (const string& err) {
+     string msg = err;
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("string exception. message:") + err + ": " + xmlData);
+   }
+   catch (const char* err) {
+     string msg = err;
+     delete parser;
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("char *exception. message:") + err + ": " + xmlData);
    }
    catch (...) {
      delete parser;
