@@ -335,7 +335,9 @@ abstract public class DispatchConnectionsHandler
     * Send the messages back to the client. 
     * If there are more fallback addresses, these will be used if the
     * first fails.
-    * @return The returned String[] from the client, for oneway invocations it is null
+    * <p>
+    * The RETURN value is transferred in the msgArr[i].getReturnObj(), for oneway updates it is null
+    * </p>
     */
    public void send(MsgQueueEntry[] msgArr) throws Throwable, XmlBlasterException
    {

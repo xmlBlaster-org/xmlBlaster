@@ -109,6 +109,9 @@ public final class DispatchWorker implements Runnable
             if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
             
             dispatchManager.getDispatchConnectionsHandler().send(entries);
+
+            // Here an exception is thrown or
+            // the RETURN value is transferred in the entries[i].getReturnObj(), for oneway updates it is null
             
             if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
          }

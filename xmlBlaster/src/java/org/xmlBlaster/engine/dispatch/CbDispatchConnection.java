@@ -97,7 +97,9 @@ public final class CbDispatchConnection extends DispatchConnection
    /**
     * Send the messages back to the client. 
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
-    * @return The returned string from the client which is decrypted if necessary, for oneway updates it is null
+    * <p>
+    * The RETURN value is transferred in the msgArr[i].getReturnObj(), for oneway updates it is null
+    * </p>
     */
    public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
    {
