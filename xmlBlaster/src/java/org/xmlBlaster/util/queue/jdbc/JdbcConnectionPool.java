@@ -311,6 +311,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
       // the property settings specific to this plugin type / version
       this.url = pluginProp.getProperty("url", this.url);
+      String dbInstanceName = glob.getStrippedId();
+      this.url = StringHelper.replaceFirst(this.url, "$_{xmlBlaster_uniqueId}", dbInstanceName);
       ME = "JdbcConnectionPool-" + this.url;
       this.user = pluginProp.getProperty("user", this.user);
       this.password = pluginProp.getProperty("password", this.password);
@@ -568,7 +570,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          }
          if (this.isShutdown) {
             try {
-   	       connect(false);
+               connect(false);
             }
             catch (SQLException ex) {
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, ex.getMessage());
