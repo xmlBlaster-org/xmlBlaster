@@ -814,7 +814,7 @@ public final class TopicHandler implements I_Timeout
       synchronized(this.subscriberMap) {
          subs = (SubscriptionInfo)this.subscriberMap.remove(subscriptionInfoUniqueKey);
       }
-      if (subs == null) {
+      if (subs == null && !isDead() && !isSoftErased()) {
          Thread.currentThread().dumpStack();
          log.warn(ME, "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
       }
