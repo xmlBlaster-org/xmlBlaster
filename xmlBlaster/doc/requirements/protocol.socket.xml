@@ -295,8 +295,17 @@ The '"' is just to show the boundary, '"' is not part of the message.
 
          <tr>
             <td>socket.SoTimeout</td>
+            <td>0</td>
+            <td>How long we max. block on InputStream.read(). Please leave this value
+                0, as we should block on input stream indefinitely to receive a new message.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.SoLingerTimeout</td>
             <td>60000 (one minute)</td>
-            <td>If a socket call is made, the socket invocation times out after the given exception
+            <td>If the socket is closed, how long shall we try to deliver unsent data from the socket stack.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -344,7 +353,7 @@ The '"' is just to show the boundary, '"' is not part of the message.
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
