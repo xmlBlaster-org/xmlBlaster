@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Removed a2Blaster (for authentication/authorization).
+   The a2Blaster project is developed further commercially and like
+   this of no use for us.
+
  o Removed complete Xindice support as the persistence layer changed.
    To add Xindice again it needs to implement the persistent queue framework, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
