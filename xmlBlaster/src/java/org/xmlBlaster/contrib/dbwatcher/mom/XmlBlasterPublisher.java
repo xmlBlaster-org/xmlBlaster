@@ -158,8 +158,10 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          isRunningNative = false;
          this.glob = new Global();
       }
-      else
-         this.glob = globOrig.getClone(null);
+      else {
+         this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());
+         this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
+      }
 
       this.topicNameTemplate = info.get("mom.topicName", "db.change.event.${groupColValue}");
       this.loginName = info.get("mom.loginName", "dbWatcher/1");
@@ -194,9 +196,9 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       else {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
          this.connectQos.setMaxSessions(100);
+         /*
          if (isRunningNative) {
             Address address = this.connectQos.getAddress();
-            this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
             address.setType("LOCAL");
             address.setPingInterval(0L);
             address.setCollectTime(0L);
@@ -211,6 +213,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
             this.connectQos.getData().getSubjectQueueProperty().setType("RAM");
             this.connectQos.getData().getSubjectQueueProperty().setVersion("1.0");
          }
+         */
       }
       
       this.con = this.glob.getXmlBlasterAccess();
