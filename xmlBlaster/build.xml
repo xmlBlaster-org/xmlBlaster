@@ -213,6 +213,8 @@ TODO
       <compilerarg value="-Wstrict-prototypes" />
       <compilerarg value="-Wimplicit-int" />
       <compilerarg value="-Werror-implicit-function-declaration" />
+      <compilerarg value="-D_REENTRANT" />
+      <compilerarg value="-rdynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp -->
    </compiler>
 
 
