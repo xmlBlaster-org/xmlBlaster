@@ -18,6 +18,10 @@ BUGS:
 
 
 DONE:
+  - Incompatible change of QoS returns:
+    Old: "<qos><state>OK</state></qos>"
+    New: "<qos><state id="OK"/></qos>"
+   
   - Server internal changes:
     Tuned performance for internal messages
     Added Global argument to many classes
