@@ -5,17 +5,23 @@
    <topic>XmlBlaster provides a property file to allow a simple configuration</topic>
    <description>
       The xmlBlaster.properties file allows to customize the behavior of xmlBlaster.
-      It is searched in the following locations:
-      &lt;ol>
-      &lt;li>In $HOME&lt;/li>
-      &lt;li>In $XMLBLASTER_HOME&lt;/li>
-      &lt;li>Local directory&lt;/li>
-      &lt;li>Fallback: \xmlBlaster oder /usr/local/xmlBlaster&lt;/li>
-      &lt;/ol>
    </description>
+   <example lang="Java">
+      <![CDATA[
+      The xmlBlaster.properties file is searched in the following locations and the given order:
+
+       $HOME
+
+       $XMLBLASTER_HOME
+      
+       Local directory
+      
+       Fallback: \xmlBlaster or /usr/local/xmlBlaster
+      ]]>
+   </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
