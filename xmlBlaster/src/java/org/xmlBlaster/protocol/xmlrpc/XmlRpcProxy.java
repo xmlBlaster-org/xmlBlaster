@@ -3,7 +3,7 @@ Name:      XmlRpcProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: XmlRpcProxy.java,v 1.5 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: XmlRpcProxy.java,v 1.6 2000/06/26 15:22:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -49,18 +49,18 @@ public class XmlRpcProxy implements I_Callback
    {
       try {
          XmlBlasterProperty.init(args);
+         if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
+            usage();
+            return;
+         }
+         Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
+
+         loginName = Args.getArg(args, "-name", ME);
+         passwd = Args.getArg(args, "-passwd", "secret");
+         xmlPort = Args.getArg(args, "-xmlPort", 8080);
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
-         usage();
-         return;
-      }
-      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
-
-      loginName = Args.getArg(args, "-name", ME);
-      passwd = Args.getArg(args, "-passwd", "secret");
-      xmlPort = Args.getArg(args, "-xmlPort", 8080);
 
       setUp();  // login
       // String subscriptionHandle = subscribe(xmlKey, queryType);
