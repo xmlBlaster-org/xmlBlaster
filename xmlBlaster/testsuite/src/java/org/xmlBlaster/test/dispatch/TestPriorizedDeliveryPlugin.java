@@ -8,6 +8,7 @@ package org.xmlBlaster.test.dispatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.enum.PriorityEnum;
@@ -101,15 +102,15 @@ public class TestPriorizedDeliveryPlugin extends TestCase
     * <p />
     * Then we connect as a client
     */
-   protected void setUp() {  
+   protected void setUp() {
+      //Global embeddedGlobal = glob.getClone(null);  
       this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
-        "-DispatchPlugin/defaultPlugin", "Priority,1.0",
-        "-dispatch/callback/DispatchPlugin/defaultPlugin", "Priority,1.0", 
+        "-DispatchPlugin/defaultPlugin", "undef", 
         "-PriorizedDeliveryPlugin/user", "_PriorizedDeliveryPlugin",
-        "-PriorizedDeliveryPlugin/config", 
+        "-"+org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY, //"-PriorizedDeliveryPlugin/config", 
             "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'>\n"+
             "  <onStatus oid='" + statusOid + "' content='" + NORMAL_LINE + "' defaultAction='send'>\n" +
             //"    <action do='send'  ifPriority='0-9'/>\n" +
@@ -136,7 +137,13 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       try {
          log.info(ME, "Connecting ...");
          this.con = glob.getXmlBlasterAccess();
+
+         // Activate plugin for callback only:
          ConnectQos qos = new ConnectQos(glob, name, passwd);
+         CallbackAddress cbAddress = new CallbackAddress(glob);
+         cbAddress.setDispatchPlugin("Priority,1.0");
+         qos.addCallbackAddress(cbAddress);
+
          this.update = new MsgInterceptor(glob, log, null);
          this.con.connect(qos, update);
       }
@@ -363,7 +370,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
     * Change the configuration of the plugin
     */
    private void publishNewConfig(String config) {
-      String configKey = "PriorizedDeliveryPlugin.config";
+      String configKey = org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY; // "PriorizedDeliveryPlugin/config"
       try {
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
@@ -379,7 +386,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
 
       /* Does not work as Main.java creates a new engine.Global for the server
       try {
-         glob.getProperty().set("PriorizedDeliveryPlugin.config", config);
+         glob.getProperty().set(configKey, config);
       }
       catch (org.jutils.JUtilsException e) {
          fail(e.toString());

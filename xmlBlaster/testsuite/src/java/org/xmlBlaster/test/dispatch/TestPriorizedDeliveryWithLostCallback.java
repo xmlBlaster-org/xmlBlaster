@@ -121,10 +121,10 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
         "-dispatch/clientSide/protocol", "XML-RPC",
         "-xmlrpc.portCB", ""+(serverPort+1),
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
-        "-DispatchPlugin/defaultPlugin", "Priority,1.0",
-        "-cb.DispatchPlugin/defaultPlugin", "Priority,1.0", 
+        "-DispatchPlugin/defaultPlugin", "undef",  // configure "Priority,1.0" below with CallbackAddress
         "-PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin",
-        "-PriorizedDeliveryPlugin.config", "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'/>\n"
+        "-"+org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY, "<msgDispatch defaultStatus='" + BACKUP_LINE + "' defaultAction='send'/>\n"
+        // "PriorizedDeliveryPlugin/config"
          };
       glob.init(args);
 
@@ -144,6 +144,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          cbAddress.setDelay(1000L);      // retry connecting every 4 sec
          cbAddress.setRetries(-1);       // -1 == forever
          cbAddress.setPingInterval(5000L); // ping every 4 seconds
+         cbAddress.setDispatchPlugin("Priority,1.0");  // Activate plugin for callback only
          this.connectQos.addCallbackAddress(cbAddress);
 
          this.connectReturnQos = this.con.connect(this.connectQos, this.updateInterceptor);
@@ -194,7 +195,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
     * Change the configuration of the plugin
     */
    private void publishNewConfig(String config) {
-      String configKey = "PriorizedDeliveryPlugin.config";
+      String configKey = org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY; // -PriorizedDeliveryPlugin/config=
       try {
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
@@ -211,7 +212,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
 
       /* Does not work as Main.java creates a new engine.Global for the server
       try {
-         glob.getProperty().set("PriorizedDeliveryPlugin.config", config);
+         glob.getProperty().set(PriorizedDeliveryPlugin.CONFIG_PROPERTY_KEY, config);
       }
       catch (org.jutils.JUtilsException e) {
          fail(e.toString());
