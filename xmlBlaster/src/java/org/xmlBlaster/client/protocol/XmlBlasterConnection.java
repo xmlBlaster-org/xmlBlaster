@@ -1004,6 +1004,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             isReconnectPolling = true;
             clientProblemCallback.lostConnection(); // notify client
             loginThread = new LoginThread(this, connectQos.getAddress().getDelay(), retries);
+            loginThread.setDaemon(true);
             loginThread.start();
          }
       }
@@ -1021,6 +1022,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
       if (connectQos.getAddress().getPingInterval() > 0L && pingThread == null) {
          pingThread = new PingThread(this, connectQos.getAddress().getPingInterval());
+         pingThread.setDaemon(true);
          pingThread.start();
       }
    }
