@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.10 2002/12/19 18:55:21 laghi Exp $
+Version:   $Id: Log.cpp,v 1.11 2003/01/06 12:15:11 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -36,7 +36,9 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    /**
     * Initializes logging and Properties
     */
-   Log::Log(int args, const char * const argc[]) {
+   Log::Log(int args, const char * const argc[], const string& name) 
+      : name_(name)
+   {
       bool isNewProperty = ((numOfImplementations_ == 0)||((args != 0) && (argc != 0))) ? true :false;
       if (isNewProperty) {
          ME = "Log";
@@ -310,44 +312,32 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    }
 
 
+
+   void Log::initSpecificTrace(const string& trace, const string& traceId)
+   {
+      if (properties_->propertyExists(trace)) {
+         if (properties_->getBoolProperty(trace, false))
+            addLogLevel(traceId);
+         else removeLogLevel(traceId);
+      }
+      if (properties_->propertyExists(trace + "[" + name_ + "]")) {
+         if (properties_->getBoolProperty(trace + "[" + name_ + "]", false))
+            addLogLevel(traceId);
+         else removeLogLevel(traceId);
+      }
+   }
+
+
    void Log::initialize() {
       logFormatPropertyRead = true;
       // Given flag -info switches off Log.info messages:
-      if (properties_->propertyExists("info")) {
-         if (properties_->getBoolProperty("info", false))
-            addLogLevel("INFO");
-         else removeLogLevel("INFO");
-      }
-      if (properties_->propertyExists("warn")) {
-         if (properties_->getBoolProperty("warn", false))
-            addLogLevel("WARN");
-         else removeLogLevel("WARN");
-      }
-      if (properties_->propertyExists("error")) {
-         if (properties_->getBoolProperty("error", false))
-            addLogLevel("ERROR");
-         else removeLogLevel("ERROR");
-      }
-      if (properties_->propertyExists("call")) {
-         if (properties_->getBoolProperty("call", false))
-            addLogLevel("CALL");
-         else removeLogLevel("CALL");
-      }
-      if (properties_->propertyExists("time")) {
-         if (properties_->getBoolProperty("time", false))
-            addLogLevel("TIME");
-         else removeLogLevel("TIME");
-      }
-      if (properties_->propertyExists("trace")) {
-         if (properties_->getBoolProperty("trace", false))
-            addLogLevel("TRACE");
-         else removeLogLevel("TRACE");
-      }
-      if (properties_->propertyExists("dump")) {
-         if (properties_->getBoolProperty("dump", false))
-            addLogLevel("DUMP");
-         else removeLogLevel("DUMP");
-      }
+      initSpecificTrace("info", "INFO");
+      initSpecificTrace("warn", "WARN");
+      initSpecificTrace("error", "ERROR");
+      initSpecificTrace("call", "CALL");
+      initSpecificTrace("time", "TIME");
+      initSpecificTrace("trace", "TRACE");
+      initSpecificTrace("dump", "DUMP");
 
       if (properties_->getBoolProperty("+call", false))
          addLogLevel("CALL");

@@ -19,8 +19,8 @@ using namespace org::xmlBlaster::util::thread;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& deliveryManager)
-   : ME("ConnectionsHandler"), 
+ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& deliveryManager, const string& instanceName)
+   : ME(string("ConnectionsHandler-") + instanceName), 
      deliveryManager_(deliveryManager), 
      status_(START), 
      global_(global), 
@@ -82,13 +82,14 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
-   connection_ = &(deliveryManager_.getPlugin(type, version));
+   connection_ = &(deliveryManager_.getPlugin(instanceName_, type, version));
    if (connectReturnQos_) {
       delete connectReturnQos_;
       connectReturnQos_ = NULL;
    }
 
-   connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
+   ConnectReturnQos retQos = connection_->connect(*connectQos_);
+   connectReturnQos_ = new ConnectReturnQos(retQos);
    lastSessionId_ = connectReturnQos_->getSessionQos().getSessionId();
    log_.info(ME, string("successfully connected with sessionId = '") + lastSessionId_ + "'");
    SessionQos tmp = connectQos_->getSessionQos();

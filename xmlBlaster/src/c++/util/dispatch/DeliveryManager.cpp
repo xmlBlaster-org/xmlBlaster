@@ -53,20 +53,22 @@ DeliveryManager::~DeliveryManager()
    }
 }
 
-I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& type, const string& version)
+I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, const string& type, const string& version)
 {
    if (log_.CALL) log_.call(ME, "::getPlugin");
    if (log_.TRACE)
-      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'"));
-    if (type == "IOR") {
-      ServerMap::iterator iter = serverMap_.find(type);
+      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'") + " for instance '" + instanceName + "'");
+   
+   string completeName = string(instanceName) + "/" + type + "/" + version; 
+   if (type == "IOR") {
+      ServerMap::iterator iter = serverMap_.find(completeName);
       if (iter == serverMap_.end()) {
-         corba::CorbaDriver* driver = new corba::CorbaDriver(global_);
+         corba::CorbaDriver* driver = new corba::CorbaDriver(global_, instanceName + "[client]");
          // probably notify the dispatcher framework here since they
          // share the same object.
-         ServerMap::value_type el(type, driver);
+         ServerMap::value_type el(completeName, driver);
          serverMap_.insert(el);
-         iter = serverMap_.find(type);
+         iter = serverMap_.find(completeName);
       }
       return *((*iter).second);
    }
@@ -84,7 +86,7 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& type, const str
 }
 
 
-ConnectionsHandler* DeliveryManager::getConnectionsHandler()
+ConnectionsHandler* DeliveryManager::getConnectionsHandler(const string& instanceName)
 {
 /*
    if (connectionsHandler_ == NULL) {
@@ -93,7 +95,7 @@ ConnectionsHandler* DeliveryManager::getConnectionsHandler()
    return *connectionsHandler_;
 */  
    // it makes sense to have one per XmlBlasterAccess (must be destructed by the invoker of this method !!!)
-   return new ConnectionsHandler(global_, *this);
+   return new ConnectionsHandler(global_, *this, instanceName);
 }
 
 

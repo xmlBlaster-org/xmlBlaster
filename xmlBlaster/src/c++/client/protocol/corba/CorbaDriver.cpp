@@ -59,13 +59,17 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
    }
 
 
-CorbaDriver::CorbaDriver(Global& global, bool connectionOwner)
-   : ME("CorbaDriver"), global_(global), statusQosFactory_(global), msgQosFactory_(global)
+CorbaDriver::CorbaDriver(Global& global, const string& instanceName, bool connectionOwner)
+   : ME(string("CorbaDriver-") + instanceName), 
+     global_(global), 
+     statusQosFactory_(global), 
+     msgQosFactory_(global), 
+     instanceName_(instanceName)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
    _COMM_TRY
-      connection_ = new CorbaConnection(global_, connectionOwner);
+      connection_ = new CorbaConnection(global_, instanceName_, connectionOwner);
    _COMM_CATCH("::Constructor", true, false)
 }
 

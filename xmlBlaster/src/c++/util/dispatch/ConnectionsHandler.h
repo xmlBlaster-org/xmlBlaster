@@ -67,9 +67,10 @@ private:
     */
    MsgQueue*               adminQueue_;
    string                  lastSessionId_;
+   const string            instanceName_;
 
 public:
-   ConnectionsHandler(Global& global, DeliveryManager& deliveryManager);
+   ConnectionsHandler(Global& global, DeliveryManager& deliveryManager, const string& instanceName);
 
    virtual ~ConnectionsHandler();
 

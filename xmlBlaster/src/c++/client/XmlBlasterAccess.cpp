@@ -19,10 +19,14 @@ using org::xmlBlaster::util::Log;
 using org::xmlBlaster::util::MessageUnit;
 // using org::xmlBlaster::util::queue::MsgQueueEntry;
 
-XmlBlasterAccess::XmlBlasterAccess(Global& global)
-   : ME("XmlBlasterAccess"),
-     serverNodeId_("xmlBlaster"), connectQos_(global), connectReturnQos_(global),
-     global_(global), log_(global.getLog("client"))
+XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
+   : ME(string("XmlBlasterAccess-") + instanceName),
+     serverNodeId_("xmlBlaster"), 
+     connectQos_(global), 
+     connectReturnQos_(global),
+     global_(global), 
+     log_(global.getLog("client")), 
+     instanceName_(instanceName)
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -60,7 +64,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    string version = "1.0";
    connection_ = &(deliveryManager_->getPlugin(type, version));
 */
-   connection_ = deliveryManager_->getConnectionsHandler();
+   connection_ = deliveryManager_->getConnectionsHandler(instanceName_);
 
    if (connectionProblems_) {
       connection_->initFailsafe(connectionProblems_);
@@ -92,7 +96,7 @@ XmlBlasterAccess::initCbServer(const string& loginName, const string& type, cons
 {
    log_.call(ME, "::initCbServer");
    if (log_.TRACE) log_.trace(ME, string("Using 'client.cbProtocol=") + type + string("' to be used by ") + getServerNodeId() + string(", trying to create the callback server ..."));
-   I_CallbackServer* server = &(global_.getCbServerPluginManager().getPlugin(type, version));
+   I_CallbackServer* server = &(global_.getCbServerPluginManager().getPlugin(instanceName_, type, version));
    server->initialize(loginName, *this);
    return server;
 }

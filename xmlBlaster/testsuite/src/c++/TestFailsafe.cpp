@@ -164,8 +164,12 @@ public:
             MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");
             PublishReturnQos pubRetQos = connection_->publish(msgUnit);
-  	    if (i == 12 || i == 32) embeddedServer_.stop();
-  	    if (i == 22 || i == 42) embeddedServer_.start();
+            if (i == 12) {
+               embeddedServer_.stop();
+            }
+            if (i == 22) {
+               embeddedServer_.start();
+            }
             try {
                Thread::sleepSecs(1);
             }

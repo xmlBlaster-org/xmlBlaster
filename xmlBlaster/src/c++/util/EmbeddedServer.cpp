@@ -67,7 +67,7 @@ bool EmbeddedServer::stop(bool shutdownExternal)
       return false;
    }
 
-   XmlBlasterAccess conn(global_);
+   XmlBlasterAccess conn(global_, "embedded");
    try {
       SessionQos sessionQos(global_);
       sessionQos.setAbsoluteName("embeddedKiller");

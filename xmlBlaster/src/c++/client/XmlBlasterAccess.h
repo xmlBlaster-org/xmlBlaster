@@ -65,13 +65,24 @@ private:
    I_ConnectionProblems* connectionProblems_;
    Global& global_;
    Log&    log_;
+   
+   /** 
+    * the name to be given to this instance (used to map the connections and passed to the connections 
+    * handler.
+    */
+    const string instanceName_;
 
 public:
    /**
     * Create an xmlBlaster accessor. 
     * @param glob Your environment handle or null to use the default Global.instance()
+    * @param instanceName is the name to give to this instance of xmlBlasterAccess. It is used to map the
+    * connections to a particular instance of XmlBlasterAccess (there will be one connection set 
+    * such instance name. This way you can use the same connections for several instances of xmlBlasterAccess
+    * provided they all have the same name. This name is also used to identify instances on logging and when
+    * throwing exceptions.
     */
-   XmlBlasterAccess(Global& global);
+   XmlBlasterAccess(Global& global, const string& instanceName="");
 
    virtual ~XmlBlasterAccess();
 

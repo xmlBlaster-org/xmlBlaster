@@ -101,6 +101,7 @@ namespace util {
       static bool   logFormatPropertyRead;
 
       string   ME;
+      string   name_;
 
 #if   _TERM_WITH_COLORS_
       string timeE, callE, traceE, plainE, infoE;
@@ -131,6 +132,8 @@ namespace util {
          else if (logLevel == "DUMP" ) return L_DUMP;
          return L_NOLOG;
       }
+
+      void initSpecificTrace(const string& trace, const string& traceId);
       
       
       /**
@@ -157,7 +160,7 @@ namespace util {
       static bool DUMP;
       
       
-      Log(int args=0, const char * const argc[]=0);
+      Log(int args=0, const char * const argc[]=0, const string& name="default");
 
 
       ~Log();

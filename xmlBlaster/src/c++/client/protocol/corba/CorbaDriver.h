@@ -45,6 +45,7 @@ namespace org {
       Global&          global_;
       StatusQosFactory statusQosFactory_;
       MsgQosFactory    msgQosFactory_;
+      const string     instanceName_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -53,7 +54,7 @@ namespace org {
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
    public:
-      CorbaDriver(Global& global, bool connectionOwner = false);
+      CorbaDriver(Global& global, const string& instanceName, bool connectionOwner = false);
 
       virtual ~CorbaDriver();
 

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.11 2002/12/29 22:48:40 laghi Exp $
+Version:   $Id: Global.cpp,v 1.12 2003/01/06 12:15:11 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
@@ -83,7 +83,7 @@ Log& Global::getLog(char* logName)
    LogMap::iterator pos = logMap_.find(logName);
    if (pos != logMap_.end()) return (*pos).second;
 
-   Log help(args_, argc_);
+   Log help(args_, argc_, logName);
    help.initialize();
    logMap_.insert(LogMap::value_type(logName, help));
    pos = logMap_.find(logName);
@@ -191,7 +191,7 @@ string Global::getStrippedString(const string& text) const
    ref = remove(ret.begin(), ref, '\\');        // StringHelper.replaceAll(strippedId, "\\", "");
    ret.erase(ref, ret.end());
    return ret;
-}	
+}       
 
 /**
  * Currently set by engine.Global, used server side only.

@@ -44,7 +44,7 @@ public:
 
    ~CbServerPluginManager();
 
-   I_CallbackServer& getPlugin(const string& type, const string& version);
+   I_CallbackServer& getPlugin(const string& instanceName, const string& type, const string& version);
 };
 
 #define _CBSERVERPLUGINMANAGER_CLASS

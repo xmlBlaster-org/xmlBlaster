@@ -49,9 +49,9 @@ public:
 
    ~DeliveryManager();
 
-   I_XmlBlasterConnection& getPlugin(const string& type, const string& version);
+   I_XmlBlasterConnection& getPlugin(const string& instanceName, const string& type, const string& version);
 
-   ConnectionsHandler* getConnectionsHandler();
+   ConnectionsHandler* getConnectionsHandler(const string& instanceName);
 };
 
 #define _DELIVERYMANAGER_CLASS
