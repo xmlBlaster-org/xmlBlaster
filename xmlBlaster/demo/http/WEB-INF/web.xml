@@ -27,7 +27,7 @@
     <init-param>
       <param-name>trace</param-name>
       <param-value>false</param-value>
-      <description>sets the trace</description>
+      <description>sets the log level to trace</description>
     </init-param>
     <init-param>
       <param-name>time</param-name>
@@ -49,7 +49,7 @@
     <!-- init-param>
       <param-name>iorHost</param-name>
       <param-value>192.168.1.5</param-value>
-      <description>dumps messages</description>
+      <description>IP where xmlBlaster is running (for CORBA protocol only)</description>
     </init-param -->
 
     <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
