@@ -5,7 +5,7 @@
 
 JACO_PRG=$0
 
-if ! [ ${JacORB_HOME} ] ; then
+if [ "x${JacORB_HOME}" = "x" ] ; then
    JacORB_BIN=`dirname "${JACO_PRG}"`
    JacORB_HOME=`dirname "${JacORB_BIN}"`
    if [ -d ${JacORB_HOME}/lib ] ; then
@@ -18,7 +18,7 @@ if ! [ ${JacORB_HOME} ] ; then
    #echo -e "\033[32;40m  Using JacORB_HOME=${JacORB_HOME}\033[0m"
 fi
 
-if ! [ ${JDK_HOME} ] ; then
+if [ "x${JDK_HOME}" = "x" ] ; then
    JAVA_EXE=`which java`
    if ! [ ${JAVA_EXE} ] ; then
       echo -e ""
@@ -33,16 +33,17 @@ if ! [ ${JDK_HOME} ] ; then
    #echo -e "\033[32;40m  Using JDK_HOME=${JDK_HOME}\033[0m"
 fi
 
-# Uncomment to switch of JIT:
-#JIT_COMPILER="-Djava.compiler="
-
 if [ -f ${JDK_HOME}/lib/classes.zip ]; then
    echo -e "\033[32;40m  Running JacORB with JDK 1.1\033[0m"
    # On Linux jdk1.1.7: Using -native does block forever in System.in.read()
-   java $JIT_COMPILER -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
+   java -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
 else
+   # To change memory consumption:
+   BlasterServerMemory=-Xms10m -Xmx80m
+   # Uncomment to switch off JIT:
+   #JIT_COMPILER="-Djava.compiler="
    echo -e "\033[32;40m  Running JacORB with JDK 1.2 and JIT=$JIT_COMPILER\033[0m"
-   java -native $JIT_COMPILER -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
+   java -native $JIT_COMPILER $BlasterServerMemory -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
 fi
 
 
