@@ -2044,9 +2044,6 @@ TODO
 
    <target name="compileCExe" description="For internal use only (C clients build)">
       <echo message="Compiling of C test client '${compileCSourcePath}/bin/${exeName}' to '${compileCSourcePath}/bin/${exeName}'"/>
-
-      <echo message="${lib.dir} UND  libs=xmlBlasterClientC" />
-
       <mkdir dir="${build.dir}/obj"/>
       <mkdir dir="${compileCSourcePath}/bin"/>
       <cc debug="${c.debug}" link="executable"
