@@ -328,7 +328,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
             e.printStackTrace();
          }
       }
-      if (Log.TRACE) Log.trace(ME, "No -hostname / port ...");
+      if (Log.TRACE) Log.trace(ME, "No -hostname / port for " + connectQos.getAddress() + " ...");
 
       String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
                   " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
