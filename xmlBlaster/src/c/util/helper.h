@@ -9,7 +9,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #ifndef _XMLBLASTER_HELPER_H
 #define _XMLBLASTER_HELPER_H
 
-#include <util/basicDefs.h> /* for int64_t (C99), Dll_Export, bool etc. */
+#include <util/basicDefs.h> /* for int64_t (C99), Dll_Export, inline, bool etc. */
 
 #if defined(_WINDOWS)
 #  include <pthreads/pthread.h> /* Our pthreads.h: For timespec, for logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
@@ -43,7 +43,9 @@ typedef struct ExceptionStruct {    /* This name is need for C++ forward declara
    char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
    /* ExceptionStruct *embedded;  who allocates/frees it? */
 } ExceptionStruct;
-Dll_Export extern void embedException(ExceptionStruct *exception, const char *newErrorCode, const char *newMessage, ExceptionStruct *embed);
+Dll_Export extern void initializeExceptionStruct(ExceptionStruct *exception);
+Dll_Export extern void embedException(ExceptionStruct *exception, const char *newErrorCode, const char *newMessage, const ExceptionStruct *embed);
+Dll_Export extern const char *getExceptionStr(char *out, int outSize, const ExceptionStruct *exception);
 
 typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    /*LOG_NOLOG=0,  don't use */
@@ -78,6 +80,8 @@ Dll_Export extern void trim(char *s);
 Dll_Export extern void trimStart(char *s);
 Dll_Export extern void trimEnd(char *s);
 Dll_Export extern char *toReadableDump(char *data, size_t len);
+Dll_Export extern const char* int64ToStr(char * const buf, int64_t val);
+Dll_Export extern bool strToInt64(int64_t *val, const char * const str);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

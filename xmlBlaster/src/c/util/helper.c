@@ -584,11 +584,12 @@ Dll_Export _INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LO
  * @param embed An original exception to embed, can be empty in which case it is ignored
  * @param exception Contains the new exception with embedded old exception errorCode/message
  */
-Dll_Export void embedException(ExceptionStruct *exception, const char *newErrorCode, const char *newMessage, ExceptionStruct *embed)
+Dll_Export void embedException(ExceptionStruct *exception, const char *newErrorCode, const char *newMessage, const ExceptionStruct *embed)
 {
+   char tmp[EXCEPTIONSTRUCT_MESSAGE_LEN];
    char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
    if (*embed->errorCode != 0) {
-      SNPRINTF(message, EXCEPTIONSTRUCT_MESSAGE_LEN, "%s {Root cause: %s %s}", newMessage, embed->errorCode, embed->message);
+      SNPRINTF(message, EXCEPTIONSTRUCT_MESSAGE_LEN, "%s {Root cause: %s}", newMessage, getExceptionStr(tmp, EXCEPTIONSTRUCT_MESSAGE_LEN, embed));
    }
    else {
       SNPRINTF(message, EXCEPTIONSTRUCT_MESSAGE_LEN, "%s", newMessage);
@@ -597,6 +598,62 @@ Dll_Export void embedException(ExceptionStruct *exception, const char *newErrorC
    strncpy0(exception->errorCode, newErrorCode, EXCEPTIONSTRUCT_ERRORCODE_LEN);
 }
 
+/**
+ * Should be called on any ExceptionStruct before using it. 
+ * Nulls all fields
+ */
+Dll_Export void initializeExceptionStruct(ExceptionStruct *exception)
+{
+   exception->remote = false;
+   *exception->errorCode = (char)0;
+   *exception->message = (char)0;
+}
+
+/**
+ * Convenience function which returns a formatted exception string. 
+ * <pre>
+ * </pre>
+ * @param out The string where the exception is written into, you should allocate at least
+ *            EXCEPTIONSTRUCT_ERRORCODE_LEN + EXCEPTIONSTRUCT_MESSAGE_LEN + 64
+ *            bytes for it
+ * @param outSize The max size of 'out'
+ * @param exception The exception to dump
+ * @return out
+ */
+Dll_Export const char *getExceptionStr(char *out, int outSize, const ExceptionStruct *exception)
+{
+   SNPRINTF(out, outSize, "[%s] %s", exception->errorCode, exception->message);
+   return out;
+}
+
+/**
+ * Convert a 64 bit integer to a string. 
+ * This helper concentrates this conversion to one place to
+ * simplify porting to compilers with no <code>int64_t = long long</code> support
+ * @param buf You need to pass this buffer with, say, 32 bytes of size
+ * @return buf
+ */
+Dll_Export const char* int64ToStr(char * const buf, int64_t val)
+{
+   if (buf == 0) return 0;
+   *buf = 0;
+   sprintf(buf, "%lld", val);  /* Returns number of written chars */
+   return buf;
+}
+
+/**
+ * Convert a string to a 64 bit integer. 
+ * This helper concentrates this conversion to one place to
+ * simplify porting to compilers with no <code>long long</code> support
+ * @param val Your <code>long long</code> which is filled from <code>str</code>
+ * @param str The string to convert, for example "123450000LL"
+ * @return true on success
+ */
+Dll_Export bool strToInt64(int64_t *val, const char * const str)
+{
+   if (str == 0 || val == 0) return false;
+   return (sscanf(str, "%lld", val) == 1) ? true : false;
+}
 
 # ifdef HELPER_UTIL_MAIN
 /* 
