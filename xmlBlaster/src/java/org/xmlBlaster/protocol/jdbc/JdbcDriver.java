@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.8 2000/10/24 09:44:45 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.9 2000/10/24 09:48:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -154,7 +154,7 @@ public class JdbcDriver implements I_Driver, I_Publish
          Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
          throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
       }
-      Log.info(ME, "login for '" + loginName + "' successful.");
+      if (Log.TRACE) Log.trace(ME, "login for '" + loginName + "' successful.");
       return tmpSessionId;
    }
 
