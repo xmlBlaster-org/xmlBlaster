@@ -17,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.protocol.I_Driver;
@@ -234,7 +234,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
    /**
     * Access the authentication singleton.
     */
-   public Authenticate getAuthenticate() {
+   public I_Authenticate getAuthenticate() {
       return glob.getAuthenticate();
    }
 
