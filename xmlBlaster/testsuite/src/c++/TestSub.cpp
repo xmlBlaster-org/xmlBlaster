@@ -3,11 +3,11 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.2 2002/11/26 12:40:14 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.3 2002/12/02 10:13:20 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
-#include <client/CorbaConnection.h>
+#include <client/protocol/corba/CorbaConnection.h>
 #include <util/StopWatch.h>
 #include <util/PlatformUtils.hpp>
 
@@ -22,6 +22,8 @@ Version:   $Id: TestSub.cpp,v 1.2 2002/11/26 12:40:14 ruff Exp $
 
 using namespace std;
 using boost::lexical_cast;
+using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+
 namespace org { namespace xmlBlaster {
 
 class TestSub: public I_Callback {

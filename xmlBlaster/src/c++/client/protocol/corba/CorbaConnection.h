@@ -7,8 +7,8 @@ Comment:   Helper to connect to xmlBlaster: for now a simplified version
 Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
-#ifndef _CLIENT_CORBACONNECTION_H
-#define _CLIENT_CORBACONNECTION_H
+#ifndef _CLIENT_PROTOCOL_CORBA_CORBACONNECTION_H
+#define _CLIENT_PROTOCOL_CORBA_CORBACONNECTION_H
 
 #include <util/XmlBCfg.h>
 #include <string>
@@ -26,7 +26,11 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include COSNAMING
 using namespace std;
 
-namespace org { namespace xmlBlaster {
+namespace org {
+ namespace xmlBlaster {
+  namespace client {
+   namespace protocol {
+    namespace corba {
 
    class Dll_Export CorbaConnection {
       
@@ -353,7 +357,7 @@ namespace org { namespace xmlBlaster {
       static void usage();
    
    }; // class CorbaConnection
-}} // namespace
+}}}}} // namespace
 
 
 #endif

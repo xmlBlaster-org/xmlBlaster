@@ -10,7 +10,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #pragma warning(disable:4786)
 #endif
 
-#include <client/CorbaConnection.h>
+#include <client/protocol/corba/CorbaConnection.h>
 #include <util/Constants.h>
 #include <sys/types.h>
 #ifdef _WINDOWS
@@ -23,7 +23,12 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #  include <unistd.h>      // gethostname()
 #endif
 
-namespace org { namespace xmlBlaster {
+namespace org {
+ namespace xmlBlaster {
+  namespace client {
+   namespace protocol {
+    namespace corba {
+
 
 CorbaConnection::CorbaConnection(int args, const char * const argc[], bool orbOwner)
   : loginQos_(), log_(args, argc) 
@@ -779,6 +784,6 @@ CORBA::ORB_ptr CorbaConnection::orb_           = 0;
 unsigned short CorbaConnection::numOfSessions_ = 0;
 PortableServer::POA_ptr CorbaConnection::poa_  = 0;
 
-}} // end of namespace
+}}}}} // end of namespace
 
 

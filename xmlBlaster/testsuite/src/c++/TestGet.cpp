@@ -9,12 +9,13 @@ Comment:   Testing get()
 #include <boost/lexical_cast.hpp>
 #include <util/Constants.h>
 #include <util/StopWatch.h>
-#include <client/CorbaConnection.h>
+#include <client/protocol/corba/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <client/PublishQosWrapper.h>
 
 using namespace std;
 using boost::lexical_cast;
+using org::xmlBlaster::client::protocol::corba::CorbaConnection;
 
 /**
  * This client tests the synchronous method get() with its different qos

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      ConnectQosFactory.h
+Name:      ConnectQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)

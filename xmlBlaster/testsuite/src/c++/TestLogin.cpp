@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.3 2002/11/26 12:40:14 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.4 2002/12/02 10:13:20 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -23,13 +23,15 @@ Version:   $Id: TestLogin.cpp,v 1.3 2002/11/26 12:40:14 ruff Exp $
 
 #include <string>
 #include <util/Log.h>
-#include <client/CorbaConnection.h>
+#include <client/protocol/corba/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
 //#include <unistd.h>
 #include <util/StopWatch.h>
 
 using namespace std;
+using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+
 namespace org { namespace xmlBlaster {
 
 class TestLogin : public virtual I_Callback {

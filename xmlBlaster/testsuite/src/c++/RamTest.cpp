@@ -3,15 +3,16 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.2 2002/11/26 12:40:14 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.3 2002/12/02 10:13:20 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <client/CorbaConnection.h>
+#include <client/protocol/corba/CorbaConnection.h>
 #include <util/StopWatch.h>
 
 using namespace std;
+using org::xmlBlaster::client::protocol::corba::CorbaConnection;
 using boost::lexical_cast;
 
 /**
