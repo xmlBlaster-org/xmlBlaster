@@ -22,15 +22,9 @@
      </p>
      <p>
        <b>Concept</b><br/>
-       All necessary information will be contained in three tables. The names of the tables are configurable on
-       the configuration file. More about that in the configuration section. Lets call these tables 
-       <b><i>Nodes</i></b>, <b><i>Queues</i></b> and <b><i>Entries</i></b>.
-     </p>
-     <p>
-     The relation between these tables is shown in the following Entity Relationship diagram<br/>
-     </p>
-     <p>
-     <center><img src="jdbcDesignERD.gif" border="0" alt="jdbcDesignERD" /></center>
+       All necessary information will be contained in one table. The name of the table is configurable with
+       the configuration file. More about that in the configuration section. Lets call the table
+       <b><i>Entries</i></b>.
      </p>
      <p>
      As already said, all entries are put in a common bucket, unaware of which cluster they belong. In many
@@ -38,19 +32,17 @@
      <i>per cluster-group basis</i> by having defined different names for the different tables.
      </p>
      <p>
-     When you start xmlBlaster for the first time you may want to let it create the necessary tables. In 
+     When you start xmlBlaster for the first time you may want to let it create the necessary table. In 
      other situations you would like to prevent it to be done (for example because lack of authorization).
      For these purposes you can use the <b><i>dbAdmin</i></b> flag
      </p>
      <p>
      If there is the need to create the tables manually here follows the code to use (note that it is
-     parametrized).
+     parameterized).
      <pre>
 #
 # General settings (independent from database implementations)
 # 
-# ${Nodes}   XMLBLASTERNODES
-# ${Queues}  XMLBLASTERQUEUES
 # ${Entries} XMLBLASTERENTRIES
 #
 #  For postgres:
@@ -70,18 +62,7 @@
 # ${blob}    long raw
 #
 
-CREATE TABLE ${Nodes}   (nodeId ${string}, 
-                         PRIMARY KEY (nodeId))
-
-CREATE TABLE ${Queues}  (queueName ${string},
-                         nodeId ${string},
-                         numOfBytes ${longint},
-                         numOfEntries ${longint},
-                         PRIMARY KEY (queueName, nodeId),
-                         FOREIGN KEY (nodeId) REFERENCES $Nodes} ON DELETE CASCADE)
-    
 CREATE TABLE ${Entries} (dataId ${longint},
-                         nodeId ${string},
                          queueName ${string},
                          prio ${int},
                          flag ${string},
@@ -89,7 +70,6 @@ CREATE TABLE ${Entries} (dataId ${longint},
                          byteSize ${longint},
                          blob ${blob},
                          PRIMARY KEY (dataId, queueName),
-                         FOREIGN KEY (queueName, nodeId) REFERENCES ${Queues} ON DELETE CASCADE)
      </pre>
      </p>
     </description>
@@ -106,8 +86,6 @@ useTopicStore=true
 
      <pre>
 StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                         nodesTableName=NODES,\
-                         queuesTableName=QUEUES,\
                          entriesTableName=ENTRIES,\
                          tableNamePrefix=XB,\
                          dbAdmin=true,\
@@ -120,16 +98,6 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
           <td><b>comment</b></td>
         </tr>
         <tr>
-          <td>nodesTableName</td>
-          <td>NODES</td>
-          <td>the name postfix for the table containing the cluster nodes.</td>
-        </tr>
-        <tr>
-          <td>queuesTableName</td>
-          <td>QUEUES</td>
-          <td>the name postfix for the table containing the queues.</td>
-        </tr>
-        <tr>
           <td>entriesTableName</td>
           <td>ENTRIES</td>
           <td>the name postfix for the table containing the entries.</td>
@@ -139,8 +107,8 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
           <td>XB</td>
           <td>the name prefix for the table containing the entries. Note that the complete names for the 
               tables are created by adding the tableNamePrefix to the names. So if you specify 
-              <i>nodesTableName=NODES</i> and <i>tableNamePrefix=XB_</i> you will get the name of the table 
-              to be <i>XB_NODES</i>.
+              <i>entriesTableName=ENTRIES</i> and <i>tableNamePrefix=XB_</i> you will get the name of the table 
+              to be <i>XB_ENTRIES</i>.
           </td>
         </tr>
         <tr>
@@ -299,7 +267,7 @@ JdbcDriver.mapping[myStrangeDB]=string=text,\
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2003 01 28</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

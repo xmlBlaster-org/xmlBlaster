@@ -58,8 +58,6 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
          connectionBusyTimeout=90000,\
          maxWaitingThreads=300,\
          tableNamePrefix=XB_,\
-         nodesTableName=NODES,\
-         queuesTableName=QUEUES,\
          entriesTableName=ENTRIES,\
          dbAdmin=true
    */
@@ -80,7 +78,6 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
                     //global_.getProperty().get("file.separator", "");
 
    const std::string url = global_.getProperty().get("queue/"+instanceRelating+"/url", defaultPath+"xmlBlasterClientCpp.db");  // "queue/connection/url"
-   const std::string nodeId = global_.getProperty().get("queue/"+instanceRelating+"/nodeId", global_.getId());        // "client/joe/2" or property.getNodeId() ?
    const std::string queueName = global_.getProperty().get("queue/"+instanceRelating+"/queueName", instanceRelating + "_" + global_.getStrippedId()); // "connection_clientJoe2"
    const std::string tableNamePrefix = global_.getProperty().get("queue/"+instanceRelating+"/tableNamePrefix", "XB_");// "queue/connection/tableNamePrefix"
 
@@ -89,7 +86,6 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    memset(&queueProperties, 0, sizeof(QueueProperties));
 
    strncpy0(queueProperties.dbName, url.c_str(), QUEUE_DBNAME_MAX);
-   strncpy0(queueProperties.nodeId, nodeId.c_str(), QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, queueName.c_str(), QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, tableNamePrefix.c_str(), QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = property.getMaxEntries();

@@ -72,8 +72,6 @@ public class I_MapTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
          this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
 
@@ -739,10 +737,11 @@ public class I_MapTest extends TestCase {
 
       Global glob = new Global(args);
 
-      I_MapTest testSub = new I_MapTest("I_MapTest", 2); // CACHE check
+      I_MapTest testSub = new I_MapTest("I_MapTest", 1); // JDBC check
+      //I_MapTest testSub = new I_MapTest("I_MapTest", 2); // CACHE check
       long startTime = System.currentTimeMillis();
       testSub.setUp();
-      testSub.testByteOverflow();
+      testSub.testPutEntriesTwice();
       testSub.tearDown();
       long usedTime = System.currentTimeMillis() - startTime;
       testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");

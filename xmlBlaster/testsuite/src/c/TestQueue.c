@@ -59,7 +59,6 @@ static bool destroy(const char *dbName)
    QueueProperties queueProperties;
    memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
-   strncpy0(queueProperties.nodeId, "a", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "b", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "c", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10;
@@ -101,7 +100,6 @@ static const char * test_illegal()
    mu_assert_checkWantException("create()", exception);
 
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
-   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 0;
@@ -197,7 +195,6 @@ static const char * test_overflow()
 
    memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
-   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 4L;
@@ -334,7 +331,6 @@ static const char * test_queue()
 
    memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
-   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10000000L;
@@ -349,7 +345,6 @@ static const char * test_queue()
    mu_assert("create() userObject", queueP->userObject == dummy);
    mu_assertEqualsBool("create() isInitialized", true, queueP->isInitialized);
    mu_assertEqualsString("create() dbName", queueProperties.dbName, queueP->getProperties(queueP)->dbName);
-   mu_assertEqualsString("create() nodeId", queueProperties.nodeId, queueP->getProperties(queueP)->nodeId);
    mu_assertEqualsString("create() tablePrefix", queueProperties.tablePrefix, queueP->getProperties(queueP)->tablePrefix);
    mu_assertEqualsString("create() queueName", queueProperties.queueName, queueP->getProperties(queueP)->queueName);
    mu_assertEqualsLong("create() maxNumOfEntries", 10000000L, (long)queueP->getMaxNumOfEntries(queueP));
@@ -432,7 +427,7 @@ static const char * test_queue()
             char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
             freeEntryDump(dump);
-			   mu_assert("uniqueId fail", queueEntry->uniqueId == idArr[expectedIndex]);
+                           mu_assert("uniqueId fail", queueEntry->uniqueId == idArr[expectedIndex]);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
             mu_assertEqualsInt("priority", 9, queueEntry->priority);
             mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);

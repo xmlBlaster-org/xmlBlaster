@@ -32,7 +32,6 @@ extern "C" {
  */
 typedef struct {
    char dbName[QUEUE_DBNAME_MAX];      /** The database name, for SQLite it is the file name on HD, "xmlBlaster.db" */
-   char nodeId[QUEUE_ID_MAX];          /** The name space of this queue, "/node/heron/client/joe" */
    char queueName[QUEUE_ID_MAX];       /** The name of the queue, "connection_client_joe" */
    char tablePrefix[QUEUE_PREFIX_MAX]; /** The table prefix to use, "XB_" */
    int32_t maxNumOfEntries;            /** The max. accepted entries, 10000 */
@@ -241,7 +240,6 @@ struct I_QueueStruct {
  *        to initialize new, future members.<br />
  * <pre>
  *        dbName The database name, for SQLite it is the file name on HD, "xmlBlasterClient.db"
- *        nodeId The name space of this queue, "clientJoe1081594557415"
  *        queueName The name of the queue, "connection_clientJoe"
  *        maxNumOfEntries The max. accepted entries, 10000000l
  *        maxNumOfBytes The max. accepted bytes, 1000000000ll

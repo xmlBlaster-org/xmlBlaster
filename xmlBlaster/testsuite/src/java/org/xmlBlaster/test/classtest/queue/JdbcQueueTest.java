@@ -121,8 +121,6 @@ public class JdbcQueueTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
 
          CbQueueProperty cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
@@ -279,8 +277,6 @@ public class JdbcQueueTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
          I_Queue tmpQueue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
          tmpQueue.clear();
@@ -335,8 +331,6 @@ public class JdbcQueueTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
          I_Queue tmpQueue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
          tmpQueue.clear();

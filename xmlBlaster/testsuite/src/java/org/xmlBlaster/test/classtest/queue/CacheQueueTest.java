@@ -99,8 +99,6 @@ public class CacheQueueTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
          this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
 

@@ -20,10 +20,19 @@ Compile:   Compiles at least on Windows, Linux, Solaris. Further porting should 
             build -DXMLBLASTER_PERSISTENT_QUEUE=true c-delete c
            expects xmlBlaster/src/c/util/queue/sqlite.h and xmlBlaster/lib/libsqlite.so
 
+Table layout XB_ENTRIES:
+           dataId bigint
+           queueName text
+           prio integer
+           flag text
+           durable char(1)
+           byteSize bigint
+           blob bytea
+           PRIMARY KEY (dataId, queueName)
+
 Todo:      Tuning:
-            - Remove nodeId from SELECT statements as queueName is world wide unique already
             - Add prio to PRIMARY KEY
-            - In persistentQueuePeekWithSamePriority() add queueName/nodeId to statement as it never changes
+            - In persistentQueuePeekWithSamePriority() add queueName to statement as it never changes
 
 @see:      http://www.sqlite.org/
 @see:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
@@ -112,6 +121,18 @@ typedef struct {
 
 static char int64Str_[INT64_STRLEN_MAX];
 static char * const int64Str = int64Str_;   /* to make the pointer address const */
+
+/** Column index into XB_ENTRIES table */
+enum {
+   XB_ENTRIES_DATA_ID = 0,
+   XB_ENTRIES_QUEUE_NAME,
+   XB_ENTRIES_PRIO,
+   XB_ENTRIES_TYPE_NAME,
+   XB_ENTRIES_PERSISTENT,
+   XB_ENTRIES_SIZE_IN_BYTES,
+   XB_ENTRIES_BLOB
+};
+
 
 /**
  * Create a new persistent queue instance. 
@@ -249,12 +270,10 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
 
    /* Never trust a queue property you haven't overflowed yourself :-) */
    dbInfo->prop.dbName[QUEUE_DBNAME_MAX-1] = 0;
-   dbInfo->prop.nodeId[QUEUE_ID_MAX-1] = 0;
    dbInfo->prop.queueName[QUEUE_ID_MAX-1] = 0;
    dbInfo->prop.tablePrefix[QUEUE_PREFIX_MAX-1] = 0;
 
    LOG __FILE__, "dbName          = %s", dbInfo->prop.dbName);
-   LOG __FILE__, "nodeId          = %s", dbInfo->prop.nodeId);
    LOG __FILE__, "queueName       = %s", dbInfo->prop.queueName);
    LOG __FILE__, "tablePrefix     = %s", dbInfo->prop.tablePrefix);
    LOG __FILE__, "maxNumOfEntries = %ld",dbInfo->prop.maxNumOfEntries);
@@ -293,22 +312,6 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
 
    retOk = createTables(queueP, exception);
 
-   if (retOk) {
-      char queryString[128+ID_MAX];
-      const char *tablePrefix = dbInfo->prop.tablePrefix;
-      SNPRINTF(queryString, 128+ID_MAX, "INSERT INTO %.20sNODES VALUES ('%.200s');", tablePrefix, dbInfo->prop.nodeId);
-      retOk = execSilent(queueP, queryString, "Insert node", exception);
-   }
-
-   if (retOk) {
-      char queryString[256+2*ID_MAX];
-      const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->prop.tablePrefix;
-      SNPRINTF(queryString, 256+2*ID_MAX, "INSERT INTO %.20sQUEUES VALUES ('%s','%s',%d,%s);",
-              tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId, dbInfo->prop.maxNumOfEntries, 
-              int64ToStr(int64Str, dbInfo->prop.maxNumOfBytes));
-      retOk = execSilent(queueP, queryString, "Insert queue", exception);
-   }
-
    fillCache(queueP, exception);
 
    LOG __FILE__, "initialize(%s) %s", dbInfo->prop.dbName, retOk?"successful":"failed");
@@ -317,8 +320,8 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
 
 /**
  * Create the necessary DB table if not already existing. 
- * @param nodeId "clientJoe1081594557415"
- * @param queueName "connection_clientJoe"
+ * @param queueP 
+ * @param exception
  * @return true on success
  */
 static bool createTables(I_Queue *queueP, ExceptionStruct *exception)
@@ -327,14 +330,7 @@ static bool createTables(I_Queue *queueP, ExceptionStruct *exception)
    bool retOk;
    const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->prop.tablePrefix;
 
-   SNPRINTF(queryString, LEN512, "CREATE TABLE %.20sNODES (nodeId text , PRIMARY KEY (nodeId));", tablePrefix);  /* XB_NODES */
-   retOk = execSilent(queueP, queryString, "Creating NODES table", exception);
-
-   SNPRINTF(queryString, LEN512, "CREATE TABLE %.20sQUEUES (queueName text , nodeId text , numOfBytes bigint, numOfEntries bigint, PRIMARY KEY (queueName, nodeId), FOREIGN KEY (nodeId) REFERENCES XB_NODES (nodeId));",
-           tablePrefix);
-   retOk = execSilent(queueP, queryString, "Creating QUEUES table", exception);
-
-   SNPRINTF(queryString, LEN512, "CREATE TABLE %.20sENTRIES (dataId bigint , nodeId text , queueName text , prio integer, flag text, durable char(1), byteSize bigint, blob bytea, PRIMARY KEY (dataId, queueName), FOREIGN KEY (queueName, nodeId) REFERENCES XB_QUEUES (queueName , nodeId));",
+   SNPRINTF(queryString, LEN512, "CREATE TABLE %.20sENTRIES (dataId bigint , queueName text , prio integer, flag text, durable char(1), byteSize bigint, blob bytea, PRIMARY KEY (dataId, queueName));",
            tablePrefix);
    retOk = execSilent(queueP, queryString, "Creating ENTRIES table", exception);
 
@@ -463,7 +459,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
 
    if (dbInfo->pVm_put == 0) {  /* Compile prepared query only once */
       char queryString[LEN256];    /*INSERT INTO XB_ENTRIES VALUES ( 1081317015888000000, 'xmlBlaster_192_168_1_4_3412', 'topicStore_xmlBlaster_192_168_1_4_3412', 5, 'TOPIC_XML', 'T', 670, '\\254...')*/
-      SNPRINTF(queryString, LEN256, "INSERT INTO %.20sENTRIES VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)", dbInfo->prop.tablePrefix);
+      SNPRINTF(queryString, LEN256, "INSERT INTO %.20sENTRIES VALUES ( ?, ?, ?, ?, ?, ?, ?)", dbInfo->prop.tablePrefix);
       stateOk = compilePreparedQuery(queueP, "put", &dbInfo->pVm_put, queryString, exception);
    }
 
@@ -476,7 +472,6 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
       int64ToStr(intStr, queueEntry->uniqueId);
       /*LOG __FILE__, "put uniqueId as string '%s'", intStr);*/
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, intStr, len, true);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->prop.nodeId, len, false);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->prop.queueName, len, false);
       SNPRINTF(intStr, INT64_STRLEN_MAX, "%d", queueEntry->priority);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, intStr, len, true);
@@ -613,41 +608,40 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
    queueEntry = &queueEntryArr->queueEntryArr[currIndex];
    memset(queueEntry, 0, sizeof(QueueEntry));
 
-   stateOk = strToInt64(&queueEntry->uniqueId, pazValue[0]);
+   stateOk = strToInt64(&queueEntry->uniqueId, pazValue[XB_ENTRIES_DATA_ID]);
    if (!stateOk) {
-      LOG __FILE__, "peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' to uniqueId, ignoring entry.", pazValue[0]);
+      LOG __FILE__, "peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' to uniqueId, ignoring entry.", pazValue[XB_ENTRIES_DATA_ID]);
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
-               "[%.100s:%d] peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' col=%s to uniqueId, ignoring entry.", __FILE__, __LINE__, pazValue[0], pazColName[0]);
+               "[%.100s:%d] peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' col=%s to uniqueId, ignoring entry.", __FILE__, __LINE__, pazValue[XB_ENTRIES_DATA_ID], pazColName[XB_ENTRIES_DATA_ID]);
       doContinue = false;
       return doContinue;
    }
 
    LOG __FILE__, "peekWithSamePriority(%s) currIndex=%d", int64ToStr(int64Str, queueEntry->uniqueId), currIndex);
-   /* strncpy0(dbInfo->prop.nodeId, pazValue[1], ID_MAX); TODO: assert() */
    /* strncpy0(dbInfo->prop.queueName, pazValue[2], ID_MAX); */
-   numAssigned = sscanf(pazValue[3], "%hd", &queueEntry->priority);
+   numAssigned = sscanf(pazValue[XB_ENTRIES_PRIO], "%hd", &queueEntry->priority);
    if (numAssigned != 1) {
-      LOG __FILE__, "peekWithSamePriority(%s) ERROR: Can't parse pazValue[3] '%.20s' to priority, setting it to NORM", int64ToStr(int64Str, queueEntry->uniqueId), pazValue[3]);
+      LOG __FILE__, "peekWithSamePriority(%s) ERROR: Can't parse pazValue[XB_ENTRIES_PRIO] '%.20s' to priority, setting it to NORM", int64ToStr(int64Str, queueEntry->uniqueId), pazValue[XB_ENTRIES_PRIO]);
       queueEntry->priority = 4;
    }
-   strncpy0(queueEntry->embeddedType, pazValue[4], QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
-   queueEntry->isPersistent = *pazValue[5] == 'T' ? true : false;
+   strncpy0(queueEntry->embeddedType, pazValue[XB_ENTRIES_TYPE_NAME], QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+   queueEntry->isPersistent = *pazValue[XB_ENTRIES_PERSISTENT] == 'T' ? true : false;
    {
       int64_t ival = 0;
-      stateOk = strToInt64(&ival, pazValue[6]);
+      stateOk = strToInt64(&ival, pazValue[XB_ENTRIES_SIZE_IN_BYTES]);
       queueEntry->embeddedBlob.dataLen = (size_t)ival;
    }
 
    /* TODO!!! in Java the length is the size in RAM and not strlen(data) */
    /* queueEntry->embeddedBlob.data = (char *)malloc(queueEntry->embeddedBlob.dataLen*sizeof(char)); */
-   queueEntry->embeddedBlob.data = (char *)malloc(strlen(pazValue[7])*sizeof(char)); /* we spoil some 2 % */
-   decodeSize = sqlite_decode_binary((const unsigned char *)pazValue[7], (unsigned char *)queueEntry->embeddedBlob.data);
+   queueEntry->embeddedBlob.data = (char *)malloc(strlen(pazValue[XB_ENTRIES_BLOB])*sizeof(char)); /* we spoil some 2 % */
+   decodeSize = sqlite_decode_binary((const unsigned char *)pazValue[XB_ENTRIES_BLOB], (unsigned char *)queueEntry->embeddedBlob.data);
    if (decodeSize == -1 || (size_t)decodeSize != queueEntry->embeddedBlob.dataLen) {
-      *(queueEntry->embeddedBlob.data + strlen(pazValue[7]) - 1) = 0; 
+      *(queueEntry->embeddedBlob.data + strlen(pazValue[XB_ENTRIES_BLOB]) - 1) = 0; 
       LOG __FILE__, "peekWithSamePriority(%s) ERROR: Returned blob encoded='%s', decodeSize=%d"
                         " but expected decoded len=%d: '%s'",
-                    int64ToStr(int64Str, queueEntry->uniqueId), pazValue[7], decodeSize,
+                    int64ToStr(int64Str, queueEntry->uniqueId), pazValue[XB_ENTRIES_BLOB], decodeSize,
                     queueEntry->embeddedBlob.dataLen, queueEntry->embeddedBlob.data);
    }
 
@@ -771,10 +765,10 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
 
    if (dbInfo->pVm_peekWithSamePriority == 0) {  /* Compile prepared  query */
       char queryString[LEN512];
-      /*"SELECT * FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415' and prio=(select max(prio) from XB_ENTRIES where queueName='connection_clientJoe' AND nodeId='clientJoe1081594557415') ORDER BY dataId ASC";*/
+      /*"SELECT * FROM XB_ENTRIES where queueName='connection_clientJoe' and prio=(select max(prio) from XB_ENTRIES where queueName='connection_clientJoe') ORDER BY dataId ASC";*/
       SNPRINTF(queryString, LEN512,
-           "SELECT * FROM %.20sENTRIES where queueName=? and nodeId=?"
-           " and prio=(select max(prio) from %.20sENTRIES where queueName=?  AND nodeId=?)"
+           "SELECT * FROM %.20sENTRIES where queueName=?"
+           " and prio=(select max(prio) from %.20sENTRIES where queueName=?)"
            " ORDER BY dataId ASC",
            dbInfo->prop.tablePrefix, dbInfo->prop.tablePrefix);
       stateOk = compilePreparedQuery(queueP, "peekWithSamePriority",
@@ -787,9 +781,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
       rc = SQLITE_OK;
 
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.queueName, len, false);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.nodeId, len, false);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.queueName, len, false);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.nodeId, len, false);
 
       switch (rc) {
          case SQLITE_OK:
@@ -858,11 +850,11 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, const QueueEntryArr 
       size_t i;
       const int qLen = 128 + 2*ID_MAX + queueEntryArr->len*(INT64_STRLEN_MAX+6);
       char *queryString = (char *)calloc(qLen, sizeof(char));
-      /*  DELETE FROM xb_entries WHERE queueName = 'connection_clientJoe' AND nodeId = 'clientJoe1081594557415' AND dataId in ( 1081492136876000000, 1081492136856000000 ); */
+      /*  DELETE FROM xb_entries WHERE queueName = 'connection_clientJoe' AND dataId in ( 1081492136876000000, 1081492136856000000 ); */
       SNPRINTF(queryString, qLen, 
-           "DELETE FROM %.20sENTRIES WHERE queueName='%s' AND nodeId='%s'"
+           "DELETE FROM %.20sENTRIES WHERE queueName='%s'"
            " AND dataId in ( ",
-           dbInfo->prop.tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId);
+           dbInfo->prop.tablePrefix, dbInfo->prop.queueName);
 
       for (i=0; i<queueEntryArr->len; i++) {
          strcat(queryString, int64ToStr(int64Str, queueEntryArr->queueEntryArr[i].uniqueId));
@@ -952,7 +944,7 @@ static bool persistentQueueClear(I_Queue *queueP, ExceptionStruct *exception)
 }
 
 /**
- * Parse response of "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s' and nodeId='%s'",
+ * Parse response of "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s'",
  */
 static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
                            const char **pazValue, const char **pazColName, ExceptionStruct *exception)
@@ -961,11 +953,11 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
    bool stateOk;
    DbInfo *dbInfo = getDbInfo(queueP);
 
-   stateOk = strToInt64(&ival, pazValue[0]);
+   stateOk = strToInt64(&ival, pazValue[XB_ENTRIES_DATA_ID]);
    if (!stateOk) {
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
-               "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfEntries, ignoring entry.", __FILE__, __LINE__, pazColName[0], pazValue[0]);
+               "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfEntries, ignoring entry.", __FILE__, __LINE__, pazColName[XB_ENTRIES_DATA_ID], pazValue[XB_ENTRIES_DATA_ID]);
       return false;
    }
    dbInfo->numOfEntries = (int32_t)ival;
@@ -974,7 +966,7 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
    if (!stateOk) {
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
-               "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfBytes, ignoring entry.", __FILE__, __LINE__, pazColName[1], pazValue[0]);
+               "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfBytes, ignoring entry.", __FILE__, __LINE__, pazColName[1], pazValue[1]);
       if (currIndex) {} /* Just to avoid compiler warning about unused variable */
       if (userP) {};
       return false;
@@ -994,14 +986,14 @@ static bool fillCache(I_Queue *queueP, ExceptionStruct *exception)
    bool stateOk = true;
    DbInfo *dbInfo = 0;
 
-   char queryString[LEN512]; /* "SELECT count(dataId) FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415'" */
+   char queryString[LEN512]; /* "SELECT count(dataId) FROM XB_ENTRIES where queueName='connection_clientJoe'" */
 
    if (checkArgs(queueP, "fillCache", true, exception) == false ) return true;
    dbInfo = getDbInfo(queueP);
 
    SNPRINTF(queryString, LEN512, 
-            "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s' and nodeId='%s'",
-            dbInfo->prop.tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId);
+            "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s'",
+            dbInfo->prop.tablePrefix, dbInfo->prop.queueName);
    stateOk = compilePreparedQuery(queueP, "fillCache",
                   &dbInfo->pVm_fillCache, queryString, exception);
 
@@ -1268,7 +1260,6 @@ static void testRun(int argc, char **argv) {
 
    memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
-   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10000000L;

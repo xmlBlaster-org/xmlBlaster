@@ -101,8 +101,6 @@ public class CacheQueueDisconnectTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
 
          CbQueueProperty cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");

@@ -86,8 +86,6 @@ public class QueueServerEntryTest extends TestCase {
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
          java.util.Properties pluginProp = (java.util.Properties)pluginInfo.getParameters();
          pluginProp.put("tableNamePrefix", "TEST");
-         pluginProp.put("nodesTableName", "_nodes");
-         pluginProp.put("queuesTableName", "_queues");
          pluginProp.put("entriesTableName", "_entries");
          this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
 

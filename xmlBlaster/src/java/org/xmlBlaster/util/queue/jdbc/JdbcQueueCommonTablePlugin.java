@@ -216,14 +216,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
          this.manager = getJdbcQueueManagerCommonTable(this.pluginInfo);
 
-         String nodeId = this.glob.getStrippedId();
-         this.manager.addNode(nodeId);
-         this.manager.addQueue(this.storageId.getStrippedId(), nodeId, this.property.getMaxBytes(), this.property.getMaxEntries());
-
-         this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
-         this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId(), this.glob.getStrippedId());
-         this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
-         this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId());
+         this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId());
+         this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId());
+         this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId());
 
          this.isDown = false;
          this.manager.registerQueue(this);
@@ -312,7 +308,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#getEntries()
     */
    public ArrayList getEntries() throws XmlBlasterException {
-      return this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), -1, -1L);
+      return this.manager.getEntries(getStorageId(), -1, -1L);
    }
 
    /**
@@ -350,7 +346,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                    " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
          }
          try {
-            if (this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), entry)) {
+            if (this.manager.addEntry(this.storageId.getStrippedId(), entry)) {
                this.numOfEntries++;
                this.numOfBytes += entry.getSizeInBytes();
                if (entry.isPersistent()) {
@@ -397,9 +393,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
          try {
 
-            int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries);
+            int[] help = this.manager.addEntries(this.storageId.getStrippedId(), queueEntries);
             for (int i=0; i < queueEntries.length; i++) {
-            // boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries[i]);
+            // boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), queueEntries[i]);
                boolean isProcessed = help[i] > 0 || help[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
                if (this.log.TRACE) {
                   this.log.trace(ME, "put(I_Entry[]) the entry nr. " + i + " returned '" + help[i] + "'");
@@ -472,13 +468,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       ArrayList ret = null;
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+            ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes);
 
             long ids[] = new long[ret.size()];
             for (int i=0; i < ids.length; i++)
                ids[i] = ((I_QueueEntry)ret.get(i)).getUniqueId();
 
-            boolean tmp[] = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            boolean tmp[] = this.manager.deleteEntries(getStorageId().getStrippedId(), ids);
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) this.numOfEntries--;
             }
@@ -513,7 +509,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       ReturnDataHolder ret = null;
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, true);
+            ret = this.manager.getAndDeleteLowest(getStorageId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, true);
             this.numOfBytes -= ret.countBytes;
             this.numOfEntries -= ret.countEntries;
 
@@ -547,7 +543,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          maxPriority = limitEntry.getPriority();
       }
 
-      ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, false);
+      ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, false);
       return ret.list;
    }
 
@@ -557,7 +553,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public I_QueueEntry peek() throws XmlBlasterException
    {
-      ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), 1, -1L);
+      ArrayList ret = this.manager.getEntries(getStorageId(), 1, -1L);
       if (ret.size() < 1) return null;
       return (I_QueueEntry)ret.get(0);
    }
@@ -568,7 +564,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+      ArrayList ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes);
       return ret;
    }
 
@@ -577,7 +573,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      ArrayList ret = this.manager.getEntriesBySamePriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+      ArrayList ret = this.manager.getEntriesBySamePriority(getStorageId(), numOfEntries, numOfBytes);
       return ret;
    }
 
@@ -586,7 +582,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, minPriority, maxPriority);
+      ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), numOfEntries, numOfBytes, minPriority, maxPriority);
       return ret;
    }
 
@@ -598,7 +594,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "peekWithLimitEntry called");
       if (limitEntry == null) return new ArrayList();
-      return this.manager.getEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry);
+      return this.manager.getEntriesWithLimit(getStorageId(), limitEntry);
    }
 
    /**
@@ -610,7 +606,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       long ret = 0L;
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
+            ret = this.manager.removeEntriesWithLimit(getStorageId(), limitEntry, inclusive);
             if (ret != 0) { // since we are not able to calculate the size in the cache we have to recalculate it
                resetCounters();
             }
@@ -635,7 +631,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       ReturnDataHolder ret = null;
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), 1, -1L);
+            ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), 1, -1L);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
@@ -667,7 +663,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       ReturnDataHolder ret = null;
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+            ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), numOfEntries, numOfBytes);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
@@ -708,7 +704,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @param msgQueueEntry the entry to erase.
     */
    public boolean[] removeRandom(long[] dataIdArray) throws XmlBlasterException {
-      ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), dataIdArray);
+      ArrayList list = this.manager.getEntries(getStorageId(), dataIdArray);
       return removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
    }
 
@@ -729,7 +725,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
       int ret = 0;
       synchronized(this.modificationMonitor) {
-         ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
+         ret = this.manager.deleteEntry(getStorageId().getStrippedId(), id);
          if (ret > 0) { // then we need to retrieve the values
             this.numOfEntries--;
             this.numOfBytes -= currentAmount;
@@ -766,7 +762,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       synchronized(this.modificationMonitor) {
          try {
 /*
-            int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), ids);
             long sum = 0;
             for (int i=0; i < tmp.length; i++) {
                if (this.log.TRACE) this.log.trace(ME, "removeRandom: entry '" + i + "' is '" + tmp[i]);
@@ -774,7 +770,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                if (ret[i]) sum++;
             }
 */  
-            tmp = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            tmp = this.manager.deleteEntries(getStorageId().getStrippedId(), ids);
             long sum = 0;
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) sum++;
@@ -822,7 +818,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       int ret = 0; 
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.deleteAllTransient(getStorageId().getStrippedId(), glob.getStrippedId());
+            ret = this.manager.deleteAllTransient(getStorageId().getStrippedId());
             this.numOfEntries -= ret;
             // not so performant but only called on init
             this.numOfBytes = -999L;
@@ -854,7 +850,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.numOfEntries > -1L && !this.debug) return this.numOfEntries;
       synchronized (this.modificationMonitor) {
          long oldValue = this.numOfEntries;
-         this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId());
          if (this.debug) {
             if (oldValue != this.numOfEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
                String txt = "getNumOfEntries: an inconsistency occured between the cached value and the real value of 'numOfEntries': it was '" + oldValue + "' but should have been '" + this.numOfEntries + "'";
@@ -901,7 +897,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       synchronized (this.modificationMonitor) {
          try {
             long oldValue = this.numOfPersistentEntries;
-            this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId());
             if (this.debug) {
                if (oldValue != this.numOfPersistentEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
                   String txt = "getNumOfPersistentEntries: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentEntries + "'";
@@ -961,7 +957,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.numOfBytes > -1L && !this.debug) return this.numOfBytes;
       synchronized (this.modificationMonitor) {
          long oldValue = this.numOfBytes;
-         this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId());
          if (this.debug) {
             if (oldValue != this.numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
                String txt = "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentBytes': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'";
@@ -1008,7 +1004,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       synchronized (this.modificationMonitor) {
          try {
             long oldValue = this.numOfPersistentBytes;
-            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId());
             if (this.debug) {
                if (oldValue != this.numOfPersistentBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
                   String txt = "getNumOfPersistentBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentBytes': it was '" + oldValue + "' but should have been '" + this.numOfPersistentBytes + "'";
@@ -1075,7 +1071,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public long clear() {
       try {
-         ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), -1, -1L);
+         ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), -1, -1L);
          this.numOfEntries = 0L;
          this.numOfBytes = 0L;
          this.numOfPersistentEntries = 0L;
@@ -1199,14 +1195,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       this.clear();
       this.shutdown();
       this.property = null;
-      this.manager.cleanUp(this.storageId.getStrippedId(), this.glob.getStrippedId());
+      this.manager.cleanUp(this.storageId.getStrippedId());
    }
 
 
    /////////////////////////// I_Map implementation ///////////////////////
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       long[] idArr = new long[] { uniqueId };
-      ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), idArr);
+      ArrayList list = this.manager.getEntries(getStorageId(), idArr);
       if (list.size() < 1) {
          return null;
       }
@@ -1279,7 +1275,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          if (oldSizeInBytes != newEntry.getSizeInBytes()) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
          } 
-         this.manager.modifyEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), newEntry);
+         this.manager.modifyEntry(getStorageId().getStrippedId(), newEntry);
          return newEntry;
       }
    }

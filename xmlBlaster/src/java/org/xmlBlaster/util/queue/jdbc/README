@@ -25,7 +25,7 @@ invoked the first time you start postgres.
 
 Configure in xmlBlaster.properties:
 -----------------------------------------------------------------
-Activate the persitence:
+Activate the persistence:
 set the following variables:
 
 persistence/msgUnitStore/defaultPlugin=CACHE,1.0
@@ -51,8 +51,6 @@ QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin
                       connectionBusyTimeout=90000,\
                       maxWaitingThreads=300,\
                       tableNamePrefix=XB_,\
-                      nodesTableName=NODES,\
-                      queuesTableName=QUEUES,\
                       entriesTableName=ENTRIES,\
                       dbAdmin=true
 
@@ -66,8 +64,6 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
                       connectionBusyTimeout=90000,\
                       maxWaitingThreads=300,\
                       tableNamePrefix=XB_,\
-                      nodesTableName=NODES,\
-                      queuesTableName=QUEUES,\
                       entriesTableName=ENTRIES,\
                       dbAdmin=true
 
@@ -84,8 +80,6 @@ QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin
                     connectionBusyTimeout=90000,\
                     maxWaitingThreads=300,\
                     tableNamePrefix=XB_,\
-                    nodesTableName=NODES,\
-                    queuesTableName=QUEUES,\
                     entriesTableName=ENTRIES,\
                     dbAdmin=true
 

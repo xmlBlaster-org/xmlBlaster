@@ -63,7 +63,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private static boolean firstConnectError = true;
    private Properties pluginProp = null;
    private boolean dbAdmin = true;
-   private int queryTimeout = 0; // wait indefinetely
+   private int queryTimeout = 0; // wait indefinitely
    private int managerCount = 0;
    private boolean isShutdown = false;
    private boolean enableBatchMode;

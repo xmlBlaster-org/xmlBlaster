@@ -12,7 +12,6 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
-// import java.sql.SQLException;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 import java.util.ArrayList;
 
@@ -42,8 +41,6 @@ public class JdbcManagerCommonTableTest extends TestCase {
             prop = (java.util.Properties)pluginInfo.getParameters().clone();
 
          prop.put("tableNamePrefix", "TEST");
-         prop.put("nodesTableName", "_nodes");
-         prop.put("queuesTableName", "_queues");
          prop.put("entriesTableName", "_entries");
 
          JdbcConnectionPool pool = new JdbcConnectionPool();
@@ -84,129 +81,90 @@ public class JdbcManagerCommonTableTest extends TestCase {
          if (this.log.TRACE) this.log.trace(me, "going to set up");
          this.manager.setUp();
  
-         this.log.info(me, "testing addition and removal of nodes");
-         boolean ret = this.manager.addNode("Fritz");
-         assertEquals(me + " adding the first node should give 'true'", true, ret);
-         ret = this.manager.addNode("Fritz");
-         assertEquals(me + " adding the second time the same node should give 'false'", false, ret);
-         ret = this.manager.removeNode("Fritz");
-         assertEquals(me + " removing the node the first time should give 'true'", true, ret);
-         ret = this.manager.removeNode("Fritz");
-         assertEquals(me + " removing the node the second time should give 'false'", false, ret);
-         this.log.info(me, "testing addition and removal of queues");
-
          StorageId storageId = new StorageId(this.glob, "cb:queue1");
          String queueName = storageId.getStrippedId();
 
-         try {
-            // this implicilty creates a node called "Fritz" too
-            this.manager.addQueue(queueName, "Fritz", 1000, 3000);
-         }
-         catch (XmlBlasterException ex) {
-            assertTrue(me + " an exception here should not occur since addQueue adds also a node if it does not exist", false);
-         }
- 
-         ret = this.manager.addNode("Fritz");
-         if (this.log.TRACE) this.log.trace(me, " re-adding the first node should give 'false'");
-         assertEquals(me + " re-adding the first node should give 'false' since it has been implicitly added with addQueue ", false, ret);
- 
-         ret = this.manager.addQueue(queueName, "Fritz", 1000, 3000);
-         assertEquals(me + " adding the second time a queue should give false", ret, false);
-
-         ret = this.manager.removeNode("Fritz");
-         assertEquals(me + " removing a node the first time should give 'true'", true, ret);
- 
-         ret = this.manager.removeNode("Fritz");
-         assertEquals(me + " removing a node the second time should give 'false'", false, ret);
- 
-         ret = this.manager.removeQueue(queueName, "Fritz");
-         assertEquals(me + " removing a queue after removing the node should give 'false' since already deleted", false, ret);
- 
          long size = 100; // entry.getSizeInBytes();
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
 
          try {
-            this.manager.addEntry(queueName, "Fritz", entry);
+            this.manager.addEntry(queueName, entry);
             assertTrue(me + " adding an entry with no queue nor node associated should fail", false);         
          }
          catch (XmlBlasterException ex) {
             this.log.info(me, "the previous exception is expected and is OK in this context");
          }
-         this.manager.addNode("Fritz");
          try {
-            this.manager.addEntry(queueName, "Fritz", entry);
+            this.manager.addEntry(queueName, entry);
             assertTrue(me + " adding an entry with no queue associated should fail", false);
          }
          catch (XmlBlasterException ex) {
             this.log.info(me, "the previous exception is expected and is OK in this context");
          }
-         ret = this.manager.addQueue(queueName, "Fritz", 200000, 1000);
-         assertEquals(me + " adding a queue should be successful here ", true, ret);
-
-         ret = this.manager.addEntry(queueName, "Fritz", entry);
+         boolean ret = this.manager.addEntry(queueName, entry);
          assertEquals(me + " adding an entry should give back true", true, ret);
 
          long totalSize = size;
  
-         ret = this.manager.addEntry(queueName, "Fritz", entry);
+         ret = this.manager.addEntry(queueName, entry);
          assertEquals(me + " adding an entry the second time should give back 'false'", false, ret);
  
          // add some more entries
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true); 
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
          totalSize += size;
 
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, false); 
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
          totalSize += size;
 
          // check here a modification of an entry:
-         long oldNumOfEntries = this.manager.getNumOfEntries(queueName, "Fritz");
-         long oldNumOfBytes = this.manager.getNumOfBytes(queueName, "Fritz");
+         long oldNumOfEntries = this.manager.getNumOfEntries(queueName);
+         long oldNumOfBytes = this.manager.getNumOfBytes(queueName);
 
          entry.setPersistent(true);
-         this.manager.modifyEntry(queueName, "Fritz", entry);
+         this.manager.modifyEntry(queueName, entry);
          long[] dataIds = new long[1];
          dataIds[0] = entry.getUniqueId();
-         ArrayList tmp = this.manager.getEntries(storageId, "Fritz", dataIds);
+         ArrayList tmp = this.manager.getEntries(storageId, dataIds);
          assertEquals(me + " modified entry is not correct ", true, ((DummyEntry)(tmp.get(0))).isPersistent());
 
          entry.setPersistent(false);
-         this.manager.modifyEntry(queueName, "Fritz", entry);
+         this.manager.modifyEntry(queueName, entry);
          dataIds = new long[1];
          dataIds[0] = entry.getUniqueId();
-         tmp = this.manager.getEntries(storageId, "Fritz", dataIds);
+         tmp = this.manager.getEntries(storageId, dataIds);
          assertEquals(me + " modified entry is not correct ", false, ((DummyEntry)(tmp.get(0))).isPersistent());
 
          // did the modification change the number or the size of the entries ?
-         assertEquals(me + " modification did change the number of entries", oldNumOfEntries, this.manager.getNumOfEntries(queueName, "Fritz"));
-         assertEquals(me + " modification did change the number of bytes", oldNumOfBytes, this.manager.getNumOfBytes(queueName, "Fritz"));
+         assertEquals(me + " modification did change the number of entries", oldNumOfEntries, this.manager.getNumOfEntries(queueName));
+         assertEquals(me + " modification did change the number of bytes", oldNumOfBytes, this.manager.getNumOfBytes(queueName));
 
-         long numOfBytes = this.manager.getNumOfBytes(queueName, "Fritz");
+         long numOfBytes = this.manager.getNumOfBytes(queueName);
          assertEquals(me + " num of bytes in queue 'queue1'", totalSize, numOfBytes);
 
          // count the number of entries here: they should be 4
-         this.manager.deleteAllTransient(queueName, "Fritz");
-         numOfBytes = this.manager.getNumOfBytes(queueName, "Fritz");
+         this.manager.deleteAllTransient(queueName);
+         numOfBytes = this.manager.getNumOfBytes(queueName);
          totalSize -= size;
          assertEquals(me + " num of bytes in queue 'queue1' after deleting transients", totalSize, numOfBytes);
 
-         ReturnDataHolder retHolder = this.manager.getAndDeleteLowest(storageId, "Fritz", 2, -1, 10, -1, false, true);
+         ReturnDataHolder retHolder = this.manager.getAndDeleteLowest(storageId, 2, -1, 10, -1, false, true);
          assertEquals(me + " getAndDeleteLowest check", 2, retHolder.countEntries);
 
          long entriesToDelete[] = new long[2];
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          entriesToDelete[0] = entry.getUniqueId();
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          entriesToDelete[1] = entry.getUniqueId();
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
 
-         boolean[] tmpArr = this.manager.deleteEntries(queueName, "Fritz", entriesToDelete);
+         boolean[] tmpArr = this.manager.deleteEntries(queueName, entriesToDelete);
          int numOfDel = 0;
          for (int i=0; i < tmpArr.length; i++) {
             if ( tmpArr[i] ) numOfDel++;
@@ -214,44 +172,44 @@ public class JdbcManagerCommonTableTest extends TestCase {
 
          assertEquals(me + " deleteEntries check", 2, numOfDel);
 
-         retHolder = this.manager.deleteFirstEntries(queueName, "Fritz", 1L, 10000L);
+         retHolder = this.manager.deleteFirstEntries(queueName, 1L, 10000L);
          assertEquals(me + " deleteFirstEntries check", 1, retHolder.countEntries);
 
-         ArrayList arrayList = this.manager.getEntriesByPriority(storageId, "Fritz", -1, -1, 0, 9);
+         ArrayList arrayList = this.manager.getEntriesByPriority(storageId, -1, -1, 0, 9);
          assertEquals(me + " getEntriesByPriority check", 1, arrayList.size());
 
 
          long[] entriesToGet = new long[2];
          entry = new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, storageId, size, true);
          entriesToGet[0] = entry.getUniqueId();
-         this.manager.addEntry(queueName, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
 
-         arrayList = this.manager.getEntriesBySamePriority(storageId, "Fritz", -1, -1);
+         arrayList = this.manager.getEntriesBySamePriority(storageId, -1, -1);
          assertEquals(me + " getEntriesBySamePriority check", 1, arrayList.size());
 
-         arrayList = this.manager.getEntries(storageId, "Fritz", -1, -1);
+         arrayList = this.manager.getEntries(storageId, -1, -1);
          assertEquals(me + " getEntries check", 2, arrayList.size());
 
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          entriesToGet[1] = entry.getUniqueId();
 
-         this.manager.addEntry(queueName, "Fritz", entry);
-         arrayList = this.manager.getEntriesWithLimit(storageId, "Fritz", entry);
+         this.manager.addEntry(queueName, entry);
+         arrayList = this.manager.getEntriesWithLimit(storageId, entry);
          assertEquals(me + " getEntriesWithLimit check", 2, arrayList.size());
 
-         arrayList = this.manager.getEntries(storageId, "Fritz", entriesToGet);
+         arrayList = this.manager.getEntries(storageId, entriesToGet);
          assertEquals(me + " getEntries check", 2, arrayList.size());
 
-         long num = this.manager.getNumOfEntries(queueName, "Fritz");
+         long num = this.manager.getNumOfEntries(queueName);
          assertEquals(me + " getNumOfEntries check", 3L, num);
 
-         num = this.manager.getNumOfPersistents(queueName, "Fritz");
+         num = this.manager.getNumOfPersistents(queueName);
          assertEquals(me + " getNumOfPersistents check", 3L, num);
 
-         num = this.manager.getSizeOfPersistents(queueName, "Fritz");
+         num = this.manager.getSizeOfPersistents(queueName);
          assertEquals(me + " getSizeOfPersistents check", 3*size, num);
 
-//         int retNum = this.manager.cleanUp(queueName, "Fritz");
+//         int retNum = this.manager.cleanUp(queueName);
 //         assertEquals(me + " cleaning up the queue should remove all queue entries", 1, retNum);
          boolean pingOK = this.manager.ping();
          assertEquals(me + " check ping command", true, pingOK);
