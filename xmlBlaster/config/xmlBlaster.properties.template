@@ -17,19 +17,21 @@
 
 #------------------------------------------------------------------------------
 # Authentication and Authorization
-Security.Server.allowSimpleDriver=true
 Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.Manager
 Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
 Security.Server.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.Manager
 Security.Server.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.Manager
 Security.Server.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.Manager
-Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
+
+# NONE switches off security checks in passwd file:
+Security.Server.Plugin.htpasswd.secretfile=NONE
+#Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
 
 # Force on client side a specified plugin (as default)
 # Only if you access xmlBlaster with java clients and
 # use our helper class XmlBlasterConnection.java
 # With "gui,1.0" will the server popup a GUI panel
-#Security.Client.DefaultPlugin=gui,1.0
+#Security.Client.DefaultPlugin=htpasswd,1.0
 Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientPlugin
 Security.Client.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.ClientPlugin
 Security.Client.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.ClientPlugin
