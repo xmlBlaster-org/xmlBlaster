@@ -39,6 +39,8 @@ public class XBMessage implements Message {
    public final static int OBJECT = 2;
    public final static int MAP    = 3;
    public final static int STREAM = 4;
+   public final static int DEFAULT_TYPE = XBMessage.STREAM;
+   
    
    private final static String ME = "XBMessage";
    protected Global global;

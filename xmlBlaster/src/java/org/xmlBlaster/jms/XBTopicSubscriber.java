@@ -21,8 +21,8 @@ public class XBTopicSubscriber extends XBMessageConsumer implements TopicSubscri
 
    private final static String ME = "XBTopicSubscriber";
 
-   XBTopicSubscriber(I_XmlBlasterAccess access, Topic topic, String msgSelector, boolean noLocal, int ackMode) {
-      super(access, topic, msgSelector, noLocal, ackMode);
+   XBTopicSubscriber(I_XmlBlasterAccess access, Topic topic, String msgSelector, boolean noLocal, int ackMode, boolean durable) {
+      super(access, topic, msgSelector, noLocal, ackMode, durable);
    }
 
    public boolean getNoLocal() throws JMSException {

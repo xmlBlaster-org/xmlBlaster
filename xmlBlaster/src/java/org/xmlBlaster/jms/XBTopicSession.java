@@ -31,12 +31,12 @@ public class XBTopicSession extends XBSession implements TopicSession {
    }
 
    public TopicSubscriber createSubscriber(Topic topic) throws JMSException {
-      return new XBTopicSubscriber(this.connection.getAccess(), topic, null, false, this.ackMode);
+      return new XBTopicSubscriber(this.connection.getAccess(), topic, null, false, this.ackMode, false);
    }
 
    public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal)
       throws JMSException {
-      return new XBTopicSubscriber(this.connection.getAccess(), topic, messageSelector, noLocal, this.ackMode);
+      return new XBTopicSubscriber(this.connection.getAccess(), topic, messageSelector, noLocal, this.ackMode, false);
    }
 
 }

@@ -1,39 +1,30 @@
 /*------------------------------------------------------------------------------
-Name:      XBQueue.java
+Name:      XBTemporaryTopic.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
 import javax.jms.JMSException;
-import javax.jms.Queue;
+import javax.jms.TemporaryTopic;
 
 /**
- * XBQueue
+ * XBTemporaryTopic
  *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBQueue implements Queue {
+public class XBTemporaryTopic extends XBTopic implements TemporaryTopic {
 
-
-   private String name;
+   XBTemporaryTopic() {
+      super();
+   }
    
-   XBQueue() {
-   }
-
-   XBQueue(String name) {
-      this.name = name;
-   }
 
    /* (non-Javadoc)
-    * @see javax.jms.Queue#getQueueName()
+    * @see javax.jms.TemporaryTopic#delete()
     */
-   public String getQueueName() throws JMSException {
+   public void delete() throws JMSException {
       // TODO Auto-generated method stub
-      return null;
-   }
-
-   public static void main(String[] args) {
    }
 }

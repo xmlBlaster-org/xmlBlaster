@@ -67,9 +67,6 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
       return (QueueConnection)createConnection();
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.QueueConnectionFactory#createQueueConnection(java.lang.String, java.lang.String)
-    */
    public Connection createConnection(String userName, String password)
       throws JMSException {
       try {

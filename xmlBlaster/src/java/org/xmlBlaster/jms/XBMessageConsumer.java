@@ -68,8 +68,18 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    protected MessageListener msgListener;
    protected SubscribeReturnQos subscribeReturnQos;
    protected int ackMode;
+   protected boolean durable;
 
-   XBMessageConsumer(I_XmlBlasterAccess access, Destination destination, String msgSelector, boolean noLocal, int ackMode) {
+   /**
+    * 
+    * @param access the connection to the xmlBlaster
+    * @param destination the destination on which to subscribe
+    * @param msgSelector the selector to apply on the destination for this subscription
+    * @param noLocal messages sent by this connection should not be received by this 
+    * @param ackMode the acknowledge mode to use
+    * @param durable true if durable subscription (in jms terms) or false if transient
+    */
+   XBMessageConsumer(I_XmlBlasterAccess access, Destination destination, String msgSelector, boolean noLocal, int ackMode, boolean durable) {
       this.access = access;
       this.global = access.getGlobal();
       this.log = this.global.getLog("jms");
@@ -77,6 +87,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
       this.noLocal = noLocal;
       this.msgSelector = msgSelector;
       this.ackMode = ackMode;
+      this.durable = durable;
    }
 
 
@@ -88,6 +99,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
       SubscribeQos qos = new SubscribeQos(this.global);
       qos.setWantInitialUpdate(false);
       qos.setWantLocal(!this.noLocal);
+      qos.setPersistent(this.durable);
       try {
          this.subscribeReturnQos = this.access.subscribe(key, qos, this);
       }
@@ -111,9 +123,9 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
             XBMessage msg = null;
             switch (type) {
                case XBMessage.TEXT: msg = new XBTextMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               // case XBMessage.BYTES: msg = new XBBytesMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
+               case XBMessage.BYTES: msg = new XBBytesMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
                case XBMessage.OBJECT: msg = new XBObjectMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               // case XBMessage.MAP: msg = new XBMapMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
+               case XBMessage.MAP: msg = new XBMapMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
                default: msg = new XBStreamMessage(this.global, updateKey.getData(), content, updateQos.getData());
             }
             
