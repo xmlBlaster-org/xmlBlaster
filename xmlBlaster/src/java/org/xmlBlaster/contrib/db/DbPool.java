@@ -244,6 +244,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       ResultSet   rs = null;
       try {
          conn =  reserve();
+         conn.setAutoCommit(true);
          stmt = conn.createStatement();
          if (log.isLoggable(Level.FINE)) log.fine("Running update command '" + command + "'");
          int rowsAffected = stmt.executeUpdate(command);
@@ -325,6 +326,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
          String str = "SQLException in query '" + command + "' : " + e;
          log.warning(str + ": sqlSTATE=" + e.getSQLState() + " we destroy the connection in case it's stale");
          // To be on the save side we always destroy the connection:
+         if (connection == null && !conn.getAutoCommit()) conn.rollback();
          erase(conn);
          conn = null;
          throw e;
@@ -333,6 +335,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
          e.printStackTrace();
          String str = "Unexpected exception in query '" + command + "' : " + e;
          log.severe(str + ": We destroy the connection in case it's stale");
+         if (connection == null && !conn.getAutoCommit()) conn.rollback();
          erase(conn);
          conn = null;
          throw new Exception(e);
