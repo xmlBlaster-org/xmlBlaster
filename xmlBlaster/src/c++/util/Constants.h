@@ -156,11 +156,11 @@ namespace org { namespace xmlBlaster {
 
 
    /** Praefix to create a sessionId */
-   extern Dll_Export const char * SESSIONID_PRAEFIX;
-   extern Dll_Export const char * SUBSCRIPTIONID_PRAEFIX;
+   extern Dll_Export const char * SESSIONID_PREFIX;
+   extern Dll_Export const char * SUBSCRIPTIONID_PREFIX;
 
-   extern Dll_Export const char * INTERNAL_OID_PRAEFIX;
-   extern Dll_Export const char * INTERNAL_OID_CLUSTER_PRAEFIX;
+   extern Dll_Export const char * INTERNAL_OID_PREFIX;
+   extern Dll_Export const char * INTERNAL_OID_CLUSTER_PREFIX;
 
    /** JDBC access messages */
    extern Dll_Export const char * JDBC_OID;

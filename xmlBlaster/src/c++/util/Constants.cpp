@@ -32,7 +32,6 @@ Dll_Export const char * INFO_QUEUED = "QUEUED";
 Dll_Export const char * RELATING_SESSION = "session";
 Dll_Export const char * RELATING_SUBJECT = "subject";
 Dll_Export const char * RELATING_UNRELATED = "unrelated";
-Dll_Export const char * RELATING_UNRELATED = "unrelated";
 Dll_Export const char * RELATING_CLIENT = "client";
 
 Dll_Export const char * ONOVERFLOW_BLOCK = "block";
@@ -43,11 +42,11 @@ Dll_Export const char * ONOVERFLOW_EXCEPTION = "exception";
 Dll_Export const char * ONOVERFLOW_DEADMESSAGE = "deadMessage";
 Dll_Export const char * ONEXHAUST_KILL_SESSION = "killSession";
 
-Dll_Export const char * SESSIONID_PRAEFIX = "sessionId:";
-Dll_Export const char * SUBSCRIPTIONID_PRAEFIX = "__subId:";
+Dll_Export const char * SESSIONID_PREFIX = "sessionId:";
+Dll_Export const char * SUBSCRIPTIONID_PREFIX = "__subId:";
 
-Dll_Export const char * INTERNAL_OID_PRAEFIX = "__sys__";
-Dll_Export const char * INTERNAL_OID_CLUSTER_PRAEFIX = "__sys__cluster";
+Dll_Export const char * INTERNAL_OID_PREFIX = "__sys__";
+Dll_Export const char * INTERNAL_OID_CLUSTER_PREFIX = "__sys__cluster";
 
 Dll_Export const char * JDBC_OID = "__sys__jdbc";
 

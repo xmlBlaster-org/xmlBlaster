@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      QueuePropertyBase.cpp
+Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.2 2002/12/07 13:31:09 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.1 2002/12/07 13:31:09 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -14,343 +14,342 @@ Version:   $Id: QueuePropertyBase.cpp,v 1.2 2002/12/07 13:31:09 laghi Exp $
  * @see org.xmlBlaster.util.ConnectQos
  */
 
-#include <util/queue/QueuePropertyBase.h>
-#include <boost/lexical_cast.hpp>
+#include <util/xmlBlasterDef.h>
+#include <util/Global.h>
+#include <util/Log.h>
+#include <util/Constants.h>
+#include <util/cfg/AddressBase.h>
+
+#include <string>
+#include <vector>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cfg;
-using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-Dll_Export const long DEFAULT_maxMsgDefault = 1000l;
-Dll_Export const long DEFAULT_maxMsgCacheDefault = 1000l;
-Dll_Export const long DEFAULT_sizeDefault = 10485760l; // 10 MB
-Dll_Export const long DEFAULT_sizeCacheDefault = 2097152l; // 2 MB
+extern Dll_Export  const long DEFAULT_maxMsgDefault;
+extern Dll_Export  const long DEFAULT_maxMsgCacheDefault;
+extern Dll_Export  const long DEFAULT_sizeDefault;
+extern Dll_Export  const long DEFAULT_sizeCacheDefault;
 /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
-Dll_Export const double DEFAULT_storeSwapLevelRatio = 0.70;
+extern Dll_Export  const double DEFAULT_storeSwapLevelRatio;
 /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-Dll_Export const double DEFAULT_storeSwapSizeRatio = 0.25;
+extern Dll_Export  const double DEFAULT_storeSwapSizeRatio;
 /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
-Dll_Export const double DEFAULT_reloadSwapLevelRatio = 0.30;
+extern Dll_Export  const double DEFAULT_reloadSwapLevelRatio;
 /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-Dll_Export const double DEFAULT_reloadSwapSizeRatio = 0.25;
-Dll_Export const Timestamp DEFAULT_minExpires = 1000;
-Dll_Export const Timestamp DEFAULT_maxExpires = 0;
-Dll_Export const string DEFAULT_onOverflow = Constants::ONOVERFLOW_DEADMESSAGE;
-Dll_Export const string DEFAULT_onFailure = Constants::ONOVERFLOW_DEADMESSAGE;
+extern Dll_Export  const double DEFAULT_reloadSwapSizeRatio;
+extern Dll_Export  const Timestamp DEFAULT_minExpires;
+extern Dll_Export  const Timestamp DEFAULT_maxExpires;
+extern Dll_Export  const string DEFAULT_onOverflow;
+extern Dll_Export  const string DEFAULT_onFailure;
 
 // static variables
-Dll_Export string DEFAULT_type = "CACHE";
-Dll_Export string DEFAULT_version = "1.0";
+extern Dll_Export  string DEFAULT_type;
+extern Dll_Export  string DEFAULT_version;
 /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
-Dll_Export long DEFAULT_expires;
+extern Dll_Export  long DEFAULT_expires;
 
-   QueuePropertyBase::QueuePropertyBase(Global& global, const string& nodeId)
-      : ME("QueuePropertyBase"), global_(global), log_(global.getLog("core")),
-        addressArr_()
+typedef vector<AddressBase*> AddressVector;
+
+class QueuePropertyBase
+{
+private:
+   const string ME; //  = "QueuePropertyBase";
+
+protected:
+   Global& global_;
+   Log&    log_;
+
+protected:
+   /** The queue plugin type "CACHE" "RAM" "JDBC" */
+   string type_;
+
+   /** The queue plugin version "1.0" or similar */
+   string version_;
+
+   /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
+   long maxMsgDefault_;
+
+   /** The max setting allowed for queue maxMsgCache is adjustable with property "queue.maxMsgCache=1000" (1000 messages is default) */
+   long maxMsgCacheDefault_;
+
+   /** The max setting allowed for queue maxSize in Bytes is adjustable with property "queue.maxSize=4194304" (4 MBytes is default) */
+   long maxSizeDefault_;
+
+   /** The max setting allowed for queue maxSizeCache in Bytes is adjustable with property "queue.maxSizeCache=4000" (4 MBytes is default) */
+   long maxSizeCacheDefault_;
+
+   /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
+   Timestamp minExpires_;
+
+   /** The max span of life of a queue is currently forever (=0), changeable with property e.g. "queue.expires.max=3600000" milliseconds */
+   Timestamp maxExpires_;
+
+
+   /** The unique protocol relating, e.g. "IOR" */
+   string relating_; //  = Constants.RELATING_SESSION;
+   /** Span of life of this queue in milliseconds */
+   Timestamp expires_; // = DEFAULT_expires;
+   /** The max. capacity of the queue in number of entries */
+   long maxMsg_;
+   /** The max. capacity of the queue in Bytes */
+   long maxSize_;
+   /** The max. capacity of the cache of the queue in number of entries */
+   long maxMsgCache_;
+
+   /** The settings for the storeSwapLevel */
+   long storeSwapLevel_;
+
+   /** The settings for the storeSwapSize */
+   long storeSwapSize_;
+
+   /** The settings for the storeSwapLevel */
+   long reloadSwapLevel_;
+
+   /** The settings for the storeSwapSize */
+   long reloadSwapSize_;
+
+   /** The max. capacity of the queue in Bytes for the cache */
+   long maxSizeCache_;
+
+   /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
+   string onOverflow_;
+
+   /** Error handling when callback failed (after all retries etc.): Constants.ONOVERFLOW_DEADMESSAGE */
+   string onFailure_;
+
+   /** The corresponding callback address */
+   AddressVector addressArr_; // = new AddressBase[0];
+
+   /** To allow specific configuration parameters for specific cluster nodes */
+   string nodeId_; // = null;
+
+
+   /**
+    * Configure property settings, add your own defaults in the derived class
+    */
+   void initialize()
    {
-      nodeId_ = nodeId;
+      // Do we need this range settings?
+      setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
+      setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
+      if (nodeId_ != "") {
+         setMinExpires(global_.getProperty().getTimestampProperty(string("queue.expires.min[")+nodeId_+string("]"), getMinExpires()));
+         setMaxExpires(global_.getProperty().getTimestampProperty(string("queue.expires.max[")+nodeId_+string("]"), getMaxExpires())); // Long.MAX_VALUE);
+      }
+
+//         PluginInfo pluginInfo = new PluginInfo(glob, null, global_.getProperty().get("queue.defaultPlugin", DEFAULT_type));
+//         DEFAULT_type = pluginInfo.getType();
+//         DEFAULT_version = pluginInfo.getVersion();
    }
 
-   QueuePropertyBase::~QueuePropertyBase()
+   void setMaxExpires(Timestamp maxExpires)
    {
-       // delete all entries of the address vector since they are pointers
-       // owned by this object.
+      maxExpires_ = maxExpires;
    }
 
+   Timestamp getMaxExpires() const
+   {
+      return maxExpires_;
+   }
+
+   void setMinExpires(Timestamp minExpires)
+   {
+      minExpires_ = minExpires;
+   }
+
+   Timestamp getMinExpires()
+   {
+      return minExpires_;
+   }
+
+public:
+
+   /**
+    * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
+    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    */
+   QueuePropertyBase(Global& global, const string& nodeId);
+
+   virtual ~QueuePropertyBase();
 
    /**
     * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
     */
-   void QueuePropertyBase::setRelating(const string& relating)
-   {
-      if (Constants::RELATING_SESSION == relating)
-         relating_ = Constants::RELATING_SESSION;
-      else if (Constants::RELATING_SUBJECT == relating)
-         relating_ = Constants::RELATING_SUBJECT;
-      else if (Constants::RELATING_CLIENT ==relating)
-         relating_ = Constants::RELATING_CLIENT;
-      else {
-         log_.warn(ME, string("Ignoring relating=") + relating);
-      }
-   }
+   void setRelating(const string& relating);
 
    /**
     * Returns the queue type.
     * @return relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
     */
-   string QueuePropertyBase::getRelating() const
-   {
-      return relating_;
-   }
+   string getRelating() const;
 
    /**
     * Span of life of this queue.
     * @return Expiry time in milliseconds or 0L if forever
     */
-   Timestamp QueuePropertyBase::getExpires()
-   {
-      return expires_;
-   }
+   Timestamp getExpires();
 
    /**
     * Span of life of this queue.
     * @param Expiry time in milliseconds
     */
-   void QueuePropertyBase::setExpires(Timestamp expires)
-   {
-      if (maxExpires_ <= 0) expires_ = expires;
-      else if ( (expires>0) && (maxExpires_>0) && (expires>maxExpires_) )
-         expires_ = maxExpires_;
-      else if ( (expires<=0) && (maxExpires_>0) )
-         expires_ = maxExpires_;
-
-      if ( (expires>0) && (expires<minExpires_) )
-         expires_ = minExpires_;
-   }
-
+   void setExpires(Timestamp expires);
 
    /**
     * Max number of messages for this queue.
     * <br />
     * @return number of messages
     */
-   long QueuePropertyBase::getMaxMsg() const
-   {
-      return maxMsg_;
-   }
+   long getMaxMsg() const;
 
    /**
     * Max number of messages for this queue.
     * <br />
     * @param maxMsg
     */
-   void QueuePropertyBase::setMaxMsg(long maxMsg)
-   {
-      maxMsg_ = maxMsg;
-   }
-
+   void setMaxMsg(long maxMsg);
 
    /**
     * The plugin type. 
     * <br />
     * @return e.g. "CACHE"
     */
-   string QueuePropertyBase::getType() const
-   {
-      return type_;
-   }
+   string getType() const;
 
    /**
     * The plugin type
     * <br />
     * @param type
     */
-   void QueuePropertyBase::setType(const string& type)
-   {
-      type_ = type;
-   }
+   void setType(const string& type);
 
    /**
     * The plugin version. 
     * <br />
     * @return e.g. "1.0"
     */
-   string QueuePropertyBase::getVersion() const
-   {
-      return version_;
-   }
+   string getVersion() const;
 
    /**
     * The plugin version
     * <br />
     * @param version
     */
-   void QueuePropertyBase::setVersion(const string& version)
-   {
-      version_ = version;
-   }
+   void setVersion(const string& version);
 
    /**
     * Max number of messages for the cache of this queue.
     * <br />
     * @return number of messages
     */
-   long QueuePropertyBase::getMaxMsgCache() const
-   {
-      return maxMsgCache_;
-   }
+   long getMaxMsgCache() const;
 
    /**
     * Max number of messages for the cache of this queue.
     * <br />
     * @param maxMsg
     */
-   void QueuePropertyBase::setMaxMsgCache(long maxMsgCache)
-   {
-      maxMsgCache_ = maxMsgCache;
-   }
-
+   void setMaxMsgCache(long maxMsgCache);
 
    /**
     * Max message queue size.
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   long QueuePropertyBase::getMaxSize() const
-   {
-      return maxSize_;
-   }
+   long getMaxSize() const;
 
    /**
     * Max message queue size.
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   void QueuePropertyBase::setMaxSize(long maxSize)
-   {
-      maxSize_ = maxSize;
-   }
-
+   void setMaxSize(long maxSize);
 
    /**
     * Max message queue size for the cache of this queue.
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   long QueuePropertyBase::getMaxSizeCache() const
-   {
-      return maxSizeCache_;
-   }
-
+   long getMaxSizeCache() const;
 
    /**
     * Gets the storeSwapLevel for the queue (only used on cache queues).
     * <br />
     * @return Get storeSwapLevel in bytes.
     */
-   long QueuePropertyBase::getStoreSwapLevel() const
-   {
-      return storeSwapLevel_;
-   }
+   long getStoreSwapLevel() const;
 
    /**
     * Sets the storeSwapLevel for the queue (only used on cache queues).
     * <br />
     * @param Set storeSwapLevel in bytes.
     */
-   void QueuePropertyBase::setStoreSwapLevel(long storeSwapLevel)
-   {
-      storeSwapLevel_ = storeSwapLevel;
-   }
+   void setStoreSwapLevel(long storeSwapLevel);
 
    /**
     * Gets the storeSwapSize for the queue (only used on cache queues).
     * <br />
     * @return Get storeSwapSize in bytes.
     */
-   long QueuePropertyBase::getStoreSwapSize() const
-   {
-      return storeSwapSize_;
-   }
+   long getStoreSwapSize() const;
 
    /**
     * Sets the storeSwapSize for the queue (only used on cache queues).
     * <br />
     * @param Set storeSwapSize in bytes.
     */
-   void QueuePropertyBase::setStoreSwapSize(long storeSwapSize)
-   {
-      storeSwapSize_ = storeSwapSize;
-   }
+   void setStoreSwapSize(long storeSwapSize);
 
    /**
     * Gets the reloadSwapLevel for the queue (only used on cache queues).
     * <br />
     * @return Get reloadSwapLevel in bytes.
     */
-   long QueuePropertyBase::getReloadSwapLevel() const
-   {
-      return reloadSwapLevel_;
-   }
+   long getReloadSwapLevel() const;
 
    /**
     * Sets the reloadSwapLevel for the queue (only used on cache queues).
     * <br />
     * @param Set reloadSwapLevel in bytes.
     */
-   void QueuePropertyBase::setReloadSwapLevel(long reloadSwapLevel)
-   {
-      reloadSwapLevel_ = reloadSwapLevel;
-   }
+   void setReloadSwapLevel(long reloadSwapLevel);
 
    /**
     * Gets the reloadSwapSize for the queue (only used on cache queues).
     * <br />
     * @return Get reloadSwapSize in bytes.
     */
-   long QueuePropertyBase::getReloadSwapSize() const
-   {
-      return reloadSwapSize_;
-   }
+   long getReloadSwapSize() const;
 
    /**
     * Sets the reloadSwapSize for the queue (only used on cache queues).
     * <br />
     * @param Set reloadSwapSize in bytes.
     */
-   void QueuePropertyBase::setReloadSwapSize(long reloadSwapSize)
-   {
-      reloadSwapSize_ = reloadSwapSize;
-   }
+   void setReloadSwapSize(long reloadSwapSize);
 
    /**
     * Max message queue size for the cache of this queue.
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   void QueuePropertyBase::setMaxSizeCache(long maxSizeCache)
-   {
-      maxSizeCache_ = maxSizeCache;
-   }
-
+   void setMaxSizeCache(long maxSizeCache);
 
    /**
     * Set the callback onOverflow, it should fit to the protocol-relating.
     *
     * @param onOverflow The callback onOverflow, e.g. "et@mars.univers"
     */
-   void QueuePropertyBase::setOnOverflow(const string& onOverflow)
-   {
-      /*
-      if (Constants.ONOVERFLOW_BLOCK.equalsIgnoreCase(onOverflow)) {
-         this.onOverflow = Constants.ONOVERFLOW_BLOCK;
-      }
-      */
-      if (Constants::ONOVERFLOW_DEADMESSAGE == onOverflow) {
-         onOverflow_ = Constants::ONOVERFLOW_DEADMESSAGE;
-      }
-      else if (Constants::ONOVERFLOW_DISCARDOLDEST == onOverflow) {
-         onOverflow_ = Constants::ONOVERFLOW_DISCARDOLDEST;
-
-         onOverflow_ = Constants::ONOVERFLOW_DEADMESSAGE; // TODO !!!
-         log_.error(ME, string("queue onOverflow='") + string(Constants::ONOVERFLOW_DISCARDOLDEST) + string("' is not implemented, switching to ") + onOverflow_ + string(" mode"));
-      }
-      else {
-         onOverflow_ = Constants::ONOVERFLOW_DEADMESSAGE;
-         log_.warn(ME, string("The queue onOverflow attribute is invalid '") + onOverflow + string("', setting to '") + onOverflow_ + string("'"));
-      }
-   }
+   void setOnOverflow(const string& onOverflow);
 
    /**
     * Returns the onOverflow.
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
-   string QueuePropertyBase::getOnOverflow() const
-   {
-      return onOverflow_;
-   }
+   string getOnOverflow() const;
 
    /*
     * The default mode, when queue is full the publisher blocks until
@@ -367,43 +366,23 @@ Dll_Export long DEFAULT_expires;
     *
     * @param onFailure The callback onFailure, e.g. "et@mars.univers"
     */
-   void QueuePropertyBase::setOnFailure(const string& onFailure)
-   {
-      if (Constants::ONOVERFLOW_DEADMESSAGE == onFailure)
-         onFailure_ = Constants::ONOVERFLOW_DEADMESSAGE;
-      else {
-         log_.warn(ME, string("The queue onFailure attribute is invalid '") + onFailure + string("', setting to 'deadMessage'"));
-         onFailure_ = Constants::ONOVERFLOW_DEADMESSAGE;
-      }
-   }
+   void setOnFailure(const string& onFailure);
 
    /**
     * Returns the onFailure.
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
-   string QueuePropertyBase::getOnFailure() const
-   {
-      return onFailure_;
-   }
+   string getOnFailure() const;
 
    /**
     * The default mode is to send a dead letter if callback fails permanently
     */
-   bool QueuePropertyBase::onFailureDeadMessage()
-   {
-      if (Constants::ONOVERFLOW_DEADMESSAGE == getOnFailure())
-         return true;
-      return false;
-   }
+   bool onFailureDeadMessage();
 
    /**
     * @return null if none available
     */
-   AddressVector QueuePropertyBase::getAddresses() const
-   {
-      return addressArr_;
-   }
-
+   AddressVector getAddresses() const;
 
    /**
     * Called for queue start tag
@@ -517,59 +496,13 @@ Dll_Export long DEFAULT_expires;
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string QueuePropertyBase::toXml(const string& extraOffset)
-   {
-      string offset = "\n   ";
-
-      string ret;
-      ret += offset + string("<!-- QueuePropertyBase -->");
-
-      ret += offset + string("<queue relating='") + getRelating();
-      if (DEFAULT_type != getType())
-         ret += string("' type='") + getType();
-      if (DEFAULT_version != getVersion())
-         ret += string("' version='") + getVersion();
-      if (DEFAULT_maxMsgDefault != getMaxMsg())
-         ret += string("' maxMsg='") + lexical_cast<string>(getMaxMsg());
-      if (DEFAULT_maxMsgCacheDefault != getMaxMsgCache())
-         ret += string("' maxMsgCache='") + lexical_cast<string>(getMaxMsgCache());
-      if (DEFAULT_sizeDefault != getMaxSize())
-         ret += string("' maxSize='") + lexical_cast<string>(getMaxSize());
-      if (DEFAULT_sizeCacheDefault != getMaxSizeCache())
-         ret += string("' maxSizeCache='") + lexical_cast<string>(getMaxSizeCache());
-      ret += string("' storeSwapLevel='") + lexical_cast<string>(getStoreSwapLevel());
-      ret += string("' storeSwapSize='") + lexical_cast<string>(getStoreSwapSize());
-      ret += string("' reloadSwapLevel='") + lexical_cast<string>(getReloadSwapLevel());
-      ret += string("' reloadSwapSize='") + lexical_cast<string>(getReloadSwapSize());
-      if (DEFAULT_expires != getExpires())
-         ret += string("' expires='") + lexical_cast<string>(getExpires());
-      if (DEFAULT_onOverflow != getOnOverflow())
-         ret += string("' onOverflow='") + getOnOverflow();
-      if (DEFAULT_onFailure != getOnFailure())
-         ret += string("' onFailure='") + getOnFailure();
-
-      if (!addressArr_.empty()) {
-         ret += string("'>");
-
-         AddressVector::iterator iter = addressArr_.begin();
-         while (iter != addressArr_.end()) {
-            ret += (*iter)->toXml(extraOffset+"   ");
-            iter++;
-         }
-         ret += offset + string("</queue>");
-      }
-      else
-         ret += string("'/>");
-      return ret;
-   }
+   string toXml(const string& extraOffset="");
 
    /**
     * returns the global object
     */
-   Global& QueuePropertyBase::getGlobal()
-   {
-      return global_;
-   }
+   Global& getGlobal();
+};
 
 }}}} // namespaces
 
