@@ -43,7 +43,6 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    private final LogChannel log;
    private final I_Queue msgQueue;
    private final DeliveryConnectionsHandler deliveryConnectionsHandler;
-   private final DeliveryWorkerPool deliveryWorkerPool;
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private final I_MsgDeliveryInterceptor msgInterceptor;
@@ -57,7 +56,6 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    /** The worker for synchronous invocations */
    private DeliveryWorker syncDeliveryWorker;
 
-   private final Timeout burstModeTimer;
    private Timestamp timerKey = null;
 
    private int notifyCounter = 0;
@@ -88,8 +86,6 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       this.msgQueue = msgQueue;
       this.failureListener = failureListener;
       this.securityInterceptor = securityInterceptor;
-      this.deliveryWorkerPool = glob.getDeliveryWorkerPool();
-      this.burstModeTimer = glob.getBurstModeTimer();
       this.deliveryConnectionsHandler = this.glob.createDeliveryConnectionsHandler(this);
       this.connectionStatusListener = connectionStatusListener;
 
@@ -565,7 +561,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          if (this.isShutdown) return false;
          if (this.timerKey == null) {
             if (log.TRACE) log.trace(ME, "Starting burstMode timer with " + collectTime + " msec");
-            this.timerKey = burstModeTimer.addTimeoutListener(this, collectTime, null);
+            this.timerKey = this.glob.getBurstModeTimer().addTimeoutListener(this, collectTime, null);
          }
       }
       return true;
@@ -577,7 +573,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    private void removeBurstModeTimer() {
       synchronized (this) {
          if (this.timerKey != null) {
-            this.burstModeTimer.removeTimeoutListener(timerKey);
+            this.glob.getBurstModeTimer().removeTimeoutListener(timerKey);
             this.timerKey = null;
          }
       }
@@ -599,7 +595,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                this.deliveryWorkerIsActive = true;
                this.notifyCounter = 0;
                try {
-                  this.deliveryWorkerPool.execute(this, new DeliveryWorker(glob, this));
+                  this.glob.getDeliveryWorkerPool().execute(this, new DeliveryWorker(glob, this));
                }
                catch (Throwable e) {
                   this.deliveryWorkerIsActive = false;
@@ -784,7 +780,6 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             //this.deliveryConnectionsHandler = null;
          }
          removeBurstModeTimer();
-         //this.burstModeTimer = null;
          //this.msgQueue = null;
          //this.failureListener = null;
          //this.securityInterceptor = null;
