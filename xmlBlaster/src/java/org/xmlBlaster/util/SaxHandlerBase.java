@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.23 2003/03/22 12:28:11 laghi Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.24 2003/10/03 19:32:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -44,6 +44,9 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    // private static final String DEFAULT_PARSER_NAME =  // com.ibm.xml.parsers.SAXParser // .sun.xml.parser.ValidatingParser
    protected StringBuffer character = new StringBuffer();
 
+   /** The xml file read for logging only */
+   protected String xmlSource;
+
 
    /**
     * The original XML string in ASCII representation, for example:
@@ -68,14 +71,24 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       if (log.CALL) log.trace(ME, "Creating new SaxHandlerBase");
    }
 
+   /*
+    * This method parses the XML InputSource using the SAX parser.
+    * @param inputSource The XML string
+    */
+   public void init(InputSource inputSource) throws XmlBlasterException
+   {
+      parse(inputSource);
+   }
 
    /*
     * This method parses the XML InputSource using the SAX parser.
+    * @param inputSource For logging only (e.g. the XML file) or null
     * @param xmlLiteral The XML string
     */
-   public void init(InputSource xmlSource) throws XmlBlasterException
+   public void init(String xmlSource, InputSource inputSource) throws XmlBlasterException
    {
-      parse(xmlSource);
+      this.xmlSource = xmlSource;
+      parse(inputSource);
    }
 
    /*
@@ -151,8 +164,12 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       }
       catch (Throwable e) {
          String location = (locator == null) ? "" : locator.toString();
-         if (e instanceof org.xml.sax.SAXParseException)
+         if (e instanceof org.xml.sax.SAXParseException) {
             location = getLocationString((SAXParseException)e);
+         }
+         else if (this.xmlSource != null) {
+            location = this.xmlSource;
+         }
 
          if (e.getMessage() != null && e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
             if (log.TRACE) log.trace(ME, location + ": Parsing execution stopped half the way");
@@ -163,7 +180,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
             e.printStackTrace();
          }
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".parse()",
-            "Error while SAX parsing: " + location + ":\n" + xmlData, e);
+            "Error while SAX parsing " + location + ":\n" + xmlData, e);
       }
       finally {
          locator = null;
@@ -309,8 +326,10 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
          return;
       }
 
-      log.error(ME+".fatalError", getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
-      ex.printStackTrace();
+      if (log.TRACE) {
+         log.trace(ME+".fatalError", getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+         ex.printStackTrace();
+      }
       throw ex;
    }
 
@@ -332,6 +351,9 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    private String getLocationString(SAXParseException ex)
    {
       StringBuffer str = new StringBuffer();
+
+      if (this.xmlSource != null)
+         str.append(this.xmlSource).append(":");
 
       String systemId = ex.getSystemId();
       if (systemId != null) {
