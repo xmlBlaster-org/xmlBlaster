@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.52 2003/02/27 07:41:22 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.53 2003/02/27 10:57:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -244,6 +244,19 @@ public class CorbaDriver implements I_Driver
                                    getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
                      }
                   }
+                  catch (org.omg.CORBA.NO_IMPLEMENT ex) {  // JacORB 1.3.x bug (remove this catch when updated to JacORB 1.4x)
+                     if (log.TRACE) log.trace(ME, "Can't register CORBA NameService context '" +
+                                    getString(nameXmlBlaster) + "': " + ex.toString());
+                     try {
+                        org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
+                        relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
+                        break;
+                     }
+                     catch (Throwable e) {
+                        log.error(ME, "Can't register CORBA NameService context '" +
+                                   getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
+                     }
+                  }
                }
                if (relativeContext != null) {
                   String clusterId = glob.getProperty().get("NameService.node.id", glob.getStrippedId());
@@ -446,6 +459,9 @@ public class CorbaDriver implements I_Driver
       if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
       if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
 
+      /*
+      CHANGED 2003-02-27 Marcel:
+      The jacorb.properties file has no impact anymore if we set the System.properties
       // We use default Port 7608 for naming service to listen ...
       // Start Naming service
       //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
@@ -457,7 +473,12 @@ public class CorbaDriver implements I_Driver
       else {
          if (log.TRACE) log.trace(ME, "Using system ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService"));
       }
-
+      */
+      if (glob.getProperty().get("ORBInitRef.NameService", (String)null) != null) {
+         JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
+         if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
+         log.error(ME, "DEBUG ONLY: Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
+      }
       return hostname;
    }
 
@@ -555,7 +576,7 @@ public class CorbaDriver implements I_Driver
       }
       catch (Exception e) {
          if (log.TRACE) log.trace(ME + ".NoNameService", e.toString() + ": " + e.getMessage());
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> if you want one.", e);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <ORBInitRef.NameService=...> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
    }
