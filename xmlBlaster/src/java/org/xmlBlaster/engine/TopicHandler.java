@@ -614,21 +614,23 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       }
       finally {
          if (msgUnitWrapper != null) {
-            synchronized (msgUnitWrapper) {
-               synchronized(this.msgUnitCache) {
-                  try {
-                     // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
-                     // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
-                     if (initialCounter != 0) {
-                        msgUnitWrapper.setReferenceCounter((-1)*initialCounter);
+            synchronized(this) {
+               synchronized(msgUnitWrapper) {
+                  synchronized(this.msgUnitCache) {
+                     try {
+                        // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
+                        // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
+                        if (initialCounter != 0) {
+                           msgUnitWrapper.setReferenceCounter((-1)*initialCounter);
+                        }
+                        if (!msgUnitWrapper.isDestroyed()) {
+                           this.msgUnitCache.put(msgUnitWrapper);
+                        }
                      }
-                     if (!msgUnitWrapper.isDestroyed()) {
-                        this.msgUnitCache.put(msgUnitWrapper);
-                     }
-                  }
-                  finally {
-                     synchronized(this.msgUnitWrapperUnderConstruction) {
-                        this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
+                     finally {
+                        synchronized(this.msgUnitWrapperUnderConstruction) {
+                           this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
+                        }
                      }
                   }
                }
@@ -756,7 +758,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
                         "the combination '" + status + "' is not handled");
                   }
-                  if (i>0) { try { Thread.currentThread().sleep(1L); } catch( InterruptedException ie) {}}
+                  if (i>0) { try { Thread.sleep(1L); } catch( InterruptedException ie) {}}
                   ConnectReturnQosServer q = authenticate.connect(connectQosServer);
                   receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
                   if (receiverSessionInfo == null) continue;
@@ -818,7 +820,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       if (this.historyQueue == null) {
          return;
       }
-      synchronized (msgUnitWrapper) {
+      synchronized (this) {
          int numHistory = msgUnitWrapper.getHistoryReferenceCounter();
          if (numHistory > 0) {
             // We need to remove it from the history queue or at least decrement the referenceCounter

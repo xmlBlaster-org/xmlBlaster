@@ -11,6 +11,7 @@ package org.xmlBlaster.authentication;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.SessionQos;
@@ -627,14 +628,22 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
                           " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
             try {
-               I_Map cache = ((ReferenceEntry)entry).getMsgUnitCache();
+               TopicHandler topicHandler = ((ReferenceEntry)entry).getTopicHandler();
+               if (topicHandler == null) {
+                  if (log.TRACE) log.trace(ME, "forwardToSessionQueue: TopicHandler is null for '" + entry.getLogId() + "'");
+                  break;
+               }
+               I_Map cache = topicHandler.getMsgUnitCache();
                if (cache == null) {
                   if (log.TRACE) log.trace(ME, "forwardToSessionQueue: MsgUnitStore is null for '" + entry.getLogId() + "'");
                   break;
                }
                MsgQueueUpdateEntry entryCb = null;
-               synchronized(cache) {
-                  entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionInfo.getSessionQueue().getStorageId());
+               
+               synchronized(topicHandler) {
+                  synchronized(cache) {
+                     entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionInfo.getSessionQueue().getStorageId());
+                  }
                }
                sessionInfo.queueMessage(entryCb);
                countForwarded++;

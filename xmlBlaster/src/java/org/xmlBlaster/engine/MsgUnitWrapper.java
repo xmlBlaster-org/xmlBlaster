@@ -249,45 +249,47 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    public boolean incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
       
       I_Map cache = getOwnerCache();
-      synchronized (cache) {
-         if (isSwapped()) {
-            if (this.log.TRACE) 
-               this.log.trace(ME+this.getLogId(), "incrementReferenceCounter: unexpected swapped message");
-            return false;
-         }
-         boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
-         synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
-            if (isHistoryReference) {
-               this.historyReferenceCounter += count;
+      synchronized (getTopicHandler()) {
+         synchronized (cache) {
+            if (isSwapped()) {
+               if (this.log.TRACE) 
+                  this.log.trace(ME+this.getLogId(), "incrementReferenceCounter: unexpected swapped message");
+               return false;
             }
-            this.referenceCounter += count;
-         }
+            boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
+            synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
+               if (isHistoryReference) {
+                  this.historyReferenceCounter += count;
+               }
+               this.referenceCounter += count;
+            }
 
-         // TODO: Remove the logging
-         if (log.TRACE && !isInternal()) {
-            log.trace(ME+getLogId(), "Reference count changed from " +
-                (this.referenceCounter-count) + " to " + this.referenceCounter + 
-                ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
-         }
+            // TODO: Remove the logging
+            if (log.TRACE && !isInternal()) {
+               log.trace(ME+getLogId(), "Reference count changed from " +
+                   (this.referenceCounter-count) + " to " + this.referenceCounter + 
+                   ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
+            }
 
-         if (this.referenceCounter > 0L) {
-            if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
-               // Update persistence store
-               if (count != 0 && getTopicHandler().isInMsgStore(this)) {
-                  I_MapEntry ret = cache.change(this, null);
-                  //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
-                  if (ret != this) {
-                     log.error(ME+getLogId(), "Expected to be identical in change(): old=" + this + " new=" + ret);
+            if (this.referenceCounter > 0L) {
+               if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
+                  // Update persistence store
+                  if (count != 0 && getTopicHandler().isInMsgStore(this)) {
+                     I_MapEntry ret = cache.change(this, null);
+                     //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
+                     if (ret != this) {
+                        log.error(ME+getLogId(), "Expected to be identical in change(): old=" + this + " new=" + ret);
+                     }
                   }
                }
             }
-         }
-         else {
-            if (!isDestroyed()) {
-               this.state = PRE_DESTROYED; // Invalidate inside synchronize
+            else {
+               if (!isDestroyed()) {
+                  this.state = PRE_DESTROYED; // Invalidate inside synchronize
+               }
             }
-         }
-      } // sync cache                               isDestroyed()
+         } // sync cache                               isDestroyed()
+      }
       return this.state == PRE_DESTROYED; //this.referenceCounter <= 0L)
    }
 

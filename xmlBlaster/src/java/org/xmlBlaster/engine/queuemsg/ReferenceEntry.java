@@ -181,27 +181,41 @@ public class ReferenceEntry extends MsgQueueEntry
       return topicHandler.getMsgUnitCache();
    }
 
+   public TopicHandler getTopicHandler() {
+      RequestBroker rb = this.glob.getRequestBroker();
+      if (rb == null) return null;
+      TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
+      return topicHandler;
+   }
+
    private void incrementReferenceCounter(int incr, StorageId storageId) {
       try {
-         I_Map cache = getMsgUnitCache();
-         if (cache == null) return;
          // we need to synchronize it over the caching process
          boolean preDestroyed = false;
          MsgUnitWrapper msgUnitWrapper = null;
-         synchronized(cache) {
-            msgUnitWrapper = getMsgUnitWrapper();
-            if (msgUnitWrapper != null) {
-               preDestroyed = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
-            }
-            else {
-               if (this instanceof MsgQueueHistoryEntry) {
-                  if (log.TRACE) log.trace(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+
+         TopicHandler topicHandler = getTopicHandler();
+         if (topicHandler == null)
+            return;
+         I_Map cache = topicHandler.getMsgUnitCache();
+         if (cache == null) return;
+         synchronized(topicHandler) {
+            synchronized(cache) {
+               msgUnitWrapper = getMsgUnitWrapper();
+               if (msgUnitWrapper != null) {
+                  preDestroyed = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
                }
                else {
-                  log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+                  if (this instanceof MsgQueueHistoryEntry) {
+                     if (log.TRACE) log.trace(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+                  }
+                  else {
+                     log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+                  }
                }
             }
          }
+
          if (preDestroyed && msgUnitWrapper != null) {
             msgUnitWrapper.toDestroyed();
          }
@@ -244,14 +258,20 @@ public class ReferenceEntry extends MsgQueueEntry
     *         or for msgUnitWrapper in state=DESTROYED
     */
    public boolean isDestroyed() {
-      I_Map cache = getMsgUnitCache();
+
+      TopicHandler topicHandler = getTopicHandler();
+      if (topicHandler == null)
+         return true;
+      I_Map cache = topicHandler.getMsgUnitCache();
       if (cache == null) return true;
-      synchronized(cache) {
-         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-         if (msgUnitWrapper == null)
-            return true;
-         return msgUnitWrapper.isDestroyed();
-      }
+      synchronized(topicHandler) {
+         synchronized(cache) {
+            MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+            if (msgUnitWrapper == null)
+               return true;
+            return msgUnitWrapper.isDestroyed();
+         }
+      }      
    }
 
    public MsgQosData getMsgQosData() throws XmlBlasterException {
