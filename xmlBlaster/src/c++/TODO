@@ -6,6 +6,9 @@ and memory leak checked with valgrind.
 Following issues however remain:
 
 
+o Implement burstMode/maxEntries and burstMode/maxBytes methods in
+  ConnectQos -> AddressBase
+
 o implementing the setters and getters for subject queue properties in ConnectQos
   (remember not to pass anything if not explicitly set, otherwise the server will
   reconfigure on each session)
