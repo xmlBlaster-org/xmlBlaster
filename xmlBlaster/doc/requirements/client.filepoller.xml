@@ -43,23 +43,28 @@
 	          If 'lockExtention' is not specified, the <i>optimistic</i> approach is choosed. Note that 
 		  while simple to be used, there is no guarantee that the published messages really are 
 		  completed. The process is the following: 
+		  Somebody starts putting a file on the filesystem. This operation could take some time. Meanwhile
+		  the poller detects a new file in the directory. If the file is valid (i.e. not exceeding the 
+		  maximum file size), the size and the timestamp did not change since the last 
+		  'delaySinceLastFileChange' milliseconds (if nothing specified here, a default is taken),
+		  then the file will be published.
 	       </li>
 	    </ul>
-
-
-	     All other files are sorted and published in a chronological sequence (oldest first).
 	 </li>
-	 <li>File locking: only publish when a file is completed. This means:
-	     <ul>
-	        <li>On Windows the file is first accessible when it is finished anyway (try this). 
-		    On other systems we need a 'delaySinceLastFileChange' configuration variable.
-		</li>
-	     </ul> 
-	 </li>
+
 	 <li>If permissions to read the directory are missing or xmlBlaster has no read rights on a 
-	     specific file, an error is reported (logged) and the plugin does temporarly stop working.
+	     specific file, or if an IO exception occurs when reading a file or trying to delete or move
+	     a file, an error is reported (logged) and the plugin does temporarly stop working.
 	     (to ensure correct sequence). The plugin continues however to poll and when the rights are 
-	     suddently fixed, it continues working again.
+	     manually fixed, it continues working again.
+	 </li>
+	 <li>
+	   To be able to track the message origin, filename, filesize and file timestamp are sent in the
+	   client properties as:
+	   <ul>
+	      <li><i>_fileName</i></li> (the relative file name as a String)
+	      <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
+	   </ul>
 	 </li>
        </ul>
    </description>
@@ -89,8 +94,6 @@
 	<attribute id='discarded'></attribute>
 	<attribute id='fileFilter'></attribute>
 	<attribute id='lockExtention'>.lck</attribute>
-
-
 
 
         <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
