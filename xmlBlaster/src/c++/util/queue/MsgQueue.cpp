@@ -35,25 +35,49 @@ MsgQueue& MsgQueue::operator =(const MsgQueue& queue)
 void MsgQueue::put(const PublishQueueEntry& entry)
 {
    PublishQueueEntry *ptr = new PublishQueueEntry(entry);
-   Queue::put(ptr);
+   try {
+      Queue::put(ptr);
+   }
+   catch (const XmlBlasterException &ex) {
+      delete ptr;
+      throw ex;
+   }
 }
 
 void MsgQueue::put(const ConnectQueueEntry& entry)
 {
    ConnectQueueEntry *ptr = new ConnectQueueEntry(entry);
-   Queue::put(ptr);
+   try {
+      Queue::put(ptr);
+   }
+   catch (const XmlBlasterException &ex) {
+      delete ptr;
+      throw ex;
+   }
 }
 
 void MsgQueue::put(const SubscribeQueueEntry& entry)
 {
    SubscribeQueueEntry *ptr = new SubscribeQueueEntry(entry);
-   Queue::put(ptr);
+   try {
+      Queue::put(ptr);
+   }
+   catch (const XmlBlasterException &ex) {
+      delete ptr;
+      throw ex;
+   }
 }
 
 void MsgQueue::put(const UnSubscribeQueueEntry& entry)
 {
    UnSubscribeQueueEntry *ptr = new UnSubscribeQueueEntry(entry);
-   Queue::put(ptr);
+   try {
+      Queue::put(ptr);
+   }
+   catch (const XmlBlasterException &ex) {
+      delete ptr;
+      throw ex;
+   }
 }
 
 
