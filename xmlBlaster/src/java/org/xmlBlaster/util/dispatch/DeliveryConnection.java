@@ -330,8 +330,10 @@ abstract public class DeliveryConnection implements I_Timeout
                // so we respan the timer.
                // Probably this slows down on many updates and seldom pings,
                // should we remove the following two lines?
-               this.timerKey = this.pingTimer.addOrRefreshTimeoutListener(this,
-                           this.address.getPingInterval(), null, this.timerKey);
+               synchronized (this.pingTimer) {
+                  this.timerKey = this.pingTimer.addOrRefreshTimeoutListener(this,
+                              this.address.getPingInterval(), null, this.timerKey);
+               }
             }
             return;
          }

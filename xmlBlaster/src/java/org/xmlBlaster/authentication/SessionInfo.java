@@ -234,7 +234,9 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     */
    public final void refreshSession() throws XmlBlasterException {
       if (connectQos.getSessionTimeout() > 0L) {
-         timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, timerKey);
+         synchronized (this.expiryTimer) {
+            this.timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, this.timerKey);
+         }
       }
    }
 
@@ -404,7 +406,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<SessionInfo id='").append(getId()).append("'>");
+      sb.append(offset).append("<SessionInfo id='").append(getId()).append("' timeout='").append("'>");
       if (hasCallback())
          sb.append(this.sessionQueue.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</SessionInfo>");
