@@ -44,7 +44,7 @@ import org.xml.sax.helpers.*;
  * </pre>
  * @see org.xmlBlaster.util.key.QueryKeyData
  * @see org.xmlBlaster.test.classtest.key.QueryKeyFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryKeyFactory
 {
@@ -187,8 +187,8 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
     */
    public final String writeObject(QueryKeyData queryKeyData, String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
-      String offset = (extraOffset != null) ? "\n " + extraOffset : "\n ";
-      extraOffset = (extraOffset != null) ? extraOffset + " "  : " ";
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<key oid='").append(queryKeyData.getOid()).append("'");
       if (queryKeyData.getContentMime() != null)
@@ -201,11 +201,11 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
          sb.append(" queryType='").append(queryKeyData.getQueryType()).append("'");
       sb.append(">");
       if (queryKeyData.getQueryString() != null) {
-         sb.append(offset).append(" ").append(queryKeyData.getQueryString());
+         sb.append(offset).append(Constants.INDENT).append(queryKeyData.getQueryString());
       }
       AccessFilterQos[] list = queryKeyData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {
-         sb.append(list[ii].toXml(" "));
+         sb.append(list[ii].toXml(extraOffset+Constants.INDENT));
       }
       sb.append(offset).append("</key>");
       return sb.toString();

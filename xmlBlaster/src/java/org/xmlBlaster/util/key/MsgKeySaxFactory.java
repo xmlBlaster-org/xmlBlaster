@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.engine.helper.Constants;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ import org.xml.sax.helpers.*;
  * </p>
  * @see org.xmlBlaster.util.key.MsgKeyData
  * @see org.xmlBlaster.test.classtest.key.MsgKeyFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFactory
 {
@@ -89,6 +90,10 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
       msgKeyData = new MsgKeyData(glob, this, xmlKey);
 
       init(xmlKey);  // use SAX parser to parse it (is slow)
+
+      if (msgKeyData.getOid() == null || msgKeyData.getOid().length() < 1) {
+         msgKeyData.setOid(msgKeyData.generateOid(glob.getStrippedId()));
+      }
 
       return msgKeyData;
    }
@@ -175,8 +180,8 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
     */
    public final String writeObject(MsgKeyData msgKeyData, String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
-      String offset = (extraOffset != null) ? "\n " + extraOffset : "\n ";
-      extraOffset = (extraOffset != null) ? extraOffset + " "  : " ";
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<key oid='").append(msgKeyData.getOid()).append("'");
       if (msgKeyData.getContentMime() != null)
@@ -187,7 +192,7 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
          sb.append(" domain='").append(msgKeyData.getDomain()).append("'");
       if (msgKeyData.getClientTags() != null) {
          sb.append(">");
-         sb.append(offset).append(extraOffset).append(" ").append(msgKeyData.getClientTags());
+         sb.append(offset).append(extraOffset).append(Constants.INDENT).append(msgKeyData.getClientTags());
          sb.append(offset).append("</key>");
       }
       else

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * Parsing/Serializing key (quality of service) of subscribe(), get(), unSubscribe() and erase(). 
  * @see org.xmlBlaster.util.key.QueryKeyData
  * @see org.xmlBlaster.test.classtest.key.QueryKeyFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_QueryKeyFactory
 {

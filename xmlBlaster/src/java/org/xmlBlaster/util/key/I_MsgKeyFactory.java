@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * Parsing/Serializing key (quality of service) of publish() and update(). 
  * @see org.xmlBlaster.util.key.MsgKeyData
  * @see org.xmlBlaster.test.classtest.key.MsgKeyFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_MsgKeyFactory
 {
