@@ -1,8 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes in current subversion repository (svn)
-==============================================
+Changes for 1.RC2 [2004-12-01] #12978
+=====================================
 
  o #12963 better handling of possible interrupted exception in ConnectionPool
 
@@ -35,6 +35,7 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
+   - C++ Xerces must be newer 2.x (?), it must include xercesc/util/TransService.hpp
    - #12958 duplicateUpdates defaults now to true to have identical behaviour for Java and C++
    - #12937 FreeBSD port, support for BOOST added again, thanks to Viner, David <dviner@yahoo-inc.com>
    - #12877 Added xerces initialization from main thread, as on Windows it crashed sometimes if initialized from callback thread

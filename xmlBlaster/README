@@ -1,57 +1,66 @@
-           _____________________________________________________
-  ________|                                                     |________
-  \       |   xmlBlaster    README    http://www.xmlBlaster.org |       /
-   \      |   Free Message-oriented Middleware (MOM)            |      /
-   /      |_____________________________________________________|      \
-  /___________)                                              (__________\
+           _______________________________________________
+  ________|                                               |________
+  \       |   xmlBlaster README http://www.xmlBlaster.org |       /
+   \      |   Free Message-oriented Middleware (MOM)      |      /
+   /      |_______________________________________________|      \
+  /___________)                                        (__________\
 
 
-The XmlBlaster is an XML based MOM (message-oriented
-middleware) which comes under the LGPL license to be free to use
-in any application.
-XmlBlaster is a pure Java publish/subscribe MOM server which exchanges
-any messages between publishers and subscribers, the messages have a
-meta description using XML and are queryable with XPath.
+The   XmlBlaster   is   an   XML  based  MOM  (message-oriented
+middleware)  which  comes  under the LGPL license to be free to
+use in any application.
 
-Communication with the server is based on CORBA, RMI, XMLRPC or SOCKET
-and subscribers can use XPath expressions to filter the messages
-they wish to receive.
+XmlBlaster  is  a  pure Java publish/subscribe MOM server which
+exchanges  any messages between publishers and subscribers, the
+topics have a meta description using XML and are queryable with
+XPath.  Message  instances can be queried with XPath or regular
+expression  filter  plugins  (full  text search) or with SQL 92
+conditions.
 
-Examples for C, C++, Java, PHP, Python and Perl clients are provided.
+Communication  with  the  server  is  based on CORBA, XMLRPC or
+SOCKET  and  examples for C, C++, Java, PHP, VB.net, C#, Python
+and Perl clients are provided.
 
-To install and getting started with xmlBlaster read the INSTALL file.
+To install and getting started with xmlBlaster read the INSTALL
+file.
 
 XmlBlaster uses the Sun XML parser for XML parsing, and XT from
 James Clark for XSL parsing.
 
-The query language for xmlBlaster is XPath. For detailed information
-about XPath refer to the following URL:
+The  topic query language for xmlBlaster is XPath. For detailed
+information about XPath refer to the following URL:
   - XPath: http://www.w3.org/TR/xpath
 
-You find examples for XPath (to play with) in the following file:
+You  find  examples  for  XPath (to play with) in the following
+file:
 
   xmlBlaster/testsuite/data/xml/Agent.xml
 
 
-Examples of Java-clients accessing xmlBlaster you find in directory:
+Examples  of  Java-clients  accessing  xmlBlaster  you  find in
+directory:
 
   xmlBlaster/demo/javaclients
 and
   xmlBlaster/testsuite/src/java/org/xmlBlaster/test
 
 
-Examples of C++/C/Perl/PHP/Tcl/Python/Java clients accessing xmlBlaster
-you find in directory:
+Examples    of   C++/C/Perl/PHP/Tcl/Python/Java   ...   clients
+accessing xmlBlaster you find in directory:
 
   xmlBlaster/demo
  and
   xmlBlaster/testsuite
 
-If you want to access xmlBlaster with other languages you have the
-choice of XmlRpc (simple), CORBA (high performing) or our native
-SOCKET protocol, for XmlRp read this guide:
+If  you want to access xmlBlaster with other languages you have
+the  choice  of XmlRpc (simple), CORBA (high performing) or our
+native SOCKET protocol, for XmlRp read this guide:
 
   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
+
+Detailed documentation is available on our requirements pages at
+
+  http://xmlblaster.org/xmlBlaster/doc/requirements/requirement.html
 
 ---------------------------------
 The xmlBlaster.org maintainers

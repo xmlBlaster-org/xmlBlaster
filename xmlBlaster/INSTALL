@@ -1,6 +1,6 @@
            _____________________________________________________
   ________|                                                     |________
-  \       |   xmlBlaster 1.RC1        http://www.xmlBlaster.org |       /
+  \       |   xmlBlaster 1.RC2        http://www.xmlBlaster.org |       /
    \      |        Free Message-oriented Middleware (MOM)       |      /
    /      |_____________________________________________________|      \
   /___________)                                              (__________\
@@ -21,7 +21,11 @@ through the mailing list (see http://www.xmlBlaster.org).
 You need to set JAVA_HOME to point to your
 JDK installation, for example:
 
-  export JAVA_HOME=/opt/jdk
+  export JAVA_HOME=/opt/jdk	     [Unix sh,ksh,bash]
+  export PATH=$PATH:$JAVA_HOME/bin
+
+  set JAVA_HOME=C:\Program\jdk       [Windows]
+  set PATH=%PATH%;%JAVA_HOME%\bin
 
 
 The XmlBlaster distribution comes compiled and ready to go.
@@ -95,7 +99,7 @@ It is a good idea to set the environment property XMLBLASTER_HOME
 to point to the root directory of the xmlBlaster installation,
 for example:
 
-  export XMLBLASTER_HOME=/opt/xmlBlaster  [UNIX,sh,ksh,bash]
+  export XMLBLASTER_HOME=/opt/xmlBlaster  [UNIX sh,ksh,bash]
 
   set XMLBLASTER_HOME=C:\xmlBlaster       [Windows]
 
