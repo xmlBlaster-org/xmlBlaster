@@ -3,8 +3,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
 
+ o Fixed possible thread leak in java client library
+   when using many client connections and Global is not
+   garbage collected frequently enough by the JVM
+
  o Updated Perl support, see
-   
 
  o Bugfix for topics with a destroy delay of 0 msec.
    Reported by Dominique Petitpierre
