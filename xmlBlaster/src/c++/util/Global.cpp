@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $
+Version:   $Id: Global.cpp,v 1.32 2003/03/20 13:30:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,9 +14,9 @@ Version:   $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $
 
 #if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.32 2003/03/20 13:30:10 ruff Exp $";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.32 2003/03/20 13:30:10 ruff Exp $";
 #endif
 
 using namespace std;
@@ -84,13 +84,13 @@ Global& Global::initialize(int args, const char * const argc[])
 
 string &Global::getVersion()
 {
-   static string version = "@version@";  // is replaced by ant / build.xml to e.g. "0.843"
+   static string version = "@version@";  // is replaced by ant / build.xml to e.g. "0.844"
    return version;
 }
 
 string &Global::getBuildTimestamp()
 {
-   static string timestamp = "@build.timestamp@"; // is replaced by ant / build.xml to e.g. "03/01/2003 10:22 PM";
+   static string timestamp = "@build.timestamp@"; // is replaced by ant / build.xml to e.g. "03/20/2003 10:22 PM";
    return timestamp;
 }
 

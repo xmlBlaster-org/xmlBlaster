@@ -1,7 +1,7 @@
 Salute,
 
-the new release 0.843 is out (Mar, 10. 2003).
-(We wait with 0.85 until we got feedback about 0.843)
+the new release 0.844 is out (Mar, 20. 2003).
+(We wait with 0.85 until we got feedback about 0.844)
 
 XmlBlaster is maturing to industrial strength.
 
@@ -47,7 +47,9 @@ If you upgrade from 0.840 or older:
 NEW FEATURES:
 -------------
 
-Bug fixes
+1. Bug fixes
+
+2. Client subscriptions can now be queried
 
 Please read the CHANGES file for more informations.
 

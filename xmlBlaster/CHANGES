@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for xxx [xxx, xx 2003]
+Changes for 0.844 [Mar, 20 2003]
 ================================
 
  o Bugifx of deadlock in Timeout.java and Timeout.cpp
