@@ -161,10 +161,11 @@ static void initCallbackServer(CallbackServerUnparsed *cb)
       XmlBlasterException xmlBlasterException;
       SocketDataHolder socketDataHolder;
       MsgUnitArr *msgUnitArr;
-      
+      bool success;      
+
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
 
-      bool success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
+      success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
 
       if (success == false) { // EOF
          if (cb->debug) printf("[CallbackServerUnparsed] Lost socket connect to client, closing socket\n");

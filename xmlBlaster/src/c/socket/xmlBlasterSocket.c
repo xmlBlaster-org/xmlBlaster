@@ -19,8 +19,8 @@ static size_t readn(int fd, char *ptr, size_t nbytes)
 {
    ssize_t nread;
    size_t nleft;
-   nleft = nbytes;
    int flag = 0; // MSG_WAITALL;
+   nleft = nbytes;
 
    while(nleft > 0) {
       nread = recv(fd, ptr, (int)nleft, flag);
