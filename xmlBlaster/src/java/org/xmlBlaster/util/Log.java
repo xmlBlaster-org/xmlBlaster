@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.3 $  $Date: 1999/11/08 22:40:25 $
+           $Revision: 1.4 $  $Date: 1999/11/10 20:26:04 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -160,13 +160,26 @@ public class Log
       numWarnInvocations++;
       log((withXtermEscapeColor) ? warnE : warnX, instance, text);
    }
+   /*
+   public final static void warningThrow(String instance, String text) throws org.xmlBlaster.XmlBlasterException
+   {
+      warning(instance, text);
+      throw new org.xmlBlaster.XmlBlasterException(instance, text);
+   }
+   */
 
    public final static void error(String instance, String text)
    {
       numErrorInvocations++;
       log((withXtermEscapeColor) ? errorE : errorX, instance, text);
    }
-
+   /*
+   public final static void errorThrow(String instance, String text) throws org.xmlBlaster.XmlBlasterException
+   {
+      error(instance, text);
+      throw new org.xmlBlaster.XmlBlasterException(instance, text);
+   }
+   */
 
    /*
     * Log without time/date
