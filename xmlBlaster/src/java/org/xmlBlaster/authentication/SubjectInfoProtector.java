@@ -33,12 +33,12 @@ public final class SubjectInfoProtector implements I_AdminSubject
       return this.subjectInfo.getNumUpdates();
    }
 
-   public long getCbQueueNumMsgs() {
-      return this.subjectInfo.getCbQueueNumMsgs();
+   public long getSubjectQueueNumMsgs() {
+      return this.subjectInfo.getSubjectQueueNumMsgs();
    }
 
-   public long getCbQueueMaxMsgs() {
-      return this.subjectInfo.getCbQueueMaxMsgs();
+   public long getSubjectQueueMaxMsgs() {
+      return this.subjectInfo.getSubjectQueueMaxMsgs();
    }
 
    public int getNumSessions() {

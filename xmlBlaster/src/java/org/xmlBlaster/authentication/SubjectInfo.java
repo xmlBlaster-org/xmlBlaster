@@ -891,11 +891,11 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       return numUpdates;
    }
 
-   long getCbQueueNumMsgs() {
+   long getSubjectQueueNumMsgs() {
       return subjectQueue.getNumOfEntries();
    }
 
-   long getCbQueueMaxMsgs() {
+   long getSubjectQueueMaxMsgs() {
       return subjectQueue.getMaxNumOfEntries();
    }
 
