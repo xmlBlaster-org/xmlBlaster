@@ -126,13 +126,20 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 
    private I_Map getOwnerCache() throws XmlBlasterException {
       if (this.ownerCache == null) {
-         TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
-         if (topicHandler == null) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "getOwnerCache() - storage lookup of topic '" + getKeyOid() + "' failed");
-         }
-         this.ownerCache = topicHandler.getMsgUnitCache();
+         this.ownerCache = getTopicHandler().getMsgUnitCache();
       }
       return this.ownerCache;
+   }
+
+   /**
+    * @return The owning TopicHandler, never null
+    */
+   public TopicHandler getTopicHandler() throws XmlBlasterException {
+      TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
+      if (topicHandler == null) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "getOwnerCache() - storage lookup of topic '" + getKeyOid() + "' failed");
+      }
+      return topicHandler;
    }
 
    public void incrementReferenceCounter(int count) throws XmlBlasterException {
@@ -343,6 +350,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    private void toDestroyed() throws XmlBlasterException {
+      //this.glob.getLog("core").error(ME, "DEBUG ONLY Entering to destroyed" + toXml());
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -353,6 +361,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          }
          this.state = DESTROYED;
          getOwnerCache().remove(this);
+         getTopicHandler().destroyed(this);
       }
    }
 
