@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.3 2000/10/22 20:20:24 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.4 2000/10/26 17:22:18 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -170,8 +170,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          throw new ConnectionException(ME+".LoginFailed", e.toString());
       }
       catch (XmlRpcException e) {
-         Log.error(ME+".LoginFailed", "xml-rpc exception: " + e.toString());
-         throw new XmlBlasterException(ME+".LoginFailed", e.toString());
+         throw extractXmlBlasterException(e);
       }
    }
 
@@ -208,8 +207,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       catch (IOException e1) {
          Log.warn(ME+".logout", "IO exception: " + e1.toString());
       }
-      catch (XmlRpcException e2) {
-         Log.warn(ME+".logout", "xml-rpc exception: " + e2.toString());
+      catch (XmlRpcException e) {
+         Log.warn(ME+".logout", "xml-rpc exception: " + extractXmlBlasterException(e).toString());
       }
 
       if (this.callback != null) this.callback.shutdown();
@@ -251,9 +250,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.error(ME+".subscribe", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".subscribe", e1.toString());
       }
-      catch (XmlRpcException e2) {
-         Log.error(ME+".subscribe", "xml-rpc exception: " + e2.toString());
-         throw new ConnectionException(ME+".subscribe", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
    }
 
@@ -281,9 +279,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.error(ME+".unSubscribe", "IO exception: " + e1.toString());
          throw new ConnectionException("IO exception", e1.toString());
       }
-      catch (XmlRpcException e2) {
-         Log.error(ME+".unSubscribe", "xml-rpc exception: " + e2.toString());
-         throw new ConnectionException("xml-rpc exception", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
    }
 
@@ -301,7 +298,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       String publishQoS_literal = publishQoS.toXml();
 
       try {
-         // convert from MessageUnit to Vector
+         // extractXmlBlasterException from MessageUnit to Vector
          Vector msgUnitWrap = ProtoConverter.messageUnit2Vector(msgUnit);
 
          Vector args = new Vector();
@@ -321,9 +318,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.error(ME+".publish", "IO exception: " + e1.toString());
          throw new ConnectionException("IO exception", e1.toString());
       }
-      catch (XmlRpcException e2) {
-         Log.error(ME+".publish", "xml-rpc exception: " + e2.toString());
-         throw new ConnectionException("xml-rpc exception", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
    }
 
@@ -368,7 +364,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
          Vector returnVectorWrap = (Vector)xmlRpcClient.execute("xmlBlaster.publishArr", args);
 
-      // re-convert the resuts to String[]
+      // re-extractXmlBlasterException the resuts to String[]
          return ProtoConverter.vector2StringArray(returnVectorWrap);
       }
 
@@ -381,9 +377,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.error(ME+".publishArr", "IO exception: " + e1.toString());
          throw new ConnectionException("IO exception", e1.toString());
       }
-      catch (XmlRpcException e2) {
-         Log.error(ME+".publishArr", "xml-rpc exception: " + e2.toString());
-         throw new ConnectionException("xml-rpc exception", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
    }
 
@@ -436,9 +431,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          throw new ConnectionException("IO exception", e1.toString());
       }
 
-      catch (XmlRpcException e2) {
-         Log.error(ME+".erase", "xml-rpc exception: " + e2.toString());
-         throw new ConnectionException("xml-rpc exception", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
    }
 
@@ -463,11 +457,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (String xmlKey_literal,
+   public final MessageUnit[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
-
       try {
          Vector args = new Vector();
          args.addElement(sessionId);
@@ -475,25 +468,44 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(qos_literal);
 
          Vector retVector = (Vector)xmlRpcClient.execute("xmlBlaster.get", args);
-         // convert the vector of vectors to a MessageUnit[] type
+         // extractXmlBlasterException the vector of vectors to a MessageUnit[] type
          return ProtoConverter.vector2MessageUnitArray(retVector);
-
       }
-
       catch (ClassCastException e) {
          Log.error(ME+".get", "not a valid Vector: " + e.toString());
          throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
       }
-
       catch (IOException e1) {
          Log.error(ME+".get", "IO exception: " + e1.toString());
          throw new ConnectionException("IO exception", e1.toString());
       }
-
-      catch (XmlRpcException e2) {
-         Log.error(ME+".get", "xml-rpc exception: " + e2.toString());
-         throw new ConnectionException("xml-rpc exception", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
+   }
+
+
+   /**
+    * xml-rpc exception: helma.xmlrpc.XmlRpcException: java.lang.Exception: id=RequestBroker.UnavailableKey reason=The key 'NotExistingMessage' is not available.
+    */
+   public static XmlBlasterException extractXmlBlasterException(XmlRpcException e) {
+      String all = e.toString();
+      String id = "XmlRpc";
+      String reason = all;
+      int start = all.indexOf("id=");
+      int end = all.indexOf("reason=");
+      if (start >= 0) {
+         if (end >= 0) {
+            try { id = all.substring(start+3, end-1); } catch(IndexOutOfBoundsException e1) {}
+         }
+         else {
+            try { id = all.substring(start+3); } catch(IndexOutOfBoundsException e2) {}
+         }
+      }
+      if (end >= 0) {
+         try { reason = all.substring(end+7); } catch(IndexOutOfBoundsException e3) {}
+      }
+      return new XmlBlasterException(id, reason);
    }
 
 
@@ -533,9 +545,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.error(ME+".toXml", "IO exception: " + e1.toString());
          throw new XmlBlasterException("IO exception", e1.toString());
       }
-      catch (XmlRpcException e2) {
-         Log.error(ME+".toXml", "xml-rpc exception: " + e2.toString());
-         throw new XmlBlasterException("xml-rpc exception", e2.toString());
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
       }
    }
 

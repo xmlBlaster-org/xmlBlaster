@@ -3,7 +3,7 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.5 2000/10/24 20:35:55 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.6 2000/10/26 17:22:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -15,6 +15,8 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
+
 import helma.xmlrpc.XmlRpcClient;
 import helma.xmlrpc.XmlRpcException;
 import java.io.IOException;
@@ -93,6 +95,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          }
       }
       catch (XmlRpcException ex) {
+         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
          Log.error(ME + ".sendUpdate", "xml-rpc exception: " + ex.toString());
          throw new XmlBlasterException("CallbackFailed", "xml-rpc exception" + ex.toString());
       }
