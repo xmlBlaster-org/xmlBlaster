@@ -61,6 +61,22 @@ public:
             assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
          }
          {
+            ClientProperty cp("key", string("102 304 506 "));
+            cout << "name=" << cp.getName() 
+                 << ", valueB64=" << cp.getValueRaw()
+                 << ", value=" << cp.getStringValue()
+                 << ", type=" << cp.getType()
+                 << ", isBase64=" << cp.isBase64()
+                 << cp.toXml("")
+                 << endl << endl;
+            assertEquals(log_, ME, "key", cp.getName(), "name");
+            assertEquals(log_, ME, "102 304 506 ", cp.getStringValue(), "value");
+            assertEquals(log_, ME, "102 304 506 ", cp.getValueRaw(), "encoded value");
+            assertEquals(log_, ME, "", cp.getType(), "type");
+            assertEquals(log_, ME, "", cp.getEncoding(), "encoding");
+            assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
+         }
+         {
             ClientProperty cp("key", string("str]]>ing"));
             cout << "name=" << cp.getName() 
                  << ", valueB64=" << cp.getValueRaw()
@@ -72,6 +88,22 @@ public:
             assertEquals(log_, ME, "key", cp.getName(), "name");
             assertEquals(log_, ME, "str]]>ing", cp.getStringValue(), "value");
             assertEquals(log_, ME, "c3RyXV0+aW5n", cp.getValueRaw(), "encoded value");
+            assertEquals(log_, ME, "", cp.getType(), "type");
+            assertEquals(log_, ME, "base64", cp.getEncoding(), "encoding");
+            assertEquals(log_, ME, true, cp.isBase64(), "isBase64");
+         }
+         {
+            ClientProperty cp("key", string("str&ing"));
+            cout << "name=" << cp.getName() 
+                 << ", valueB64=" << cp.getValueRaw()
+                 << ", value=" << cp.getStringValue()
+                 << ", type=" << cp.getType()
+                 << ", isBase64=" << cp.isBase64()
+                 << cp.toXml("")
+                 << endl << endl;
+            assertEquals(log_, ME, "key", cp.getName(), "name");
+            assertEquals(log_, ME, "str&ing", cp.getStringValue(), "value");
+            assertEquals(log_, ME, "c3RyJmluZw==", cp.getValueRaw(), "encoded value");
             assertEquals(log_, ME, "", cp.getType(), "type");
             assertEquals(log_, ME, "base64", cp.getEncoding(), "encoding");
             assertEquals(log_, ME, true, cp.isBase64(), "isBase64");
