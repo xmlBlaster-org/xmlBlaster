@@ -98,16 +98,22 @@
       to its destinations (like a blocking RPC call)?
       </li>
       <li>Connection errors versus client failures<br />
+      <p>
       Do we need to distinguish recovery procedures for callback connection problems
-      and for blocking clients or for clients sending NAK?<br />
-      There are three error conditions when invoking update():<br />
+      and for blocking clients or for clients sending NAK?
+      </p>
+      <p>
+      There are different error conditions when invoking update():
+      </p>
       <ol>
          <li>receiver is not reachable</li>
          <li>receiver throws exception</li>
          <li>receiver sends error in return string</li>
          <li>receiver blocks, xmlBlaster handles it</li>
       </ol>
-      Possible approaches:<br />
+      <p>
+      Possible approaches:
+      </p>
       <ol>
         <li>PtP: xmlBlaster sends NAK to sender message</li>
         <li>Pub/Sub: xmlBlaster publishes dead letter</li>
@@ -130,7 +136,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -128,7 +128,7 @@
       </qos>
 
 
-      These are example QoS of subsribe() invocations:
+      These are example QoS of subscribe() invocations:
       ================================================
 
       <!-- The subscribed messages are delivered via the SessionQueue of the subscriber -->
@@ -180,7 +180,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
