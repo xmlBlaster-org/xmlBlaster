@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.17 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.18 2000/07/14 14:34:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -202,6 +202,9 @@ public class TestPtD extends TestCase implements I_Callback
       if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
 
       numReceived += 1;
+
+      // Wait that publish() returns and set 'publishOid' properly
+      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
       if (!receiverName.equals(loginName) && !receiver2Name.equals(loginName))
          assert("Wrong receveiver " + receiverName, false);

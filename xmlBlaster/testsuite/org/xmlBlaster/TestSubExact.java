@@ -3,7 +3,7 @@ Name:      TestSubExact.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubExact.java,v 1.6 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestSubExact.java,v 1.7 2000/07/14 14:34:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -197,6 +197,9 @@ public class TestSubExact extends TestCase implements I_Callback
       if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
 
       numReceived += 1;
+
+      // Wait that publish() returns and set 'publishOid' properly
+      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
       assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
