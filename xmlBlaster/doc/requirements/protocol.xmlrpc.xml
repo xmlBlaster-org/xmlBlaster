@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.xmlrpc' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>XmlBlaster supports XmlRpc</topic>
+   <description>
+      <p>
+      The XmlRpc protocol is very simple, it uses http as underlying protocol
+      with some XML markup for remote method invocation.
+      </p>
+      <p>
+      XmlBlaster has fully operational XmlRpc support, 
+      we provide client examples in C, Perl, PHP, Python and Java which use
+      XmlRpc to connect to xmlBlaster. Please see <i>xmlBlaster/demo/javaclients</i>.
+      </p>
+      <p><b>This documentation is under construction</b></p>
+   </description>
+
+   <example lang="Java" type="HTML">
+   </example>
+
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>protocol/xmlrpc/hostname</td>
+            <td>localhost</td>
+            <td>Specify a hostname where the XMLRPC server runs
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>protocol/xmlrpc/port</td>
+            <td>7607</td>
+            <td>The XMLRPC server port
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>protocol/xmlrpc/localHostname</td>
+            <td>localhost</td>
+            <td>The local address the xmlrpc is bound to. 
+            Usually this is dynamically choosen by your operating system and you don't need
+            to specify it.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>protocol/xmlrpc/localPort</td>
+            <td>8900</td>
+            <td>The local port the xmlrpc is bound to.
+                Default is -1 and the operating system chooses an arbitrary port.
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>protocol/xmlrpc/debug</td>
+            <td>false</td>
+            <td>true switches debugging on
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+   <configuration where="client">
+      <p>The Java xmlrpc implementation on client side supports
+         the same properties as the server.
+         You need to add the "dispatch/callback/" or "dispatch/clientSide/" prefix
+         to the property key.<br />
+         You have thes additional features on client side:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+      </table>
+   </configuration>
+   <todo type="HTML">
+   </todo>
+   <see type="REQ">protocol</see>
+   <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver</see>
+   <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl</see>
+   <see type="API">org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection</see>
+   <author>xmlBlaster@marcelruff.info</author>
+   <date>2002 05 22</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
