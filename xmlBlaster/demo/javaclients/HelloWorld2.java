@@ -32,10 +32,11 @@ public class HelloWorld2 implements I_Callback
 
          try {
             Thread.currentThread().sleep(1000); // wait a second
-             Log.info("", "Hit a key to logout and terminate ...");
+            Log.info("", "Hit a key to logout and terminate ...");
             System.in.read();
          } catch(Exception e) { }
 
+         con.erase("<key oid='HelloWorld2'/>", null);
          con.disconnect(null);
       }
       catch (Exception e) {
@@ -47,7 +48,7 @@ public class HelloWorld2 implements I_Callback
                         UpdateQos updateQos)
    {
       Log.info("HelloWorld2", "Received asynchronous message '" +
-               updateKey.getOid() + "' from xmlBlaster");
+         updateKey.getOid() + "' state=" + updateQos.getState() + " from xmlBlaster");
       return "";
    }
 

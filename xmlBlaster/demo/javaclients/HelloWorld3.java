@@ -81,8 +81,15 @@ public class HelloWorld3 implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos)
    {
+      if (updateKey.isInternal()) {
+         Log.info("", "Received unexpected internal message '" +
+              updateKey.getOid() + " from xmlBlaster");
+         return "";
+      }
+
       Log.info("", "Received asynchronous message '" + updateKey.getOid() +
-                   "' content=" + new String(content) + " from xmlBlaster");
+                   "' state=" + updateQos.getState() +
+                   " content=" + new String(content) + " from xmlBlaster");
       return "";
    }
 
