@@ -14,6 +14,7 @@
 	</head>
 
 	<body>
+	<h1>XmlBlaster Requirements</h1>
    <TABLE BORDER="1" cellpadding="6">
       <THEAD>
          <TR>
