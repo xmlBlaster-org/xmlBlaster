@@ -139,7 +139,7 @@
       </h3>
       
       <p>
-      We have to code and manage two logical mapping functionalities:
+      We have to code and manage three logical mapping functionalities:
       </p>
       <ol>
          <li><h4>Find out who is the master of a message</h4><br />
@@ -156,9 +156,23 @@
          domains change, all clients need to be recompiled/restarted/reconfigured.
          A rule based approach (see the XPATH example in the Example section)
          is generic and addresses this issue.
+         <p>
+         The plugin interface <i>I_MapMsgToMasterId.java</i> allows you to code
+         your own mapping logic, the default plugin delivered with xmlBlaster
+         is <i>DomainToMaster.java</i> which implements a domain attribute based approach.
+         </p>
+         </li>
+         <li><h4>Choose a node from the list of possible master nodes (load balancing)</h4><br />
+         If step 1. has found more than one master nodes, a load balancing algorithm needs
+         to choose one of those.
+         <p>
+         The plugin interface <i>I_LoadBalancer.java</i> allows you to code
+         your own load balancing logic, the default plugin delivered with xmlBlaster
+         is <i>RoundRobin.java</i> which implements a roung robin approach.
+         </p>
          </li>
          <li><h4>Map a cluster node ID to the physical xmlBlaster instance</h4><br />
-         After step 1. we need to find out how to reach the physical xmlBlaster instance.
+         Now we need to find out how to reach the physical xmlBlaster instance.
          We have its cluster node ID and need to get the CORBA IOR, XmlRpc URL,
          RMI registry entry or the socket to be able to communicate.
          </li>
@@ -309,7 +323,7 @@
 
       <p>
       <table border="1">
-         <tr><td>2</td><td>Determine the master: Mapping of messages to cluster node IDs</td><td>Comments</td></tr>
+         <tr><td>2</td><td>Determine the master: Mapping of messages to cluster node IDs<br />See <i>NodeDomainInfo.java</i> and plugin <i>DomainToMaster.java</i></td><td>Comments</td></tr>
          <tr><td>2a) key</td><td><pre>
    &lt;key oid='__sys__cluster.node.master[heron]'>
       &lt;__sys__cluster.node.master/>
@@ -622,13 +636,15 @@
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.cluster.ClusterManager</see>
+   <see type="API">org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster</see>
+   <see type="API">org.xmlBlaster.engine.cluster.simpledomain.RoundRobin</see>
    <see type="REQ">util.property</see>
 
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
