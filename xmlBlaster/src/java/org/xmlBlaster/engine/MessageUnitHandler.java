@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.20 1999/12/09 16:12:27 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.21 1999/12/15 00:45:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -292,9 +292,9 @@ public class MessageUnitHandler
     * <p />
     * @return the MIME type of the MessageUnit.content
     */
-   public String getMimeType() throws XmlBlasterException
+   public String getContentMime() throws XmlBlasterException
    {
-      return getXmlKey().getMimeType();
+      return getXmlKey().getContentMime();
    }
 
 

@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.6 1999/12/10 16:44:45 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.7 1999/12/15 00:45:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -155,13 +155,13 @@ public class MessageUnitWrapper
 
    /**
     */
-   public final String getMimeType() throws XmlBlasterException
+   public final String getContentMime() throws XmlBlasterException
    {
       if (getMessageUnit().xmlKey == null) {
          Log.error(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
          throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
       }
-      return xmlKey.getMimeType();
+      return xmlKey.getContentMime();
    }
 
 
