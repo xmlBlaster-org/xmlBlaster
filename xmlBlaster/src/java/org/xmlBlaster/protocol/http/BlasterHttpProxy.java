@@ -3,15 +3,13 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.4 2000/03/13 22:20:39 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.5 2000/03/14 17:49:05 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -36,250 +34,18 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util.LogListener
+public class BlasterHttpProxy
 {
-   private final String ME                                                      = "BlasterHttpProxy";
-   private static BlasterHttpProxy theInstance  = new  BlasterHttpProxy();
+   private static final String ME                      = "BlasterHttpProxy";
 
    /** Mapping the sessionId to a ServletConnection instance */
-   private Hashtable proxyConnections           = new Hashtable();
+   private static Hashtable proxyConnections           = new Hashtable();
 
    /** Stores global Attributes for other Servlets */
-   private Hashtable attributes                 = new Hashtable();
+   private static Hashtable attributes                 = new Hashtable();
 
-
-   /**
-    * This method is invoked only once when the servlet is startet.
-    * @param conf init parameter of the servlet
-    */
-   public void init(ServletConfig conf) throws ServletException
-   {
-      super.init(conf);
-      // Redirect xmlBlaster logs to servlet log file (see method log() below)
-      Log.setDefaultLogLevel();
-      //Log.addLogLevel("DUMP");
-      //Log.addLogLevel("TRACE");
-      Log.addLogLevel("CALLS");
-      Log.addLogLevel("TIME");
-      //Log.addLogListener(this);
-      Log.info(ME, "Initialize ...");
-   }
-
-
-
-
-   /**
-    * GET request from the browser
-    * Used for login and for keeping a permanent http connection
-    */
-   public void doGet(HttpServletRequest req, HttpServletResponse res)
-                                 throws ServletException, IOException
-   {
-      Log.info(ME, "Entering doGet() ...");
-      res.setContentType("text/html");
-      StringBuffer retStr = new StringBuffer("");
-      String errorText="";
-
-      HttpSession session = req.getSession(true);
-      String sessionId = req.getRequestedSessionId();
-
-      HttpPushHandler pushHandler = new HttpPushHandler(req, res);
-
-      try {
-         String actionType = Util.getParameter(req, "ActionType", "NONE");
-
-         //------------------ Login -------------------------------------------------
-         if (actionType.equals("login")) {
-            Log.info(ME, "Login action ...");
-
-            String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
-            if (loginName == null || loginName.length() < 1)
-               throw new Exception("Missing login name");
-            String passwd = Util.getParameter(req, "passwd", null);  // "secret";
-            if (passwd == null || passwd.length() < 1)
-               throw new Exception("Missing passwd");
-
-            // Find proxyConnection !!Attention, other browser can use an existing
-            //                        xmlBlaster connection. This is an security problem.
-            ProxyConnection proxyConnection = (ProxyConnection)proxyConnections.get( loginName );
-            if( proxyConnection == null ) {
-               proxyConnection = new ProxyConnection( loginName, passwd );
-               proxyConnections.put( loginName, proxyConnection );
-            }
-            proxyConnection.addHttpSession( sessionId, pushHandler );
-
-
-            // confirm successful login:
-            pushHandler.push("if (parent.loginSuccess != null) parent.loginSuccess(true);\n");
-
-            // Don't fall out of doGet() to keep the HTTP connection open
-            Log.info(ME, "Waiting forever, permanent HTTP connection ...");
-            Thread.currentThread().join();
-         }
-
-         //------------------ Test --------------------------------------------------
-         else if(actionType.equals("test")) {
-            pushHandler.push("alert('Test erfolgreich');\n");
-            Thread.currentThread().join();
-         }
-
-
-      } catch (XmlBlasterException e) {
-         Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
-         errorText = e.reason;
-      } catch (Exception e) {
-         Log.error(ME, "Caught Exception: " + e.toString());
-         errorText = e.toString();
-         e.printStackTrace();
-      } finally {
-
-         Log.info(ME, "Entering finally of permanent connection");
-         pushHandler.cleanup();
-      }
-   }
-
-
-
-
-   /**
-    * POST request from the browser.
-    * Handles the following requests 'ActionType' from the browser<br />
-    * <ul>
-    *    <li>logout</li>
-    *    <li>get - The synchronous get is not supported</li>
-    *    <li>subscribe</li>
-    *    <li>unSubscribe</li>
-    *    <li>publish</li>
-    *    <li>erase</li>
-    * </ul>
-    * <p>
-    * This method is called through a SUBMIT of a HTML FORM,<br>
-    * the TARGET should be set to "callbackFrame".
-    * The parameter ActionType must be set to one of the above methods.<br />
-    * For an explanation of these methods see the file xmlBlaster.idl
-    * @param req Data from browser
-    * @param res Response of the servlet
-    */
-   public void doPost(HttpServletRequest req, HttpServletResponse res)
-                               throws ServletException, IOException
-   {
-      res.setContentType("text/html");
-      PrintWriter out = res.getWriter();
-
-      //HttpSession session = req.getSession();
-      HttpSession session = req.getSession(true);
-      String sessionId = req.getRequestedSessionId();
-      Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
-      ProxyConnection proxyConnection = (ProxyConnection)getProxyConnection(sessionId);
-      Server xmlBlaster = proxyConnection.getXmlBlaster();
-
-      StringBuffer retStr = new StringBuffer();
-      try {
-         String actionType = Util.getParameter(req, "ActionType", "NONE");
-
-         if (actionType.equals("logout")) {
-            Log.info(ME, "Logout ActionType arrived ...");
-         }
-
-         else if (actionType.equals("subscribe")) {
-            Log.info(ME, "subscribe arrived ...");
-            String xmlKey =
-                      "<key oid='' queryType='XPATH'>\n" +
-                      "   //key" +
-                      "</key>";
-            String qos = "<qos></qos>";
-            try {
-               String subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
-               Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
-            } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
-            }
-         }
-
-         else if (actionType.equals("unSubscribe")) {
-            Log.info(ME, "unSubscribe arrived ...");
-         }
-
-         else if (actionType.equals("get")) {
-            throw new Exception("Synchronous ActionType=get is not supported");
-         }
-
-         else if (actionType.equals("publish")) {
-            Log.info(ME, "publish arrived ...");
-            String xmlKey =
-                      "<key oid='HelloWorld' contentMime='text/plain' contentMimeExtended='-'>\n" +
-                      "</key>";
-            String qos = "<qos></qos>";
-            String content = "Hello world";
-            MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
-            try {
-               String publishOid = xmlBlaster.publish(msgUnit, qos);
-               Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
-            } catch(XmlBlasterException e) {
-               Log.warning(ME, "XmlBlasterException: " + e.reason);
-            }
-         }
-
-         else if (actionType.equals("erase")) {
-            Log.info(ME, "erase arrived ...");
-         }
-
-         else {
-            throw new Exception("Unknown or missing 'ActionType'");
-         }
-
-      } catch (Exception e) {
-         Log.error(ME, "RemoteException: " + e.getMessage());
-         e.printStackTrace();
-         retStr.append("<body>http communication problem</body>");
-      } finally {
-         out.println(retStr.toString());
-      }
-   }
-
-
-   /**
-    * Event fired by Log.java through interface LogListener.
-    * <p />
-    * Log output from Log.info(); etc. into Servlet log file.
-    * <p />
-    * Note that System.err.println("Hello"); will be printed into
-    * the Apache error log file /var/log/httpd.error_log<br />
-    * I don't know what other web servers are doing with it.
-    * <p />
-    * System.out.println("Hello"); will be printed to the console
-    * where you started the servlet engine.
-    */
-   public void log(String str)
-   {
-      getServletContext().log(str);
-   }
-
-
-   /**
-    * Display a popup alert message containing the error text
-    *
-    * @param der Fehlertext
-    * @see azu.js mit Javascript für Popup
-    */
-   public final String alert(String text)
-   {
-      StringBuffer retStr = new StringBuffer();
-      retStr.append("alert(\"" + text.replace('\n', ' ') + "\");\n");
-      Log.warning(ME, "Sending alert to browser: " + text);
-      return retStr.toString();
-   }
-
-   /**
-    * returns a singelton BlasterHttpProxy
-    *
-    */
-   public static final BlasterHttpProxy getInstance()
-   {
-      return theInstance;
-   }
 
    /**
     * returns a Object by a given name
@@ -287,7 +53,7 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
     * @param name key name
     * @return Object
     */
-   public Object getAttribute(String name)
+   public static Object getAttribute(String name)
    {
       return attributes.get(name);
    }
@@ -298,44 +64,68 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util
     * @param name key name
     * @param obj Object
     */
-   public void setAttribute(String name, Object obj)
+   public static void setAttribute(String name, Object obj)
    {
       attributes.put(name,obj);
    }
 
    /**
+    * gives a proxy connection by a given loginName and Password
+    *
+    * @param loginName
+    * @return valid proxyConnection for valid HTTP sessionId.
+    */
+   public static ProxyConnection getProxyConnection( String loginName, String passwd ) throws XmlBlasterException
+   {
+      
+      synchronized( proxyConnections ) {
+         Log.plain(ME,"proxyConnections="+proxyConnections);
+         //return a proxy connection by login name
+         ProxyConnection pc = (ProxyConnection)proxyConnections.get( loginName );
+         if( pc == null ) {
+            pc = new ProxyConnection( loginName, passwd );
+            proxyConnections.put( loginName, pc );
+         }
+         return pc;
+      }
+         
+   }
+
+   /**
     * gives a proxy connection by a given sessionId
+    * if a proxy connection was found by the loginName, it will be returned.
+    * if not the routine searches the first proxyConnection
+    * which contains a HTTP Session with the given sessionId
     *
     * @param sessionId HTTP sessionId
-    * @return valid corbaConnection for valid HTTP sessionId.
-    *               If the session is null the default CorbaConnection will
-    *               be returned.
+    * @return valid proxyConnection for valid HTTP sessionId.
     */
-   public ProxyConnection getProxyConnection( String sessionId )
+   public static ProxyConnection getProxyConnection( String sessionId ) throws XmlBlasterException
    {
-      for( Enumeration e = proxyConnections.elements(); e.hasMoreElements() ; ) {
-         ProxyConnection pc = (ProxyConnection) e.nextElement();
-         HttpPushHandler hph = pc.getHttpPushHandler( sessionId );
-         if( hph != null )
-            return pc;
+      synchronized( proxyConnections ) {
+         Log.plain(ME,"proxyConnections="+proxyConnections);
+         for( Enumeration e = proxyConnections.elements(); e.hasMoreElements() ; ) {
+            ProxyConnection pc = (ProxyConnection) e.nextElement();
+            HttpPushHandler hph = pc.getHttpPushHandler( sessionId );
+            if( hph != null )
+               return pc;
+         }
       }
       return null;
    }
+
 
    /**
     * gives a corbaConnection by a given loginName
     *
     * @param loginName
     */
-   public CorbaConnection getCorbaConnection( String loginName, String passwd ) throws XmlBlasterException
+   public static CorbaConnection getCorbaConnection( String loginName, String passwd ) throws XmlBlasterException
    {
-      CorbaConnection cc = ((ProxyConnection)proxyConnections.get( loginName )).getCorbaConnection();
-      if( cc == null ) {
-         ProxyConnection pc = new ProxyConnection( loginName, passwd );
-         proxyConnections.put( loginName, pc );
-         cc = pc.getCorbaConnection();
+      synchronized( proxyConnections ) {
+         Log.plain(ME,"proxyConnections="+proxyConnections);
+         return getProxyConnection(loginName, passwd).getCorbaConnection();
       }
-      return cc;
    }
 
 
