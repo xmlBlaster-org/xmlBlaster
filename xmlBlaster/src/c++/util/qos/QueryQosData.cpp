@@ -42,6 +42,7 @@ void QueryQosData::init()
    forceDestroy_   = false;
    meta_           = true;
    content_        = true;
+   multiSubscribe_ = true;
    local_          = true;
    initialUpdate_  = true;
    notify_         = true;
@@ -54,6 +55,7 @@ void QueryQosData::copy(const QueryQosData& data)
    forceDestroy_   = data.forceDestroy_;
    meta_           = data.meta_;
    content_        = data.content_;
+   multiSubscribe_ = data.multiSubscribe_;
    local_          = data.local_;
    initialUpdate_  = data.initialUpdate_;
    notify_         = data.notify_;
@@ -70,6 +72,7 @@ QueryQosData::QueryQosData(Global& global)
       forceDestroy_(false),
       meta_(true), 
       content_(true),
+      multiSubscribe_(true),
       local_(true),
       initialUpdate_(true),
       notify_(true),
@@ -106,6 +109,16 @@ void QueryQosData::setWantNotify(bool notify)
 bool QueryQosData::getWantNotify() const
 {
    return notify_;
+}
+
+void QueryQosData::setMultiSubscribe(bool multiSubscribe)
+{
+   multiSubscribe_ = multiSubscribe;
+}
+
+bool QueryQosData::getMultiSubscribe() const
+{
+   return multiSubscribe_;
 }
 
 /**
@@ -240,6 +253,7 @@ string QueryQosData::toXml(const string& extraOffset) const
 
    if (!meta_) ret += offset + " <meta>false</meta>";
    if (!content_) ret += offset + " <content>false</content>";
+   if (!multiSubscribe_) ret += offset + " <multiSubscribe>false</multiSubscribe>";
    if (!local_) ret += offset + " <local>false</local>";
    if (!initialUpdate_) ret += offset + " <initialUpdate>false</initialUpdate>";
    if (!notify_) ret += offset + " <notify>false</notify>";

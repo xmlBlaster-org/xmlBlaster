@@ -65,6 +65,11 @@ void SubscribeQos::setWantInitialUpdate(bool initialUpdate)
    data_.setWantInitialUpdate(initialUpdate);
 }
 
+void SubscribeQos::setMultiSubscribe(bool multiSubscribe)
+{
+   data_.setMultiSubscribe(multiSubscribe);
+}
+
 /**
  * false Inhibit the delivery of messages to myself if i have published it.
  */

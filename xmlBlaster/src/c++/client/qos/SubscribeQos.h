@@ -60,6 +60,13 @@ public:
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
     */
    void setWantInitialUpdate(bool initialUpdate);
+
+   /**
+    * Allow to subscribe multiple times to the same query/oid
+    * @param multiSubscribe defaults to true
+    */
+   void setMultiSubscribe(bool multiSubscribe);
+
    /**
     * false Inhibit the delivery of messages to myself if i have published it.
     */

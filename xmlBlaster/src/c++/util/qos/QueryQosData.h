@@ -57,6 +57,8 @@ class Dll_Export QueryQosData : public QosData
    /** not yet supported */
    bool content_;
 
+   bool multiSubscribe_;
+
    bool local_;
 
    /** send on subscribe an initial update with the current message */
@@ -83,6 +85,14 @@ public:
     * @param The factory which knows how to serialize and parse me
     */
    QueryQosData(Global& global);
+
+   void setMultiSubscribe(bool multiSubscribe);
+
+   /**
+    * Allow to subscribe multiple times to the same query/oid
+    * @return defaults to true
+    */
+   bool getMultiSubscribe() const;
 
    /**
     * Do we want to have an initial update on subscribe if the message
