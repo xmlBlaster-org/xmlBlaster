@@ -195,7 +195,7 @@ TODO
    <property name="gcc.enableStackTrace" value="-D_ENABLE_STACK_TRACE_" /> <!-- Use -U... to undefine for OSF -->
    <property name="sqlite.include.dir" location="${src.c.dir}/util/queue"/> <!-- Path to sqlite.h, http://www.sqlite.org -->
    <property name="sqlite.lib.dir" location="${lib.dir}"/>                  <!-- Path to libsqlite.so -->
-   <property name="zlib.include.dir" location="${src.c.dir}/util/queue"/> <!-- Path to zlib.h, http://www.gzip.org/zlib/ -->
+   <property name="zlib.include.dir" location="${src.c.dir}/util/zlib"/> <!-- Path to zlib.h, http://www.gzip.org/zlib/ -->
    <property name="zlib.lib.dir" location="${lib.dir}"/>                  <!-- Path to libz.so -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
@@ -2611,7 +2611,7 @@ TODO
          <fileset dir="${build.src.c.dir}/socket" includes="*.c"/>
          <fileset dir="${build.src.c.dir}/util" includes="*.c"/>
          <fileset dir="${build.src.c.dir}/util/queue" includes="*.c" if="XMLBLASTER_PERSISTENT_QUEUE"/>
-         <fileset dir="${build.src.c.dir}/util/zlib" includes="*.c" if="XMLBLASTER_ZLIB"/>
+         <!-- fileset dir="${build.src.c.dir}/util/zlib" includes="*.c" if="XMLBLASTER_ZLIB"/--> <!--(We currently don't deliver zlib sources in the xmlBlaster distribution)-->
 
          <includepath location="${build.src.c.dir}" />
          <includepath location="${sqlite.include.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
@@ -2697,7 +2697,7 @@ TODO
    </target>
 
    <target name="c-demo" depends="prepare-cpp" description="Create C demo clients">
-      <foreach list="LogRedirect,HelloWorld3,HelloWorldUdp,Subscriber"
+      <foreach list="HelloWorld3,LogRedirect,HelloWorldUdp,Subscriber"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
       </foreach>
