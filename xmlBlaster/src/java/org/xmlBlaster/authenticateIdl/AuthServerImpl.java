@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
-           $Revision: 1.2 $  $Date: 1999/11/15 09:35:48 $
+           $Revision: 1.3 $  $Date: 1999/11/15 13:09:10 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authenticateIdl;
 
@@ -59,11 +59,11 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     * @param cb The Callback interface of the client
     * @return a unique sessionId for the client, to be used in following calls
     */
-   public String login(String loginName, String passwd,
+   public org.xmlBlaster.serverIdl.Server login(String loginName, String passwd,
                        BlasterCallback cb,
                        String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName + ", qos=" + qos_literal + ")");
+      if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal + ")"*/);
       return authenticate.login(loginName, passwd, cb, qos_literal, orb.object_to_string(cb));
    }
 

@@ -3,8 +3,8 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Login for clients
-           $Revision: 1.3 $
-           $Date: 1999/11/15 09:35:48 $
+           $Revision: 1.4 $
+           $Date: 1999/11/15 13:09:10 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -131,20 +131,34 @@ public class Authenticate
     *         </code><br>
     *         to access the server in the client.
     */
-   public String login(String loginName, String passwd,
+   public org.xmlBlaster.serverIdl.Server login(String loginName, String passwd,
                        BlasterCallback callback,
                        String xmlQoS_literal, String callbackIOR) throws XmlBlasterException
    {
 
       String sessionId;
       org.omg.CORBA.Object objRef;
+      org.xmlBlaster.serverIdl.Server server = null;
+      ServerImpl serverImpl = null;
       try {
          byte[] oid = xmlBlasterPOA.activate_object(xmlBlasterServant);
          //byte[] oid = xmlBlasterPOA.servant_to_id(xmlBlasterServant);
          Log.info(ME, "New Active Object Map ID=" + oid + " for client " + loginName);
+
+         /* This produced similar IOR:
+         serverImpl = (ServerImpl)xmlBlasterPOA.id_to_servant(oid);
+         sessionId = new String(oid);
+         */
+
+
+         // !!! create a new object reference:
+         // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
          objRef = xmlBlasterPOA.id_to_reference(oid);
+         server = org.xmlBlaster.serverIdl.ServerHelper.narrow(objRef);
          sessionId = orb.object_to_string(objRef);
          Log.info(ME, "New Active Object Map IOR=" + sessionId);
+         Log.info(ME, "New Active Object Map ID=" + xmlBlasterPOA.reference_to_id(objRef));
+
       } catch ( Exception e ) {
          e.printStackTrace();
          Log.error(ME, e.toString());
@@ -156,7 +170,7 @@ public class Authenticate
       synchronized(clientInfoMap) {
          clientInfoMap.put(clientInfo.getUniqueKey(), clientInfo);
       }
-      return sessionId;  // !!!!!
+      return server; //serverImpl._this(orb); // (org.xmlBlaster.serverIdl.Server)objRef;  //sessionId !!!!!
    }
 
 
@@ -187,12 +201,34 @@ public class Authenticate
     */
    public ClientInfo check(String sessionId) throws XmlBlasterException
    {
+      try { 
+         // who is it?
+         // find out by asking the xmlBlasterPOA
+         org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
+                                                      orb.resolve_initial_references("POACurrent"));
+         byte[] active_oid = poa_current.get_object_id();
+         Log.warning(ME, "subscribe for poa oid: " + active_oid);
+         org.omg.PortableServer.POA xmlBlasterPOA = poa_current.get_POA();
+         org.omg.PortableServer.Servant servant = xmlBlasterPOA.id_to_servant(active_oid);
+         org.omg.CORBA.Object servantObj = xmlBlasterPOA.id_to_reference(active_oid);
+         String IOR = orb.object_to_string(servantObj);
+         Log.warning(ME, "subscribe for IOR: " + IOR);
+
+         sessionId = IOR; // !!!
+      } catch (Exception e) {
+         Log.error(ME, "subscribe for oid");
+      }
+
       synchronized(clientInfoMap) {
          Object obj = clientInfoMap.get(sessionId);
          if (obj == null) {
             throw new XmlBlasterException(ME+"AccessDenied", "Sorry, sessionId is invalid");
          }
-         return (ClientInfo)obj;
+         ClientInfo clientInfo = (ClientInfo)obj;
+
+         Log.info(ME, "Succesfully granted access for " + clientInfo.toString());
+
+         return clientInfo;
       }
    }
 }

@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.10 1999/11/14 21:55:55 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.11 1999/11/15 13:09:06 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   JacORB:
@@ -258,7 +258,7 @@ module authenticateIdl
        *                  like clientCertificate (X.509), timeouts etc.
        * @return ior      The IOR of the server interface
        */
-      string login(in string loginName, in string passwd,
+      serverIdl::Server login(in string loginName, in string passwd,
                    in clientIdl::BlasterCallback cb,
                    in serverIdl::XmlType qosClient)
                       raises (serverIdl::XmlBlasterException);
