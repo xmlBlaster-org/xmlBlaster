@@ -418,6 +418,14 @@ public class MessageUnitHandler
          return true;
       }
 
+      if (sub.getSessionInfo().getSubjectInfo().isCluster()) {
+         if (msgUnitWrapper.getPublishQos().dirtyRead(sub.getSessionInfo().getSubjectInfo().getNodeId())) {
+            if (log.TRACE) log.trace(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getUniqueKey() + "', '" + sub.getXmlKey().getKeyOid() + "' we don't need to send it back");
+            log.error(ME, "DEBUG: Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getUniqueKey() + "', '" + sub.getXmlKey().getKeyOid() + "' we don't need to send it back");
+            return true;
+         }
+      }
+
       AccessFilterQos[] filterQos = sub.getFilterQos();
       if (filterQos != null) {
          SubjectInfo publisher = (publisherSessionInfo == null) ? null : publisherSessionInfo.getSubjectInfo();
@@ -433,6 +441,7 @@ public class MessageUnitHandler
       }
 
       try {
+         if (log.CALL) log.call(ME, "pushing update() message '" + sub.getXmlKey().getKeyOid() + "' into '" + sub.getSessionInfo().getLoginName() + "' callback queue");
          sub.getMsgQueue().putMsg(new MsgQueueEntry(glob, sub, msgUnitWrapper));
       }
       catch(XmlBlasterException e) {
