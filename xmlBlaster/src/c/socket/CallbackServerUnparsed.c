@@ -204,7 +204,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
    int rc;
    ListenLoopArgs* tcpLoop;
    ListenLoopArgs* udpLoop;
-   bool enableUdp = cb->socketUdp != -1;
+   bool useUdpForOneway = cb->socketUdp != -1;
 
    cb->isShutdown = false;
 
@@ -229,7 +229,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
    tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
    rc = pthread_create(&cb->tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
 
-   if (enableUdp) {
+   if (useUdpForOneway) {
       udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
       rc = pthread_create(&cb->udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
    }
@@ -314,7 +314,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
    pthread_mutex_unlock(&cb->listenMutex);
    pthread_join(cb->tcpListenThread, NULL);
    free(tcpLoop);
-   if (enableUdp) {
+   if (useUdpForOneway) {
       pthread_join(cb->udpListenThread, NULL);
       free(udpLoop);
    }

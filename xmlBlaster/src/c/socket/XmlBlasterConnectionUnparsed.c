@@ -16,7 +16,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterConnectionUnparsed.h>
 
-#define SOCKET_UDP true
 #define SOCKET_TCP false
 
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
@@ -78,7 +77,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
    xb->logUserP = 0;
-   xb->enableUdp = false; /* For publishOneway() only */
+   xb->useUdpForOneway = false; /* For publishOneway() only */
    return xb;
 }
 
@@ -217,14 +216,14 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
             if (xb->logLevel>=LOG_INFO) xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
-            xb->enableUdp = xb->props->getBool(xb->props, "plugin/socket/enableUdp", xb->enableUdp);
-            xb->enableUdp = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/enableUdp", xb->enableUdp);
+            xb->useUdpForOneway = xb->props->getBool(xb->props, "plugin/socket/useUdpForOneway", xb->useUdpForOneway);
+            xb->useUdpForOneway = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/useUdpForOneway", xb->useUdpForOneway);
 
-            if (xb->enableUdp) {
+            if (xb->useUdpForOneway) {
                struct sockaddr_in localAddr;
                socklen_t size = (socklen_t)sizeof(localAddr);
                xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__,
-                  "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/enableUdp true");
+                  "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/useUdpForOneway true");
 
                xb->socketToXmlBlasterUdp = (int)socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -268,7 +267,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                            __FILE__, __LINE__, serverHostName, servTcpPort, errno);
                   return false;
                }
-            } /* if (xb->enableUdp) */
+            } /* if (xb->useUdpForOneway) */
 
          }
          else { /* connect(...) == -1 */
@@ -399,7 +398,7 @@ const char *xmlBlasterConnectionUnparsedUsage()
       "\n                       Force the local IP, useful on multi homed computers."
       "\n   -dispatch/connection/plugin/socket/localPort [0]"
       "\n                       Force the local port, useful to tunnel firewalls."
-      "\n   -dispatch/connection/plugin/socket/enableUdp [false]"
+      "\n   -dispatch/connection/plugin/socket/useUdpForOneway [false]"
       "\n                       Use UDP for publishOneway() calls.";
 }
 
@@ -887,7 +886,6 @@ static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
 {
    size_t i;
    SocketDataHolder responseSocketDataHolder;
-   bool udp = xb->enableUdp;
 
    BlobHolder blob = encodeMsgUnitArr(msgUnitArr, xb->logLevel >= LOG_DUMP);
 
@@ -895,19 +893,20 @@ static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
 
    for (i=0; i<msgUnitArr->len; i++) {
       msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
-      /*udp |= strstr(msgUnitArr->msgUnitArr[i].qos, "<clientProperty name='__udp' type='boolean'>true</clientProperty>") != NULL;*/
    }
 
-   if (udp && !xb->enableUdp) {
+   /*
+   if (!xb->useUdpForOneway) {
       strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] UDP not enabled, use -dispatch/connection/plugin/socket/enableUDP true", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       free(blob.data);
       return;
    }
+   */
 
    if (sendData(xb, XMLBLASTER_PUBLISH_ONEWAY, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
-                &responseSocketDataHolder, exception, udp) == false) {
+                &responseSocketDataHolder, exception, xb->useUdpForOneway) == false) {
       free(blob.data);
       return;
    }

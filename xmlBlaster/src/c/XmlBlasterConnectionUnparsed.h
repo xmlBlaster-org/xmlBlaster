@@ -78,7 +78,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterLogging log;
    void *logUserP;               /* For outside users to pass a user object back to the logging implementation */
-   bool enableUdp;
+   bool useUdpForOneway;
 };
 
 
