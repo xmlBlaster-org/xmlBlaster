@@ -22,13 +22,13 @@ ESC="\033[0m"
 
 
 #-------- Checking xmlBlaster --------
-if ! [ ${XMLBLASTER_HOME} ] ; then
+if [ "x${XMLBLASTER_HOME}" = "x" ] ; then
    echo -e "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
    echo -e "$BLACK_RED      Example: 'export XMLBLASTER_HOME=/home/paul/xmlBlaster'   $ESC"
    return
 fi
 
-if ! [ -d ${XMLBLASTER_HOME} ] ; then
+if [ ! -d ${XMLBLASTER_HOME} ] ; then
    echo -e "$BLACK_RED   The directory XMLBLASTER_HOME=$XMLBLASTER_HOME doesn't exist   $ESC"
 fi
 
@@ -65,7 +65,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxt='cd $XMLBLASTER_HOME/testsuite'
    alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
 
-   if ! [ -f ${HOME}/xmlBlaster.properties ]; then
+   if [ ! -f ${HOME}/xmlBlaster.properties ]; then
       cp ${XMLBLASTER_HOME}/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
       echo -e "$BLACK_RED   Please edit and customize ${HOME}/xmlBlaster.properties   $ESC"
    fi
@@ -77,16 +77,16 @@ fi
 
 #-------- Checking JacORB --------
 # Is JacORB home not set already? Try to find where JacORB is:
-if ! [ ${JacORB_HOME} ] ; then
+if [ "x${JacORB_HOME}" = "x" ] ; then
    JACO_EXE=`which jaco`
-   if [ ${JACO_EXE} ] ; then
+   if [ "x${JACO_EXE}" != "x" ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
    fi
 fi
 
-if ! [ ${JacORB_HOME} ] ; then
+if [ "x${JacORB_HOME}" = "x" ] ; then
    # No external JacORB found, use the with xmlBlaster delivered JacORB:
    JacORB_HOME=${XMLBLASTER_HOME}
    export JacORB_HOME
@@ -112,7 +112,7 @@ if [ -d ${JacORB_HOME} ] ; then
    export CLASSPATH
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
-   if ! [ -f ${HOME}/.jacorb_properties ]; then
+   if [ ! -f ${HOME}/.jacorb_properties ]; then
       cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
       echo -e "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
    fi
@@ -123,7 +123,7 @@ fi
 
 
 #-------- Checking MICO --------
-if ! [ -d ${MICO_HOME} ] ; then
+if [ ! -d ${MICO_HOME} ] ; then
    echo -e "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
    echo -e "         Example: 'export MICO_HOME=/usr/local/mico'"
 else
@@ -133,7 +133,7 @@ fi
 
 
 #-------- Checking JDK version -
-if [ ${JDK_HOME} ] ; then
+if [ "x${JDK_HOME}" != "x" ] ; then
    if [ -d ${JDK_HOME} ] ; then
 		if [ -f ${JDK_HOME}/lib/classes.zip ]; then
 			# JDK 1.1.x
@@ -161,7 +161,7 @@ fi
 
 #-------- Checking jikes version -
 # use jikes 1.06 or better
-if [ ${JIKES_HOME} ] ; then
+if [ "x${JIKES_HOME}" != "x" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
