@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.15 2001/02/12 00:07:57 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.16 2001/09/24 10:27:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -30,6 +30,8 @@ import org.xml.sax.Attributes;
  *     &lt;subscriptionId>
  *        __sys__TotalMem
  *     &lt;/subscriptionId>
+ *     &lt;queue index='0' of='1'> &lt;!-- If queued messages are flushed on login -->
+ *     &lt;/queue>
  *  &lt;/qos>
  * </pre>
  */
@@ -49,6 +51,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean inSubscriptionId = false;
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId = null;
+
+   private int queueIndex = -1;
+   private int queueSize = -1;
+   private boolean inQueue = false;
 
 
    /**
@@ -91,6 +97,23 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       return subscriptionId;
    }
 
+   /**
+    * If durable messages where in queue, this is flushed on login. 
+    * @return The number of queued messages
+    */
+   public int getQueueSize()
+   {
+      return queueSize;
+   }
+
+   /**
+    * If durable messages where in queue, this is flushed on login. 
+    * @return The index of the message of the queue
+    */
+   public int getQueueIndex()
+   {
+      return queueIndex;
+   }
 
    /**
     * Start element, event from SAX parser.
@@ -145,6 +168,28 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          }
          return;
       }
+
+      if (name.equalsIgnoreCase("queue")) {
+         if (!inQos)
+            return;
+         inQueue = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               if( attrs.getQName(i).equalsIgnoreCase("index") ) {
+                 String tmp = attrs.getValue(i).trim();
+                 try { queueIndex = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid queue - index =" + tmp); };
+               }
+               if( attrs.getQName(i).equalsIgnoreCase("size") ) {
+                 String tmp = attrs.getValue(i).trim();
+                 try { queueSize = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid queue - index =" + tmp); };
+               }
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found queue tag");
+         }
+         return;
+      }
+
    }
 
 
@@ -182,6 +227,13 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          character.setLength(0);
          return;
       }
+
+      if(name.equalsIgnoreCase("queue")) {
+         inQueue = false;
+         character.setLength(0);
+         return;
+      }
+
    }
 
 
@@ -252,6 +304,8 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "   <subscriptionId>\n" +
                    "      1234567890\n" +
                    "   </subscriptionId>\n" +
+                   "   <queue index='0' size='1'>\n" +
+                   "   </queue>\n" +
                    "</qos>";
 
       UpdateQoS up = new UpdateQoS(xml);
