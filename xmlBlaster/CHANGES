@@ -33,10 +33,20 @@ BUGS:
 
 Changes for xxxxx [xxx, xx 200x]
 ================================
+  - Updated to use newest JUnit from cvs
+
+  - Added clearSession QoS for disconnect() invocations
+
+  - Added requirement describing message priorities
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.priority.html
+    
+  - You can now suppress the initial update on subscribe
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html
+
   - Added message erase events for subscribers, see
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
     NOTE: You have to cope with different sorts of update messages
-	       now.
+          now.
 
   - Bugfix for client side -hostname parameter.
 
