@@ -293,7 +293,7 @@ public class MessageUnitHandler
 
       sub.addMessageUnitHandler(this);
 
-      if (log.TRACE) log.trace(ME, "You have successfully subscribed to " + uniqueKey);
+      if (log.TRACE) log.trace(ME, "Client '" + sub.getSessionInfo().getLoginName() + "' has successfully subscribed to '" + uniqueKey + "'");
 
       if (invokeCallback(null, sub) == false) {
          Set removeSet = new HashSet();
