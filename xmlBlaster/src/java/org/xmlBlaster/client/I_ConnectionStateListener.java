@@ -21,12 +21,17 @@ public interface I_ConnectionStateListener
     *
     * <p>
     * Note that this method is invoked also when the connection has been 
-    * established the first time.
+    * established the first time. In this case the connection is fully operational
+    * but your connect() call has not yet returned. You can access the
+    * returned connect QoS in this case with <i>connect.getConnectReturnQos()</i>.
     * </p>
     *
     * <p>
     * You can erase all entries of the queue manually or add others before you return and in
     * this way control the behavior.
+    * During you have control in <i>reachedAlive()</i> the client side
+    * queue is blocked and does not accept publish or request messages from other threads.
+    * So you can do peacefully your work (your thread is allowed to modify the queue exclusively).
     * </p>
     *
     * <p>
@@ -35,7 +40,7 @@ public interface I_ConnectionStateListener
     * @param oldState The previous state of the connection.
     * @param connectionHandler An interface which allows you to control the queue and the connection
     */
-   void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler);
+   void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
 
    /**
     * This is the callback method invoked from XmlBlasterAccess
@@ -44,7 +49,7 @@ public interface I_ConnectionStateListener
     * @param oldState The previous state of the connection.
     * @param connectionHandler An interface which allows you to control the queue and the connection
     */
-   void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler);
+   void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
 
    /**
     * This is the callback method invoked from XmlBlasterAccess
@@ -54,6 +59,6 @@ public interface I_ConnectionStateListener
     * @param oldState The previous state of the connection.
     * @param connectionHandler An interface which allows you to control the queue and the connection
     */
-   void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler);
+   void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
 }
 
