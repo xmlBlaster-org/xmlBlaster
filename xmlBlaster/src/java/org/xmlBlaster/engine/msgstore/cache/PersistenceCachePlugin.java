@@ -176,11 +176,11 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
                   // initial fill of RAM queue ...
                   long maxBytes = this.transientStore.getMaxNumOfBytes();
                   // this.transientStore.getMaxNumOfEntries();
-                  int maxEntries = -1;
+                  long maxEntries = this.transientStore.getMaxNumOfEntries();
 
                   ArrayList entries = null;
                   try {
-                     entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek(maxEntries, maxBytes);
+                     entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek((int)maxEntries, maxBytes);
                   }
                   catch (XmlBlasterException ex) {
                      this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running");
