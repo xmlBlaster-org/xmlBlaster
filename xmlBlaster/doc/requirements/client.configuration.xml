@@ -50,31 +50,47 @@ java HelloWorld2 -help
    address.setPingInterval(0L);  // switched off
       ...
 	</pre>
-        For the complete listing have a look at the code for 
+        For a more detailed example have a look at the code for 
 	<a href='http://www.xmlblaster.org/xmlBlaster/demo/javaclients/HelloWorld6.java.html'>HelloWorld6</a>.
      </p>
-     <p>The following is a list of groups of properties used to configure xmlBlaster clients. Some of the
-      groups must still be given according to the original "dot and bracket" syntax (they are denoted
-      with a red icon on the right column).
+     <p>The following is a list of groups of properties used to configure xmlBlaster clients. <i><b>We
+     are changing the syntax for the properties from the original "dot and bracket" syntax like
+     <pre>
+  -socket.responseTimeout 100
+  -trace[core] true
+     </pre>
+     to the new "slash" notation which we believe fits better our needs 
+     <pre>
+  -queue/callback/maxEntries 1000   
+     </pre>
+     This is an ongoing process and not all properties have been ported yet. You can read the status of
+     this porting in the right column in the next table.
+     </b></i>
       <center>
       <table border="1">
-         <tr><th>Groups of parameters</th><th>new "slash" syntax</th></tr>
-         <tr><td>Choice of connection protocol</td><td>&nbsp;</td></tr>
+         <tr><th>Groups of Parameters</th><th>ported to new syntax</th></tr>
+         <tr><td>Choice of Connection Protocol</td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
          <tr><td>Security Features</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
-         <tr><td>Security Plugin specific properties</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Security Plugin Specific Properties</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
          <tr><td>Session Settings</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
-         <tr><td><b>failsafe connection to xmlBlaster server</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td><b>Server side callback (in case we install a local callback server)</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td><b>queue/clientSide storage properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td><b>queue/callback storage properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
-         <tr><td>specific communication protocol options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
-         <tr><td>Logging options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
-         <tr><td>Properties framework</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td><b>Failsafe Connection to XmlBlaster Server</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td><b>Server Side Callback (in case we install a local callback server)</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td><b>Queue ClientSide Storage Properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td><b>Queue Callback Storage Properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td>Specific Communication Protocol Options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Logging Options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Properties Framework</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
       </table>
       </center>
      </p>
 
-     <p><b>failsafe connection to xmlBlaster server</b><br/>
+
+
+
+
+
+
+     <p><b>Failsafe Connection to XmlBlaster Server</b><br/>
 
      The following parameters control the client side dispatch configuration
      <center>
@@ -103,7 +119,7 @@ java HelloWorld2 -help
     </p>
 
 
-     <p><b>Server side callback (in case we install a local callback server)</b><br/>
+     <p><b>Server Side Callback (in case we install a local callback server)</b><br/>
      The following parameters control the callback (server side) dispatch configuration. It only makes
      sense to configure these if you have assigned a callback to this session.
     <center>
@@ -155,7 +171,7 @@ java HelloWorld2 -help
     </center>
      </p>
 
-     <p><b>queue/clientSide storage properties</b><br/>
+     <p><b>Queue Client Side Storage Properties</b><br/>
      <center>
      <table border="1">
        <tr><th>Command line</th><th>comment and [default]</th></tr>
@@ -173,8 +189,7 @@ java HelloWorld2 -help
      </p>
      
 
-
-     <p><b>queue/callback storage properties</b><br/>
+     <p><b>Queue Callback Storage Properties</b><br/>
      <center>
      <table border="1">
        <tr><th>Command line</th><th>comment and [default]</th></tr>
@@ -236,8 +251,8 @@ java HelloWorld2 -help
                <plugin refid='dispatch:priority'/>
                <burstMode collectTime='400' />
                <compress type='gzip' minSize='3000'/>
-               <ptp>true</ptp>
-               <plugin refid='queue:CACHE'>
+	       <ptp>true</ptp>
+	       <plugin refid='queue:CACHE'>
                   <attribute id='numEntries'>7</attribute>
                   <attribute id='numBytes'>90023</attribute>
                   <attribute id='onOverflow'>DEAD_MESSAGE</attribute>
@@ -256,18 +271,26 @@ java HelloWorld2 -help
                       oneway='false'>
                <plugin refid='queue:CACHE'>
                   <attribute id='maxEntries'>200</attribute>
-                  <entry id='1046976320188000000' type='publish'>
-                     <!-- client side queued entries -->
-                     <key oid='hello' contentMime='text/plain'/>
-                     <content>Salute</content>
-                     <qos>
-                        <persistent/>
-                        <sender>/node/heron/client/joe</sender>
-                        <expiration lifeTime='-1'/>
-                     </qos>
-                  </entry>
+                  <attribute id='entry'>
+		     <attribute id='id'>1046976320188000000></attribute>
+		     <attribute id='type'>publish'</attribute>
+                        <!-- client side queued entries -->
+                     <attribute id='key'>
+		       <attribute id='oid'>hello</attribute>
+		       <attribute id='contentMime'>text/plain</attribute>
+		     </attribute>
+		     <attribute id='content'>Salute</attribute>
+		     <attribute id='qos'>
+		       <attribute id='persistent' />
+		       <attribute id='sender'>/node/heron/client/joe</attribute>
+		       <attribute id='expiration'>
+		          <attribute id='lifeTime'>-1</attribute>
+		       </attribute>
+		     </attribute>
+		  </attribute>
                </plugin>
-               <plugin id='protocol:XML-RPC:clientSide'
+               
+	       <plugin id='protocol:XML-RPC:clientSide'
                           className='org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection'>
                   <attribute id='hostname'>server.mycomp.com</attribute>
                   <attribute id='port'>6901</attribute>
@@ -328,49 +351,28 @@ Old style:
 
    <example lang="any" type="HTML">
       <p>
-         Here is an example of a complete and valid URI, we should try
-         not to break this syntax with our query language (NOTE: this is currently not implemented):
+      The following means to set the maximum number of entries in the callback queue to 100. To set
+      the maximum number of entries for the client side queue also to 100 and to put all ping intervals
+      both on client and server side since no prefix is specified) to 20 seconds.
+      <pre>
+    java HelloWorld2 -queue/callback/maxEntries 100 -queue/clientSide/maxEntries 100 -pingInterval 20000
+      </pre>
+      The following command line has the same effect since it sets the maximum number of entries for 
+      all queues (so it automatically sets it for callback and client side queue) to 100 and sets 
+      individually the ping interval for 
+      <pre>
+    java HelloWorld2 -maxEntries 100 -dispatch/callback/pingInterval 20000 -dispatch/clientSide/pingInterval 20000
+      </pre>
+
       </p>
    </example>
 
-   <configuration where="server">
+   <configuration where="client">
       <p>
-      The available commands are marked as R=readable, W=writable, S=subscribable
-      T=schedulable, P=pollable
       </p>
-      <table border="1">
-         <tr>
-            <th>Command</th>
-            <th>Type</th>
-            <th>Read/Write</th>
-            <th>Description</th>
-            <th>Implemented</th>
-         </tr>
-
-         <tr>
-            <td>TODO</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-         </tr>
-
-      </table>
-     
    </configuration>
 
-   <todo type="HTML">
-      <ul>
-        <li>Read/Write access with telnet and MoM clients on system properties, internal states
-            and messages is implemented.</li>
-        <li>SNMP (SnmpGateway.java) support is missing.</li>
-        <li>JMX (JmxGateway.java) support is missing.</li>
-        <li>A swing or browser based GUI interface for administration.</li>
-        <li>Wildcard queries.</li>
-        <li>XPath queries with <a href="http://jakarta.apache.org/commons/jxpath/" target="others">JXPath</a></li>
-      </ul>
-   </todo>
-
+   <!--
    <see type="API">org.xmlBlaster.engine.admin.I_AdminNode</see>
    <see type="API">org.xmlBlaster.engine.admin.I_AdminSubject</see>
    <see type="API">org.xmlBlaster.engine.admin.I_AdminSession</see>
@@ -379,16 +381,10 @@ Old style:
    <see type="REQ">admin.telnet</see>
    <see type="REQ">admin.messages</see>
    <see type="REQ">engine.runlevel</see>
+   -->
 
-   <author>Heinrich.Goetzger@exploding-systems.de</author>
-   <author>Michele.Laghi@swisscom.com</author>
-   <author>xmlBlaster@marcelruff.info</author>
-   <date>2002 06 12</date>
-   <revision>$Revision: 1.6 $</revision>
-   <testcase status="OPEN">
-      <name>-</name>
-      <comment>-</comment>
-      <test tool="SUITE">org.xmlBlaster.test.classtest.CommandWrapperTest</test>
-   </testcase>
+   <author>laghi@swisscom.com</author>
+   <date>2003 03 25</date>
+   <revision>$Revision: 1.7 $</revision>
 </requirement>
 
