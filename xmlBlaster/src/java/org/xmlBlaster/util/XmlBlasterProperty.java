@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   jutils.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.4 2000/07/11 17:46:23 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.5 2000/07/24 07:07:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -46,6 +46,23 @@ public class XmlBlasterProperty
    public static final String get(String key, String defaultVal)
    {
       return getProps().get(key, defaultVal);
+   }
+
+
+   /**
+   * Try to find the given key.
+   * <p />
+   * Example:<br />
+   * NameList=Josua,David,Ken,Abel<br />
+   * Will return each name separately in the array.<br />
+   * The separator is here set to ","
+   * @param key the key to look for
+   * @param defaultVal The default value to return if key is not found
+   * @return The String array for the given key, the elements are trimmed (no leading/following white spaces)
+   */
+   public final String[] get(String key, String[] defaultVal)
+   {
+      return getProps().get(key, defaultVal, ",");
    }
 
 
