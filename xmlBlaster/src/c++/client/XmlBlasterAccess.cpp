@@ -30,7 +30,9 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      connectQos_(global), 
      connectReturnQos_(global),
      global_(global), 
-     log_(global.getLog("org.xmBlaster.client"))
+     log_(global.getLog("org.xmBlaster.client")),
+     subscriptionCallbackMap_(),
+     updateMutex_()
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -44,6 +46,12 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
 XmlBlasterAccess::~XmlBlasterAccess()
 {
    if (log_.call()) log_.call(ME, "destructor");
+   {
+      // synchronization
+      org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+      subscriptionCallbackMap_.clear();
+   }
+
    if (cbServer_) {
       CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
       CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
@@ -228,14 +236,23 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 }
 */
 
-SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
+SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos, I_Callback *callback)
 {
    if (log_.call()) log_.call(ME, "subscribe");
    if (log_.dump()) {
       log_.dump(ME, string("subscribe. The key:\n") + key.toXml());
       log_.dump(ME, string("subscribe. The Qos:\n") + qos.toXml());
    }
-   return connection_->subscribe(key, qos);
+   if (callback != 0) {
+      org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+      SubscribeReturnQos retQos = connection_->subscribe(key, qos);
+      std::string subId = retQos.getSubscriptionId();
+      subscriptionCallbackMap_.insert(std::map<std::string, I_Callback*>::value_type(subId, callback));
+      return retQos;
+   }
+   else {
+      return connection_->subscribe(key, qos);
+   }
 }
 
 vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
@@ -248,7 +265,7 @@ vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
    return connection_->get(key, qos);
 }
 
-vector<UnSubscribeReturnQos> 
+vector<UnSubscribeReturnQos>
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
    if (log_.call()) log_.call(ME, "unSubscribe");
@@ -256,7 +273,15 @@ XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& q
       log_.dump(ME, string("unSubscribe. The key:\n") + key.toXml());
       log_.dump(ME, string("unSubscribe. The Qos:\n") + qos.toXml());
    }
-   return connection_->unSubscribe(key, qos);
+   // synchronization
+   org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+   vector<UnSubscribeReturnQos> ret = connection_->unSubscribe(key, qos);
+   vector<UnSubscribeReturnQos>::iterator iter = ret.begin();
+   while (iter != ret.end()) {
+      subscriptionCallbackMap_.erase((*iter).getSubscriptionId());
+      iter++;
+   }
+   return ret;
 }
 
 PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
@@ -309,6 +334,17 @@ XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, const un
       log_.dump(ME, string("update. The key:\n") + updateKey.toXml());
       log_.dump(ME, string("update. The Qos:\n") + updateQos.toXml());
    }
+
+   if (!subscriptionCallbackMap_.empty()) {
+      // synchronization
+      org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+      std::map<std::string, I_Callback*>::iterator 
+         iter = subscriptionCallbackMap_.find(updateQos.getSubscriptionId());
+      if (iter != subscriptionCallbackMap_.end()) {
+         return ((*iter).second)->update(sessionId, updateKey, content, contentSize, updateQos);
+      }
+   }
+
    if (updateClient_)
       return updateClient_->update(sessionId, updateKey, content, contentSize, updateQos);
    return "<qos><state id='OK'/></qos>";

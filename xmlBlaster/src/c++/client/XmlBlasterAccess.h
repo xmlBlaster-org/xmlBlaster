@@ -10,8 +10,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/ConnectQos.h>
 #include <client/I_ConnectionProblems.h>
 #include <client/I_Callback.h>
+#include <util/thread/ThreadImpl.h>
 #include <string>
 #include <vector>
+#include <map>
 
 // Note: I_ConnectionProblems.h includes I_ConnectionsHandler.h includes I_XmlBlasterConnection.h
 //       which includes all EraseQos, SubscribeKey etc.
@@ -66,6 +68,8 @@ private:
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log&    log_;
    std::string  instanceName_;
+   std::map<std::string, I_Callback*> subscriptionCallbackMap_;
+   org::xmlBlaster::util::thread::Mutex updateMutex_;
 
    /**
     * Private copy constructor, clones are not supported
@@ -186,7 +190,7 @@ public:
 
    // org::xmlBlaster::client::qos::SubscribeReturnQos
 //   std::string subscribe(const std::string& xmlKey, const std::string& qos);
-   org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
+   org::xmlBlaster::client::qos::SubscribeReturnQos subscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos, I_Callback *callback=0);
 
 //   std::vector<org::xmlBlaster::util::MessageUnit> get(const std::string&  xmlKey, const std::string& qos);
    std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos);
