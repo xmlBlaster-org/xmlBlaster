@@ -1436,6 +1436,9 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             if (log.TRACE) log.trace(ME, "erase oid='" + xmlKeyExact.getUniqueKey() + "' of total " + xmlKeyVec.size() + " ...");
 
             MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+            if (msgUnitHandler == null) {
+               continue;    // can happen as not synchronized
+            }
             //log.info(ME, "Erasing " + msgUnitHandler.toXml());
 
             oidSet.add(msgUnitHandler.getUniqueKey());
