@@ -62,7 +62,7 @@ Else add it manually.
 
   <property name="src.dir" value="./src/java"/>
   <property name="dtd.dir" value="./src/dtd"/>
-  <property name="idl.dir" value="./src/idl"/>
+  <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
   <property name="doc.dir" value="./doc"/>
   <property name="javadoc.dir" value="./doc/api"/>
   <property name="testsuite.dir" value="./testsuite"/>
@@ -82,7 +82,7 @@ Else add it manually.
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet-2.0.jar:"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet-2.0.jar:./lib/gnu-regexp-1.0.8.jar:"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -138,7 +138,7 @@ Else add it manually.
                 classname="${idl.class}"
                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
-    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile"/>
+    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java"/>
 
     <javac
                 srcdir="${build.src}/xmlBlaster"
