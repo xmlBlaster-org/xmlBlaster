@@ -2,6 +2,10 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
+  - Changed to support security QoS tags used for login method
+    Performance changes to avoid double qos parsing of connect QoS
+    (bug reported by Cyrille, again keeping me busy :-)
+
   - Added SVG sample code for persistent http callback, see
 
       demo/http/svg/systemInfo
@@ -11,11 +15,12 @@ Changes for 0.xxx [xxx, xx xxxx]
       build.sh deploy_war
 
   - Added C++ support in build.xml, to compile the
-    xmlBlaster C++ client helper shared library (dll) type:
+    xmlBlaster C++ client helper shared library (so, sl, dll) type:
 
        build.sh cpp-lib
 
   - Changed C++ file extension .cc to .cpp
+    Holger Lehn ported C++ clients to Windows using stlport library
 
   - Added a message receive timestamp in update QoS, see:
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.update.rcvTimestamp.html
