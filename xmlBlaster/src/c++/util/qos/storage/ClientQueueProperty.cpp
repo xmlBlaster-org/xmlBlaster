@@ -19,8 +19,15 @@ using namespace org::xmlBlaster::util::qos::address;
       QueuePropertyBase(global, nodeId)
    {
       ME = "ClientQueueProperty";
-      relating_ = Constants::RELATING_CLIENT;
-      QueuePropertyBase::initialize(Constants::RELATING_CLIENT);
+      relating_ = Constants::RELATING_CLIENT;  // == "connection"
+      QueuePropertyBase::initialize(Constants::RELATING_CLIENT); // == "connection"
+
+      // TODO !!!: Hack: We need to force default to RAM instead of CACHE
+      // as we have no C++ CACHE implementation  (see QueueFactory.cpp for the other workaround)
+      string envType = global_.getProperty().getStringProperty("queue/connection/type", "");
+      if (envType == "") {
+         setType("RAM");
+      }
    }
 
    ClientQueueProperty::ClientQueueProperty(const QueuePropertyBase& prop)
@@ -93,9 +100,9 @@ using namespace org::xmlBlaster::util::qos::address;
       text += string("   -queue/connection/maxEntries [") + lexical_cast<std::string>(DEFAULT_maxEntriesDefault) + string("]\n");
       text += string("                       The maximum allowed number of messages in this queue.\n");
       text += string("                       0 switches recording of invocations off, -1 sets it to unlimited.\n");
-    //text += string("   -queue/connection/type    The queue plugin type [") + DEFAULT_type + string("].\n");
-    //text += string("   -queue/connection/version The queue plugin type [") + DEFAULT_version + string("].\n");
-    //text += string("   -queue/connection/maxBytes     The maximum size in kBytes of this queue [" + DEFAULT_bytesDefault + "].\n";
+      text += string("   -queue/connection/type    The queue plugin type [") + DEFAULT_type + string("].\n");
+      text += string("   -queue/connection/version The queue plugin type [") + DEFAULT_version + string("].\n");
+      text += string("   -queue/connection/maxBytes     The maximum size in kBytes of this queue [" + lexical_cast<std::string>(DEFAULT_bytesDefault) + "].\n");
     //text += string("   -queue/connection/expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += string("   -queue/connection/onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
     //text += string("   -queue/connection/onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
