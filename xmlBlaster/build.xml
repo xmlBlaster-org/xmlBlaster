@@ -99,7 +99,7 @@ Else add it manually.
     <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
     <echo message="   demo        --> generates the demo.jar file"/>
     <echo message="   testsuite   --> generates the testsuite.jar file"/>
-    <echo message="   all         --> generates the xmlBlaster.jar, demo.jar, and testsuite.jar file"/>
+    <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
     <echo message="   javadocs    --> generates the javadoc documentation"/>
     <echo message="   dist        --> generates the xmlBlaster distribution"/>
     <echo message="   clean       --> cleans up the directory"/>
@@ -131,10 +131,9 @@ Else add it manually.
   <!-- Compiles the xmlBlaster core source directory                       -->
   <!-- =================================================================== -->
   <target name="xmlBlaster" depends="prepare-src">
-    <mkdir dir="${build.dest}/xmlBlaster"/>
 
     <!-- convert idl -->
-        <echo message="Converting idl..."/>
+    <echo message="Converting idl..."/>
     <java
                 classname="${idl.class}"
                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
@@ -144,11 +143,11 @@ Else add it manually.
 
     <javac
                 srcdir="${build.src}/xmlBlaster"
-                destdir="${build.dest}/xmlBlaster"
+                destdir="${build.dest}"
                 classpath="${classpath}"
                 debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}/xmlBlaster" includes="org/**"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**"/>
 
     <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
   </target>
@@ -157,15 +156,14 @@ Else add it manually.
   <!-- Compiles the xmlBlaster demo source directory                       -->
   <!-- =================================================================== -->
   <target name="demo" depends="xmlBlaster">
-    <mkdir dir="${build.dest}/demo"/>
     <copydir src="${demo.dir}" dest="${build.src}/demo" excludes="README, Makefile"/>
     <javac
                 srcdir="${build.src}/demo"
-                destdir="${build.dest}/demo"
+                destdir="${build.dest}"
                 classpath="${classpath}:${lib.dir}/${name}.jar"
                 debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}/demo"/>
+    <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class"/>
 
     <copyfile src="${build.dir}/demo.jar" dest="${lib.dir}/demo.jar"/>
   </target>
@@ -174,20 +172,25 @@ Else add it manually.
   <!-- Compiles the xmlBlaster, demo, and  testsuite source directories    -->
   <!-- =================================================================== -->
   <target name="all" depends="xmlBlaster,demo,testsuite">
+  <!--target name="all" depends="prepare-src"-->
+    <delete file="${lib.dir}/demo.jar"/>
+    <delete file="${lib.dir}/testsuite.jar"/>
+    <delete file="${build.dir}/${name}.jar"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class"/>
+    <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Compiles the xmlBlaster testsuite source directory                  -->
   <!-- =================================================================== -->
   <target name="testsuite" depends="xmlBlaster">
-    <mkdir dir="${build.dest}/testsuite"/>
     <copydir src="${testsuite.dir}/org" dest="${build.src}/testsuite/org" excludes="README, Makefile"/>
     <javac
                 srcdir="${build.src}/testsuite"
-                destdir="${build.dest}/testsuite"
+                destdir="${build.dest}"
                 classpath="${classpath}:${lib.dir}/${name}.jar"
                 debug="${debug}"/>
-    <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}/testsuite" includes="testsuite/**"/>
+    <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
     <copyfile src="${build.dir}/testsuite.jar" dest="${lib.dir}/testsuite.jar"/>
   </target>
 
