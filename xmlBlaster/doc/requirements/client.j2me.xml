@@ -50,17 +50,18 @@
    <example type="HTML">
    <p>There is a little demo showing the way this works. The demo SystemInfo has the same 
    functionality as the SystemInfoApplet. In order to be run it needs a running xmlBlaster (with
-   the xmlrpc port redirected or disactivated), a SystemInfoPubliser which publishes on the 
+   the xmlrpc port redirected or disactivated), a SystemInfoPublisher which publishes on the 
    given xmlBlaster and a servlet engine running (for example apache's tomcat). If you don't
    want to bother about configuring and starting these, you can use the ones which constantly run
-   on the <a href="http://www.xmlBlaster.org:8080/xmlBlaster/AppletServlet">xmlBlaster server</a>.
+   on the xmlBlaster server. The url of the servlet is 
+   <i>http://www.xmlBlaster.org:8080/xmlBlaster/AppletServlet</i>.
    </p>
    <p>
    If you have access to an embedded device which supports j2me (and more precisely CLDC-1.1 and
-   MIDP-2.0) you can download the precompiled demo application:<br/>
+   MIDP-2.0 profile) you can download the precompiled demo application directly from the xmlBlaster server:<br/>
    <ul>
-     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jad"></a>SystemInfo.jad</li>
-     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jar"></a>SystemInfo.jar</li>
+     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jad">SystemInfo.jad</a></li>
+     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jar">SystemInfo.jar</a></li>
    </ul>
    </p>
    And you can then run the application.
@@ -132,7 +133,7 @@ http://localhost:8080/xmlBlaster/AppletServlet
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 04 01</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
