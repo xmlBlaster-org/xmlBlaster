@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.6 1999/12/22 12:26:18 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.7 1999/12/22 20:03:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -36,14 +36,17 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    private long elapsedTime = 0L;
 
    private FillLevelBar publishedMessagesBar = null;
+   private Label publishedLabel = null;
    private long publishedMessages = 0L;
    private long lastPublishedMessages = 0L;
 
    private FillLevelBar sentMessagesBar = null;
+   private Label sentLabel = null;
    private long sentMessages = 0L;
    private long lastSentMessages = 0L;
 
    private FillLevelBar getMessagesBar = null;
+   private Label getLabel = null;
    private long getMessages = 0L;
    private long lastGetMessages = 0L;
 
@@ -88,7 +91,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Event fired ecery 2 seconds by the PollingThread. 
+    * Event fired ecery 2 seconds by the PollingThread.
     * <p />
     * Update the statistic bars.
     * @param sleepTime Milliseconds how long the PollingThread was sleeping (no zero division check!)
@@ -108,9 +111,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          // System.out.println("totally publishedMessages=" + publishedMessages + " current avg=" + currentPublishedAvg + " total avg=" + totalPublishedAvg);
          publishedMessagesBar.setCurrentValue(currentPublishedAvg);
          publishedMessagesBar.setAvgValue(totalPublishedAvg);
+         publishedLabel.setText("Total:  " + publishedMessages);
          lastPublishedMessages = publishedMessages;
       }
-   
+
       {
          sentMessages = ClientInfo.sentMessages;
          int currentSentAvg = (int)((sentMessages - lastSentMessages)/sleepSeconds);
@@ -119,6 +123,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          // System.out.println("totally sentMessages=" + sentMessages + " current avg=" + currentSentAvg + " total avg=" + totalSentAvg);
          sentMessagesBar.setCurrentValue(currentSentAvg);
          sentMessagesBar.setAvgValue(totalSentAvg);
+         sentLabel.setText("Total:  " + sentMessages);
          lastSentMessages = sentMessages;
       }
 
@@ -130,6 +135,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          // System.out.println("totally getMessages=" + getMessages + " current avg=" + currentGetAvg + " total avg=" + totalGetAvg);
          getMessagesBar.setCurrentValue(currentGetAvg);
          getMessagesBar.setAvgValue(totalGetAvg);
+         getLabel.setText("Total:  " + getMessages);
          lastGetMessages = getMessages;
       }
    }
@@ -162,42 +168,65 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       gbc.weightx = gbc.weighty = 0.0;
       add(beepButton, gbc);
 
+      final int LABEL_LOCATION_X = 2;
+      final int LABEL_LOCATION_Y = 10;
+      final int LABEL_WIDTH = 90;
+      final int LABEL_HEIGHT = 12;
+      final int BAR_X = 32;
+      final int BAR_Y = LABEL_LOCATION_Y + 2 * LABEL_HEIGHT;
+      final int BAR_WIDTH = 50;
+      final int BAR_HEIGHT = 130;
+      final int TOTAL_LABEL_Y = BAR_Y + BAR_HEIGHT;
+      final int PANEL_WIDTH = LABEL_LOCATION_X + LABEL_WIDTH + 2; // 94
+      final int PANEL_HEIGHT = TOTAL_LABEL_Y + LABEL_HEIGHT + 4;  // 180
+      Font barFont = new java.awt.Font("dialog", 2, 10);
       {
          Panel panel = new Panel();
          panel.setName("PublishedMessagePanel");
          panel.setLayout(null);
          panel.setBackground(java.awt.SystemColor.control);
-         panel.setSize(100, 200);
+         panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
 
          Label label1 = new Label();
          label1.setName("Label1");
-         label1.setLocation(10, 10);
+         label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
          label1.setText("Published");
          label1.setBackground(java.awt.SystemColor.control);
-         label1.setSize(90, 12);
+         label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
          label1.setForeground(java.awt.Color.black);
-         label1.setFont(new java.awt.Font("dialog", 2, 10));
+         label1.setFont(barFont);
          label1.setAlignment(1);
          panel.add(label1, label1.getName());
 
          Label label2 = new Label();
          label2.setName("Label2");
-         label2.setLocation(10, 22);
+         label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
          label2.setText("[messages/sec]");
          label2.setBackground(java.awt.SystemColor.control);
-         label2.setSize(90, 12);
+         label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
          label2.setForeground(java.awt.Color.black);
-         label2.setFont(new java.awt.Font("dialog", 2, 10));
+         label2.setFont(barFont);
          label2.setAlignment(1);
          panel.add(label2, label2.getName());
 
          publishedMessagesBar = new FillLevelBar();
          publishedMessagesBar.setName("PublishedMessages");
-         publishedMessagesBar.setLocation(32, 35);
+         publishedMessagesBar.setLocation(BAR_X, BAR_Y);
          publishedMessagesBar.setBackground(java.awt.SystemColor.control);
-         publishedMessagesBar.setSize(50, 130);
+         publishedMessagesBar.setSize(BAR_WIDTH, BAR_HEIGHT);
          publishedMessagesBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
          panel.add(publishedMessagesBar, publishedMessagesBar.getName());
+
+         publishedLabel = new Label();
+         publishedLabel.setName("PublishedLabel");
+         publishedLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
+         publishedLabel.setText("Total:  0");
+         publishedLabel.setBackground(java.awt.SystemColor.control);
+         publishedLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
+         publishedLabel.setForeground(java.awt.Color.black);
+         publishedLabel.setFont(barFont);
+         publishedLabel.setAlignment(1);
+         panel.add(publishedLabel, publishedLabel.getName());
 
          gbc.gridx=0; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
          gbc.weightx = gbc.weighty = 0.0;
@@ -209,35 +238,35 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          panel.setName("SentMessagePanel");
          panel.setLayout(null);
          panel.setBackground(java.awt.SystemColor.control);
-         panel.setSize(100, 200);
+         panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
 
          Label label1 = new Label();
          label1.setName("Label1");
-         label1.setLocation(10, 10);
+         label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
          label1.setText("Update");
          label1.setBackground(java.awt.SystemColor.control);
-         label1.setSize(90, 12);
+         label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
          label1.setForeground(java.awt.Color.black);
-         label1.setFont(new java.awt.Font("dialog", 2, 10));
+         label1.setFont(barFont);
          label1.setAlignment(1);
          panel.add(label1, label1.getName());
 
          Label label2 = new Label();
          label2.setName("Label2");
-         label2.setLocation(10, 22);
+         label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
          label2.setText("[messages/sec]");
          label2.setBackground(java.awt.SystemColor.control);
-         label2.setSize(90, 12);
+         label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
          label2.setForeground(java.awt.Color.black);
-         label2.setFont(new java.awt.Font("dialog", 2, 10));
+         label2.setFont(barFont);
          label2.setAlignment(1);
          panel.add(label2, label2.getName());
 
          sentMessagesBar = new FillLevelBar();
          sentMessagesBar.setName("SentMessages");
-         sentMessagesBar.setLocation(32, 35);
+         sentMessagesBar.setLocation(BAR_X, BAR_Y);
          sentMessagesBar.setBackground(java.awt.SystemColor.control);
-         sentMessagesBar.setSize(50, 130);
+         sentMessagesBar.setSize(BAR_WIDTH, BAR_HEIGHT);
          // yellow avg value, green current value
          sentMessagesBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
          //sentMessagesBar.setMaxValue(100);  // is set variable
@@ -245,6 +274,17 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          //sentMessagesBar.setCurrentValue(50);
          //sentMessagesBar.setAvgValue(25);
          panel.add(sentMessagesBar, sentMessagesBar.getName());
+
+         sentLabel = new Label();
+         sentLabel.setName("SentLabel");
+         sentLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
+         sentLabel.setText("Total:  0");
+         sentLabel.setBackground(java.awt.SystemColor.control);
+         sentLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
+         sentLabel.setForeground(java.awt.Color.black);
+         sentLabel.setFont(barFont);
+         sentLabel.setAlignment(1);
+         panel.add(sentLabel, sentLabel.getName());
 
          gbc.gridx=1; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
          gbc.weightx = gbc.weighty = 0.0;
@@ -256,37 +296,48 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          panel.setName("GetMessagePanel");
          panel.setLayout(null);
          panel.setBackground(java.awt.SystemColor.control);
-         panel.setSize(100, 200);
+         panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
 
          Label label1 = new Label();
          label1.setName("Label1");
-         label1.setLocation(10, 10);
+         label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
          label1.setText("Get Synchronous");
          label1.setBackground(java.awt.SystemColor.control);
-         label1.setSize(90, 12);
+         label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
          label1.setForeground(java.awt.Color.black);
-         label1.setFont(new java.awt.Font("dialog", 2, 10));
+         label1.setFont(barFont);
          label1.setAlignment(1);
          panel.add(label1, label1.getName());
 
          Label label2 = new Label();
          label2.setName("Label2");
-         label2.setLocation(10, 22);
+         label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
          label2.setText("[messages/sec]");
          label2.setBackground(java.awt.SystemColor.control);
-         label2.setSize(90, 12);
+         label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
          label2.setForeground(java.awt.Color.black);
-         label2.setFont(new java.awt.Font("dialog", 2, 10));
+         label2.setFont(barFont);
          label2.setAlignment(1);
          panel.add(label2, label2.getName());
 
          getMessagesBar = new FillLevelBar();
          getMessagesBar.setName("GetMessages");
-         getMessagesBar.setLocation(32, 35);
+         getMessagesBar.setLocation(BAR_X, BAR_Y);
          getMessagesBar.setBackground(java.awt.SystemColor.control);
-         getMessagesBar.setSize(50, 130);
+         getMessagesBar.setSize(BAR_WIDTH, BAR_HEIGHT);
          getMessagesBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
          panel.add(getMessagesBar, getMessagesBar.getName());
+
+         getLabel = new Label();
+         getLabel.setName("GetLabel");
+         getLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
+         getLabel.setText("Total:  0");
+         getLabel.setBackground(java.awt.SystemColor.control);
+         getLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
+         getLabel.setForeground(java.awt.Color.black);
+         getLabel.setFont(barFont);
+         getLabel.setAlignment(1);
+         panel.add(getLabel, getLabel.getName());
 
          gbc.gridx=2; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
          gbc.weightx = gbc.weighty = 0.0;
@@ -386,7 +437,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 /**
  * Polls the state of xmlBlaster
  */
-class PollingThread extends Thread 
+class PollingThread extends Thread
 {
    private final int POLLING_FREQUENCY = 2000;  // sleep 2 sec
    private final MainGUI mainGUI;
@@ -402,7 +453,7 @@ class PollingThread extends Thread
 
 
    /**
-    * Start the timeout thread. 
+    * Start the timeout thread.
     **/
    public void run()
    {
