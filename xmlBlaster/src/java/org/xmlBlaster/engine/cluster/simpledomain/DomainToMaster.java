@@ -145,6 +145,12 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       //XmlKey xmlKey = msgWrapper.getMessageUnitHandler().getXmlKey(); // This key from the current messsage is DOM parsed
       XmlKey xmlKey = msgWrapper.getXmlKey();
 
+      if (msgWrapper.getPublishQos().isPtp()) {
+         log.info(ME, "Checking if PtP message shall be forwarded to other cluster node");
+         log.error(ME, "PtP cluster support is not implemented");
+         return null;
+      }
+
       /*
       // Look if we can handle it simple ...
       if (xmlKey.isDefaultDomain()) {

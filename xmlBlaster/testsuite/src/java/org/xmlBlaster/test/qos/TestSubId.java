@@ -127,9 +127,8 @@ public class TestSubId extends TestCase implements I_Callback
       String serverName = "heron";
       int myCounter = 99;
       try {
-         sentSubscribeId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX + serverName +
-                  "/client/" + connectQos.getUserId() +
-                  "/" + connectReturnQos.getPublicSessionId() +
+         sentSubscribeId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX +
+                  "/" + connectReturnQos.getSessionName() +
                   "/" + myCounter;
          sq.setSubscriptionId(sentSubscribeId);
          numReceived = 0;

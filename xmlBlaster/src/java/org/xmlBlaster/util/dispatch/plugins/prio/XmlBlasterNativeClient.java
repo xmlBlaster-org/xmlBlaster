@@ -114,7 +114,7 @@ public final class XmlBlasterNativeClient implements I_Callback
             public void reConnected() {
                connected = true;
                conRetQos = xmlBlasterCon.getConnectReturnQos();
-               log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " with public session Id " + conRetQos.getPublicSessionId());
+               log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                try {
                   xmlBlasterCon.flushQueue();    // send all tailback messages
                   // xmlBlasterCon.resetQueue(); // or discard them (it is our choice)

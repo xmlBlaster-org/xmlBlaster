@@ -68,7 +68,7 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
          }
          else if (MethodName.CONNECT == entries[ii].getMethodName()) {
             ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)entries[ii]).getConnectQos());
-            if (connectReturnQos.getPublicSessionId() == null) {
+            if (connectReturnQos.getSessionName() == null) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                   "Please provide a public session ID to support polling for xmlBlaster without an initial connection. " +
                   "See 'http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsave.html' for more details.");

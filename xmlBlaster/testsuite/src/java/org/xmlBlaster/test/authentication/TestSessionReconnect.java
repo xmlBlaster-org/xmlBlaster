@@ -101,7 +101,7 @@ public class TestSessionReconnect extends TestCase implements I_Callback
                public void reConnected() {
                   connected = true;
                   ConnectReturnQos conRetQos = con.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " with public session Id " + conRetQos.getPublicSessionId());
+                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
                   try {
                      con.flushQueue();    // send all tailback messages

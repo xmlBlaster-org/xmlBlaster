@@ -53,7 +53,7 @@ public class HelloWorld4
                public void reConnected() {
                   connected = true;
                   conRetQos = con.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " with public session Id " + conRetQos.getPublicSessionId());
+                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
                   try {
                      con.flushQueue();    // send all tailback messages
@@ -98,7 +98,7 @@ public class HelloWorld4
 
          connected = (conRetQos != null);
          if (connected)
-            log.info(ME, "Connected as " + qos.getUserId() + " to xmlBlaster, your public session ID is " + conRetQos.getPublicSessionId());
+            log.info(ME, "Connected as " + qos.getUserId() + " to xmlBlaster, your public session ID is " + conRetQos.getSessionName());
          else
             log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
 

@@ -267,7 +267,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          // --- compose an answer -----------------------------------------------
          ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
          returnQos.setSessionId(secretSessionId); // securityInfo is not coded yet !
-         returnQos.setPublicSessionId(""+sessionInfo.getInstanceId());
+         returnQos.setSessionName(sessionInfo.getSessionName());
 
          // Now some nice logging ...
          StringBuffer sb = new StringBuffer(256);

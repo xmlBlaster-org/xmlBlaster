@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.32 2002/11/26 12:39:27 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.33 2002/11/26 18:22:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -38,12 +38,11 @@ import java.io.Serializable;
  *     &lt;qos>
  *        &lt;securityService type="htpasswd" version="1.0">
  *          &lt;![CDATA[
- *          &lt;user>michele&lt;/user>
+ *          &lt;user>joe&lt;/user>
  *          &lt;passwd>secret&lt;/passwd>
  *          ]]>
  *        &lt;/securityService>
- *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0' publicSessionId='9'>
- *        &lt;/session>
+ *        &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
  *        &lt;ptp>true&lt;/ptp>
  *        &lt;!-- The client side queue: -->
  *        &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>
@@ -104,12 +103,11 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** Clear on login all other sessions of this user (for recovery reasons) "session.clearSessions false" */
    protected boolean clearSessions = false;
 
-   /** Passing own sessionId is not yet supported */
+   /** Passing own secret sessionId is not yet supported */
    protected String sessionId = null;
-   /** This is the not secret unique session ID which allows
-       to address a specific session of a user with PtP message replies
+   /** The unified session name which is a clusterwide unique identifier
    */
-   protected String publicSessionId = null; 
+   protected SessionName sessionName;
 
    protected transient PluginLoader pMgr;
    protected I_ClientPlugin plugin;
@@ -535,7 +533,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
-    * Get our session identifier which authenticates us for xmlBlaster. 
+    * Get our secret session identifier which authenticates us for xmlBlaster. 
     * <p />
     * @return The unique, secret sessionId
     */
@@ -545,25 +543,20 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
-    * Set our session identifier which can be used with PtP messages. 
-    * <p />
-    * @param id The unique publicSessionId (unique in this JVM)
+    * Set our unique SessionName. 
+    * @param sessionName
     */
-   public void setPublicSessionId(String id)
-   {
-      if(id==null || id.equals("")) id = null;
-      publicSessionId = id;
+   public void setSessionName(SessionName sessionName) {
+      this.sessionName = sessionName;
    }
 
    /**
-    * Get our public session identifier. 
+    * Get our unique SessionName. 
     * <p />
-    * It is unique in this JVM
-    * @return The unique publicSessionId (null if not known)
+    * @return The unique SessionName (null if not known)
     */
-   public final String getPublicSessionId()
-   {
-      return publicSessionId;
+   public final SessionName getSessionName() {
+      return this.sessionName;
    }
 
    /**
@@ -802,6 +795,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return securityQos.getUserId();
    }
 
+   
+
    /**
     * Start element, event from SAX parser.
     * <p />
@@ -926,14 +921,14 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             int len = attrs.getLength();
             int ii=0;
             for (ii = 0; ii < len; ii++) {
-               if (attrs.getQName(ii).equalsIgnoreCase("timeout"))
+               if (attrs.getQName(ii).equalsIgnoreCase("name"))
+                  this.sessionName = new SessionName(glob, attrs.getValue(ii).trim());
+               else if (attrs.getQName(ii).equalsIgnoreCase("timeout"))
                   this.sessionTimeout = (new Long(attrs.getValue(ii).trim())).longValue();
                else if (attrs.getQName(ii).equalsIgnoreCase("maxSessions"))
                   this.maxSessions = (new Integer(attrs.getValue(ii).trim())).intValue();
                else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
                   this.clearSessions = (new Boolean(attrs.getValue(ii).trim())).booleanValue();
-               else if (attrs.getQName(ii).equalsIgnoreCase("publicSessionId"))
-                  this.publicSessionId = attrs.getValue(ii).trim();
                else
                   log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
@@ -1145,8 +1140,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append(offset).append("   <session timeout='").append(sessionTimeout);
       sb.append("' maxSessions='").append(maxSessions);
       sb.append("' clearSessions='").append(clearSessions());
-      if (getPublicSessionId() != null)
-         sb.append("' publicSessionId='").append(getPublicSessionId());
+      if (getSessionName() != null)
+         sb.append("' name='").append(getSessionName().getAbsoluteName());
       if(sessionId!=null) {
          sb.append("'>");
          sb.append(offset).append("      <sessionId>").append(sessionId).append("</sessionId>");

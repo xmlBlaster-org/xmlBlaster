@@ -109,7 +109,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
       synchronized (SessionInfo.class) {
          instanceId = instanceCounter;
-         instanceCounter++;
+         instanceCounter--;
       }
       //this.id = ((prefix.length() < 1) ? "client/" : (prefix+"/client/")) + subjectInfo.getLoginName() + "/" + getPublicSessionId();
       this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getPublicSessionId());
@@ -151,11 +151,10 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    /**
-    * This is a unique instance id per JVM.
+    * This is a unique instance id per JVM (it is the pubSessionId).
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
-    * @see #getPublicSessionId
     */
    public final long getInstanceId() {
       return this.instanceId;

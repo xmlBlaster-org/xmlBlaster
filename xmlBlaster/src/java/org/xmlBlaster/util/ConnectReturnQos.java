@@ -1,6 +1,7 @@
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -17,12 +18,12 @@ import org.xmlBlaster.util.XmlBlasterException;
  *   &lt;qos>
  *      &lt;securityService type='htpasswd' version='1.0'>
  *         &lt;![CDATA[
- *         &lt;user>ClientSub&lt;/user>
+ *         &lt;user>joe&lt;/user>
  *         &lt;passwd>secret&lt;/passwd>
  *         ]]>
  *      &lt;/securityService>
  *      &lt;ptp>true&lt;/ptp>
- *      &lt;session timeout='86400000' maxSessions='10' clearSessions='false'>
+ *      &lt;session name='/node/heron/client/joe/2' timeout='86400000' maxSessions='10' clearSessions='false'>
  *         &lt;sessionId>sessionId:192.168.1.2-null-1018875420070--582319444-3&lt;/sessionId>
  *      &lt;/session>
  *      &lt;!-- CbQueueProperty -->
@@ -57,8 +58,8 @@ public class ConnectReturnQos {
    public final void setSessionId(String id) {
       connectQos.setSessionId(id);
    }
-   public final void setPublicSessionId(String id) {
-      connectQos.setPublicSessionId(id);
+   public final void setSessionName(SessionName sessionName) {
+      connectQos.setSessionName(sessionName);
    }
    /**
     * Adds a server reference
@@ -72,8 +73,8 @@ public class ConnectReturnQos {
    public String getSessionId() {
       return connectQos.getSessionId();
    }
-   public String getPublicSessionId() {
-      return connectQos.getPublicSessionId();
+   public SessionName getSessionName() {
+      return connectQos.getSessionName();
    }
    public String getUserId() {
       return connectQos.getUserId();

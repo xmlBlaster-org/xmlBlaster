@@ -49,7 +49,7 @@ public class ConnectQosTest extends TestCase {
          "   <ptp>true</ptp>\n" +
          "   <isClusterNode>true</isClusterNode>\n" +
          "   <duplicateUpdates>false</duplicateUpdates>\n" +
-         "   <session timeout='" + sessionTimeout + "' maxSessions='20' clearSessions='false'>\n" +
+         "   <session name='/node/avalon/client/joe/2' timeout='" + sessionTimeout + "' maxSessions='20' clearSessions='false'>\n" +
          "      <sessionId>anId</sessionId>\n" +
          "   </session>\n" +
          "   <queue relating='subject' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>\n" +
@@ -86,6 +86,7 @@ public class ConnectQosTest extends TestCase {
 
          ConnectQos qos = new ConnectQos(glob, xml);
          assertEquals("sessionTimeout failed", sessionTimeout, qos.getSessionTimeout());
+         assertEquals("", "/node/avalon/client/joe/2", qos.getSessionName().getAbsoluteName());
 
          // TODO: check all methods
       }

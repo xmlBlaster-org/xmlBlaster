@@ -600,6 +600,9 @@ public class SubjectInfo implements I_AdminSubject
     * @return null if not found
     */
    public final SessionInfo getSessionByPublicId(String publicSessionId) {
+      if (publicSessionId == null) {
+         return null;
+      }
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];

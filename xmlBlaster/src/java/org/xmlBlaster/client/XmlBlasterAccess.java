@@ -7,6 +7,7 @@ package org.xmlBlaster.client;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
@@ -129,7 +130,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
    public void toAlive(ConnectReturnQos ret) {
       this.connectReturnQos = ret;
       this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
-      this.connectQos.setPublicSessionId(this.connectReturnQos.getPublicSessionId());
+      this.connectQos.setPublicSessionId(this.connectReturnQos.getSessionName());
          if (isReconnectPolling)
             clientProblemCallback.reConnected();
    }
@@ -241,27 +242,21 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
 
    /**
     * Create a descriptive ME, for logging only
-    * @return "client/joe/3-bilbo" in cluster environment otherwise only "client/joe/3"
+    * @return e.g. "/node/heron/client/joe/3"
     */
    public String getId() {
-      StringBuffer sb = new StringBuffer(56);
-      sb.append("client/").append(getLoginName());
-      if (getPublicSessionId() != null)
-         sb.append("/").append(getPublicSessionId());
-      if (!getServerNodeId().equals("xmlBlaster"))
-         sb.append("-").append(getServerNodeId());
-
-      return sb.toString();
+      SessionName sessionName = getSessionName();
+      return (sessionName == null) ? "UNKNOWN_SESSION" : sessionName.getAbsoluteName();
    }
 
    /**
     * The public session ID of this login session. 
     */
-   public String getPublicSessionId() {
+   public SessionName getSessionName() {
       if (this.connectReturnQos != null)
-         return this.connectReturnQos.getPublicSessionId();
+         return this.connectReturnQos.getSessionName();
       if (this.connectQos != null) {
-         return this.connectQos.getPublicSessionId();
+         return this.connectQos.getSessionName();
       }
       return null;
    }

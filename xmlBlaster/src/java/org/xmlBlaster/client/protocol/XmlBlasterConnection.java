@@ -836,7 +836,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             if (loginName == null && connectQos != null)
                loginName = connectQos.getUserId();
             if (this.connectReturnQos != null)
-               loginName += this.connectReturnQos.getPublicSessionId();
+               loginName += this.connectReturnQos.getSessionName().getLoginName();
             else {
                synchronized (this) {
                   loginName += (recorderCounter++);
@@ -939,7 +939,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             firstConnect = false;
             if (log.DUMP) log.dump(ME, "connectReturnQos=" + connectReturnQos.toXml());
             initFailSave();
-            log.info(ME, "Connected to " + getServerNodeId() + ", your public session ID is " + connectReturnQos.getPublicSessionId());
+            log.info(ME, "Connected to " + getServerNodeId() + " as " + connectReturnQos.getSessionName());
          }
          else
             this.connectReturnQos = driver.loginRaw();
@@ -947,7 +947,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          // Remember sessionId for reconnects ...
          this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
-         this.connectQos.setPublicSessionId(this.connectReturnQos.getPublicSessionId());
+         this.connectQos.setSessionName(this.connectReturnQos.getSessionName());
 
          if (log.TRACE) log.trace(ME, "Successful login to " + getServerNodeId());
 
@@ -1461,9 +1461,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             if (qos == null || qos.indexOf("<id>") == -1) { // Add a subscription ID on client side
                org.xmlBlaster.engine.qos.SubscribeQosServer sq = new org.xmlBlaster.engine.qos.SubscribeQosServer(glob, qos);
                subscribeUniqueCounter++;
-               String subId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX + getServerNodeId() +
-                        "/client/" + getLoginName() +
-                        "/" + ((connectReturnQos!=null)?connectReturnQos.getPublicSessionId():"-") +
+               String absoluteName = (this.connectReturnQos!=null) ? this.connectReturnQos.getSessionName().getAbsoluteName() : (String)null;
+               if (absoluteName == null) {
+                  absoluteName = (this.connectQos!=null) ? this.connectQos.getSessionName().getAbsoluteName() : (String)null;
+               }
+               if (absoluteName == null) {
+                  absoluteName = getServerNodeId() + "/client/" + getLoginName();
+               }
+               String subId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX + absoluteName +
                         "/" + subscribeUniqueCounter;
                sq.setSubscriptionId(subId);
                if (log.TRACE) log.trace(ME, "Adding client side subscriptionId='" + subId + "'");
