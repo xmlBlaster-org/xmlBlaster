@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.30 2003/03/27 20:56:28 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.31 2003/10/03 19:36:09 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -154,7 +154,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          loginQos.setSecurityPluginData(null, null, loginName, passwd);
 
          // No login using the connect() method ...
-         ConnectReturnQosServer returnQos = connect(loginQos);
+         ConnectReturnQosServer returnQos = connectIntern(loginQos.toXml());
 
          // Build return handle ...
          ServerRef ref = returnQos.getServerRef();
@@ -175,20 +175,6 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    }
 
    /**
-    * If qos_literal transports another sessionId (e.g. from a2Blaster)
-    * we leave this untouched.
-    * This CORBA sessionId (transported hidden in the IOR) is used as well
-    */
-   public String connect(String qos_literal) throws XmlBlasterException
-   {
-      try {
-         return connect(new ConnectQosServer(glob, qos_literal)).toXml();
-      } catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
-      }
-   }
-
-   /**
     * Ping to check if xmlBlaster is alive.
     * @param qos ""
     * @return ""
@@ -199,7 +185,22 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       return "";
    }
 
-   private ConnectReturnQosServer connect(ConnectQosServer loginQos) throws XmlBlasterException
+   /**
+    * Called by the CORBA layer. 
+    * If qos_literal transports another sessionId (e.g. from a2Blaster)
+    * we leave this untouched.
+    * This CORBA sessionId (transported hidden in the IOR) is used as well
+    */
+   public String connect(String qos_literal) throws XmlBlasterException
+   {
+      try {
+         return connectIntern(qos_literal).toXml();
+      } catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+      }
+   }
+
+   private ConnectReturnQosServer connectIntern(String qos_literal) throws org.xmlBlaster.util.XmlBlasterException
    {
       ConnectReturnQosServer returnQos = null;
       String sessionId = null;
@@ -217,27 +218,22 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       } catch (Exception e) {
          e.printStackTrace();
          log.error(ME+".Corba", e.toString());
-         throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
-                     ErrorCode.INTERNAL_CONNECTIONFAILURE, ME, "connect failed: " + e.toString()));
+         throw new org.xmlBlaster.util.XmlBlasterException(glob, ErrorCode.INTERNAL_CONNECTIONFAILURE,
+                                ME, "connect failed: " + e.toString());
       }
 
-      try {
-         returnQos = authenticate.connect(loginQos, sessionId);
-
-         if (returnQos.isReconnected()) {
-            // How to detect outdated server IORs??
-            // Here we assume max one connection of type=CORBA which is probably wrong?
-            if (log.TRACE) log.trace(ME, "Destroying old server addresses because of reconnect");
-            returnQos.removeServerRef("IOR");
-         }
-
-         org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
-         String serverIOR = orb.object_to_string(xmlBlaster);
-         returnQos.addServerRef(new ServerRef("IOR", serverIOR));
+      String returnQosStr = authenticate.connect(qos_literal, sessionId);
+      returnQos = new ConnectReturnQosServer(glob, returnQosStr);
+      if (returnQos.isReconnected()) {
+         // How to detect outdated server IORs??
+         // Here we assume max one connection of type=CORBA which is probably wrong?
+         if (log.TRACE) log.trace(ME, "Destroying old server addresses because of reconnect");
+         returnQos.removeServerRef("IOR");
       }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
-      }
+
+      org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
+      String serverIOR = orb.object_to_string(xmlBlaster);
+      returnQos.addServerRef(new ServerRef("IOR", serverIOR));
 
       if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
       if (log.DUMP) log.dump(ME, "Returning from login-connect()" + returnQos.toXml());

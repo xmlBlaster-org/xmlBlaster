@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: I_LocalCallback.java,v 1.1 2003/09/18 14:32:20 antman Exp $
+ * $Id: I_LocalCallback.java,v 1.2 2003/10/03 19:36:09 ruff Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,14 +20,14 @@
 package org.xmlBlaster.protocol.local;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
+
 /**
- * I_LocalCallback.java
- *
+ * Is implemented by the callback client (LOCAL protocol driver). 
  *
  * Created: Mon Sep 15 18:39:08 2003
- *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
+ * @see org.xmlBlaster.client.protocol.local.LocalCallbackImpl
  */
 
 public interface I_LocalCallback {

@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.44 2003/05/21 20:21:20 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.45 2003/10/03 19:36:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -23,7 +23,6 @@ import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 
 import java.util.StringTokenizer;
-import org.xmlBlaster.authentication.Authenticate;
 
 
 /**
@@ -98,16 +97,16 @@ public class JdbcDriver implements I_Driver, I_Publish
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {
-         Authenticate authenticate = engineGlob.getAuthenticate();
-         if (authenticate == null) {
+         this.authenticate = engineGlob.getAuthenticate();
+         if (this.authenticate == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
-         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
 
-         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         init(glob, new AddressServer(glob, getType(), glob.getId()), this.authenticate, xmlBlasterImpl);
          
          activate();
       }
@@ -182,7 +181,7 @@ public class JdbcDriver implements I_Driver, I_Publish
       connectQos.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
       connectQos.getSessionQos().setSessionTimeout(0L);
 
-      ConnectReturnQosServer returnQos = authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));
+      ConnectReturnQosServer returnQos = this.authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));
       sessionId = returnQos.getSecretSessionId();
 
       log.info(ME, "Started successfully JDBC driver with loginName=" + loginName);
@@ -203,7 +202,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void shutdown() throws XmlBlasterException {
       if (sessionId != null) {
-         try { authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
+         try { this.authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
       }
       namedPool.destroy();
       log.info(ME, "JDBC service stopped, resources released.");

@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.46 2003/05/23 09:44:33 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.47 2003/10/03 19:36:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -17,7 +17,6 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.authentication.Authenticate;
 
 import org.apache.xmlrpc.*;
 import java.io.IOException;
@@ -97,16 +96,16 @@ public class XmlRpcDriver implements I_Driver
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {
-         Authenticate authenticate = engineGlob.getAuthenticate();
-         if (authenticate == null) {
+         this.authenticate = engineGlob.getAuthenticate();
+         if (this.authenticate == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
-         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
 
-         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         init(glob, new AddressServer(glob, getType(), glob.getId()), this.authenticate, xmlBlasterImpl);
 
          activate();
       }

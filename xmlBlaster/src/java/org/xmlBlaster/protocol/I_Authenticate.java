@@ -3,15 +3,18 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.11 2003/01/05 23:06:13 ruff Exp $
+Version:   $Id: I_Authenticate.java,v 1.12 2003/10/03 19:36:09 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
-
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.engine.admin.I_AdminSubject;
+import org.xmlBlaster.authentication.SessionInfo;
 
 /**
  * This is the native interface to xmlBlaster-authentication.
@@ -27,20 +30,47 @@ public interface I_Authenticate
 {
    public boolean sessionExists(String sessionId);
 
+   public Global getGlobal();
+
+   public I_XmlBlaster getXmlBlaster();
+
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
    public ConnectReturnQosServer connect(ConnectQosServer qos) throws XmlBlasterException;
+
+   /**
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
+    */
+   public String connect(String qos) throws XmlBlasterException;
 
    /*
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
    public ConnectReturnQosServer connect(ConnectQosServer qos, String sessionId) throws XmlBlasterException;
 
+   /*
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
+    */
+   public String connect(String qos, String sessionId) throws XmlBlasterException;
+
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
     */
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException;
+
+   /**
+    * Administrative access. 
+    * For security reasons the I_AdminSubject implementation is SubjectInfoProtector
+    */
+   public I_AdminSubject getSubjectInfoByName(SessionName sessionName)  throws XmlBlasterException;
+
+   /**
+    * @deprecated Security hole, currently need by MainGUI.java
+    */
+   public SessionInfo unsecureCreateSession(SessionName loginName) throws XmlBlasterException;
+
+   public String toXml() throws XmlBlasterException;
 }
 
 

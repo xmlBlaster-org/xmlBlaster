@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.71 2003/09/14 20:41:17 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.72 2003/10/03 19:36:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -30,8 +30,6 @@ import java.util.Properties;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
-
-import org.xmlBlaster.authentication.Authenticate;
 
 /**
  * CorbaDriver class to invoke the xmlBlaster server using CORBA.
@@ -118,16 +116,16 @@ public class CorbaDriver implements I_Driver
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {
-         Authenticate authenticate = engineGlob.getAuthenticate();
-         if (authenticate == null) {
+         this.authenticate = engineGlob.getAuthenticate();
+         if (this.authenticate == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
-         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
 
-         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         init(glob, new AddressServer(glob, getType(), glob.getId()), this.authenticate, xmlBlasterImpl);
          
          activate();
       }
@@ -169,7 +167,7 @@ public class CorbaDriver implements I_Driver
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
 
-         authServer = new AuthServerImpl(glob, orb, authenticate, xmlBlasterImpl);
+         authServer = new AuthServerImpl(glob, orb, this.authenticate, this.xmlBlasterImpl);
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);

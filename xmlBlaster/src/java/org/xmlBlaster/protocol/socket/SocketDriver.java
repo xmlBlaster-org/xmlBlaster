@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.35 2003/05/23 11:46:44 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.36 2003/10/03 19:36:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -15,7 +15,6 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.authentication.Authenticate;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -115,16 +114,16 @@ public class SocketDriver extends Thread implements I_Driver
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {
-         Authenticate authenticate = engineGlob.getAuthenticate();
-         if (authenticate == null) {
+         this.authenticate = engineGlob.getAuthenticate();
+         if (this.authenticate == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
-         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
 
-         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         init(glob, new AddressServer(glob, getType(), glob.getId()), this.authenticate, xmlBlasterImpl);
          
          activate();
       }

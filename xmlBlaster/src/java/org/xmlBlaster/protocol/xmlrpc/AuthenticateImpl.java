@@ -113,9 +113,7 @@ public class AuthenticateImpl
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
-      ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
-      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
-      returnValue = returnQos.toXml();
+      returnValue = authenticate.connect(qos_literal);
 
       returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
       returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");

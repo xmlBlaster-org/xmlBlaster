@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.36 2003/05/23 09:04:53 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.37 2003/10/03 19:36:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -22,8 +22,6 @@ import java.rmi.RMISecurityManager;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.Naming;
 import java.rmi.AlreadyBoundException;
-
-import org.xmlBlaster.authentication.Authenticate;
 
 /**
  * RmiDriver class to invoke the xmlBlaster server using RMI.
@@ -145,16 +143,16 @@ public class RmiDriver implements I_Driver
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {
-         Authenticate authenticate = engineGlob.getAuthenticate();
-         if (authenticate == null) {
+         this.authenticate = engineGlob.getAuthenticate();
+         if (this.authenticate == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
-         I_XmlBlaster xmlBlasterImpl = authenticate.getXmlBlaster();
+         I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
 
-         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         init(glob, new AddressServer(glob, getType(), glob.getId()), this.authenticate, xmlBlasterImpl);
          
          activate();
       }
@@ -230,7 +228,7 @@ public class RmiDriver implements I_Driver
    public synchronized void activate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering activate");
       try {
-         authRmiServer = new AuthServerImpl(glob, authenticate, xmlBlasterImpl);
+         authRmiServer = new AuthServerImpl(glob, this.authenticate, xmlBlasterImpl);
          xmlBlasterRmiServer = new XmlBlasterImpl(glob, xmlBlasterImpl);
       }
       catch (RemoteException e) {
