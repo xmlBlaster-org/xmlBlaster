@@ -300,3 +300,9 @@ only the SNMP subagent module jax.jar is GPL only!
   commons-codec-2.0, built from cvs Nov, 18 2003
   different utilities (extention of java.util.*)
  
+34) xmlunit.jar
+=============== 
+  http://xmlunit.sourceforge.net/
+  XMLUnit - JUnit and NUnit testing for XML
+  Version 1.0
+
