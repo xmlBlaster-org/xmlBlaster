@@ -175,6 +175,7 @@ public:
       log_.info(ME, "   -historyNumUpdates   " + lexical_cast<string>(historyNumUpdates));
       log_.info(ME, "   -historyNewestFirst  " + lexical_cast<string>(historyNewestFirst));
       log_.info(ME, "   -wantContent         " + lexical_cast<string>(wantContent));
+      log_.info(ME, "   -maxContentLength    " + lexical_cast<string>(maxContentLength));
       log_.info(ME, "   -unSubscribe         " + lexical_cast<string>(unSubscribe));
       log_.info(ME, "   -disconnect          " + lexical_cast<string>(disconnect));
       log_.info(ME, "   -filter.type         " + filterType);
