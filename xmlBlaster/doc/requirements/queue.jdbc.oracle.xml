@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='queue.jdbc.oracle' type='NEW' prio='MIDDLE' status='CLOSED'>
+   <topic>
+        XmlBlaster has an advanced queuing facility. Among others one tested persistence layer is offered by
+        communicating with an oracle database.
+    </topic>
+    <description>
+       <p>The generic plugin for jdbc based queues has been tested against Oracle 9.20 i on linux).</p>
+        <p>Oracle is available on <a href='www.oracle.com'>http://www.oracle.com</a> where you can find all
+        necessary information and instructions on how to make Oracle run.
+        </p>
+        <p>Once you have a running oracle database you can configure xmlBlaster to make it run against it.
+        Before you need to download the jdbc driver (you need two files: the  classes12.zip  nls_charset12.zip files which
+        you can download them from <a href='http://otn.oracle.com/software/tech/java/sqlj_jdbc/content.html'>
+        http://otn.oracle.com/software/tech/java/sqlj_jdbc/content.html</a>. You must
+        put these files in the CLASSPATH (for example you can put them into $XMLBLASTER_HOME/lib and add them to the
+        CLASSPATH.
+        </p>
+    </description>
+
+    <example lang="Java" type="HTML">
+       These are example QoS of subscribe() invocations:
+       <pre>
+&lt;qos>
+   &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  maxMsg='10000' maxSize='1000000000' onOverflow='deadMessage'/>
+   &lt;/queue>
+&lt;/qos>
+</pre>
+   </example>
+   <configuration where="server">
+
+      <p>
+      These parameters allow to configure a cache queue running with postgres
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>QueuePlugin[CACHE][1.0]</td>
+            <td>org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</td>
+            <td>specifies the cache implementing class to be used</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in the ram portion of this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxSize</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size for the ram portion allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.maxMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.maxSize</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.url</td>
+            <td>jdbc:oracle:thin:@develop:1521:TEST</td>
+            <td>the url which specifies where to find the DB.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+            <tr>
+            <td>queue.persistent.user</td>
+            <td>xmlblaster</td>
+            <td>The db user under which to run</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.password</td>
+            <td>secret</td>
+            <td>The password used together with the user 'xmlblaster'</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+        </table>
+        Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>laghi@swissinfo.org</author>
+   <date>2002 11 17</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.CacheQueueTest</test>
+   </testcase>
+</requirement>
+

@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='queue.jdbc.postgres' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+        XmlBlaster has an advanced queuing facility. Among others one tested persistence layer is offered by
+        communicating with a postgres database.
+    </topic>
+    <description>
+       <p>The generic plugin for jdbc based queues has been tested against postgres (on postgres 7.2.2 
+       and 7.2.3 on linux).</p>
+       <p>To make xmlBlaster run with a persitent queue stored on postgres it is necessary to first install postgres.
+       In some of the linux distributions postgres comes along. For others, you can download it from
+       <a href='http://www.postgres.org'>the postgres homepage</a>. Please follow the instructions given there on 
+       how to download, install and initially configure postgres.. Keep in mind that you also need to install on your
+       machine the jdbc driver working with postgres. You can download it from <a href='http://jdbc.postgresql.org/download.html'>
+       http://jdbc.postgresql.org/download.html</a> and put it somewhere in your classpath. To keep it simple you can 
+       put the jar file (for example pgjdbc2.jar) in the $XMLBLASTER_HOME/lib directory.
+       </p>
+       <p>
+       If you have not initialized postgres previously, you should do it now by invoking 
+       <pre>
+       $PGRES_HOME/bin/initdb -D $PGRES_HOME/data
+       </pre>as the user postgres, where '$PGRES_HOME' is the base directory where you installed your postgres (for example in /usr/local/pgres).
+        Once postgres has been initialized you can start the server. Since we are communicating via TCP/IP with the jdbc driver, we need the '-i'
+        switch on, for example:
+        <pre>
+         postmaster -i -N100 -B200 -D /usr/local/pgres/data
+        </pre>
+         the -N50 flag and -B100 are needed if you want to run the <b>complete</b> testsuite since it will consume quite a
+         big amount of tcp/ip connections. If you did'nt create a db before you can do it now. Lets suppose we call the database 'test', then 
+         what you have to do is invoke
+         <pre>
+         createdb test
+         </pre>
+         And now you still have to configure xmlBlaster in order to be able to find the db. Lets say you run it in the standard port on your
+         localhost and under the user postgres (you don't need a password for that user). If you choosed these settings you should be able to
+         start xmlBlaster and automatically have the persistence queues writing their data on postgres. If you specified someting diffenrent for
+         the db name, the user, the hostname or the port, please read more under 'configuration'.
+       </p>
+       
+    </description>
+
+    <example lang="Java" type="HTML">
+       These are example QoS of subscribe() invocations:
+       <pre>
+           &lt;qos>
+               &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  maxMsg='10000' maxSize='1000000000' onOverflow='deadMessage'/>
+           &lt;/queue>
+       </pre>
+   </example>
+   <configuration where="server">
+
+      <p>
+      These parameters allow to configure a cache queue running with postgres
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>QueuePlugin[CACHE][1.0]</td>
+            <td>org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</td>
+            <td>specifies the cache implementing class to be used</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in the ram portion of this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxSize</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size for the ram portion allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.maxMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.maxSize</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.url</td>
+            <td>jdbc:postgresql://localhost/test</td>
+            <td>the url which specifies where to find the DB. Here postgresql is the db vendor name, localhost the hostname and test the db name.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+            <tr>
+            <td>queue.persistent.user</td>
+            <td>postgres</td>
+            <td>The db user under which to run</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.persistent.password</td>
+            <td></td>
+            <td>The unencrypted password. For the user 'postgres' the password is an empty string</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+        </table>
+        Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>laghi@swissinfo.org</author>
+   <date>2002 11 17</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.CacheQueueTest</test>
+   </testcase>
+</requirement>
+
