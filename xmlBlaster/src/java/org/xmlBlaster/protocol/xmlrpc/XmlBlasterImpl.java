@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.7 2001/02/14 01:02:33 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.8 2001/02/14 10:37:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -96,9 +96,10 @@ public class XmlBlasterImpl // implements org.xmlBlaster.protocol.xmlrpc.I_XmlBl
 
 
    /**
+    * This variant allows to publish simple string based messages
+    * (the content is a string). 
     * @see xmlBlaster.idl
     */
-    /*
    public String publish (String sessionId, String xmlKey_literal, String content,
          String publishQoS_literal)
       throws XmlBlasterException
@@ -114,7 +115,7 @@ public class XmlBlasterImpl // implements org.xmlBlaster.protocol.xmlrpc.I_XmlBl
       String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
       return retVal;
    }
-   */
+
 
    /**
     * @see xmlBlaster.idl
