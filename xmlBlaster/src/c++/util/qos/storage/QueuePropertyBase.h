@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.11 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.12 2003/05/29 10:35:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -49,7 +49,7 @@ extern Dll_Export  const string DEFAULT_onFailure;
 // static variables
 extern Dll_Export  string DEFAULT_type;
 extern Dll_Export  string DEFAULT_version;
-/** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
+/** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue/expires=3600000" milliseconds */
 extern Dll_Export  long DEFAULT_expires;
 
 typedef vector<AddressBase> AddressVector;
@@ -80,10 +80,10 @@ protected:
    /** The max setting allowed for queue maxBytesCache in Bytes is adjustable with property "queue/maxBytesCache=4000" (4 MBytes is default) */
    long maxBytesCacheDefault_;
 
-   /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
+   /** The min span of life is one second, changeable with property e.g. "queue/expires.min=2000" milliseconds */
    Timestamp minExpires_;
 
-   /** The max span of life of a queue is currently forever (=0), changeable with property e.g. "queue.expires.max=3600000" milliseconds */
+   /** The max span of life of a queue is currently forever (=0), changeable with property e.g. "queue/expires.max=3600000" milliseconds */
    Timestamp maxExpires_;
 
 
@@ -426,7 +426,7 @@ public:
 
    /**
     * The command line prefix to configure the queue or msgUnitStore
-    * @return e.g. "topic." or "history.queue."
+    * @return e.g. "persistence/msgUnitStore/" or "queue/history/"
     */
    string getPrefix();
 

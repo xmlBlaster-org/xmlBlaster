@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.8 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.9 2003/05/29 10:35:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -158,14 +158,14 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
       text += string("Control the callback queue properties:\n");
       text += string("   -queue/callback/maxEntries       The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
       text += string("   -queue/callback/maxEntriesCache  The maximum allowed number of messages in the cache of this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
-      text += string("   -cb.queue.maxBytes      The maximum size in kBytes of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
-      text += string("   -cb.queue.maxBytesCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
-    //text += "   -cb.queue.expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-    //text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
-      text += string("   -cb.queue.onOverflow What happens if queue is full [") + DEFAULT_onOverflow + string("]\n");
-      text += string("   -cb.queue.onFailure  Error handling when callback failed [") + DEFAULT_onFailure + string("]\n");
-      text += string("   -cb.queue.type       The plugin type [") + DEFAULT_type + string("]\n");
-      text += string("   -cb.queue.version    The plugin version [") + DEFAULT_version + string("]\n");
+      text += string("   -queue/callback/maxBytes      The maximum size in kBytes of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
+      text += string("   -queue/callback/maxBytesCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
+    //text += "   -queue/callback/expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
+    //text += "   -queue/callback/onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
+      text += string("   -queue/callback/onOverflow What happens if queue is full [") + DEFAULT_onOverflow + string("]\n");
+      text += string("   -queue/callback/onFailure  Error handling when callback failed [") + DEFAULT_onFailure + string("]\n");
+      text += string("   -queue/callback/type       The plugin type [") + DEFAULT_type + string("]\n");
+      text += string("   -queue/callback/version    The plugin version [") + DEFAULT_version + string("]\n");
       return text;
    }
 

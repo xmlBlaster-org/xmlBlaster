@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.17 2003/03/30 21:09:21 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.18 2003/05/29 10:35:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -60,12 +60,12 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    if (log_.trace()) log_.trace(ME, string("::initialize: got the prefix '") + prefix + "'");
 
    // Do we need this range settings?
-   setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
-   setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
+   setMinExpires(global_.getProperty().getTimestampProperty("queue/expires.min", DEFAULT_minExpires));
+   setMaxExpires(global_.getProperty().getTimestampProperty("queue/expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
    if (log_.trace()) log_.trace(ME, "::initialize: expires set");
    if (nodeId_ != "") {
-      setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min["+nodeId_+"]", getMinExpires()));
-      setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max["+nodeId_+"]", getMaxExpires())); // Long.MAX_VALUE);
+      setMinExpires(global_.getProperty().getTimestampProperty("queue/expires.min["+nodeId_+"]", getMinExpires()));
+      setMaxExpires(global_.getProperty().getTimestampProperty("queue/expires.max["+nodeId_+"]", getMaxExpires())); // Long.MAX_VALUE);
    }
    if (log_.trace()) log_.trace(ME, "::initialize: expires for the specific node set");
 
@@ -116,11 +116,11 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    void QueuePropertyBase::initialize()
    {
       // Do we need this range settings?
-      setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
-      setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
+      setMinExpires(global_.getProperty().getTimestampProperty("queue/expires.min", DEFAULT_minExpires));
+      setMaxExpires(global_.getProperty().getTimestampProperty("queue/expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
       if (nodeId_ != "") {
-         setMinExpires(global_.getProperty().getTimestampProperty(string("queue.expires.min[")+nodeId_+string("]"), getMinExpires()));
-         setMaxExpires(global_.getProperty().getTimestampProperty(string("queue.expires.max[")+nodeId_+string("]"), getMaxExpires())); // Long.MAX_VALUE);
+         setMinExpires(global_.getProperty().getTimestampProperty(string("queue/expires.min[")+nodeId_+string("]"), getMinExpires()));
+         setMaxExpires(global_.getProperty().getTimestampProperty(string("queue/expires.max[")+nodeId_+string("]"), getMaxExpires())); // Long.MAX_VALUE);
       }
 
 //         PluginInfo pluginInfo = new PluginInfo(glob, null, global_.getProperty().get("queue/defaultPlugin", DEFAULT_type));
@@ -602,17 +602,19 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
    /**
     * The command line prefix to configure the queue or msgUnitStore
-    * @return e.g. "history.queue." or "msgUnitStore."
+    * @return e.g. "queue/history/" or "persistence/msgUnitStore/"
     */
    string QueuePropertyBase::getPrefix()
    {
-      return (propertyPrefix_.length() > 0) ? propertyPrefix_ + "."+getRootTagName()+"." : getRootTagName()+".";
+      return (propertyPrefix_.length() > 0) ?
+                   getRootTagName()+"/"+propertyPrefix_+"/" :
+                   getRootTagName()+"/";
    }
 
    /**
     * Helper for logging output, creates the property key for configuration (the command line property).
     * @param prop e.g. "maxEntries"
-    * @return e.g. "-history.queue.maxEntries" or "-history.queue.maxEntriesCache" or "-persistence.maxEntries"
+    * @return e.g. "-queue/history/maxEntries" or "-queue/history/maxEntriesCache" or "-persistence/msgUnitStore/maxEntries"
     */
    string QueuePropertyBase::getPropName(const string& token)
    {

@@ -67,7 +67,8 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
 //   initSecuritySettings(securityQos.getPluginType(), securityQos.getPluginVersion());
    ME = string("XmlBlasterAccess-") + getId();
    string typeVersion = global_.getProperty().getStringProperty("queue/defaultPlugin", "CACHE,1.0");
-   string queueId = string("client:") + getId();
+   typeVersion = global_.getProperty().getStringProperty("queue/connection/defaultPlugin", "typeVersion");
+   string queueId = string("connection:") + getId();
    updateClient_ = clientAddr;
    //if (!cbServer_) createDefaultCbServer();
    createDefaultCbServer();
