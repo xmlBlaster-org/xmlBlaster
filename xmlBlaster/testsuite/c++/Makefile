@@ -1,0 +1,118 @@
+#
+# MICO --- a CORBA 2.0 implementation
+# Copyright (C) 1997 Kay Roemer & Arno Puder
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# Send comments and/or bug reports to:
+#                mico@informatik.uni-frankfurt.de
+#
+
+all: .depend client
+
+DIR_PREFIX=${MICO_HOME}/demo/redlich/
+include $(DIR_PREFIX)../../MakeVars
+
+LD = $(CXX)
+
+CXXFLAGS := -I. -I$(DIR_PREFIX)../../include $(CXXFLAGS) $(EHFLAGS)
+CFLAGS   := -I. -I$(DIR_PREFIX)../../include $(CFLAGS)
+LDLIBS   := -lmico$(VERSION) $(CONFLIBS)
+LDFLAGS  := -L$(DIR_PREFIX)../../libs $(LDFLAGS)
+DEPS     := $(DIR_PREFIX)../../orb/$(LIBMICO)
+IDLFLAGS := -I. -I$(DIR_PREFIX)../../include
+
+AUX_CXXFLAGS =
+AUX_LDLIBS   = -lmicoaux$(VERSION)
+AUX_LDFLAGS  =
+ifeq  ($(HAVE_STATIC), yes)
+AUX_DEPS     = $(DIR_PREFIX)../../auxdir/libmicoaux$(VERSION).a
+else
+AUX_DEPS     = $(DIR_PREFIX)../../auxdir/libmicoaux$(VERSION).$(SOEXT)
+endif
+
+X11_CXXFLAGS = $(X_CFLAGS)
+X11_LDLIBS   = -lmicox$(VERSION) -lXaw -lXmu -lXt -lX11 -lXext $(X_LIBS)
+X11_LDFLAGS  =
+ifeq  ($(HAVE_SHARED), yes)
+X11_DEPS     = $(DIR_PREFIX)../../auxdir/libmicox$(VERSION).$(SOEXT)
+else
+X11_DEPS     = $(DIR_PREFIX)../../auxdir/libmicox$(VERSION).a
+endif
+
+QT_CXXFLAGS = $(X_CFLAGS)
+QT_LDLIBS   = -lmicoqt$(VERSION) -lqt -lX11 -lXext $(X_LIBS)
+QT_LDFLAGS  =
+ifeq  ($(HAVE_SHARED), yes)
+QT_DEPS     = $(DIR_PREFIX)../../auxdir/libmicoqt$(VERSION).$(SOEXT)
+else
+QT_DEPS     = $(DIR_PREFIX)../../auxdir/libmicoqt$(VERSION).a
+endif
+
+GTK_CXXFLAGS = $(GTK_CFLAGS)
+GTK_LDLIBS   = -lmicogtk$(VERSION) $(GTK_LIBS)
+GTK_LDFLAGS  =
+ifeq  ($(HAVE_SHARED), yes)
+GTK_DEPS     = $(DIR_PREFIX)../../auxdir/libmicogtk$(VERSION).$(SOEXT)
+else
+GTK_DEPS     = $(DIR_PREFIX)../../auxdir/libmicogtk$(VERSION).a
+endif
+
+COS_CXXFLAGS =
+COS_LDLIBS   = -lmicocoss$(VERSION)
+COS_LDFLAGS  =
+ifeq  ($(HAVE_SHARED_EXCEPTS), yes)
+COS_DEPS     = $(DIR_PREFIX)../../coss/libmicocoss$(VERSION).$(SOEXT)
+else
+COS_DEPS     = $(DIR_PREFIX)../../coss/libmicocoss$(VERSION).a
+endif
+
+install:
+	$(IDIRCMD) $(INSTDIR)/doc/mico/examples/$(INSTALL_DIR)
+	test -z "$(INSTALL_SRCS)" || \
+	  eval 'for i in $(INSTALL_SRCS); do \
+	    $(ISRCCMD) $$i $(INSTDIR)/doc/mico/examples/$(INSTALL_DIR); \
+	  done'
+	test -z "$(INSTALL_SCRIPTS)" || \
+	  eval 'for i in $(INSTALL_SCRIPTS); do \
+	    $(ISCRIPTCMD) $$i $(INSTDIR)/doc/mico/examples/$(INSTALL_DIR); \
+	  done'
+
+ifeq (.depend, $(wildcard .depend))
+include .depend
+endif
+
+.depend:
+	echo '# Module dependencies' > .depend
+	$(MKDEPEND) $(CXXFLAGS) *.c *.cc >> .depend
+
+XMLBLASTER_IDL  = ${XMLBLASTER_HOME}/src/idl/xmlBlaster.idl
+
+INSTALL_DIR     = redlich/Hello-1
+INSTALL_SRCS    = Makefile client.cc ${XMLBLASTER_IDL}
+INSTALL_SCRIPTS =
+
+server: xmlBlaster.h xmlBlaster.o server.o $(DEPS)
+	$(LD) $(CXXFLAGS) $(LDFLAGS) xmlBlaster.o server.o $(LDLIBS) -o server
+
+client: xmlBlaster.h xmlBlaster.o client.o $(DEPS)
+	$(LD) $(CXXFLAGS) $(LDFLAGS) xmlBlaster.o client.o $(LDLIBS) -o client 
+	
+
+xmlBlaster.h xmlBlaster.cc : ${XMLBLASTER_IDL} $(IDLGEN)
+	$(IDL) ${XMLBLASTER_IDL}
+
+clean:
+	rm -f xmlBlaster.cc xmlBlaster.h *.o core client server *~ .depend
