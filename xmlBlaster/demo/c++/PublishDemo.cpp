@@ -1,5 +1,3 @@
-// NOTE: UNDER CONSTRUCTION Marcel 2004-01-16
-
 /*-----------------------------------------------------------------------------
 Name:      PublishDemo.cpp
 Project:   xmlBlaster.org
