@@ -1,33 +1,41 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='msgDistributor.plugin' type='NEW' prio='LOW' status='OPEN'>
+<requirement id='msgDistributor.plugin' type='NEW' prio='LOW' status='CLOSE'>
    <topic>XmlBlaster has a plugin interface which allows to control the distribution of published
           messages to subscribers</topic>
    <description>
       <p>
       It is possible to let a plugin handle the distribution of published messages.
-      The normal behavior is that all client-sessions subscribing to a certain topic will get all 
+      The normal behavior is that all client-sessions subscribing to a certain topic are getting all 
       updates of that topic. This covers a wide range of use cases but sometimes it is just too 
       limiting.
       </p>
       <p>
-      Suppose you want to ensure that a published message is consumed only once. That could be done by
-      sending a PtP message to a client (by specifying his session to avoid double dispatch) and 
-      setting the message as volatile. Great but this implies that the publisher knows the address of the 
-      client. What if the destination has to be anonymous, i.e. if everybody is allowed to consume that 
-      message (without the knowledge of the producer) as it would be the case of JMS queues ? 
+      Suppose you want to guarantee that a published message is consumed once and only once. That 
+      could be acheeved by sending a PtP message to a client (by specifying his session to avoid 
+      double dispatching) and setting the message as volatile. This is great but it implies that the
+      publisher knows the address of the client. What shall we do if the destination has to be 
+      anonymous, i.e. if everybody is allowed to consume that message without the producer knowing 
+      about it, as it is for example the case of queues in JMS ? 
       </p>
       <p>Suppose a load balancer is required where messages of the same topic have to be distributed
          <i>intelligently</i> among clients (for example by giving the current message to the client
-	 having the lowest cpu consumption at the moment)
+         currently having the lowest cpu consumption)
       </p>
-      <p>The mentioned cases are just a few of all potential exotic wishes of the users. A good approach
-         is to avoid to hard code such cases and make a plugin instead. This way the user gets the 
-	 freedom she/he needs.
+      <p>The mentioned cases are just a few of a whole spectra of potential -an many times specific-
+         wishes users can have. A good approach to this problem is to avoid to hard-code 
+         such specific cases and provide a plugin instead.
       </p>
-      <p>The plugin acts on the distribution of the published message to the subscribers. There is a 
-      maximum of one plugin instance per TopicHandler instance.</p>
+      <p>The plugin controls the distribution of a published message to the subscribing clients, in
+         other words it contains the logics which decide who/how a certain subscriber is getting a
+         certain message or message update.
+      </p>
+      <p>
+        There is a maximum of one plugin instance per TopicHandler instance. The Topic is the owner
+        of the plugin. This implies that you define distribution control on a pro-topic base. 
+        Practically this is defined in the PublishQos.
+      </p>
       
       <h3>How to write my own plugin</h3>
       <p>
@@ -36,20 +44,21 @@
       <ul>
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
          <li>I_MsgDistributor: Which forces you to implement some methods allowing you to control the 
-	     message flow, i.e. which addresses deserve the message and if/when/how the message 
-	     should be removed from the history queue.</li>
+             message flow, i.e. which addresses have to get the message and if/when/how the message 
+             should be removed from the history queue.</li>
       </ul>
       <p>
-      This is simple and straight forward (see requirement msgDistributor.plugin.ConsumableQueuePlugin).
+      This is simple and straightforward (see requirement msgDistributor.plugin.ConsumableQueuePlugin).
       </p>
       <p>
-      Note that this is only an example what you can do. The status message and priority configuration
-      of the above example is specific for exactly this plugin.
+      Note that this is only an example of what you can do. The status message and priority 
+      configuration of the above example is specific for exactly this plugin.
       If you implement your own plugin, you can do whatever you like.
       </p>
       <p>
-      For the above example exists an implementation which you can use or change
-      to your needs, see the <i>ConsumableQueuePlugin</i> link below.
+      For the mentioned example of only once delivery an implementation exists which you can 
+      use/change and modify according to your needs. It is the <i>ConsumableQueuePlugin</i> 
+      (see link below).
       </p>
    </description>
    <configuration where="server">
@@ -69,7 +78,17 @@
    -queue/callback/defaultPlugin
                        The plugin type,version (short form) [CACHE,1.0]
 -->
-      <table border="1">
+     <p>
+       The first step to do when configuring this plugin is to register it by assigning a name to it.
+       This is normally put into the xmlBlaster.properties file which is read by the server.
+       The name has the structure <code>PluginType[instanceName][instanceVersion]</code> as stated in the
+       first row in the table below. Besides the class name of the implementation to use you could
+       also pass properties which are specific to the given implementation. <br/>
+       The second step is to define a default plugin to be used when the client does not specify
+       anything explicitly. This is done as in the third row of the table below.
+      </p>
+      <center>
+      <table border="1" width="75%">
          <tr>
             <th>Property</th>
             <th>Default / Example</th>
@@ -81,14 +100,14 @@
             <td>MsgDistributorPlugin[MyPlugin][1]</td>
             <td>com.xy.MyPlugin</td>
             <td>Register your plugin</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>MsgDistributorPlugin[Another][1.0]</td>
             <td>com.xy.MySpecial</td>
             <td>Register your plugin</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -97,27 +116,49 @@
             <td>Specifiy the plugin to use as a default.<br />
                 Default is <i>undef</i> that is no default plugin is loaded which is usually the correct setting:<br />
                 The client normally chooses on publish its desired plugin by specifying it in the topic section of 
-		the publish QoS</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+                the publish QoS</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
+      </center>
+      <p>
+      When publishing a topic for the first time (or when doing an administrative publish), you can
+      specify which plugin to use for the distribution of the message. In java you would do it like this:
+<pre>
+
+   ...
+
+   PublishQos pubQos = new PublishQos(global);
+   TopicProperty topicProp = new TopicProperty(global);
+   topicProp.setMsgDistributor("ConsumableQueue,1.0");
+   pubQos.setTopicProperty(topicProp);
+   MsgUnit msgUnit = new MsgUnit(new PublishKey(global, someOid), 
+                                 someContent, 
+                                 pubQos);
+   global.getXmlBlasterAccess().publish(msgUnit);
+
+   ...
+
+</pre>
+      </p>
       <!-- p>
       For coding and configuration of plugins please read the
-      requirement msgDistributor.plugin.ConsumableQueuePlugin (see link below)
+      requirement msgDistributor.plugin.ConsumableQueue (see link below)
       </p -->
    </configuration>
+
    <see type="API">org.xmlBlaster.engine.distributor.I_MsgDistributor</see>
    <see type="API">org.xmlBlaster.engine.distributor.plugins.ConsumableQueuePlugin</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
-   <see type="REQ">msgDistributor.plugin.ConsumableQueuePlugin</see>
+   <see type="REQ">msgDistributor.plugin.ConsumableQueue</see>
    <see type="REQ">util.property.env</see>
-   <author>laghi@swissinfo.org</author>
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 10 16</date>
-   <revision>$Revision: 1.2 $</revision>
-   <testcase status="OPEN">
+   <revision>$Revision: 1.3 $</revision>
+   <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">org.xmlBlaster.test.distributor.ConfigurationParserTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.distributor.TestConsumableQueue</test>
    </testcase>
 </requirement>
 
