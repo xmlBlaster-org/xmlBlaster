@@ -1,41 +1,47 @@
 Bom dia,
 
-the new release 0.847 is out (May, 12. 2003).
+the new release 0.848 is out (May, 23. 2003).
 
-We wait with stable release 0.85 until we got feedback about 0.847
+We wait with the stable release 0.85 until we got feedback about 0.848
 
 
 IMPORTANT NOTE:
 ---------------
 
-1. Edit xmlBlaster/build.properties to
-  compile the C++ clients or to use jikes.
+1. Many property names changed!
+   Please read accurate xmlBlaster/CHANGES and search & replace all
+   your outdated environment settings!
 
 2. Remove your old xmlBlaster.properties, xmlBlasterPlugins.xml
-  and jacorb.properties files.
-  Use the new files from directory xmlBlaster/config.
-  (For upgrades of 0.844 or earlier)
+   and jacorb.properties files.
+   Use the new files from directory xmlBlaster/config.
   
 3. Backward compatibility:
-  * No incompatible changes since 0.846
+  * XmlRpc client and server is not backward compatible to 0.847
+    as the XML-RPC protocol was renamed to XMLPRC
 
 4. The default setup of xmlBlaster runs RAM based only,
-  there is no persistence for crash recovery.
-  To switch it on you need Postgres or Oracle installed, see
+   there is no persistence for crash recovery.
+   To switch it on you need Postgres or Oracle installed, see
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
-  and read the NOTE in xmlBlaster.properties.
-  This way you get swapping support for huge message amount
-  and persistence messages to survive server crashes.
+   and read the NOTE in xmlBlaster.properties.
+   This way you get swapping support for huge message amount
+   and persistence messages to survive server crashes.
 
 
 NEW FEATURES:
 -------------
 
-   Bug fixes
+o  Properties renamed to match the new hierarchical syntax.
 
-   Please read the CHANGES file for more informations.
+o  Bug fixes.
+
+o  A C bases SOCKET client with only 25 kByte of size
+   (currently for synchronous access only).
+
+o  Please read the CHANGES file for more informations.
 
 
 KNOWN BUGS:
@@ -57,6 +63,8 @@ NEXT RELEASES:
 The next release is 0.85 and we strive to have these additional changes:
 
   o Bug fixes
+
+  o Cleanup of obsolete packages
 
 
 The planned features of release 0.9 are an open issue.

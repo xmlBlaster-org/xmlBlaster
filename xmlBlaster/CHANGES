@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xx, xxx 2003]
+Changes for 0.848 [23, May 2003]
 ================================
  o Changed protocol plugin loading behavior.
    Now we throw an exception if the protocol plugin is not found
