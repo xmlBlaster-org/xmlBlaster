@@ -214,6 +214,12 @@
       If later a master appears the messages are flushed.
       </li>
 
+      <li>Forward a client<br />
+      If an xmlBlaster node is stopped, it has the ability to inform
+      its clients and pass them a forward address of another
+      xmlBlaster node which is willing to take care of them.
+      </li>
+
       <li>PtP messages<br />
       To allow global delivery we introduce a unique naming schema,
       it is based on the URL naming synstax and allows addressing
@@ -438,7 +444,7 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
