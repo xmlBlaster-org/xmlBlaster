@@ -20,17 +20,16 @@
 <!ELEMENT fix (
 	name,
 	comment,
-	status,
 	test
 	)>
 
 <!ELEMENT name  (%text;)> 
 <!ELEMENT comment  (%text;)> 
-<!ELEMENT status  (%text;)> 
 <!ELEMENT test  (%text;)> 
 
 <!ATTLIST requirement
           id ID #REQUIRED
 			 prio  (LOW | MEDIUM | HIGH) "LOW"
           type (NEW | BUG) "BUG">
+<!ATTLIST fix status (OPEN | CLOSED) "OPEN">  
 <!ATTLIST test tool (SUITE | MANUAL) "SUITE">  

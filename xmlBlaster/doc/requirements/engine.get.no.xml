@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.get.no' type='BUG' prio='LOW'>
+   <topic>Accessing an unknown message in xmlBlaster with the synchronous get() method throws an Exception</topic>
+   <description>-</description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 02 23</date>
+   <revision>$Revision: 1.1 $</revision>
+   <fix status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestGet</test>
+   </fix>
+</requirement>
+
