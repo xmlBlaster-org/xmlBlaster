@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.8 2002/03/17 13:31:54 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.9 2002/03/27 15:33:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -279,9 +279,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
-    * Default constructor for transient PtP messages.
+    * Default constructor with a specified callback address. 
     * <p />
-    * To make the message persistent, use the
     * @param callback The object containing the callback address.<br />
     *        To add more callbacks, us the addCallbackAddress() method.
     */
