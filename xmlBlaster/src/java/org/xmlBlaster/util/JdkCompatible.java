@@ -3,7 +3,7 @@ Name:      JdkCompatible.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: JdkCompatible.java,v 1.3 2002/09/11 12:45:11 kkrafft2 Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 

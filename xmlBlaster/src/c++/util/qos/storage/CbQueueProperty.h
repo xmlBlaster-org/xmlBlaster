@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.11 2004/04/09 17:12:25 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**

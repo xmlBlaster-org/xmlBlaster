@@ -3,7 +3,7 @@ Name:      XmlProcessor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Accessing the XML processor through a singleton
-Version:   $Id: XmlProcessor.java,v 1.3 2003/04/03 09:28:02 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 

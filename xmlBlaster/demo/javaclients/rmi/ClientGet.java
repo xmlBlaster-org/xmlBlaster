@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.21 2004/02/22 17:24:44 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 

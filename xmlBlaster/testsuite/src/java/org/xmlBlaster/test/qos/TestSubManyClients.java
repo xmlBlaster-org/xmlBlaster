@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.8 2003/05/23 09:05:07 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 

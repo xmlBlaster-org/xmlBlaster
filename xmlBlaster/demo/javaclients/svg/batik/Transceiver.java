@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.11 2003/03/24 16:12:54 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -41,7 +41,7 @@ import org.apache.batik.dom.svg.SVGDocumentFactory;
 import java.util.StringTokenizer;
 
 /**
- * @author $Author: ruff $ (laghi@swissinfo.org)
+ * @author $Author$ (laghi@swissinfo.org)
  */
 
 public class Transceiver implements I_Callback

@@ -3,7 +3,7 @@ Name:      I_Publish.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface
-Version:   $Id: I_Publish.java,v 1.3 2002/12/18 12:39:09 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;

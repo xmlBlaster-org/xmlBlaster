@@ -3,7 +3,7 @@ Name:      ChessMover.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The demo class which moves around the chess peaces
-Version:   $Id: ChessMover.java,v 1.9 2003/03/24 16:12:54 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.rhino;
 

@@ -9,7 +9,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * A managare that loads plugins.
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/11/07 13:04:21 $
+ * @version $Revision: 1.1 $ $Date$
  */
 
 public interface I_PluginManager {

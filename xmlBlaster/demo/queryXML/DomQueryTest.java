@@ -16,7 +16,7 @@ Invoke:    With key oid:
              java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
            Normal XPath checks:
              java -DtestAgentNavigation=false DomQueryTest Qos.xml /qos/expiration
-Version:   $Id: DomQueryTest.java,v 1.11 2003/12/15 15:39:19 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;

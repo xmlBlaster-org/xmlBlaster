@@ -3,7 +3,7 @@ Name:      MassiveSubTestOne.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: MassiveSubTestOne.java,v 1.2 2003/10/07 08:51:46 antman Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 import org.xmlBlaster.util.Global;
@@ -22,7 +22,7 @@ protocol=IOR
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2003/10/07 08:51:46 $
+ * @version $Revision: 1.2 $ $Date$
  */
 
 public class MassiveSubTestOne extends MassiveSubTest {

@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.10 2003/12/15 15:39:11 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 

@@ -23,7 +23,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2003/07/17 09:34:12 $
+ * @version $Revision: 1.2 $ $Date$
  */
 
 public interface I_LogDeviceFactory extends I_Plugin {

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: AllTests.java,v 1.1 2003/09/24 14:31:26 antman Exp $
+ * $Id$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

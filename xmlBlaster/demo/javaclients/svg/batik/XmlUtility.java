@@ -3,7 +3,7 @@ Name:      XmlUtility.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: XmlUtility.java,v 1.1 2002/01/04 01:05:38 laghi Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 
  /**
   * Used to retrieve a default Document (of the underling implementation)
-  * @author $Author: laghi $ (laghi@swissinfo.org)
+  * @author $Author$ (laghi@swissinfo.org)
   */
 public class XmlUtility {
 

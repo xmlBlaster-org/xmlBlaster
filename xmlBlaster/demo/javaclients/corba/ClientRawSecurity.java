@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.16 2003/05/23 09:04:23 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 

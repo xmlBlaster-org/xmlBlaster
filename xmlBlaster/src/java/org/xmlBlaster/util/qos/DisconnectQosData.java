@@ -3,7 +3,7 @@ Name:      DisconnectQosData.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQosData.java,v 1.6 2004/02/22 17:29:14 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 

@@ -3,7 +3,7 @@ Name:      org::xmlBlaster::util::qos::address::AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address std::string including protocol
-Version:   $Id: AddressBase.h,v 1.19 2004/05/12 19:38:33 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**

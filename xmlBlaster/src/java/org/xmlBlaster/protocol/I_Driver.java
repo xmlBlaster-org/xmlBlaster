@@ -3,7 +3,7 @@ Name:      I_Driver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_Driver.java,v 1.12 2003/05/21 20:21:16 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;

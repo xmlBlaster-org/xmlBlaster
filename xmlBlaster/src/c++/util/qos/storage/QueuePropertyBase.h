@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.15 2004/04/30 08:57:19 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**

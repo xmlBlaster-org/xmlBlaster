@@ -64,7 +64,7 @@ import org.jaxen.dom.DOMXPath;
  * @author Jens Askengren
  * @author Robert Leftwich <robert@leftwich.info>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
- * @version $Id: XPathFilter.java,v 1.11 2004/07/12 08:24:16 ruff Exp $
+ * @version $Id$
  */
 
 public class XPathFilter implements I_Plugin, I_AccessFilter {

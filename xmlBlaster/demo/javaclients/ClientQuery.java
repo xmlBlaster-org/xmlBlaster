@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.25 2003/03/24 16:12:45 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients;
 

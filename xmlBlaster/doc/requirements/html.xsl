@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
            This is the old version, displaying everything on one page
            Use overview.xsl instead
-Version:   $Id: html.xsl,v 1.16 2002/12/18 14:42:17 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -30,7 +30,7 @@ Author:    xmlBlaster@marcelruff.info
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2002/12/18 14:42:17 $ $Author: ruff $
+       Last updated $Date$ $Author$
    </p>
    <p class="sitetitel">XmlBlaster Programmers Reference Overview</p>
 

@@ -3,7 +3,7 @@ Name:      I_MergeDomNode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface to delegate the merging of a node into an existing DOM tree
-Version:   $Id: I_MergeDomNode.java,v 1.4 2000/06/13 13:04:02 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 

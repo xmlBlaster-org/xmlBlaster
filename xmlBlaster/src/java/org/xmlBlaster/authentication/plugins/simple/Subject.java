@@ -7,8 +7,8 @@ import org.xmlBlaster.util.def.MethodName;
 import org.jutils.log.LogChannel;
 
 /**
- * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2004/02/22 17:27:43 $)
+ * @author  $Author$ ($Name:  $)
+ * @version $Revision: 1.6 $ (State: $State) (Date: $Date$)
  */
 
 public class Subject implements I_Subject {

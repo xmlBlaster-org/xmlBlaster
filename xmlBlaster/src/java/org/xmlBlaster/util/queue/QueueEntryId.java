@@ -3,7 +3,7 @@ Name:      QueueEntryId.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class encapsulating the unique id for the message entries in queue
-Version:   $Id: QueueEntryId.java,v 1.3 2002/12/18 11:56:50 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info, laghi@swissinfo.org
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;

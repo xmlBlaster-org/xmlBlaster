@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ClientEntryImpl.java,v 1.5 2003/03/25 07:48:19 ruff Exp $
+ * $Id$
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 

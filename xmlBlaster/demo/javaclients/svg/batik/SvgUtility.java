@@ -3,7 +3,7 @@ Name:      SvgUtility.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: SvgUtility.java,v 1.2 2003/08/31 21:52:36 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -18,7 +18,7 @@ import org.apache.batik.dom.svg.SVGOMDocument;
 
 
 /**
- * @author $Author: ruff $ (laghi@swissinfo.org)
+ * @author $Author$ (laghi@swissinfo.org)
  */
 
 public class SvgUtility

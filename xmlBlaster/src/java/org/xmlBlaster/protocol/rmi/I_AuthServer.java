@@ -3,7 +3,7 @@ Name:      I_AuthServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: I_AuthServer.java,v 1.6 2002/12/18 12:39:11 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 

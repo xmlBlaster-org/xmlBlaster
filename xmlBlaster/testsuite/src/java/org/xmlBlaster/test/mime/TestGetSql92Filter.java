@@ -3,7 +3,7 @@ Name:      TestGetSql92Filter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetSql92Filter.java,v 1.1 2004/05/28 14:34:47 laghi Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 

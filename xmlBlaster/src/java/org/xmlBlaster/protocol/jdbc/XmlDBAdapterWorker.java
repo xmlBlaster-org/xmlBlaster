@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.22 2003/03/13 14:10:30 ruff Exp $
+ * Version:   $Id$
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;

@@ -3,7 +3,7 @@ Name:      StopParseException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Throw this exception to stop SAX parsing
-Version:   $Id: StopParseException.java,v 1.2 2004/03/11 16:56:47 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 

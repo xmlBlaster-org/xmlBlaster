@@ -3,7 +3,7 @@ Name:      RcvTimestamp.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp for incoming message
-Version:   $Id: RcvTimestamp.java,v 1.4 2002/12/18 11:48:49 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;

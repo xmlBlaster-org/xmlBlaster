@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.34 2004/10/02 20:24:15 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -92,7 +92,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2004/10/02 20:24:15 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date$ $Author$ </p -->
    <table width="700" border="1">
    <tr>
       <td>

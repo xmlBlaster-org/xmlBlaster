@@ -3,7 +3,7 @@ Name:      JSVGCanvasExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The JSVGCanvas extended to fit the application specific requirements
-Version:   $Id: JSVGCanvasExtended.java,v 1.3 2002/09/13 23:17:42 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
 
 
 /**
- * @author $Author: ruff $ (laghi@swissinfo.org)
+ * @author $Author$ (laghi@swissinfo.org)
  */
 
 public class JSVGCanvasExtended extends JSVGCanvas

@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.27 2003/03/24 16:12:46 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients;
 

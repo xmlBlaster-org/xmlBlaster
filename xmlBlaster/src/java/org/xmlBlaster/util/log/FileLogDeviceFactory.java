@@ -43,7 +43,7 @@ logFile[corba]=mylogfile.corba
 
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2003/03/22 12:28:12 $
+ * @version $Revision: 1.2 $ $Date$
  */
 
 public class FileLogDeviceFactory implements I_LogDeviceFactory {

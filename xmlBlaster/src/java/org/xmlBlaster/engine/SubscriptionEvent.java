@@ -3,7 +3,7 @@ Name:      SubscriptionEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The subscribe/unsubscribe event object
-Version:   $Id: SubscriptionEvent.java,v 1.5 2004/02/09 00:17:50 laghi Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -14,7 +14,7 @@ package org.xmlBlaster.engine;
  * <p />
  * It carries the SubscriptionInfo reference inside.
  *
- * @version $Id: SubscriptionEvent.java,v 1.5 2004/02/09 00:17:50 laghi Exp $
+ * @version $Id$
  * @author Marcel Ruff
  */
 public class SubscriptionEvent extends java.util.EventObject {

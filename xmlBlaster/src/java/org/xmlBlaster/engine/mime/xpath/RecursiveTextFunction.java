@@ -23,7 +23,7 @@ import java.util.Iterator;
  * contains-ignore-case(recursive-text(//body.content), 'XmlBlaster')
  * </pre>
  * @author Jens Askengren
- * @version $Id: RecursiveTextFunction.java,v 1.1 2003/09/10 08:14:02 antman Exp $
+ * @version $Id$
  */
 public class RecursiveTextFunction
 	implements Function

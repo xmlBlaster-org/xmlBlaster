@@ -43,7 +43,7 @@ logDevice[cb]=console,file
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.4 $ $Date: 2004/02/22 17:29:01 $
+ * @version $Revision: 1.4 $ $Date$
  */
 
 public class LogDevicePluginManager implements I_PluginManager {

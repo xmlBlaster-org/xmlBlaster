@@ -3,7 +3,7 @@ Name:      Prop.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding data for a property
-Version:   $Id: Prop.h,v 1.4 2003/07/03 20:54:44 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**

@@ -3,7 +3,7 @@ Name:      I_XmlBlasterCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The client callback server interface.
-Version:   $Id: I_XmlBlasterCallback.java,v 1.7 2002/12/18 12:39:11 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;

@@ -3,7 +3,7 @@ Name:      SvgIdMapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates an hashtable containing the dynamic svg elements
-Version:   $Id: SvgIdMapper.java,v 1.2 2002/09/13 23:17:42 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -31,7 +31,7 @@ import javax.xml.parsers.DocumentBuilder;
 /**
  * This class implements the NodeFilter interface to handle only nodes which
  * are of the type "element" whith an attribute "id" which is not empty.
- * @author $Author: ruff $ (laghi@swissinfo.org)
+ * @author $Author$ (laghi@swissinfo.org)
  */
 public class SvgIdMapper /*implements NodeFilter*/
 {

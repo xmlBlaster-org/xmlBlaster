@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing persistent messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.10 2003/05/21 20:21:45 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 

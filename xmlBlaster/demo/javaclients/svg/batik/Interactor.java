@@ -3,7 +3,7 @@ Name:      Interactor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The class which takes care of the user events (mouse events)
-Version:   $Id: Interactor.java,v 1.2 2002/09/13 23:17:42 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -29,7 +29,7 @@ import java.util.List;
  * We need to create an extention of JSVGCanvas in order to be able to
  * retrieve the protected member bridgeContext. Lets call this class
  * com.eclettic.svg.JSVGCanvasExtended
- * @author $Author: ruff $ (laghi@swissinfo.org)
+ * @author $Author$ (laghi@swissinfo.org)
  */
 public class Interactor extends InteractorAdapter
 {

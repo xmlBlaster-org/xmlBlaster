@@ -20,7 +20,7 @@ package org.xmlBlaster.j2ee.jmx;
  * MBean interface marker.
  *
  * @author Peter Antman
- * @version $Revision: 1.3 $ $Date: 2003/09/18 14:30:57 $
+ * @version $Revision: 1.3 $ $Date$
  */
 
 public interface XmlBlasterServiceMBean {

@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClientRaw.java,v 1.9 2003/05/23 09:04:26 ruff Exp $
+Version:   $Id$
 Author:    "Michele Laghi" <laghi@swissinfo.org>
 ------------------------------------------------------------------------------*/
 

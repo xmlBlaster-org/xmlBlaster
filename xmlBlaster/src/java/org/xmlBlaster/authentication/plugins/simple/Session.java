@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
- * @author  $Author: ruff $ ($Name:  $)
+ * @author  $Author$ ($Name:  $)
  *
  * @author Wolfgang Kleinertz
  */

@@ -3,7 +3,7 @@ Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for access plugins
-Version:   $Id: I_AccessFilter.java,v 1.10 2003/10/22 18:35:16 laghi Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;

@@ -5,7 +5,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author  kleinerz
- * @version $Revision: 1.7 $ (State: $State) (Date: $Date: 2003/07/17 09:34:03 $)
+ * @version $Revision: 1.7 $ (State: $State) (Date: $Date$)
  */
 
 public interface I_Manager extends I_Plugin

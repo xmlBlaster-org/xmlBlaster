@@ -14,7 +14,7 @@ import org.xmlBlaster.util.Global;
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: NodeScalarProxy.java,v 1.2 2002/07/05 07:10:20 ruff Exp $
+ * $Id$
  */
 
 /**

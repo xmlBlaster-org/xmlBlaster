@@ -22,7 +22,7 @@ import java.util.List;
  * </pre>
  *
  * @author Jens Askengren
- * @version $Id: ContainsIgnoreCaseFunction.java,v 1.1 2003/09/10 08:14:02 antman Exp $
+ * @version $Id$
  */
 public class ContainsIgnoreCaseFunction
 	implements Function

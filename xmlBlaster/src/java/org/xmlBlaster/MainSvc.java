@@ -3,7 +3,7 @@ Name:      MainSvc.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainSvc.java,v 1.1 2002/12/23 20:40:23 david Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 

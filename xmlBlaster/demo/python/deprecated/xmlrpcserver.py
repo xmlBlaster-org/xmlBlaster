@@ -1,6 +1,6 @@
 #
 # XMLRPC SERVER
-# $Id: xmlrpcserver.py,v 1.1 2004/01/23 10:25:32 ruff Exp $
+# $Id$
 #
 # a simple XMLRPC server for Python
 #

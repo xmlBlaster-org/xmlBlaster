@@ -55,7 +55,7 @@ where a @link { org.xmlBlaster.j2ee.util.GlobalLookup} will be bound. If a clien
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.9 $ $Date: 2004/05/11 15:37:00 $
+ * @version $Revision: 1.9 $ $Date$
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {

@@ -3,7 +3,7 @@ Name:      CollectXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Collects all xml requirement files into the all.xml master file
-Version:   $Id: CollectXml.java,v 1.2 2000/04/06 20:15:45 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package doc.requirements;
 

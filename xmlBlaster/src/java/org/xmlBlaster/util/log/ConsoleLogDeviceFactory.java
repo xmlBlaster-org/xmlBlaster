@@ -18,7 +18,7 @@ import org.jutils.log.LogDeviceConsole;
  * A factory for creating file log devices of type org.jutils.log.LogDeviceConsole
  * <p>This plugin is of type <b>console</b></p>
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2003/03/22 12:28:12 $
+ * @version $Revision: 1.2 $ $Date$
  */
 
 public class ConsoleLogDeviceFactory implements I_LogDeviceFactory {

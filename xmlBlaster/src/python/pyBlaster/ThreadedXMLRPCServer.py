@@ -1,10 +1,10 @@
 """
 __version__ = '$Revision: 1.3 $'
-__date__    = '$Date: 2003/05/21 20:21:32 $'
+__date__    = '$Date$'
 __author__  = 'Peter Arwanitis'
 __license__ = 'pyBlaster is under LGPL, see http://www.xmlBlaster.org/license.html'
 
-last change by $Author: ruff $ 
+last change by $Author$ 
 
 """
 

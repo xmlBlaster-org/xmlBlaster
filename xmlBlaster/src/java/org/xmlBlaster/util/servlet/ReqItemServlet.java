@@ -3,7 +3,7 @@ Name:      ReqItemServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Collects all xml requirement files into the all.xml master file
-Version:   $Id: ReqItemServlet.java,v 1.5 2002/09/13 23:18:22 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 

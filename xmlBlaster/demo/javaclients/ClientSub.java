@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.43 2003/05/23 09:04:19 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients;
 

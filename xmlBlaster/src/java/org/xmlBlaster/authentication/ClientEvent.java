@@ -3,7 +3,7 @@ Name:      ClientEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Transports SessionInfo or SubjectInfo
-Version:   $Id: ClientEvent.java,v 1.6 2004/02/04 20:47:51 laghi Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 

@@ -3,7 +3,7 @@ Name:      I_InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for storing tail back messages
-Version:   $Id: I_InvocationRecorder.java,v 1.6 2002/12/18 12:10:11 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;

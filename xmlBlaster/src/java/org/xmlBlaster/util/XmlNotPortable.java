@@ -3,7 +3,7 @@ Name:      XmlNotPortable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlNotPortable hold none portable xml code
-Version:   $Id: XmlNotPortable.java,v 1.7 2004/08/12 18:18:28 ruff Exp $
+Version:   $Id$
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;

@@ -3,7 +3,7 @@ Name:      ReqBaseServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ReqBaseServlet.java,v 1.7 2002/09/13 23:18:21 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
