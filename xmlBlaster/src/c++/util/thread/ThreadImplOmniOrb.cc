@@ -61,7 +61,7 @@ public:
          // std::cerr << "ThreadImpl::run invoked ..." << std::endl;
          if (owner_) owner_->run();
       }
-      catch (exception &ex) {
+      catch (exception & /*ex*/) {
          // std::cerr << "exception in run method: " << ex.what() << std::endl;
       }
       catch (...) {
@@ -80,7 +80,7 @@ public:
          // std::cerr << "ThreadImpl::run_undetached invoked ..." << std::endl;
          if (owner_) owner_->run();
       }
-      catch (exception &ex) {
+      catch (exception & /*ex*/) {
          // std::cerr << "exception in run_undetached method: " << ex.what() << std::endl;
       }
       catch (...) {
