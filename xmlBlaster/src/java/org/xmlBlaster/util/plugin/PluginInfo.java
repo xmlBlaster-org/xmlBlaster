@@ -192,10 +192,11 @@ public class PluginInfo {
             }
             int pos = tok.indexOf("=");
             if (pos < 0) {
-               log.info(ME, "Accepting param " + tok + " without value (missing '=')");
+               log.info(ME, "Accepting param '" + tok + "' without value (missing '=')");
                this.params.put(tok, "");
             }
-            this.params.put(tok.substring(0,pos), tok.substring(pos+1));
+            else
+               this.params.put(tok.substring(0,pos), tok.substring(pos+1));
          }
       }
       else
