@@ -18,7 +18,8 @@ SUB_DIRS =
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
-			$(CLASS_DIR)/SystemInfo.class
+			$(CLASS_DIR)/SystemInfo.class \
+			$(CLASS_DIR)/SystemInfoPublisher.class 
 #------------------------------------------------------------------------------
 
 
