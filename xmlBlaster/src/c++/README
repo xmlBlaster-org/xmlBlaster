@@ -104,6 +104,11 @@ Read ${XMLBLASTER_HOME}/testsuite/c++/README
 To manually start a test look at the file test.sh in that directory.
 
 
+How to bind the mico callback server on a specified port:
+=========================================================
+
+  -ORBIIOPAddr inet:<host addr>:<port number>
+
 
 And now some additional notes:
 ==============================
