@@ -77,7 +77,7 @@ Else add it manually.
   <property name="WEB-INF"              value="${www.dir}/WEB-INF"/>
   <property name="WEB-INF.classes"      value="${WEB-INF}/classes"/>
   <!-- The document root of the servlet engine (deploy dir for war files): -->
-  <property name="WWW_ROOT"             value="${user.home}/jakarta-tomcat-4.0/webapps"/>
+  <property name="WWW_ROOT"             value="${user.home}/jakarta-tomcat/webapps"/>
 
   <property name="idl" value="org.xmlBlaster.protocol.corba"/>
   <property name="idl.class" value="jacorb.idl.parser"/>
@@ -236,7 +236,7 @@ Else add it manually.
    <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
    <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
    <copy file="${src.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
-   
+
     <jar jarfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
     <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
     <!-- I know it is deprecated, but how else to remove dirs -->
@@ -256,7 +256,7 @@ Else add it manually.
    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
   <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
 
-     
+
    <javac srcdir="${build.src}/javaclients/j2ee/k2/"
            destdir="${build.dest}"
            classpath="${classpath}:${lib.dir}/${name}.jar"
@@ -267,7 +267,7 @@ Else add it manually.
     <jar jarfile="${build.dir}/JmsAdapter.jar">
         <fileset dir="${build.dest}"
              includes="**/JmsAdapter.class"/>
-        <fileset dir="${build.dir}/jms"/> 
+        <fileset dir="${build.dir}/jms"/>
    </jar>
 
     <copy overwrite="yes" file="${build.dir}/JmsAdapter.jar" tofile="${lib.dir}/JmsAdapter.jar"/>
@@ -315,6 +315,16 @@ Else add it manually.
      <delete file="${WWW_ROOT}/xmlBlaster.war"/>
      <copy file="${build.dir}/xmlBlaster.war" tofile="${WWW_ROOT}/xmlBlaster.war"/>
      <!-- unjar src="${WWW_ROOT}/xmlBlaster.war" dest="${WWW_ROOT}" /-->
+
+     <echo message=""/>
+     <echo message="   Start xmlBlaster and a demo data publisher:"/>
+     <echo message="      java org.xmlBlaster.Main"/>
+     <echo message="      java html.systemInfo.SystemInfoPublisher"/>
+     <echo message=""/>
+     <echo message="   Start tomcat and invoke the demo with:"/>
+     <echo message="      http://HOSTNAME/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
+     <echo message=""/>
+     <echo message="   WARNING: The tomcat integration is not finished!!!"/>
   </target>
 
   <!-- =================================================================== -->
