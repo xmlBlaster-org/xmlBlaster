@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.8 2002/02/12 21:51:51 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.9 2002/02/14 15:00:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -39,18 +40,6 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private Authenticate authenticate;
 
    private PluginManager plgnLdr = null;
-
-   // action key --- used to ckeck access rights
-   public static final String         GET = "get";
-   public static final String       ERASE = "erase";
-   public static final String     PUBLISH = "publish";
-   public static final String   SUBSCRIBE = "subscribe";
-   public static final String UNSUBSCRIBE = "unSubscribe";
-   public static final String      UPDATE = "update";
-   public static final String        PING = "ping";
-   public static final String     CONNECT = "connect";
-   public static final String  DISCONNECT = "disconnect";
-   //public static final String   EXCEPTION = "exception";
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -90,7 +79,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       // --- security checks --------------------------------------------------
       MessageUnit msgUnit = new MessageUnit(xmlKey_literal, "".getBytes(), qos_literal);
-      msgUnit = checkMessage(sessionId, msgUnit, SUBSCRIBE);
+      msgUnit = checkMessage(sessionId, msgUnit, Constants.SUBSCRIBE);
 
       // ----------------------------------------------------------------------
       ClientInfo clientInfo = authenticate.check(sessionId);
@@ -127,7 +116,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       // --- security checks --------------------------------------------------
       MessageUnit msgUnit = new MessageUnit(xmlKey_literal, "".getBytes(), qos_literal);
-      msgUnit = checkMessage(sessionId, msgUnit, UNSUBSCRIBE);
+      msgUnit = checkMessage(sessionId, msgUnit, Constants.UNSUBSCRIBE);
 
       // ----------------------------------------------------------------------
       ClientInfo clientInfo = authenticate.check(sessionId);
@@ -165,7 +154,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       if (Log.CALL) Log.call(ME+".+publish(String, MessageUnit)=String", "-------CALLED-------\n");
 
       // --- security checks --------------------------------------------------
-      msgUnit = checkMessage(sessionId, msgUnit, PUBLISH);
+      msgUnit = checkMessage(sessionId, msgUnit, Constants.PUBLISH);
 
       // ----------------------------------------------------------------------
       ClientInfo clientInfo = authenticate.check(sessionId);
@@ -187,7 +176,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       // --- security checks --------------------------------------------------
 //      for (int i=0; i<msgUnitArr.length; i++) {
-//         msgUnitArr[i] = checkMessage(sessionId, msgUnitArr[i], PUBLISH);
+//         msgUnitArr[i] = checkMessage(sessionId, msgUnitArr[i], Constants.PUBLISH);
 //      }
 
       // ----------------------------------------------------------------------
@@ -232,7 +221,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       // --- security checks --------------------------------------------------
       MessageUnit msgUnit = new MessageUnit(xmlKey_literal, "".getBytes(), qos_literal);
-      msgUnit = checkMessage(sessionId, msgUnit, ERASE);
+      msgUnit = checkMessage(sessionId, msgUnit, Constants.ERASE);
 
       // ----------------------------------------------------------------------
       ClientInfo clientInfo = authenticate.check(sessionId);
@@ -263,7 +252,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       // --- security checks --------------------------------------------------
       MessageUnit msgUnit = new MessageUnit(xmlKey_literal, "".getBytes(), qos_literal);
-      msgUnit = checkMessage(sessionId, msgUnit, GET);
+      msgUnit = checkMessage(sessionId, msgUnit, Constants.GET);
 
       // ----------------------------------------------------------------------
       ClientInfo clientInfo = authenticate.check(sessionId);
@@ -318,7 +307,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       if (!subjSecCtx.isAuthorized(action, msgUnit.xmlKey)) {
          throw new XmlBlasterException(ME+".accessDenied",
                                        "Subject '" + subjSecCtx.getName() +
-                                       "' is not permitted perform action '" + PUBLISH +
+                                       "' is not permitted perform action '" + Constants.PUBLISH +
                                        "' on key '" + msgUnit.xmlKey + "'");
       }
       return msgUnit;

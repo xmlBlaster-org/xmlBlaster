@@ -3,7 +3,7 @@ Name:      Constants.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Constants.java,v 1.2 2002/02/14 08:46:10 ruff Exp $
+Version:   $Id: Constants.java,v 1.3 2002/02/14 15:00:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -105,5 +105,29 @@ public class Constants
    public final static String ONOVERFLOW_DEADLETTER = "deadLetter";
    /** message queue onOverflow handling */
    public final static String ONOVERFLOW_DISCARDOLDEST = "discardOldest";
+
+
+
+   // action key --- xmlBlaster supported method names used to ckeck access rights, for raw socket messages etc.
+   /** The get() method */
+   public static final String         GET = "get";
+   /** The erase() method */
+   public static final String       ERASE = "erase";
+   /** The publish() method */
+   public static final String     PUBLISH = "publish";
+   /** The subscribe() method */
+   public static final String   SUBSCRIBE = "subscribe";
+   /** The unSubscribe() method */
+   public static final String UNSUBSCRIBE = "unSubscribe";
+   /** The update() method */
+   public static final String      UPDATE = "update";
+   /** The ping() method */
+   public static final String        PING = "ping";
+   /** The connect() method */
+   public static final String     CONNECT = "connect";
+   /** The disconnect() method */
+   public static final String  DISCONNECT = "disconnect";
+   //public static final String   EXCEPTION = "exception";
+
 }
 
