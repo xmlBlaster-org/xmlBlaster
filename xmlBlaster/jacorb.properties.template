@@ -29,7 +29,7 @@ jacorb.ProxyServerURL=http://localhost/~user/Appligator_Ref
 jacorb.reference_caching=off
 
 # amount of diagnostic output, 0 is off
-jacorb.verbosity=1
+jacorb.verbosity=0
 
 # where does output go? Terminal is default
 #jacorb.logfile=/tmp/xmlBlasterOrb.log
@@ -94,6 +94,7 @@ jacorb.poa.thread_pool_min=5
 # will run at this priority. If not set or invalid,
 # MAX_PRIORITY will be used.
 #jacorb.poa.thread_priority=
+jacorb.poa.thread_priority=8
 
 # size of the request queue, clients will receive Corba.TRANSIENT
 # exceptions if load exceeds this limit
