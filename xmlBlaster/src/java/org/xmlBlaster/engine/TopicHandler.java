@@ -505,48 +505,52 @@ public final class TopicHandler implements I_Timeout
       try { // finally
          boolean changed = true;
          synchronized (this) {
-            if (this.topicProperty.isReadonly() && hasHistoryEntries()) {
-               log.warn(ME+".Readonly", "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
-               throw new XmlBlasterException(glob, ErrorCode.USER_PUBLISH_READONLY, ME, "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
-            }
 
-            if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
-               MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
-               if (entry != null) {
-                  MsgUnitWrapper old = entry.getMsgUnitWrapper();
-                  if (old != null) {
-                     changed = !old.getMsgUnit().sameContent(msgUnit.getContent());
-                  }
+            final boolean isInvisiblePtp = publishQosServer.isPtp() && !publishQosServer.isSubscribeable();
+            final boolean addToHistoryQueue = this.historyQueue != null && !isInvisiblePtp;
+
+            if (!isInvisiblePtp) {  // readonly is only checked for Pub/Sub?
+               if (this.topicProperty.isReadonly() && hasHistoryEntries()) {
+                  log.warn(ME+".Readonly", "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
+                  throw new XmlBlasterException(glob, ErrorCode.USER_PUBLISH_READONLY, ME, "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
                }
             }
-
-            // Remove oldest history entry (if queue is full) and decrease reference counter in msgUnitStore
-            long numHist = getNumOfHistoryEntries();
-            if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
-               ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
-               if (entryList.size() != 1) {
-                  throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
-                        "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
-               }
-               /*
-               MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-               MsgUnitWrapper msgUnitEntry = entry.getMsgUnitWrapper();
-               if (msgUnitEntry != null) { // Check WeakReference
-                  this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
-               }
-               */
-               MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-               if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
-            }
-
 
             initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
             msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0, -1);
        
             this.msgUnitCache.put(msgUnitWrapper);
 
-            if (this.historyQueue != null && msgUnitWrapper.isAlive() &&             // no volatile messages
-                !(publishQosServer.isPtp() && publishQosServer.isSubscribeable())) { // no invisible PtP 
+            if (addToHistoryQueue && msgUnitWrapper.isAlive()) { // no volatile messages
+               if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
+                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
+                  if (entry != null) {
+                     MsgUnitWrapper old = entry.getMsgUnitWrapper();
+                     if (old != null) {
+                        changed = !old.getMsgUnit().sameContent(msgUnit.getContent());
+                     }
+                  }
+               }
+
+               // Remove oldest history entry (if queue is full) and decrease reference counter in msgUnitStore
+               long numHist = getNumOfHistoryEntries();
+               if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
+                  ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
+                  if (entryList.size() != 1) {
+                     throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
+                           "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+                  }
+                  /*
+                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
+                  MsgUnitWrapper msgUnitEntry = entry.getMsgUnitWrapper();
+                  if (msgUnitEntry != null) { // Check WeakReference
+                     this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
+                  }
+                  */
+                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
+                  if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
+               }
+
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
                }
