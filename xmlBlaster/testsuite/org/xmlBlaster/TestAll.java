@@ -38,8 +38,6 @@ public class TestAll
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());
       suite.addTest(TestGet.suite());
-      suite.addTest(TestGetFilter.suite());
-      suite.addTest(TestGetRegexFilter.suite());
       suite.addTest(TestSubExact.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubDispatch.suite());
@@ -47,7 +45,6 @@ public class TestAll
       suite.addTest(new TestSuite(testsuite.org.xmlBlaster.TestSubXPathMany.class));
       suite.addTest(TestSubMulti.suite());
       suite.addTest(TestUnSub.suite());
-      suite.addTest(TestSubscribeFilter.suite());
       suite.addTest(TestPtD.suite());
       suite.addTest(TestPtDQueue.suite());
       suite.addTest(TestPersistence.suite());

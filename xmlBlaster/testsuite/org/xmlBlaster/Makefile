@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/org/xmlBlaster
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = classtest clustertest query xmldb authentication
+SUB_DIRS = classtest clustertest query xmldb authentication mime
 #LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
@@ -39,10 +39,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestSubXPath.class \
     $(CLASS_DIR)/TestSubXPathMany.class \
     $(CLASS_DIR)/TestSubMulti.class \
-    $(CLASS_DIR)/TestSubscribeFilter.class \
     $(CLASS_DIR)/TestGet.class \
-    $(CLASS_DIR)/TestGetFilter.class \
-    $(CLASS_DIR)/TestGetRegexFilter.class \
     $(CLASS_DIR)/TestUnSub.class \
     $(CLASS_DIR)/TestInvocationRecorder.class \
     $(CLASS_DIR)/TestSubManyClients.class \
