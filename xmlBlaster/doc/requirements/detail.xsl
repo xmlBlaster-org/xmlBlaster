@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.15 2002/05/09 14:46:27 ruff Exp $
+Version:   $Id: detail.xsl,v 1.16 2002/05/27 10:34:45 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -33,7 +33,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/05/09 14:46:27 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/05/27 10:34:45 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -85,20 +85,24 @@ Author:    ruff@swand.lake.de
             <xsl:copy-of select="description" />
          </td>
       </tr>
+
+      <xsl:for-each select="example">
       <tr>
-         <td class="reqId">Example</td>
+         <td class="reqId">Example<br /><i><xsl:value-of select="@lang"/></i></td>
          <td class="example">
          <xsl:choose>
-         <xsl:when test="example[@type='HTML']">
+         <xsl:when test="@type='HTML'">
             <!-- xsl:value-of select="example"/-->
-            <xsl:copy-of select="example" />
+            <xsl:copy-of select="." />
          </xsl:when>
          <xsl:otherwise>
-            <pre><xsl:value-of select="example"/></pre>
+            <pre><xsl:value-of select="."/></pre>
          </xsl:otherwise>
          </xsl:choose>
          </td>
       </tr>
+      </xsl:for-each>
+
       <tr>
          <td class="reqId">Configure</td>
          <td class="configuration">
