@@ -121,11 +121,11 @@ TODO
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/jms.jar:lib/ejb2.0.jar:lib/jndi-jdk1_3_1.jar"/>
    <property name="cp.xml" value="lib/parser.jar:lib/jaxp.jar:lib/omquery.jar:lib/xtdash.jar"/>
    <property name="cp.orb" value="lib/idl.jar:lib/jacorb.jar"/>
-   <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
+   <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
    <property name="cp.test" value="testsuite/org/xmlBlaster"/>
-   <property name="classpath" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}"/>
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}"/>
 
 
    <!-- =================================================================== -->
@@ -323,7 +323,7 @@ TODO
          </then>
          <else>
             <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
-            <java classname="${idl.class}" classpath="${classpath}"
+            <java classname="${idl.class}" classpath="${cp}" fork="false"
                  args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
          </else>
       </if>
@@ -348,13 +348,13 @@ TODO
 
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
-            classpath="${classpath}"
+            classpath="${cp}"
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
 
-      <javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${classpath}" />
+      <javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${cp}" />
 
       <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
       <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
@@ -382,7 +382,7 @@ TODO
       </copy>
       <javac srcdir="${build.src}/demo"
             destdir="${build.dest}"
-            classpath="${classpath}:${lib.dir}/${name}.jar"
+            classpath="${cp}:${lib.dir}/${name}.jar"
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
@@ -416,7 +416,7 @@ TODO
       </copy>
       <javac srcdir="${build.src}/testsuite"
             destdir="${build.dest}"
-            classpath="${classpath}:${lib.dir}/${name}.jar"
+            classpath="${cp}:${lib.dir}/${name}.jar"
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
@@ -459,7 +459,7 @@ TODO
 
       <javac srcdir="${build.src}/javaclients/j2ee/k2/"
             destdir="${build.dest}"
-            classpath="${classpath}:${lib.dir}/${name}.jar"
+            classpath="${cp}:${lib.dir}/${name}.jar"
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
@@ -542,7 +542,7 @@ TODO
       <mkdir dir="${javadoc.dir}"/>
       <javadoc packagenames="org.xmlBlaster.*"
                sourcepath="${src.dir}"
-               classpath="${classpath}"
+               classpath="${cp}"
                destdir="${javadoc.dir}"
                author="true"
                version="true"
