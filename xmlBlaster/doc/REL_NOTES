@@ -3,6 +3,10 @@
 
 Changes for 0.75 [???, 2000]
 ==============================
+   - Added little tool which allows to subscribe
+	  from command line for a message (for testing/debugging).
+	  See xmlBlaster/src/java/org/xmlBlaster/client/reader/README
+
    - Added to internal messages with key oid="__sys__Login"
      and key oid="__sys__Logout"
      You may subscribe on those messages if you want to be informed
