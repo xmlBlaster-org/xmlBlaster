@@ -1,6 +1,4 @@
 // xmlBlaster/demo/javaclients/HelloWorld.java
-
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -26,13 +24,13 @@ public class HelloWorld
 
          MessageUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
 
-         Log.info("HelloWorld", "xmlBlaster has currently " + new String(msgs[0].getContent()) +
-                      " bytes of free memory");
+         System.out.println("\nHelloWorld: xmlBlaster has currently " +
+                new String(msgs[0].getContent()) + " bytes of free memory\n");
 
          con.disconnect(null);
       }
       catch (Exception e) {
-         Log.panic("", e.toString());
+         System.err.println("We have a problem: " + e.toString());
       }
    }
 
