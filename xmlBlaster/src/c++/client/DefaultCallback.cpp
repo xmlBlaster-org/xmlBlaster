@@ -47,10 +47,10 @@ DefaultCallback::update(const char* sessionId,
 #endif
 {
 
-   // typedef StringSequenceTmpl<CORBA::String_var> StringArr;
-   // typedef TSeqVar<StringSequenceTmpl<CORBA::String_var> > StringArr_var;
-   // typedef TSeqOut<StringSequenceTmpl<CORBA::String_var> > StringArr_out;
-   // IDL: typedef sequence<string> StringArr;
+   // typedef StringSequenceTmpl<CORBA::String_var> XmlTypeArr;
+   // typedef TSeqVar<StringSequenceTmpl<CORBA::String_var> > XmlTypeArr_var;
+   // typedef TSeqOut<StringSequenceTmpl<CORBA::String_var> > XmlTypeArr_out;
+   // IDL: typedef sequence<string> XmlTypeArr;
    serverIdl::XmlTypeArr *res = new serverIdl::XmlTypeArr(msgUnitArr.length());
    res->length(msgUnitArr.length());
 
@@ -101,7 +101,7 @@ DefaultCallback::update(const char* sessionId,
          (*res)[i] = str;
       } 
       catch (serverIdl::XmlBlasterException &e) {
-         log_.error(me(), string(e.reason) + " message is on error state: " + updateKey->printOn());
+         log_.error(me(), string(e.message) + " message is on error state: " + updateKey->printOn());
          string oneRes = "<qos><state id='ERROR'/></qos>";
          CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
          (*res)[i] = str;
@@ -109,7 +109,10 @@ DefaultCallback::update(const char* sessionId,
       catch(...) {
          string tmp = "Exception caught in update() " + lexical_cast<string>(msgUnitArr.length()) + " messages are handled as not delivered";
          log_.error(me(), tmp);
-         throw serverIdl::XmlBlasterException("UpdateFailed", tmp.c_str());
+	 throw serverIdl::XmlBlasterException("user.update.error", "client", 
+					      "client update failed", "en",
+					      tmp.c_str(), "", "", "", "", 
+					      "", "");
       }
 
       delete updateKey;
@@ -148,7 +151,7 @@ DefaultCallback::updateOneway(const char* sessionId,
             updateQos = new UpdateQos(string(msgUnit.qos));
          } 
          catch (serverIdl::XmlBlasterException &e) {
-            log_.error(me(), string(e.reason) );
+            log_.error(me(), string(e.message) );
          }
 
          if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQos->getSender());

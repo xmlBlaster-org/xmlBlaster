@@ -35,7 +35,6 @@ namespace org { namespace xmlBlaster {
       string me() const {
          return "CorbaConnection";
       }
-      
       static CORBA::ORB_ptr           orb_;
       static PortableServer::POA_ptr  poa_;
       static unsigned short           numOfSessions_;
@@ -242,7 +241,7 @@ namespace org { namespace xmlBlaster {
       string subscribe(const string &xmlKey, const string &qos=string("<qos/>"));
       
  
-      void unSubscribe(const string &xmlKey, const string &qos=string("<qos/>"));
+      vector<string> unSubscribe(const string &xmlKey, const string &qos=string("<qos/>"));
       
       
       /**

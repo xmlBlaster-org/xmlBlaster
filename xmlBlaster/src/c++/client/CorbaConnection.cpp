@@ -78,7 +78,9 @@ CorbaConnection::getXmlBlaster()
      msg       += "available, please login first.";
      string txt = me();
      txt += ".NotLoggedIn";
-     throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
   return serverIdl::Server::_duplicate(xmlBlaster_);
 }
@@ -218,11 +220,16 @@ CorbaConnection::getAuthenticationService()
      }
      catch(serverIdl::XmlBlasterException & /*e*/ ) {
         log_.error(me() + ".NoAuthService", text);
-        throw serverIdl::XmlBlasterException(msg.c_str(),text.c_str());
+	throw serverIdl::XmlBlasterException("communication.noConnection", 
+					     "client", me().c_str(), "en",
+					     text.c_str(), "", "", "", "", 
+					     "", "");
      }
   }
   if (log_.TRACE) log_.trace(me(), "No -ns ...");
-  throw serverIdl::XmlBlasterException(msg.c_str(), text.c_str());
+  throw serverIdl::XmlBlasterException("communication.noConnection", "client",
+				       me().c_str(), "en", text.c_str(), "", 
+				       "", "", "", "", "");
 }
 
 
@@ -317,7 +324,7 @@ CorbaConnection::logout()
   }
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
-     msg += e.reason;
+     msg += e.message;
      log_.warn(me(), msg);
   }
   xmlBlaster_ = 0;
@@ -336,7 +343,9 @@ CorbaConnection::subscribe(const string &xmlKey, const string &qos)
   if (log_.CALL) log_.call(me(), "subscribe() ...");
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
   try {
      CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
@@ -348,19 +357,28 @@ CorbaConnection::subscribe(const string &xmlKey, const string &qos)
 }
 
 
-void CorbaConnection::unSubscribe(const string &xmlKey,
+vector<string> CorbaConnection::unSubscribe(const string &xmlKey,
                                   const string &qos) 
 {
   if (log_.CALL) log_.call(me(), "unSubscribe() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
-     xmlBlaster_->unSubscribe(xmlKey.c_str(), qos.c_str());
+     serverIdl::XmlTypeArr_var 
+	retArr = xmlBlaster_->unSubscribe(xmlKey.c_str(), qos.c_str());
+     
+     vector<string> vecArr;
+     for (unsigned int ii=0; ii<retArr->length(); ii++) {
+	vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
      }
+     return vecArr;
+  }
   catch(serverIdl::XmlBlasterException e) {
      throw e;
   }
@@ -379,7 +397,9 @@ string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
@@ -391,7 +411,7 @@ string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
   }
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
-     msg += e.reason;
+     msg += e.message;
      if (log_.TRACE) log_.trace(me(), msg);
      throw e;
   }
@@ -410,8 +430,10 @@ CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
-  }
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
+ }
 
   try {
      CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
@@ -419,7 +441,7 @@ CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit)
   }
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
-     msg += e.reason;
+     msg += e.message;
      if (log_.TRACE) log_.trace(me(), msg);
      throw e;
   }
@@ -444,13 +466,15 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
      serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
      copyToCorba(msgUnitArr, msgVec);
-     serverIdl::StringArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
+     serverIdl::XmlTypeArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
      vector<string> vecArr;
      for (unsigned int ii=0; ii<retArr->length(); ii++) {
         vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
@@ -459,7 +483,7 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
   }
   catch(serverIdl::XmlBlasterException &e) {
      if (log_.TRACE) log_.trace(me(), "XmlBlasterException: "
-                                + string(e.reason) );
+                                + string(e.message) );
      throw e;
   }
 }
@@ -467,14 +491,16 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
 /**
 * @deprecated Please use the STL vector variant
 */
-serverIdl::StringArr* 
+serverIdl::XmlTypeArr* 
 CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr)
 {
   if (log_.CALL) log_.call(me(), "publishArr() ...");
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
@@ -482,7 +508,7 @@ CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr)
   }
   catch(serverIdl::XmlBlasterException &e) {
      if (log_.TRACE) log_.trace(me(), "XmlBlasterException: "
-                                + string(e.reason) );
+                                + string(e.message) );
      throw e;
   }
   return 0;
@@ -503,7 +529,9 @@ CorbaConnection::publishOneway(const vector<util::MessageUnit>& msgVec)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
@@ -531,7 +559,9 @@ CorbaConnection::publishOneway(const serverIdl::MessageUnitArr& msgUnitArr)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
@@ -557,7 +587,9 @@ CorbaConnection::erase(const string &xmlKey, const string &qos)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
@@ -590,7 +622,9 @@ CorbaConnection::get(const string &xmlKey, const string &qos)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {
@@ -642,7 +676,9 @@ CorbaConnection::ping(const string &qos)
 
   if (CORBA::is_nil(xmlBlaster_)) {
      string txt = "no auth.Server, you must login first";
-     throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+     throw serverIdl::XmlBlasterException("communication.noConnection", 
+					  "client", me().c_str(), "en",
+					  txt.c_str(), "", "", "", "", "", "");
   }
 
   try {

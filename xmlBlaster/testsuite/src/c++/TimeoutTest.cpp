@@ -1,0 +1,81 @@
+/*-----------------------------------------------------------------------------
+Name:      TimeoutTest.cpp
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Testing the Timeout Features
+-----------------------------------------------------------------------------*/
+
+#include <util/Timeout.h>
+#include <iostream>
+#include <string>
+
+#include <unistd.h>
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+
+// using boost::lexical_cast;
+
+/**
+ * This client tests the synchronous method get() with its different qos
+ * variants.<p>
+ * This client may be invoked multiple time on the same xmlBlaster server,
+ * as it cleans up everything after his tests are done.
+ * <p>
+ */
+
+namespace org { namespace xmlBlaster {
+
+class TimeoutTest : public I_Timeout {
+   
+private:
+   string ME;
+   Timeout *timeoutObject;
+public:
+   TimeoutTest(string name) : ME(name) {
+   }
+
+   void timeout(void *userData) {
+      cout << "this is the timeout for the test" << endl;
+   }
+
+   void testTimeout() {
+      cout << ME << " testTimeout(): the timeout will now be started" << endl;
+      timeoutObject->start();
+      cout << ME << " testTimeout(): the timeout will now be triggered" << endl;
+      timeoutObject->addTimeoutListener(this, 1000, NULL);
+      cout << ME << " testTimeout: timeout triggered. Waiting to be fired (sould happen in 1 second" << endl;
+//      timeoutObject->join();
+      usleep(10000000);
+      std::cout << ME << " after joining" << std::endl;
+   }
+
+   void setUp(int args=0, char *argc[]=0) {
+      cout << ME << " setUp(): creating the timeout object" << endl;
+      timeoutObject = new Timeout(args, argc);
+      cout << ME << " setUp(): timeout object created" << endl;
+   }
+
+   void tearDown() {
+      cout << ME << " tearDown(): will delete now" << endl;
+      timeoutObject->shutdown();
+      delete timeoutObject;
+      cout << ME << " tearDown(): has deleted now" << endl;
+   }
+};
+   
+}} // namespace
+
+
+
+int main(int args, char *argc[]) {
+
+   org::xmlBlaster::TimeoutTest *test = new org::xmlBlaster::TimeoutTest("TimeoutTest");
+
+
+   test->setUp(args, argc);
+   test->testTimeout();
+   test->tearDown();
+   return 0;
+}
+

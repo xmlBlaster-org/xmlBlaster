@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.2 2002/11/26 12:37:37 ruff Exp $
+Version:   $Id: Timestamp.h,v 1.3 2002/11/26 18:02:03 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -47,13 +47,12 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 
-   class Timestamp {
+   class TimestampFactory {
       
    private:
-      long long nanoCounter_;
-      long long  milliCounter_;
-      long long lastSeconds_;
-      
+      Timestamp nanoCounter_;
+      Timestamp milliCounter_;
+      Timestamp lastSeconds_;
       boost::mutex *getterMutex_;
 
       /** Cache for string representation */
@@ -63,25 +62,28 @@ namespace org { namespace xmlBlaster { namespace util {
        * The default constructor is made private to implement the singleton
        * pattern.
        */
-      Timestamp();
+      TimestampFactory();
+      TimestampFactory(const TimestampFactory &factory);
+      TimestampFactory& operator =(const TimestampFactory &factory);
+      ~TimestampFactory();
 
-      ~Timestamp();
-      
    public:
-      const long long TOUSAND;
-      const long long MILLION;
-      const long long BILLION;
+      const Timestamp TOUSAND;
+      const Timestamp MILLION;
+      const Timestamp BILLION;
+
 
       /**
        * The method to call to get the singleton Timestamp object.
        */
-      static Timestamp& getInstance();
+      static TimestampFactory& getInstance();
     
       /**
        * Constructs a current timestamp which is guaranteed to be unique in time for this JVM
+       * @param delay the time in milliseconds from now the return value has to point to.
        * @exception RuntimeException on overflow (never happens :-=)
        */
-      long long getTimestamp();
+      Timestamp getTimestamp(long delay=0);
    };
 
 }}}; // namespace
