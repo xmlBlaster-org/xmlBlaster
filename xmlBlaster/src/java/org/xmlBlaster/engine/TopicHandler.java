@@ -430,6 +430,12 @@ public final class TopicHandler implements I_Timeout
    {
       if (log.TRACE) log.trace(ME, "Setting content");
 
+      StatusQosData qos = new StatusQosData(glob);
+      qos.setKeyOid(this.uniqueKey);
+      qos.setState(Constants.STATE_OK);
+      qos.setRcvTimestamp(publishQosServer.getRcvTimestamp());
+      PublishReturnQos publishReturnQos = new PublishReturnQos(glob, qos);
+
       MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
       MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
       /* Happens in RequestBroker already
@@ -463,11 +469,8 @@ public final class TopicHandler implements I_Timeout
             else {
                log.info(ME, "Topic is successfully configured by administrative message.");
             }
-            StatusQosData qos = new StatusQosData(glob);
-            qos.setKeyOid(this.uniqueKey);
-            qos.setState(Constants.STATE_OK);
-            qos.setStateInfo("Administrative configuration request handled");
-            return new PublishReturnQos(glob, qos);
+            publishReturnQos.getData().setStateInfo("Administrative configuration request handled");
+            return publishReturnQos;
          }
       }
 
@@ -477,7 +480,6 @@ public final class TopicHandler implements I_Timeout
 
       int initialCounter = 0; // Force referenceCount until update queues are filled (volatile messages)
       MsgUnitWrapper msgUnitWrapper = null;
-      PublishReturnQos publishReturnQos = null;
       
       try { // finally
          boolean changed = true;
@@ -523,8 +525,9 @@ public final class TopicHandler implements I_Timeout
             this.msgUnitCache.put(msgUnitWrapper);
 
             if (publishQosServer.isPtp()) {
-               publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+               /*publishReturnQos =*/ forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
                if (!publishQosServer.isSubscribeable()) {
+                  publishReturnQos.getData().setStateInfo("PtP request handled");
                   return publishReturnQos;
                }
             }
