@@ -190,12 +190,12 @@ One important note:
 
    iorPort -1 switches the internal http server off:
 
-     jaco org.xmlBlaster.MainGUI -iorPort -1
+     jaco org.xmlBlaster.MainGUI -iorPort 0
 
    This client looks into jacorb.properties to find the URL with the naming service IOR.
    Edit ${HOME}/jacorb.properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
 
-     jaco javaclients.ClientXml -iorPort -1
+     jaco javaclients.ClientXml -iorPort 0
 
    If you have problems, check your web server:
 
