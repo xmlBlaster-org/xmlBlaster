@@ -1,4 +1,4 @@
-# $ Id: $
+# $Id: jacorb.sh,v 1.6 2002/01/07 10:48:50 goetzger Exp $
 #-------- Checking JacORB --------
 # Is JacORB home not set already? Try to find where JacORB is:
 if [ "${JacORB_HOME}" = "" ] ; then

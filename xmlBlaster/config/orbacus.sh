@@ -1,4 +1,4 @@
-# $ Id: $
+# $Id: orbacus.sh,v 1.8 2002/01/07 10:48:50 goetzger Exp $
 export IDL_OUTDIR="--output-dir"
 export IDL2JAVA="${ORBACUS_HOME}/bin/jidl --tie --package org.xmlBlaster.protocol.corba"
 export CLASSPATH=${XMLBLASTER_HOME}/lib/miniJacorb.jar:${CLASSPATH}

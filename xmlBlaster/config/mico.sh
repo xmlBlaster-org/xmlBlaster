@@ -1,4 +1,4 @@
-# $ Id: $
+# $Id: mico.sh,v 1.12 2002/01/07 10:48:50 goetzger Exp $
 #-------- Checking MICO --------
 if [ "${CORBACPP_HOME}" = "" ] || [ ! -d ${CORBACPP_HOME} ] ; then
    ${ECHO} "$BLACK_RED  If you want to use the C++ MICO client, set the CORBACPP_HOME environment variable $ESC"
