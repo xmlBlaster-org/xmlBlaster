@@ -156,11 +156,20 @@ public class PtPTest extends TestCase {
    }
 
    /**
-    * setUp() and tearDown() are ivoked between each test...() method
+    * Invoke: 
+    * <pre>
+    *  java -Dtrace[cluster]=true -Dcall[cluster]=true -Dcall[core]=true org.xmlBlaster.test.cluster.PtPTest
+    *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.cluster.PtPTest
+    * <pre>
     */
-    /*
-   public void testDummy() {
-      System.err.println("***PtPTest: testDummy [SUCCESS]");
+   public static void main(String args[]) {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         System.exit(0);
+      }
+      PtPTest testSub = new PtPTest("PtPTest");
+      testSub.setUp();
+      testSub.testPublishPtP();
+      testSub.tearDown();
    }
-     */
 }
