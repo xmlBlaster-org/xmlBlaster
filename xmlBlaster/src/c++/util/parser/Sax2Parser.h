@@ -86,6 +86,7 @@ protected:
     */
    bool getStringAttr(const Attributes& attrs, const XMLCh* const name, std::string& value, bool doTrim=true) const;
 
+ public:
 
    /**
     *  Helper method which encapsulates either the delete[] operator for Xerces-c versions older than 
@@ -102,8 +103,6 @@ protected:
     * build.properties or in your system environment the variable OLDXERCES.
     */
    static void releaseXMLCh(char** data);
-
-public:
 
    /** Receive notification of character data inside an element. */
    void characters(const XMLCh *const chars, const unsigned int length);
