@@ -37,6 +37,10 @@
 
    Download http://members.pingnet.ch/gamma/junit.htm
 
+   Please read the
+      ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README
+   file for more informations.
+
 
 5) collections.jar
 ==================
