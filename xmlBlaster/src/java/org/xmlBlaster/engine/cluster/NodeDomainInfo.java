@@ -10,15 +10,18 @@ package org.xmlBlaster.engine.cluster;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 
 import org.xml.sax.Attributes;
+
+import java.util.Vector;
 
 /**
  * Here we have the rules to find out who is the master of a message. 
  * <p />
  * The rules are configurable with such a message:
  * <pre>
- * &lt;!-- Messages of type "__sys__cluster.node.domainmapping:heron": -->
+ * &lt;!-- Messages of type "__sys__cluster.node.master[heron]": -->
  *
  * &lt;master stratum='0' refid='bilbo' type='DomainToMaster' version='1.0'>
  *    &lt;![CDATA[
@@ -55,9 +58,18 @@ public final class NodeDomainInfo implements Comparable
    private String version;
    private String query = "";
 
-   private Object preparedQuery = null;
+   /** for SAX parsing */
+   private int inMaster = 0;
 
-   private XmlKey[] keyMappings;
+   private transient AccessFilterQos tmpFilter = null;
+   protected Vector filterVec = null;                      // To collect the <filter> when sax parsing
+   protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
+   private transient boolean inFilter = false;
+
+   private transient XmlKey tmpKey = null;
+   protected Vector keyVec = null;                      // To collect the <key> when sax parsing
+   private XmlKey[] keyArr;
+   private transient boolean inKey = false;
 
    /**
     * Create a NodeDomainInfo belonging to the given cluster node. 
@@ -106,7 +118,12 @@ public final class NodeDomainInfo implements Comparable
     * Get the key based rules
     */
    public XmlKey[] getKeyMappings() {
-         return keyMappings;
+      if (keyArr != null || keyVec == null || keyVec.size() < 1)
+         return keyArr;
+
+      keyArr = new XmlKey[keyVec.size()];
+      keyVec.toArray(keyArr);
+      return keyArr;
    }
 
    /**
@@ -114,48 +131,34 @@ public final class NodeDomainInfo implements Comparable
     * @parameter XmlKey, e.g.<pre>
     *            &lt;key domain='rugby'/>
     */
-   public void setKeyMappings(XmlKey[] keyMappings){
-         this.keyMappings = keyMappings;
+   public void setKeyMappings(XmlKey[] keyArr){
+         this.keyArr = keyArr;
    }
 
    /**
-    * Set the master query, it should fit to the protocol-type. 
-    * <p />
-    * Clears the pre parsed query object to null
-    * @param query The master query, e.g. "&lt;key domain='RUGBY'>" to select RUGBY messages
+    * Return the cluster master filters or null if none is specified. 
     */
-   public final void setQuery(String query) {
-      if (query == null)
-         this.query = "";
-      else
-         this.query = query;
-      this.preparedQuery = null;
+   public final AccessFilterQos[] getFilterQos()
+   {
+      if (filterArr != null || filterVec == null || filterVec.size() < 1)
+         return filterArr;
+
+      filterArr = new AccessFilterQos[filterVec.size()];
+      filterVec.toArray(filterArr);
+      return filterArr;
    }
 
    /**
-    * Returns the query, the syntax is depending on what your plugin supports.
-    * @return e.g. "&lt;key domain='RUGBY'>", is never null
+    * Return the XmlKey master filters or null if none is specified. 
     */
-   public final String getQuery() {
-      return query;
-   }
+   public final XmlKey[] getXmlKeyFilters()
+   {
+      if (keyArr != null || keyVec == null || keyVec.size() < 1)
+         return keyArr;
 
-   /**
-    * This object is for the plugin writer, she can
-    * parse the query and store here an arbitrary pre parsed object
-    * for better performance.
-    */
-   public Object getPreparedQuery() {
-      return this.preparedQuery;
-   }
-
-   /**
-    * This object is for the plugin writer, she can
-    * parse the query and store here an arbitrary pre parsed object
-    * for better performance.
-    */
-   public void setPreparedQuery(Object preparedQuery) {
-      this.preparedQuery = preparedQuery;
+      keyArr = new XmlKey[keyVec.size()];
+      keyVec.toArray(keyArr);
+      return keyArr;
    }
 
    /**
@@ -247,13 +250,9 @@ public final class NodeDomainInfo implements Comparable
     */
    public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
       //glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
-      String tmp1 = character.toString().trim(); // The query
-      if (tmp1.length() > 0) {
-         setQuery(tmp1);
-         character.setLength(0);
-      }
-
       if (name.equalsIgnoreCase("master")) {
+         inMaster++;
+         if (inMaster > 1) return false; // ignore nested master tags
          if (attrs != null) {
             String tmp = attrs.getValue("stratum");
             if (tmp != null) { try { setStratum(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <master stratum='" + tmp + "'"); }; }
@@ -277,6 +276,36 @@ public final class NodeDomainInfo implements Comparable
          return true;
       }
 
+      if (inMaster == 1 && name.equalsIgnoreCase("key")) {
+         inKey = true;
+      }
+
+      if (inMaster == 1 && name.equalsIgnoreCase("filter")) {
+         inFilter = true;
+         tmpFilter = new AccessFilterQos(glob);
+         boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
+         if (ok) {
+            if (filterVec == null) filterVec = new Vector();
+            filterVec.addElement(tmpFilter);
+         }
+         else
+            tmpFilter = null;
+         return ok;
+      }
+
+      if (inKey) {
+         // Collect everything to pass it later to XmlKey for DOM parsing:
+         character.append("<").append(name);
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int ii=0; ii<len; ii++) {
+                character.append(" ").append(attrs.getQName(ii)).append("='").append(attrs.getValue(ii)).append("'");
+            }
+         }
+         character.append(">");
+         return true;
+      }
+
       return false;
    }
 
@@ -286,12 +315,34 @@ public final class NodeDomainInfo implements Comparable
    public final void endElement(String uri, String localName, String name, StringBuffer character) {
       //glob.getLog().info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
       if (name.equalsIgnoreCase("master")) {
-         String tmp = character.toString().trim(); // The query
-         if (tmp.length() > 0)
-            setQuery(tmp);
-         if (getQuery() == null || getQuery().length() < 1)
-            glob.getLog().error(ME, "<master> contains no query data to map messages to their master node");
+         inMaster--;
+         if (inMaster > 0) return; // ignore nested master tags
          character.setLength(0);
+      }
+
+      if (inKey)
+         character.append("</"+name+">");
+
+      if (inMaster == 1 && name.equalsIgnoreCase("key")) {
+         inKey = false;
+         glob.getLog().info(ME, "Parsing filter xmlKey=" + character.toString());
+         try {
+            tmpKey = new XmlKey(glob, character.toString()); // Do a DOM parse on the collected tags
+            if (keyVec == null) keyVec = new Vector();
+            keyVec.addElement(tmpKey);
+         }
+         catch (XmlBlasterException e) {
+            glob.getLog().info(ME, "Parsing <master>" + character.toString() + " failed, ignoring this rule: " + e.toString());
+         }
+         character.setLength(0);
+         return;
+      }
+
+      if (inMaster == 1 && name.equalsIgnoreCase("filter")) {
+         inFilter = false;
+         if (tmpFilter != null)
+            tmpFilter.endElement(uri, localName, name, character);
+         return;
       }
    }
 
@@ -330,7 +381,14 @@ public final class NodeDomainInfo implements Comparable
           sb.append(" acceptOtherDefault='").append(getAcceptOtherDefault()).append("'");
       sb.append(">");
 
-      sb.append(offset).append("   <![CDATA[").append(getQuery()).append("]]>");
+      XmlKey[] keyArr = getXmlKeyFilters();
+      for (int ii=0; keyArr != null && ii<keyArr.length; ii++)
+         sb.append(offset).append("   ").append(keyArr[ii].literal());
+
+      AccessFilterQos[] filterArr = getFilterQos();
+      for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
+         sb.append(filterArr[ii].toXml(extraOffset+"   "));
+
       sb.append(offset).append("</master>");
 
       return sb.toString();

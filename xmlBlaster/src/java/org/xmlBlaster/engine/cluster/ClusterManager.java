@@ -291,6 +291,8 @@ public final class ClusterManager
       }
 
       // Search all other cluster nodes to find the masters of this message ...
+      // NOTE: If no filters are used, the masterSet=f(msgWrapper) could be cached for performance gain
+      //       Cache implementation is currently missing
 
       Set masterSet = new TreeSet(); // Contains the NodeDomainInfo objects which match this message
                                      // Sorted by stratum (0 is the first entry) -> see NodeDomainInfo.compareTo
@@ -326,8 +328,9 @@ public final class ClusterManager
                                nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
                                msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
             if (domainMapper == null) {
-               Log.warn(ME, "No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() + "' found, ignoring rule '" + nodeDomainInfo.getQuery() +
-                            "' for message mime='" + msgWrapper.getContentMime() + "' and '" + msgWrapper.getContentMimeExtended() + "'");
+               Log.warn(ME, "No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() +
+                            "' found for message mime='" + msgWrapper.getContentMime() + "' and '" + msgWrapper.getContentMimeExtended() +
+                            "' ignoring rules " + nodeDomainInfo.toXml());
                continue;
             }
 
@@ -353,7 +356,7 @@ public final class ClusterManager
          Log.info(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
       }
 
-      ClusterNode clusterNode = loadBalancer.getClusterNode(masterSet);
+      ClusterNode clusterNode = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
 
       if (clusterNode == null) {
          log.error(ME, "Message '" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'" +

@@ -47,8 +47,7 @@ import org.xml.sax.Attributes;
  *     &lt;!-- Parsed by NodeDomainInfo.java -->
  *
  *     &lt;master stratum='0' type='DomainToMaster'> <!-- Specify your plugin -->
- *        &lt;key domain=''/>
- *        &lt;key domain='rugby'/>
+ *        &lt;key queryType='DOMAIN' domain='RUGBY'/>
  *     &lt;/master>
  *
  *
@@ -154,8 +153,9 @@ public class NodeParser extends SaxHandlerBase
          if (inClusternode != 1) return;
          inMaster = true;
          tmpMaster = new NodeDomainInfo(glob, tmpClusterNode);
-         if (tmpMaster.startElement(uri, localName, name, character, attrs) == true)
+         if (tmpMaster.startElement(uri, localName, name, character, attrs) == true) {
             tmpClusterNode.addDomainInfo(tmpMaster);
+         }
          else
             tmpMaster = null;
          return;
@@ -274,10 +274,21 @@ public class NodeParser extends SaxHandlerBase
             "     </backupnode>\n" +
             "   </info>\n" +
             "   <master type='DomainToMaster' version='0.9'>\n" +
-            "     <![CDATA[\n" +
-            "     <key domain='RUGBY'/>\n" +
-            "     <key type='XPATH'>//STOCK</key>\n" +
-            "     ]]>\n" +
+            "     <key queryType='DOMAIN' domain='RUGBY'/>\n" +
+            "     <key queryType='XPATH'>//STOCK</key>\n" +
+            "     <filter type='ContentLength'>\n" +
+            "       8000\n" +
+            "     </filter>\n" +
+            "     <filter type='ContainsChecker' version='7.1' xy='true'>\n" +
+            "       bug\n" +
+            "     </filter>\n" +
+            "     <someOtherPluginfilter>\n" +
+            "        <![CDATA[\n" +
+            "        ]]>\n" +
+            "     </someOtherPluginfilter>\n" +
+            "   </master>\n" +
+            "   <master type='DomainToMaster' version='1.1'>\n" +
+            "     //RUGBY\n" +
             "   </master>\n" +
             "   <state>\n" +
             "     <cpu id='0' idle='40'/>\n" +

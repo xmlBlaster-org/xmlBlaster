@@ -13,7 +13,9 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
@@ -127,48 +129,86 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
 
    /**
     * Find out who is the master of the provided message. 
+    * <pre>
+    *   &lt;clusternode id='heron'>
+    *   &lt;master type='DomainToMaster' version='0.9'>
+    *     &lt;![CDATA[
+    *       &lt;key type='DOMAIN' domain='RUGBY'/>
+    *       &lt;key type='XPATH'>//GAME&lt;/key>
+    *     ]]>
+    *     &lt;filter type='ContentLength'>
+    *       8000
+    *     &lt;/filter>
+    *     &lt;filter type='ContainsChecker' version='7.1' xy='true'>
+    *       rugby
+    *     &lt;/filter>
+    *   &lt;/master>
+    *   &lt;/clusternode>
+    * </pre>
+    * If the attribute domain='RUGBY' and the meta informations contains the tag &lt;GAME>
+    * and the message is shorter 8000 bytes and the message content contains a token 'rugby'
+    * the cluster node 'heron' is chosen as the master of the message.
     * @param msgWrapper The message
     * @return The node which is master of the message, you should always return a valid ClusterNode
     */
    public ClusterNode getMasterId(NodeDomainInfo nodeDomainInfo, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
 
-      if (msgWrapper.getXmlKey().isDefaultDomain()) {
+      // TODO: We have not found the MessageUnitHandler, as the publish may be forwarded !!!
+      //XmlKey xmlKey = msgWrapper.getMessageUnitHandler().getXmlKey(); // This key from the current messsage is DOM parsed
+      XmlKey xmlKey = msgWrapper.getXmlKey();
+
+      // Look if we can handle it simple ...
+      if (xmlKey.isDefaultDomain()) {
          if (nodeDomainInfo.getClusterNode().isLocalNode()) {
             if (nodeDomainInfo.getAcceptDefault()==true) {
                // if no domain is specified and the local node accepts default messages -> local node is master
-               if (log.TRACE) log.trace(ME, "Message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "' is handled by local node");
+               if (log.TRACE) log.trace(ME, "Message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "' is handled by local node");
+               log.warn(ME, "<filter> additional check is not implemented");
                return nodeDomainInfo.getClusterNode(); // Found the master
             }
          }
          else {
             if (nodeDomainInfo.getAcceptOtherDefault()==true) {
                log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' which accepts other default domains");
+               log.warn(ME, "<filter> additional check is not implemented");
                return nodeDomainInfo.getClusterNode(); // Found the master
             }
          }
       }
 
-      XmlKey preparedQuery = (XmlKey)nodeDomainInfo.getPreparedQuery();
-
-      if (preparedQuery == null) { // The first time we need to parse the query string, and cache it
-         String query = nodeDomainInfo.getQuery().trim();
-         if (log.TRACE) log.trace(ME, "Parsing user supplied domain to master mapping query='" + query + "'");
-         try {
-            preparedQuery = new XmlKey(glob, query);
-         } catch(Throwable e) {
-            log.warn(ME, "Parsing user supplied domain to master mapping query='" + query + "' failed, we ignore it: " + e.toString());
-            return null;
-         }
-         nodeDomainInfo.setPreparedQuery(preparedQuery);
-      }
+      XmlKey[] keyMappings = nodeDomainInfo.getKeyMappings();  // These are the key based queries
 
       // Now check if we are master
-      if (preparedQuery.getDomain().equals(msgWrapper.getXmlKey().getDomain())) {
-         log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'.");
-         return nodeDomainInfo.getClusterNode(); // Found the master
+      ClusterNode clusterNode = null;
+      for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
+         if (xmlKey.match(keyMappings[ii])) {
+            log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
+            clusterNode = nodeDomainInfo.getClusterNode(); // Found the master
+            return clusterNode;
+         }
       }
 
-      log.info(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+      // Check for user supplied filters <master><filter>... These are the filter based queries
+      AccessFilterQos[] filterQos = nodeDomainInfo.getFilterQos();
+      if (filterQos != null) {
+         log.info(ME, "Found " + filterQos.length + " filter rules ...");
+         for (int jj=0; jj<filterQos.length; jj++) {
+            I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
+                                          filterQos[jj].getType(),
+                                          filterQos[jj].getVersion(), 
+                                          xmlKey.getContentMime(),
+                                          xmlKey.getContentMimeExtended());
+            log.warn(ME, "get("+xmlKey.getUniqueKey()+") filter=" + filter + " qos=" + msgWrapper.getPublishQos().toXml());
+            /* TODO: pass sessionInfo to here
+            if (filter != null && filter.match(sessionInfo.getSubjectInfo(),
+                                          sessionInfo.getSubjectInfo(),
+                                          msgUnitWrapper, filterQos[jj].getQuery()) == false)
+               continue NEXT_MSG; // filtered message is not send to client
+            */
+         }
+      }
+
+      log.info(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'");
       return null; // This clusternode is not the master
    }
 }

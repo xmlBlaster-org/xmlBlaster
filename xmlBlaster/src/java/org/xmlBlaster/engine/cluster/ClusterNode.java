@@ -138,6 +138,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          this.cbSessionId = callback.getSessionId();
 
          ConnectQos qos = new ConnectQos(getId(), glob);
+
+         qos.setSecurityPluginData(null, null, glob.getId(), "secret"); // !!! Password null?
+
          Address addr = getNodeInfo().getAddress();
          if (addr == null) {
             Log.error(ME, "Can't connect to node '" + getId() + "', address is null");
@@ -220,7 +223,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * Set the filter rules to determine the master of a message. 
     */
    public void addDomainInfo(NodeDomainInfo domainInfo) {
-      this.domainInfoMap.put(domainInfo.getQuery(), domainInfo);
+      // How to avoid duplicates? key = domainInfo.getQuery() does not help because of subtags 
+      this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
    }
 
    /**
