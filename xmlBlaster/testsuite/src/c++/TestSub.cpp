@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.15 2003/02/09 21:17:14 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.16 2003/02/13 14:01:16 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -182,7 +182,6 @@ private:
             vector<MessageUnit> msgUnitArr;
             msgUnitArr.insert(msgUnitArr.begin(), msgUnit);
             connection_.publishOneway(msgUnitArr);
-            //delete msgUnitArr;
             log_.info(ME, string("Success: Publishing oneway done (old style)"));
          }
          else if (testType == TEST_PUBLISH) {
@@ -198,7 +197,6 @@ private:
             vector<MessageUnit> msgUnitArr;
             msgUnitArr.insert(msgUnitArr.begin(), msgUnit);
             connection_.publishArr(msgUnitArr);
-            //delete msgUnitArr;
             log_.info(ME, string("Success: Publishing array done (old style)"));
          }
       }
@@ -430,7 +428,7 @@ int main(int args, char *argc[])
       
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
-   	  Thread::sleepSecs(1);
+          Thread::sleepSecs(1);
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
