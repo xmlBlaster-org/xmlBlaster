@@ -2,25 +2,18 @@
 Name:      CbWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Pool of threads doing a callback. 
-Version:   $Id: CbWorkerPool.java,v 1.1 2000/12/29 14:46:22 ruff Exp $
+Comment:   Pool of threads doing a callback.
+Version:   $Id: CbWorkerPool.java,v 1.2 2001/02/14 21:36:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
 
-import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.jutils.runtime.Sleeper;
-import java.util.*;
 
 
 /**
- * Pool of threads doing a callback. 
+ * Pool of threads doing a callback.
  */
 public class CbWorkerPool
 {
@@ -28,6 +21,7 @@ public class CbWorkerPool
    public final int MAX_CB_THREADS;
    private int numActiveWorkers = 0;
    private final long SLEEP_PERIOD = 10L;
+   private final ThreadGroup threadGroup;
 
    /**
     * @param maxWorkers Maximum allowed callback threads
@@ -35,6 +29,7 @@ public class CbWorkerPool
    public CbWorkerPool(int maxWorkers)
    {
       this.MAX_CB_THREADS = maxWorkers;
+      this.threadGroup = new ThreadGroup("CallbackWorkerThreadGroup");
    }
 
    public CbWorker reserve()
