@@ -86,29 +86,29 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 2. Copy xmlBlaster/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
    or edit the existing orb.properties file.
 
-	This switches off the default CORBA from JDK 1.2, and replaces it with
-	the JacORB CORBA implementation.
+   This switches off the default CORBA from JDK 1.2, and replaces it with
+   the JacORB CORBA implementation.
 
-	If you want to avoid this, you need to specify on command line:
-	   java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
-		     -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+   If you want to avoid this, you need to specify on command line:
+      java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+           -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
 
 
 3. There are two property files which you can adjust.
    (They are copied automatically if you use the .bashrc from step 1a)
 
    a) $HOME/xmlBlaster.properties
-	   There is a template xmlBlaster/xmlBlaster.properties.template
-		to use as a base.
+      There is a template xmlBlaster/xmlBlaster.properties.template
+      to use as a base.
 
-	b) $HOME/jacorb.properties
-	   There is a template xmlBlaster/jacorb.properties.template
-		to use as a base.
+   b) $HOME/jacorb.properties
+      There is a template xmlBlaster/jacorb.properties.template
+      to use as a base.
 
    Note: With 'java -Duser.home=yourHome ...' you could set another
          path to look for the property files.
-			See requirement xmlBlaster/doc/requirements/util.property.xml
-			for further search path.
+         See requirement xmlBlaster/doc/requirements/util.property.xml
+         for further search path.
 
 
 4. Notes on adjusting your environment setup.
@@ -144,11 +144,11 @@ instructions.
 One important note:
    You can't start xmlBlaster on JDK 1.2.x with the java command directly,
    since this would use the JDK internal ORB (which is outdated).
-	- Start xmlBlaster like this:
-	   java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
-		     -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
-	- Use our little script 'jaco' which does this
-	- Or install orb.properties (see above, the recommended way)
+   - Start xmlBlaster like this:
+      java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+           -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+   - Use our little script 'jaco' which does this
+   - Or install orb.properties (see above, the recommended way)
 
 1. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
    (This is the Default-Startup)
