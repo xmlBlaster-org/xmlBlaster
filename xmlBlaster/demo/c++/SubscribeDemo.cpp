@@ -51,7 +51,7 @@ private:
    string updateExceptionMessage;
    string updateExceptionRuntime;
    string oid;
-   string domain;
+   //string domain;
    string xpath;
    bool multiSubscribe;
    bool local;
@@ -106,7 +106,7 @@ public:
       updateExceptionMessage = global_.getProperty().get("updateException.message", string(""));
       updateExceptionRuntime = global_.getProperty().get("updateException.runtime", string(""));
       oid = global_.getProperty().get("oid", "");
-      domain = global_.getProperty().get("domain", "");
+      //domain = global_.getProperty().get("domain", "");
       xpath = global_.getProperty().get("xpath", "");
       multiSubscribe = global_.getProperty().get("multiSubscribe", true);
       local = global_.getProperty().get("local", true);
@@ -143,7 +143,7 @@ public:
       log_.info(ME, "   -updateException.message   " + updateExceptionMessage);
       log_.info(ME, "   -updateException.runtime   " + updateExceptionRuntime);
       log_.info(ME, "   -oid               " + oid);
-      log_.info(ME, "   -domain            " + domain);
+      //log_.info(ME, "   -domain            " + domain);
       log_.info(ME, "   -xpath             " + xpath);
       log_.info(ME, "   -multiSubscribe    " + lexical_cast<string>(multiSubscribe));
       log_.info(ME, "   -local             " + lexical_cast<string>(local));
@@ -180,13 +180,11 @@ public:
             sk = new SubscribeKey(global_, xpath, Constants::XPATH);
             qStr = xpath;
          }
-         if (domain.length() > 0) {  // cluster routing information
-            if (sk == 0) sk = new SubscribeKey(global_, "", Constants::D_O_M_A_I_N); // usually never
-            //TODO:
-            //sk->setDomain(domain);
-            log_.error(ME, "setDomain is not implemented on C++ side");
-            qStr = domain;
-         }
+         //if (domain.length() > 0) {  // cluster routing information
+         //   if (sk == 0) sk = new SubscribeKey(global_, "", Constants::D_O_M_A_I_N); // usually never
+         //   sk->setDomain(domain);
+         //   qStr = domain;
+         //}
          SubscribeQos sq(global_);
          sq.setWantInitialUpdate(initialUpdate);
          sq.setMultiSubscribe(multiSubscribe);
