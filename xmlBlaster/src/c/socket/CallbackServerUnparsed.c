@@ -352,7 +352,6 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
    size_t i;
    bool testException = false;
    for (i=0; i<msgUnitArr->len; i++) {
-      ;
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("client.update(): Asynchronous message update arrived:%s\n", xml);
       free(xml);
