@@ -25,6 +25,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestCallback.class \
     $(CLASS_DIR)/TestCallbackConfig.class \
     $(CLASS_DIR)/TestLoginLogoutEvent.class \
+    $(CLASS_DIR)/TestLogout.class \
     $(CLASS_DIR)/TestPersistence.class \
     $(CLASS_DIR)/TestPersistence2.class \
     $(CLASS_DIR)/TestPersistenceXMLDB.class \

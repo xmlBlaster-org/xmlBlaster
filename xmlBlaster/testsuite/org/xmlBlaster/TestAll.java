@@ -40,6 +40,7 @@ public class TestAll
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());
       suite.addTest(TestLoginLogoutEvent.suite());
+      suite.addTest(TestLogout.suite());
       suite.addTest(TestGet.suite());
       suite.addTest(TestGetFilter.suite());
       suite.addTest(TestGetRegexFilter.suite());
