@@ -26,6 +26,28 @@
      </p>
      <p>
      The communication protocol is based on the xmlBlaster internal SOCKET protocol.
+     </p>
+     <p>
+     On Linux the 'hello world' client executable has a very little footprint,
+     on Windows you need to add the pthreadVC.lib size of ~ 29 kBytes:
+     </p>
+     <pre>
+1. Complete synchronous access (without callback and single threaded):
+
+ XmlBlasterConnectionUnparsedMain:  26 kBytes
+
+   libc.so.6 => /lib/libc.so.6 (0x4002b000)
+   /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+
+2. Complete client connection and multi threaded callback server:
+
+ XmlBlasterAccessUnparsedMain:      38 kBytes
+
+   libpthread.so.0 => /lib/libpthread.so.0 (0x4002b000)
+   libc.so.6 => /lib/libc.so.6 (0x4007b000)
+   /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+     </pre>
+     <p>
      A demo using XmlRpc is available as well (see xmlBlaster/demo/c/xmlrpc/README).
      </p>
      <p>
@@ -36,6 +58,63 @@
    <example lang="C">
       <p><a NAME="example"></a></p>
    <pre><![CDATA[
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <XmlBlasterConnectionUnparsed.h>
+
+/**
+ * Access the free memory in the server. 
+ */
+int main(int argc, char** argv)
+{
+   MsgUnitArr *msgUnitArr;
+   XmlBlasterException exception;
+   char *connectQos;
+   char *response;
+   
+   XmlBlasterConnectionUnparsed *xb = getXmlBlasterConnectionUnparsed(argc, argv);
+   if (xb == (XmlBlasterConnectionUnparsed *)0) {
+      printf("[HelloWorld] Connection failed, please start xmlBlaster server first\n");
+      exit(1);
+   }
+
+   connectQos =
+            "<qos>"
+            " <securityService type='htpasswd'>"
+            "   <user>fritz</user>"
+            "   <passwd>secret</passwd>"
+            " </securityService>"
+            "</qos>";
+
+   response = xb->connect(xb, connectQos, &exception);
+   free(response);
+   if (strlen(exception.errorCode) > 0) {
+      printf("[client] Caught exception during connect, errorCode=%s, message=%s", exception.errorCode, exception.message);
+      exit(1);
+   }
+
+   printf("[HelloWorld] Connected to xmlBlaster, invoking now get() ...\n");
+   
+   msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
+
+   if (msgUnitArr != (MsgUnitArr *)0 && msgUnitArr->len > 0) {
+      char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[0].content, msgUnitArr->msgUnitArr[0].contentLen);
+      printf("[HelloWorld] xmlBlaster has currently %s bytes of free memory\n", contentStr);
+      free(contentStr);
+      freeMsgUnitArr(msgUnitArr);
+   }
+   else {
+      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s", exception.errorCode, exception.message);
+      exit(1);
+   }
+   
+   xb->disconnect(xb, 0, &exception);
+
+   freeXmlBlasterConnectionUnparsed(xb);
+   printf("[HelloWorld] Good bye.\n");
+   exit(0);
+}
         ]]>
    </pre>
    </example>
@@ -60,19 +139,6 @@
 
        <tr>
        <td>1</td>
-       <td>WindowsXP</td>
-       <td>VC 7 (May 2003)</td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
-       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
-       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
-       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a></td>
-       <td>TODO !</td>
-       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
-       </tr>
-
-       <tr>
-       <td>2</td>
        <td>Linux 2.4.20</td>
        <td><a href="http://www.gnu.org/software/gcc/gcc.html" target="others">g++ and gcc 3.3</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
@@ -85,7 +151,7 @@
        </tr>
 
        <tr>
-       <td>3</td>
+       <td>2</td>
        <td>Linux 2.4.9</td>
        <td><a href="http://www.gnu.org/software/gcc/gcc.html" target="others">g++ and gcc 2.95.3</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
@@ -98,7 +164,7 @@
        </tr>
 
        <tr>
-       <td>4</td>
+       <td>3</td>
        <td><a href="http://wwws.sun.com/software/download/index.html" target="others">SunOS 5.8 sparc</a></td>
        <td>cc: Forte Developer 7 C 5.4 2002/03/09</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
@@ -106,6 +172,19 @@
        <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
        <td>Unparsed access with raw XML strings</td>
        <td>2003-06-02</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
+
+       <tr>
+       <td>4</td>
+       <td>WindowsXP</td>
+       <td>VC 7 (May 2003)</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
+       <td>2003-06-03</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
        </tr>
@@ -123,6 +202,6 @@
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 </requirement>
 
