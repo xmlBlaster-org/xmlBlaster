@@ -154,6 +154,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initSecuritySettings();
       initDriver(null);
+      initFailSave(null);
    }
 
    /**
@@ -180,6 +181,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initSecuritySettings();
       initDriver(null);
+      initFailSave(null);
    }
 
    /**
@@ -194,6 +196,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initSecuritySettings();
       initDriver(driverType);
+      initFailSave(null);
    }
 
 
@@ -277,6 +280,46 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          throw new XmlBlasterException(ME+".UnknownDriver", text);
       }
    }
+
+   /**
+    * Initialize fail save mode. 
+    * Configured with command line or xmlBlaster.properties settings
+    * <p />
+    * For example:
+    * <pre>
+    *   java javaclients.ClientSub -client.failSave.retryInterval 5000
+    * </pre>
+    * switches fail save mode on, on lost connection we try every 5 sec a reconnect.<br />
+    * -1 switches it off, which is default.
+    * @param connCallback Your implementation of I_ConnectionProblems, we initialize fail save mode with default settings<br />
+    *                     If null, DummyConnectionProblemHandler is used and
+    *                     fail save mode is only switched on, if -client.failSave.retryInterval is set bigger 0
+    * @see org.xmlBlaster.client.protocol.DummyConnectionProblemHandler
+    */
+   public void initFailSave(I_ConnectionProblems connCallback)
+   {
+      int retryInterval = -1;
+      if (connCallback == null)
+         retryInterval = XmlBlasterProperty.get("client.failSave.retryInterval", -1);
+      else
+         retryInterval = XmlBlasterProperty.get("client.failSave.retryInterval", 5000);
+
+      if (retryInterval > 0) {
+         if (connCallback == null)
+            this.clientProblemCallback = new DummyConnectionProblemHandler(this);
+         else
+            this.clientProblemCallback = connCallback;
+         this.retryInterval = retryInterval;
+         this.pingInterval = XmlBlasterProperty.get("client.failSave.pingInterval", 10 * 1000L);
+         this.retries = XmlBlasterProperty.get("client.failSave.retries", -1);
+         int maxInvocations = XmlBlasterProperty.get("client.failSave.maxInvocations", 10000);
+         this.recorder = new InvocationRecorder(maxInvocations, this, null);
+         Log.info(ME, "Initializing fail save mode: retryInterval=" + retryInterval +
+                      " msec, retries=" + retries + ", maxInvocations=" + maxInvocations +
+                      ", pingInterval=" + pingInterval + " msec");
+      }
+   }
+
 
    /**
     * CORBA client access to xmlBlaster for <strong>applets</strong>.
@@ -1056,6 +1099,65 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
    } // class PingThread
 
+   /**
+    * This class implements connection problems with xmlBlaster. 
+    * <p />
+    * It is a dummy implementation.
+    * You can use this as fail save handling. Switch it on with command
+    * line argument
+    * <pre>
+    *   java javaclients.ClientSub -client.failSave.retryInterval 5000
+    * </pre>
+    * NOTE: Usually you should provide these two methods yourself,
+    * and initialize your subscriptions etc. again.
+    * This dummy won't do it.
+    */
+   private class DummyConnectionProblemHandler implements I_ConnectionProblems
+   {
+      private final String ME = "DummyConnectionProblemHandler";
+      private XmlBlasterConnection xmlBlasterConnection = null;
+
+      DummyConnectionProblemHandler(XmlBlasterConnection con)
+      {
+         this.xmlBlasterConnection = con;
+      }
+
+      /**
+       * This is the callback method invoked from XmlBlasterConnection
+       * informing the client in an asynchronous mode if the connection was lost.
+       * <p />
+       * This method is enforced through interface I_ConnectionProblems
+       * <p />
+       * We do nothing here, only logging the situation ...
+       */
+      public void lostConnection()
+      {
+         Log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
+      }
+
+      /**
+       * This is the callback method invoked from XmlBlasterConnection
+       * informing the client in an asynchronous mode if the connection was established.
+       * <p />
+       * This method is enforced through interface I_ConnectionProblems
+       * <p />
+       * We will send all undelivered messages to xmlBlaster
+       */
+      public void reConnected()
+      {
+         try {
+            if (xmlBlasterConnection.queueSize() > 0) {
+               Log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " + xmlBlasterConnection.queueSize() + " messages ...");
+               xmlBlasterConnection.flushQueue();
+            }
+            else
+               Log.info(ME, "We were lucky, reconnected to xmlBlaster, no backup messages to flush");
+         }
+         catch (XmlBlasterException e) {
+            Log.error(ME, "Sorry, flushing of backup messages failed, they are lost: " + e.toString());
+         }
+      }
+   }
 
    /**
     * Command line usage.
@@ -1065,9 +1167,17 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       String text = "\n";
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'IOR' or 'RMI' or 'XML-RPC'.\n";
-      text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'.\n";
+      text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below.\n";
+      text += "\n";
+      text += "Security features:\n";
       text += "   -Security.Client.ForcePlugin \"gui,1.0\"\n";
       text += "                       Force the given authentication schema, here the GUI is enforced\n";
+      text += "\n";
+      text += "Fail Save Mode:\n";
+      text += "   -client.failSave.retryInterval   How many milli seconds sleeping before we retry a connection [5000]\n";
+      text += "   -client.failSave.pingInterval    How many milli seconds sleeping between the pings [10 * 1000]\n";
+      text += "   -client.failSave.retries         Number of retries if connection cannot directly be established [-1] (-1 is forever)\n";
+      text += "   -client.failSave.maxInvocations  How many messages shall we queue max (using the InvocationRecorder) [10000]\n";
       Log.plain(text);
       Log.plain(CorbaConnection.usage());
       Log.plain(RmiConnection.usage());
