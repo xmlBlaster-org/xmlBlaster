@@ -1,7 +1,7 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
 
-Changes for 0.72 [Feb.1 2000]
+Changes for 0.72 [Feb.1, 2000]
 ==============================
 
    - Support for new QoS tag <ForceQueuing /> in PtP style.

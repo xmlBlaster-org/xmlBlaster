@@ -113,6 +113,7 @@ proprietary Protocol plugins (not CORBA)
 - Protocol plugins (www.webdav.com)
 - state less protocols (email, http, webDav)
   For HTTP and XML see: http://www.xmlrpc.com/spec
+- http protocol Java servlet (including a Java web server): http://www.mortbay.com/software/iX.html
 
 xmlBlaster homepage
 -------------------
