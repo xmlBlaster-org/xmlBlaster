@@ -224,5 +224,8 @@ public class Constants
    public static final String REGEX = "REGEX";
 
 
+   public static final int RUNLEVEL_RUNNING = 10;
+   public static final int RUNLEVEL_STANDBY = 5;
+   public static final int RUNLEVEL_HALTED = 0;
 }
 
