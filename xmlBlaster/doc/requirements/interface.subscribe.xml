@@ -74,6 +74,11 @@
    &lt;!-- don't send an initial message after subscribe (default: true) -->
    &lt;initialUpdate>false&lt;/initialUpdate>
    
+   &lt;!-- send callbacks messages for this subscription with the better performing -->
+   &lt;!-- updateOneway() instead of the more reliable update() (default: false) -->
+   &lt;!-- Note: The SOCKET protocol plugin supports additionally the faster UDP transfer -->
+   &lt;updateOneway>true&lt;/updateOneway>
+   
    &lt;!-- Suppress erase event to subscribers (default: true) -->
    &lt;notify>false&lt;/notify>
    
@@ -273,7 +278,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
