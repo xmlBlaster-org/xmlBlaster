@@ -24,6 +24,7 @@ import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -33,6 +34,9 @@ import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -395,7 +399,7 @@ public final class ClusterManager implements I_RunlevelListener
     *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
     *         tailed back because cluster node is temporary not available. The message will
     *         be flushed on reconnect.<br />
-    *         Otherwise the normal publish return value of the remote cluster node.  
+    *         Otherwise the normal subscribe return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
    public SubscribeReturnQos forwardSubscribe(SessionInfo publisherSession, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException {
@@ -412,6 +416,30 @@ public final class ClusterManager implements I_RunlevelListener
       }
 
       return con.subscribe(new SubscribeKey(this.glob, xmlKey), new SubscribeQos(this.glob, subscribeQos.getData()));
+   }
+
+   /**
+    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
+    *         tailed back because cluster node is temporary not available. The message will
+    *         be flushed on reconnect.<br />
+    *         Otherwise the normal unSubscribe return value of the remote cluster node.  
+    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
+    */
+   public UnSubscribeReturnQos[] forwardUnSubscribe(SessionInfo publisherSession, QueryKeyData xmlKey, UnSubscribeQosServer unSubscribeQos) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering forwardUnSubscribe(" + xmlKey.getOid() + ")");
+
+      MsgUnit msgUnit = new MsgUnit(xmlKey, (byte[])null, unSubscribeQos.getData());
+      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
+      if (nodeDomainInfo == null)
+         return null;
+      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
+      if (con == null) {
+         if (log.TRACE) log.trace(ME, "forwardUnSubscribe - Nothing to forward");
+         return null;
+      }
+
+      return con.unSubscribe(new UnSubscribeKey(this.glob, xmlKey), new UnSubscribeQos(this.glob, unSubscribeQos.getData()));
    }
 
    /**
@@ -587,7 +615,8 @@ public final class ClusterManager implements I_RunlevelListener
 
       if (log.CALL) log.call(ME, "Entering getConnection(" + msgUnit.getLogId() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
 
-      if (msgUnit.getKeyData().isInternal()) {
+      // e.g. unSubscribe(__subId:heron-55) shall be forwarded
+      if (msgUnit.getQosData().isPublish() && msgUnit.getKeyData().isInternal()) {
          // key oid can be null for XPath subscription
          // internal system messages are handled locally
          String keyOid = msgUnit.getKeyOid();
