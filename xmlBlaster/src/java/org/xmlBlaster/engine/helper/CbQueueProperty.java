@@ -3,11 +3,11 @@ Name:      CbQueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.java,v 1.2 2002/05/11 09:36:25 ruff Exp $
+Version:   $Id: CbQueueProperty.java,v 1.3 2002/05/30 16:30:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 
@@ -20,6 +20,7 @@ import org.xml.sax.Attributes;
 public class CbQueueProperty extends QueuePropertyBase
 {
    private static final String ME = "CbQueueProperty";
+   private final LogChannel log;
 
    /**
     * @param relating  To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_UNRELATED
@@ -28,6 +29,7 @@ public class CbQueueProperty extends QueuePropertyBase
     */
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);
+      this.log = glob.getLog("cb");
       initialize();
       setRelating(relating);
    }
@@ -81,7 +83,7 @@ public class CbQueueProperty extends QueuePropertyBase
       else if (Constants.RELATING_UNRELATED.equals(relating))
          this.relating = Constants.RELATING_UNRELATED;
       else {
-         Log.warn(ME, "The queue relating attribute is invalid '" + relating + "', setting to session scope");
+         log.warn(ME, "The queue relating attribute is invalid '" + relating + "', setting to session scope");
          this.relating = Constants.RELATING_SESSION;
       }
    }
@@ -140,6 +142,8 @@ public class CbQueueProperty extends QueuePropertyBase
     * @return null if none available
     */
    public CallbackAddress getCurrentCallbackAddress() {
+      if (this.addressArr.length > 1)
+         log.error(ME, "We have " + this.addressArr.length + " callback addresses, using the first only");
       if (this.addressArr.length > 0)
          return (CallbackAddress)this.addressArr[0];
       return null;
