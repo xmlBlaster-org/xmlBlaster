@@ -915,8 +915,9 @@ TODO
             bootclasspath="${J2ME_HOME}/lib/cldcapi11.jar:${J2ME_HOME}/lib/midpapi20.jar"
             debug="${debug}"
             optimize="${optimize}"
-            deprecation="${deprecation}"/>
-
+            deprecation="${deprecation}"
+            source="${JVM.source}"
+            target="${JVM.target}" />
 
       <switch value="${os.family}" caseinsensitive="false">
          <case value="windows">
