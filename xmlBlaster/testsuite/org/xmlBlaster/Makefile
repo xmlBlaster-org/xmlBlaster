@@ -16,6 +16,7 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/org/xmlBlaster
 SUB_DIRS = query
 LOCAL_FILES = \
 			$(CLASS_DIR)/ClientOid.class \
+			$(CLASS_DIR)/ClientGet.class \
 			$(CLASS_DIR)/ClientXml.class
 #------------------------------------------------------------------------------
 
