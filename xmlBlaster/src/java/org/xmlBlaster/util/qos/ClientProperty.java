@@ -32,8 +32,10 @@ public final class ClientProperty implements java.io.Serializable, Cloneable
    private final transient Global glob;
    private final String name;
    private String type;
+   /** The value encoded as specified with encoding */
    private String value;
    private String encoding;
+   /** Needed for Base64 encoding */
    public static final boolean isChunked = false;
 
    /**
