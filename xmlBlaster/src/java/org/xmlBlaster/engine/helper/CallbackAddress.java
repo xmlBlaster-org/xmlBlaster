@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.7 2002/03/18 00:27:13 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.8 2002/03/22 08:19:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -111,7 +111,7 @@ public class CallbackAddress
    public final String getSettings()
    {
       StringBuffer buf = new StringBuffer(126);
-      buf.append("type=").append(type).append(" retries=").append(retries).append(" oneway=").append(oneway);
+      buf.append("type=").append(type).append(" retries=").append(retries).append(" oneway=").append(oneway).append(" burstMode.collectTime=").append(getCollectTime());
       return buf.toString();
    }
 
