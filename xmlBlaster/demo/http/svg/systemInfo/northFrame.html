@@ -23,9 +23,8 @@ COMMENT:
             for( var i = 0; i < messageQueue.length; i++ ) {
                top.xmlBlasterWindow.setReady( self, false );
                var keyOid = messageQueue[i].key.oid;
-               var frameName = keyOid + "Frame";  // Frame name is for example "cpuinfoFrame"
                var content = messageQueue[i].content;
-               updateFrame(frameName, content);
+               updateFrame(keyOid, content);
             }
          }
 
@@ -47,7 +46,7 @@ COMMENT:
          /**
           * Draw the cpuinfo/meminfo frame with the received new data
           */
-         function updateFrame(frameName, contentStr)
+         function updateFrame(keyOid, contentStr)
          {
             var Log = top.xmlBlasterWindow.Log;
             var value = parseInt(contentStr);
@@ -55,12 +54,14 @@ COMMENT:
             if (value < 1) value = 1;
             if (value > 100) value = 100;
 
-            Log.trace("Drawing to SVG in frame '" + frameName + "': '" + value + "'");
+            var rectangleName = "rectangle.CPU";
+            if (keyOid == "meminfo") rectangleName = "rectangle.RAM";
+            Log.trace("Drawing to SVG in frame '" + rectangleName + "': '" + value + "'");
 
             var svgdoc = getSVGDocument(parent.svgFrame, "systemInfoSVGPlugin");
             if (svgdoc == null) return;
 
-            var myRectangle=svgdoc.getElementById('rectangle.CPU');
+            var myRectangle=svgdoc.getElementById(rectangleName);
 
             myRectangle.setAttribute('width', value);
             if (value > 80)
