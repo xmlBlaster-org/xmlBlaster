@@ -474,7 +474,7 @@ TODO
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
-      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*,javaclients/**/*.gif"/>
+      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*,Ptp*,Latency*,DomQuery*,javaclients/**/*.gif"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
    </target>
 
@@ -487,7 +487,7 @@ TODO
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**/*.*,javaclients/**/*.class,javaclients/**/*.gif,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,Hello*,doc/requirements/*"/>
+           includes="org/**/*.*,javaclients/**/*.class,javaclients/**/*.gif,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,Hello*,Ptp*,Latency*,DomQuery*,doc/requirements/*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
 
