@@ -2,8 +2,8 @@
 Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_AccessFilter.java,v 1.1 2002/03/28 10:00:47 ruff Exp $
+Comment:   Interface for access plugins
+Version:   $Id: I_AccessFilter.java,v 1.2 2002/04/05 18:44:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -41,7 +41,7 @@ import org.xmlBlaster.engine.Global;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author ruff@swand.lake.de
  */
 public interface I_AccessFilter
