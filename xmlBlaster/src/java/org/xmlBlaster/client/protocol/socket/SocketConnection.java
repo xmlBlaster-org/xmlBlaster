@@ -343,7 +343,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (log.CALL) log.call(ME, "Entering shutdown of callback server");
       if (this.cbReceiver != null) {
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
-         this.cbReceiver.shutdown();
+         this.cbReceiver.shutdownSocket();
       }
       try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }

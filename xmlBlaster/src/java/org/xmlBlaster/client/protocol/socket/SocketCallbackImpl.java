@@ -210,10 +210,16 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    }
 
    /**
-    * Shutdown callback, called by SocketConnection on problems
-    * @return true everything is OK, false if probably messages are lost on shutdown
+    * Shutdown callback only.
     */
    public synchronized void shutdown() {
+      setCbClient(null); // reset callback client in super class Executor:callback
+   }
+
+   /**
+    * Shutdown SOCKET connection and callback, called by SocketConnection on problems
+    */
+   public synchronized void shutdownSocket() {
       this.running = false;
       if (this.iStream != null) {
          try {
