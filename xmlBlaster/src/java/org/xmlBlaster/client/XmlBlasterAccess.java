@@ -609,7 +609,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       // otherwise if the update was faster then the subscribe to return we miss the entry
       synchronized (this.updateDispatcher) {
          SubscribeReturnQos subscribeReturnQos = subscribe(subscribeKey, subscribeQos);
-         this.updateDispatcher.addCallback(subscribeReturnQos.getSubscriptionId(), cb);
+         this.updateDispatcher.addCallback(subscribeReturnQos.getSubscriptionId(), cb, subscribeQos.getPersistent());
          if (!subscribeReturnQos.isFakedReturn()) {
             this.updateDispatcher.ackSubscription(subscribeReturnQos.getSubscriptionId());
          }
@@ -825,7 +825,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    private void cleanupForNewServer() {
       if (this.updateDispatcher.size() > 0) {
-         int num = this.updateDispatcher.clearAckSubscriptions(); // to avoid memory leaks, subscribes pending in the queue are not cleared
+         int num = this.updateDispatcher.clearAckNonPersistentSubscriptions(); // to avoid memory leaks, subscribes pending in the queue are not cleared
          if (num > 0) {
             log.info(ME, "Removed " + num + " subscribe specific callback registrations");
          }

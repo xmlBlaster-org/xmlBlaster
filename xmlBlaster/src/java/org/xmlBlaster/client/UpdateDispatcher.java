@@ -29,11 +29,11 @@ public final class UpdateDispatcher
    /**
     * Register a callback interface with the given subscriptionId
     */
-   public synchronized void addCallback(String subscriptionId, I_Callback callback) {
+   public synchronized void addCallback(String subscriptionId, I_Callback callback, boolean isPersistent) {
       if (subscriptionId == null) {
          throw new IllegalArgumentException("Null argument not allowed in addCallback: subscriptionId=" + subscriptionId + " callback=" + callback);
       }
-      this.callbackMap.put(subscriptionId, new CallbackInfo(callback));
+      this.callbackMap.put(subscriptionId, new CallbackInfo(callback, isPersistent));
    }
 
    /**
@@ -113,12 +113,12 @@ public final class UpdateDispatcher
     * Clear all subscribes which where marked as acknowledged
     * @return number of removed entries
     */
-   public synchronized int clearAckSubscriptions() {
+   public synchronized int clearAckNonPersistentSubscriptions() {
       String[] ids = getSubscriptionIds();
       int count = 0;
       for (int i=0; i<ids.length; i++) {
          CallbackInfo info = (CallbackInfo)this.callbackMap.get(ids[i]);
-         if (info != null && info.ack) {
+         if (info != null && info.ack && !info.isPersistent()) {
             this.callbackMap.remove(ids[i]);
             count++;
          }
@@ -146,9 +146,14 @@ public final class UpdateDispatcher
     */
    class CallbackInfo {
       I_Callback callback;
+      boolean persistent;
       boolean ack = false; // Is the subscribe acknowledged from the server (the subscribe() method returned?)
-      CallbackInfo(I_Callback callback) {
+      CallbackInfo(I_Callback callback, boolean persistent) {
          this.callback = callback;
+         this.persistent = persistent;
+      }
+      boolean isPersistent() {
+         return this.persistent;
       }
    };
 }

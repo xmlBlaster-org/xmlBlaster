@@ -57,7 +57,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
 
-   private MsgInterceptor updateInterceptor;
+   private MsgInterceptor[] updateInterceptors;
    private I_XmlBlasterAccess con;
    private String senderName;
 
@@ -80,7 +80,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       super(testName);
       this.glob = glob;
       this.senderName = testName;
-      // this.updateInterceptors = new MsgInterceptor[this.numSubscribers];
+      this.updateInterceptors = new MsgInterceptor[this.numSubscribers];
    }
 
    /**
@@ -119,8 +119,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
             connectQos.addCallbackAddress(cbAddress);
          }
 
-         this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
-         con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
+         con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
           log.warn(ME, "setUp() - login failed: " + e.getMessage());
@@ -143,6 +142,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestPersistentSession-AGENT" +
                       "</key>";
+
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
@@ -179,8 +179,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          qos.setPersistent(this.persistent);
          qos.setWantNotify(false); // to avoig getting erased messages
 
-         //this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
-         SubscribeReturnQos subscriptionId = con.subscribe(key, qos);
+         this.updateInterceptors[num] = new MsgInterceptor(this.glob, log, null); // Collect received msgs
+         SubscribeReturnQos subscriptionId = con.subscribe(key, qos, this.updateInterceptors[num]);
 
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
@@ -252,16 +252,16 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                
                // Message-4 We need to wait until the client reconnected (reconnect interval)
                // Message-5
-               assertEquals("", 2, this.updateInterceptor.waitOnUpdate(reconnectDelay*2L, 2));
+               assertEquals("", 2, this.updateInterceptors[0].waitOnUpdate(reconnectDelay*4L, 2));
                // for (int j=0; j < this.numSubscribers; j++) 
-               this.updateInterceptor.clear();
+               this.updateInterceptors[0].clear();
             }
             doPublish(i+1);
             if (i < numStop || i >= numStart ) {
-               assertEquals("", 1, this.updateInterceptor.waitOnUpdate(4000L, 1));
+               assertEquals("", 1, this.updateInterceptors[0].waitOnUpdate(8000L, 1));
             }
             // for (int j=0; j < this.numSubscribers; j++) 
-            this.updateInterceptor.clear();
+            this.updateInterceptors[0].clear();
          }
          catch(XmlBlasterException e) {
             if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
@@ -294,6 +294,14 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+      String contentStr = new String(content);
+      String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
+      this.log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+                        " priority=" + updateQos.getPriority() +
+                        " state=" + updateQos.getState() +
+                        " content=" + cont);
+      this.log.info(ME, "further log for receiving update of a message cbSessionId=" + cbSessionId +
+                     updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
       this.log.error(ME, "update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
       return "OK";
    }
