@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for xxx [xxx, xx 2003]
 ================================
 
+ o Added subscription informations to administration interface
+
  o Bugfix of cursor leak in jdbc persistence
 
  o Bugfix with missing ResultSet in return of JDBC service driver
@@ -18,7 +20,7 @@ Changes for xxx [xxx, xx 2003]
  o multiSubscribe QoS support added, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
- o Bugfix NPE in XmlBlasterException, reported by Zang
+ o Bugfix NPE in XmlBlasterException, reported by Zhang
 
 
 Changes for 0.843 [Mar, 10 2003]
