@@ -9,7 +9,7 @@
 <body>
 
 <!--   <p class=sideend>
-      Last updated $Date: 2003/05/20 21:17:39 $ $Author: ruff $
+      Last updated $Date: 2003/05/29 10:49:54 $ $Author: ruff $
    </p>-->
    <p class=sitetitel>Guidelines for XmlBlaster core developers</p>
 
@@ -127,9 +127,23 @@
                   And maybe some other nice with XSL generated output
                </li>
             </ul>
+            <p>
             We are lazy, and this approach is simple and can be done with any vi editor.<p />
             The requirement should have a pointer to the testsuite, where this requirement is
             enforced.
+            </p>
+            <p>
+            To compile the requirements from XML to nicer HTML use our ant task:
+            </p>
+            <pre>
+   cd xmlBlaster
+   build.sh requirements
+            </pre>
+            <p>
+            Now for every <i>.xml</i> requirement file a <i>.html</i> counterpart is generated in directory
+            <i>xmlBlaster/doc/requirements</i>. You should only commit the <i>.xml</i> file to cvs
+            as the html files are generated automatically on our homepage server at midnight.
+            </p>
          </td>
       </tr>
    </table>
