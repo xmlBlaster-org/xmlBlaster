@@ -12,7 +12,6 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 #include <string>
 #include <util/XmlQoSBase.h>
 #include <util/StringTrim.h>
-#include <util/Global.h>
 
 /**
  *

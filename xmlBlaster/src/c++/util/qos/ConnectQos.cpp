@@ -7,8 +7,8 @@ Comment:   Implementation of ConnectQos (ConnectReturnQos ConnectQosData)
 
 #include <util/qos/ConnectQos.h>
 #include <util/Global.h>
-// #include <util/XmlBlasterException>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 

@@ -3,7 +3,7 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.2 2002/12/09 12:26:41 laghi Exp $
+Version:   $Id: CallbackAddress.h,v 1.3 2002/12/16 14:26:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -40,40 +40,7 @@ private:
    /**
     * Configure property settings
     */
-   void initialize()
-   {
-      initHostname(global_.getCbHostname()); // don't use setHostname() as it would set isCardcodedHostname=true
-      setPort(global_.getProperty().getIntProperty("cb.port", getPort()));
-      setType(global_.getProperty().getStringProperty("cb.protocol", getType()));
-      setCollectTime(global_.getProperty().getTimestampProperty("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
-      setCollectTimeOneway(global_.getProperty().getTimestampProperty("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
-      setPingInterval(global_.getProperty().getTimestampProperty("cb.pingInterval", getDefaultPingInterval()));
-      setRetries(global_.getProperty().getIntProperty("cb.retries", getDefaultRetries()));
-      setDelay(global_.getProperty().getTimestampProperty("cb.delay", getDefaultDelay()));
-      useForSubjectQueue(global_.getProperty().getBoolProperty("cb.useForSubjectQueue", DEFAULT_useForSubjectQueue));
-      setOneway(global_.getProperty().getBoolProperty("cb.oneway", DEFAULT_oneway));
-      setCompressType(global_.getProperty().getStringProperty("cb.compress.type", DEFAULT_compressType));
-      setMinSize(global_.getProperty().getLongProperty("cb.compress.minSize", DEFAULT_minSize));
-      setPtpAllowed(global_.getProperty().getBoolProperty("cb.ptpAllowed", DEFAULT_ptpAllowed));
-      setSessionId(global_.getProperty().getStringProperty("cb.sessionId", DEFAULT_sessionId));
-      setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
-      if (nodeId_ != "") {
-         setPort(global_.getProperty().getIntProperty("cb.port["+nodeId_+"]", getPort()));
-         setType(global_.getProperty().getStringProperty("cb.protocol["+nodeId_+"]", getType()));
-         setCollectTime(global_.getProperty().getTimestampProperty("cb.burstMode.collectTime["+nodeId_+"]", collectTime_));
-         setCollectTimeOneway(global_.getProperty().getTimestampProperty("cb.burstMode.collectTimeOneway["+nodeId_+"]", collectTimeOneway_));
-         setPingInterval(global_.getProperty().getTimestampProperty("cb.pingInterval["+nodeId_+"]", pingInterval_));
-         setRetries(global_.getProperty().getIntProperty("cb.retries["+nodeId_+"]", retries_));
-         setDelay(global_.getProperty().getTimestampProperty("cb.delay["+nodeId_+"]", delay_));
-         useForSubjectQueue(global_.getProperty().getBoolProperty("cb.useForSubjectQueue["+nodeId_+"]", useForSubjectQueue_));
-         setOneway(global_.getProperty().getBoolProperty("cb.oneway["+nodeId_+"]", oneway_));
-         setCompressType(global_.getProperty().getStringProperty("cb.compress.type["+nodeId_+"]", compressType_));
-         setMinSize(global_.getProperty().getLongProperty("cb.compress.minSize["+nodeId_+"]", minSize_));
-         setPtpAllowed(global_.getProperty().getBoolProperty("cb.ptpAllowed["+nodeId_+"]", ptpAllowed_));
-         setSessionId(global_.getProperty().getStringProperty("cb.sessionId["+nodeId_+"]", sessionId_));
-         setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin.defaultPlugin["+nodeId_+"]", dispatchPlugin_));
-      }
-   }
+   inline void initialize();
 
 public:
 
@@ -103,10 +70,10 @@ public:
    int getDefaultRetries();
 
    /** Delay between connection retries in milliseconds: defaults to one minute */
-   Timestamp getDefaultDelay();
+   long getDefaultDelay();
 
    /** Ping interval: pinging every given milliseconds, defaults to one minute */
-   Timestamp getDefaultPingInterval();
+   long getDefaultPingInterval();
 
    /**
     * Shall this address be used for subject queue messages?

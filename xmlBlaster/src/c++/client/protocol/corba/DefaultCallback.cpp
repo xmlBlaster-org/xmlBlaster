@@ -9,6 +9,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define _CLIENT_PROTOCOL_CORBA_DEFAULTCALLBACK_C
 
 #include <client/protocol/corba/DefaultCallback.h>
+#include <util/Global.h>
 
 using namespace org::xmlBlaster::client::protocol::corba;
 

@@ -18,7 +18,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/I_Callback.h>
 
 #include <util/Log.h>
-#include <util/Global.h>
 #include <string>
 #include <vector>
 
@@ -62,6 +61,8 @@ private:
    Global& global_;
    Log&    log_;
 
+   enum {START, CONNECTED, POLLING, DEAD, END};
+   int status_;
 public:
    /**
     * Create an xmlBlaster accessor. 

@@ -7,6 +7,7 @@ Comment:   Holding callback queue properties
 
 #include <util/queue/QueueProperty.h>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using boost::lexical_cast;
 
@@ -14,6 +15,29 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cfg;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
+
+   inline void QueueProperty::initialize()
+   {
+      QueuePropertyBase::initialize();
+
+      // Set the queue properties
+      setMaxMsg(global_.getProperty().getLongProperty("queue.maxMsg", DEFAULT_maxMsgDefault));
+      setMaxSize(global_.getProperty().getLongProperty("queue.maxSize", DEFAULT_sizeDefault));
+      setExpires(global_.getProperty().getTimestampProperty("queue.expires", DEFAULT_maxExpires));
+      setOnOverflow(global_.getProperty().getStringProperty("queue.onOverflow", DEFAULT_onOverflow));
+      setOnFailure(global_.getProperty().getStringProperty("queue.onFailure", DEFAULT_onFailure));
+      setType(global_.getProperty().getStringProperty("queue.type", DEFAULT_type));
+      setVersion(global_.getProperty().getStringProperty("queue.version", DEFAULT_version));
+      if (nodeId_ != "") {
+         setMaxMsg(global_.getProperty().getLongProperty(string("queue.maxMsg[")+nodeId_+string("]"), getMaxMsg()));
+         setMaxSize(global_.getProperty().getLongProperty(string("queue.maxSize[")+nodeId_+string("]"), getMaxSize()));
+         setExpires(global_.getProperty().getTimestampProperty(string("queue.expires[")+nodeId_+string("]"), getExpires()));
+         setOnOverflow(global_.getProperty().getStringProperty(string("queue.onOverflow[")+nodeId_+string("]"), getOnOverflow()));
+         setOnFailure(global_.getProperty().getStringProperty(string("queue.onFailure[")+nodeId_+string("]"), getOnFailure()));
+         setType(global_.getProperty().getStringProperty(string("queue.type[")+nodeId_+string("]"), getType()));
+         setVersion(global_.getProperty().getStringProperty(string("queue.version[")+nodeId_+string("]"), getVersion()));
+      }
+   }
 
    QueueProperty::QueueProperty(Global& global, const string& nodeId) :
       QueuePropertyBase(global, nodeId)

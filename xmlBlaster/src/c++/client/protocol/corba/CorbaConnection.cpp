@@ -23,6 +23,8 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #  include <unistd.h>      // gethostname()
 #endif
 
+#include <util/Global.h>
+
 using org::xmlBlaster::util::qos;
 using org::xmlBlaster::client::protocol::corba::NameServerControl;
 

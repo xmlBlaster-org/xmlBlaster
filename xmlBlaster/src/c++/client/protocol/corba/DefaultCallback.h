@@ -14,7 +14,6 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <client/I_Callback.h>
 #include <client/UpdateKey.h>
 #include <client/UpdateQos.h>
-#include <util/Global.h>
 #define  SERVER_HEADER generated/xmlBlaster
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING

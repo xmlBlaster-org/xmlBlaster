@@ -13,18 +13,19 @@ Comment:   Allows you be called back after a given delay.
 #include <boost/thread/condition.hpp>
 #include <boost/thread/xtime.hpp>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-
-   Timeout::Timeout(Global& global) : ME("Timeout"), threadName_("Timeout-Thread"),
-      isRunning_(false), isReady_(false), isDebug_(false), timeoutMap_(),
-      timestampFactory_(TimestampFactory::getInstance()), isActive_(true),
+   Timeout::Timeout(Global& global)
+      : ME("Timeout"), threadName_("Timeout-Thread"),
+        timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
+        isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
         global_(global), log_(global.getLog("util"))
-      {
-      // the thread will only be instantiated when starting 
+   {
+      // the thread will only be instantiated when starting
       log_.call(ME, " default constructor");
       runningThread_ = NULL;
 
@@ -34,9 +35,10 @@ namespace org { namespace xmlBlaster { namespace util {
       log_.trace(ME, " default constructor: after creating timeout condition");
    }
 
-   Timeout::Timeout(Global& global, const string &name) : ME("Timeout"), threadName_(name),
-        isRunning_(false), isReady_(false), isDebug_(false), timeoutMap_(),
-        timestampFactory_(TimestampFactory::getInstance()), isActive_(true),
+   Timeout::Timeout(Global& global, const string &name)
+      : ME("Timeout"), threadName_("Timeout-Thread"),
+        timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
+        isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
         global_(global), log_(global.getLog("util"))
    {
       // the thread remains uninitialized ...

@@ -16,6 +16,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 
 #include <client/protocol/CbServerPluginManager.h>
 #include <client/protocol/corba/CorbaDriver.h>
+#include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 

@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.4 2002/12/10 18:45:41 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.5 2002/12/16 14:26:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -19,10 +19,8 @@ Version:   $Id: AddressBase.h,v 1.4 2002/12/10 18:45:41 laghi Exp $
 #define _UTIL_CFG_ADDRESSBASE_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Global.h>
 #include <util/Constants.h>
 #include <util/Log.h>
-#include <util/Timestamp.h>
 
 #include <string>
 
@@ -33,8 +31,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace cfg {
 extern Dll_Export const int       DEFAULT_port;
 extern Dll_Export const string    DEFAULT_type;
 extern Dll_Export const string    DEFAULT_version;
-extern Dll_Export const Timestamp DEFAULT_collectTime;
-extern Dll_Export const Timestamp DEFAULT_collectTimeOneway;
+extern Dll_Export const long      DEFAULT_collectTime;
+extern Dll_Export const long      DEFAULT_collectTimeOneway;
 extern Dll_Export const bool      DEFAULT_oneway;
 extern Dll_Export const string    DEFAULT_compressType;
 extern Dll_Export const long      DEFAULT_minSize;
@@ -86,19 +84,19 @@ protected:
    string version_; // = DEFAULT_version;
    
    /** BurstMode: The time to collect messages for publish/update */
-   Timestamp collectTime_; //  = DEFAULT_collectTime;
+   long collectTime_; //  = DEFAULT_collectTime;
    
    /** BurstMode: The time to collect messages for oneway publish/update */
-   Timestamp collectTimeOneway_; // = DEFAULT_collectTimeOneway;
+   long collectTimeOneway_; // = DEFAULT_collectTimeOneway;
 
    /** Ping interval: pinging every given milliseconds */
-   Timestamp pingInterval_; //  = getDefaultPingInterval();
+   long pingInterval_; //  = getDefaultPingInterval();
    
    /** How often to retry if connection fails */
    int retries_; //  = getDefaultRetries();
    
    /** Delay between connection retries in milliseconds */
-   Timestamp delay_; //  = getDefaultDelay();
+   long delay_; //  = getDefaultDelay();
 
    /**
     * Shall the update() or publish() messages be send oneway (no application level ACK). 
@@ -169,9 +167,9 @@ protected:
 
 public:
 
-   virtual Timestamp getDefaultPingInterval();
+   virtual long getDefaultPingInterval();
    virtual int getDefaultRetries();
-   virtual Timestamp getDefaultDelay();
+   virtual long getDefaultDelay();
 
    /**
     * common constructor
@@ -288,37 +286,37 @@ public:
     * BurstMode: The time span to collect messages before sending. 
     * @return The time to collect in milliseconds
     */
-   Timestamp getCollectTime() const;
+   long getCollectTime() const;
 
    /**
     * BurstMode: The time span to collect oneway messages before sending. 
     * @return The time to collect in milliseconds
     */
-   Timestamp getCollectTimeOneway() const;
+   long getCollectTimeOneway() const;
 
    /**
     * BurstMode: The time to collect messages for sending in a bulk. 
     * @param The time to collect in milliseconds
     */
-   void setCollectTime(Timestamp collectTime);
+   void setCollectTime(long collectTime);
 
    /**
     * BurstMode: The time to collect oneway messages for sending in a bulk. 
     * @param The time to collect in milliseconds
     */
-   void setCollectTimeOneway(Timestamp collectTimeOneway);
+   void setCollectTimeOneway(long collectTimeOneway);
 
    /**
     * How long to wait between pings to the callback server. 
     * @return The pause time between pings in millis
     */
-   Timestamp getPingInterval() const;
+   long getPingInterval() const;
 
    /**
     * How long to wait between pings to the callback server. 
     * @param pingInterval The pause time between pings in millis
     */
-   void setPingInterval(Timestamp pingInterval);
+   void setPingInterval(long pingInterval);
 
    /**
     * How often shall we retry callback attempt on callback failure
@@ -336,12 +334,12 @@ public:
     * Delay between callback retries in milliseconds, defaults to one minute
     * @return The delay in millisconds
     */
-   Timestamp getDelay() const;
+   long getDelay() const;
 
    /**
     * Delay between callback retries in milliseconds, defaults to one minute
     */
-   void setDelay(Timestamp delay);
+   void setDelay(long delay);
 
    /**
     * Shall the publish() or callback update() message be oneway. 

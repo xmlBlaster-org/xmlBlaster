@@ -11,8 +11,8 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 
 #include <util/xmlBlasterDef.h>
 #include <util/SaxHandlerBase.h>
-#include <util/Global.h>
 #include <string>
+#include <util/Global.h>
 
 using namespace std;
 

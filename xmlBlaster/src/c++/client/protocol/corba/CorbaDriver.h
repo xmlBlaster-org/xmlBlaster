@@ -18,7 +18,6 @@ Comment:   The client driver for the corba protocol
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/XmlBlasterException.h>
-#include <util/Global.h>
 
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::Global;

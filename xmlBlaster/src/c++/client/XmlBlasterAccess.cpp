@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
+#include <util/Global.h>
 
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::dispatch::DeliveryManager;
@@ -27,6 +28,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    updateClient_    = NULL;
    connection_      = NULL;
    deliveryManager_ = NULL;
+   status_          = START;
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()
@@ -54,7 +56,9 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    string version = "1.0";
    connection_ = &(deliveryManager_->getPlugin(type, version));
    if (log_.TRACE) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
-   return connection_->connect(connectQos_);
+   connectReturnQos_ = connection_->connect(connectQos_);
+   status_ = CONNECTED;
+   return connectReturnQos_;
 }
 
 void XmlBlasterAccess::createDefaultCbServer()
@@ -98,7 +102,9 @@ bool
 XmlBlasterAccess::disconnect(const string& qos, bool flush, bool shutdown, bool shutdownCb)
 {
    if (connection_ == NULL) return false;
-   return connection_->disconnect(qos);
+   bool ret  = connection_->disconnect(qos);
+   status_ = DEAD;
+   return true;
 }
 
 string XmlBlasterAccess::getId()
@@ -148,6 +154,9 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 string
 XmlBlasterAccess::subscribe(const string& xmlKey, const string& qos)
 {
+   if (status_ != CONNECTED) { // throw an exception back to the user ...
+
+   }
    return connection_->subscribe(xmlKey, qos);
 }
 

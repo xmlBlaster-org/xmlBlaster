@@ -3,11 +3,12 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.7 2002/12/11 14:05:44 laghi Exp $
+Version:   $Id: Global.cpp,v 1.8 2002/12/16 14:26:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
+#include <util/Timeout.h>
 
 using org::xmlBlaster::client::protocol::CbServerPluginManager;
 
@@ -40,6 +41,7 @@ namespace org { namespace xmlBlaster { namespace util {
          logMap_.erase(logMap_.begin(), logMap_.end());
          delete property_;
          delete cbServerPluginManager_;
+         delete pingTimer_;
       }
       catch (...) {
       }
@@ -136,6 +138,14 @@ namespace org { namespace xmlBlaster { namespace util {
       }
       return *deliveryManager_;
    }
+
+   Timeout& Global::getPingTimer()
+   {
+      if (pingTimer_) return *pingTimer_;
+      pingTimer_ = new Timeout(*this, string("ping timer"));
+      return *pingTimer_;
+   }
+
 
 }}}; // namespace
 

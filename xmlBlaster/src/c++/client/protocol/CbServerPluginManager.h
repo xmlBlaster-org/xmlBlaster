@@ -18,7 +18,6 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 #define _CLIENT_PROTOCOL_CBSERVERPLUGINMANAGER_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Global.h>
 #include <util/Log.h>
 #include <util/XmlBlasterException.h>
 #include <client/protocol/I_CallbackServer.h>

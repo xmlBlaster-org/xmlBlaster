@@ -8,6 +8,7 @@ Comment:   The client driver for the corba protocol
 #include <client/protocol/corba/CorbaDriver.h>
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
+#include <util/Global.h>
 
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::XmlBlasterException;

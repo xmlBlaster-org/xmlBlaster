@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.6 2002/12/10 22:58:39 laghi Exp $
+Version:   $Id: Global.h,v 1.7 2002/12/16 14:26:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -29,12 +29,16 @@ namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 }}}}
 #endif
 
+
 using namespace std;
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::util::dispatch;
 
 namespace org { namespace xmlBlaster { namespace util {
 
+#ifndef _UTIL_TIMEOUT_H
+class Timeout;
+#endif
 
 class Dll_Export HappyCompilerFriend
 {
@@ -63,6 +67,7 @@ class Dll_Export HappyCompilerFriend
       bool                   isInitialized_;
       CbServerPluginManager* cbServerPluginManager_;
       DeliveryManager*       deliveryManager_;
+      Timeout*               pingTimer_;
       /**
        * The default constructor is made private to implement the singleton
        * pattern.
@@ -74,9 +79,10 @@ class Dll_Export HappyCompilerFriend
 
       void copy()
       {
-         args_     = 0 ;
-         argc_     = NULL;
-         property_ = NULL;
+         args_      = 0 ;
+         argc_      = NULL;
+         property_  = NULL;
+         pingTimer_ = NULL;
       }
 
    public:
@@ -84,7 +90,6 @@ class Dll_Export HappyCompilerFriend
       int getArgs();
 
       const char * const* getArgc();
-
 
       /**
        * The method to call to get the singleton Timestamp object.
@@ -121,6 +126,8 @@ class Dll_Export HappyCompilerFriend
        CbServerPluginManager& getCbServerPluginManager();
 
        DeliveryManager& getDeliveryManager();
+
+       Timeout& getPingTimer();
 
    };
 

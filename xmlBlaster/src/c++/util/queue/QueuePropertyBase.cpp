@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.5 2002/12/10 18:45:42 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.6 2002/12/16 14:26:56 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -16,6 +16,7 @@ Version:   $Id: QueuePropertyBase.cpp,v 1.5 2002/12/10 18:45:42 laghi Exp $
 
 #include <util/queue/QueuePropertyBase.h>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cfg;
@@ -45,6 +46,24 @@ Dll_Export string DEFAULT_type = "CACHE";
 Dll_Export string DEFAULT_version = "1.0";
 /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
 Dll_Export long DEFAULT_expires;
+
+
+   void QueuePropertyBase::initialize()
+   {
+      // Do we need this range settings?
+      setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
+      setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
+      if (nodeId_ != "") {
+         setMinExpires(global_.getProperty().getTimestampProperty(string("queue.expires.min[")+nodeId_+string("]"), getMinExpires()));
+         setMaxExpires(global_.getProperty().getTimestampProperty(string("queue.expires.max[")+nodeId_+string("]"), getMaxExpires())); // Long.MAX_VALUE);
+      }
+
+//         PluginInfo pluginInfo = new PluginInfo(glob, null, global_.getProperty().get("queue.defaultPlugin", DEFAULT_type));
+//         DEFAULT_type = pluginInfo.getType();
+//         DEFAULT_version = pluginInfo.getVersion();
+   }
+
+
 
    QueuePropertyBase::QueuePropertyBase(Global& global, const string& nodeId)
       : ME("QueuePropertyBase"), global_(global), log_(global.getLog("core")),

@@ -15,6 +15,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/SaxHandlerBase.h>
 #include <sax/SAXException.hpp>
 #include <util/XmlBlasterException.h>
+#include <util/Global.h>
 
 using namespace std;
 

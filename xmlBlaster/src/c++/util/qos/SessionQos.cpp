@@ -10,6 +10,7 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 #include <stdlib.h>
 #include <boost/lexical_cast.hpp>
 #include <util/StringStripper.h>
+#include <util/Global.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -313,7 +314,7 @@ int main(int args, char* argv[])
        SessionQosFactory factory(glob);
        SessionQosData data = factory.readObject(qos);
 
-       string ret = factory.writeObject(data);
+       string ret = data.toXml();
        cout << ret << endl;
 
        cout << data.getPubSessionId() << endl;

@@ -23,7 +23,6 @@ Comment:   Manager to retrieve the correct delivery protocol
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <string>
 #include <map>
-#include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 

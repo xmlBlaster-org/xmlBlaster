@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.4 2002/12/10 18:45:42 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.5 2002/12/16 14:26:56 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -17,7 +17,6 @@ Version:   $Id: QueuePropertyBase.h,v 1.4 2002/12/10 18:45:42 laghi Exp $
 #define _UTIL_QUEUE_QUEUEPROPERTYBASE_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/Global.h>
 #include <util/Log.h>
 #include <util/Constants.h>
 #include <util/cfg/AddressBase.h>
@@ -155,20 +154,7 @@ protected:
    /**
     * Configure property settings, add your own defaults in the derived class
     */
-   void initialize()
-   {
-      // Do we need this range settings?
-      setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
-      setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
-      if (nodeId_ != "") {
-         setMinExpires(global_.getProperty().getTimestampProperty(string("queue.expires.min[")+nodeId_+string("]"), getMinExpires()));
-         setMaxExpires(global_.getProperty().getTimestampProperty(string("queue.expires.max[")+nodeId_+string("]"), getMaxExpires())); // Long.MAX_VALUE);
-      }
-
-//         PluginInfo pluginInfo = new PluginInfo(glob, null, global_.getProperty().get("queue.defaultPlugin", DEFAULT_type));
-//         DEFAULT_type = pluginInfo.getType();
-//         DEFAULT_version = pluginInfo.getVersion();
-   }
+   inline void initialize();
 
    void setMaxExpires(Timestamp maxExpires)
    {

@@ -21,7 +21,6 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <util/cfg/CallbackAddress.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQosFactory.h>
-#include <util/Global.h>
 
 #define  SERVER_HEADER generated/xmlBlaster
 #include <client/protocol/corba/CompatibleCorba.h>

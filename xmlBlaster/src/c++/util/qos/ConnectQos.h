@@ -15,7 +15,6 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/ServerRef.h>
 #include <util/qos/SessionQos.h>
 #include <authentication/SecurityQos.h>
-#include <util/Global.h>
 #include <util/Log.h>
 
 #include <util/cfg/AddressFactory.h>

@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.4 2002/12/10 18:45:41 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.5 2002/12/16 14:26:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -17,24 +17,25 @@ Version:   $Id: AddressBase.cpp,v 1.4 2002/12/10 18:45:41 laghi Exp $
 
 #include <util/cfg/AddressBase.h>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util { namespace cfg {
 
-Dll_Export const int       DEFAULT_port               = 3412;
-Dll_Export const string    DEFAULT_type               = "IOR";
-Dll_Export const string    DEFAULT_version            = "1.0";
-Dll_Export const Timestamp DEFAULT_collectTime        = 0L;
-Dll_Export const Timestamp DEFAULT_collectTimeOneway  = 0L;
-Dll_Export const bool      DEFAULT_oneway             = false;
-Dll_Export const string    DEFAULT_compressType       = "";
-Dll_Export const long      DEFAULT_minSize            = 0L;
-Dll_Export const bool      DEFAULT_ptpAllowed         = true;
-Dll_Export const string    DEFAULT_sessionId          = "unknown";
-Dll_Export const bool      DEFAULT_useForSubjectQueue = true;
-Dll_Export       string    DEFAULT_dispatchPlugin     = "";
+Dll_Export const int    DEFAULT_port               = 3412;
+Dll_Export const string DEFAULT_type               = "IOR";
+Dll_Export const string DEFAULT_version            = "1.0";
+Dll_Export const long   DEFAULT_collectTime        = 0;
+Dll_Export const long   DEFAULT_collectTimeOneway  = 0;
+Dll_Export const bool   DEFAULT_oneway             = false;
+Dll_Export const string DEFAULT_compressType       = "";
+Dll_Export const long   DEFAULT_minSize            = 0L;
+Dll_Export const bool   DEFAULT_ptpAllowed         = true;
+Dll_Export const string DEFAULT_sessionId          = "unknown";
+Dll_Export const bool   DEFAULT_useForSubjectQueue = true;
+Dll_Export       string DEFAULT_dispatchPlugin     = "";
 
 
    AddressBase::AddressBase(Global& global, const string& rootTag)
@@ -247,7 +248,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * BurstMode: The time span to collect messages before sending. 
     * @return The time to collect in milliseconds
     */
-   Timestamp AddressBase::getCollectTime() const
+   long AddressBase::getCollectTime() const
    {
       return collectTime_;
    }
@@ -256,7 +257,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * BurstMode: The time span to collect oneway messages before sending. 
     * @return The time to collect in milliseconds
     */
-   Timestamp AddressBase::getCollectTimeOneway() const
+   long AddressBase::getCollectTimeOneway() const
    {
       return collectTimeOneway_;
    }
@@ -265,7 +266,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * BurstMode: The time to collect messages for sending in a bulk. 
     * @param The time to collect in milliseconds
     */
-   void AddressBase::setCollectTime(Timestamp collectTime)
+   void AddressBase::setCollectTime(long collectTime)
    {
       if (collectTime < 0) collectTime_ = 0;
       else collectTime_ = collectTime;
@@ -275,7 +276,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * BurstMode: The time to collect oneway messages for sending in a bulk. 
     * @param The time to collect in milliseconds
     */
-   void AddressBase::setCollectTimeOneway(Timestamp collectTimeOneway)
+   void AddressBase::setCollectTimeOneway(long collectTimeOneway)
    {
       if (collectTimeOneway < 0) collectTimeOneway_ = 0;
       else collectTimeOneway_ = collectTimeOneway;
@@ -285,7 +286,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * How long to wait between pings to the callback server. 
     * @return The pause time between pings in millis
     */
-   Timestamp AddressBase::getPingInterval() const
+   long AddressBase::getPingInterval() const
    {
       return pingInterval_;
    }
@@ -294,7 +295,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * How long to wait between pings to the callback server. 
     * @param pingInterval The pause time between pings in millis
     */
-   void AddressBase::setPingInterval(Timestamp pingInterval)
+   void AddressBase::setPingInterval(long pingInterval)
    {
       if (pingInterval <= 0) pingInterval_ = 0;
       else if (pingInterval < 10) {
@@ -327,7 +328,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
     * Delay between callback retries in milliseconds, defaults to one minute
     * @return The delay in millisconds
     */
-   Timestamp AddressBase::getDelay() const
+   long AddressBase::getDelay() const
    {
       return delay_;
    }
@@ -335,7 +336,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
    /**
     * Delay between callback retries in milliseconds, defaults to one minute
     */
-   void AddressBase::setDelay(Timestamp delay)
+   void AddressBase::setDelay(long delay)
    {
       if (delay < 0) delay_ = 0;
       else delay_ = delay;
@@ -461,7 +462,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
    }
 
 
-   Timestamp AddressBase::getDefaultPingInterval()
+   long AddressBase::getDefaultPingInterval()
    {
       return 0;
    }
@@ -471,7 +472,7 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
       return 0;
    }
 
-   Timestamp AddressBase::getDefaultDelay()
+   long AddressBase::getDefaultDelay()
    {
       return 0;
    }

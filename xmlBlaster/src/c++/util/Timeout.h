@@ -12,7 +12,6 @@ Comment:   Allows you be called back after a given delay.
 #include <util/I_Timeout.h>
 #include <util/Timestamp.h>
 #include <util/Log.h>
-#include <util/Global.h>
 
 #include <string>
 #include <map>

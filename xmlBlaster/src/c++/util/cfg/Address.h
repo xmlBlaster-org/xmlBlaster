@@ -3,7 +3,7 @@ Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.h,v 1.2 2002/12/09 12:26:41 laghi Exp $
+Version:   $Id: Address.h,v 1.3 2002/12/16 14:26:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -30,56 +30,13 @@ namespace org { namespace xmlBlaster { namespace util { namespace cfg {
 class Dll_Export Address : public AddressBase
 {
 private:
-     // string ME; // = "Address";
 
    /**
     * Configure property settings. 
     * "-delay[heron] 20" has precedence over "-delay 10"
     * @see #Address(String, String)
     */
-   void initialize()
-   {
-      setPort(global_.getProperty().getIntProperty("port", getPort()));
-      setPort(global_.getProperty().getIntProperty("client.port", getPort())); // this is stronger (do we need it?)
-
-      setType(global_.getProperty().getStringProperty("client.protocol", getType()));
-      setCollectTime(global_.getProperty().getTimestampProperty("burstMode.collectTime", DEFAULT_collectTime));
-      setCollectTimeOneway(global_.getProperty().getTimestampProperty("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
-      setPingInterval(global_.getProperty().getTimestampProperty("pingInterval", getDefaultPingInterval()));
-      setRetries(global_.getProperty().getIntProperty("retries", getDefaultRetries()));
-      setDelay(global_.getProperty().getTimestampProperty("delay", getDefaultDelay()));
-      setOneway(global_.getProperty().getBoolProperty("oneway", DEFAULT_oneway));
-      setCompressType(global_.getProperty().getStringProperty("compress.type", DEFAULT_compressType));
-      setMinSize(global_.getProperty().getLongProperty("compress.minSize", DEFAULT_minSize));
-      setPtpAllowed(global_.getProperty().getBoolProperty("ptpAllowed", DEFAULT_ptpAllowed));
-      setSessionId(global_.getProperty().getStringProperty("sessionId", DEFAULT_sessionId));
-      setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
-      if (nodeId_ != "") {
-         setPort(global_.getProperty().getIntProperty("port["+nodeId_+"]", getPort()));
-         setPort(global_.getProperty().getIntProperty("client.port["+nodeId_+"]", getPort())); // this is stronger (do we need it?)
-
-         setType(global_.getProperty().getStringProperty("client.protocol["+nodeId_+"]", getType()));
-         setCollectTime(global_.getProperty().getTimestampProperty("burstMode.collectTime["+nodeId_+"]", getCollectTime()));
-         setCollectTimeOneway(global_.getProperty().getTimestampProperty("burstMode.collectTimeOneway["+nodeId_+"]", getCollectTimeOneway()));
-         setPingInterval(global_.getProperty().getTimestampProperty("pingInterval["+nodeId_+"]", getPingInterval()));
-         setRetries(global_.getProperty().getIntProperty("retries["+nodeId_+"]", getRetries()));
-         setDelay(global_.getProperty().getTimestampProperty("delay["+nodeId_+"]", getDelay()));
-         setOneway(global_.getProperty().getBoolProperty("oneway["+nodeId_+"]", oneway()));
-         setCompressType(global_.getProperty().getStringProperty("compress.type["+nodeId_+"]", getCompressType()));
-         setMinSize(global_.getProperty().getLongProperty("compress.minSize["+nodeId_+"]", getMinSize()));
-         setPtpAllowed(global_.getProperty().getBoolProperty("ptpAllowed["+nodeId_+"]", isPtpAllowed()));
-         setSessionId(global_.getProperty().getStringProperty("sessionId["+nodeId_+"]", getSessionId()));
-         setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin.defaultPlugin["+nodeId_+"]", dispatchPlugin_));
-      }
-
-      // TODO: This is handled in QueueProperty.java already ->
-//      long maxMsg = global_.getProperty().getLongProperty("queue.maxMsg", CbQueueProperty.DEFAULT_maxMsgDefault);
-      long maxMsg = global_.getProperty().getLongProperty("queue.maxMsg", 10000l);
-      setMaxMsg(maxMsg);
-      if (nodeId_ != "") {
-         setMaxMsg(global_.getProperty().getLongProperty("queue.maxMsg["+nodeId_+"]", getMaxMsg()));
-      }
-   }
+   inline void initialize();
 
 public:
 
@@ -116,13 +73,13 @@ public:
    int getDefaultRetries();
 
    /** Delay between connection retries in milliseconds (5000 is a good value): defaults to 0, a value bigger 0 switches fails save mode on */
-   Timestamp getDefaultDelay();
+   long getDefaultDelay();
 
    // /* Delay between connection retries in milliseconds: defaults to 5000 (5 sec), a value of 0 switches fails save mode off */
    // public long getDefaultDelay() { return 5 * 1000L; };
 
    /** Ping interval: pinging every given milliseconds, defaults to 10 seconds */
-   Timestamp getDefaultPingInterval();
+   long getDefaultPingInterval();
 
    /** For logging only */
    string getSettings();
