@@ -3,6 +3,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for xxx [xxx, xx 2003]
 ================================
 
+ o Removed unused field from history and update queue entries
+   in JDBC database.
+   This change is NOT backwards compatible:
+   Existing entries in DB from an old release can't be read with this
+   new xmlBlaster release.
+
  o Added subscription informations to administration interface
 
  o Bugfix of cursor leak in jdbc persistence
