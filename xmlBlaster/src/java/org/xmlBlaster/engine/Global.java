@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.14 2002/06/12 18:43:38 ruff Exp $
+Version:   $Id: Global.java,v 1.15 2002/06/13 13:20:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -13,16 +13,14 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.Authenticate;
 
-import java.util.Vector;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Collection;
+import java.util.*;
 import java.io.IOException;
 
 
@@ -60,6 +58,12 @@ public final class Global extends org.xmlBlaster.util.Global
    private CommandManager commandManager;
    private boolean useAdminManager = true;
    private boolean firstUseAdminManager = true; // to allow caching
+
+   private int currRunlevel = 0;
+   /**
+    * For listeners who want to be informed about runlevel changes. 
+    */
+   private final Set runlevelListenerSet = Collections.synchronizedSet(new HashSet());
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -449,5 +453,84 @@ public final class Global extends org.xmlBlaster.util.Global
 
    public RequestBroker getRequestBroker() {
       return this.requestBroker;
+   }
+
+   /**
+    * Adds the specified runlevel listener to receive subscribe/unSubscribe events.
+    */
+   public void addRunlevelListener(I_RunlevelListener l) {
+      if (l == null) {
+         return;
+      }
+      synchronized (runlevelListenerSet) {
+         runlevelListenerSet.add(l);
+      }
+   }
+
+   /**
+    * Removes the specified listener.
+    */
+   public void removeRunlevelListener(I_RunlevelListener l) {
+      if (l == null) {
+         return;
+      }
+      synchronized (runlevelListenerSet) {
+         runlevelListenerSet.remove(l);
+      }
+   }
+
+   /**
+    * Notify all Listeners that a message is erased. 
+    * <p />
+    * See Constants.RUNLEVEL_HALTED etc.
+    * @param newRunlevel The new run level we want to switch to
+    * @param force Ignore exceptions during change, currently only force == true is supported
+    * @return numErrors
+    */
+   public final int fireRunlevelEvent(int newRunlevel, boolean force) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Changing from run level=" + currRunlevel + " to level=" + newRunlevel + " with force=" + force);
+      int numErrors = 0;
+      if (currRunlevel == newRunlevel) {
+         return numErrors;
+      }
+      try {
+         synchronized (runlevelListenerSet) {
+            if (runlevelListenerSet.size() == 0)
+               return numErrors;
+            Iterator iterator = runlevelListenerSet.iterator();
+            while (iterator.hasNext()) {
+               I_RunlevelListener li = (I_RunlevelListener)iterator.next();
+               try {
+                  li.runlevelChange(currRunlevel, newRunlevel, force);
+                  if (log.TRACE) log.trace(ME, li.getName() + " sucessfully changed from run level=" + currRunlevel + " to level=" + newRunlevel + ".");
+               }
+               catch (XmlBlasterException e) {
+                  log.warn(ME, "Changing from run level=" + currRunlevel + " to level=" + newRunlevel + " failed for component " + li.getName() + ": " + e.toString());
+                  numErrors++;
+               }
+            }
+         }
+      }
+      finally {
+         currRunlevel = newRunlevel;
+      }
+      return numErrors;
+   }
+
+   /**
+    * See Constants.java for runlevels
+    */
+   public int getCurrentRunlevel() {
+      return currRunlevel;
+   }
+
+   public boolean isHalted() {
+      return currRunlevel == Constants.RUNLEVEL_HALTED;
+   }
+   public boolean isStandby() {
+      return currRunlevel == Constants.RUNLEVEL_STANDBY;
+   }
+   public boolean isRunning() {
+      return currRunlevel == Constants.RUNLEVEL_RUNNING;
    }
 }
