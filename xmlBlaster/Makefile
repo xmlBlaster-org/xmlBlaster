@@ -17,13 +17,13 @@ distclean: clean
 	$(RM) $(JAR_DIR)/xmlBlaster.jar
 
 PACKGS = org.xmlBlaster \
-					org.xmlBlaster.engine \
-					org.xmlBlaster.authenticateIdl \
-					org.xmlBlaster.authentication \
-					org.xmlBlaster.client \
-					org.xmlBlaster.clientIdl \
-					org.xmlBlaster.serverIdl \
-					org.xmlBlaster.util
+			org.xmlBlaster.engine \
+			org.xmlBlaster.authenticateIdl \
+			org.xmlBlaster.authentication \
+			org.xmlBlaster.client \
+			org.xmlBlaster.clientIdl \
+			org.xmlBlaster.serverIdl \
+			org.xmlBlaster.util
 
 javadoc:
 	$(JAVADOC) -d $(JAVADOC_DIR) -sourcepath ./src/java $(PACKGS) 
