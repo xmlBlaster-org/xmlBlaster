@@ -239,7 +239,7 @@
 #  define ETIMEDOUT 10060     /* This is the value in winsock.h. */
 #endif
 
-#include <sched.h>
+#include "sched.h"
 
 /*
  * To avoid including windows.h we define only those things that we
