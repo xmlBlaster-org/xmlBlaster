@@ -83,6 +83,8 @@ public class Timeout extends Thread
    private final boolean debug = false;
    /** Hold only weak reference on callback object? */
    private final boolean useWeakReference;
+   /** To avoid sync */
+   private boolean mapHasNewEntry;
 
    /**
     * Create a timer thread with a strong reference on the callback objects. 
@@ -119,7 +121,6 @@ public class Timeout extends Thread
       }
    }
 
-
    /**
     * Get number of current used timers. 
     * @return The number of active timers
@@ -131,7 +132,6 @@ public class Timeout extends Thread
       }
    }
 
-
    /**
     * Starts the Timeout manager thread.
     */
@@ -141,7 +141,6 @@ public class Timeout extends Thread
       while (running) {
          long delay = 100000; // sleep veeery long
          container = null;
-         int oldSize = 0;
          synchronized (map) {
             try {
                Timestamp nextWakeup = (Timestamp) map.firstKey(); // throws exception if empty
@@ -161,7 +160,7 @@ public class Timeout extends Thread
                if (debug)
                   System.out.println("The listener map is empty, nothing to do.");
             }
-            oldSize = map.size();
+            this.mapHasNewEntry = false;
          }
 
          if (container != null) {
@@ -177,7 +176,7 @@ public class Timeout extends Thread
             try {
                synchronized (this) {
                   ready = true; // only needed on thread creation / startup
-                  if (oldSize == getSize()) { // If in the sync gap (~5 lines higher) a new timer was registered we need to loop again and recalculate the delay
+                  if (!this.mapHasNewEntry) { // If in the sync gap (~5 lines higher) a new timer was registered we need to loop again and recalculate the delay
                      wait(delay);
                   }
                }
@@ -230,6 +229,7 @@ public class Timeout extends Thread
                //System.out.println("Looping nanoCounter=" + nanoCounter);
             }
          }
+         this.mapHasNewEntry = true;
       }
       synchronized (this) {
          notify();
@@ -269,22 +269,24 @@ public class Timeout extends Thread
             "The timeout handle is null, no timeout refresh done");
       }
       Timestamp newKey = null;
+      Object obj;
       synchronized (map) {
-         Object obj = map.remove(key);
-         if (obj == null) {
-            Thread.currentThread().dumpStack();
-            throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
-         }
-         Container container = (Container)obj;
-         I_Timeout callback = container.getCallback();
-         if (callback == null) {
-            if (this.useWeakReference)
-               throw new XmlBlasterException(ME, "The weak callback reference for timeout handle '" + key + "' is garbage collected, no timeout refresh done");
-            else
-               throw new XmlBlasterException(ME, "Internal error for timeout handle '" + key + "', no timeout refresh done");
-         }
-         return addTimeoutListener(callback, delay, container.getUserData());
+         obj = map.remove(key);
       }
+
+      if (obj == null) {
+         Thread.currentThread().dumpStack();
+         throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+      }
+      Container container = (Container)obj;
+      I_Timeout callback = container.getCallback();
+      if (callback == null) {
+         if (this.useWeakReference)
+            throw new XmlBlasterException(ME, "The weak callback reference for timeout handle '" + key + "' is garbage collected, no timeout refresh done");
+         else
+            throw new XmlBlasterException(ME, "Internal error for timeout handle '" + key + "', no timeout refresh done");
+      }
+      return addTimeoutListener(callback, delay, container.getUserData());
    }
 
    /**
@@ -293,13 +295,11 @@ public class Timeout extends Thread
    public final Timestamp addOrRefreshTimeoutListener(I_Timeout listener, long delay, Object userData, Timestamp key) 
       throws XmlBlasterException
    {
-      synchronized (map) {
-         if (key == null) {
-            return addTimeoutListener(listener, delay, null);
-         }
-         else {
-            return refreshTimeoutListener(key, delay);
-         }
+      if (key == null) {
+         return addTimeoutListener(listener, delay, null);
+      }
+      else {
+         return refreshTimeoutListener(key, delay);
       }
    }
 
