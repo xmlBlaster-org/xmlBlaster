@@ -20,14 +20,14 @@ import java.util.StringTokenizer;
  */
 public class PluginManager extends PluginManagerBase {
    private static final String                ME = "SecurityPluginManager";
-   private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.simple.Manager";
+   private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.htpasswd.Manager"; //"org.xmlBlaster.authentication.plugins.simple.Manager";
    private              Authenticate        auth = null;
    private final Global glob;
 
    public PluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      if (glob.getProperty().get("Security.Server.allowSimpleDriver", true)) {
+      if (glob.getProperty().get("Security.Server.allowSimpleDriver", false)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
          Log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
          Log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
@@ -139,8 +139,8 @@ public class PluginManager extends PluginManagerBase {
     */
    protected String[] choosePlugin(String type, String version) throws XmlBlasterException
    {
-      if (type == null || type.equals("simple")) {
-         if (glob.getProperty().get("Security.Server.allowSimpleDriver", true) == false){
+      if (type.equals("simple")) {
+         if (glob.getProperty().get("Security.Server.allowSimpleDriver", false) == false){
             throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
          }
       }
