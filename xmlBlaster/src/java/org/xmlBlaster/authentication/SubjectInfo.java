@@ -545,6 +545,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                if (log.TRACE) log.trace(ME, "Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.getMessage());
             }
             catch (Throwable e) {
+               e.printStackTrace();
                log.warn(ME, "Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.toString());
             }
          }
