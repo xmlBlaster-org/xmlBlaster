@@ -66,7 +66,7 @@ JUTILS_PACKGS =
 
 TEST_PACKGS = testsuite.org.xmlBlaster
 
-DEMO_PACKGS = javaclients javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.HelloWorldApplet html.systemInfo
+DEMO_PACKGS = javaclients javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.HelloWorldApplet http.dhtml.systemInfo
 
 DOC_PACKGS = doc.requirements
 
