@@ -1,7 +1,7 @@
 Salute,
 
-the new release 0.841 is out (Jan, 23. 2003).
-(We wait with 0.85 until we got feedback about 0.841)
+the new release 0.842 is out (Feb, 21. 2003).
+(We wait with 0.85 until we got feedback about 0.842)
 
 XmlBlaster is maturing to industrial strength.
 
@@ -15,12 +15,18 @@ In many of the features we are already far ahead, some others are still missing
 IMPORTANT NOTE:
 ---------------
 
-1. Remove your old xmlBlaster.properties, jacorb.properties
-  and orb.properties files.
+If you upgrade from 0.841:
+
+1. Edit xmlBlaster/build.properties to
+  compile the C++ clients or to use jikes.
+
+If you upgrade from 0.840 or older:
+
+1. Remove your old xmlBlaster.properties, jacorb.properties files.
   Use the new files from directory xmlBlaster/config.
 
 2. Backward compatibility:
-  * xmlBlaster 0.841 has got changes to the client API (Java and C++)
+  * xmlBlaster 0.841 had changes to the client API (Java and C++)
     Please read 
       xmlBlaster/CHANGES
     and study
@@ -41,67 +47,15 @@ IMPORTANT NOTE:
 NEW FEATURES:
 -------------
 
-1. Full C++ support (by Michele Laghi, Marting Johnson, Marcel Ruff and others)
-  * It is known to run on Linux gcc 2.9 and 3.2 and Solaris
-  * The xmlBlaster branch CPP_WIN contains a Windows variant:
-      cvs checkout -r CPP_WIN xmlBlaster
-    When some namespace issues are resolved it will be merged
-    back to the main trunk.
-  * Compile:
-      cd xmlBlaster
-      build.sh cpp   (unix/linux)
-      build.bat cpp  (windows)
+1. Full client side C++ support (by Michele Laghi, Marting Johnson, Marcel Ruff and others)
+  * It is known to run on Linux/Solaris/Windows with g++ 2.9x/3.x, VC7 and more.
   * See 
       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
       http://www.xmlblaster.org/xmlBlaster/src/c++/doc/html/ 
       xmlBlaster/src/c++
       xmlBlaster/testsuite/src/c++
 
-2. Client side fail over behavior specification and implementation (Java and C++)
-   (by Michele Laghi and Marcel Ruff), see
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.failsave.html
-
-3. A simple GUI to receive messages (Wolfgang Kleinertz, Thomas Bodemer, Heinrich Götzger), see
-     http://www.xmlblaster.org/xmlBlaster/demo/javaclients/simplereader/README
-
-4. Startup as Windows NT/2000 service or Linux/Unix daemon (by David Robison)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.start.asService.html
-
-5. PtP cluster routing added (by Marcel Ruff)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.PtP.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.PtP.html
-
-6. Persistence queue and storage specification and implementation
-   (by Michele Laghi, Marcel Ruff)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.cache.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.ram.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
-
-7. Message lifecycle support added (Marcel Ruff, Michele Laghi)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
-
-8. Exception and error code specification and implementation
-   (Marcel Ruff, Michele Laghi, Konrad Krafft, Cyrille Giquello, Heinrich Götzger and others)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html
-
-9. Logging plugin framework (by Peter Antman)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.log.plugin.html
-
-10. Message dispatcher plugin framework (Marcel Ruff)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/delivery.plugin.priorizedDelivery.html
-
-11. Reworked java client library (Michele Laghi, Marcel Ruff)
-     http://www.xmlblaster.org/invocationOverviewTable.html
-
-12. Full text search plugin with XPath for xml'ish message contents (Peter Antman)
-     http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
-
-And many smaller additions, changes and bugfixes.
+2. Many server side bug fixes
 
 Please read the CHANGES file for more informations.
 
@@ -111,6 +65,9 @@ KNOWN BUGS:
 
 1. telnet/remoteconsole loops forever after shutdown of embeeded xmlBlaster
    (switch off in such a case with -admin.remoteconsole.port 0)
+
+2. On some JDK 1.2x variants there is a delay of 10 seconds on client login.
+   The reason is not known.
 
 
 NEXT RELEASES:
@@ -133,20 +90,7 @@ The next release is 0.85 and we strive to have these additional changes:
 6. Finish port to new property syntax (see mailing list discussion).
 
 
-The release 0.9 will (hopefully) contain:
-
-1. Cluster mirroring of sessions and subscriptions (additionally to the
-   already functional message mirroring).
-
-2. Load balancing in cluster environment
-
-3. Finishing SNMP support (it is partially coded already).
-
-4. User plugins startable at configurable runlevels by the Runlevel manager.
-   (Supporting administrative topic creation and many other things).
-
-5. A SWING based frontend to control and configure xmlBlaster clusters.
-
+The planned features of release 0.9 are an open issue.
 
 enjoy,
 

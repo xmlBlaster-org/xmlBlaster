@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.842 [xx]
+Changes for 0.842 [Feb, 21 2003]
 ================================
  o C++: Added Global::getVersion() and Global::getBuildTimestamp() and rcsid.
    Try "ident libxmlBlasterClient.so" or "what libxmlBlasterClient.so"
@@ -15,7 +15,8 @@ Changes for 0.842 [xx]
  o Bugfix in persistent layer for Oracle, blobs where limited to 2000 bytes,
    now they correctly process up to 2 GByte messages.
 
- o Finished C++ client library fow Windows/Unix with CORBA (TAO and MICO)
+ o Finished C++ client library fow Windows/Linux with CORBA (TAO and MICO)
+   Support for ORBIX on SunOS
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
 
  o Fixed bug for multiple PublishFilter plugins
