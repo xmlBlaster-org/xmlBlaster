@@ -46,7 +46,7 @@ public class Util
       vec.addElement(""+(serverPort-3));
       vec.addElement("-client.port");
       vec.addElement(""+serverPort);
-      vec.addElement("-admin.remoteconsole.port");
+      vec.addElement("-admin.remoteconsole.port");  // -admin.remoteconsole.port 0 : switch off telnet
       vec.addElement(""+0);
       //vec.addElement(""+(serverPort-4));
       return vec;
