@@ -85,6 +85,7 @@ public class HelloWorldSubscribe implements I_Callback
          this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);
          this.updateExceptionMessage = glob.getProperty().get("updateException.message", (String)null);
          this.updateExceptionRuntime = glob.getProperty().get("updateException.runtime", (String)null);
+         boolean shutdownCbServer = glob.getProperty().get("shutdownCbServer", false);
          String oid = glob.getProperty().get("oid", "");
          String domain = glob.getProperty().get("domain", "");
          String xpath = glob.getProperty().get("xpath", "");
@@ -132,6 +133,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -updateException.errorCode " + this.updateExceptionErrorCode);
          log.info(ME, "   -updateException.message   " + this.updateExceptionMessage);
          log.info(ME, "   -updateException.runtime   " + this.updateExceptionRuntime);
+         log.info(ME, "   -shutdownCbServer          " + shutdownCbServer);
          log.info(ME, "   -oid               " + oid);
          log.info(ME, "   -domain            " + domain);
          log.info(ME, "   -xpath             " + xpath);
@@ -202,7 +204,26 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
                       "', got subscription id='" + srq.getSubscriptionId() + "'\n" + srq.toXml());
          if (log.DUMP) log.dump("", "Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
-         log.info(ME, "Waiting on update ...");
+
+         if (shutdownCbServer) {
+            Global.waitOnKeyboardHit("Hit a key to shutdown callback server");
+            con.getCbServer().shutdown();
+            log.info(ME, "Callback server halted, no update should arrive ...");
+            /*
+            for (int ii=0; ii<4; ii++) {
+               Global.waitOnKeyboardHit("Hit a key to publish " + ii + "/4 ...");
+               org.xmlBlaster.util.MsgUnit msgUnit = new org.xmlBlaster.util.MsgUnit("<key oid='FromSubscriber'/>", (new String("BLA")).getBytes(), "<qos/>");
+               con.publish(msgUnit);
+               log.info(ME, "Published message");
+            }
+            */
+         }
+         else {
+            log.info(ME, "Waiting on update ...");
+         }
+
+         Global.waitOnKeyboardHit("Success, hit a key to exit");
+
 
          if (interactiveUpdate) {
             try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
