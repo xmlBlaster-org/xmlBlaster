@@ -270,7 +270,7 @@ b) Using tcljava (TclBlend/JACL) with an ordinary Java client
 Here a description to setup TclJava (b):
     cvs -z9 checkout tcljava
     cd tcljava/unix; autoconf;
-    ./configure --with-jikes --with-jdk=/usr/local/jdk --with-tcl=/www/tcl8.2 --prefix=/www/tclJava
+    ./configure --with-jikes --with-jdk=/usr/local/jdk --with-tcl=/usr/local/tcl8.2 --prefix=/usr/local/tclJava
 
 
                            Python - Client
