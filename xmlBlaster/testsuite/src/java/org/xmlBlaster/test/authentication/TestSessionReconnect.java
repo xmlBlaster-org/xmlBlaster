@@ -130,17 +130,20 @@ public class TestSessionReconnect extends TestCase
 
          conSub = globSub.getXmlBlasterAccess();
          
-         ConnectQos qosSub = new ConnectQos(globSub, sessionNameSub, passwd);
+         ConnectReturnQos crqSub = null;
+         {
+            ConnectQos qosSub = new ConnectQos(globSub, sessionNameSub, passwd);
 
-         CallbackAddress addr = new CallbackAddress(globSub);
-         addr.setRetries(-1);
-         String secretCbSessionId = "TrustMeSub";
-         addr.setSecretCbSessionId(secretCbSessionId);
-         qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
+            CallbackAddress addr = new CallbackAddress(globSub);
+            addr.setRetries(-1);
+            String secretCbSessionId = "TrustMeSub";
+            addr.setSecretCbSessionId(secretCbSessionId);
+            qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
 
-         log.info(ME, "First subscribe connect QoS = " + qosSub.toXml());
-         ConnectReturnQos crqSub = conSub.connect(qosSub, this.updateInterceptorSub); // Login to xmlBlaster
-         log.info(ME, "Connect as subscriber '" + crqSub.getSessionName() + "' success");
+            log.info(ME, "First subscribe connect QoS = " + qosSub.toXml());
+            crqSub = conSub.connect(qosSub, this.updateInterceptorSub); // Login to xmlBlaster
+            log.info(ME, "Connect as subscriber '" + crqSub.getSessionName() + "' success");
+         }
 
          SubscribeKey sk = new SubscribeKey(globSub, oid);
          SubscribeQos sq = new SubscribeQos(globSub);
@@ -207,11 +210,18 @@ public class TestSessionReconnect extends TestCase
 
          conSub2 = globSub2.getXmlBlasterAccess(); // Create a new client
          String secretCbSessionId2 = "TrustMeSub2";
-         qosSub.getSessionCbQueueProperty().getCurrentCallbackAddress().setSecretCbSessionId(secretCbSessionId2);
-         qosSub.getSessionQos().setSessionName(crqSub.getSessionQos().getSessionName());
-         log.info(ME, "Second subscribe connect QoS = " + qosSub.toXml());
-         ConnectReturnQos crqSub2 = conSub2.connect(qosSub, updateInterceptorSub2); // Login to xmlBlaster
-         log.info(ME, "Connect as subscriber '" + crqSub2.getSessionName() + "' success");
+         {
+            ConnectQos qosSub = new ConnectQos(globSub, sessionNameSub, passwd);
+            CallbackAddress addr = new CallbackAddress(globSub);
+            addr.setRetries(-1);
+            addr.setSecretCbSessionId(secretCbSessionId2);
+            qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
+            qosSub.getSessionQos().setSessionName(crqSub.getSessionQos().getSessionName());
+
+            log.info(ME, "Second subscribe connect QoS = " + qosSub.toXml());
+            ConnectReturnQos crqSub2 = conSub2.connect(qosSub, updateInterceptorSub2); // Login to xmlBlaster
+            log.info(ME, "Connect as subscriber '" + crqSub2.getSessionName() + "' success");
+         }
 
          assertEquals("", 0, updateInterceptorSub.count()); // The first login session should not receive anything
 

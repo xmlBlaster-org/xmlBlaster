@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.10 2003/05/23 09:05:05 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.11 2004/02/22 14:44:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -176,8 +176,9 @@ public class TestGetRegexFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", regPattern));
 
          MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         if (msgUnits.length > 0) log.info(ME, msgUnits[0].toXml());
          assertTrue("Expected zero returned message", msgUnits!=null);
-         assertTrue("Expected zero returned message", msgUnits.length==0);
+         assertEquals("Expected zero returned message", 0, msgUnits.length);
          log.info(ME, "Success: Got no message.");
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
