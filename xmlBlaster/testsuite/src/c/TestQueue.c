@@ -46,7 +46,7 @@ static XmlBlasterLogging loggingFp = xmlBlasterDefaultLogging;
          }\
       } while (0)
 
-static bool destroy();
+static bool destroy(const char *dbName);
 
 /**
  * Kill complete DB on HD
@@ -64,7 +64,7 @@ static bool destroy(const char *dbName)
    queueProperties.maxNumOfEntries = 10;
    queueProperties.maxNumOfBytes = 10;
    
-   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
    
    stateOk = queueP->destroy(&queueP, &exception);
 
@@ -92,10 +92,10 @@ static const char * test_illegal()
 
    memset(&queueProperties, 0, sizeof(QueueProperties));
 
-   queueP = createQueue(0, 0, 0, 0);
+   queueP = createQueue(0, 0, (XMLBLASTER_LOG_LEVEL)0, 0);
    mu_assert("create() Wrong properties", queueP == 0);
 
-   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
    mu_assert("create()", queueP == 0);
    mu_assert_checkWantException("create()", exception);
 
@@ -105,13 +105,13 @@ static const char * test_illegal()
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 0;
    queueProperties.maxNumOfBytes = 0;
-   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
    mu_assert("create()", queueP == 0);
    mu_assert_checkWantException("create()", exception);
 
    queueProperties.maxNumOfEntries = 10;
    queueProperties.maxNumOfBytes = 100;
-   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
    mu_assert("create()", queueP != 0);
    mu_assert_checkException("create()", exception);
 
@@ -189,7 +189,7 @@ static const char * test_overflow()
    const int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll, 1081492136911000000ll, 1081492136922000000ll };
    const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
    const char *data[] =      { ""                   , ""                   , ""                   , ""                   , ""};
-   const int numPut = sizeof(idArr)/sizeof(int64_t);
+   const size_t numPut = sizeof(idArr)/sizeof(int64_t);
    int lenPut = 0;
 
    printf("\n---------test_overflow-------------------\n");
@@ -285,7 +285,7 @@ static const char * test_queue()
    const int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll, 1081492136911000000ll, 1081492136922000000ll };
    const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
    const char *data[] =      { "1. Hello"           , "2. World"           , "3. High Prio 1"     , "4. High Prio 2"     , "5. done"};
-   const int numPut = sizeof(idArr)/sizeof(int64_t);
+   const size_t numPut = sizeof(idArr)/sizeof(int64_t);
    int lenPut = 0;
 
    printf("\n---------test_queue----------------------\n");
@@ -329,7 +329,7 @@ static const char * test_queue()
          queueP->put(queueP, &queueEntry, &exception);
          mu_assert_checkException("put()", exception);
       }
-      mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfEntries", (int)numPut, queueP->getNumOfEntries(queueP));
       mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
 
@@ -339,7 +339,7 @@ static const char * test_queue()
       mu_assert("shutdown()", queueP == 0);
 
       queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
-      mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
+      mu_assertEqualsInt("put() numOfEntries", (int)numPut, queueP->getNumOfEntries(queueP));
       mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
       printf("-----------------------------------------\n");
@@ -368,7 +368,7 @@ static const char * test_queue()
          mu_assertEqualsInt("peekWithSamePriority() numOfEntries", 1, entries->len);
          freeQueueEntryArr(entries);
 
-         mu_assertEqualsInt("put() numOfEntries", numPut, queueP->getNumOfEntries(queueP));
+         mu_assertEqualsInt("put() numOfEntries", (int)numPut, queueP->getNumOfEntries(queueP));
          mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
          mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
       }
