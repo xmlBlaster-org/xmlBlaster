@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.25 2002/09/12 11:58:16 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.26 2002/09/15 18:52:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -530,6 +530,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             if (sessionInfo == null) {
                log.error(ME, "Internal error in subjectQueue, sessionInfo is unknown, recovery handling failed");
                Thread.currentThread().dumpStack();
+               return;
             }
             if (log.TRACE) log.trace(ME, "Found sessionId=" + sessionInfo.getSessionId() + " for broken callback address=" + cbConnection.getCbAddress().getName());
             log.warn(ME, "Callback server is lost, killing login session '" + sessionInfo.getInstanceId() + "' of client " + subjectInfo.getLoginName() + ".");
