@@ -233,10 +233,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *    args[1] = "" + serverPort;
     *    xmlBlasterConnection = new XmlBlasterConnection(args); // Find orb
     * </pre>
+    * <p>
+    * NOTE: If you want to use multiple XmlBlasterConnection in the same client
+    * you have to use the XmlBlasterConnection(Global) constructor and provide a different
+    * Global instance on each creation - or the XmlBlasterConnection(String[], boolean)
+    * constructor which does this for you.
+    * </p>
     */
    public XmlBlasterConnection(String[] args) throws XmlBlasterException {
       super(Global.instance());
       initArgs(args);
+   }
+
+   public XmlBlasterConnection(String[] args, boolean loadPropFile) throws XmlBlasterException {
+      super(new Global(args, loadPropFile, false));
    }
 
    public XmlBlasterConnection(Global glob) throws XmlBlasterException {
