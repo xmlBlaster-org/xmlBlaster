@@ -477,9 +477,9 @@ public class HttpPushHandler
     * Calls the message method in the parentframe of the callback frame.
     * <p />
     * See callback.js message() method.
+    * Can be used by applications to send a message to the browser.
     * @param text This must be Javascript code (usually a message string)
     */
-    /*
    public void message( String text )
    {
       try {
@@ -494,7 +494,6 @@ public class HttpPushHandler
          log.error(ME,e.toString());
       }
    }
-     */
 
    /**
     * Calls the error method in the parentframe of the callback frame.
