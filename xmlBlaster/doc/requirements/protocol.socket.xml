@@ -613,14 +613,13 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
       with '<tt>build c</tt>'. Now you are ready to try:
       </p>
 <pre>
-  HelloWorld3 -dispatch/connection/plugin/socket/compress/type zlib:stream
-              -dispatch/connection/plugin/socket/port 7607
+  HelloWorld3 -plugin/socket/compress/type zlib:stream -plugin/socket/port 7607
 </pre>
       <p>Compile the C++ examples with '<tt>build cpp</tt>' and try:
       </p>
 <pre>
-  PublishDemo -protocol SOCKET -dispatch/connection/plugin/socket/compress/type zlib:stream
-              -dispatch/connection/plugin/socket/port 7607 -numPublish 10 -contentSize 100000
+  PublishDemo -protocol SOCKET -plugin/socket/compress/type zlib:stream 
+              -plugin/socket/port 7607 -numPublish 10 -contentSize 10000
 </pre>
    </example>
 
@@ -924,7 +923,7 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
    <see type="INTERNET" label="xmlBlaster.properties">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlaster.properties.template</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.55 $</revision>
+   <revision>$Revision: 1.56 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
