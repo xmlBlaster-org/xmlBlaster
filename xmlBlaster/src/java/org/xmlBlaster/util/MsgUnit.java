@@ -172,7 +172,10 @@ public final class MsgUnit implements java.io.Serializable
       this.qosData.setGlobal(this.glob);
    }
 
-   private void setContent(byte[] content) {
+   /**
+    * Used internally and my be used by publish mime plugin
+    */
+   public void setContent(byte[] content) {
       if (content == null)
          this.content = EMPTY_BYTEARR;
       else
