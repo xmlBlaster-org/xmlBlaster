@@ -24,6 +24,10 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine.persistence.mudb \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
+			org.xmlBlaster.client.protocol \
+			org.xmlBlaster.client.protocol.corba \
+			org.xmlBlaster.client.protocol.rmi \
+			org.xmlBlaster.client.protocol.xmlrpc \
 			org.xmlBlaster.client.feeder \
 			org.xmlBlaster.client.reader \
 			org.xmlBlaster.protocol \
