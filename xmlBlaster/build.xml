@@ -64,6 +64,7 @@ Else add it manually.
   <property name="dtd.dir" value="./src/dtd"/>
   <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
   <property name="doc.dir" value="./doc"/>
+  <property name="classes.dir" value="./classes"/>
   <property name="javadoc.dir" value="./doc/api"/>
   <property name="testsuite.dir" value="./testsuite"/>
   <property name="demo.dir" value="./demo"/>
@@ -139,6 +140,8 @@ Else add it manually.
                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
     <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java, **/OracleSqlFactory.java"/>
+    <echo message="${classes.dir}/manifest.xmlBlaster to ${build.dest}/manifest.xmlBlaster"/>
+    <copyfile src="${classes.dir}/manifest.xmlBlaster" dest="${build.dest}/manifest.xmlBlaster"/>
 
     <javac
                 srcdir="${build.src}/xmlBlaster"
@@ -146,7 +149,7 @@ Else add it manually.
                 classpath="${classpath}"
                 debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}/xmlBlaster" includes="org/**"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}/xmlBlaster" includes="org/**"/>
 
     <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
   </target>
