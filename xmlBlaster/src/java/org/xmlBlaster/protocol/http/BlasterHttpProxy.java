@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.24 2002/04/26 21:31:54 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.25 2002/09/13 23:18:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -11,7 +11,6 @@ import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -27,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class BlasterHttpProxy
 {
@@ -133,7 +132,6 @@ public class BlasterHttpProxy
     */
    public static void cleanupByLoginName(String loginName)
    {
-      if (Log.CALL) Log.call(ME, "Entering cleanupByLoginName(" + loginName + ")");
       synchronized(proxyConnections) {
          proxyConnections.remove(loginName);
       }
@@ -148,7 +146,6 @@ public class BlasterHttpProxy
    public static XmlBlasterConnection getXmlBlasterConnection(Global glob, String loginName, String passwd ) throws XmlBlasterException
    {
       synchronized( proxyConnections ) {
-         Log.plain(ME,"proxyConnections="+proxyConnections);
          ProxyConnection pc = getNewProxyConnection(glob, loginName, passwd);
          return pc.getXmlBlasterConnection();
       }

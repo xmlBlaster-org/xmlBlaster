@@ -5,10 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
 -----------------------------------------------------------------------------*/
 
-//  package org.xmlBlaster.client;
-//  import org.xmlBlaster.util.Log;
-//  import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
-
 #include <string>
 #include <client/KeyWrapper.h>
 #define CLIENT_HEADER xmlBlaster

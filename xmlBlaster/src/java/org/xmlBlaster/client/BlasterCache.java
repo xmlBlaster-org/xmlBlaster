@@ -3,12 +3,10 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.11 2002/05/01 21:40:00 ruff Exp $
+Version:   $Id: BlasterCache.java,v 1.12 2002/09/13 23:17:53 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
-
-import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -44,7 +42,6 @@ public class BlasterCache
 
    public void addSubscription(String query, String subId)
    {
-      if(Log.CALL) Log.call(ME,"Adding new subscription to BlasterCache(query="+query+", subId="+subId+")");
       query2SubId.put(query,subId);
       subscriptions.put(subId, new Hashtable());
    }
@@ -56,10 +53,8 @@ public class BlasterCache
    }
    public boolean update(String subId, String updateKey, byte[] content, String updateQos)
    {
-      if(Log.CALL) Log.call(ME,"Entering update of BlasterCache for subId="+subId);
       Object obj = subscriptions.get( subId );
       if( obj == null ) {
-         Log.info(ME, "No subscriptionId('"+subId+"') found in BlasterCache.");
          return false;
       }
       else {

@@ -2,6 +2,7 @@ package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
 
@@ -17,6 +18,7 @@ public class Manager implements I_Manager{
    private static final String          ME = "SimpleManager";
    private static final String        TYPE = "simple";
    private static final String     VERSION = "1.0";
+   private Global glob = null;
 
    // this is the simplest, but not the best way to handle sessions
    // --> a pool would be a good idea at this point :)
@@ -30,6 +32,11 @@ public class Manager implements I_Manager{
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+      this.glob = glob;
+   }
+
+   final Global getGlobal() {
+      return this.glob;
    }
 
    public String getType() {

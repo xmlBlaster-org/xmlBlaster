@@ -2,7 +2,6 @@ package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.SaxHandlerBase;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.jutils.text.StringHelper;
@@ -52,9 +51,7 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "<![CDATA[", "");
       xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "]]>", "");
 
-      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQos_literal + ")");
       init(xmlQos_literal);
-      if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
    public void setUserId(String userId)

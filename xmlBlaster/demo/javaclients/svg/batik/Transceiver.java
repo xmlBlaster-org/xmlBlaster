@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.5 2002/06/02 21:35:59 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.6 2002/09/13 23:17:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -17,7 +17,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -48,6 +48,7 @@ public class Transceiver implements I_Callback
 {
 
    private static final String ME = "Transceiver";
+   private final LogChannel log;
    private BridgeContext        bridgeContext        = null;
    private JSVGCanvasExtended   canvas               = null;
    private XmlBlasterConnection xmlBlasterConnection = null;
@@ -94,7 +95,8 @@ public class Transceiver implements I_Callback
     */
    public Transceiver (Global glob, JSVGCanvasExtended canvas)
    {
-      Log.trace(ME, "constructor with Global");
+      this.log = glob.getLog("batik");
+      log.trace(ME, "constructor with Global");
       this.canvas = canvas;
       try {
          String svgMaster = glob.getProperty().get("svgMaster", (String)null);
@@ -108,7 +110,7 @@ public class Transceiver implements I_Callback
 
          if (svgMaster != null) {
             this.svgFileName = svgMaster;
-            Log.trace(ME, "constructor: running as Master: " + svgMaster);
+            log.trace(ME, "constructor: running as Master: " + svgMaster);
             // read the file, create a publishKey and then publish the thing
             // then subscribe only to complete documents (not single elements)
             // this because the elements can olny be updated once the document
@@ -119,7 +121,7 @@ public class Transceiver implements I_Callback
             byte[] content = this.readFromFile(this.svgFileName);
             MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
             PublishRetQos ret = this.xmlBlasterConnection.publish(messageUnit);
-            Log.info(ME, "constructor: " + ret.getOid());
+            log.info(ME, "constructor: " + ret.getOid());
          }
          else if (svgSlave != null) {
             this.svgFileName = svgSlave;
@@ -136,13 +138,13 @@ public class Transceiver implements I_Callback
       }
       // don't know if this is the correct place where to catch this exception
       catch (XmlBlasterException ex) {
-         Log.error(ME, "Transceiver Constructor: " + ex.toString());
+         log.error(ME, "Transceiver Constructor: " + ex.toString());
       }
       catch (FileNotFoundException ex) {
-         Log.error(ME, "Transceiver Constructor: " + ex.toString());
+         log.error(ME, "Transceiver Constructor: " + ex.toString());
       }
       catch (IOException ex) {
-         Log.error(ME, "Transceiver Constructor: " + ex.toString());
+         log.error(ME, "Transceiver Constructor: " + ex.toString());
       }
    }
 
@@ -162,13 +164,13 @@ public class Transceiver implements I_Callback
     */
    protected void updateDocument (byte[] content) throws XmlBlasterException
    {
-      Log.warn(ME, ".updateDocument()");
+      log.warn(ME, ".updateDocument()");
       try {
          this.canvas.loadDocumentFromByteArray(content);
       }
       catch (IOException ex)
       {
-         Log.error(ME, "io exception: " + ex.toString());
+         log.error(ME, "io exception: " + ex.toString());
          throw new XmlBlasterException(ME, ".updateDocument: " + ex.getMessage());
       }
    }
@@ -176,17 +178,17 @@ public class Transceiver implements I_Callback
 
    protected void updateElement (byte[] content, String id) throws XmlBlasterException
    {
-      Log.trace(ME, ".updateElement(): " + id);
+      log.trace(ME, ".updateElement(): " + id);
 
       Element el = this.canvas.getElement(id);
       if (el == null) {
-         Log.warn(ME, "the element with id '" + id + "' is not registered");
+         log.warn(ME, "the element with id '" + id + "' is not registered");
          return;
       }
 
       this.bridgeContext.unbind(el);
       String completeSVG = SVG_PREFIX + new String(content) + SVG_POSTFIX;
-      Log.warn(ME, ".updateElement: " + completeSVG);
+      log.warn(ME, ".updateElement: " + completeSVG);
 
       try {
          Node tempNode = SvgUtility.createDocument(completeSVG, "file://dummy.svg").getDocumentElement().getFirstChild();
@@ -205,7 +207,7 @@ public class Transceiver implements I_Callback
          this.canvas.updateDocument();
       }
       catch (IOException ex) {
-         Log.error(ME, ".updateElement: IOException " + ex.getMessage());
+         log.error(ME, ".updateElement: IOException " + ex.getMessage());
          throw new XmlBlasterException(ME, ".updateElement: IOException " + ex.getMessage());
       }
    }
@@ -215,10 +217,10 @@ public class Transceiver implements I_Callback
    public String update(java.lang.String loginName, UpdateKey updateKey,
                    byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
-      Log.trace(ME, "update called, content: " + new String(content));
-      Log.trace(ME, "update called, loginName: " + loginName);
-      Log.trace(ME, "update called, updateKey: " + updateKey);
-      Log.trace(ME, "update called, updateQos: " + updateQos);
+      log.trace(ME, "update called, content: " + new String(content));
+      log.trace(ME, "update called, loginName: " + loginName);
+      log.trace(ME, "update called, updateKey: " + updateKey);
+      log.trace(ME, "update called, updateQos: " + updateQos);
       XmlToDom keyDom = new XmlToDom(updateKey.toString());
       NodeList nodes = keyDom.getXmlDoc().getDocumentElement().getElementsByTagName("svg");
       int length = nodes.getLength();
@@ -258,7 +260,7 @@ public class Transceiver implements I_Callback
     */
    protected Element getClickedDynamicElement (Element el)
    {
-      Log.trace(ME, ".getClickedDynamicElement");
+      log.trace(ME, ".getClickedDynamicElement");
       while (el != null) {
          String id = el.getAttribute("id");
          if (SvgIdMapper.isDynamic(id)) return el;
@@ -272,7 +274,7 @@ public class Transceiver implements I_Callback
 
    public static void moveElement (Element el, int x, int y)
    {
-      Log.call(ME, ".moveElement");
+      //log.call(ME, ".moveElement");
       if (el == null) return;
       String transformString = el.getAttribute("transform");
       if ((transformString == null) || (transformString.length() < 1)) {
@@ -301,7 +303,7 @@ public class Transceiver implements I_Callback
 
    public void move (GraphicsNode graphicsNode, Point displacement)
    {
-      Log.info(ME, ".move " + displacement.x + " " + displacement.y);
+      log.info(ME, ".move " + displacement.x + " " + displacement.y);
 
       Element el = this.bridgeContext.getElement(graphicsNode);
       el = getClickedDynamicElement(el);
@@ -319,7 +321,7 @@ public class Transceiver implements I_Callback
       el.setAttributeNS(null, "x", Double.toString(x));
       el.setAttributeNS(null, "y", Double.toString(y));
 */
-      Log.info(ME,".move: el: " + el.getNodeName());
+      log.info(ME,".move: el: " + el.getNodeName());
 
 
       // publish the node
@@ -331,10 +333,10 @@ public class Transceiver implements I_Callback
       MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
       try {
          PublishRetQos ret = this.xmlBlasterConnection.publish(messageUnit);
-         Log.trace(ME, "move: " + ret.getOid());
+         log.trace(ME, "move: " + ret.getOid());
       }
       catch (XmlBlasterException ex) {
-         Log.error(ME, ".move exception when publishing: " + ex.getMessage());
+         log.error(ME, ".move exception when publishing: " + ex.getMessage());
       }
    }
 

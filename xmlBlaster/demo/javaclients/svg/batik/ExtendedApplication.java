@@ -3,7 +3,7 @@ Name:      XmlUtility.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik (the demo appl. itself)
-Version:   $Id: ExtendedApplication.java,v 1.2 2002/05/03 10:37:25 ruff Exp $
+Version:   $Id: ExtendedApplication.java,v 1.3 2002/09/13 23:17:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -20,11 +20,10 @@ import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.GVTTreeBuilderAdapter;
 import org.apache.batik.swing.svg.GVTTreeBuilderEvent;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
-import org.jutils.log.LogChannel;
 
 /**
  *
@@ -34,6 +33,8 @@ public class ExtendedApplication
 {
 
    private static final String ME = "ExtendedApplication";
+   private final Global glob;
+   private final LogChannel log;
 
    protected class SimpleLoaderAdapter extends SVGDocumentLoaderAdapter
    {
@@ -42,20 +43,22 @@ public class ExtendedApplication
       private Interactor specialInteractor = null;
 
       private final String ME = "SimpleLoaderAdapter";
+      private LogChannel log;
 
-      public SimpleLoaderAdapter (Interactor specialInteractor)
+      public SimpleLoaderAdapter (Global glob, Interactor specialInteractor)
       {
          super();
+         this.log = glob.getLog("batik");
          this.specialInteractor = specialInteractor;
-         Log.trace(ME, " constructor");
+         log.trace(ME, " constructor");
       }
 
       public void documentLoadingStarted(SVGDocumentLoaderEvent e) {
-         Log.trace(ME, ".documentLoadingStarted");
+         log.trace(ME, ".documentLoadingStarted");
       }
 
       public void documentLoadingCompleted(SVGDocumentLoaderEvent e) {
-         Log.info(ME, ".documentLoadingCompleted");
+         log.info(ME, ".documentLoadingCompleted");
       }
 
    }
@@ -69,19 +72,21 @@ public class ExtendedApplication
       private JSVGCanvasExtended canvas = null;
 
       private final String ME = "SimpleGVTTreeRendererAdapter";
+      private LogChannel log;
 
-      public SimpleGVTTreeRendererAdapter (JSVGCanvasExtended canvas)
+      public SimpleGVTTreeRendererAdapter (Global glob, JSVGCanvasExtended canvas)
       {
          super();
+         this.log = glob.getLog("batik");
          this.canvas = canvas;
-         Log.trace(ME, " constructor");
+         log.trace(ME, " constructor");
       }
 
 
       public void gvtRenderingPrepare (GVTTreeRendererEvent e)
       {
          label.setText("Rendering Started...");
-         Log.trace(ME, "Rendering Started...");
+         log.trace(ME, "Rendering Started...");
       }
 
 
@@ -91,7 +96,7 @@ public class ExtendedApplication
          // it must be done here because the graphicsNode will be set when
          // all the loading & rendering process has been completed.
          this.canvas.updateDocument();
-         Log.info(ME, "Rendering ended...");
+         log.info(ME, "Rendering ended...");
       }
    }
 
@@ -100,11 +105,10 @@ public class ExtendedApplication
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.out.println(ME + " Init failed");
+         System.exit(1);
       }
 
-      Log.setLogLevel(LogChannel.LOG_ALL);
-      Log.trace(ME, " this is a trace");
       JFrame f = new JFrame("Batik");
       ExtendedApplication app = new ExtendedApplication(glob, f);
       f.getContentPane().add(app.createComponents());
@@ -127,6 +131,8 @@ public class ExtendedApplication
 
    public ExtendedApplication (Global glob, JFrame f)
    {
+      this.glob = glob;
+      this.log = glob.getLog(null);
       frame = f;
       svgCanvasExtended = new JSVGCanvasExtended(glob);
    }
@@ -164,7 +170,7 @@ public class ExtendedApplication
 
 
       // Set the JSVGCanvas listeners.
-      svgCanvasExtended.addSVGDocumentLoaderListener(new SimpleLoaderAdapter(svgCanvasExtended.getSpecificInteractor()));
+      svgCanvasExtended.addSVGDocumentLoaderListener(new SimpleLoaderAdapter(glob, svgCanvasExtended.getSpecificInteractor()));
 
       svgCanvasExtended.addGVTTreeBuilderListener(new GVTTreeBuilderAdapter()
          {
@@ -172,17 +178,17 @@ public class ExtendedApplication
             public void gvtBuildStarted (GVTTreeBuilderEvent e)
             {
                label.setText("Build Started...");
-               Log.trace(ME, "Build Started...");
+               log.trace(ME, "Build Started...");
             }
 
             public void gvtBuildCompleted(GVTTreeBuilderEvent e) {
                label.setText("Build Done.");
-               Log.info(ME, "Build Done.");
+               log.info(ME, "Build Done.");
                frame.pack();
             }
          });
 
-      svgCanvasExtended.addGVTTreeRendererListener(new SimpleGVTTreeRendererAdapter(svgCanvasExtended));
+      svgCanvasExtended.addGVTTreeRendererListener(new SimpleGVTTreeRendererAdapter(glob, svgCanvasExtended));
       return panel;
    }
 }

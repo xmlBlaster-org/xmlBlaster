@@ -3,11 +3,11 @@ Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.6 2002/06/25 17:55:25 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.7 2002/09/13 23:17:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -57,6 +57,7 @@ import java.util.Vector;
 public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 {
    private String ME = "UpdateQos";
+   private final LogChannel log;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    private boolean inState = false;
@@ -113,7 +114,8 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
     */
    public UpdateQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering UpdateQos() (a message arrived)");
+      this.log = glob.getLog("client");
+      if (log.CALL) log.call(ME, "Entering UpdateQos() (a message arrived)");
       init(xmlQoS_literal);
    }
 
@@ -280,7 +282,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    {
       super.startElement(uri, localName, name, attrs);
 
-      //if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      //if (log.TRACE) log.trace(ME, "Entering startElement for " + name);
 
       if (name.equalsIgnoreCase("state")) {
          if (!inQos)
@@ -296,7 +298,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
                   userInfo = attrs.getValue(i).trim();
                }  */
             }
-            // if (Log.TRACE) Log.trace(ME, "Found state tag");
+            // if (log.TRACE) log.trace(ME, "Found state tag");
          }
          return;
       }
@@ -308,9 +310,9 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found sender tag");
+            // if (log.TRACE) log.trace(ME, "Found sender tag");
          }
          return;
       }
@@ -322,9 +324,9 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found priority tag");
+            // if (log.TRACE) log.trace(ME, "Found priority tag");
          }
          return;
       }
@@ -336,7 +338,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <redeliver> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <redeliver> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -349,9 +351,9 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <subscriptionId> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <subscriptionId> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found subscriptionId tag");
+            // if (log.TRACE) log.trace(ME, "Found subscriptionId tag");
          }
          return;
       }
@@ -365,10 +367,10 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
             for (int i = 0; i < len; i++) {
                if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
                  String tmp = attrs.getValue(i).trim();
-                 try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp)); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
+                 try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
                }
             }
-            // if (Log.TRACE) Log.trace(ME, "Found rcvTimestamp tag");
+            // if (log.TRACE) log.trace(ME, "Found rcvTimestamp tag");
          }
          return;
       }
@@ -385,7 +387,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
                  try {
                     long remainingLife = Long.parseLong(tmp);
                     this.expirationTimestamp = System.currentTimeMillis() + remainingLife;
-                 } catch(NumberFormatException e) { Log.error(ME, "Invalid remainingLife - millis =" + tmp); };
+                 } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
                }
             }
          }
@@ -401,14 +403,14 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
             for (int i = 0; i < len; i++) {
                if( attrs.getQName(i).equalsIgnoreCase("index") ) {
                  String tmp = attrs.getValue(i).trim();
-                 try { queueIndex = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid queue - index =" + tmp); };
+                 try { queueIndex = Integer.parseInt(tmp); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + tmp); };
                }
                if( attrs.getQName(i).equalsIgnoreCase("size") ) {
                  String tmp = attrs.getValue(i).trim();
-                 try { queueSize = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid queue - index =" + tmp); };
+                 try { queueSize = Integer.parseInt(tmp); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + tmp); };
                }
             }
-            // if (Log.TRACE) Log.trace(ME, "Found queue tag");
+            // if (log.TRACE) log.trace(ME, "Found queue tag");
          }
          return;
       }
@@ -429,10 +431,10 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          if (tmp != null) id = tmp.trim();
          tmp = attrs.getValue("stratum");
          int stratum = 0;
-         if (tmp != null) { try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node stratum='" + tmp + "'"); }; }
+         if (tmp != null) { try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid <route><node stratum='" + tmp + "'"); }; }
          tmp = attrs.getValue("timestamp");
          long timestamp = 0L;
-         if (tmp != null) { try { timestamp = Long.parseLong(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node timestamp='" + tmp + "'"); }; }
+         if (tmp != null) { try { timestamp = Long.parseLong(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid <route><node timestamp='" + tmp + "'"); }; }
          if (routeNodeVec == null) routeNodeVec = new Vector(5);
          routeNodeVec.addElement(new RouteInfo(new NodeId(id), stratum, new Timestamp(timestamp)));
          return;
@@ -449,7 +451,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    {
       super.endElement(uri, localName, name);
 
-      // if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      // if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
       if(name.equalsIgnoreCase("state")) {
          inState = false;
@@ -460,7 +462,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if(name.equalsIgnoreCase("sender")) {
          inSender = false;
          sender = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
+         // if (log.TRACE) log.trace(ME, "Found message sender login name = " + sender);
          character.setLength(0);
          return;
       }
@@ -468,7 +470,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if(name.equalsIgnoreCase("priority")) {
          inPriority = false;
          priority = Constants.getPriority(character.toString(), Constants.NORM_PRIORITY);
-         // if (Log.TRACE) Log.trace(ME, "Found priority = " + priority);
+         // if (log.TRACE) log.trace(ME, "Found priority = " + priority);
          character.setLength(0);
          return;
       }
@@ -476,7 +478,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if(name.equalsIgnoreCase("redeliver")) {
          inRedeliver = false;
          String tmp = character.toString().trim();
-         try { queueIndex = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid queue - redeliver =" + tmp); };
+         try { queueIndex = Integer.parseInt(tmp); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - redeliver =" + tmp); };
          character.setLength(0);
          return;
       }
@@ -484,7 +486,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if(name.equalsIgnoreCase("subscriptionId")) {
          inSubscriptionId = false;
          subscriptionId = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message subscriptionId = " + subscriptionId);
+         // if (log.TRACE) log.trace(ME, "Found message subscriptionId = " + subscriptionId);
          character.setLength(0);
          return;
       }
@@ -492,7 +494,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if(name.equalsIgnoreCase("rcvTimestamp")) {
          inRcvTimestamp = false;
          // rcvTime = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message rcvTimestamp = " + rcvTimestamp);
+         // if (log.TRACE) log.trace(ME, "Found message rcvTimestamp = " + rcvTimestamp);
          character.setLength(0);
          return;
       }
@@ -564,7 +566,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if (getRcvTimestamp() != null)
          sb.append(getRcvTimestamp().toXml(extraOffset+"   ", true));
       else {
-         Log.error(ME, "Missing rcvTimestamp in update QoS");
+         log.error(ME, "Missing rcvTimestamp in update QoS");
          sb.append(offset).append("   <error>No rcvTimestamp</error>");
       }
       sb.append(offset).append("   <expiration remainingLife='").append(getRemainingLife()).append("'/>");
@@ -605,7 +607,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
                  org.xmlBlaster.engine.MessageUnitWrapper msgUnitWrapper,
                  int index, int max, String state, int redeliver, String nodeId) {
       if (msgUnitWrapper == null || state == null) {
-         Log.error("UpdateQos", "Arguments for UpdateQos are invalid: subscriptionId == " + subscriptionId + " msgUnitWrapper=" + msgUnitWrapper + " state=" + state);
+         Global.instance().getLog("client").error("UpdateQos", "Arguments for UpdateQos are invalid: subscriptionId == " + subscriptionId + " msgUnitWrapper=" + msgUnitWrapper + " state=" + state);
          throw new IllegalArgumentException("Arguments for UpdateQos are invalid");
       }
 
@@ -683,9 +685,8 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
                    "</qos>";
 
       UpdateQos up = new UpdateQos(glob, xml);
-      Log.info("Test", "#1\n" + up.toXml());
+      System.out.println("Test: #1\n" + up.toXml());
 
       up = new UpdateQos(glob, up.toXml());
-      Log.exit("Test", "#2\n" + up.toXml());
    }
 }

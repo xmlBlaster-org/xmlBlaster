@@ -3,11 +3,11 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -41,6 +41,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
 {
    private final static String ME = "TestPtDQueue";
    private final Global glob;
+   private final LogChannel log;
 
    private final String senderName = "William";
    private String publishOid = "";
@@ -66,6 +67,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
    }
 
 
@@ -80,10 +82,10 @@ public class TestPtDQueue extends TestCase implements I_Callback
       try {
          senderConnection = new XmlBlasterConnection(glob);
          senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
-         Log.info(ME, "Successful login for " + senderName);
+         log.info(ME, "Successful login for " + senderName);
       }
       catch (XmlBlasterException e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
           assertTrue("login - XmlBlasterException: " + e.reason, false);
       }
@@ -112,7 +114,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    public void testPtUnknownDestination()
    {
       {
-         Log.info(ME, "Testing point to a unknown destination with NO forceQueuing set ...");
+         log.info(ME, "Testing point to a unknown destination with NO forceQueuing set ...");
 
          // Construct a message and send it to "Averell"
          String xmlKey = "<key oid='' contentMime='text/plain'/>";
@@ -126,10 +128,10 @@ public class TestPtDQueue extends TestCase implements I_Callback
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
             publishOid = senderConnection.publish(msgUnit).getOid();
-            Log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
+            log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
             assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
-            Log.info(ME, "Exception is correct, client is not logged in");
+            log.info(ME, "Exception is correct, client is not logged in");
          }
 
          waitOnUpdate(1000L);
@@ -138,7 +140,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       }
 
       {
-         Log.info(ME, "Testing point to a unknown destination with forceQueuing set ...");
+         log.info(ME, "Testing point to a unknown destination with forceQueuing set ...");
 
          // Construct a message and send it to "Martin Unknown"
          String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -154,9 +156,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
             publishOid = senderConnection.publish(msgUnit).getOid();
-            Log.info(ME, "Sending done, returned oid=" + publishOid);
+            log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+            log.error(ME, "publish() XmlBlasterException: " + e.reason);
             assertTrue("publish - XmlBlasterException: " + e.reason, false);
          }
 
@@ -169,7 +171,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
             receiverConnection = new XmlBlasterConnection(glob);
             receiverConnection.login(receiverName, passwd, new ConnectQos(glob), this);
          } catch (XmlBlasterException e) {
-             Log.error(ME, e.toString());
+             log.error(ME, e.toString());
              e.printStackTrace();
              assertTrue("login - XmlBlasterException: " + e.reason, false);
              return;
@@ -188,7 +190,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -218,7 +220,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -239,10 +241,6 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestPtDQueue
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtDQueue</pre>
     */
@@ -250,12 +248,12 @@ public class TestPtDQueue extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestPtDQueue testSub = new TestPtDQueue(glob, "TestPtDQueue");
       testSub.setUp();
       testSub.testPtUnknownDestination();
       testSub.tearDown();
-      Log.exit(TestPtDQueue.ME, "Good bye");
    }
 }

@@ -1,6 +1,5 @@
 package org.xmlBlaster.authentication.plugins.a2Blaster;
 
-import org.xmlBlaster.util.Log;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -11,9 +10,12 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/05/11 09:36:19 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/09/13 23:17:50 $)
  * Last Changes:
  *    ($Log: ClientInfo.java,v $
+ *    (Revision 1.4  2002/09/13 23:17:50  ruff
+ *    (Ported completely to LogChannel (org.xmlBlaster.util.Log is deprecated)
+ *    (
  *    (Revision 1.3  2002/05/11 09:36:19  ruff
  *    (Removed import org.xmlBlaster.util.XmlBlasterProperty;
  *    (

@@ -5,12 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 -----------------------------------------------------------------------------*/
 
-//  package org.xmlBlaster.client;
-
-//  import org.xmlBlaster.util.Log;
-//  import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
-//  import org.xml.sax.AttributeList;
-
 #ifndef _CLIENT_UPDATEQOS_H
 #define _CLIENT_UPDATEQOS_H
 

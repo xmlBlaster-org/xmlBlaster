@@ -1,6 +1,7 @@
 // xmlBlaster/demo/javaclients/cluster/PublishToSlave.java
 package javaclients.cluster;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -35,12 +36,15 @@ import org.xmlBlaster.engine.helper.Constants;
  */
 public class PublishToSlave implements I_Callback
 {
+   private final LogChannel log;
+
    public PublishToSlave(Global glob) {
+      log = glob.getLog("client");
       XmlBlasterConnection con = null;
       try {
          con = new XmlBlasterConnection(glob);
 
-         Log.info("", "Usage example: java javaclients.cluster.PublishToSlave -port 7601 -numPublish 1000 -interactivePublish false");
+         log.info("", "Usage example: java javaclients.cluster.PublishToSlave -port 7601 -numPublish 1000 -interactivePublish false");
 
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
          String content = glob.getProperty().get("content", "We win");
@@ -49,7 +53,7 @@ public class PublishToSlave implements I_Callback
 
          ConnectQos qos = new ConnectQos(glob);
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
-         Log.info("PublishToSlave", "Connected to xmlBlaster.");
+         log.info("PublishToSlave", "Connected to xmlBlaster.");
 
          PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave."+domain, "text/xml", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
@@ -61,13 +65,13 @@ public class PublishToSlave implements I_Callback
             }
             MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
             PublishRetQos retQos = con.publish(msgUnit);
-            Log.info("PublishToSlave", "Published #" + (i+1) + " message oid=" + pk.getOid() + " of domain='" + pk.getDomain() + "' and content='" + content +
+            log.info("PublishToSlave", "Published #" + (i+1) + " message oid=" + pk.getOid() + " of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos.getOid());
          }
       }
       catch (Exception e) {
-         Log.error("PublishToSlave-Exception", e.toString());
+         log.error("PublishToSlave-Exception", e.toString());
       }
       finally {
          System.out.println("Hit a key to quit ...");
@@ -84,14 +88,12 @@ public class PublishToSlave implements I_Callback
             con.disconnect(dq);
          }
       }
-
-      Log.exit("PublishToSlave", "Bye");
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos)
    {
-      Log.info("PublishToSlave", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("PublishToSlave", "Received asynchronous message '" + updateKey.getOid() +
                                  "' from xmlBlaster");
       return "";
    }
@@ -108,7 +110,8 @@ public class PublishToSlave implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.exit("PublishToSlave", "Example: java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE -content 'We win'\n");
+         System.err.println("Example: java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE -content 'We win'\n");
+         System.exit(1);
       }
 
       new PublishToSlave(glob);

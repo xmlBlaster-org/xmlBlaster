@@ -3,12 +3,11 @@ Name:      SessionMsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: SessionMsgQueue.java,v 1.3 2002/05/03 13:46:09 ruff Exp $
+Version:   $Id: SessionMsgQueue.java,v 1.4 2002/09/13 23:18:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.helper.CbQueueProperty;

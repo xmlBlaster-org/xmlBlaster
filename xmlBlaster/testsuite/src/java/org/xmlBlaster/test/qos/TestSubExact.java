@@ -6,7 +6,7 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,6 +38,8 @@ public class TestSubExact extends TestCase implements I_Callback
 {
    private static String ME = "TestSubExact";
    private final Global glob;
+   private final LogChannel log;
+
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -60,10 +62,11 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    public TestSubExact(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.glob = glob;
-       this.senderName = loginName;
-       this.receiverName = loginName;
+      super(testName);
+      this.glob = glob;
+      this.log = this.glob.getLog("test");
+      this.senderName = loginName;
+      this.receiverName = loginName;
    }
 
 
@@ -81,7 +84,7 @@ public class TestSubExact extends TestCase implements I_Callback
          senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, "Login failed: " + e.toString());
+          log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -102,7 +105,7 @@ public class TestSubExact extends TestCase implements I_Callback
          assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -113,7 +116,7 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    public void subscribeExact()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
                       "</key>";
@@ -122,9 +125,9 @@ public class TestSubExact extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -139,7 +142,7 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -148,9 +151,9 @@ public class TestSubExact extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
          publishOid = senderConnection.publish(msgUnit).getOid();
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -182,7 +185,7 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -219,7 +222,7 @@ public class TestSubExact extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -241,10 +244,6 @@ public class TestSubExact extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestSubExact
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubExact</pre>
     */
@@ -252,13 +251,13 @@ public class TestSubExact extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestSubExact testSub = new TestSubExact(glob, "TestSubExact", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribe();
       testSub.tearDown();
-      Log.exit(TestSubExact.ME, "Good bye");
    }
 }
 

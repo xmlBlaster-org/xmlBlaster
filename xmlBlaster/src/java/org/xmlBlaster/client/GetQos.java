@@ -3,11 +3,12 @@ Name:      GetQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQos.java,v 1.3 2002/04/30 16:41:36 ruff Exp $
+Version:   $Id: GetQos.java,v 1.4 2002/09/13 23:17:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.Attributes;
 
@@ -31,6 +32,7 @@ import org.xml.sax.Attributes;
 public class GetQos extends org.xmlBlaster.util.XmlQoSBase
 {
    private String ME = "GetQos";
+   private LogChannel log;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    private boolean inState = false;
@@ -48,8 +50,9 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
     */
    public GetQos(String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Creating GetQos(" + xmlQoS_literal + ")");
-      //if (Log.CALL) Log.call(ME, "Creating GetQos()");
+      this.log = Global.instance().getLog("core");
+      if (log.CALL) log.call(ME, "Creating GetQos(" + xmlQoS_literal + ")");
+      //if (log.CALL) log.call(ME, "Creating GetQos()");
       init(xmlQoS_literal);
    }
 
@@ -84,7 +87,7 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
    {
       super.startElement(uri, localName, name, attrs);
 
-      //if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      //if (log.TRACE) log.trace(ME, "Entering startElement for " + name);
 
       if (name.equalsIgnoreCase("state")) {
          if (!inQos)
@@ -98,7 +101,7 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
                   break;
                }
             }
-            // if (Log.TRACE) Log.trace(ME, "Found state tag");
+            // if (log.TRACE) log.trace(ME, "Found state tag");
          }
          return;
       }
@@ -110,9 +113,9 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found sender tag");
+            // if (log.TRACE) log.trace(ME, "Found sender tag");
          }
          return;
       }
@@ -128,7 +131,7 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
    {
       super.endElement(uri, localName, name);
 
-      // if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      // if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
       if(name.equalsIgnoreCase("state")) {
          inState = false;
@@ -139,7 +142,7 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
       if(name.equalsIgnoreCase("sender")) {
          inSender = false;
          sender = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
+         // if (log.TRACE) log.trace(ME, "Found message sender login name = " + sender);
          character.setLength(0);
          return;
       }
@@ -204,9 +207,8 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
                    "</qos>";
 
       GetQos up = new GetQos(xml);
-      Log.info("Test", "\n" + up.toXml());
+      System.out.println("\n" + up.toXml());
 
       up = new GetQos(up.toXml());
-      Log.exit("Test", "\n" + up.toXml());
    }
 }

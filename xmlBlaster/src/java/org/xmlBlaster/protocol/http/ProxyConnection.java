@@ -3,12 +3,12 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.32 2002/05/02 19:08:39 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.33 2002/09/13 23:18:11 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -35,7 +35,7 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  * @author laghi@swissinfo.org
  * @author ruff@swand.lake.de
  */
@@ -43,6 +43,7 @@ public class ProxyConnection implements I_Callback
 {
    private String ME = "ProxyConnection";
    private final Global glob;
+   private final LogChannel log;
    private final String loginName;
    private final String passwd;
    private XmlBlasterConnection xmlBlasterConnection = null;
@@ -55,11 +56,12 @@ public class ProxyConnection implements I_Callback
    public ProxyConnection(Global glob, String loginName, String passwd) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("http");
       this.loginName = loginName;
       this.passwd = passwd; // remember it to allow multiple browser logins for the same user
       this.ME = "ProxyConnection-" + loginName;
 
-      if (Log.TRACE) Log.trace(ME, "Creating ProxyConnection ...");
+      if (log.TRACE) log.trace(ME, "Creating ProxyConnection ...");
 
       if (loginName == null || loginName.length() < 1 || passwd == null || passwd.length() < 1)
          throw new XmlBlasterException(ME+".AccessDenied", "Please give proper login name and password");
@@ -91,7 +93,7 @@ public class ProxyConnection implements I_Callback
     */
    public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.trace(ME,"----------Update:"+updateKey.getUniqueKey());
+      log.trace(ME,"----------Update:"+updateKey.getUniqueKey());
       String[] s_arr = new String[3];
       s_arr[0] = updateKey.toString();
       s_arr[1] = new String(content);
@@ -100,7 +102,7 @@ public class ProxyConnection implements I_Callback
          s_arr = interceptor.update(s_arr[0], s_arr[1], s_arr[2]);
       }
 
-      Log.trace(ME, "Update of "+httpConnections.size()+" http connections.");
+      log.trace(ME, "Update of "+httpConnections.size()+" http connections.");
       synchronized(httpConnections) {
          for( Enumeration e = httpConnections.elements(); e.hasMoreElements() ; )
            ((HttpPushHandler)e.nextElement()).update( s_arr[0], s_arr[1], s_arr[2] );
@@ -113,7 +115,7 @@ public class ProxyConnection implements I_Callback
     */
    public void cleanup()
    {
-      if (Log.CALL) Log.call(ME, "Entering cleanup() ...");
+      if (log.CALL) log.call(ME, "Entering cleanup() ...");
 
 
       synchronized(httpConnections) {
@@ -121,7 +123,7 @@ public class ProxyConnection implements I_Callback
          if (xmlBlasterConnection != null) {
             BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getLoginName());
             xmlBlasterConnection.logout();
-            Log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' removed");
+            log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' removed");
             xmlBlasterConnection = null;
          }
 
@@ -147,7 +149,7 @@ public class ProxyConnection implements I_Callback
          HttpPushHandler ph = (HttpPushHandler)httpConnections.remove(sessionId);
          if (ph == null) {
             // No error, may be invoked multiple times (e.g. form servlet and pingThread)
-            Log.trace(ME, "Can't cleanup browser connection, your sessionId " + sessionId + " is unknown");
+            log.trace(ME, "Can't cleanup browser connection, your sessionId " + sessionId + " is unknown");
             return;
          }
 
@@ -159,12 +161,12 @@ public class ProxyConnection implements I_Callback
             if (xmlBlasterConnection != null) {
                BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getLoginName());
                xmlBlasterConnection.logout();
-               Log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
+               log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
                xmlBlasterConnection = null;
             }
          }
       }
-      Log.info(ME, "Browser connection with sessionId=" + sessionId + " removed");
+      log.info(ME, "Browser connection with sessionId=" + sessionId + " removed");
    }
 
 
@@ -183,7 +185,7 @@ public class ProxyConnection implements I_Callback
    public void addHttpPushHandler( String sessionId, HttpPushHandler pushHandler ) throws XmlBlasterException
    {
       if( sessionId == null || pushHandler == null ) {
-         Log.warn(ME,"You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
+         log.warn(ME,"You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
          throw new XmlBlasterException(ME, "You shouldn't use null pointer: sessionId="+sessionId+"; pushHandler="+pushHandler);
       }
 

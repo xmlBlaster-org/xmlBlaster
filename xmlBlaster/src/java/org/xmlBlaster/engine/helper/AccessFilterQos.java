@@ -3,11 +3,11 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.7 2002/05/11 09:36:25 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.8 2002/09/13 23:18:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.mime.Query;
 import org.xml.sax.Attributes;
@@ -33,6 +33,7 @@ public class AccessFilterQos
 {
    private static final String ME = "AccessFilterQos";
    private final Global glob;
+   private final LogChannel log;
 
    /** The filter rule string and an object to hold the prepared query on demand  */
    private Query query;
@@ -49,6 +50,7 @@ public class AccessFilterQos
    public AccessFilterQos(Global glob)
    {
       this.glob = glob;
+      this.log = this.glob.getLog("mime");
       version = glob.getProperty().get("accessFilter.version", DEFAULT_version);
    }
 
@@ -61,6 +63,7 @@ public class AccessFilterQos
    public AccessFilterQos(Global glob, String type, String version, String query)
    {
       this.glob = glob;
+      this.log = this.glob.getLog("mime");
       version = glob.getProperty().get("accessFilter.version", DEFAULT_version);
       setType(type);
       setVersion(version);
@@ -76,6 +79,7 @@ public class AccessFilterQos
    public AccessFilterQos(Global glob, String type, String version, Query query)
    {
       this.glob = glob;
+      this.log = this.glob.getLog("mime");
       version = glob.getProperty().get("accessFilter.version", DEFAULT_version);
       setType(type);
       setVersion(version);
@@ -158,12 +162,12 @@ public class AccessFilterQos
                   setVersion(attrs.getValue(i).trim());
                }
                else {
-                  Log.warn(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in filter section.");
+                  log.warn(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in filter section.");
                }
             }
          }
          if (getType() == null) {
-            Log.warn(ME, "Missing 'filter' attribute 'type' in QoS, ignoring the filter request");
+            log.warn(ME, "Missing 'filter' attribute 'type' in QoS, ignoring the filter request");
             setType(null);
             return false;
          }
@@ -184,7 +188,7 @@ public class AccessFilterQos
          if (tmp.length() > 0)
             setQuery(new Query(glob, tmp));
          else if (getQuery() == null)
-            Log.error(ME, "filter QoS contains no query data");
+            log.error(ME, "filter QoS contains no query data");
       }
       character.setLength(0);
    }

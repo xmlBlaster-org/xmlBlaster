@@ -3,11 +3,9 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.5 2002/03/13 16:41:15 ruff Exp $
+Version:   $Id: Destination.java,v 1.6 2002/09/13 23:18:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
-
-import org.xmlBlaster.util.Log;
 
 
 /**
@@ -138,9 +136,9 @@ public class Destination
       if (queryType.equalsIgnoreCase("EXACT"))
          this.queryType = queryType;
       else if (queryType.equalsIgnoreCase("XPATH"))
-         Log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+         org.xmlBlaster.util.Global.instance().getLog(null).error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
       else
-         Log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+         org.xmlBlaster.util.Global.instance().getLog(null).error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
    }
 
 
@@ -190,6 +188,6 @@ public class Destination
       Destination dest = new Destination();
       dest.setDestination("Johann");
       dest.forceQueuing(true);
-      Log.info("", dest.toXml());
+      System.out.println(dest.toXml());
    }
 }

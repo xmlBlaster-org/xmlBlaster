@@ -42,7 +42,7 @@ and
     </pre></td></tr></table>
 
     <p>
-    The zip file contains the above jar file already with some additional
+    The zip file contains the above jar file with some additional
     files:
     </p>
     <table border="1"><tr><td><pre>
@@ -63,7 +63,7 @@ xmlBlaster/INSTALL
     </pre></td></tr></table>
     <p>
     You can choose to use the jar file or to use the zip file,
-    whatever suits you needs better.
+    whatever suits your needs better.
     </p>
     <br />
 
@@ -211,7 +211,7 @@ sleep 5
    
    <date>2002 06 04</date>
    
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

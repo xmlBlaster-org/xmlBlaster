@@ -1,6 +1,5 @@
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;

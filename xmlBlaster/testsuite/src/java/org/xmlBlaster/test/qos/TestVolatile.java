@@ -3,11 +3,11 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -37,6 +37,7 @@ public class TestVolatile extends TestCase implements I_Callback
 {
    private final static String ME = "TestVolatile";
    private final Global glob;
+   private final LogChannel log;
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloVolatile";
@@ -54,8 +55,9 @@ public class TestVolatile extends TestCase implements I_Callback
     */
    public TestVolatile(Global glob, String testName)
    {
-       super(testName);
-       this.glob = glob;
+      super(testName);
+      this.glob = glob;
+      this.log = this.glob.getLog("test");
    }
 
 
@@ -74,7 +76,7 @@ public class TestVolatile extends TestCase implements I_Callback
          senderConnection.login(senderName, passwd, qos, this);
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -96,7 +98,7 @@ public class TestVolatile extends TestCase implements I_Callback
          assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -106,7 +108,7 @@ public class TestVolatile extends TestCase implements I_Callback
     */
    public void sendVolatile()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing a volatile message ...");
+      if (log.TRACE) log.trace(ME, "Testing a volatile message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                       "</key>";
@@ -119,9 +121,9 @@ public class TestVolatile extends TestCase implements I_Callback
       try {
          String returnedOid = senderConnection.publish(msgUnit).getOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
-         Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
+         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -133,7 +135,7 @@ public class TestVolatile extends TestCase implements I_Callback
     */
    public void subscribeVolatile()
    {
-      Log.info(ME, "Subscribing a volatile message ...");
+      log.info(ME, "Subscribing a volatile message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                       "</key>";
@@ -143,9 +145,9 @@ public class TestVolatile extends TestCase implements I_Callback
 
       try {
          senderConnection.subscribe(xmlKey, qos);
-         Log.info(ME, "Subscribing of '" + publishOid + "' done");
+         log.info(ME, "Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -178,7 +180,7 @@ public class TestVolatile extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -209,7 +211,7 @@ public class TestVolatile extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -229,10 +231,6 @@ public class TestVolatile extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestVolatile
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestVolatile</pre>
     */
@@ -242,6 +240,5 @@ public class TestVolatile extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testVolatile();
       testSub.tearDown();
-      Log.exit(TestVolatile.ME, "Good bye");
    }
 }

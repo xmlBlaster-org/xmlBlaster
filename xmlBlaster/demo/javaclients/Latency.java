@@ -1,4 +1,5 @@
 // xmlBlaster/demo/javaclients/Latency.java
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -41,8 +42,10 @@ public class Latency implements I_Callback
 {
    private long startTime = 0L;
    private boolean messageArrived = false;
+   private final LogChannel log;
 
    public Latency(Global glob) {
+      log = glob.getLog("client");
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
@@ -77,7 +80,7 @@ public class Latency implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         Log.panic("", e.toString());
+         log.error("", e.toString());
       }
    }
 
@@ -86,7 +89,7 @@ public class Latency implements I_Callback
    {
       long endTime = System.currentTimeMillis();
       messageArrived = true;
-      Log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("", "Received asynchronous message '" + updateKey.getOid() +
                    "' from xmlBlaster - latency=" + (endTime - startTime) + " millis");
       return "";
    }
@@ -103,8 +106,9 @@ public class Latency implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit("", "Example: java Latency -loginName Jeff\n");
+         Global.instance().usage();
+         System.err.println("Example: java Latency -loginName Jeff\n");
+         System.exit(1);
       }
 
       new Latency(glob);

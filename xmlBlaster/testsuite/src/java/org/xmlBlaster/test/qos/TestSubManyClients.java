@@ -3,13 +3,13 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -52,6 +52,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 {
    private static String ME = "TestSubManyClients";
    private final Global glob;
+   private final LogChannel log;
+
    private boolean messageArrived = false;
 
    private final String publishOid1 = "dummy1";
@@ -84,6 +86,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
       this.oneName = loginName;
       numClients = glob.getProperty().get("numClients", 10);
    }
@@ -96,7 +99,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      Log.info(ME, "Setting up test ...");
+      log.info(ME, "Setting up test ...");
       numReceived = 0;
       try {
          oneConnection = new XmlBlasterConnection(); // Find orb
@@ -104,7 +107,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          oneConnection.login(oneName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, "Login failed: " + e.toString());
+          log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -119,18 +122,18 @@ public class TestSubManyClients extends TestCase implements I_Callback
    protected void tearDown()
    {
       if (numReceived != numClients) {
-         Log.error(ME, "numClients=" + numClients + " but numReceived=" + numReceived);
+         log.error(ME, "numClients=" + numClients + " but numReceived=" + numReceived);
          assertEquals("numClients=" + numClients + " but numReceived=" + numReceived, numClients, numReceived);
       }
 
-      Log.removeLogLevel("INFO");
+      log.removeLogLevel("INFO");
       if (manyClients != null) {
          for (int ii=0; ii<numClients; ii++) {
             Client sub = manyClients[ii];
-            sub.connection.logout();
+            sub.connection.disconnect(null);
          }
       }
-      Log.addLogLevel("INFO");
+      log.addLogLevel("INFO");
 
       {
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -154,8 +157,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
          } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.reason); }
       }
 
-      oneConnection.logout();
-      Log.info(ME, "Logout done");
+      oneConnection.disconnect(null);
+      log.info(ME, "Logout done");
    }
 
 
@@ -164,7 +167,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void subcribeMany()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing ...");
+      if (log.TRACE) log.trace(ME, "Subscribing ...");
 
       String passwd = "secret";
 
@@ -178,8 +181,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       long usedBefore = getUsedServerMemory();
 
-      Log.info(ME, "Setting up " + numClients + " subscriber clients ...");
-      Log.removeLogLevel("INFO");
+      log.info(ME, "Setting up " + numClients + " subscriber clients ...");
+      log.removeLogLevel("INFO");
       stopWatch = new StopWatch();
       for (int ii=0; ii<numClients; ii++) {
          Client sub = new Client();
@@ -191,29 +194,29 @@ public class TestSubManyClients extends TestCase implements I_Callback
             sub.connection.login(sub.loginName, passwd, loginQosW, this);
          }
          catch (Exception e) {
-             Log.error(ME, "Login failed: " + e.toString());
+             log.error(ME, "Login failed: " + e.toString());
              assertTrue("Login failed: " + e.toString(), false);
          }
 
          try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
-            Log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getUniqueKey());
+            log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getUniqueKey());
          } catch(XmlBlasterException e) {
-            Log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.reason);
             assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
          }
 
          manyClients[ii] = sub;
       }
       double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
-      Log.addLogLevel("INFO");
+      log.addLogLevel("INFO");
 
       long usedAfter = getUsedServerMemory();
       long memPerLogin = (usedAfter - usedBefore)/numClients;
 
-      Log.info(ME, numClients + " subscriber clients are ready.");
-      Log.info(ME, "Server memory per login consumed=" + memPerLogin);
-      Log.info(ME, "Time " + (long)(numClients/timeForLogins) + " logins/sec");
+      log.info(ME, numClients + " subscriber clients are ready.");
+      log.info(ME, "Server memory per login consumed=" + memPerLogin);
+      log.info(ME, "Time " + (long)(numClients/timeForLogins) + " logins/sec");
    }
 
 
@@ -228,7 +231,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          String mem = new String(msgArr[0].content);
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
-         Log.warn(ME, e.toString());
+         log.warn(ME, e.toString());
          return 0L;
       }
    }
@@ -241,7 +244,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void publishOne()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -253,9 +256,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
          stopWatch = new StopWatch();
          String tmp = oneConnection.publish(msgUnit).getOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -267,28 +270,28 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void testManyClients()
    {
-      Log.plain(ME, "");
-      Log.info(ME, "TEST 1, many publishers, one subscriber ...");
+      log.plain(ME, "");
+      log.info(ME, "TEST 1, many publishers, one subscriber ...");
 
       subcribeMany();
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publishOne();
-      Log.info(ME, "Waiting long enough for updates ...");
+      log.info(ME, "Waiting long enough for updates ...");
       Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
       assertEquals("Wrong number of updates", numClients, numReceived);
 
 
-      Log.plain(ME, "");
-      Log.info(ME, "TEST 2, many publishers, one subscriber ...");
+      log.plain(ME, "");
+      log.info(ME, "TEST 2, many publishers, one subscriber ...");
 
       subcribeOne();
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}                                             // Wait some time ...
 
       numReceived = 0;
       publishMany();
-      Log.info(ME, "Waiting long enough for updates ...");
+      log.info(ME, "Waiting long enough for updates ...");
       Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
       assertEquals("Wrong number of updates", numClients, numReceived);
    }
@@ -299,7 +302,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void subcribeOne()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing ...");
+      if (log.TRACE) log.trace(ME, "Subscribing ...");
 
       SubscribeKeyWrapper subKeyW = new SubscribeKeyWrapper(publishOid2);
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid2 + "' queryType='EXACT'></key>";
@@ -309,9 +312,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       try {
          SubscribeRetQos subscribeOid = oneConnection.subscribe(subKey, subQos);
-         Log.info(ME, "Client " + oneName + " subscribed to " + subKeyW.getUniqueKey());
+         log.info(ME, "Client " + oneName + " subscribed to " + subKeyW.getUniqueKey());
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -324,7 +327,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void publishMany()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       PublishKeyWrapper pubKeyW = new PublishKeyWrapper(publishOid2, contentMime, contentMimeExtended);
       String pubKey = pubKeyW.toXml(); // "<key oid='" + publishOid2 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'></key>"
@@ -334,8 +337,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       long usedBefore = getUsedServerMemory();
 
-      Log.info(ME, numClients + " clients are publishing one message each ...");
-      Log.removeLogLevel("INFO");
+      log.info(ME, numClients + " clients are publishing one message each ...");
+      log.removeLogLevel("INFO");
       stopWatch = new StopWatch();
 
       for (int ii=0; ii<numClients; ii++) {
@@ -347,20 +350,20 @@ public class TestSubManyClients extends TestCase implements I_Callback
             PublishRetQos tmp = oneConnection.publish(msgUnit);
             assertEquals("Wrong publishOid2", publishOid2, tmp.getOid());
          } catch(XmlBlasterException e) {
-            Log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.reason);
             assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
          }
       }
 
       double timeToPublish = (double)stopWatch.elapsed()/1000.; // msec -> sec
-      Log.addLogLevel("INFO");
+      log.addLogLevel("INFO");
 
       long usedAfter = getUsedServerMemory();
       long memPerLogin = (usedAfter - usedBefore)/numClients;
 
-      Log.info(ME, numClients + " have published their messages.");
-      Log.info(ME, "Server memory consumed=" + memPerLogin + " bytes.");
-      Log.info(ME, "Time " + (long)(numClients/timeToPublish) + " publish/sec");
+      log.info(ME, numClients + " have published their messages.");
+      log.info(ME, "Server memory consumed=" + memPerLogin + " bytes.");
+      log.info(ME, "Time " + (long)(numClients/timeToPublish) + " publish/sec");
    }
 
    /**
@@ -370,7 +373,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      //Log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
       numReceived++;
 
       if (numReceived == numClients) {
@@ -378,7 +381,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numReceived / elapsed);
-         Log.info(ME, numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
+         log.info(ME, numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
       }
       return "";
    }
@@ -397,10 +400,6 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestSubManyClients
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubManyClients</pre>
     */
@@ -408,13 +407,13 @@ public class TestSubManyClients extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestSubManyClients testSub = new TestSubManyClients(glob, "TestSubManyClients", "Tim");
       testSub.setUp();
       testSub.testManyClients();
       testSub.tearDown();
-      Log.exit(TestSubManyClients.ME, "Good bye");
    }
 }
 

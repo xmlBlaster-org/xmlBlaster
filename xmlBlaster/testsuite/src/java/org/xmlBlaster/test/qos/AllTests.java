@@ -1,12 +1,11 @@
 /*------------------------------------------------------------------------------
-Name:      TestAll.java
+Name:      AllTests.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
 import org.jutils.JUtilsException;
 import junit.framework.*;
 
@@ -19,21 +18,21 @@ import junit.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestAll
- *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestAll
+ *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.AllTests
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.AllTests
  * </pre>
  */
-public class TestAll
+public class AllTests
 {
    public static Test suite()
    {
       TestSuite suite= new TestSuite("All xmlBlaster core features and QoS");
 
       //System.out.println("\n\n========= TESTING CORBA ==========\n");
-      //try { glob.getProperty().set("client.protocol", "SOCKET"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
-      //try { glob.getProperty().set("client.protocol", "IOR"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
-      //try { glob.getProperty().set("client.protocol", "RMI"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
-      //try { glob.getProperty().set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "SOCKET"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "IOR"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "RMI"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
       suite.addTest(TestCorbaThreads.suite());
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());

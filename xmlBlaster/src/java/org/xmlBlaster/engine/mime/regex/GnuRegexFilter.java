@@ -6,7 +6,7 @@ Comment:   Support check of message content with regular expressions.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.regex;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -55,7 +55,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "GnuRegexFilter";
    private Global glob;
-   private Log log;
+   private LogChannel log;
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
    /** For testsuite TestAccess.java only to force an XmlBlasterException */
@@ -67,7 +67,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog();
+      this.log = glob.getLog("mime");
       log.info(ME, "Filter is initialized, we check all mime types if content is not to long");
    }
 
@@ -147,7 +147,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
             expression = new RE(query.getQuery());
             query.setPreparedQuery(expression); // for better performance we remember the regex expression
          } catch (gnu.regexp.REException e) {
-            Log.error(ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
+            log.error(ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
             throw new XmlBlasterException(ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
          }
       }

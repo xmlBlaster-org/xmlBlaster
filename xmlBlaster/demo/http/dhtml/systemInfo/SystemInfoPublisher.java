@@ -3,11 +3,11 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.5 2002/05/11 10:12:22 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.6 2002/09/13 23:17:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.io.FileUtil;
 import org.jutils.time.StopWatch;
@@ -39,6 +39,7 @@ public class SystemInfoPublisher
 {
    private static final String ME = "SystemInfoPublisher";
    private final Global glob;
+   private final LogChannel log;
    private XmlBlasterConnection con;
    private Random random = new Random();
 
@@ -49,10 +50,12 @@ public class SystemInfoPublisher
     */
    public SystemInfoPublisher(Global glob) {
       this.glob = glob;
+      this.log = glob.getLog("client");
       String osName = System.getProperty("os.name");     // "Linux" "Windows NT" ...
       if (!osName.startsWith("Linux")) {
-         Log.panic(ME, "This system load publisher runs only on Linux, sorry about that\n" +
+         log.error(ME, "This system load publisher runs only on Linux, sorry about that\n" +
                    "Note that you can use own Perl or C++ or Java publishers to do this task");
+         System.exit(1);
       }
 
       setUp();  // login
@@ -72,7 +75,7 @@ public class SystemInfoPublisher
             publish("meminfo", mem);
          }
          catch (XmlBlasterException e) {
-            Log.error(ME, e.reason);
+            log.error(ME, e.reason);
          }
       }
 
@@ -86,7 +89,7 @@ public class SystemInfoPublisher
     */
    private int getCpuload() throws XmlBlasterException {
       // String text = FileUtil.readAsciiFile("/proc/cpuinfo");
-      // Log.info(ME, "cpuinfo=\n" + text);
+      // log.info(ME, "cpuinfo=\n" + text);
       return random.nextInt(100); // hack!
    }
 
@@ -97,7 +100,7 @@ public class SystemInfoPublisher
     */
    private int getMeminfo() throws XmlBlasterException {
       // String text = FileUtil.readAsciiFile("/proc/meminfo");
-      // Log.info(ME, "meminfo=\n" + text);
+      // log.info(ME, "meminfo=\n" + text);
       int val = random.nextInt(100); // hack!
       if (val < 11) val = 11;
       if (val > 96) val = 96;
@@ -113,7 +116,7 @@ public class SystemInfoPublisher
          con.connect(null, null); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -144,10 +147,10 @@ public class SystemInfoPublisher
       try {
          con.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
       }
 
-      Log.info(ME, "Published message " + oid + " with value " + content);
+      log.info(ME, "Published message " + oid + " with value " + content);
    }
 
    /**

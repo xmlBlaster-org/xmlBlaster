@@ -1,7 +1,8 @@
 package org.xmlBlaster.authentication.plugins.a2Blaster;
 
 import java.util.Hashtable;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -14,9 +15,12 @@ import org.a2Blaster.Environment;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/08/26 11:04:16 $)
+ * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2002/09/13 23:17:50 $)
  * Last Changes:
  *    ($Log: Manager.java,v $
+ *    (Revision 1.6  2002/09/13 23:17:50  ruff
+ *    (Ported completely to LogChannel (org.xmlBlaster.util.Log is deprecated)
+ *    (
  *    (Revision 1.5  2002/08/26 11:04:16  ruff
  *    (INCOMPATIBLE plugin interface change!
  *    (This is of importance only if you use your own plugins.
@@ -51,6 +55,8 @@ import org.a2Blaster.Environment;
 
 public class Manager implements I_Manager{
    private static final String          ME = "Manager";
+   private              Global        glob;
+   private              LogChannel     log;
 
    public  static final String        TYPE = "a2Blaster";
    public  static final String     VERSION = "1.0";
@@ -64,8 +70,6 @@ public class Manager implements I_Manager{
    private              String                LCN = "xmlBlaster";
 
    public Manager() {
-      if (Log.CALL) Log.call(ME+"."+ME+"()", "-------START--------\n");
-      if (Log.CALL) Log.call(ME+"."+ME+"()", "-------END----------\n");
    }
 
    /**
@@ -73,6 +77,12 @@ public class Manager implements I_Manager{
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws org.xmlBlaster.util.XmlBlasterException {
+      this.glob = glob;
+      this.log = this.glob.getLog("a2Blaster");
+   }
+
+   final Global getGlobal() {
+      return this.glob;
    }
 
    /**
@@ -94,7 +104,6 @@ public class Manager implements I_Manager{
       return VERSION;
    }
 
-
    /**
     * Create a new user session.
     * <p/>
@@ -102,10 +111,10 @@ public class Manager implements I_Manager{
     * @return I_Session
     */
    public I_Session reserveSession(String sessionId){
-      if (Log.CALL) Log.call(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------\n");
+      if (log.CALL) log.call(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------\n");
       Session session = new Session(this, sessionId);
       sessions.put(sessionId, session);
-      if (Log.CALL) Log.call(ME+".reserveSession(String sessionId="+sessionId+")", "-------END----------\n");
+      if (log.CALL) log.call(ME+".reserveSession(String sessionId="+sessionId+")", "-------END----------\n");
 
       return session;
    }
@@ -117,13 +126,13 @@ public class Manager implements I_Manager{
     * @param String Specifies the session. (sessionId)
     */
    public void releaseSession(String sessionId, String qos_literal){
-      if (Log.CALL) Log.call(ME+".releaseSession(String sessionId="
+      if (log.CALL) log.call(ME+".releaseSession(String sessionId="
                             +sessionId+", String qos_literal="+qos_literal+")",
                             "-------START--------\n");
       I_Session sessionSecCtx = getSessionById(sessionId);
       sessions.remove(sessionId);
       ((Session)sessionSecCtx).destroy(qos_literal);
-      if (Log.CALL) Log.call(ME+".releaseSession(...)", "-------END---------\n");
+      if (log.CALL) log.call(ME+".releaseSession(...)", "-------END---------\n");
    }
 
    /**
@@ -133,30 +142,30 @@ public class Manager implements I_Manager{
     * @return I_Session
     */
    public I_Session getSessionById(String id) {
-      if (Log.CALL) Log.call(ME+".getSessionById(String id="+id+")", "-------CALLED-------\n");
+      if (log.CALL) log.call(ME+".getSessionById(String id="+id+")", "-------CALLED-------\n");
       return (I_Session)sessions.get(id);
    }
 
    CorbaConnection getA2Blaster() throws XmlBlasterException{
-      if (Log.CALL) Log.call(ME+".getA2Blaster()", "-------START------\n");
+      if (log.CALL) log.call(ME+".getA2Blaster()", "-------START------\n");
 
       if(a2Blaster == null) {
          try {
             a2Blaster = new CorbaConnection();
          }
          catch (A2BlasterException e) {
-            Log.error(ME+".getA2Blaster()", "Connecting a2Blaster failed!!!");
+            log.error(ME+".getA2Blaster()", "Connecting a2Blaster failed!!!");
             throw new XmlBlasterException(ME+".getA2Blaster()", "Connecting a2Blaster failed!!!");
          }
       }
 
-      if (Log.CALL) Log.call(ME+".getA2Blaster()", "-------END-------\n");
+      if (log.CALL) log.call(ME+".getA2Blaster()", "-------END-------\n");
 
       return a2Blaster;
    }
 
    void changeSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME + ".changeSessionId(String oldSessionId=" + oldSessionId +
+      if (log.CALL) log.call(ME + ".changeSessionId(String oldSessionId=" + oldSessionId +
                              ", String newSessionID=" +newSessionId+")", "-------START------\n");
       synchronized(sessions) {
          Session session = (Session)sessions.get(oldSessionId);
@@ -165,7 +174,7 @@ public class Manager implements I_Manager{
          sessions.put(newSessionId, session);
          sessions.remove(oldSessionId);
       }
-      if (Log.CALL) Log.call(ME+".changeSessionId(...)", "-------END-------\n");
+      if (log.CALL) log.call(ME+".changeSessionId(...)", "-------END-------\n");
    }
 
 }

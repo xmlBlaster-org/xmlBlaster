@@ -130,10 +130,6 @@ public class TestEmbeddedXmlBlaster extends TestCase
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestEmbeddedXmlBlaster
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestEmbeddedXmlBlaster</pre>
     */

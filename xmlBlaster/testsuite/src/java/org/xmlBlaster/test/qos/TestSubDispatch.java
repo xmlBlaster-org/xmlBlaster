@@ -3,11 +3,11 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.2 2002/09/13 23:18:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -40,6 +40,8 @@ public class TestSubDispatch extends TestCase implements I_Callback
 {
    private static String ME = "TestSubDispatch";
    private final Global glob;
+   private final LogChannel log;
+
    private boolean messageArrived = false;
 
    private String publishOid = "dummyTestSubDispatch";
@@ -64,10 +66,11 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public TestSubDispatch(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.glob = glob;
-       this.senderName = loginName;
-       this.receiverName = loginName;
+      super(testName);
+      this.glob = glob;
+      this.log = this.glob.getLog("test");
+      this.senderName = loginName;
+      this.receiverName = loginName;
    }
 
 
@@ -84,7 +87,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, "Login failed: " + e.toString());
+          log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -107,7 +110,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
          assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
    /**
@@ -117,7 +120,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public void testSubscribeXPath()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='' queryType='XPATH'>\n" +
@@ -128,7 +131,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
       try {
          subscribeRetQos = senderConnection.subscribe(xmlKey, qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  Log.info(ME, "Receiving message with specialized update() ...");
+                  log.info(ME, "Receiving message with specialized update() ...");
                   numReceived += 1;
 
                   assertEquals("Wrong sender", senderName, updateQos.getSender());
@@ -145,9 +148,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
          assertTrue("returned null subscribeRetQos", subscribeRetQos != null);
          assertTrue("returned null subscribeId", subscribeRetQos.getSubscriptionId() != null);
          assertTrue("returned subscribeId is empty", 0 != subscribeRetQos.getSubscriptionId().length());
-         Log.info(ME, "Success: Subscribe subscription-id=" + subscribeRetQos.getSubscriptionId() + " done");
+         log.info(ME, "Success: Subscribe subscription-id=" + subscribeRetQos.getSubscriptionId() + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -160,7 +163,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -175,9 +178,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
       try {
          String tmp = senderConnection.publish(msgUnit).getOid();
          assertEquals("Wrong publishOid", publishOid, tmp);
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -208,7 +211,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       assertInUpdate = "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...";
-      Log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...");
+      log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...");
       return "";
    }
 
@@ -231,7 +234,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -253,10 +256,6 @@ public class TestSubDispatch extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestSubDispatch
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubDispatch</pre>
     */
@@ -266,7 +265,6 @@ public class TestSubDispatch extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
-      Log.exit(TestSubDispatch.ME, "Good bye");
    }
 }
 

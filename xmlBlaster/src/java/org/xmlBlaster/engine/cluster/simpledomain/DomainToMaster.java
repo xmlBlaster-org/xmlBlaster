@@ -7,7 +7,7 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster.simpledomain;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -40,7 +40,7 @@ import java.util.Iterator;
 final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    private String ME = "DomainToMaster";
    private Global glob;
-   private Log log;
+   private LogChannel log;
    private ClusterManager clusterManager;
 
    /**
@@ -49,7 +49,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     */
    public void initialize(Global glob, ClusterManager clusterManager) {
       this.glob = glob;
-      this.log = glob.getLog();
+      this.log = glob.getLog("cluster");
       this.clusterManager = clusterManager;
       this.ME = this.ME + "-" + this.glob.getId();
       log.info(ME, "The simple domain based master mapper plugin is initialized");
@@ -60,7 +60,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     * cache or do whatever it needs to do. 
     */
    public void reset() {
-      Log.warn(ME, "New configuration, nothing to do");
+      log.warn(ME, "New configuration, nothing to do");
    }
 
    /**

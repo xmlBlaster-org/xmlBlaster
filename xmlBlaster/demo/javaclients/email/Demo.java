@@ -1,7 +1,6 @@
 // xmlBlaster/demo/javaclients/email/Demo.java
 package javaclients.email;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -47,7 +46,7 @@ public class Demo
          con.disconnect(null);
       }
       catch (Exception e) {
-         Log.panic("", e.toString());
+         System.out.println(e.toString());
       }
    }
 
@@ -59,7 +58,10 @@ public class Demo
     */
    public static void main(String args[]) {
       Global glob = new Global(); // initializes args, properties etc.
-      if (glob.init(args) < 0)  Log.panic("EmailDemo", "Bye");
+      if (glob.init(args) < 0)  {
+         System.out.println("EmailDemo wrong args, Bye");
+         System.exit(1);
+      }
 
       new Demo(glob);
    }

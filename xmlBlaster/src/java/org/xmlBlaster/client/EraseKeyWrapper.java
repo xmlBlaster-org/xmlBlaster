@@ -3,11 +3,10 @@ Name:      EraseKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: EraseKeyWrapper.java,v 1.3 2002/06/15 16:03:28 ruff Exp $
+Version:   $Id: EraseKeyWrapper.java,v 1.4 2002/09/13 23:17:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.Constants;
 

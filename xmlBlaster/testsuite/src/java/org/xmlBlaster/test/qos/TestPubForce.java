@@ -3,11 +3,11 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.2 2002/09/13 23:18:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -39,6 +39,8 @@ public class TestPubForce extends TestCase implements I_Callback
 {
    private static String ME = "TestPubForce";
    private final Global glob;
+   private final LogChannel log;
+
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -62,6 +64,7 @@ public class TestPubForce extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
       this.senderName = loginName;
       this.receiverName = loginName;
    }
@@ -81,7 +84,7 @@ public class TestPubForce extends TestCase implements I_Callback
          senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -103,7 +106,7 @@ public class TestPubForce extends TestCase implements I_Callback
          assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -114,7 +117,7 @@ public class TestPubForce extends TestCase implements I_Callback
     */
    public void testSubscribe()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
@@ -122,9 +125,9 @@ public class TestPubForce extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -139,7 +142,7 @@ public class TestPubForce extends TestCase implements I_Callback
     */
    public void testPublish(boolean forceUpdate)
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -153,9 +156,9 @@ public class TestPubForce extends TestCase implements I_Callback
 
       try {
          publishOid = senderConnection.publish(msgUnit).getOid();
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
       assertTrue("returned publishOid == null", publishOid != null);
@@ -203,7 +206,7 @@ public class TestPubForce extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -236,7 +239,7 @@ public class TestPubForce extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -258,10 +261,6 @@ public class TestPubForce extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestPubForce
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestPubForce</pre>
     */
@@ -269,13 +268,13 @@ public class TestPubForce extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestPubForce testSub = new TestPubForce(glob, "TestPubForce", "Tim");
       testSub.setUp();
       testSub.testPublishForceUpdate();
       testSub.tearDown();
-      Log.exit(TestPubForce.ME, "Good bye");
    }
 }
 

@@ -4,17 +4,16 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding serverRef address string and protocol string to
            access XmlBlaster
-Version:   $Id: ServerRef.java,v 1.2 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: ServerRef.java,v 1.3 2002/09/13 23:18:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
 
 /**
  * Helper class holding serverRef address string and protocol string.
  * <p />
  * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author ruff@swand.lake.de
  */
 public class ServerRef
@@ -115,7 +114,7 @@ public class ServerRef
          System.out.println(ref.toXml());
       }
       catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed: " + e.toString());
       }
    }
 }

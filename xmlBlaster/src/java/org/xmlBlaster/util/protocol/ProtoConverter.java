@@ -3,7 +3,7 @@ Name:      ProtoConverter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter used to convert native data to protocol-specific data.
-Version:   $Id: ProtoConverter.java,v 1.4 2002/03/18 00:29:41 ruff Exp $
+Version:   $Id: ProtoConverter.java,v 1.5 2002/09/13 23:18:21 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
@@ -12,7 +12,6 @@ import java.util.Vector;
 import java.util.Enumeration;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.Log;
 
 
 /**
@@ -47,7 +46,6 @@ public class ProtoConverter {
       MessageUnit ret = null;
       int size = vec.size();
       if (size != 3) {
-         Log.error(ME + ".vector2MessageUnit", "not a valid MessageUnit");
          throw new XmlBlasterException("Not a valid Message Unit", "Wrong size");
       }
 
@@ -61,8 +59,6 @@ public class ProtoConverter {
       }
 
       catch (ClassCastException e) {
-         Log.error(ME + ".vector2MessageUnit", "not a valid MessageUnit: "
-                          + e.toString());
          throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
       }
 
@@ -112,8 +108,6 @@ public class ProtoConverter {
       }
 
       catch (ClassCastException e) {
-         Log.error(ME + ".vector2MessageUnitArray", "not a valid MessageUnit[]: "
-                          + e.toString());
          throw new XmlBlasterException("Not a valid MessageUnit[]", "Class Cast Exception");
       }
 
@@ -159,8 +153,6 @@ public class ProtoConverter {
       }
 
       catch (ClassCastException e) {
-         Log.error(ME + ".vector2StringArray", "not a valid String: "
-                          + e.toString());
          throw new XmlBlasterException("Not a valid String", "Class Cast Exception");
       }
 
@@ -181,13 +173,12 @@ public class ProtoConverter {
       if (size == 0)
          throw new XmlBlasterException(ME+"vector2String", "There is no string in the vector");
       if (size > 1)
-         Log.error("ProtoConvertor.vector2String", "There are too many strings in the vector");
+         org.xmlBlaster.util.Global.instance().getLog("core").error("ProtoConvertor.vector2String", "There are too many strings in the vector");
 
       try {
          return (String)vec.elementAt(0);
       }
       catch (ClassCastException e) {
-         Log.error(ME + ".vector2String", "not a valid String: " + e.toString());
          throw new XmlBlasterException(ME + ".vector2String", "Class Cast Exception, not a valid String");
       }
    }

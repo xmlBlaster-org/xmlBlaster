@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 public class PluginGUI extends JFrame {
    JPanel contentPane;
@@ -85,7 +85,7 @@ public class PluginGUI extends JFrame {
       try {
          serverImage.setIcon(new ImageIcon(org.xmlBlaster.authentication.plugins.demo.PluginGUI.class.getResource("aufmacher_ho_.gif")));
       } catch (java.lang.Exception e) {
-         Log.warn("PluginGUI", "Can't find image 'aufmacher_ho_.gif'");
+         System.err.println("PluginGUI: Can't find image 'aufmacher_ho_.gif'");
       }
       jPanel1.setLayout(borderLayout1);
       actionOut.setText("- - -");

@@ -3,11 +3,11 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
@@ -44,6 +44,7 @@ public class TestPtD extends TestCase implements I_Callback
 {
    private final static String ME = "TestPtD";
    private final Global glob;
+   private final LogChannel log;
 
    private final String senderName = "Manuel";
    private String publishOid = "";
@@ -67,8 +68,9 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public TestPtD(Global glob, String testName)
    {
-       super(testName);
+      super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
    }
 
 
@@ -95,7 +97,7 @@ public class TestPtD extends TestCase implements I_Callback
          senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -122,7 +124,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public void testPtOneDestination()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing point to one destination ...");
+      if (log.TRACE) log.trace(ME, "Testing point to one destination ...");
 
       // Construct a love message and send it to Ulrike
       String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -138,9 +140,9 @@ public class TestPtD extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
          publishOid = senderConnection.publish(msgUnit).getOid();
-         Log.info(ME, "Sending done, returned oid=" + publishOid);
+         log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -156,7 +158,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public void testPtManyDestinations()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing point to many destinations ...");
+      if (log.TRACE) log.trace(ME, "Testing point to many destinations ...");
 
       // Construct a love message and send it to Ulrike
       String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -175,9 +177,9 @@ public class TestPtD extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
          publishOid = senderConnection.publish(msgUnit).getOid();
-         Log.info(ME, "Sending done, returned oid=" + publishOid);
+         log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -193,7 +195,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -227,7 +229,7 @@ public class TestPtD extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -249,10 +251,6 @@ public class TestPtD extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestPtD
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtD</pre>
     */
@@ -260,12 +258,12 @@ public class TestPtD extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestPtD testSub = new TestPtD(glob, "TestPtD");
       testSub.setUp();
       testSub.testPtOneDestination();
       testSub.tearDown();
-      Log.exit(TestPtD.ME, "Good bye");
    }
 }

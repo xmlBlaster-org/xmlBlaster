@@ -3,7 +3,7 @@ Name:      ReqBaseServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ReqBaseServlet.java,v 1.6 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: ReqBaseServlet.java,v 1.7 2002/09/13 23:18:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
@@ -21,7 +21,7 @@ import com.jclark.xsl.sax.ServletDestination;
 import com.jclark.xsl.sax.OutputMethodHandlerImpl;
 import com.jclark.xsl.sax.XSLProcessorImpl;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 
 /*
@@ -34,12 +34,14 @@ abstract public class ReqBaseServlet extends HttpServlet
 {
    private static final String ME               = "ReqBaseServlet";
    private static final String DEFAULT_PARSER   = "com.jclark.xml.sax.CommentDriver";
+   private LogChannel log;
 
 
   /**
    */
    public void init(ServletConfig conf) throws ServletException {
       super.init(conf);
+      log = org.xmlBlaster.util.Global.instance().getLog("http");
    }
 
 
@@ -84,7 +86,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       }
       catch(Exception e) {
-         Log.warn(ME, "servlet output broken:"+e.toString());
+         log.warn(ME, "servlet output broken:"+e.toString());
          throw new ServletException(e.toString());
       }
 
@@ -109,7 +111,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       }
       catch(Exception e) {
-         Log.warn(ME, "servlet output broken:"+e.toString());
+         log.warn(ME, "servlet output broken:"+e.toString());
          throw new ServletException(e.toString());
       }
 
@@ -131,12 +133,12 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       try {
          String url = new URL("file", "", xslPath).toString();
-         Log.info(ME, "Reading from "+url);
+         log.info(ME, "Reading from "+url);
          xsl.loadStylesheet( new InputSource( new URL("file", "", xslPath).toString() ) );
-         Log.info(ME, "Successfully read from "+url);
+         log.info(ME, "Successfully read from "+url);
       }
       catch ( Exception e) {
-         Log.error(ME,e.toString());
+         log.error(ME,e.toString());
          throw new XmlBlasterException(ME,"Could not read XSL file.");
       }
 

@@ -3,7 +3,7 @@ Name:      TestSubNoInitial.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubNoInitial.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestSubNoInitial.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -116,7 +116,7 @@ public class TestSubNoInitial extends TestCase implements I_Callback
          assertTrue(assertInUpdate, assertInUpdate == null);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -286,10 +286,6 @@ public class TestSubNoInitial extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestSubNoInitial
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubNoInitial</pre>
     */

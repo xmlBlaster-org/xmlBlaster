@@ -1,6 +1,6 @@
 package javaclients.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -27,6 +27,7 @@ public class XmlDBClient implements I_Callback
 {
    private static String ME = "XmlDBClient";
    private final Global glob;
+   private final LogChannel log;
    private XmlBlasterConnection con = null;
    private String results;
    private boolean done = false;
@@ -36,6 +37,7 @@ public class XmlDBClient implements I_Callback
     */
    public XmlDBClient(Global glob) {
       this.glob = glob;
+      this.log = this.glob.getLog("client");
       initBlaster();
       query();
       waitOnResults();
@@ -50,9 +52,9 @@ public class XmlDBClient implements I_Callback
             Thread.sleep(1000);
          }
          catch (InterruptedException e) {}
-         Log.plain("Waiting...");
+         log.plain(ME, "Waiting...");
       }
-      Log.plain(results);
+      log.plain(ME, results);
       logout();
    }
 
@@ -74,11 +76,12 @@ public class XmlDBClient implements I_Callback
       try {
          con = new XmlBlasterConnection(glob);
          con.connect(null, this);
-         Log.info(ME, "Connected to xmlBlaster");
+         log.info(ME, "Connected to xmlBlaster");
       }
       catch (Exception e) {
          e.printStackTrace();
-         Log.exit(ME, "Login to xmlBlaster failed");
+         log.error(ME, "Login to xmlBlaster failed");
+         System.exit(1);
       }
    }
 
@@ -87,7 +90,7 @@ public class XmlDBClient implements I_Callback
     */
    public void logout() {
       if (con == null) return;
-      Log.info(ME, "Logout ...");
+      log.info(ME, "Logout ...");
       con.disconnect(null);
    }
 
@@ -109,14 +112,15 @@ public class XmlDBClient implements I_Callback
 
       try {
          con.publish(wrap.toMessage());
-         Log.info(ME, "Published query ...");
-         if (Log.DUMP) Log.dump(ME, wrap.toXml());
+         log.info(ME, "Published query ...");
+         if (log.DUMP) log.dump(ME, wrap.toXml());
       }
-      catch (Exception e) { Log.error(ME, e.getMessage()); }
+      catch (Exception e) { log.error(ME, e.getMessage()); }
 
       if (!queryStr.equalsIgnoreCase("query") && !confirm) {
          logout();
-         Log.exit(ME, "Done, no waiting on confirmation");
+         log.info(ME, "Done, no waiting on confirmation");
+         System.exit(0);
       }
    }
 

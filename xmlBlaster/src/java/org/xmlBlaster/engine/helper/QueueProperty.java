@@ -6,7 +6,6 @@ Comment:   Holding callback queue properties
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 

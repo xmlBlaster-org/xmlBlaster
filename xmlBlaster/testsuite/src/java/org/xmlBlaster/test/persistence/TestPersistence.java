@@ -3,11 +3,11 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.1 2002/09/12 21:01:42 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
@@ -38,7 +38,8 @@ import junit.framework.*;
 public class TestPersistence extends TestCase implements I_Callback
 {
    private final static String ME = "TestPersistence";
-   private static Global glob = null;
+   private Global glob = null;
+   private LogChannel log = null;
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloDurable";
@@ -68,7 +69,8 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      if (glob == null) glob = new Global();
+      if (this.glob == null) this.glob = new Global();
+      this.log = this.glob.getLog("test");
       try {
          String passwd = "secret";
          senderConnection = new XmlBlasterConnection();
@@ -76,7 +78,7 @@ public class TestPersistence extends TestCase implements I_Callback
          senderConnection.login(senderName, passwd, qos, this);
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -99,7 +101,7 @@ public class TestPersistence extends TestCase implements I_Callback
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
       checkContent(false);
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -109,7 +111,7 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public void sendDurable()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing a durable message ...");
+      if (log.TRACE) log.trace(ME, "Testing a durable message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'>\n" +
                       "</key>";
@@ -122,9 +124,9 @@ public class TestPersistence extends TestCase implements I_Callback
       try {
          String returnedOid = senderConnection.publish(msgUnit).getOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
-         Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
+         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -155,13 +157,13 @@ public class TestPersistence extends TestCase implements I_Callback
    {
       String driverType = glob.getProperty().get("Persistence.Driver.Type", (String)null);
       if (driverType == null || !driverType.equals("filestore")) {
-         Log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
+         log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
 
       String path = glob.getProperty().get("Persistence.Path", (String)null);
       if (path == null) {
-         Log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
+         log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
          return;
       }
 
@@ -188,7 +190,7 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of a message, checking ...");
+      log.info(ME, "Receiving update of a message, checking ...");
 
       numReceived += 1;
 
@@ -221,7 +223,7 @@ public class TestPersistence extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -241,23 +243,19 @@ public class TestPersistence extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.persistence.TestPersistence
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.persistence.TestPersistence</pre>
     */
    public static void main(String args[])
    {
-      TestPersistence.glob = new Global();
-      if (TestPersistence.glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestPersistence testSub = new TestPersistence("TestPersistence");
       testSub.setUp();
       testSub.testDurable();
       testSub.tearDown();
-      Log.exit(TestPersistence.ME, "Good bye");
    }
 }

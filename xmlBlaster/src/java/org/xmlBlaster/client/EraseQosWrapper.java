@@ -3,11 +3,10 @@ Name:      EraseQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: EraseQosWrapper.java,v 1.2 2001/12/23 19:49:54 ruff Exp $
+Version:   $Id: EraseQosWrapper.java,v 1.3 2002/09/13 23:17:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 

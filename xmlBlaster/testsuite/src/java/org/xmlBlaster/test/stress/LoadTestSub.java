@@ -3,13 +3,13 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.1 2002/09/12 21:01:46 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.2 2002/09/13 23:18:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -42,6 +42,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private boolean messageArrived = false;
    private StopWatch stopWatch = null;
    private Global glob;
+   private LogChannel log;
 
    private String subscribeOid;
    private String publishOid = "LoadTestSub";
@@ -71,6 +72,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
+       this.log = glob.getLog("test");
        this.senderName = loginName;
        this.receiverName = loginName;
        this.passwd = passwd;
@@ -93,11 +95,11 @@ public class LoadTestSub extends TestCase implements I_Callback
          if (burstModePublish > numPublish)
             burstModePublish = numPublish;
          if ((numPublish % burstModePublish) != 0)
-            Log.error(ME, "numPublish should by dividable by publish.burstMode");
-         Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " cb.burstMode.collectTime=" + glob.getProperty().get("cb.burstMode.collectTime", 0L));
+            log.error(ME, "numPublish should by dividable by publish.burstMode");
+         log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " cb.burstMode.collectTime=" + glob.getProperty().get("cb.burstMode.collectTime", 0L));
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
           assertTrue(e.toString(), false);
       }
@@ -116,7 +118,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       double elapsed = stopWatch.elapsed();
       if (elapsed > 0.)
          avg = (long)(1000.0 * numPublish / elapsed);
-      Log.info(ME, numPublish + " messages updated, average messages/second = " + avg + stopWatch.nice());
+      log.info(ME, numPublish + " messages updated, average messages/second = " + avg + stopWatch.nice());
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
@@ -124,10 +126,10 @@ public class LoadTestSub extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       try {
          EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
-         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -138,7 +140,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void testSubscribeXPath()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='' queryType='XPATH'>\n" +
@@ -149,9 +151,9 @@ public class LoadTestSub extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          // assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -164,7 +166,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      Log.info(ME, "Publishing " + numPublish + " messages ...");
+      log.info(ME, "Publishing " + numPublish + " messages ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -194,17 +196,17 @@ public class LoadTestSub extends TestCase implements I_Callback
                publishOids = senderConnection.publishArr(arr);
             /*
             if (((ii+1) % 1) == 0)
-               Log.info(ME, "Success: Publishing done: '" + someContent + "'");
+               log.info(ME, "Success: Publishing done: '" + someContent + "'");
             */
          }
          long avg = 0;
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numPublish / elapsed);
-         Log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
+         log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
          //assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -232,23 +234,23 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message ...");
 
       numReceived++;
       if ((numReceived % 1000) == 0) {
          long avg = (long)((double)numReceived / (double)(stopWatch.elapsed()/1000.));
          String contentStr = new String(content);
          String tok = "... " + contentStr.substring(contentStr.length() - 10);
-         Log.info(ME, "Success: Update #" + numReceived + " received: '" + tok + "', average messages/second = " + avg);
+         log.info(ME, "Success: Update #" + numReceived + " received: '" + tok + "', average messages/second = " + avg);
       }
       messageArrived = true;
       String currentContent = new String(content);
       int val = -1;
       if (lastContentNumber >= 0) {
          String number = currentContent.substring(someContent.length());
-         try { val = new Integer(number).intValue(); } catch (NumberFormatException e) { Log.error(ME, e.toString()); }
+         try { val = new Integer(number).intValue(); } catch (NumberFormatException e) { log.error(ME, e.toString()); }
          if (val <= lastContentNumber) {
-            Log.error(ME, "lastContent=" + lastContentNumber + " currentContent=" + currentContent);
+            log.error(ME, "lastContent=" + lastContentNumber + " currentContent=" + currentContent);
             //assertTrue("Sequence of received message is broken", false);
          }
       }
@@ -277,7 +279,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -298,19 +300,15 @@ public class LoadTestSub extends TestCase implements I_Callback
 
    static void usage()
    {
-      Log.plain("\nAvailable options:");
-      Log.plain("   -numPublish         Number of messages to send [5000].");
-      Log.plain("   -publish.burstMode  Collect given number of messages when publishing [1].");
-      Log.plain("   -publish.oneway     Send messages oneway (publish does not receive return value) [false].");
+      System.out.println("\nAvailable options:");
+      System.out.println("   -numPublish         Number of messages to send [5000].");
+      System.out.println("   -publish.burstMode  Collect given number of messages when publishing [1].");
+      System.out.println("   -publish.oneway     Send messages oneway (publish does not receive return value) [false].");
       XmlBlasterConnection.usage();
-      Log.usage();
    }
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.LoadTestSub
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
     * <br />
     * You can use the command line option -numPublish 5000 to change the number of messages sent.
     * <br />
@@ -323,8 +321,9 @@ public class LoadTestSub extends TestCase implements I_Callback
       int ret = glob.init(args);
       if (ret != 0) {
          usage();
-         Log.plain(ME, "Oneway Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway true -burstMode.collectTimeOneway 500 -cb.oneway true -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
-         Log.exit(ME, "Syn    Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 200 -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
+         System.out.println("Oneway Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway true -burstMode.collectTimeOneway 500 -cb.oneway true -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
+         System.out.println("Syn    Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 200 -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
+         System.exit(1);
       }
 
       int numPublish = glob.getProperty().get("numPublish", 5000);
@@ -337,7 +336,6 @@ public class LoadTestSub extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testManyPublish();
       testSub.tearDown();
-      Log.exit(LoadTestSub.ME, "Good bye");
    }
 }
 

@@ -3,12 +3,11 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.10 2002/08/26 09:10:48 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.11 2002/09/13 23:18:03 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;

@@ -3,11 +3,11 @@ Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.java,v 1.3 2002/05/17 19:03:19 ruff Exp $
+Version:   $Id: QueuePropertyBase.java,v 1.4 2002/09/13 23:18:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 
@@ -21,6 +21,7 @@ public abstract class QueuePropertyBase
 {
    private static final String ME = "QueuePropertyBase";
    protected final Global glob;
+   protected final LogChannel log;
 
    /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
    public static final int DEFAULT_maxMsgDefault = 1000;
@@ -76,6 +77,7 @@ public abstract class QueuePropertyBase
       }
       else
          this.glob = glob;
+      this.log = glob.getLog("core");
       this.nodeId = nodeId;
    }
 
@@ -116,7 +118,7 @@ public abstract class QueuePropertyBase
     */
    public void setRelating(String relating)
    {
-      Log.warn(ME, "Ignoring relating=" + relating);
+      log.warn(ME, "Ignoring relating=" + relating);
       Thread.currentThread().dumpStack();
    }
 
@@ -214,11 +216,11 @@ public abstract class QueuePropertyBase
          this.onOverflow = Constants.ONOVERFLOW_DISCARDOLDEST;
 
          this.onOverflow = Constants.ONOVERFLOW_DEADLETTER; // TODO !!!
-         Log.error(ME, "queue onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
+         log.error(ME, "queue onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
       }
       else {
          this.onOverflow = Constants.ONOVERFLOW_DEADLETTER;
-         Log.warn(ME, "The queue onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
+         log.warn(ME, "The queue onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
       }
    }
 
@@ -252,7 +254,7 @@ public abstract class QueuePropertyBase
       if (Constants.ONOVERFLOW_DEADLETTER.equalsIgnoreCase(onFailure))
          this.onFailure = Constants.ONOVERFLOW_DEADLETTER;
       else {
-         Log.warn(ME, "The queue onFailure attribute is invalid '" + onFailure + "', setting to 'deadLetter'");
+         log.warn(ME, "The queue onFailure attribute is invalid '" + onFailure + "', setting to 'deadLetter'");
          this.onFailure = Constants.ONOVERFLOW_DEADLETTER;
       }
    }
@@ -283,7 +285,7 @@ public abstract class QueuePropertyBase
                try {
                   setMaxMsg(new Integer(tmp).intValue());
                } catch (NumberFormatException e) {
-                  Log.error(ME, "Wrong format of <queue maxMsg='" + tmp + "'>, expected a long in milliseconds, using default.");
+                  log.error(ME, "Wrong format of <queue maxMsg='" + tmp + "'>, expected a long in milliseconds, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("maxSize")) {
@@ -291,7 +293,7 @@ public abstract class QueuePropertyBase
                try {
                   setMaxSize(new Integer(tmp).intValue());
                } catch (NumberFormatException e) {
-                  Log.error(ME, "Wrong format of <queue maxSize='" + tmp + "'>, expected a long in milliseconds, using default.");
+                  log.error(ME, "Wrong format of <queue maxSize='" + tmp + "'>, expected a long in milliseconds, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("expires")) {
@@ -299,7 +301,7 @@ public abstract class QueuePropertyBase
                try {
                   setExpires(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  Log.error(ME, "Wrong format of <queue expires='" + tmp + "'>, expected a long in milliseconds, using default.");
+                  log.error(ME, "Wrong format of <queue expires='" + tmp + "'>, expected a long in milliseconds, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("onOverflow")) {
@@ -309,11 +311,11 @@ public abstract class QueuePropertyBase
                setOnFailure(attrs.getValue(ii).trim());
             }
             else
-               Log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <queue>");
+               log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <queue>");
          }
       }
       else {
-         Log.warn(ME, "Missing 'relating' attribute in connect QoS <queue>");
+         log.warn(ME, "Missing 'relating' attribute in connect QoS <queue>");
       }
    }
 

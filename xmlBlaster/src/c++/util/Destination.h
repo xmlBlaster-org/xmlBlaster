@@ -14,10 +14,6 @@ Comment:   Holding destination address attributes
 
 using namespace std;
 
-//  package org.xmlBlaster.util;
-//  import org.xmlBlaster.util.Log;
-//  import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
-
 namespace org { namespace xmlBlaster {
 namespace util {
    

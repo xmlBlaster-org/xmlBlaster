@@ -1,12 +1,13 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/04 15:09:30 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/09/13 23:17:53 $)
  */
 
 public class Subject implements I_Subject {
@@ -50,7 +51,7 @@ public class Subject implements I_Subject {
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");
       // dummy implementation
-      Log.info(ME, "Access for " + getName() + " granted, without further checks.");
+      Global.instance().getLog("simple").info(ME, "Access for " + getName() + " granted, without further checks.");
    }
 
 }

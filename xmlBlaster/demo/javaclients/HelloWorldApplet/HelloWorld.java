@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.17 2002/06/03 09:39:24 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.18 2002/09/13 23:17:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -12,9 +12,12 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 
 import java.applet.*;
@@ -40,10 +43,13 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    private static String ME = "HelloWorld";
    public static boolean isApplet = true;      // usually true; but org.jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
    public static HelloWorld helloWorld = null; // reference to myself (only for main)
+   private LogChannel log;
+   private Global glob;
 
    private String oid = "HelloWorld-Message";
    private XmlBlasterConnection corbaConnection;
    private String senderName = "HelloWorld-Applet";
+   private ConnectReturnQos conRetQos = null;
 
    private MessageUnit msgUnit;     // a message to play with
    private final String contentMime = "text/plain";
@@ -71,15 +77,16 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       }
       */
 
-      Global glob = new Global();
+      glob = new Global();
       glob.init(this);
 
       initUI();
 
       connect();
 
-      Log.getLogChannel().addLogDevice(this);
-      Log.info(ME, "Connected to xmlBlaster");
+      log = Global.instance().getLog("applet");
+      log.addLogDevice(this);
+      log.info(ME, "Connected to xmlBlaster");
       validate();
    }
 
@@ -126,7 +133,9 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
             corbaConnection = new XmlBlasterConnection(this, "IOR"); // Find orb
          else
             corbaConnection = new XmlBlasterConnection(); // Find orb
-         corbaConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         conRetQos = corbaConnection.connect(connectQos, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -138,10 +147,10 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          doSubscribe();
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
-      Log.info(ME, "Success: Login to xmlBlaster");
+      log.info(ME, "Success: Login to xmlBlaster");
    }
 
 
@@ -155,12 +164,12 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          String qos = "<qos></qos>";
          try {
             corbaConnection.erase(xmlKey, qos);
-         } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+         } catch(XmlBlasterException e) { log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
       }
 
       if (corbaConnection != null)
-         corbaConnection.logout();
-      Log.info(ME+"-tearDown", "Success: Logged out");
+         corbaConnection.disconnect(null);
+      log.info(ME+"-tearDown", "Success: Logged out");
    }
 
 
@@ -174,9 +183,9 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       String qos = "<qos></qos>";
       try {
          corbaConnection.subscribe(xmlKey, qos);
-         Log.info(ME, "Success: Subscribe on " + oid + " done");
+         log.info(ME, "Success: Subscribe on " + oid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME+"-doSubscribe", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-doSubscribe", "XmlBlasterException: " + e.reason);
       }
    }
 
@@ -190,9 +199,9 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          // With ForceUpdate, following messages with the same content will be updated
          corbaConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         Log.warn(ME+"-doPublish", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.reason);
       }
-      Log.info(ME, "Success: Published message");
+      log.info(ME, "Success: Published message");
    }
 
    /**
@@ -202,7 +211,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Success: Update of message");
+      log.info(ME, "Success: Update of message");
       String msgContent = new String(content);
       output.append(msgContent +"\n");
       return "";
@@ -222,7 +231,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
 
 
    /**
-    * Event fired by Log.java through interface LogableDevice.
+    * Event fired by log.java through interface LogableDevice.
     * <p />
     * Log output into TextField<br />
     */
@@ -238,13 +247,13 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    /**
     * WindowListener events for applet
     */
-   public void windowOpened(WindowEvent e) { Log.info(ME, "Event windowOpened"); }
-   public void windowClosing(WindowEvent e) { Log.info(ME, "Event windowClosing"); tearDown(); }
-   public void windowClosed(WindowEvent e) { Log.info(ME, "Event windowClosed"); tearDown(); }
-   public void windowIconified(WindowEvent e) { Log.info(ME, "Event windowIconified"); }
-   public void windowDeiconified(WindowEvent e) { Log.info(ME, "Event windowDeiconified"); }
-   public void windowActivated(WindowEvent e) { Log.info(ME, "Event windowActivated"); }
-   public void windowDeactivated(WindowEvent e) { Log.info(ME, "Event windowDeactivated"); }
+   public void windowOpened(WindowEvent e) { log.info(ME, "Event windowOpened"); }
+   public void windowClosing(WindowEvent e) { log.info(ME, "Event windowClosing"); tearDown(); }
+   public void windowClosed(WindowEvent e) { log.info(ME, "Event windowClosed"); tearDown(); }
+   public void windowIconified(WindowEvent e) { log.info(ME, "Event windowIconified"); }
+   public void windowDeiconified(WindowEvent e) { log.info(ME, "Event windowDeiconified"); }
+   public void windowActivated(WindowEvent e) { log.info(ME, "Event windowActivated"); }
+   public void windowDeactivated(WindowEvent e) { log.info(ME, "Event windowDeactivated"); }
 
 
    /**
@@ -267,7 +276,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
                HelloWorld.helloWorld.tearDown();
-               Log.exit(ME, "Exit!");
+               System.exit(1);
             }
          }
       );

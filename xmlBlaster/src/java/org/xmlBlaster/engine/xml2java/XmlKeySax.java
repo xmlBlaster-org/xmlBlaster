@@ -6,7 +6,6 @@ Comment:   Parsing XmlKey with SAX 2 parser
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -50,7 +49,6 @@ public class XmlKeySax extends SaxHandlerBase
    public XmlKeySax(Global glob, XmlKey xmlKey) {
       this.glob = glob;
       this.xmlKey = xmlKey;
-      if (glob.getLog().CALL) glob.getLog().call(ME, "Starting SAX parser");
    }
 
    /**
@@ -58,7 +56,6 @@ public class XmlKeySax extends SaxHandlerBase
     * @return true if ok, false on error
     */
    public final void startElement(String uri, String localName, String name, Attributes attrs) {
-      //glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
       
       if (name.equalsIgnoreCase("key")) {
          inKey++;
@@ -122,7 +119,6 @@ public class XmlKeySax extends SaxHandlerBase
     * Handle SAX parsed end element
     */
    public final void endElement(String uri, String localName, String name) {
-      //glob.getLog().info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
       if (name.equalsIgnoreCase("key")) {
          inKey--;
          if (inKey > 0) return; // ignore nested key tags
@@ -170,11 +166,11 @@ public class XmlKeySax extends SaxHandlerBase
                System.out.println(qosArr[ii].toXml());
             }
             if (!xmlKey.getQueryString().equals("//STOCK"))
-               Log.error("TestFailed", "Missing XPath string");
+               System.out.println("TestFailed: Missing XPath string");
          }
       }
       catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed: " + e.toString());
       }
    }
 }

@@ -13,12 +13,12 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.7 2000/12/26 14:56:37 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.8 2002/09/13 23:17:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 
 import java.io.File;
@@ -39,8 +39,9 @@ class XtOmQueryTest
 
    public XtOmQueryTest(String argv[])
    {
-      if (argv.length < 2)
-         Log.panic(ME, "Usage:\n\n   java XtOmQueryTest <XML-file> <Query-String>\n\nExample:\n   java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
+      if (argv.length < 2) {
+         System.out.println("Usage:\n\n   java XtOmQueryTest <XML-file> <Query-String>\n\nExample:\n   java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
+      }
 
       boolean dumpIt = false;
       if (argv.length == 2) dumpIt = true;
@@ -61,59 +62,59 @@ class XtOmQueryTest
       {
          StopWatch inputTime = new StopWatch();
          input = new InputSource(createURL(argv[0]));           // [ 29 millis ] [ 28 millis ]
-         Log.info(ME, "Read file" + inputTime.nice());
+         System.out.println("Read file" + inputTime.nice());
 
          StopWatch mgrTime = new StopWatch();
          XtOmQueryMgr query_mgr = new XtOmQueryMgr();           // [ 588 millis ] [ 612 millis ]
-         Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());
+         System.out.println("Instantiate DomQueryMgr" + mgrTime.nice());
 
          {
             StopWatch loadTime = new StopWatch();
             com.jclark.xsl.om.Node node = query_mgr.load(input);// [ 738 millis ] [ 1 sec 987 millis ]
-            Log.info(ME, "Load nodes" + loadTime.nice());
+            System.out.println("Load nodes" + loadTime.nice());
 
             if (argv.length > 1) {
                StopWatch queryTime = new StopWatch();
                iter = query_mgr.getNodesByXPath(node, argv[1]); // [ 2 sec 422 millis ] [ 2 sec 577 millis ]
-               Log.info(ME, "Query time" + queryTime.nice());
+               System.out.println("Query time" + queryTime.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
             }
 
             if (dumpIt)
-               Log.exit(ME, "Good bye");
+               System.exit(1);
 
             if (argv.length > 2) {
                StopWatch queryTime2 = new StopWatch();
                iter = query_mgr.getNodesByXPath(node, argv[2]); // [ 3 millis ] [ 1 millis ]
-               Log.info(ME, "Query time" + queryTime2.nice());
+               System.out.println("Query time" + queryTime2.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
+               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
             }
 
             if (argv.length > 3) {
                StopWatch queryTime2 = new StopWatch();
                iter = query_mgr.getNodesByXPath(node, argv[3]); // [ 1 millis ] [ 0 millis ]
-               Log.info(ME, "Query time" + queryTime2.nice());
+               System.out.println("Query time" + queryTime2.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
+               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
             }
          }
 
          {
             StopWatch loadTime = new StopWatch();
             Node node = query_mgr.load(input);                  // [ 22 millis ] [ 1 sec 211 millis ]
-            Log.info(ME, "Load nodes" + loadTime.nice());
+            System.out.println("Load nodes" + loadTime.nice());
 
             StopWatch queryTime = new StopWatch();
             iter = query_mgr.getNodesByXPath(node, argv[1]);    // [ 0 millis ] [ 1 millis ]
-            Log.info(ME, "Query time" + queryTime.nice());
+            System.out.println("Query time" + queryTime.nice());
 
             num_nodes = getNumNodes(iter, dumpIt);
-            Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+            System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
          }
       }
       catch (IOException e)
@@ -154,7 +155,7 @@ class XtOmQueryTest
 
             Object aobj = siter.next();
             while (aobj != null) {
-               Log.info(ME, "Attibutes:  " + aobj.toString());
+               System.out.println("Attibutes:  " + aobj.toString());
 
                aobj = siter.next();
             }
@@ -162,9 +163,9 @@ class XtOmQueryTest
             com.jclark.xsl.om.Node parent = node.getParent();
 
             if (parent == null)
-               Log.warn(ME, "No parent");
+               System.out.println("No parent");
             else {
-               Log.warn(ME, "Got parent");
+               System.out.println("Got parent");
             }
          }
       }

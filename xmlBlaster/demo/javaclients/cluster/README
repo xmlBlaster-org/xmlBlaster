@@ -15,7 +15,7 @@ first.
  Edit avalon.properties and change the IP variable
  to your host (the host where golan runs later).
   
-   java org.xmlBlaster.Main -propertyFile avalon.properties
+   java org.xmlBlaster.Main -propertyFile avalon.properties -call[core] true
 
 
 3. Start a client connecting to avalon:
@@ -33,7 +33,7 @@ first.
 4. Start heron (the master):
 ============================
 
-   java org.xmlBlaster.Main -propertyFile heron.properties
+   java org.xmlBlaster.Main -propertyFile heron.properties -call[core] true
 
  Heron should be contacted by avalon and receive the
  tailed back message sent by PublishToSlave

@@ -3,11 +3,11 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.26 2002/07/30 09:24:46 jbirkle Exp $
+Version:   $Id: UpdateKey.java,v 1.27 2002/09/13 23:17:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.StopParseException;
@@ -47,6 +47,7 @@ public class UpdateKey extends SaxHandlerBase
 {
    private String ME = "UpdateKey";
    private final Global glob;
+   private final LogChannel log;
 
    protected boolean inKey = false;     // parsing inside <key> ? </key>
 
@@ -70,7 +71,8 @@ public class UpdateKey extends SaxHandlerBase
    public UpdateKey(Global glob, String xmlKey) throws XmlBlasterException
    {
       this.glob = glob;
-      if (Log.CALL) Log.trace(ME, "Creating new UpdateKey");
+      this.log = glob.getLog("client");
+      if (log.CALL) log.trace(ME, "Creating new UpdateKey");
       init(xmlKey); // does the parsing
    }
 
@@ -81,7 +83,8 @@ public class UpdateKey extends SaxHandlerBase
    public UpdateKey(Global glob) throws XmlBlasterException
    {
       this.glob = glob;
-      if (Log.CALL) Log.trace(ME, "Creating new UpdateKey");
+      this.log = glob.getLog("client");
+      if (log.CALL) log.trace(ME, "Creating new UpdateKey");
    }
 
    /**
@@ -193,9 +196,9 @@ public class UpdateKey extends SaxHandlerBase
                }
             }
             if (keyOid == null)
-               Log.warn(ME, "The oid of the message is missing");
+               log.warn(ME, "The oid of the message is missing");
             if (contentMime == null)
-               Log.warn(ME, "The contentMime of the message is missing");
+               log.warn(ME, "The contentMime of the message is missing");
          }
          return true;
       }

@@ -3,14 +3,13 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.7 2002/05/11 09:36:35 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.8 2002/09/13 23:18:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import java.io.*;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.jutils.JUtilsException;
-import org.xmlBlaster.util.Log;
 
 
 /**
@@ -96,9 +95,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       catch (IOException e) {}
 
       if (location != null)
-         Log.error(location + "-" + id, reason);
+         Global.instance().getLog(null).error(location + "-" + id, reason);
       else
-         Log.error(id, reason);
+         Global.instance().getLog(null).error(id, reason);
 
    }
 

@@ -6,10 +6,11 @@ Comment:   Handling callback over http
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.jutils.io.FileUtil;
 import org.jutils.text.StringHelper;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.rmi.RemoteException;
@@ -39,6 +40,7 @@ public class HttpPushHandler
 {
    boolean isApplet = false;
    private String ME  = "HttpPushHandler";
+   private final LogChannel log;
 
    /**
     * Ping the browser every 10 seconds.
@@ -87,6 +89,7 @@ public class HttpPushHandler
    public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId, String loginName)
                                throws ServletException, IOException
    {
+      this.log = org.xmlBlaster.util.Global.instance().getLog("http");
       this.req = req;
       this.res = res;
       this.sessionId = sessionId;
@@ -105,7 +108,7 @@ public class HttpPushHandler
       pushQueue = new Vector();
       setBrowserIsReady(true);
 
-      Log.trace(ME,"Creating PingThread ...");
+      log.trace(ME,"Creating PingThread ...");
       pingThread = new HttpPingThread(this, PING_INTERVAL, browserId);
    }
 
@@ -114,7 +117,7 @@ public class HttpPushHandler
     */
    private void initialize(String head, String tail) throws IOException
    {
-      if (Log.TRACE) Log.trace(ME, "Creating HttpPushHandler ...");
+      if (log.TRACE) log.trace(ME, "Creating HttpPushHandler ...");
       this.head = head;
       this.tail = tail;
       this.handlesMultipart = doesHandleMultipart();
@@ -123,7 +126,7 @@ public class HttpPushHandler
       else
          this.outPlain =  res.getWriter();
 
-      Log.trace(ME, "Initialize ...");
+      log.trace(ME, "Initialize ...");
 
       if (this.head == null) {
          if (!isApplet)
@@ -180,10 +183,10 @@ public class HttpPushHandler
          }
 
          pingThread.stopThread();
-         Log.info(ME, "Closed push connection to browser");
+         log.info(ME, "Closed push connection to browser");
       }
       catch(Exception e) {
-         Log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
+         log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
       }
    }
 
@@ -193,16 +196,16 @@ public class HttpPushHandler
     */
    private void cleanup()
    {
-      if (Log.CALL) Log.call(ME, "Entering cleanup(" + sessionId + ") ...");
+      if (log.CALL) log.call(ME, "Entering cleanup(" + sessionId + ") ...");
       try {
          ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
          if (pc != null) {
             pc.cleanup(sessionId);
-            if (Log.TRACE) Log.trace(ME, "Deleted " + sessionId + " ...");
+            if (log.TRACE) log.trace(ME, "Deleted " + sessionId + " ...");
          }
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + org.jutils.runtime.StackTrace.getStackTrace());
+         log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + org.jutils.runtime.StackTrace.getStackTrace());
       }
    }
 
@@ -225,7 +228,7 @@ public class HttpPushHandler
     */
    public void setClosed(boolean closed)
    {
-      if (Log.TRACE) Log.trace(ME, "Setting closed from " + this.closed + " to " + closed);
+      if (log.TRACE) log.trace(ME, "Setting closed from " + this.closed + " to " + closed);
       this.closed = closed;
    }
 
@@ -250,7 +253,7 @@ public class HttpPushHandler
       if (closed()) { this.browserIsReady=false; return; }
 
       this.browserIsReady = ready;
-      if (Log.TRACE) Log.trace(ME, "Setting browserReady=" + browserIsReady);
+      if (log.TRACE) log.trace(ME, "Setting browserReady=" + browserIsReady);
 
       pong(); // Use this as a browser alive as well, since some internet proxies seem to hold back my pongs
 
@@ -260,7 +263,7 @@ public class HttpPushHandler
             pushToBrowser();
          }
          catch(Exception e) {
-            Log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
+            log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
             deinitialize();
          }
       }
@@ -290,9 +293,9 @@ public class HttpPushHandler
 
 
       if (doesMulti)
-         Log.info(ME, "Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
+         log.info(ME, "Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
       else
-         Log.info(ME, "Checking browser = " + browser + ". We won't use 'multipart requests'");
+         log.info(ME, "Checking browser = " + browser + ". We won't use 'multipart requests'");
       return doesMulti;
    }
 
@@ -317,19 +320,19 @@ public class HttpPushHandler
     */
    private void pushToBrowser() throws ServletException, IOException
    {
-      if (Log.CALL) Log.call(ME, "Entering pushToBrowser() ...");
+      if (log.CALL) log.call(ME, "Entering pushToBrowser() ...");
 
       synchronized(pushQueue) {
          if(pushQueue.size() == 0)
             return;
          if(!isBrowserReady() ) {
-            Log.info(ME, "Waiting until browser is ready to send " + pushQueue.size() + " messages");
+            log.info(ME, "Waiting until browser is ready to send " + pushQueue.size() + " messages");
             return;
          }
 
          //setting Http push connection to false.
          if (handlesMultipart) {
-            if (Log.TRACE) Log.trace(ME, "Pushing multipart, pushQueue.size=" + pushQueue.size());
+            if (log.TRACE) log.trace(ME, "Pushing multipart, pushQueue.size=" + pushQueue.size());
             /* Every line which is sent to the browser overwrites the former one
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -356,19 +359,19 @@ public class HttpPushHandler
                   setBrowserIsReady(false); // Force browser to tell us when it is ready
 
                buf.append(tail);
-               if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
+               if (log.DUMP) log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
 
                outMulti.println(buf.toString());
 
                outMulti.println();
                outMulti.println("--End");
                outMulti.flush();
-               Log.trace(ME,"Push content queue successfully sent as multipart.");
+               log.trace(ME,"Push content queue successfully sent as multipart.");
                pushQueue.clear();
             }
          }
          else {
-            Log.trace(ME, "Pushing plain, pushQueue.size=" + pushQueue.size());
+            log.trace(ME, "Pushing plain, pushQueue.size=" + pushQueue.size());
             /*
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -400,14 +403,14 @@ public class HttpPushHandler
 
                // bug, thanks to Just: buf.append(tail);
 
-               if (Log.DUMP) Log.dump(ME, "Sending plain to callbackFrame:\n" + buf.toString());
+               if (log.DUMP) log.dump(ME, "Sending plain to callbackFrame:\n" + buf.toString());
 
                outPlain.println(buf.toString());
 
                outPlain.println("</script><p />\n");
 
                outPlain.flush();
-               Log.trace(ME,"Push content queue successfully sent.");
+               log.trace(ME,"Push content queue successfully sent.");
                pushQueue.clear();
             }
          }
@@ -427,11 +430,11 @@ public class HttpPushHandler
          String codedContent = URLEncoder.encode( content );
          String codedQos     = URLEncoder.encode( updateQos );
 
-         if (Log.TRACE) Log.trace(ME,"update dump: " + updateKey.substring(0,50) + " ...");
+         if (log.TRACE) log.trace(ME,"update dump: " + updateKey.substring(0,50) + " ...");
          /*
-         Log.plain(ME,"Key:"+updateKey);
-         Log.plain(ME,"\nContent:"+content);
-         Log.trace(ME,"************* End of Update *************************");
+         log.plain(ME,"Key:"+updateKey);
+         log.plain(ME,"\nContent:"+content);
+         log.trace(ME,"************* End of Update *************************");
          */
          String pushStr="";
          if (isApplet)
@@ -442,7 +445,7 @@ public class HttpPushHandler
          push(new PushDataItem(PushDataItem.MESSAGE, pushStr));
       }
       catch(Exception e) {
-         Log.error(ME,e.toString());
+         log.error(ME,e.toString());
       }
    }
 
@@ -464,7 +467,7 @@ public class HttpPushHandler
       retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
       retStr.append("</script>\n");
       retStr.append("</body></html>\n");
-      Log.warn("HttpPushHandler", "Sending alert to browser: " + text);
+      Global.instance().getLog("http").warn("HttpPushHandler", "Sending alert to browser: " + text);
       return retStr.toString();
    }
 
@@ -486,7 +489,7 @@ public class HttpPushHandler
            push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
       }
       catch(Exception e) {
-         Log.error(ME,e.toString());
+         log.error(ME,e.toString());
       }
    }
 
@@ -508,7 +511,7 @@ public class HttpPushHandler
             push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
       }
       catch(Exception e) {
-         Log.error(ME,e.toString());
+         log.error(ME,e.toString());
       }
    }
 
@@ -523,7 +526,7 @@ public class HttpPushHandler
    public void ping(String state) throws ServletException, IOException
    {
       if (!isBrowserReady()) {
-         Log.warn(ME, "Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
+         log.warn(ME, "Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
          setBrowserIsReady(true);
       }
       if (isApplet)
@@ -573,7 +576,7 @@ public class HttpPushHandler
        */
       public void pong()
       {
-         if (Log.TRACE) Log.trace(ME, "Received pong, current waitForPong=" + waitForPong + ", counter=" + counter);
+         if (log.TRACE) log.trace(ME, "Received pong, current waitForPong=" + waitForPong + ", counter=" + counter);
          waitForPong = 0; // not waitForPong--; if (waitForPong<0) waitForPong=0; since we don't care about delay, we are happy if the browser does respond somehow
       }
 
@@ -590,10 +593,10 @@ public class HttpPushHandler
          this.ME = "HttpPingThread-" + loginName;
          this.pushHandler = pushHandler;
          this.PING_INTERVAL = pingInterval;
-         if (Log.CALL) Log.call(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
+         if (log.CALL) log.call(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         if (Log.CALL) Log.call(ME, "Pinging browser ...");
+         if (log.CALL) log.call(ME, "Pinging browser ...");
          while (pingRunning) {
 
             try {
@@ -608,24 +611,24 @@ public class HttpPushHandler
                //if (false) {  //// Switched off !!!!!
                if (waitForPong > 2) {  // Allow three pongs delay over slow connections
                // This ping doesn't work over the internet??????
-                  Log.warn(ME, "Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
+                  Global.instance().getLog("http").warn(ME, "Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
                   pushHandler.cleanup();
                   stopThread();
                }
                else {
                   String text = "refresh-" + counter;
-                  if (Log.TRACE) Log.trace(ME,"Sending ping '" + text + "'  to browser ...");
+                  if (log.TRACE) log.trace(ME,"Sending ping '" + text + "'  to browser ...");
                   pushHandler.ping(text);
                   waitForPong++;
                }
             } catch(Exception e) {
                //error handling: browser closed connection.
-               Log.warn(ME,"You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
+               log.warn(ME,"You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
                pushHandler.cleanup();
                stopThread();
             }
          }
-         if (Log.TRACE) Log.trace(ME, "Ping thread dies ...");
+         if (log.TRACE) log.trace(ME, "Ping thread dies ...");
       }
    } // class PingThread
 

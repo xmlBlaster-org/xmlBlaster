@@ -3,11 +3,11 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.1 2002/09/12 21:01:46 ruff Exp $
+Version:   $Id: RamTest.java,v 1.2 2002/09/13 23:18:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
@@ -44,6 +44,7 @@ public class RamTest extends TestCase
 {
    private static String ME = "Tim";
    private final Global glob;
+   private final LogChannel log;
    private StopWatch stopWatch = null;
 
    private String publishOid = "";
@@ -64,10 +65,11 @@ public class RamTest extends TestCase
     */
    public RamTest(Global glob, String testName, String loginName, int numPublish)
    {
-       super(testName);
-       this.glob = glob;
-       this.senderName = loginName;
-       this.numPublish = numPublish;
+      super(testName);
+      this.glob = glob;
+      this.log = glob.getLog("test");
+      this.senderName = loginName;
+      this.numPublish = numPublish;
    }
 
 
@@ -84,7 +86,7 @@ public class RamTest extends TestCase
          senderConnection.login(senderName, passwd, null); // Login to xmlBlaster without Callback
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
 
@@ -98,7 +100,7 @@ public class RamTest extends TestCase
     */
    protected void tearDown()
    {
-      Log.info(ME, "tearDown() ...");
+      log.info(ME, "tearDown() ...");
       stopWatch = new StopWatch();
 
       for (int ii=0; ii<numPublish; ii++) {
@@ -109,16 +111,16 @@ public class RamTest extends TestCase
             EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
             assertTrue("returned erased oid array == null", null != arr);
             assertEquals("num erased messages is wrong", 1, arr.length);
-         } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
       }
 
       long avg = 0;
       double elapsed = stopWatch.elapsed();
       if (elapsed > 0.)
          avg = (long)(1000.0 * numPublish / elapsed);
-      Log.info(ME, "Success: Erasing done, " + numPublish + " messages erased, average messages/second = " + avg);
+      log.info(ME, "Success: Erasing done, " + numPublish + " messages erased, average messages/second = " + avg);
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -129,7 +131,7 @@ public class RamTest extends TestCase
     */
    public void testPublish()
    {
-      Log.info(ME, "Publishing " + numPublish + " messages ...");
+      log.info(ME, "Publishing " + numPublish + " messages ...");
 
       long usedMemBefore = 0L;
 
@@ -159,7 +161,7 @@ public class RamTest extends TestCase
          assertTrue("returned msgArr[0].msgUnit.content.length == 0", 0 != msgArr[0].content.length);
          String mem = new String(msgArr[0].content);
          usedMemBefore = new Long(mem).longValue();
-         Log.info(ME, "xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
+         log.info(ME, "xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
 
 
          stopWatch = new StopWatch();
@@ -170,7 +172,7 @@ public class RamTest extends TestCase
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numPublish / elapsed);
-         Log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
+         log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
 
          assertTrue("returned publishOidArr == null", null != publishOidArr);
          assertEquals("numPublished is wrong", numPublish, publishOidArr.length);
@@ -179,14 +181,14 @@ public class RamTest extends TestCase
          // 3. Query the memory allocated in xmlBlaster after publishing all the messages
          msgArr = senderConnection.get(xmlKey, qos);
          long usedMemAfter = new Long(new String(msgArr[0].content)).longValue();
-         Log.info(ME, "xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
-         Log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/numPublish));
+         log.info(ME, "xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
+         log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/numPublish));
 
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       } catch(Exception e) {
-         Log.warn(ME, "Exception: " + e.toString());
+         log.warn(ME, "Exception: " + e.toString());
          e.printStackTrace();
          assertTrue("get or publish - Exception: " + e.toString(), false);
       }
@@ -217,9 +219,6 @@ public class RamTest extends TestCase
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.RamTest
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
     * <br />
     * You can use the command line option -numPublish 1000 to change the number of messages sent.
     * <br />
@@ -234,7 +233,6 @@ public class RamTest extends TestCase
       testSub.setUp();
       testSub.testManyPublish();
       testSub.tearDown();
-      Log.exit(RamTest.ME, "Good bye");
    }
 }
 

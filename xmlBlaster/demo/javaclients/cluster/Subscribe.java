@@ -1,6 +1,7 @@
 // xmlBlaster/demo/javaclients/cluster/PublishToSlave.java
 package javaclients.cluster;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -29,10 +30,12 @@ import org.xmlBlaster.engine.helper.Constants;
 public class Subscribe implements I_Callback
 {
    private final String ME = "Subscribe";
+   private final LogChannel log;
    /** To simulate a slow subscriber client: millis to sleep when update arrives */
    private long updateSleep = 0L;
 
    public Subscribe(Global glob) {
+      log = glob.getLog("client");
       XmlBlasterConnection con = null;
       updateSleep = glob.getProperty().get("updateSleep", 0L);
       try {
@@ -40,7 +43,7 @@ public class Subscribe implements I_Callback
 
          ConnectQos qos = new ConnectQos(glob);
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
-         Log.info(ME, "Connected to xmlBlaster.");
+         log.info(ME, "Connected to xmlBlaster.");
 
 
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
@@ -49,12 +52,12 @@ public class Subscribe implements I_Callback
          sk.setDomain(domain);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
          SubscribeRetQos subId = con.subscribe(sk.toXml(), sq.toXml());
-         Log.info(ME, "Subscribed message of domain='" + sk.toXml() + //domain +
+         log.info(ME, "Subscribed message of domain='" + sk.toXml() + //domain +
                       "' from xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
                       ", the returned subscriptionId is: " + subId.getSubscriptionId());
       }
       catch (Exception e) {
-         Log.error("Subscribe-Exception", e.toString());
+         log.error("Subscribe-Exception", e.toString());
       }
       finally {
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
@@ -66,20 +69,18 @@ public class Subscribe implements I_Callback
             con.disconnect(dq);
          }
       }
-
-      Log.exit(ME, "Bye");
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos)
    {
       if (updateSleep > 0L) {
-         Log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
+         log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
                                  "' '" + updateKey.getDomain() + " from xmlBlaster, sleeping for " + updateSleep + " millis ...");
          try { Thread.currentThread().sleep(updateSleep); } catch( InterruptedException i) {}
-         Log.info(ME, "Waking up.");
+         log.info(ME, "Waking up.");
       } else {
-         Log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
+         log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
                                  "' from xmlBlaster");
       }
       return "";
@@ -97,7 +98,8 @@ public class Subscribe implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.exit("Subscribe", "Example: java javaclients.cluster.Subscribe -port 7601 -domain STOCK_EXCHANGE\n");
+         System.out.println("Example: java javaclients.cluster.Subscribe -port 7601 -domain STOCK_EXCHANGE\n");
+         System.exit(1);
       }
 
       new Subscribe(glob);

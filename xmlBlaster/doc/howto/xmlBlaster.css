@@ -22,12 +22,12 @@ a:active {color: #F1C101;}
 /*----------------------------------------------------------------------------------------------
 	The folowing classes are used for the requirements tables:
 ----------------------------------------------------------------------------------------------*/
-td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:100%;}
+td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:100%; vertical-align: top;}
 td.topic {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:100%;}
-td.description {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFFF99; font-size:100%;}
+td.description {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:100%;}
 ol,ul,li { margin-top:1em; }
 
-td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFFF99; font-size:100%;}
+td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:100%;}
 /* OPEN/INWORK/CLOSED corresponds to status attribute in requirement.dtd: */ 
 td.OPEN { BACKGROUND-COLOR: #E6E6E6; }
 td.INWORK { BACKGROUND-COLOR: #FFFF99; }

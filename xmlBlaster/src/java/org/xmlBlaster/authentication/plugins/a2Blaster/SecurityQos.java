@@ -1,6 +1,6 @@
 package org.xmlBlaster.authentication.plugins.a2Blaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -12,12 +12,13 @@ import org.jutils.text.StringHelper;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/05/11 09:36:19 $)
+ * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/09/13 23:17:51 $)
  */
 public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
 
    private static String ME = "SecurityQos";
+   private final LogChannel log;
 
    // helper flags for SAX parsing
    private        boolean    inSecurityService = false;
@@ -33,6 +34,7 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 
 
    public SecurityQos(String xmlQos_literal) throws XmlBlasterException {
+      this.log = Global.instance().getLog("a2Blaster"); 
       parse(xmlQos_literal);
    }
 
@@ -42,13 +44,14 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "<![CDATA[", "");
       xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "]]>", "");
 
-      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQos_literal + ")");
+      if (log.DUMP) log.dump(ME, "Creating securityPlugin-QoS(" + xmlQos_literal + ")");
       init(xmlQos_literal);
-      if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
+      if (log.DUMP) log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
    public SecurityQos(String loginName, String password)
    {
+      this.log = Global.instance().getLog("a2Blaster"); 
       this.user = loginName;
       this.passwd = password;
    }
@@ -230,7 +233,7 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed: " + e.toString());
       }
    }
 }

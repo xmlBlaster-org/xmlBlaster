@@ -3,11 +3,10 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.5 2002/09/12 21:01:29 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.6 2002/09/13 23:18:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
@@ -53,7 +52,6 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
     */
    public DisconnectQos(String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "Creating DisconnectQos(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
 
@@ -106,7 +104,6 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
    {
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
-      //if (Log.TRACE) Log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
 
       if (name.equalsIgnoreCase("deleteSubjectQueue")) {
          deleteSubjectQueue = true;
@@ -126,7 +123,6 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
    {
       if (super.endElementBase(uri, localName, name) == true)
          return;
-      //if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
 
       if (name.equalsIgnoreCase("deleteSubjectQueue")) {
          String tmp = character.toString().trim();
@@ -190,7 +186,7 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed : " + e.toString());
       }
    }
 }

@@ -124,6 +124,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       if (log.CALL) log.call(ME, "Entering unsecureCreateSession(" + loginName + ")");
       String sessionId = createSessionId(loginName);
       org.xmlBlaster.authentication.plugins.simple.Manager manager = new org.xmlBlaster.authentication.plugins.simple.Manager();
+      manager.init(glob, null);
       I_Session session = new org.xmlBlaster.authentication.plugins.simple.Session(manager, sessionId);
       org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(loginName, "");
       session.init(securityQos);

@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.21 2002/09/13 10:59:23 ruff Exp $
+Version:   $Id: detail.xsl,v 1.22 2002/09/13 23:17:47 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -35,7 +35,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/09/13 10:59:23 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/09/13 23:17:47 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -141,7 +141,7 @@ Author:    ruff@swand.lake.de
       <xsl:for-each select="see">
          <tr>
             <xsl:if test="@type='API'">
-               <td class="reqId">See Javadoc API</td>
+               <td class="reqId">See<br />Javadoc<br /> API</td>
                <td>
                <a>
                   <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
@@ -195,7 +195,7 @@ Author:    ruff@swand.lake.de
          <xsl:for-each select="test">
             <tr>
                <xsl:if test="@tool='SUITE'">
-                  <td class="reqId">See Testcase Code</td>
+                  <td class="reqId">See<br />Testcase<br />Code</td>
                     <td>
                   <a>
                     <xsl:attribute name="href">../../testsuite/src/java/<xsl:value-of select="translate(.,'.','/')"/>.java.html</xsl:attribute>

@@ -1,7 +1,6 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -35,36 +34,6 @@ public class ClientPlugin implements I_ClientPlugin {
    {
       return "1.0";
    }
-
-   /*
-    * Called by the PluginLoader.
-    * <p/>
-    * @param String[] Arguments from xmlBlaster.properties:
-    *                 There must be either 0 arguments or 2 arguments.
-    *                 The first arguments has to be a valid user name (userId),
-    *                 the second must contain the password.
-   public void init(String[] param) throws XmlBlasterException
-   {
-      if (Log.CALL) Log.call(ME+".init()", "-------START--------\n");
-      for(int i=0;i<param.length;i++) {
-         switch (i) {
-         case 0:  {
-                     initQoSWrapper.setUserId(param[i]);
-                     break;
-                  }
-         case 1:  {
-                     initQoSWrapper.setCredential(param[i]);
-                     break;
-                  }
-         default: {
-                     Log.warn(ME+".init()", "Unexpected option! option="+param[i]);
-                     break;
-                  }
-         }
-      }
-      if (Log.CALL) Log.call(ME+".init()", "-------END--------\n");
-   }
-    */
 
    /**
     * The client application can use this method to get a new I_SecurityQos instance,

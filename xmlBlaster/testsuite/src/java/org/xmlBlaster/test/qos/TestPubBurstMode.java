@@ -3,13 +3,13 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.2 2002/09/13 23:18:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -43,6 +43,8 @@ public class TestPubBurstMode extends TestCase
 {
    private static String ME = "TestPubBurstMode";
    private final Global glob;
+   private final LogChannel log;
+
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -65,9 +67,10 @@ public class TestPubBurstMode extends TestCase
     */
    public TestPubBurstMode(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.glob = glob;
-       this.senderName = loginName;
+      super(testName);
+      this.glob = glob;
+      this.log = this.glob.getLog("test");
+      this.senderName = loginName;
    }
 
 
@@ -86,7 +89,7 @@ public class TestPubBurstMode extends TestCase
          senderConnection.login(senderName, passwd, qos); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -108,7 +111,7 @@ public class TestPubBurstMode extends TestCase
          assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -117,7 +120,7 @@ public class TestPubBurstMode extends TestCase
     */
    public void testPublish()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing messages ...");
+      if (log.TRACE) log.trace(ME, "Publishing messages ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "   <TestPubBurstMode-AGENT id='192.168.124.10' subId='1' type='generic'>" +
@@ -134,14 +137,14 @@ public class TestPubBurstMode extends TestCase
 
       PublishRetQos[] publishOidArr = null;
       try {
-         Log.info(ME, "Publishing " + numPublish + " messages in burst mode ...");
+         log.info(ME, "Publishing " + numPublish + " messages in burst mode ...");
          stopWatch = new StopWatch();
          publishOidArr = senderConnection.publishArr(msgUnitArr);
          double elapsed = (double)stopWatch.elapsed()/1000.; // msec -> sec
-         Log.info(ME, "Published " + numPublish + " messages in burst mode in " + elapsed + " sec: " +
+         log.info(ME, "Published " + numPublish + " messages in burst mode in " + elapsed + " sec: " +
                        (long)(numPublish/elapsed) + " messages/sec");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
       assertTrue("returned publishOidArr == null", publishOidArr != null);
@@ -156,9 +159,9 @@ public class TestPubBurstMode extends TestCase
    public void testPublishMany()
    {
       testPublish();
-      Log.plain(ME, "");
+      log.plain(ME, "");
       testPublish();
-      Log.plain(ME, "");
+      log.plain(ME, "");
       testPublish();
    }
 
@@ -177,10 +180,6 @@ public class TestPubBurstMode extends TestCase
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestPubBurstMode
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestPubBurstMode</pre>
     */
@@ -188,13 +187,13 @@ public class TestPubBurstMode extends TestCase
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestPubBurstMode testPub = new TestPubBurstMode(glob, "TestPubBurstMode", "Tim");
       testPub.setUp();
       testPub.testPublishMany();
       testPub.tearDown();
-      Log.exit(TestPubBurstMode.ME, "Good bye");
    }
 }
 

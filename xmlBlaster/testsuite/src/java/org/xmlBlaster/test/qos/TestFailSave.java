@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -142,7 +142,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
-      con.logout();
+      con.disconnect(null);
 
       EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 

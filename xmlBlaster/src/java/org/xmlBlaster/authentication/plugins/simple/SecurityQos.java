@@ -1,6 +1,5 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
-import org.xmlBlaster.util.Log;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -46,9 +45,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
       xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
 
-      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
-      if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
    }
 
    public SecurityQos(String loginName, String password)
@@ -215,7 +212,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed: " + e.toString());
       }
    }
 }

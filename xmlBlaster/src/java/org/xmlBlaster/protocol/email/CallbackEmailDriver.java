@@ -3,11 +3,11 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.22 2002/08/26 11:04:23 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.23 2002/09/13 23:18:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -39,6 +39,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
 {
    private String ME = "CallbackEmailDriver";
    private Global glob = null;
+   private LogChannel log = null;
    private CallbackAddress callbackAddress = null;
 
    /** Get a human readable name of this driver */
@@ -85,6 +86,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress)
    {
       this.glob = glob;
+      this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
    }
 
@@ -95,7 +97,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
    public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSessionId());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSessionId());
       try {
          String smtpHost = glob.getProperty().get("EmailDriver.smtpHost", "localhost");
          String from = glob.getProperty().get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();
@@ -117,8 +119,8 @@ public class CallbackEmailDriver implements I_CallbackDriver
          message.setSubject("XmlBlaster Generated Email");
          String text = getMailBody(msg);
          message.setText(text);
-         Log.info(ME + ".sendUpdate", "Sending email from " + from + " to " + to + ", smtpHost=" + smtpHost);
-         if (Log.DUMP) Log.dump(ME + ".sendUpdate", "\n"+text);
+         log.info(ME + ".sendUpdate", "Sending email from " + from + " to " + to + ", smtpHost=" + smtpHost);
+         if (log.DUMP) log.dump(ME + ".sendUpdate", "\n"+text);
          // Send message
          Transport.send(message);
          String[] ret = new String[msg.length];
@@ -127,7 +129,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
          return ret;
       } catch (Throwable e) {
          String str = "Sorry, email callback failed, no mail sent to " + callbackAddress.getAddress() + ": " + e.toString();
-         Log.warn(ME + ".EmailSendError", str);
+         log.warn(ME + ".EmailSendError", str);
          throw new XmlBlasterException(ME + ".EmailSendError", str);
       }
    }
@@ -150,7 +152,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
     */
    public final String ping(String qos) throws XmlBlasterException
    {
-      Log.info(ME, "Email ping is not supported, request ignored");
+      log.info(ME, "Email ping is not supported, request ignored");
       return "";
    }
 
@@ -177,6 +179,6 @@ public class CallbackEmailDriver implements I_CallbackDriver
     */
    public void shutdown()
    {
-      Log.warn(ME, "shutdown implementation is missing");
+      log.warn(ME, "shutdown implementation is missing");
    }
 }

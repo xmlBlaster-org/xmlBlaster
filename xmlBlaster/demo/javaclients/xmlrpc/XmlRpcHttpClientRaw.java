@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClientRaw.java,v 1.2 2002/05/11 09:36:55 ruff Exp $
+Version:   $Id: XmlRpcHttpClientRaw.java,v 1.3 2002/09/13 23:17:44 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -15,7 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
@@ -47,6 +47,7 @@ public class XmlRpcHttpClientRaw
 {
    private static final String ME = "XmlRpcHttpClientRaw";
    private final Global glob;
+   private final LogChannel log;
 
    /**
     * Constructor.
@@ -54,6 +55,7 @@ public class XmlRpcHttpClientRaw
    public XmlRpcHttpClientRaw (Global glob)
    {
       this.glob = glob;
+      this.log = this.glob.getLog("xmlrpc");
    }
 
 
@@ -95,11 +97,11 @@ public class XmlRpcHttpClientRaw
       }
 
       catch (MalformedURLException ex1) {
-         Log.error(ME, ex1.toString());
+         log.error(ME, ex1.toString());
          throw new XmlBlasterException(ME, ex1.toString());
       }
       catch (IOException ex2) {
-         Log.error(ME, ex2.toString());
+         log.error(ME, ex2.toString());
          throw new XmlBlasterException(ME, ex2.toString());
       }
 
@@ -118,7 +120,7 @@ public class XmlRpcHttpClientRaw
          int cb_port = glob.getProperty().get("xmlrpc.cb_port", 8081);
          String urlStr = "http://" + host + ":" + port;
 
-         Log.info(ME, "Connected to xmlBlaster using XML-RPC");
+         log.info(ME, "Connected to xmlBlaster using XML-RPC");
 
          // reads from the standard input stream. Ignores the lines until the
          // first comment line containing the word COMMAND
@@ -128,7 +130,7 @@ public class XmlRpcHttpClientRaw
 
          String cmd = "";
          boolean hasStarted = false;
-         Log.info(ME, "Processing data from stdin ...");
+         log.info(ME, "Processing data from stdin ...");
          while ( (line = reader.readLine()) != null) {
             if (line.indexOf("COMMAND") == -1) {
                if (hasStarted) cmd += line + "\n";
@@ -146,10 +148,10 @@ public class XmlRpcHttpClientRaw
          }
       }
       catch (XmlBlasterException ex) {
-         Log.error(ME, "exception: " + ex);
+         log.error(ME, "exception: " + ex);
       }
       catch (IOException ex1) {
-         Log.error(ME, "exception:"  + ex1);
+         log.error(ME, "exception:"  + ex1);
       }
    }
 
@@ -165,7 +167,7 @@ public class XmlRpcHttpClientRaw
       Global glob = new Global();
       if (glob.init(args) != 0) {
          usage();
-         Log.exit("", "Bye");
+         System.exit(1);
       }
       XmlRpcHttpClientRaw client = new XmlRpcHttpClientRaw(glob);
       client.testRaw();
@@ -177,17 +179,17 @@ public class XmlRpcHttpClientRaw
     */
    private static void usage()
    {
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "java javaclients.xmlrpc.XmlRpcHttpClientRaw < demo.xml <options>");
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "   -h                  Show the complete usage.");
-      Log.plain(ME, "   -xmlrpc.host        The XML-RPC web server host [localhost].");
-      Log.plain(ME, "   -xmlrpc.port        The XML-RPC web server port [8080].");
-      //Log.plain(ME, "   -xmlrpc.cb_host     My XML-RPC callback web server host (e.g. for multi homed hosts) [localhost].");
-      //Log.plain(ME, "   -xmlrpc.cb_port     My XML-RPC callback web server port [8081].");
-      Log.usage();
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("java javaclients.xmlrpc.XmlRpcHttpClientRaw < demo.xml <options>");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("   -h                  Show the complete usage.");
+      System.out.println("   -xmlrpc.host        The XML-RPC web server host [localhost].");
+      System.out.println("   -xmlrpc.port        The XML-RPC web server port [8080].");
+      //System.out.println("   -xmlrpc.cb_host     My XML-RPC callback web server host (e.g. for multi homed hosts) [localhost].");
+      //System.out.println("   -xmlrpc.cb_port     My XML-RPC callback web server port [8081].");
+      System.out.println(Global.instance().usage());
+      System.out.println("----------------------------------------------------------");
+      System.out.println("");
    }
 }
 

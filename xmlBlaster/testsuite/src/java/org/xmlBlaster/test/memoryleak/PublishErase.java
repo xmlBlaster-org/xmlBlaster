@@ -104,7 +104,8 @@ public class PublishErase
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.exit("", "Example: java PublishErase -loginName Jeff\n");
+         System.err.println("Example: java PublishErase -loginName Jeff\n");
+         System.exit(1);
       }
 
       new PublishErase(glob);

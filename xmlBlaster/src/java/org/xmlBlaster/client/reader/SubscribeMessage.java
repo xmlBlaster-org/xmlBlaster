@@ -3,11 +3,11 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.17 2002/06/18 13:51:53 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.18 2002/09/13 23:17:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
@@ -43,6 +43,7 @@ public class SubscribeMessage implements I_Callback
 {
    private static final String ME = "SubscribeMessage";
    private final Global glob;
+   private final LogChannel log;
    private XmlBlasterConnection xmlBlasterConnection;
    private String loginName;
    private String passwd;
@@ -58,6 +59,7 @@ public class SubscribeMessage implements I_Callback
    public SubscribeMessage(Global glob) throws JUtilsException
    {
       this.glob = glob;
+      this.log = glob.getLog("client");
       loginName = glob.getProperty().get("loginName", ME);
       passwd = glob.getProperty().get("passwd", "secret");
 
@@ -66,7 +68,8 @@ public class SubscribeMessage implements I_Callback
 
       if (oidString == null && xpathString == null) {
          usage();
-         Log.panic(ME, "Specify the message oid or a xpath query");
+         log.error(ME, "Specify the message oid or a xpath query");
+         System.exit(1);
       }
 
       String xmlKey;
@@ -84,7 +87,7 @@ public class SubscribeMessage implements I_Callback
       subscriptionHandle = subscribe(xmlKey, queryType);
 
       try { Thread.currentThread().sleep(10000000L); } catch (Exception e) { }
-      Log.exit(ME, "Bye, time is over.");
+      log.warn(ME, "Bye, time is over.");
    }
 
 
@@ -94,6 +97,7 @@ public class SubscribeMessage implements I_Callback
    public SubscribeMessage(Global glob, String loginName, String passwd, String xmlKey, String queryType)
    {
       this.glob = glob;
+      this.log = glob.getLog("client");
       this.loginName = loginName;
       this.passwd = passwd;
       setUp();  // login
@@ -114,7 +118,7 @@ public class SubscribeMessage implements I_Callback
          xmlBlasterConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -137,10 +141,11 @@ public class SubscribeMessage implements I_Callback
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
          SubscribeRetQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
          String subscriptionId = ret.getSubscriptionId();
-         Log.info(ME, "Subscribed to [" + xmlKey + "], subscriptionId=" + subscriptionId);
+         log.info(ME, "Subscribed to [" + xmlKey + "], subscriptionId=" + subscriptionId);
          return subscriptionId;
       } catch(XmlBlasterException e) {
-         Log.panic(ME, "XmlBlasterException:\n" + e.reason);
+         log.error(ME, "XmlBlasterException:\n" + e.reason);
+         System.exit(1);
       }
       return null;
    }
@@ -157,28 +162,28 @@ public class SubscribeMessage implements I_Callback
          SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(subscriptionId);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
          xmlBlasterConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
-         if (Log.TRACE) Log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
+         if (log.TRACE) log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
+         log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
       }
    }
 
 
    public String update(String loginName, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.plain(ME, "");
-      Log.plain(ME, "============= START " + updateKey.getUniqueKey() + " =======================");
-      Log.info(ME, "Receiving update of a message ...");
-      Log.plain(ME, "<xmlBlaster>");
-      Log.plain(ME, updateKey.toString());
-      Log.plain(ME, "");
-      Log.plain(ME, "<content>");
-      Log.plain(ME, new String(content));
-      Log.plain(ME, "</content>");
-      Log.plain(ME, updateQos.toString());
-      Log.plain(ME, "</xmlBlaster>");
-      Log.plain(ME, "============= END " + updateKey.getUniqueKey() + " =========================");
-      Log.plain(ME, "");
+      System.out.println("");
+      System.out.println("============= START " + updateKey.getUniqueKey() + " =======================");
+      log.info(ME, "Receiving update of a message ...");
+      System.out.println("<xmlBlaster>");
+      System.out.println(updateKey.toString());
+      System.out.println("");
+      System.out.println("<content>");
+      System.out.println(new String(content));
+      System.out.println("</content>");
+      System.out.println(updateQos.toString());
+      System.out.println("</xmlBlaster>");
+      System.out.println("============= END " + updateKey.getUniqueKey() + " =========================");
+      System.out.println("");
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
@@ -188,23 +193,23 @@ public class SubscribeMessage implements I_Callback
     */
    private static void usage()
    {
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "java org.xmlBlaster.client.reader.SubscribeMessage <options>");
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "Options:");
-      Log.plain(ME, "   -?                  Print this message.");
-      Log.plain(ME, "");
-      Log.plain(ME, "   -oid <XmlKeyOid>    The unique oid of the message");
-      Log.plain(ME, "   -xpath <XPATH>      The XPATH query");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("java org.xmlBlaster.client.reader.SubscribeMessage <options>");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("Options:");
+      System.out.println("   -?                  Print this message.");
+      System.out.println("");
+      System.out.println("   -oid <XmlKeyOid>    The unique oid of the message");
+      System.out.println("   -xpath <XPATH>      The XPATH query");
       //XmlBlasterConnection.usage();
-      //Log.usage();
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "Example:");
-      Log.plain(ME, "java org.xmlBlaster.client.reader.SubscribeMessage -oid mySpecialMessage");
-      Log.plain(ME, "");
-      Log.plain(ME, "java org.xmlBlaster.client.reader.SubscribeMessage -xpath //key/CAR");
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "");
+      //log.usage();
+      System.out.println("----------------------------------------------------------");
+      System.out.println("Example:");
+      System.out.println("java org.xmlBlaster.client.reader.SubscribeMessage -oid mySpecialMessage");
+      System.out.println("");
+      System.out.println("java org.xmlBlaster.client.reader.SubscribeMessage -xpath //key/CAR");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("");
    }
 
 
@@ -216,15 +221,14 @@ public class SubscribeMessage implements I_Callback
       Global glob = new Global();
       if (glob.init(args) != 0) {
          usage();
-         Log.exit("","Bye");
+         System.exit(1);
       }
       try {
          SubscribeMessage publishFile = new SubscribeMessage(glob);
       } catch (Throwable e) {
          e.printStackTrace();
-         Log.panic(SubscribeMessage.ME, e.toString());
+         System.err.println(SubscribeMessage.ME + ": " + e.toString());
       }
-      Log.exit(SubscribeMessage.ME, "Good bye");
    }
 }
 

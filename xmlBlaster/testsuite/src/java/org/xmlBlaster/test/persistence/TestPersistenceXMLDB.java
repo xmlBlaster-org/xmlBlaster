@@ -3,11 +3,11 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.1 2002/09/12 21:01:42 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
@@ -39,6 +39,7 @@ import junit.framework.*;
 public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    private final static String ME = "TestPersistenceXMLDB";
    private Global glob = null;
+   private final LogChannel log;
 
    private final String senderName = "Benedikt";
    private final String senderPasswd = "secret";
@@ -65,6 +66,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
    }
 
    /**
@@ -93,7 +95,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       */
 
       st = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
-      Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+      log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
       return st;
    } // end of startServer
 
@@ -104,7 +106,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     */
    protected void stopServer(EmbeddedXmlBlaster st) {
          EmbeddedXmlBlaster.stopXmlBlaster(st);
-         Log.info( ME, "Xmlblaster stopped");
+         log.info( ME, "Xmlblaster stopped");
          st = null;
    } // end of stopServer
 
@@ -116,15 +118,15 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @return The sender connection.
     */
    protected XmlBlasterConnection connectClient(String name, String passwd) {
-      Log.info(ME, "connect to client: name='" + name + "' passwd='" + passwd + "'");
+      log.info(ME, "connect to client: name='" + name + "' passwd='" + passwd + "'");
          XmlBlasterConnection sc = null;
       try {
          sc = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(glob, name, passwd); // == "<qos></qos>";
          sc.connect(qos, this);
-         Log.info( ME, name + " connected" );
+         log.info( ME, name + " connected" );
       } catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
       return sc;
@@ -140,7 +142,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
          sc.disconnect(null);
          sc = null;
       } catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    } // end of disconnectClient
@@ -173,8 +175,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param sc A connection of a client to xmlBlaster.
     */
    public void sendDurable(XmlBlasterConnection sc) {
-        if (Log.CALL) Log.call(ME, "sendDurable");
-      if (Log.TRACE) Log.trace(ME, "Testing a durable message ...");
+        if (log.CALL) log.call(ME, "sendDurable");
+      if (log.TRACE) log.trace(ME, "Testing a durable message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                       "   <" + subscribeString + "/>\n" +
@@ -188,9 +190,9 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       try {
          String returnedOid = sc.publish(msgUnit).getOid();
          assertEquals("Returned oid is invalid", publishOid, returnedOid);
-         Log.info(ME, "Sending of '" + senderContent + "' done, returned oid '" + publishOid + "'");
+         log.info(ME, "Sending of '" + senderContent + "' done, returned oid '" + publishOid + "'");
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
    } // end of sendDurable
@@ -201,17 +203,17 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param sc A connection of a client to xmlBlaster.
     */
    protected void subscribe(XmlBlasterConnection sc) {
-        if (Log.CALL) Log.call(ME, "subscribe");
+        if (log.CALL) log.call(ME, "subscribe");
 
       String xmlKeySub = "<key oid='' queryType='XPATH'>\n" + "/xmlBlaster/key/" + subscribeString + " </key>";
-      Log.info(ME, "Subscribe to '" + xmlKeySub + "' ...");
+      log.info(ME, "Subscribe to '" + xmlKeySub + "' ...");
 
       try {
          sc.subscribe(xmlKeySub, "<qos></qos>");
       } catch(XmlBlasterException e2) {
-         Log.warn(ME, "XmlBlasterException: " + e2.reason);
+         log.warn(ME, "XmlBlasterException: " + e2.reason);
       }
-      //Log.trace(ME, "Subscribed to '" + xmlKeySub + "' ...");
+      //log.trace(ME, "Subscribed to '" + xmlKeySub + "' ...");
    } // end of subscribe
 
 
@@ -244,14 +246,14 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      //Log.info(ME, "Receiving update of a message ...");
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      //log.info(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message ...");
 
       numReceived += 1;
 
-      Log.plain("UpdateKey", updateKey.toXml());
-      Log.plain("content", (new String(content)).toString());
-      Log.plain("UpdateQos", updateQos.toXml());
+      log.plain("UpdateKey", updateKey.toXml());
+      log.plain("content", (new String(content)).toString());
+      log.plain("UpdateQos", updateQos.toXml());
 
       assertEquals("Wrong sender", senderName, updateQos.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
@@ -269,13 +271,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
        return suite;
    }
 
-
    /**
     * Invoke: java org.xmlBlaster.test.persistence.TestPersistenceXMLDB
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.persistence.TestPersistenceXMLDB</pre>
     */
@@ -283,16 +280,12 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       Global glob = new Global();
 
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
 
       TestPersistenceXMLDB testSub = new TestPersistenceXMLDB(glob, "TestPersistenceXMLDB");
       testSub.setUp();
       testSub.testDurable();
-      Log.exit(TestPersistenceXMLDB.ME, "Good bye");
-
-   } // end of main
-
-} // end of class
-
-// end of file
+   }
+}

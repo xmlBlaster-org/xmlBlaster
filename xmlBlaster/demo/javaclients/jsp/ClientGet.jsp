@@ -8,7 +8,7 @@
 
 <body bgcolor="#FFFFFF">
 
-   <%@ page import = "org.xmlBlaster.util.Log" %>
+   <%@ page import = "org.jutils.log.LogChannel" %>
    <%@ page import = "org.jutils.init.Args" %>
    <%@ page import = "org.jutils.text.StringHelper" %>
    <%@ page import = "org.xmlBlaster.client.protocol.XmlBlasterConnection" %>
@@ -26,6 +26,7 @@
       XmlBlasterConnection blasterConnection = null;
       String ME = "ClientSub";
       Global glob = new Global();
+      LogChannel log = glob.getLog(null);
       {
          try {
             // check if parameter -loginName <userName> is given at startup of client
@@ -35,9 +36,9 @@
 
             blasterConnection = new XmlBlasterConnection(glob);
             blasterConnection.connect(loginQos);
-            Log.info(ME, "Now we are connected to xmlBlaster MOM server");
+            log.info(ME, "Now we are connected to xmlBlaster MOM server");
 
-            Log.info(ME, "Getting a message - checking free memory in server ...");
+            log.info(ME, "Getting a message - checking free memory in server ...");
             // GetKeyWrapper helps us to create this string "<key oid='__cmd:?freeMem' queryType='EXACT'></key>";
             GetKeyWrapper key = new GetKeyWrapper("__cmd:?freeMem", "EXACT");
             GetQosWrapper qos = new GetQosWrapper(); // helps us to create "<qos></qos>":
@@ -45,7 +46,7 @@
             try {
                MessageUnit[] msgArr = null;
                msgArr = blasterConnection.get(key.toXml(), qos.toXml());
-               Log.info(ME, "Get done.");
+               log.info(ME, "Get done.");
                // We expect for this get() only one returned massage (msgArr.length == 1):
                for (int ii=0; ii<msgArr.length; ii++) {
                   out.println("<h1>Current free memory in xmlBlaster</h1>");
@@ -57,14 +58,14 @@
                }
                out.println();
             } catch(XmlBlasterException e) {
-               Log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.reason);
                out.println(e.reason);
             }
             
             blasterConnection.logout();
          }
          catch (Exception e) {
-            Log.error(ME, e.toString());
+            log.error(ME, e.toString());
             out.println(e.toString());
             e.printStackTrace();
          }

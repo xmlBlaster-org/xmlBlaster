@@ -4,11 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.10 2002/05/19 12:55:37 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.11 2002/09/13 23:17:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -30,13 +31,15 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 //public class BlasterCallbackImpl extends BlasterCallbackPOA {         // inheritance approach
 public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approach
    final String ME;
+   private final LogChannel log;
 
    /**
     * Construct the client CORBA side callback server. 
     */
    public BlasterCallbackImpl(java.lang.String name) {
       this.ME = "BlasterCallbackImpl-" + name;
-      if (Log.CALL) Log.trace(ME, "Entering constructor with argument");
+      this.log = Global.instance().getLog("client");
+      if (log.CALL) log.trace(ME, "Entering constructor with argument");
    }
 
    /**
@@ -45,7 +48,8 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    public BlasterCallbackImpl() {
       super();
       this.ME = "BlasterCallbackImpl";
-      if (Log.CALL) Log.trace(ME, "Entering constructor without argument");
+      this.log = Global.instance().getLog("client");
+      if (log.CALL) log.trace(ME, "Entering constructor without argument");
    }
 
    /**
@@ -55,8 +59,8 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     */
    public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaMsgUnitArr)
    {
-      Log.info(ME, "#================== BlasterCallback update START =============");
-      Log.info(ME, "cbSessionId=" + cbSessionId);
+      log.info(ME, "#================== BlasterCallback update START =============");
+      log.info(ME, "cbSessionId=" + cbSessionId);
       MessageUnit[] msgUnitArr = org.xmlBlaster.protocol.corba.CorbaDriver.convert(corbaMsgUnitArr);
       String[] ret = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
@@ -65,13 +69,13 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
          try {
             xmlKey = new UpdateKey(null, msgUnit.xmlKey);
          } catch (XmlBlasterException e) {
-            Log.error(ME, e.reason);
+            log.error(ME, e.reason);
          }
-         Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
-         Log.info(ME, new String(msgUnit.content));
+         log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.content.length);
+         log.info(ME, new String(msgUnit.content));
          ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
       }
-      Log.info(ME, "#================== BlasterCallback update END ===============");
+      log.info(ME, "#================== BlasterCallback update END ===============");
       return ret;
    }
 
@@ -91,7 +95,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
          update(cbSessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         Log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -103,7 +107,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     */
    public String ping(String qos)
    {
-      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      if (log.CALL) log.call(ME, "Entering ping() ...");
       return "";
    }
 }

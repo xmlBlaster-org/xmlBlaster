@@ -222,29 +222,6 @@ public class ByteArray extends OutputStream {
     }
 
     /**
-     * Creates a newly allocated string. Its size is the current size of 
-     * the output stream and the valid contents of the buffer have been 
-     * copied into it. Each character <i>c</i> in the resulting string is 
-     * constructed from the corresponding element <i>b</i> in the byte 
-     * array such that:
-     * <blockquote><pre>
-     *     c == (char)(((hibyte &amp; 0xff) &lt;&lt; 8) | (b &amp; 0xff))
-     * </pre></blockquote>
-     *
-     * @deprecated This method does not properly convert bytes into characters.
-     * As of JDK&nbsp;1.1, the preferred way to do this is via the
-     * <code>toString(String enc)</code> method, which takes an encoding-name
-     * argument, or the <code>toString()</code> method, which uses the
-     * platform's default character encoding.
-     *
-     * @param      hibyte    the high byte of each resulting Unicode character.
-     * @return     the current contents of the output stream, as a string.
-     */
-    public String toString(int hibyte) {
-        return new String(buf, hibyte, 0, count);
-    }
-
-    /**
      * Closing a <tt>ByteArray</tt> has no effect. The methods in
      * this class can be called after the stream has been closed without
      * generating an <tt>IOException</tt>.

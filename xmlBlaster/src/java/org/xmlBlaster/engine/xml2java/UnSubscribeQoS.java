@@ -3,12 +3,11 @@ Name:      UnSubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UnSubscribeQoS.java,v 1.6 2001/02/12 00:05:54 ruff Exp $
+Version:   $Id: UnSubscribeQoS.java,v 1.7 2002/09/13 23:18:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.Attributes;
 import java.util.Vector;
@@ -30,7 +29,6 @@ public class UnSubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public UnSubscribeQoS(String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Creating UnSubscribeQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
 
@@ -46,8 +44,6 @@ public class UnSubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
-
       if (!inQos) return;
    }
 
@@ -61,8 +57,6 @@ public class UnSubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    {
       if (super.endElementBase(uri, localName, name) == true)
          return;
-
-      if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
    }
 
 

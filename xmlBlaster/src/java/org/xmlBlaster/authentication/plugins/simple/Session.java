@@ -6,7 +6,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
@@ -17,16 +17,18 @@ import org.xmlBlaster.util.Log;
 public class Session implements I_Session {
    private static final String ME = "Session";
 
-   private              Subject  subject = null;
-   private              Manager          secMgr = null;
-   private              String                       sessionId = null;
-   private              boolean                  authenticated = false;
+   private Subject  subject = null;
+   private final LogChannel log;
+   private Manager secMgr = null;
+   private String sessionId = null;
+   private boolean authenticated = false;
 
-   private static       Subject dummyUsr = null;
+   private static Subject dummyUsr = null;
 
 
    public Session(Manager sm, String sessionId) {
       secMgr = sm;
+      this.log = secMgr.getGlobal().getLog("simple");
       this.sessionId = sessionId;
       // Up to now, we've a session, but no subject where it belongs to.
       // Thus, it gets a dummy, a subjet with nearly no rights.

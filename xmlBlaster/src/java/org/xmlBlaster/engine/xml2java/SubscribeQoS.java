@@ -3,12 +3,12 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.16 2002/06/27 11:08:53 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.17 2002/09/13 23:18:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
@@ -53,6 +53,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    private static String ME = "SubscribeQoS";
 
    private final Global glob;
+   private final LogChannel log;
 
    // helper flags for SAX parsing
 
@@ -87,7 +88,8 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    public SubscribeQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
       this.glob = glob;
-      if (Log.TRACE) Log.trace(ME, "Creating SubscribeQoS(" + xmlQoS_literal + ")");
+      this.log = glob.getLog("core");
+      if (log.TRACE) log.trace(ME, "Creating SubscribeQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
 
@@ -178,7 +180,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      if (log.TRACE) log.trace(ME, "Entering startElement for " + name);
 
       if (!inQos) return;
 
@@ -249,7 +251,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    {
       super.endElement(uri, localName, name);
 
-      if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
       if (name.equalsIgnoreCase("meta")) {
          String tmp = character.toString().trim();
@@ -385,7 +387,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("TestFailed", e.toString());
+         System.out.println("TestFailed: " + e.toString());
       }
    }
 }

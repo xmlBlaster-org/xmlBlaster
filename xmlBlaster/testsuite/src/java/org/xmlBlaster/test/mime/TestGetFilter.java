@@ -3,11 +3,11 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.1 2002/09/12 21:01:41 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.2 2002/09/13 23:18:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
@@ -41,6 +41,7 @@ public class TestGetFilter extends TestCase
 {
    private static String ME = "TestGetFilter";
    private final Global glob;
+   private final LogChannel log;
 
    private XmlBlasterConnection con = null;
    private String name;
@@ -59,6 +60,7 @@ public class TestGetFilter extends TestCase
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
       this.name = name;
    }
 
@@ -89,17 +91,17 @@ public class TestGetFilter extends TestCase
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         Log.info(ME, "Connecting ...");
+         log.info(ME, "Connecting ...");
          con = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         Log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
       }
    }
 
@@ -114,8 +116,8 @@ public class TestGetFilter extends TestCase
 
       try {
          EraseRetQos[] arr = con.erase("<key oid='MSG'/>", null);
-         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
 
       con.disconnect(null);
 
@@ -132,14 +134,14 @@ public class TestGetFilter extends TestCase
     */
    public void testFilter()
    {
-      Log.info(ME, "testFilter() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
+      log.info(ME, "testFilter() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
 
-      Log.info(ME, "TEST 1: Testing unfiltered message");
+      log.info(ME, "TEST 1: Testing unfiltered message");
       String content = "1234567890";
       try {
          con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -152,19 +154,19 @@ public class TestGetFilter extends TestCase
          assertTrue("Expected exactly one returned message", msgUnits.length==1);
          assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
                 msgUnits[0].getContent().length == content.length());
-         Log.info(ME, "Success: Got one message.");
+         log.info(ME, "Success: Got one message.");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("get - XmlBlasterException: " + e.reason, false);
       }
 
 
-      Log.info(ME, "TEST 2: Testing filtered message");
+      log.info(ME, "TEST 2: Testing filtered message");
       content = "12345678901"; // content is too long, our plugin denies this message
       try {
          con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -175,18 +177,18 @@ public class TestGetFilter extends TestCase
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assertTrue("Expected one returned message", msgUnits!=null);
          assertEquals("Expected no returned message", 0, msgUnits.length);
-         Log.info(ME, "Success: Got no message.");
+         log.info(ME, "Success: Got no message.");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          fail("get - XmlBlasterException: " + e.reason);
       }
 
 
-      Log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
+      log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          fail("publish - XmlBlasterException: " + e.reason);
       }
 
@@ -197,10 +199,10 @@ public class TestGetFilter extends TestCase
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          fail("get() message should throw an XmlBlasterException, but it didn't happen");
       } catch(XmlBlasterException e) {
-         Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
+         log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
       }
 
-      Log.info(ME, "Success in testFilter()");
+      log.info(ME, "Success in testFilter()");
    }
 
    /**
@@ -225,12 +227,12 @@ public class TestGetFilter extends TestCase
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestGetFilter testSub = new TestGetFilter(glob, "TestGetFilter", "Tim");
       testSub.setUp();
       testSub.testFilter();
-      Log.exit(TestGetFilter.ME, "Good bye");
    }
 }
 

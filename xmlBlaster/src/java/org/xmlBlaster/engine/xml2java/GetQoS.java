@@ -3,12 +3,12 @@ Name:      GetQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQoS.java,v 1.9 2002/05/16 23:31:58 ruff Exp $
+Version:   $Id: GetQoS.java,v 1.10 2002/09/13 23:18:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
@@ -26,6 +26,7 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
 {
    private static String ME = "GetQoS";
    private final Global glob;
+   private final LogChannel log;
 
    private transient AccessFilterQos tmpFilter = null;
    protected Vector filterVec = null;                         // To collect the filter when sax parsing
@@ -38,7 +39,8 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
    public GetQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
       this.glob = glob;
-      if (Log.CALL) Log.call(ME, "Creating GetQoS(" + xmlQoS_literal + ")");
+      this.log = glob.getLog("core");
+      if (log.CALL) log.call(ME, "Creating GetQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
 
@@ -66,7 +68,7 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      if (log.TRACE) log.trace(ME, "Entering startElement for " + name);
 
       if (!inQos) return;
 
@@ -95,7 +97,7 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.endElementBase(uri, localName, name) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
       
       if (name.equalsIgnoreCase("filter")) {
          inFilter = false;
@@ -167,7 +169,7 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed: " + e.toString());
       }
    }
 }

@@ -3,11 +3,11 @@ Name:      SvgIdMapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates an hashtable containing the dynamic svg elements
-Version:   $Id: SvgIdMapper.java,v 1.1 2002/01/04 01:05:38 laghi Exp $
+Version:   $Id: SvgIdMapper.java,v 1.2 2002/09/13 23:17:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -31,11 +31,13 @@ import javax.xml.parsers.DocumentBuilder;
 /**
  * This class implements the NodeFilter interface to handle only nodes which
  * are of the type "element" whith an attribute "id" which is not empty.
- * @author $Author: laghi $ (laghi@swissinfo.org)
+ * @author $Author: ruff $ (laghi@swissinfo.org)
  */
 public class SvgIdMapper /*implements NodeFilter*/
 {
    private final static String ME = "SvgIdMapper";
+   private final LogChannel log;
+
    /**
     * The table containing the pairs
     */
@@ -43,6 +45,7 @@ public class SvgIdMapper /*implements NodeFilter*/
 
    public SvgIdMapper ()
    {
+      this.log = org.xmlBlaster.util.Global.instance().getLog("batik");
       idTable = new Hashtable();
    }
 
@@ -63,7 +66,7 @@ public class SvgIdMapper /*implements NodeFilter*/
    /*
    public short acceptNode(Node node)
    {
-      Log.info(ME, ".acceptNode " + node.toString());
+      log.info(ME, ".acceptNode " + node.toString());
       // this is probably not needed
       if (!(node instanceof Element)) return FILTER_REJECT;
       String idText = ((Element)node).getAttribute("id");
@@ -81,7 +84,7 @@ public class SvgIdMapper /*implements NodeFilter*/
     */
    protected void scanNode (Node node)
    {
-      Log.trace(ME, ".scanNode started");
+      log.trace(ME, ".scanNode started");
       if (node instanceof Document) {
          node = ((Document)node).getDocumentElement();
       }
@@ -90,7 +93,7 @@ public class SvgIdMapper /*implements NodeFilter*/
          String idText = el.getAttribute("id");
          if (isDynamic(idText)) {
             this.idTable.put(idText, node);
-            Log.trace(ME, ".scanNode: " + idText);
+            log.trace(ME, ".scanNode: " + idText);
          }
          // scan the child nodes if any
          NodeList nodeList = el.getChildNodes();
@@ -100,14 +103,14 @@ public class SvgIdMapper /*implements NodeFilter*/
             }
          }
       }
-      Log.trace(ME, ".scanNode ended");
+      log.trace(ME, ".scanNode ended");
    }
 
 
 
    public Hashtable createIdTable (Document document)
    {
-      Log.info(ME, "createIdTable");
+      log.info(ME, "createIdTable");
       this.idTable = new Hashtable();
 
       this.scanNode(document);
@@ -127,7 +130,6 @@ public class SvgIdMapper /*implements NodeFilter*/
    public static void main(String[] args)
    {
       SvgIdMapper mapper = new SvgIdMapper();
-
       try {
          File file = new File("simple.svg");
          DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -139,10 +141,8 @@ public class SvgIdMapper /*implements NodeFilter*/
             System.out.println(key);
          }
       }
-      catch (Exception ex)
-      {
-         Log.error(ME, ex.toString());
+      catch (Exception ex) {
+         System.err.println(ex.toString());
       }
-
    }
 }

@@ -6,7 +6,6 @@ Comment:   Some helper methods for test clients
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.xmlBlaster.engine.helper.Constants;
@@ -80,7 +79,7 @@ public class Util
       try {
          Global.instance().getProperty().addArgs2Props(getDefaultServerPorts());
       } catch(org.jutils.JUtilsException e) {
-         Log.error(ME, e.toString());
+         Global.instance().getLog("test").error(ME, e.toString());
       }
    }
 
@@ -104,7 +103,7 @@ public class Util
     */
    public static void ask(String text)
    {
-      Log.plain(ME, "################### " + text + ": Hit a key to continue ###################");
+      System.out.println("################### " + text + ": Hit a key to continue ###################");
       try {
          System.in.read();
       } catch (java.io.IOException e) {}

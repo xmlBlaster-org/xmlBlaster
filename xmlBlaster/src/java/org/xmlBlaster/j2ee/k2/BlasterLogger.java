@@ -24,7 +24,6 @@ import javax.resource.ResourceException;
 import org.jutils.log.LogChannel;
 import org.jutils.log.LogDeviceConsole;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 
 /**
@@ -38,16 +37,16 @@ import org.xmlBlaster.util.Global;
 
 public class BlasterLogger  implements org.jutils.log.LogableDevice {
     private PrintWriter logWriter = null;
-    private LogChannel channel;
+    private LogChannel log;
     private LogDeviceConsole console = null;
     private final Global glob;
     
     public BlasterLogger(Global glob) throws ResourceException {
         this.glob = glob;
+        this.log = glob.getLog(null);
         try {
             glob.getProperty().set("logConsole", "false");
-            channel = Log.getLogChannel();
-            channel.removeAllDevices();
+            log.removeAllDevices();
         }catch(org.jutils.JUtilsException ex) {
             ResourceException re = new ResourceException("Could not instantiate logger: " + ex);
             re.setLinkedException(ex);
@@ -59,15 +58,15 @@ public class BlasterLogger  implements org.jutils.log.LogableDevice {
     public void setLogWriter(PrintWriter out)
         throws ResourceException {
         this.logWriter = out;
-        Log.info("BlasterLogger","Setting LogWriter: " + out);
+        log.info("BlasterLogger","Setting LogWriter: " + out);
     }
 
-    public void setLogging(boolean log) {
+    public void setLogging(boolean dolog) {
         // If true, set this as a logchannel
-        if (log)
-            channel.addLogDevice(this);
+        if (dolog)
+            log.addLogDevice(this);
         else
-            channel.removeAllDevices();
+            log.removeAllDevices();
     }
 
     /**
@@ -107,7 +106,7 @@ public class BlasterLogger  implements org.jutils.log.LogableDevice {
     public void log(int level, String source, String text) {
         if (logWriter != null) {
             String levelString = convertLevelToString(level);
-            String logEntry = channel.formatLogData(levelString, level, source, text);
+            String logEntry = log.formatLogData(levelString, level, source, text);
 
             logWriter.println(logEntry + "\n");
         } else {

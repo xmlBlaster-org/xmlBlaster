@@ -17,7 +17,7 @@ package org.xmlBlaster.test.persistence;
 
 import org.jutils.io.FileUtil;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -49,6 +49,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 {
    private final static String ME = "TestPersistence2";
    private final Global glob;
+   private final LogChannel log;
 
    private final String senderName = "Gesa";
    private final String senderPasswd = "secret";
@@ -72,6 +73,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
    }
 
 
@@ -85,7 +87,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
    {
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
-      Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+      log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
 
       doLogin();
    }
@@ -97,10 +99,10 @@ public class TestPersistence2 extends TestCase implements I_Callback
          senderConnection.login( senderName, senderPasswd, qos, this);
       }
       catch (XmlBlasterException e) {
-          Log.warn(ME, "setUp() - login failed");
+          log.warn(ME, "setUp() - login failed");
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -119,11 +121,11 @@ public class TestPersistence2 extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       try {
          EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
-         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
       checkContent(false);
 
-      senderConnection.logout();
+      senderConnection.disconnect(null);
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
@@ -138,7 +140,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    public void sendDurable()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing a durable message ...");
+      if (log.TRACE) log.trace(ME, "Testing a durable message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'/>";
 
@@ -150,9 +152,9 @@ public class TestPersistence2 extends TestCase implements I_Callback
       try {
          String returnedOid = senderConnection.publish(msgUnit).getOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
-         Log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
+         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -179,9 +181,9 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       try {
          senderConnection.subscribe("<key oid='" + publishOid + "'/>", "<qos/>");
-         Log.info(ME, "Subscribe done");
+         log.info(ME, "Subscribe done");
       } catch(XmlBlasterException e) {
-         Log.error(ME, "subscribe() XmlBlasterException: " + e.reason);
+         log.error(ME, "subscribe() XmlBlasterException: " + e.reason);
          fail("subscribe - XmlBlasterException: " + e.reason);
       }
 
@@ -194,7 +196,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
    /**
     * a dirty hack to restart the Test Server between send and checkcontent.
-    * - logout()
+    * - disconnect(null)
     * - stopXmlBlaster()
     * - delay()
     * - startXmlBlaster()
@@ -204,10 +206,10 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    public void RestartTestServer() {
       long    delay4Server = 4000L ;
-      Log.info( ME, "Restarting Test Server" );
+      log.info( ME, "Restarting Test Server" );
 
       try {
-         senderConnection.logout();
+         senderConnection.disconnect(null);
          EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
          serverThread = null ;
          Util.delay( delay4Server );    // Wait some time
@@ -219,10 +221,10 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       }
       catch (XmlBlasterException e) {
-         Log.warn(ME, "setUp() - login failed");
+         log.warn(ME, "setUp() - login failed");
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          e.printStackTrace();
       }
    }
@@ -234,19 +236,19 @@ public class TestPersistence2 extends TestCase implements I_Callback
    {
       String driverType = glob.getProperty().get("Persistence.Driver.Type", (String)null);
       if (driverType == null || !driverType.equals("filestore")) {
-         Log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
+         log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
 
       String path = glob.getProperty().get("Persistence.Path", (String)null);
       if (path == null) {
-         Log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
+         log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
          return;
       }
 
       if (checkContent) {
 
-         Log.info(ME, "Checking content of message " + publishOid);
+         log.info(ME, "Checking content of message " + publishOid);
 
          try {
             String persistenceContent = FileUtil.readAsciiFile(path, publishOid);
@@ -270,7 +272,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of a message, checking ...");
+      log.info(ME, "Receiving update of a message, checking ...");
 
       numReceived += 1;
 
@@ -303,7 +305,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -323,10 +325,6 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
    /**
     * Invoke: java org.xmlBlaster.test.persistence.TestPersistence2
-    * <p />
-    * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.persistence.TestPersistence2</pre>
     */
@@ -334,12 +332,12 @@ public class TestPersistence2 extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestPersistence2 testSub = new TestPersistence2(glob, "TestPersistence2");
       testSub.setUp();
       testSub.testDurable();
       testSub.tearDown();
-      Log.exit(TestPersistence2.ME, "Good bye");
    }
 }

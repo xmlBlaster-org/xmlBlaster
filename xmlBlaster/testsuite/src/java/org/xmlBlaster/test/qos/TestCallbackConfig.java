@@ -3,11 +3,11 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -37,6 +37,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
 {
    private static String ME = "TestCallbackConfig";
    private final Global glob;
+   private final LogChannel log;
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
@@ -57,6 +58,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
+       this.log = this.glob.getLog("test");
        this.name = name;
    }
 
@@ -85,7 +87,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
          con.connect(qos, this);
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          assertTrue(e.toString(), false);
       }
    }
@@ -100,12 +102,12 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       try {
          if (con != null) {
             EraseRetQos[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
-            if (strArr.length != 1) Log.error(ME, "ERROR: Erased " + strArr.length + " messages");
+            if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
             con.disconnect(new DisconnectQos());
          }
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          assertTrue(e.toString(), false);
       }
    }
@@ -114,21 +116,21 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     */
    public void testCbSessionId()
    {
-      Log.info(ME, "testCbSessionId() ...");
+      log.info(ME, "testCbSessionId() ...");
       try {
          con.subscribe("<key oid='testCallbackMsg'/>", null);
 
          publishOid = con.publish(new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null)).getOid();
 
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
          waitOnUpdate(2000L, 1);
       }
       catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          assertTrue(e.toString(), false);
       }
-      Log.info(ME, "Success in testCbSessionId()");
+      log.info(ME, "Success in testCbSessionId()");
    }
 
 
@@ -139,10 +141,10 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
       if (!this.cbSessionId.equals(cbSessionId))
-         Log.error(ME, "Invalid cbSessionId");
+         log.error(ME, "Invalid cbSessionId");
       assertEquals("Invalid cbSessionId", this.cbSessionId, cbSessionId);
       return "";
    }
@@ -199,7 +201,6 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testCbSessionId();
       testSub.tearDown();
-      Log.exit(TestCallbackConfig.ME, "Good bye");
    }
 }
 

@@ -7,7 +7,6 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.Log;
 //import org.xmlBlaster.authentication.plugins.ReversibleCrypt;
 
 /**
@@ -18,7 +17,7 @@ public class Session implements I_Session {
    private static final String ME = "Session";
 
    private              Subject       subject = null;
-   private              Manager  secMgr = null;
+   private              Manager        secMgr = null;
    private              String          sessionId = null;
    private              boolean     authenticated = false;
 

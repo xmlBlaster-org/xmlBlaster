@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.9 2001/12/16 04:01:34 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.10 2002/09/13 23:18:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -12,7 +12,7 @@ import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 
 /**
@@ -32,6 +32,7 @@ public class BrowserTest extends HttpServlet
    private final String ME = "BrowserTest";
    private int globalVal = 1;
    private String mode = "multi";
+   private LogChannel log;
 
 
    /**
@@ -41,7 +42,8 @@ public class BrowserTest extends HttpServlet
    public void init(ServletConfig conf) throws ServletException
    {
       super.init(conf);
-      Log.info(ME, "Initialize ...");
+      log = org.xmlBlaster.util.Global.instance().getLog(null);
+      log.info(ME, "Initialize ...");
    }
 
 
@@ -63,13 +65,13 @@ public class BrowserTest extends HttpServlet
       String sessionId = req.getRequestedSessionId();
       String loginName = Util.getParameter(req, "login", null);    // "Joe";
       String password = Util.getParameter(req, "password", null);  // "secret";
-      Log.info(ME, "Entering BrowserTest servlet for '" + loginName + "', sessionId=" + sessionId);
+      log.info(ME, "Entering BrowserTest servlet for '" + loginName + "', sessionId=" + sessionId);
 
       StringBuffer retStr = new StringBuffer();
       try {
          String actionType = Util.getParameter(req, "ActionType", null);
          if (actionType!=null && actionType.equals("Login")) {
-            Log.info(ME, "Login pressed ...");
+            log.info(ME, "Login pressed ...");
 
             if (loginName == null || loginName.length() < 1)
                throw new Exception("Missing login name");
@@ -77,14 +79,14 @@ public class BrowserTest extends HttpServlet
                throw new Exception("Missing password");
          }
          else if (actionType!=null && actionType.equals("Logout")) {
-            Log.info(ME, "Logout pressed ...");
+            log.info(ME, "Logout pressed ...");
          }
          else {
            throw new Exception("Unknown action type");
          }
 
       } catch (Exception e) {
-         Log.error(ME, "RemoteException: " + e.getMessage());
+         log.error(ME, "RemoteException: " + e.getMessage());
          e.printStackTrace();
          retStr.append("<body>http communication problem</body>");
       } finally {
@@ -100,11 +102,11 @@ public class BrowserTest extends HttpServlet
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      Log.info(ME, "Entering doGet()");
+      log.info(ME, "Entering doGet()");
       String tmp = Util.getParameter(req, "mode", null);
       if (tmp != null) {
          mode = tmp;
-         Log.info(ME, "Testing mode=" + mode);
+         log.info(ME, "Testing mode=" + mode);
       }
 
       try {
@@ -125,7 +127,7 @@ public class BrowserTest extends HttpServlet
             int val = 1;
 
             while (true) {
-               Log.info(ME, "Sending next multipart");
+               log.info(ME, "Sending next multipart");
 
                out.println("Content-Type: text/html");
                out.println();
@@ -171,11 +173,11 @@ public class BrowserTest extends HttpServlet
             res.setContentType("text/html");
             if (globalVal % 2 == 0) {
                globalVal++;
-               Log.info(ME, "SC_NO_CONTENT globalVal=" + globalVal);
+               log.info(ME, "SC_NO_CONTENT globalVal=" + globalVal);
                res.setStatus(HttpServletResponse.SC_NO_CONTENT);
                return;
             }
-            Log.info(ME, "globalVal=" + globalVal);
+            log.info(ME, "globalVal=" + globalVal);
             out.println("<HTML>");
             out.println("<HEAD>");
             out.println("<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>");
@@ -216,17 +218,17 @@ public class BrowserTest extends HttpServlet
             while (true) {
                out.println("<BIG>Hello World - GET - Simple server push No." + val++ + "</BIG>");
                out.println("<P>"); // This newline forces a refresh everytime!
-               Log.info(ME, "Flushing number " + (val-1) + " ...");
+               log.info(ME, "Flushing number " + (val-1) + " ...");
                out.println("<script language='JavaScript1.2'>");
                out.println("alert('Hoi Michele');");
                out.println("</script>");
 
                out.flush();
-               Log.info(ME, "Before sleeping 2 sec ...");
+               log.info(ME, "Before sleeping 2 sec ...");
                try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
                if (val > 10)
                   break;
-               Log.info(ME, "After sleeping 2 sec send next ...");
+               log.info(ME, "After sleeping 2 sec send next ...");
             }
             out.println("</BODY></HTML>");
             out.flush();
@@ -265,10 +267,10 @@ public class BrowserTest extends HttpServlet
             }
             out.close();
          }
-         Log.info(ME, "doGet() done");
+         log.info(ME, "doGet() done");
       }
       catch(Exception e) {  // if browser closes in multipart: java.io.IOException
-         Log.error(ME, "doGet() failed, " + e.toString());
+         log.error(ME, "doGet() failed, " + e.toString());
       }
    }
 }

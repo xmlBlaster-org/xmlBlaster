@@ -1,6 +1,6 @@
 package org.xmlBlaster.authentication.plugins.a2Blaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_Subject;
@@ -13,13 +13,14 @@ import org.a2Blaster.client.api.CorbaConnection;
 /**
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2001/12/20 22:04:41 $)
+ * @version $Revision: 1.7 $ (State: $State) (Date: $Date: 2002/09/13 23:17:51 $)
  */
 
 public class Session implements I_Session, I_Subject {
    private static final String                    ME = "Session";
    private static final String               baseKey = "/org/xmlBlaster/";
-   private              Manager       secMgr = null;
+   private        final Manager               secMgr;
+   private        final LogChannel               log;
    private              boolean        authenticated = false;
    private              String             sessionId = null;
    private              String                  name = null;   // login name
@@ -28,10 +29,10 @@ public class Session implements I_Session, I_Subject {
 
 
    public Session(Manager sm, String sessionId) {
-      if (Log.CALL) Log.call(ME+"."+ME+"(Manager sm=..., String sessionId="+sessionId+")=...", "-------START-----\n");
       secMgr = sm;
+      log = secMgr.getGlobal().getLog("a2Blaster");
       this.sessionId = sessionId;
-      if (Log.CALL) Log.call(ME+"."+ME+"(...)=...", "-------END-------\n");
+      if (log.CALL) log.call(ME+"."+ME+"(...)=...", "-------END-------\n");
    }
 
    /**
@@ -104,7 +105,7 @@ public class Session implements I_Session, I_Subject {
     *                                exist or the passwd is incorrect.
     */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".init(String qos=...)=...", "-------START-----\n");
+      if (log.CALL) log.call(ME+".init(String qos=...)=...", "-------START-----\n");
       String result = null;
       authenticated = false;
       name = securityQos.getUserId();
@@ -120,7 +121,7 @@ public class Session implements I_Session, I_Subject {
               "      <sessionId type=\""+Manager.TYPE+"\">"+a2BlasterSessionId+"</sessionId>\n"+
               "   </securityPlugin>\n";
 
-      if (Log.CALL) Log.call(ME+".init(...)=...", "-------END-------\n");
+      if (log.CALL) log.call(ME+".init(...)=...", "-------END-------\n");
 
       return result;
    }
@@ -154,10 +155,10 @@ public class Session implements I_Session, I_Subject {
     * @deprecated
     */
    public void changeSessionId(String sessionId) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".importMessage(String sessionId="+sessionId+") [DEPRECATED]",
+      if (log.CALL) log.call(ME+".importMessage(String sessionId="+sessionId+") [DEPRECATED]",
                              "-------START-----\n");
 
-      if (Log.CALL) Log.call(ME+".importMessage() [DEPRECATED]",
+      if (log.CALL) log.call(ME+".importMessage() [DEPRECATED]",
                              "try to change id="+this.sessionId+" to id="+sessionId);
 
       if(this.sessionId.endsWith(sessionId)) return;
@@ -166,7 +167,7 @@ public class Session implements I_Session, I_Subject {
          this.sessionId = sessionId;
       }
 
-      if (Log.CALL) Log.call(ME+".importMessage(...) [DEPRECATED]",
+      if (log.CALL) log.call(ME+".importMessage(...) [DEPRECATED]",
                              "-------END-------\n");
    }
 
@@ -191,13 +192,13 @@ public class Session implements I_Session, I_Subject {
     */
    public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
-      if (Log.CALL) Log.call(ME+".importMessage(...)", "-------START-----\n");
-      if (Log.DUMP) Log.dump(ME+".importMessage(...)", "in: key="+msg.xmlKey+
+      if (log.CALL) log.call(ME+".importMessage(...)", "-------START-----\n");
+      if (log.DUMP) log.dump(ME+".importMessage(...)", "in: key="+msg.xmlKey+
                              " content="+msg.content+" qos="+msg.qos);
 
-      if (Log.DUMP) Log.dump(ME+".importMessage(...)", "out: key="+msg.xmlKey+
+      if (log.DUMP) log.dump(ME+".importMessage(...)", "out: key="+msg.xmlKey+
                              " content="+msg.content+" qos="+msg.qos);
-      if (Log.CALL) Log.call(ME+".importMessage(...)=...", "-------END-------\n");
+      if (log.CALL) log.call(ME+".importMessage(...)=...", "-------END-------\n");
 
       return msg;
    }
@@ -219,13 +220,13 @@ public class Session implements I_Session, I_Subject {
     */
    public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
-      if (Log.CALL) Log.call(ME+".exportMessage(...)", "-------START-----\n");
-      if (Log.DUMP) Log.dump(ME+".exportMessage(...)", "in: key="+msg.xmlKey+
+      if (log.CALL) log.call(ME+".exportMessage(...)", "-------START-----\n");
+      if (log.DUMP) log.dump(ME+".exportMessage(...)", "in: key="+msg.xmlKey+
                              " content="+msg.content+" qos="+msg.qos);
 
-      if (Log.DUMP) Log.dump(ME+".exportMessage(...)", "out: key="+msg.xmlKey+
+      if (log.DUMP) log.dump(ME+".exportMessage(...)", "out: key="+msg.xmlKey+
                              " content="+msg.content+" qos="+msg.qos);
-      if (Log.CALL) Log.call(ME+".exportMessage(...)=...", "-------END-------\n");
+      if (log.CALL) log.call(ME+".exportMessage(...)=...", "-------END-------\n");
 
       return msg;
    }
@@ -243,7 +244,7 @@ public class Session implements I_Session, I_Subject {
       CorbaConnection con = null;
       boolean   permitted = false;
 
-      if (Log.CALL) Log.call(ME+".isAuthorized(String actionKey="+actionKey+
+      if (log.CALL) log.call(ME+".isAuthorized(String actionKey="+actionKey+
                              ", String key="+key+")", "-------START-----\n");
 
       try {
@@ -260,21 +261,21 @@ public class Session implements I_Session, I_Subject {
          permitted = con.isAuthorized(a2BlasterSessionId, baseKey+actionKey+"/"+key);
       }
       catch (XmlBlasterException xe) {
-         Log.error(ME + ".error", "Couldn't check if " + getName() + " is permitted to " +
+         log.error(ME + ".error", "Couldn't check if " + getName() + " is permitted to " +
                                   actionKey + " " + key + "! Reason: No connection to the a2Blaster! Assertion: " + xe);
-         if (Log.CALL) Log.call(ME+".isAuthorized(...)=false", "-------END-------\n");
+         if (log.CALL) log.call(ME+".isAuthorized(...)=false", "-------END-------\n");
 
          return false;
       }
       catch (A2BlasterException ae) {
-         Log.error(ME + ".error", "Couldn't check if " + getName() + " is permitted to " +
+         log.error(ME + ".error", "Couldn't check if " + getName() + " is permitted to " +
                                   actionKey + " " + key + "! Assertion: " + ae);
-         if (Log.CALL) Log.call(ME+".isAuthorized(...)=false", "-------END-------\n");
+         if (log.CALL) log.call(ME+".isAuthorized(...)=false", "-------END-------\n");
 
          return false;
       }
 
-      if (Log.CALL) Log.call(ME+".isAuthorized(...)=true", "-------END-------\n");
+      if (log.CALL) log.call(ME+".isAuthorized(...)=true", "-------END-------\n");
       return true; // dummy implementation;
    }
 
@@ -286,7 +287,7 @@ public class Session implements I_Session, I_Subject {
     * @return String login name
     */
    public String getName() {
-      if (Log.CALL) Log.call(ME+".getName()", "-------START-----\n");
+      if (log.CALL) log.call(ME+".getName()", "-------START-----\n");
 
       if (name == null) {
          // ask the a2Blaster
@@ -299,16 +300,16 @@ public class Session implements I_Session, I_Subject {
             name = userInfo.getName();
          }
          catch (XmlBlasterException xe) {
-            Log.error(ME + ".brokenConnection", "a2Blaster connection doesn't respond! Reason: "+xe);
+            log.error(ME + ".brokenConnection", "a2Blaster connection doesn't respond! Reason: "+xe);
             return null;
          }
          catch (A2BlasterException ae) {
-            Log.error(ME + ".accessDenied", "Unknown a2Blaster session! Can't fetch user info! Reason: "+ae);
+            log.error(ME + ".accessDenied", "Unknown a2Blaster session! Can't fetch user info! Reason: "+ae);
             return null;
          }
       }
 
-      if (Log.CALL) Log.call(ME+".getName()="+name, "-------END-------\n");
+      if (log.CALL) log.call(ME+".getName()="+name, "-------END-------\n");
 
       return name;
    }
@@ -324,22 +325,22 @@ public class Session implements I_Session, I_Subject {
       CorbaConnection con = null;
       String    sessionId = null;
 
-      if (Log.CALL) Log.call(ME+".authenticate(String passwd=[passwd])", "-------START-----\n");
+      if (log.CALL) log.call(ME+".authenticate(String passwd=[passwd])", "-------START-----\n");
       try {
          con = secMgr.getA2Blaster();
          sessionId = con.login(name, passwd);
       }
       catch (XmlBlasterException xe) {
-         Log.error(ME + ".brokenConnection", "a2Blaster connection doesn't respond! Reason: "+xe);
+         log.error(ME + ".brokenConnection", "a2Blaster connection doesn't respond! Reason: "+xe);
          throw xe;
       }
       catch (A2BlasterException ae) {
-         Log.error(ME + ".accessDenied", "Login incorrect! Reason: "+ae);
+         log.error(ME + ".accessDenied", "Login incorrect! Reason: "+ae);
          throw new XmlBlasterException(ME + ".accessDenied", "Login incorrect! Reason: "+ae);
       }
       authenticated = true;
 
-      if (Log.CALL) Log.call(ME+".authenticate(...)=sessionId", "-------END-------\n");
+      if (log.CALL) log.call(ME+".authenticate(...)=sessionId", "-------END-------\n");
 
       return sessionId;
    }
@@ -361,7 +362,7 @@ public class Session implements I_Session, I_Subject {
     *               anyone else who triggered the disconnect. (not implemented in this version)
     */
    void destroy(String qos_literal) {
-      if (Log.CALL) Log.call(ME+".destroy(String qos_literal="+qos_literal+")",
+      if (log.CALL) log.call(ME+".destroy(String qos_literal="+qos_literal+")",
                              "-------START-----\n");
       if(a2BlasterSessionCtl) { // do the logout, only if we (not the client) did the login
          try {
@@ -369,17 +370,16 @@ public class Session implements I_Session, I_Subject {
             con.logout(a2BlasterSessionId);
          }
          catch (XmlBlasterException xe) {
-            Log.error(ME + ".error", "Unable to logout user " + getName() +
+            log.error(ME + ".error", "Unable to logout user " + getName() +
                                      " (a2BlasterSessionId: "+ a2BlasterSessionId +
                                      "); Assertion: " + xe);
             return;
          }
          catch (A2BlasterException ae) {
-            Log.error(ME + ".accessDenied", "Logout impossible! Reason: "+ae);
+            log.error(ME + ".accessDenied", "Logout impossible! Reason: "+ae);
             return;
          }
       }
-      if (Log.CALL) Log.call(ME+".destroy(...)", "-------END-------\n");
+      if (log.CALL) log.call(ME+".destroy(...)", "-------END-------\n");
    }
-
 }

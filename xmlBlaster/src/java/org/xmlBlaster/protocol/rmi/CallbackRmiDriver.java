@@ -3,12 +3,12 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.17 2002/08/26 11:04:26 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.18 2002/09/13 23:18:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -42,6 +42,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
    private String ME = "CallbackRmiDriver";
    private I_XmlBlasterCallback cb = null;
    private CallbackAddress callbackAddress = null;
+   private LogChannel log = null;
 
 
    /** Get a human readable name of this driver */
@@ -88,10 +89,11 @@ public class CallbackRmiDriver implements I_CallbackDriver
     */
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
+      this.log = glob.getLog("rmi");
       // Create and install a security manager
       if (System.getSecurityManager() == null) {
          System.setSecurityManager(new RMISecurityManager());
-         if (Log.TRACE) Log.trace(ME, "Started RMISecurityManager");
+         if (log.TRACE) log.trace(ME, "Started RMISecurityManager");
       }
 
       this.callbackAddress = callbackAddress;
@@ -101,25 +103,25 @@ public class CallbackRmiDriver implements I_CallbackDriver
          rem = Naming.lookup(addr);
       }
       catch (RemoteException e) {
-         Log.error(ME, "Can't access callback address ='" + addr + "', no client rmi registry running");
+         log.error(ME, "Can't access callback address ='" + addr + "', no client rmi registry running");
          throw new XmlBlasterException("CallbackHandleInvalid", "Can't access callback address ='" + addr + "', no client rmi registry running");
       }
       catch (NotBoundException e) {
-         Log.error(ME, "The given callback address ='" + addr + "' is not bound to rmi registry: " + e.toString());
+         log.error(ME, "The given callback address ='" + addr + "' is not bound to rmi registry: " + e.toString());
          throw new XmlBlasterException("CallbackHandleInvalid", "The given callback address '" + addr + "' is not bound to rmi registry: " + e.toString());
       }
       catch (MalformedURLException e) {
-         Log.error(ME, "The given callback address ='" + addr + "' is invalid: " + e.toString());
+         log.error(ME, "The given callback address ='" + addr + "' is invalid: " + e.toString());
          throw new XmlBlasterException("CallbackHandleInvalid", "The given callback address '" + addr + "' is invalid: " + e.toString());
       }
       catch (Throwable e) {
-         Log.error(ME, "The given callback address ='" + addr + "' is invalid : " + e.toString());
+         log.error(ME, "The given callback address ='" + addr + "' is invalid : " + e.toString());
          throw new XmlBlasterException("CallbackHandleInvalid", "The given callback address '" + addr + "' is invalid : " + e.toString());
       }
 
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlasterCallback) {
          cb = (I_XmlBlasterCallback)rem;
-         Log.info(ME, "Accessing client callback reference using given '" + addr + "' string");
+         log.info(ME, "Accessing client callback reference using given '" + addr + "' string");
       }
       else {
          throw new XmlBlasterException("InvalidRmiCallback", "No callback to '" + addr + "' possible, class needs to implement interface I_XmlBlasterCallback.");
@@ -140,7 +142,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
    public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSessionId());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSessionId());
 
       try {
          MessageUnit[] updateArr = new MessageUnit[msg.length];
@@ -164,7 +166,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
    public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSessionId());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSessionId());
 
       try {
          MessageUnit[] updateArr = new MessageUnit[msg.length];
@@ -206,6 +208,6 @@ public class CallbackRmiDriver implements I_CallbackDriver
       // How do we close the socket??
       cb = null;
       callbackAddress = null;
-      if (Log.TRACE) Log.trace(ME, "Shutdown implementation is missing");
+      if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
 }

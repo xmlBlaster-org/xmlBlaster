@@ -3,11 +3,11 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.1 2002/09/12 21:01:41 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.2 2002/09/13 23:18:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
@@ -44,6 +44,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
    private final Global glob;
+   private final LogChannel log;
 
    private XmlBlasterConnection con = null;
    private String name;
@@ -63,6 +64,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
+      this.log = this.glob.getLog("test");
       this.name = name;
    }
 
@@ -95,17 +97,17 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
-      Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         Log.info(ME, "Connecting ...");
+         log.info(ME, "Connecting ...");
          con = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         Log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
       }
 
       // Subscribe to a message with a supplied filter
@@ -114,9 +116,9 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -150,38 +152,38 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
     */
    public void testFilter()
    {
-      Log.info(ME, "testFilter() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
+      log.info(ME, "testFilter() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
 
-      Log.info(ME, "TEST 1: Testing unfiltered message");
+      log.info(ME, "TEST 1: Testing unfiltered message");
       try {
          con.publish(new MessageUnit("<key oid='MSG'/>", "1234567890".getBytes(), null));
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(2000L, 1); // message should come back as it is only 10 bytes
 
 
-      Log.info(ME, "TEST 2: Testing filtered message");
+      log.info(ME, "TEST 2: Testing filtered message");
       try {
          con.publish(new MessageUnit("<key oid='MSG'/>", "12345678901".getBytes(), null));
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(2000L, 0); // message should be filtered as it is longer 10 bytes
 
 
-      Log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
+      log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
          assertTrue("publish forced the plugin to throw an XmlBlasterException, but it didn't happen", false);
       } catch(XmlBlasterException e) {
-         Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
+         log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
       }
       waitOnUpdate(2000L, 0); // no message expected on exception
 
-      Log.info(ME, "Success in testFilter()");
+      log.info(ME, "Success in testFilter()");
    }
 
    /**
@@ -191,7 +193,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
       return "";
    }
@@ -244,12 +246,12 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println(ME + ": Init failed");
+         System.exit(1);
       }
       TestSubscribeFilter testSub = new TestSubscribeFilter(glob, "TestSubscribeFilter", "Tim");
       testSub.setUp();
       testSub.testFilter();
-      Log.exit(TestSubscribeFilter.ME, "Good bye");
    }
 }
 

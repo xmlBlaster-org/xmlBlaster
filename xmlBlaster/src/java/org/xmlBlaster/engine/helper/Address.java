@@ -3,11 +3,10 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.10 2002/05/19 17:53:19 ruff Exp $
+Version:   $Id: Address.java,v 1.11 2002/09/13 23:18:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 
@@ -194,7 +193,7 @@ public class Address extends AddressBase
             a.setDelay(7890L);
             a.setOneway(true);
             a.setSessionId("0x4546hwi89");
-            Log.info(ME, a.toXml());
+            System.out.println(a.toXml());
          }
          {
             String nodeId = "heron";
@@ -212,13 +211,12 @@ public class Address extends AddressBase
 
             Global glob = new Global(args);
             Address a = new Address(glob, "RMI", nodeId);
-            Log.info(ME, a.toXml());
-            //Log.info(ME, glob.getProperty().toXml());
+            System.out.println(a.toXml());
          }
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("TestFailed", e.toString());
+         System.err.println("TestFailed: " + e.toString());
       }
    }
 }

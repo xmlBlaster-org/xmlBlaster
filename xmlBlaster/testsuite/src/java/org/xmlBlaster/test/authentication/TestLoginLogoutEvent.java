@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.StringTokenizer;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -43,6 +43,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
 {
    private static String ME = "TestLoginLogoutEvent";
    private final Global glob;
+   private final LogChannel log;
 
    private XmlBlasterConnection firstConnection;
    private String firstName;
@@ -67,10 +68,11 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    public TestLoginLogoutEvent(Global glob, String testName, String firstName, String secondName)
    {
-       super(testName);
-       this.glob = glob;
-       this.firstName = firstName;
-       this.secondName = secondName;
+      super(testName);
+      this.glob = glob;
+      this.log = this.glob.getLog("test");
+      this.firstName = firstName;
+      this.secondName = secondName;
    }
 
 
@@ -87,7 +89,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          firstConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
 
@@ -108,7 +110,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          try {
             firstConnection.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
+            log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
             assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
          }
 
@@ -128,16 +130,16 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    public void subscribe(String oid)
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing to login events ...");
+      if (log.TRACE) log.trace(ME, "Subscribing to login events ...");
       String xmlKey = "<key oid='" + oid + "' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       numReceived = 0;
       try {
          String subscribeOid = firstConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned null subscribeOid", subscribeOid != null);
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -154,7 +156,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       waitOnUpdate(1000L, 1);     // expecting a login event message (the login event message exists from my own login)
 
       numReceived = 0;
-      expectedName = null;        // no check (the logout event exists with TestAll but not when this test is run alone
+      expectedName = null;        // no check (the logout event exists with AllTests but not when this test is run alone
       subscribe("__sys__Logout");
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}          // no check
 
@@ -172,7 +174,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
                           "<qos></qos>");
          assertTrue(msgArr.length == 1);
          String clients = new String(msgArr[0].content);
-         Log.info(ME, "Current '__sys__UserList' is\n" + clients);
+         log.info(ME, "Current '__sys__UserList' is\n" + clients);
          StringTokenizer st = new StringTokenizer(clients);
          int found = 0;
          while (st.hasMoreTokens()) {
@@ -185,7 +187,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assertTrue("Check of '__sys__UserList' failed", found==2);
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, e.id + ": " + e.reason);
+         log.error(ME, e.id + ": " + e.reason);
          assertTrue("Second login failed", false);
       }
 
@@ -207,7 +209,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    {
       numReceived++;
       String name = new String(content);
-      Log.info(ME, cbSessionId + " - Receiving update of a message " + updateKey.getUniqueKey() + ", event for client " + name);
+      log.info(ME, cbSessionId + " - Receiving update of a message " + updateKey.getUniqueKey() + ", event for client " + name);
 
       if (expectedName != null)
          assertEquals("Wrong login name returned", expectedName, name);
@@ -261,7 +263,6 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testLoginLogout();
       testSub.tearDown();
-      Log.exit(TestLoginLogoutEvent.ME, "Good bye");
    }
 }
 

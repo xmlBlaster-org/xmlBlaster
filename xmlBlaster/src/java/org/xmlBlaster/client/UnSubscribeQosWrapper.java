@@ -3,11 +3,10 @@ Name:      UnSubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: UnSubscribeQosWrapper.java,v 1.1 2001/12/23 10:19:08 ruff Exp $
+Version:   $Id: UnSubscribeQosWrapper.java,v 1.2 2002/09/13 23:17:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 

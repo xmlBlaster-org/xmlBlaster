@@ -3,11 +3,11 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.16 2002/04/26 21:32:00 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.17 2002/09/13 23:18:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 public class XmlToDom
 {
    private String ME = "XmlToDom";
+   private final LogChannel log;
 
    protected String xmlKey_literal;
 
@@ -37,6 +38,7 @@ public class XmlToDom
     */
    public XmlToDom(String xmlKey_literal) throws XmlBlasterException
    {
+      log = org.xmlBlaster.util.Global.instance().getLog("core");
       create(xmlKey_literal);
    }
 
@@ -48,7 +50,7 @@ public class XmlToDom
     */
    public final void create(String xmlKey_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.trace(ME, "Creating DOM tree");
+      if (log.CALL) log.trace(ME, "Creating DOM tree");
 
       if (this.xmlKey_literal != null) {
          xmlDoc = null;
@@ -58,7 +60,7 @@ public class XmlToDom
       this.xmlKey_literal = xmlKey_literal.trim();
 
       if (!this.xmlKey_literal.startsWith("<")) {
-         Log.error(ME+".XML", "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
+         log.error(ME+".XML", "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
          throw new XmlBlasterException(ME+".XML", "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
 
       }
@@ -135,10 +137,10 @@ public class XmlToDom
       try {
          xmlDoc = xmlProc.load(input);
       } catch (java.io.IOException e) {
-         Log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
       } catch (org.xml.sax.SAXException e) {
-         Log.error(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         log.error(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
       }
 
@@ -152,7 +154,7 @@ public class XmlToDom
    public final void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException
    {
       org.w3c.dom.Node tmpRootNode = rootNode;
-      if (Log.TRACE) Log.trace(ME, "Entering mergeRootNode() ...");
+      if (log.TRACE) log.trace(ME, "Entering mergeRootNode() ...");
       org.w3c.dom.Node node = merger.mergeNode(tmpRootNode);
       rootNode = tmpRootNode;  // everything successful, assign the rootNode
    }
@@ -174,7 +176,7 @@ public class XmlToDom
          while (st.hasMoreTokens()) {
             sb.append(offset).append("   ").append(st.nextToken());
          }
-      } catch (Exception e) { Log.error(ME, "Problems in writing DOM"); return ""; }
+      } catch (Exception e) { log.error(ME, "Problems in writing DOM"); return ""; }
       String nice = sb.toString();
       int index = nice.indexOf("?>");   // Remove header line "<?xml version="1.0" encoding="UTF-8"?>"
       if (index > 0)

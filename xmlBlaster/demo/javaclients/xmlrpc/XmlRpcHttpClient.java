@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.14 2002/06/02 21:35:59 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.15 2002/09/13 23:17:44 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -14,7 +14,7 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
@@ -52,6 +52,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class XmlRpcHttpClient
 {
    private static final String ME = "XmlRpcHttpClient";
+   private LogChannel log = null;
 
 
    /**
@@ -69,18 +70,19 @@ public class XmlRpcHttpClient
     */
    private void testWithHelperClasses(Global glob)
    {
+      this.log = glob.getLog("client");
       try {
          // force XML-RPC protocol:
          glob.getProperty().set("client.protocol", "XML-RPC");
          
          XmlBlasterConnection client = new XmlBlasterConnection(glob);
          
-         Log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterConnection");
+         log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterConnection");
          String sessionId = "Session1";
          ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
 
          client.login("LunaMia", "silence", loginQos, null);
-         Log.info(ME, "Login successful");
+         log.info(ME, "Login successful");
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
@@ -89,12 +91,12 @@ public class XmlRpcHttpClient
 
          MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos><forceUpdate /></qos>");
          client.publish(msgUnit);
-         Log.info(ME, "Published a message");
+         log.info(ME, "Published a message");
 
          client.logout();
       }
       catch (XmlBlasterException ex) {
-         Log.error(ME, "exception: " + ex.toString());
+         log.error(ME, "exception: " + ex.toString());
       }
       catch (Throwable ex1) {
          System.err.println("exception:"  + ex1);
@@ -115,14 +117,12 @@ public class XmlRpcHttpClient
       Global glob = new Global();
       if (glob.init(args) != 0) {
          usage();
-         Log.exit(ME, "");
+         System.exit(1);
       }
 
       XmlRpcHttpClient client = new XmlRpcHttpClient();
 
       client.testWithHelperClasses(glob);
-
-      Log.exit(ME, "EXIT NOW....");
    }
 
 
@@ -131,13 +131,13 @@ public class XmlRpcHttpClient
     */
    private static void usage()
    {
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
-      Log.plain(ME, "----------------------------------------------------------");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
+      System.out.println("----------------------------------------------------------");
       XmlBlasterConnection.usage();
-      Log.usage();
-      Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "");
+      System.out.println(Global.instance().usage());
+      System.out.println("----------------------------------------------------------");
+      System.out.println("");
    }
 }
 

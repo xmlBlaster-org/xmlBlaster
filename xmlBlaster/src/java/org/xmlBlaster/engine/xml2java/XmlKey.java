@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.27 2002/08/30 07:51:30 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.28 2002/09/13 23:18:06 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -466,7 +466,12 @@ public final class XmlKey
     * @return true if accessing <__sys__xy>
     */
    public final boolean isInternalMsg() throws XmlBlasterException {
-      if (getKeyOid().startsWith(Constants.INTERNAL_OID_PRAEFIX)) // "__sys__")
+      String oid = getKeyOid(); 
+      if (oid == null) {
+         log.warn(ME, "Can't determine key oid");
+         return false;
+      }
+      if (oid.startsWith(Constants.INTERNAL_OID_PRAEFIX)) // "__sys__")
          return true;
       else
          return false;
