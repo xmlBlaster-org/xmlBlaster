@@ -20,307 +20,194 @@ using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-   Timeout::Timeout(Global& global)
-      : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
-        timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
-        isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
-        global_(global), log_(global.getLog("util")),
-	invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
-   {
-      // the thread will only be instantiated when starting
-      log_.call(ME, " default constructor");
-/*
-      runningThread_ = NULL;
-      invocationMutex_ = new boost::mutex();
-      waitForTimeoutMutex_ = new boost::mutex();
-      waitForTimeoutCondition_ = new boost::condition();
-*/
-      log_.trace(ME, " default constructor: after creating timeout condition");
-   }
+Timeout::Timeout(Global& global)
+   : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
+     timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
+     isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
+     global_(global), log_(global.getLog("util")),
+     invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
+{
+   // the thread will only be instantiated when starting
+   log_.call(ME, " default constructor");
+   log_.trace(ME, " default constructor: after creating timeout condition");
+}
 
-   Timeout::Timeout(Global& global, const string &name)
-      : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
-        timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
-        isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
-        global_(global), log_(global.getLog("util")),
-	invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
-   {
-      // the thread remains uninitialized ...
-      log_.call(ME, " alternative constructor");
-/*
-      runningThread_ = NULL;
-      invocationMutex_ = new boost::mutex();
-      waitForTimeoutMutex_ = new boost::mutex();
-      waitForTimeoutCondition_ = new boost::condition();
-*/
-   }
+Timeout::Timeout(Global& global, const string &name)
+   : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
+     timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
+     isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
+     global_(global), log_(global.getLog("util")),
+     invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
+{
+   // the thread remains uninitialized ...
+   log_.call(ME, " alternative constructor");
+}
 
-   Timeout::~Timeout() {
-      log_.call(ME, " destructor");
-      shutdown();
-      while (isActive_) { } // wait for the thread to finish
-/*
-      delete invocationMutex_;
-      delete waitForTimeoutMutex_;
-      delete waitForTimeoutCondition_;
-      delete runningThread_;
-*/
-//      Thread::~Thread();
-   }
+Timeout::~Timeout() {
+   log_.call(ME, " destructor");
+   shutdown();
+   while (isActive_) { } // wait for the thread to finish
+}
 
 
-   void Timeout::start() {
-      log_.call(ME, " start");
-      isRunning_ = true;
-      log_.trace(ME, " before creating the running thread");
-//      runningThread_ = new boost::thread(TimeoutRunner(*this));
-      Thread::start();
-      log_.trace(ME, " start: running thread created");
-   }
+void Timeout::start() {
+   log_.call(ME, " start");
+   isRunning_ = true;
+   log_.trace(ME, " before creating the running thread");
+   Thread::start();
+   log_.trace(ME, " start: running thread created");
+}
 
-   void Timeout::join() {
-//      runningThread_->join();
-      Thread::join();
-      log_.trace(ME, " start: running thread joined (i.e. thread started)");
-   }
+void Timeout::join() {
+   Thread::join();
+   log_.trace(ME, " start: running thread joined (i.e. thread started)");
+}
 
-   Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) {
-      log_.call(ME, " addTimeoutListener");
-      Timestamp key = 0;
-      if (delay < 1) std::cerr << ME <<": addTimeoutListener with delay = " << delay << std::endl;
-//      int nanoCounter = 0;
-      
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
-      while (true) {
-         key = timestampFactory_.getTimestamp() + Constants::MILLION * delay;
-         TimeoutMap::iterator iter = timeoutMap_.find(key);
-         if (iter == timeoutMap_.end()) {
-            log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<string>(key));
-            Container cont(listener, userData);
-            TimeoutMap::value_type el(key, cont);
-            timeoutMap_.insert(el);
-            break;
-         }
-      }
-//      waitForTimeoutCondition_->notify_one();
-      waitForTimeoutCondition_.notify();
-      return key;
-   }
+Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) {
+   log_.call(ME, " addTimeoutListener");
+   Timestamp key = 0;
+   if (delay < 1) std::cerr << ME <<": addTimeoutListener with delay = " << delay << std::endl;
 
-   Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) {
-      log_.call(ME, " refreshTimeoutListener");
-      if (key < 0)
-         // throw an exception here ...
-//      Timestamp newKey = 0;
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
+   Lock lock(invocationMutex_);
+   while (true) {
+      key = timestampFactory_.getTimestamp() + Constants::MILLION * delay;
       TimeoutMap::iterator iter = timeoutMap_.find(key);
       if (iter == timeoutMap_.end()) {
-          // throw the exception here ...
-         // throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
-         std::cerr << ME << "The timeout handle '" << key <<"' is unknown, no timeout refresh done" << std::endl;
-         return -1; // temporarly. Change this once exception is thrown
+         log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<string>(key));
+         Container cont(listener, userData);
+         TimeoutMap::value_type el(key, cont);
+         timeoutMap_.insert(el);
+         break;
       }
-      timeoutMap_.erase(key);
-      I_Timeout *callback = (*iter).second.first;
-      void *userData = (*iter).second.second;
-      return addTimeoutListener(callback, delay, userData);
    }
+   waitForTimeoutCondition_.notify();
+   return key;
+}
 
-   Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void *userData, Timestamp key) {
-      log_.call(ME, " addOrRefreshTimeoutListener");
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
-      if (key < 0) return addTimeoutListener(listener, delay, NULL);
-      return refreshTimeoutListener(key, delay);
+Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) {
+   log_.call(ME, " refreshTimeoutListener");
+   if (key < 0) {
+      // throw an exception here ...
    }
-
-   void Timeout::removeTimeoutListener(Timestamp key) {
-      log_.call(ME, " removeTimeoutListener");
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
-      timeoutMap_.erase(key);
+   Lock lock(invocationMutex_);
+   TimeoutMap::iterator iter = timeoutMap_.find(key);
+   if (iter == timeoutMap_.end()) {
+       // throw the exception here ...
+      // throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+      std::cerr << ME << "The timeout handle '" << key <<"' is unknown, no timeout refresh done" << std::endl;
+      return -1; // temporarly. Change this once exception is thrown
    }
+   timeoutMap_.erase(key);
+   I_Timeout *callback = (*iter).second.first;
+   void *userData = (*iter).second.second;
+   return addTimeoutListener(callback, delay, userData);
+}
 
-   bool Timeout::isExpired(Timestamp key) {
-      log_.call(ME, " isExpired");
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
-      return (timeoutMap_.find(key) == timeoutMap_.end());
-   }
+Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void *userData, Timestamp key) {
+   log_.call(ME, " addOrRefreshTimeoutListener");
+   Lock lock(invocationMutex_);
+   if (key < 0) return addTimeoutListener(listener, delay, NULL);
+   return refreshTimeoutListener(key, delay);
+}
 
-   long Timeout::spanToTimeout(Timestamp key) {
-      log_.call(ME, " spanToTimeout");
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
-      TimeoutMap::iterator iter = timeoutMap_.find(key);
-      if (iter == timeoutMap_.end()) return -1;
-      Timestamp currentTimestamp = timestampFactory_.getTimestamp();
-      return getTimeout(key) - (long)(currentTimestamp / Constants::MILLION);
-   }
+void Timeout::removeTimeoutListener(Timestamp key) {
+   log_.call(ME, " removeTimeoutListener");
+   Lock lock(invocationMutex_);
+   timeoutMap_.erase(key);
+}
 
-   long Timeout::getTimeout(Timestamp key) {
-      log_.call(ME, " getTimeout");
-      if (key < 0) return -1;
-      return (long)(key / Constants::MILLION);
-   }
+bool Timeout::isExpired(Timestamp key) {
+   log_.call(ME, " isExpired");
+   Lock lock(invocationMutex_);
+   return (timeoutMap_.find(key) == timeoutMap_.end());
+}
 
-   void Timeout::removeAll() {
-      log_.call(ME, " removeAll");
-//      boost::mutex::scoped_lock lock(*invocationMutex_);
-      Lock lock(invocationMutex_);
-      timeoutMap_.clear();
-   }
+long Timeout::spanToTimeout(Timestamp key) {
+   log_.call(ME, " spanToTimeout");
+   Lock lock(invocationMutex_);
+   TimeoutMap::iterator iter = timeoutMap_.find(key);
+   if (iter == timeoutMap_.end()) return -1;
+   Timestamp currentTimestamp = timestampFactory_.getTimestamp();
+   return getTimeout(key) - (long)(currentTimestamp / Constants::MILLION);
+}
 
-   void Timeout::shutdown() {
-      log_.call(ME, " shutdown");
-      isRunning_ = false;
-      removeAll();
-//      waitForTimeoutCondition_->notify_one();
-      waitForTimeoutCondition_.notify();
-   }
+long Timeout::getTimeout(Timestamp key) {
+   log_.call(ME, " getTimeout");
+   if (key < 0) return -1;
+   return (long)(key / Constants::MILLION);
+}
 
+void Timeout::removeAll() {
+   log_.call(ME, " removeAll");
+   Lock lock(invocationMutex_);
+   timeoutMap_.clear();
+}
 
-
-   void Timeout::run()
-   {
-      log_.call(ME, " run: operator ()");
-      isActive_ = true;
-
-      Container *container = NULL;
-      Container tmpContainer;
-      
-      while (isRunning_) {
-         Lock waitForTimeoutLock(waitForTimeoutMutex_);
-
-         log_.trace(ME, " operator (): is running");
-         double delay = 100000.0; // sleep veeery long
+void Timeout::shutdown() {
+   log_.call(ME, " shutdown");
+   isRunning_ = false;
+   removeAll();
+   waitForTimeoutCondition_.notify();
+}
 
 
-         {
-            Lock lock(invocationMutex_);
-            TimeoutMap::iterator iter = timeoutMap_.begin();
-            if (iter == timeoutMap_.end()) {
-               log_.warn(ME, " The timeout is empty");
+
+void Timeout::run()
+{
+   log_.call(ME, " run: operator ()");
+   isActive_ = true;
+
+   Container *container = NULL;
+   Container tmpContainer;
+   
+   while (isRunning_) {
+      Lock waitForTimeoutLock(waitForTimeoutMutex_);
+
+      log_.trace(ME, " operator (): is running");
+      double delay = 100000.0; // sleep veeery long
+
+
+      {
+         Lock lock(invocationMutex_);
+         TimeoutMap::iterator iter = timeoutMap_.begin();
+         if (iter == timeoutMap_.end()) {
+            log_.warn(ME, " The timeout is empty");
+         }
+         else {
+            log_.trace(ME, " The timeout is not empty");
+            Timestamp nextWakeup = (*iter).first;
+            log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ms");
+            double next = nextWakeup / Constants::MILLION;
+            double current = timestampFactory_.getTimestamp() / Constants::MILLION;
+            delay = next - current;
+
+            log_.trace(ME, "run, next event  : " + lexical_cast<string>(next) + " ms");
+            log_.trace(ME, "run, current time: " + lexical_cast<string>(current) + " ms");
+            log_.trace(ME, "run, delay       : " + lexical_cast<string>(delay) + " ms");
+            if (delay <= 1.0e-9) {
+               tmpContainer = (*iter).second;
+               timeoutMap_.erase((*iter).first);
+               container = &tmpContainer;
+               if (isDebug_)
+                  std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " millis" << std::endl;
             }
-            else {
-               log_.trace(ME, " The timeout is not empty");
-               Timestamp nextWakeup = (*iter).first;
-               log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ms");
-               double next = nextWakeup / Constants::MILLION;
-               double current = timestampFactory_.getTimestamp() / Constants::MILLION;
-               delay = next - current;
-
-               log_.trace(ME, "run, next event  : " + lexical_cast<string>(next) + " ms");
-               log_.trace(ME, "run, current time: " + lexical_cast<string>(current) + " ms");
-               log_.trace(ME, "run, delay       : " + lexical_cast<string>(delay) + " ms");
-               if (delay <= 1.0e-9) {
-                  tmpContainer = (*iter).second;
-                  timeoutMap_.erase((*iter).first);
-                  container = &tmpContainer;
-                  if (isDebug_)
-                     std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " millis" << std::endl;
-               }
-            }
-         }
-         // must be outside the sync
-         if (container != NULL) {
-             (container->first)->timeout(container->second);
-             container = NULL;
-         }
-         {
-            log_.trace(ME, "sleeping ... " + lexical_cast<string>(delay) + " milliseconds");
-            isReady_ = true;
-            waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)delay);
-            log_.trace(ME, "waking up .. ");
-         }
-      }
-      log_.trace(ME, "the running thread is exiting");
-      isActive_ = false;
-   }
-
-
-
-
-
-
-
-
-
-
-
-//-------------------- and the timeout runner .... ----------------------------
-
-/*
-   TimeoutRunner::TimeoutRunner(Timeout &ref) : ref), ME("TimeoutRunner") {
-   }
-
-   void TimeoutRunner::operator()() {
-       
-      log_.call(ME, " run: operator ()");
-      isActive_ = true;
-
-      Container *container = NULL;
-      Container tmpContainer;
-      
-      while (isRunning_) {
-         boost::mutex::scoped_lock waitForTimeoutLock(*waitForTimeoutMutex_);
-
-         log_.trace(ME, " operator (): is running");
-         double delay = 100000.0; // sleep veeery long
-
-         boost::xtime timeToWait;
-         boost::xtime_get(&timeToWait, boost::TIME_UTC);
-
-         {
-            boost::mutex::scoped_lock lock(*invocationMutex_);
-            TimeoutMap::iterator iter = timeoutMap_.begin();
-            if (iter == timeoutMap_.end()) {
-               log_.warn(ME, " The timeout is empty");
-            }
-            else {
-               log_.trace(ME, " The timeout is not empty");
-               Timestamp nextWakeup = (*iter).first;
-               log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ms");
-               double next = nextWakeup / Constants::MILLION;
-               double current = timestampFactory_.getTimestamp() / Constants::MILLION;
-               delay = next - current;
-
-               log_.trace(ME, "run, next event  : " + lexical_cast<string>(next) + " ms");
-               log_.trace(ME, "run, current time: " + lexical_cast<string>(current) + " ms");
-               log_.trace(ME, "run, delay       : " + lexical_cast<string>(delay) + " ms");
-               if (delay <= 1.0e-9) {
-                  tmpContainer = (*iter).second;
-                  timeoutMap_.erase((*iter).first);
-                  container = &tmpContainer;
-                  if (isDebug_)
-                     std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " millis" << std::endl;
-               }
-            }
-         }
-         // must be outside the sync
-         if (container != NULL) {
-             (container->first)->timeout(container->second);
-             container = NULL;
-         }
-         {
-//            boost::mutex::scoped_lock waitForTimeoutLock(*waitForTimeoutMutex_);
-            long int sec = (long int)(delay / Constants::THOUSAND);
-            long int nano = (long int)((delay - sec*Constants::THOUSAND)*Constants::MILLION);
-            timeToWait.sec  +=  sec;
-            timeToWait.nsec += nano;
-            log_.trace(ME, "sleeping ... " + lexical_cast<string>(sec) + " seconds and " + lexical_cast<string>(nano));
-            isReady_ = true;
-            waitForTimeoutCondition_->timed_wait(waitForTimeoutLock, timeToWait);
-            log_.trace(ME, "waking up .. ");
          }
       }
-      log_.trace(ME, "the running thread is exiting");
-      isActive_ = false;
+      // must be outside the sync
+      if (container != NULL) {
+          (container->first)->timeout(container->second);
+          container = NULL;
+      }
+      {
+         log_.trace(ME, "sleeping ... " + lexical_cast<string>(delay) + " milliseconds");
+         isReady_ = true;
+         waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)delay);
+         log_.trace(ME, "waking up .. ");
+      }
    }
-*/
-
+   log_.trace(ME, "the running thread is exiting");
+   isActive_ = false;
+}
 
 }}}; // namespaces
 

@@ -3,7 +3,7 @@ Name:      xmlBlaster.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.10 2002/12/13 12:23:56 laghi Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.11 2002/12/31 16:03:44 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -15,17 +15,6 @@ Version:   $Id: xmlBlasterDef.h,v 1.10 2002/12/13 12:23:56 laghi Exp $
 #endif
 
 #include <util/XmlBCfg.h>
-
-// forward declaration to avoid include boost header files 
-// note that this number might change
-#ifndef BOOST_MUTEX_WEK070601_HPP 
-namespace boost { 
-   class thread;    
-   class mutex;
-//   class timed_mutex;
-   class condition;
-}
-#endif
 
 // definition for the timestamps
 namespace org { namespace xmlBlaster { namespace util {

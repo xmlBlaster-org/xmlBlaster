@@ -48,7 +48,8 @@ public:
       cout << "next timeout will occur in about 1 s" << endl;
    }
 
-   void testTimeout() {
+   void testTimeout() 
+   {
       cout << ME << " testTimeout(): the timeout will now be started" << endl;
       timeoutObject->start();
       cout << ME << " testTimeout(): the timeout will now be triggered" << endl;

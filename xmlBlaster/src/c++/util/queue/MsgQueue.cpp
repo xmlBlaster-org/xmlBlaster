@@ -14,7 +14,7 @@ using org::xmlBlaster::util::qos::storage::QueueProperty;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 MsgQueue::MsgQueue(Global& global, const QueueProperty& property)
-   : ME("MsgQueue"), global_(global), log_(global.getLog("queue")), property_(property), storage_()
+   : ME("MsgQueue"), global_(global), log_(global.getLog("queue")), property_(property), storage_(), accessMutex_()
 {
    numOfBytes_ = 0;
 }
@@ -22,19 +22,15 @@ MsgQueue::MsgQueue(Global& global, const QueueProperty& property)
 MsgQueue::~MsgQueue()
 {
    if (!storage_.empty()) {
+      Lock lock(accessMutex_);
       storage_.erase(storage_.begin(), storage_.end());
    }
 } 
 
- 
-/**
- * puts a new entry into the queue. Note that this method takes the entry pointed to by the argument 
- * and puts a reference to it into the queue. This means that you can not destroy the entry before the
- * reference to it has been removed from the queue (which normally happens on a remove or when destroying
- * the queue.
- */
+
 void MsgQueue::put(MsgQueueEntry *entry)
 {
+   Lock lock(accessMutex_);
    if (!entry) {
       // throw an exception here
    }
@@ -53,14 +49,24 @@ void MsgQueue::put(MsgQueueEntry *entry)
    }	  
 }
 
-/**
- * Returns the entries with the highest priority in the queue. If 'maxNumOfEntries' is positive,
- * this is the maximum number of entries to return. If maxNumOfBytes is positive, only the entries
- * which fit into the range specified are returned. If there are no such entries, an empty vector is
- * returned.
- */
+
+
+void MsgQueue::put(const PublishQueueEntry& entry)
+{
+   PublishQueueEntry *ptr = new PublishQueueEntry(entry);
+   put(ptr);
+}
+
+void MsgQueue::put(const ConnectQueueEntry& entry)
+{
+   ConnectQueueEntry *ptr = new ConnectQueueEntry(entry);
+   put(ptr);
+}
+
+
 vector<EntryType> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
 {
+   Lock lock(accessMutex_);
    vector<EntryType> ret;
    if (storage_.empty()) return ret;
    StorageType::const_iterator iter = storage_.begin();
@@ -81,12 +87,9 @@ vector<EntryType> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long maxN
 }
 
 
-/**
- * Deletes the entries specified in the vector in the argument list. If this vector is empty or if
- * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
- */
 long MsgQueue::randomRemove(const vector<EntryType>& entries) 
 {
+   Lock lock(accessMutex_);
    if (entries.empty() || storage_.empty()) return 0;
    vector<EntryType>::const_iterator iter = entries.begin();
    long count = 0;
@@ -104,8 +107,6 @@ long MsgQueue::randomRemove(const vector<EntryType>& entries)
 }
 
 }}}} // namespace
-
-
 
 
 

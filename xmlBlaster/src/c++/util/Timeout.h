@@ -108,11 +108,8 @@ class Dll_Export Timeout : public Thread
    Log&    log_;
 
    /** The synchronization object */
-//   boost::mutex *invocationMutex_;
    Mutex invocationMutex_;   
-//   boost::mutex *waitForTimeoutMutex_;
    Mutex waitForTimeoutMutex_;
-//   boost::condition *waitForTimeoutCondition_;
    Condition waitForTimeoutCondition_;
 
 
@@ -256,20 +253,6 @@ class Dll_Export Timeout : public Thread
    void run();
 
 };
-
-/*
-
-class TimeoutRunner {
-private:
-   Timeout& reference_;
-   string ME;
-public:
-   TimeoutRunner(Timeout &ref);
-
-   void operator()();
-
-};
-*/
 
 }}}; // namespaces
 

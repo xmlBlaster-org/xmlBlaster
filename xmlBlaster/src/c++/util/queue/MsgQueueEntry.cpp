@@ -102,8 +102,8 @@ size_t MsgQueueEntry::getSizeInBytes() const
    size_t sum = 0;
    if (msgUnit_          != NULL) sum += sizeof(*msgUnit_);
    if (connectQos_       != NULL) sum += sizeof(*connectQos_);
-   if (connectReturnQos_ != NULL) sum += sizeof(*connectReturnQos_);
-   if (publishReturnQos_ != NULL) sum += sizeof(*publishReturnQos_);
+//   if (connectReturnQos_ != NULL) sum += sizeof(*connectReturnQos_);
+//   if (publishReturnQos_ != NULL) sum += sizeof(*publishReturnQos_);
    return sum;
 }
 
