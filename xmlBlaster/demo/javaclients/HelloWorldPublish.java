@@ -143,7 +143,7 @@ public class HelloWorldPublish
             pq.setPriority(priority);
             pq.setPersistent(persistent);
             pq.setLifeTime(lifeTime);
-            pq.setIsSubscribeable(subscribeable);
+            pq.setSubscribeable(subscribeable);
             
             if (i == 0) {
                TopicProperty topicProperty = new TopicProperty(glob);

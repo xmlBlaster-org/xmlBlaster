@@ -131,8 +131,8 @@ public final class PublishQosServer
     * @param isSubscribeable true if Publish/Subscribe style is used<br />
     *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
     */
-   public void setIsSubscribeable(boolean isSubscribeable) {
-      this.msgQosData.setIsSubscribeable(isSubscribeable);
+   public void setSubscribeable(boolean isSubscribeable) {
+      this.msgQosData.setSubscribeable(isSubscribeable);
    }
 
    public boolean isSubscribeable() {
