@@ -3,6 +3,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o Commented out RMI in property files, this protocol driver is currently
+   buggy.
+
+ o MsgUnitRaw needs to implement Serializable for RMI but may not use it for J2ME,
+   this issue needs to be resolved
+
  o C client library: Bugfix in messageUnitToXmlLimited() for msg content smaller 5 bytes
 
  o Incompatible JDBC persistence change:
