@@ -192,7 +192,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       return this.authenticate.getGlobal();
    }
 
-   final AccessPluginManager getAccessPluginManager() {
+   public final AccessPluginManager getAccessPluginManager() {
       return this.accessPluginManager;
    }
 
@@ -533,7 +533,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                                                   filterQos[jj].getVersion(), 
                                                   xmlKey.getContentMime(),
                                                   xmlKey.getContentMimeExtended());
-                     Log.warn(ME, "get("+xmlKeyExact.getUniqueKey()+") filter=" + filter + " qos=" + qos.toXml());
+                     if (Log.TRACE) Log.trace(ME, "get("+xmlKeyExact.getUniqueKey()+") filter=" + filter + " qos=" + qos.toXml());
                      if (filter != null && filter.match(sessionInfo.getSubjectInfo(),
                                                   sessionInfo.getSubjectInfo(),
                                                   msgUnitWrapper, filterQos[jj].getQuery()) == false)
