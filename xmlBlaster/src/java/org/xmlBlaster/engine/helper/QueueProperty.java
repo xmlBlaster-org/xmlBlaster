@@ -3,7 +3,7 @@ Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: QueueProperty.java,v 1.3 2002/03/17 13:34:33 ruff Exp $
+Version:   $Id: QueueProperty.java,v 1.4 2002/03/18 00:26:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -70,6 +70,17 @@ public class QueueProperty
       setRelating(relating);
    }
 
+   /**
+    * Show some important settings for logging
+    */
+   public final String getSettings()
+   {
+      StringBuffer buf = new StringBuffer(256);
+      buf.append("onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      if (getCurrentCallbackAddress() != null)
+         buf.append(" ").append(getCurrentCallbackAddress().getSettings());
+      return buf.toString();
+   }
 
    /**
     * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_UNRELATED
