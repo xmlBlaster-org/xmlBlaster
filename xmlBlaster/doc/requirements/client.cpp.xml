@@ -339,7 +339,7 @@ int main(int args, char ** argv)
 Compilation with VC 6 will fail (broken namespace support leads to internal compiler error).
 </p>
 <p>
-Besides the orbs mentionned in the table the source code is already prepared for other corba implementors such as
+Besides the orbs mentioned in the table the source code is already prepared for other corba vendors such as
 </p>
 <ol>
   <li>ORBACUS</li>
@@ -369,7 +369,7 @@ what libxmlBlasterClient.so
 ident libxmlBlasterClient.so
 
 # The result is something like:
-@(#) $Id: client.cpp.xml,v 1.12 2003/03/03 08:36:08 ruff Exp $
+@(#) $Id: client.cpp.xml,v 1.13 2003/03/03 08:40:46 ruff Exp $
 
 # You can now lookup Global.cpp 1.29 with
 cvs log Global.cpp
@@ -387,6 +387,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 </requirement>
 
