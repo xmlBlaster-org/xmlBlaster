@@ -1,8 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 
-Changes for 0.x []
+Changes for 0.x [] (cvs main branch)
 ==================
+
+ o C++ client library got support for a client side persistent queue, see
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.queue.html
 
  o C++ client library
    - Introduced abstract queue interface (I_Queue) and queue factory
