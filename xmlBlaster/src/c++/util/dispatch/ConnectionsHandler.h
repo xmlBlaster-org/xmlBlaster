@@ -145,7 +145,9 @@ public:
 
    virtual I_XmlBlasterConnection& getConnection();
 
-//   virtual void setConnectReturnQos(const connectReturnQos& retQos);
+   virtual ConnectReturnQos* getConnectReturnQos();
+
+   virtual ConnectQos* getConnectQos();
 
 protected:
    /** only used inside the class to avoid deadlock */

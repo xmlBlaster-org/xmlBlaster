@@ -53,6 +53,10 @@ public:
     */
    virtual Queue* getQueue() = 0;
 
+   /**
+    * Returns true if the connection is in failsafe mode. You can activate this mode by invoking initFailsafe
+    * in XmlBlasterAccess.
+    */
    virtual bool isFailsafe() const = 0;
 
    virtual bool isConnected() const = 0;
@@ -61,7 +65,9 @@ public:
 
    virtual I_XmlBlasterConnection& getConnection() = 0;
 
-//   virtual void setConnectReturnQos(const ConnectReturnQos& retQos) = 0;
+   virtual ConnectReturnQos* getConnectReturnQos() = 0;
+
+   virtual ConnectQos* getConnectQos() = 0;
 
 };
 

@@ -668,6 +668,18 @@ I_XmlBlasterConnection& ConnectionsHandler::getConnection()
    }
    return *connection_;
 }
+
+
+ConnectReturnQos* ConnectionsHandler::getConnectReturnQos()
+{
+   return connectReturnQos_;
+}
+
+ConnectQos* ConnectionsHandler::getConnectQos()
+{
+   return connectReturnQos_;
+}
+
 /*
 void ConnectionsHandler::setConnectReturnQos(const connectReturnQos& retQos)
 {
