@@ -3,11 +3,11 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.24 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestPub.java,v 1.25 2002/06/25 18:02:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -37,8 +37,9 @@ import junit.framework.*;
  */
 public class TestPub extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestPub";
    private final Global glob;
+   private final LogChannel log;
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -52,6 +53,8 @@ public class TestPub extends TestCase implements I_Callback
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
 
+   private String assertInUpdate = null;
+
    /**
     * Constructs the TestPub object.
     * <p />
@@ -62,6 +65,7 @@ public class TestPub extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
+       this.log = glob.getLog(null);
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -81,7 +85,7 @@ public class TestPub extends TestCase implements I_Callback
          senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
    }
@@ -101,6 +105,7 @@ public class TestPub extends TestCase implements I_Callback
       try {
          EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
+         assertTrue(assertInUpdate, assertInUpdate == null);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       senderConnection.logout();
@@ -114,7 +119,7 @@ public class TestPub extends TestCase implements I_Callback
     */
    public void testSubscribe()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing using XPath syntax ...");
+      System.out.println("***** Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
@@ -122,9 +127,9 @@ public class TestPub extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -139,7 +144,7 @@ public class TestPub extends TestCase implements I_Callback
     */
    public void testPublish(boolean first)
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      System.out.println("***** Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -155,9 +160,9 @@ public class TestPub extends TestCase implements I_Callback
       if (first) {
          try {
             publishOid = senderConnection.publish(msgUnit).getOid();
-            Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+            log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            Log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.reason);
             assertTrue("publish - XmlBlasterException: " + e.reason, false);
          }
          assertTrue("returned publishOid == null", publishOid != null);
@@ -168,7 +173,7 @@ public class TestPub extends TestCase implements I_Callback
             publishOid = senderConnection.publish(msgUnit).getOid();
             assertTrue("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
-            Log.info(ME, "Success: Publishing again throws an exception");
+            log.info(ME, "Success: Publishing again throws an exception");
          }
       }
    }
@@ -184,15 +189,21 @@ public class TestPub extends TestCase implements I_Callback
       Util.delay(1000L);                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
+      log.info(ME, "*** Test #1");
       senderContent = "Yeahh, i'm the new content 1";
       testPublish(true);
       waitOnUpdate(5000L);
+      assertTrue(assertInUpdate, assertInUpdate == null);
+      assertInUpdate = null;
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
 
+      log.info(ME, "*** Test #2");
       senderContent = "Yeahh, i'm the new content 2";
       testPublish(false);
       Util.delay(1000L);                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after publishing", 0, numReceived); // message arrived?
+      assertTrue(assertInUpdate, assertInUpdate == null);
+      assertInUpdate = null;
    }
 
    /**
@@ -202,16 +213,30 @@ public class TestPub extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of a message state=" + updateQos.getState());
+      if (updateQos.isErased()) {
+         log.info(ME, "Ignore erase event");
+         return ""; // We ignore the erase event on tearDown
+      }
 
       numReceived += 1;
 
+      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender();
       assertEquals("Wrong sender", senderName, updateQos.getSender());
+
+      assertInUpdate = "Wrong oid of message returned expected:" + publishOid + " but was:" + updateKey.getUniqueKey();
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+
+      assertInUpdate = "Message content is corrupted expected:" + new String(senderContent) + " but was:" + new String(content);
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
+
+      assertInUpdate = "Message contentMime is corrupted expected:" + contentMime + " but was:" + updateKey.getContentMime();
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
+
+      assertInUpdate = "Message contentMimeExtended is corrupted expected:" + contentMimeExtended + " but was: " + updateKey.getContentMimeExtended();
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
 
+      assertInUpdate = null;
       messageArrived = true;
       return "";
    }
@@ -234,7 +259,7 @@ public class TestPub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -267,13 +292,12 @@ public class TestPub extends TestCase implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.err.println("******* " + ME + ": Init failed");
       }
       TestPub testSub = new TestPub(glob, "TestPub", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
-      Log.exit(TestPub.ME, "Good bye");
    }
 }
 
