@@ -139,7 +139,7 @@ namespace org { namespace xmlBlaster {
                string oneRes = "<qos><state>OK</state></qos>";
                if (!forCache) {
                   if (boss_) {
-                     oneRes = boss_->update(sessionId, loginName_, *updateKey,
+                     oneRes = boss_->update(sessionId, *updateKey,
                                    (void*)&msgUnit.content[0], 
                                    msgUnit.content.length(), *updateQoS); 
                      // Call my boss
@@ -197,7 +197,7 @@ namespace org { namespace xmlBlaster {
                if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQoS->getSender());
 
                if (boss_) {
-                  boss_->update(sessionId, loginName_, *updateKey,
+                  boss_->update(sessionId, *updateKey,
                                  (void*)&msgUnit.content[0], 
                                  msgUnit.content.length(), *updateQoS); 
                }
