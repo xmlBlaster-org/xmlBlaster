@@ -77,6 +77,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import java.util.*;
 import java.io.*;
 
+
 /**
  * This is the central message broker, all requests are routed through this singleton.
  * <p>
@@ -89,7 +90,7 @@ import java.io.*;
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class RequestBroker implements I_ClientListener, I_AdminNode, I_RunlevelListener
+public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener
 {
    private String ME = "RequestBroker";
    private final Global glob;
@@ -241,6 +242,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
       authenticate.addClientListener(this);
+
+      // register into the jmx server ...
+      this.log.info(ME, "registering the RequestBroker into the jmx server");
+      this.glob.getJmxWrapper().register(this, this.glob.getStrippedId());
+      // don't forget to unregister from the jmx server (currently not done)
 
       this.state = ALIVE;
    }
