@@ -1,13 +1,14 @@
 /*------------------------------------------------------------------------------
-Name:      ServerThread.java
+Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.19 2002/09/07 21:50:27 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.1 2002/09/09 13:32:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.I_Main;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.XmlBlasterClassLoader;
@@ -20,16 +21,14 @@ import org.xmlBlaster.client.*;
  * <p />
  * TODO: change to use util.Global (or engine.Global as xmlBlaster.Main needs it).
  */
-public class ServerThread extends Thread
+public class EmbeddedXmlBlaster
 {
-   private static final String ME = "ServerThread";
+   private static final String ME = "EmbeddedXmlBlaster";
    private Global glob;
    LogChannel log;
    /** Key/value array, containing command line arguments or xmlBlaster.properties variables to be used */
    private String[] args;
-   /** Invoke thread.stopServer=true; to stop it. */
-   private boolean stopServer = false;
-   private org.xmlBlaster.Main xmlBlasterMain = null;
+   private org.xmlBlaster.I_Main xmlBlasterMain = null;
 
 
    /**
@@ -41,7 +40,7 @@ public class ServerThread extends Thread
     * @return the xmlBlaster handle, pass this to method stopXmlBlaster
     *         to shutdown the server again.
     */
-   public static ServerThread startXmlBlaster(int serverPort)
+   public static EmbeddedXmlBlaster startXmlBlaster(int serverPort)
    {
       Global glob = Global.instance().getClone(null);
       String[] args = new String[4];
@@ -50,8 +49,8 @@ public class ServerThread extends Thread
       args[2] = "-doBlocking";
       args[3] = "false";
       glob.init(args);
-      ServerThread serverThread = new ServerThread(glob);
-      serverThread.start();
+      EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
+      serverThread.run();
       while(!serverThread.isReady()) {
          try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
       }
@@ -67,18 +66,19 @@ public class ServerThread extends Thread
     * @return the xmlBlaster handle, pass this to method stopXmlBlaster
     *         to shutdown the server again.
     */
-   public static ServerThread startXmlBlaster(String[] args)
+   public static EmbeddedXmlBlaster startXmlBlaster(String[] args)
    {
       return startXmlBlaster(args, (String)null);
    }
 
-   public static ServerThread startXmlBlaster(String[] args, String clusterNodeId)
+   public static EmbeddedXmlBlaster startXmlBlaster(String[] args, String clusterNodeId)
    {
       Global glob = Global.instance().getClone(args);
+      glob.setId(clusterNodeId);
       String[] args2 = { "-doBlocking", "false" };
       glob.init(args2);
-      ServerThread serverThread = new ServerThread(glob);
-      serverThread.start();
+      EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
+      serverThread.run();
       while(!serverThread.isReady()) {
          try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
       }
@@ -90,16 +90,16 @@ public class ServerThread extends Thread
    /**
     * Creates an instance of xmlBlaster and starts the server.
     * <p />
-    * @param args Key/value array, containing command line arguments or xmlBlaster.properties variables to be used
+    * @param glob The specific handle for this xmlBlaster server
     * @return the xmlBlaster handle, pass this to method stopXmlBlaster
     *         to shutdown the server again.
     */
-   public static ServerThread startXmlBlaster(Global glob)
+   public static EmbeddedXmlBlaster startXmlBlaster(Global glob)
    {
       String[] args = { "-doBlocking", "false" };
       glob.init(args);
-      ServerThread serverThread = new ServerThread(glob);
-      serverThread.start();
+      EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
+      serverThread.run();
       while(!serverThread.isReady()) {
          try { Thread.currentThread().sleep(200L); }
          catch( InterruptedException i) {
@@ -115,16 +115,16 @@ public class ServerThread extends Thread
     * Stop xmlBlaster server.
     * @param serverThread The handle you got from startXmlBlaster()
     */
-   public static void stopXmlBlaster(ServerThread serverThread)
+   public static void stopXmlBlaster(EmbeddedXmlBlaster serverThread)
    {
       serverThread.stopServer(true);
    }
 
 
    /*
-    * Constructor is private, create an instance through ServerThread.starXmlBlaster()
+    * Constructor is private, create an instance through EmbeddedXmlBlaster.starXmlBlaster()
     */
-   private ServerThread(Global glob) {
+   private EmbeddedXmlBlaster(Global glob) {
       this.glob = glob;
       this.log = glob.getLog(glob.getId());
    }
@@ -136,7 +136,7 @@ public class ServerThread extends Thread
       return xmlBlasterMain != null;
    }
 
-   public org.xmlBlaster.Main getMain() {
+   public org.xmlBlaster.I_Main getMain() {
       return xmlBlasterMain;
    }
 
@@ -144,7 +144,8 @@ public class ServerThread extends Thread
     * @param sync if true the method blocks until the server is shutdown
     */
    public void stopServer(boolean sync) {
-      this.stopServer = true;
+      log.info(ME, "Stopping the xmlBlaster server instance ...");
+      xmlBlasterMain.shutdown();
       if (sync) {
          while(true) {
             if (xmlBlasterMain == null)
@@ -166,56 +167,42 @@ public class ServerThread extends Thread
     * Start the server
     */
    public void run() {
-
-
       ClassLoaderFactory factory = glob.getClassLoaderFactory();
       XmlBlasterClassLoader cl = null;
-      java.lang.Object mainObject = null;
 
       try {
          cl = factory.getXmlBlasterClassLoader();
          if( log.TRACE ) log.trace(ME, "Get first instance of org.xmlBlaster.Main via own class loader.");
 
-         Class mainClass = Class.forName("org.xmlBlaster.Main", true, cl );
-         if( log.TRACE ) log.trace(ME, "org.xmlBlaster.Main class created.");
-         Class[] paramClasses = { glob.getClass() };
-         Object[] params = { glob };
+         xmlBlasterMain = (I_Main)cl.loadClass("org.xmlBlaster.Main").newInstance();
+         java.util.Properties props = glob.getProperty().getProperties();
+         xmlBlasterMain.init(props);
+         /*
+         Class[] paramClasses = { glob.getArgs().getClass() };
+         Object[] params = { glob.getArgs() };
          java.lang.reflect.Constructor constructor = mainClass.getDeclaredConstructor( paramClasses );
          mainObject = constructor.newInstance( params );
          if ( mainObject instanceof org.xmlBlaster.Main ) {
-            xmlBlasterMain = (org.xmlBlaster.Main) mainObject;
          }
          else {
             log.error( ME, "Error in constructing org.xmlBlaster.Main!");
             System.exit(-1);
          }
-
+         */
          log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with specific classloader");
       } catch(Throwable e) {
          if (cl != null)
-            log.error(ME, "Problems loading org.xmlBlaster.Main with ClassLoader "+cl.getClass().getName()+": " + e.toString());
+            log.error(ME, "Problems loading org.xmlBlaster.Main with ClassLoader "+cl.getClass().getName()+": " + e.toString() + " -> using default classloader");
          else
-            log.error(ME, "Problems loading org.xmlBlaster.Main (classloader = 'null' ???): " + e.toString());
-         log.info(ME, "Load class 'org.xmlBlaster.Main' via default class loader.");
+            log.error(ME, "Problems loading org.xmlBlaster.Main (classloader = 'null' ???): " + e.toString() + " -> using default classloader");
          xmlBlasterMain = new org.xmlBlaster.Main(glob);
+         log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with default classloader");
       }
-
-
-      log.info(ME, "Starting a xmlBlaster server instance for testing ...");
-      while(!stopServer) {
-         try { Thread.currentThread().sleep(200L); }
-         catch( InterruptedException i) {
-            log.info(ME, "Server has been interrupted.");
-         }
-      }
-      log.info(ME, "Stopping the xmlBlaster server instance ...");
-      xmlBlasterMain.shutdown();
-      stopServer = false;
    }
 
 
    /**
-    * Invoke: java org.xmlBlaster.util.ServerThread
+    * Invoke: java org.xmlBlaster.util.EmbeddedXmlBlaster
     * <p />
     * instead of the JacORB ORB, which won't work.
     */
@@ -223,11 +210,11 @@ public class ServerThread extends Thread
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         glob.getLog(null).error("ServerThread", "Initialization of property failed, bye!");
+         glob.getLog(null).error("EmbeddedXmlBlaster", "Initialization of property failed, bye!");
          System.exit(1);
       }
-      ServerThread xmlBlaster = ServerThread.startXmlBlaster(glob);
-      ServerThread.stopXmlBlaster(xmlBlaster);
+      EmbeddedXmlBlaster xmlBlaster = EmbeddedXmlBlaster.startXmlBlaster(glob);
+      EmbeddedXmlBlaster.stopXmlBlaster(xmlBlaster);
    }
-} // class ServerThread
+} // class EmbeddedXmlBlaster
 
