@@ -269,6 +269,7 @@ TODO
       <compilerarg value="-wd193" />
       <compilerarg value="-wd279" />
       <compilerarg value="-wd383" />          <!-- C++ suppress char * to string temporary warn -->
+      <!--compilerarg value="-Wcheck" />         < icc 8 diagnostic switch -->
       <compilerarg value="-D_REENTRANT" />
    </compiler>
 
