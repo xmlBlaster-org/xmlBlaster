@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.20 2001/08/31 16:38:35 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.21 2001/09/01 08:55:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -66,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -510,7 +510,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
             String retQos = authServer.init(loginQos.toXml());
             InitResultQos wrapper = new InitResultQos(retQos);
             sessionId = wrapper.getSessionId();
-            String xmlBlasterIOR = wrapper.getXmlBlasterIOR();
+            String xmlBlasterIOR = wrapper.getServerRef();
 
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          }
