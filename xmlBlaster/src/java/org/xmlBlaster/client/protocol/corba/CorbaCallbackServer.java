@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.24 2002/06/25 09:22:52 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.25 2002/06/25 17:52:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -246,7 +246,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          return boss.update(cbSessionId, localMsgUnitArr);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "Delivering message to client failed, message is lost.");
+         log.error(ME, "Delivering message to client failed, message is lost: " + e.toString());
          org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
              new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();
          eCorba.id = e.id;
@@ -254,7 +254,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          throw eCorba;
       }
       catch (Throwable e) {
-         log.error(ME, "Delivering message to client failed, message is lost.");
+         log.error(ME, "Delivering message to client failed, message is lost: " + e.toString());
          e.printStackTrace();
          org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
              new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();

@@ -232,7 +232,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       try {
          nameServiceObj = orb.resolve_initial_references("NameService");
       }
-      catch (Exception e) {
+      catch (Throwable e) {
          String text = "Can't access naming service, is there any running?\n" +
                        " - try to specify '-ior.file <fileName>' if server is running on same host (not using any naming service)\n" +
                        " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
@@ -256,7 +256,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
                              // but it is not sure that the naming service is really running
       }
-      catch (Exception e) {
+      catch (Throwable e) {
          if (verbose) log.warn(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException("NoNameService", e.toString());
       }
@@ -330,7 +330,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       catch(XmlBlasterException e) {
          ;
       }
-      catch(Exception e) {
+      catch(Throwable e) {
          if (verbose)  {
             log.error(ME, "XmlBlaster not found with internal HTTP download");
             e.printStackTrace();
@@ -358,7 +358,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
             log.info(ME, "Accessing xmlBlaster using a naming service.");
             return authServer;
          }
-         catch(Exception e) {
+         catch(Throwable e) {
             //if (verbose || log.TRACE) log.trace(ME + ".NoAuthService", text);
             throw new ConnectionException("NoAuthService", text);
          }
@@ -478,11 +478,17 @@ public class CorbaConnection implements I_XmlBlasterConnection
          }
          if (log.TRACE) log.trace(ME, "Success, login for " + loginName);
          return this.connectReturnQos;
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+      }
+      catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          log.warn(ME, "Login failed for " + loginName + ": id=" + e.id + ": reason=" + e.reason);
          if (log.TRACE) log.trace(ME, "Login failed for " + loginName + ": id=" + e.id + ": reason=" + e.reason);
          if (log.DUMP) log.dump(ME, "Login failed for " + loginName + " connectQos=" + connectQos.toXml());
          throw new ConnectionException(e.id, e.reason);
+      }
+      catch(Throwable e) {
+         if (log.TRACE) log.trace(ME, "Login failed for " + loginName + ": "+ e.toString());
+         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + " connectQos=" + connectQos.toXml());
+         throw new ConnectionException(ME, e.toString());
       }
    }
 
@@ -585,7 +591,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return getXmlBlaster().subscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
@@ -602,7 +608,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          getXmlBlaster().unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
@@ -626,7 +632,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
@@ -643,7 +649,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
@@ -656,7 +662,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (log.CALL) log.call(ME, "publishOneway() ...");
       try {
          getXmlBlaster().publishOneway(CorbaDriver.convert(msgUnitArr));
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
@@ -673,7 +679,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return getXmlBlaster().erase(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
@@ -689,7 +695,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return CorbaDriver.convert(getXmlBlaster().get(xmlKey, qos));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
-      } catch(Exception e) {
+      } catch(Throwable e) {
          e.printStackTrace();
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -703,7 +709,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    {
       try {
          return getXmlBlaster().ping(qos);
-      } catch(Exception e) {
+      } catch(Throwable e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
