@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.23 2002/06/19 13:40:49 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.24 2002/06/27 11:07:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -784,7 +784,8 @@ public final class XmlKey
          sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid()).append("</isGeneratedOid>");
          sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>");
          sb.append(offset).append("   <isInternalMsg>").append(isInternalMsg()).append("</isInternalMsg>");
-         sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
+         if (xmlToDom != null)
+            sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
          sb.append(offset).append("</XmlKey>");
       } catch (XmlBlasterException e) {
          log.warn(ME, "Caught exception in printOn()");
