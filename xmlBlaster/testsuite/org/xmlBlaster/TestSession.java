@@ -3,7 +3,7 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.8 2002/05/17 06:52:20 ruff Exp $
+Version:   $Id: TestSession.java,v 1.9 2002/05/20 19:03:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -256,6 +256,8 @@ public class TestSession extends TestCase implements I_Callback
                   qos.clearSessions(true);
                   con[ii].connect(qos, this);
                   Log.info(ME, "Success, login is possible again");
+                  con[ii].get("<key oid='__sys__FreeMem'/>", null);
+                  Log.info(ME, "Success, get works");
                }
                catch (Exception e2) {
                   Log.error(ME, e2.toString());
