@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.6 2003/03/26 13:31:31 laghi Exp $
+Version:   $Id: TestCallback.java,v 1.7 2004/08/26 21:21:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -72,9 +72,14 @@ public class TestCallback extends TestCase implements I_Callback
       String driverType = glob.getProperty().get("client.protocol", "dummy");
       if (driverType.equalsIgnoreCase("SOCKET"))
          isSocket = true;
+      else {
+         driverType = glob.getProperty().get("protocol", "dummy");
+         if (driverType.equalsIgnoreCase("SOCKET"))
+            isSocket = true;
+      }
 
       if (isSocket) {
-         log.warn(ME, "callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoce channel");
+         log.warn(ME, "callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoke channel");
          return;
       }
 
