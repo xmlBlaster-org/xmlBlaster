@@ -26,9 +26,10 @@ public class PluginManager {
    private              Hashtable       managers = new Hashtable(); // currently loaded plugins
 
    public PluginManager() {
-      if (!XmlBlasterProperty.get("Security.Server.disableDefaults", false)) {
+      if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
-         Log.warn(ME, "* * * Security risk * * * Default security manager is available!!!");
+         Log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
+         Log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
       }
    }
 
