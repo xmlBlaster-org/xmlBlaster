@@ -29,7 +29,9 @@ static bool isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId);
+static void sendResponseVoid(CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArr);
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr);
+static void sendXmlBlasterExceptionVoid(CallbackServerUnparsed *cb, void *socketDataHolder, XmlBlasterException *exception);
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static void shutdownCallbackServer(CallbackServerUnparsed *cb);
 static void closeAcceptSocket(CallbackServerUnparsed *cb);
@@ -38,7 +40,7 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb);
  * See header for a description. 
  */
 CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
-                        UpdateFp update, void *updateUserData)
+                        UpdateCbFp update, void *updateUserData)
 {
    CallbackServerUnparsed *cb = (CallbackServerUnparsed *)calloc(1,
                                 sizeof(CallbackServerUnparsed));
@@ -65,6 +67,8 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
    cb->addResponseListener = addResponseListener;
    cb->removeResponseListener = removeResponseListener;
    cb->isShutdown = false;
+   cb->sendResponse = sendResponseVoid;
+   cb->sendXmlBlasterException = sendXmlBlasterExceptionVoid;
 
    return cb;
 }
@@ -244,7 +248,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
             if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
                "Calling client %s() for requestId '%s' ...",
                socketDataHolder.methodName, socketDataHolder.requestId);
-            success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException);
+            success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException, &socketDataHolder);
          }
       }
       else {
@@ -254,13 +258,21 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 
       if (! (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0)) {
          if (success == true) {
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+               "update(): Sending response for requestId '%s'", socketDataHolder.requestId);
             sendResponse(cb, &socketDataHolder, msgUnitArr);
          }
          else {
-            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
-               "CallbackServerUnparsed.update(): Throwing the XmlBlasterException '%s' back to the server:\n%s",
-                   xmlBlasterException.errorCode, xmlBlasterException.message);
-            sendXmlBlasterException(cb, &socketDataHolder, &xmlBlasterException);
+            if (*xmlBlasterException.errorCode == 0) {
+               if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+                  "update(): We don't return anything for requestId '%s', the return message will come later by the client update dispatcher thread", socketDataHolder.requestId);
+            }
+            else {
+               if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+                  "update(): Throwing the XmlBlasterException '%s' back to the server:\n%s",
+                      xmlBlasterException.errorCode, xmlBlasterException.message);
+               sendXmlBlasterException(cb, &socketDataHolder, &xmlBlasterException);
+            }
          }
       }
 
@@ -382,6 +394,12 @@ static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketData
    return parseSocketData(cb->acceptSocket, socketDataHolder, exception, cb->logLevel >= LOG_DUMP);
 }
 
+/** A helper to cast to SocketDataHolder */
+static void sendResponseVoid(CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArr)
+{
+   sendResponse(cb, (SocketDataHolder *)socketDataHolder, msgUnitArr);
+}
+
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr)
 {
    char *rawMsg;
@@ -426,6 +444,11 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
    /*ssize_t numSent =*/(void) writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
    free(rawMsg);
+}
+
+static void sendXmlBlasterExceptionVoid(CallbackServerUnparsed *cb, void *socketDataHolder, XmlBlasterException *exception)
+{
+   sendXmlBlasterException(cb, (SocketDataHolder *)socketDataHolder, exception);
 }
 
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception)
@@ -533,7 +556,7 @@ const char *callbackServerRawUsage()
 /**
  * Here we receive the callback messages from xmlBlaster
  */
-bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
+bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, SocketDataHandler socketDataHandler)
 {
    size_t i;
    bool testException = false;

@@ -38,6 +38,24 @@ extern "C" {
 */
 struct XmlBlasterAccessUnparsed;
 
+/**
+ * Here we asynchronous receive the callback from xmlBlaster
+ * msg = char *key, char *content, int contentLen, char *qos
+ *
+ * NOTE: After this call the memory of msgUnitArr is freed immediately by callbackServer.c
+ *       So you need to take a copy of all message members if needed out of the scope of this function.
+ *
+ * @param msgUnitArr The messages from the server, use mgsUnit->responseQos to transport the return value
+ * @param userData An optional pointer from the client with client specific data which is delivered back
+ * @param xmlBlasterException This points on a valid struct, so you only need to fill errorCode with strcpy
+ *        and the returned pointer is ignored and the exception is thrown to xmlBlaster.
+ * @return Return true if everything is OK
+ *         Return false if you want to throw an exception, please fill xmlBlasterException in such a case.
+ *         If false and *xmlBlasterException.errorCode==0 we don't send a return message (useful for update dispatcher thread to do it later)
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+ */
+typedef bool (*UpdateFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException);
+
 /* Declare function pointers to use in struct to simulate object oriented access */
 typedef char *( * XmlBlasterAccessUnparsedConnect)(struct XmlBlasterAccessUnparsed *xb, const char * const qos, UpdateFp update, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessUnparsedInitialize)(struct XmlBlasterAccessUnparsed *xa, UpdateFp update, XmlBlasterException *exception);
@@ -50,7 +68,6 @@ typedef MsgUnitArr *( * XmlBlasterAccessUnparsedGet)(struct XmlBlasterAccessUnpa
 typedef char *( * XmlBlasterAccessUnparsedPing)(struct XmlBlasterAccessUnparsed *xb, const char * const qos);
 typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(struct XmlBlasterAccessUnparsed *xb);
 typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
-
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
@@ -79,6 +96,8 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    XmlBlasterConnectionUnparsed *connectionP;
    CallbackServerUnparsed *callbackP;
    bool isInitialized;
+   UpdateFp clientsUpdateFp;
+   bool callbackMultiThreaded;    /* Shall update messages be transported to the client code in a thread per request? */
    long responseTimeout;
    XmlBlasterBlob responseBlob;
    char responseType;             /* XMLBLASTER_MSG_TYPE_ENUM */
@@ -87,7 +106,6 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    bool responseMutexIsLocked;
    pthread_cond_t responseCond;
 } XmlBlasterAccessUnparsed;
-
 
 /**
  * Get an instance of this to get xmlBlaster access. 

@@ -27,7 +27,7 @@ typedef enum XMLBLASTER_MSG_TYPE_ENUM {
    MSG_TYPE_EXCEPTION = 69
 } XMLBLASTER_MSG_TYPE;
 
-typedef struct SocketDataHolderStruct {
+typedef struct SocketDataHolder {
    size_t msgLen;
    bool checksum;
    bool compressed;
