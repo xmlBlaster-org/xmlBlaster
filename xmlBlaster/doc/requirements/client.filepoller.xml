@@ -85,7 +85,6 @@
         <attribute id='connectQos'></attribute>
         <attribute id='maximumFileSize'>-1L</attribute>
         <attribute id='delaySinceLastFileChange'>10000L</attribute>
-        <attribute id='warnOnEmptyFileDelay'>30000L</attribute>
         <attribute id='pollInterval'>2000L</attribute>
 	<attribute id='loginName'></attribute>
 	<attribute id='password'></attribute>

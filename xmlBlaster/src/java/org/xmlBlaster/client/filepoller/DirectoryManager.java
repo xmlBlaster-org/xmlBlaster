@@ -33,7 +33,6 @@ public class DirectoryManager {
    private LogChannel log;
    private long maximumFileSize;
    private long delaySinceLastFileChange;
-   private long warnOnEmptyFileDelay;
 
    private File directory;
    /** this is the the directory where files are moved to after successful publishing. If null they will be erased */
@@ -48,7 +47,7 @@ public class DirectoryManager {
    private String lockExtention;
    private Set lockFiles;
    
-   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, long warnOnEmptyFileDelay, String filter, String sent, String discarded, String lockExtention) throws XmlBlasterException {
+   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention) throws XmlBlasterException {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
@@ -56,7 +55,6 @@ public class DirectoryManager {
       this.log = this.global.getLog("filepoller");
       this.maximumFileSize = maximumFileSize; 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
-      this.warnOnEmptyFileDelay = warnOnEmptyFileDelay;
       this.directoryEntries = new HashMap();
       this.directory = initDirectory(null, "directory", directoryName);
       if (this.directory == null)
@@ -161,8 +159,8 @@ public class DirectoryManager {
    private boolean isReady(FileInfo info, long currentTime) {
       if (info == null)
          return false;
-      if (info.getSize() < 1L)
-         return false;
+      //if (info.getSize() < 1L)
+      //   return false;
       if (this.lockExtention != null) {
          return !this.lockFiles.contains(info.getName());
       }
@@ -171,21 +169,6 @@ public class DirectoryManager {
          this.log.dump(ME, "isReady '" + info.getName() + "' delta='" + delta + "' constant='" + this.delaySinceLastFileChange + "'");
       }
       return delta > this.delaySinceLastFileChange;
-   }
-   
-   /**
-    * Returns true if the file has been zero in size for too long.
-    *  
-    * @param info
-    * @param currentTime
-    * @return
-    */
-   private boolean isStale(FileInfo info, long currentTime) {
-      if (info == null)
-         return false;
-      if (info.getSize() > 0L)
-         return false;
-      return currentTime - info.getLastChange() > this.warnOnEmptyFileDelay;
    }
    
    private TreeSet prepareEntries(File directory, Map existingFiles) {
@@ -205,11 +188,6 @@ public class DirectoryManager {
          
          if (isReady(info, currentTime)) {
             chronologicalSet.add(info);
-         }
-         else {
-            if (isStale(info, currentTime)) {
-               this.log.warn(ME, "prepareEntries: the file '" + info.getName() + "' has been empty for too long: please remove it from directory '" + directory.getName() + "'");
-            }
          }
       }
       return chronologicalSet;
@@ -316,9 +294,11 @@ public class DirectoryManager {
          }
          if (success) { // then do a move 
             moveTo(file, this.sentDirectory);
+            this.directoryEntries.remove(entryName);
          }
          else {
             moveTo(file, this.discardedDirectory);
+            this.directoryEntries.remove(entryName);
          }
       }
       catch (XmlBlasterException ex) {

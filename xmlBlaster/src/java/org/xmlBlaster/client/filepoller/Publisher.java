@@ -107,14 +107,13 @@ public class Publisher implements I_Timeout {
       
       this.maximumFileSize = this.global.get("maximumFileSize", -1L, null, pluginConfig);
       long delaySinceLastFileChange = this.global.get("delaySinceLastFileChange", 10000L, null, pluginConfig);
-      long warnOnEmptyFileDelay = this.global.get("warnOnEmptyFileDelay", 60000L, null, pluginConfig);
       this.pollInterval = this.global.get("pollInterval", 2000L, null, pluginConfig);
 
       String sent =  this.global.get("sent", (String)null, null, pluginConfig);
       String discarded =  this.global.get("discarded", (String)null, null, pluginConfig);
       String lockExtention =  this.global.get("lockExtention", (String)null, null, pluginConfig);
       
-      this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, warnOnEmptyFileDelay, fileFilter, sent, discarded, lockExtention);
+      this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, fileFilter, sent, discarded, lockExtention);
       
    }
    
