@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster for the xml-rpc protocol
-Version:   $Id: I_XmlBlaster.java,v 1.1 2000/08/30 00:21:58 laghi Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.2 2000/09/01 21:18:55 laghi Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -49,6 +49,16 @@ public interface I_XmlBlaster
    public String publish (String sessionId, String xmlKey_literal, Vector msgUnitWrap,
                           String publishQoS_literal)
       throws XmlBlasterException;
+
+
+   /**
+    * Publish a message.
+    * <p />
+    * @see org.xmlBlaster.engine.RequestBroker
+    */
+   public String publish (String sessionId, Vector msgUnitWrap)
+      throws XmlBlasterException;
+
 
 
    /**

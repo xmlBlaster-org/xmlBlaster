@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.2 2000/08/30 00:21:58 laghi Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.3 2000/09/01 21:18:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -72,8 +72,10 @@ public class XmlRpcDriver implements I_Driver
     * Enforced by interface I_Driver.
     * @param args The command line parameters
     */
-   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) 
+      throws XmlBlasterException
    {
+
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
       LogManager.info("xmlBlaster", ME, "Started successfully XML-RPC driver.");

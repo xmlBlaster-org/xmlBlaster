@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.2 2000/09/01 05:34:22 laghi Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.3 2000/09/01 21:18:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -123,6 +123,36 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          // transform native exception to Corba exception
       }
    }
+
+
+   /**
+    * @see xmlBlaster.idl
+    */
+   public String publish (String sessionId, Vector msgUnitWrap)
+      throws XmlBlasterException
+   {
+
+      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+
+      try {
+
+         MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
+
+         // convert the xml literal strings
+         XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+         PublishQoS publishQoS = new PublishQoS(msgUnit.getQos());
+
+         String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
+         // String retVal = blasterNative.publish(sessionId, msgUnit);
+         return retVal;
+      }
+
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); 
+         // transform native exception to Corba exception
+      }
+   }
+
 
 
 
