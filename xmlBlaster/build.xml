@@ -159,7 +159,7 @@ TODO
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
-      <defineset define="DLL_EXPORT"/>
+      <!-- defineset define="DLL_EXPORT"/ -->
       <!-- <compilerarg value="/GX" /> -->
       <compilerarg value="/Gm" if="is-debug"/>      
       <compilerarg value="/Zi" if="is-debug"/>      
@@ -1468,19 +1468,18 @@ TODO
        cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\CompatibleCorba.obj E:\xmlBlaster\src\c++\util\CompatibleCorba.cpp
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
-   <target name="cpp-test" depends="prepare-cpp" description="c++ client integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
-      <!-- Problem: property can't be overwritten, but available can, unfortunately the available overwriting is deprecated -->
-      <property name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
-      <available file="build.xml" property="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
+   <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
       <foreach list="TestGet,TestSub,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver"
-               target="compileCppExe" param="exeName" delimiter=","/>
+               target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
+      </foreach>
    </target>
 
-   <target name="cpp-demo" depends="prepare-cpp" description="c++ client demo - create C++ demo clients"> <!-- depends="prepare,cpp-lib" -->
-      <!-- Problem: property can't be overwritten, but available can, unfortunately the available overwriting is deprecated -->
-      <property name="compileCppSourcePath" value="${demo.dir}/c++"/>
-      <available file="build.xml" property="compileCppSourcePath" value="${demo.dir}/c++" />
-      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo" target="compileCppExe" param="exeName" delimiter="," />
+   <target name="cpp-demo" depends="prepare-cpp" description="Create C++ demo clients">
+      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo"
+               target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCppSourcePath" value="${demo.dir}/c++" />
+      </foreach>
    </target>
 
    <target name="compileCppExe" description="For internal use only (C++ clients build)">
