@@ -74,7 +74,8 @@ public class HelloWorld4
          conRetQos = con.connect(qos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               if (log.DUMP) log.dump(ME, "UpdateKey.toString()=" + updateKey.toString());
+               if (log.DUMP) log.dump(ME, "UpdateKey.toString()=" + updateKey.toString() +
+                                          "UpdateQos.toString()=" + updateQos.toString());
                if (updateKey.isInternal()) {
                   log.error(ME, "Receiving unexpected asynchronous internal message '" + updateKey.getOid() +
                                 "' in default handler");
