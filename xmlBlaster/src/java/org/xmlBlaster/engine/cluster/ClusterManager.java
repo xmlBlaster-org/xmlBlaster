@@ -198,6 +198,9 @@ public final class ClusterManager
 
       PublishQos publishQos = msgWrapper.getPublishQos();
       MessageUnit msgUnit = msgWrapper.getMessageUnit();
+      Log.info(ME, "QoS before:\n" + msgUnit.getQos());
+      msgUnit.setQos(publishQos.toXml());
+      Log.info(ME, "QoS after:\n" + msgUnit.getQos());
 
       try {
          return con.publish(msgUnit);
@@ -290,8 +293,8 @@ public final class ClusterManager
 
       PublishQos publishQos = msgWrapper.getPublishQos();
       if (publishQos.count(glob.getNodeId()) > 1) { // Checked in RequestBroker as well with warning
-         glob.getLog().warn(ME, "Warning, message oid='" + msgWrapper.getXmlKey().getUniqueKey()
-            + "' passed my node id='" + glob.getId() + "' before, we have a circular routing problem, keeping message locally");
+         glob.getLog().warn(ME, "Warning, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
+            "' passed my node id='" + glob.getId() + "' before, we have a circular routing problem, keeping message locally");
          return null;
       }
 
@@ -301,6 +304,11 @@ public final class ClusterManager
          ClusterNode clusterNode = (ClusterNode)it.next();
          if (clusterNode.isAllowed() == false) {
             glob.getLog().info(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
+            continue;
+         }
+         if (!clusterNode.isLocalNode() && publishQos.count(clusterNode.getNodeId()) > 0) {
+            glob.getLog().info(ME, "Ignoring node id='" + clusterNode.getId() + "' for routing, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
+               "' has been there already");
             continue;
          }
          Iterator domains = clusterNode.getDomainInfoMap().values().iterator();

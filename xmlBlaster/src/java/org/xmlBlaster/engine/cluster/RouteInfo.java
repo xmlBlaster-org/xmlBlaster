@@ -20,7 +20,8 @@ public final class RouteInfo {
 
    /**
     * @param nodeId The unique name of the xmlBlaster instance
-    * @param stratum The distance from the node to the master node
+    * @param stratum The distance from the node to the master node, if you don't know
+    *                it set it to 0.
     * @param timestamp The receive timestamp of the message (nano seconds)
     */
    public RouteInfo(NodeId nodeId, int stratum, Timestamp timestamp) {

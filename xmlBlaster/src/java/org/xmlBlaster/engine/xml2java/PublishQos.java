@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.5 2002/05/01 07:54:38 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.6 2002/05/02 14:52:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -296,7 +296,8 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Adds a new route hop to the QoS of this message. 
     * The added routeInfo is assumed to be one statum closer to the master
-    * So we will rearrange the statum here
+    * So we will rearrange the statum here. The given stratum in routeInfo
+    * is used to recalculate the other nodes as well.
     */
    public final void addRouteInfo(RouteInfo routeInfo)
    {
@@ -309,9 +310,12 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       routeNodeVec.addElement(routeInfo);
 
       // Set stratum to new values
-      for (int ii=0; ii<routeNodeVec.size(); ii++) {
+      int offset = routeInfo.getStratum();
+      if (offset < 0) offset = 0;
+
+      for (int ii=routeNodeVec.size()-1; ii>=0; ii--) {
          RouteInfo ri = (RouteInfo)routeNodeVec.elementAt(ii);
-         ri.setStratum(routeNodeVec.size()-ii-1);
+         ri.setStratum(offset++);
       }
    }
 
