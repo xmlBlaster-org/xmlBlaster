@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-           $Revision: 1.2 $  $Date: 1999/11/11 12:17:52 $
+           $Revision: 1.3 $  $Date: 1999/11/11 16:15:00 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * This is just a container to hold references on all interesting data
  * concerning a subscription of exactly one MessageUnitHandler of exactly one Client
  */
-public class SubscriptionInfo implements Comparable
+public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
@@ -53,6 +53,7 @@ public class SubscriptionInfo implements Comparable
     * client receive their updates.
     * For now, the client which subscribed first, is served first
     */
+   /*SORT_PROBLEM: Works fine with TreeSet, but with TreeMap i get the key here :-(
    public int compareTo(Object o)
    {
       SubscriptionInfo sub = (SubscriptionInfo)o;
@@ -64,6 +65,7 @@ public class SubscriptionInfo implements Comparable
       else
          return 0;
    }
+   */
 
 
    public ClientInfo getClientInfo()
@@ -84,9 +86,9 @@ public class SubscriptionInfo implements Comparable
    /**
     * @return A unique key for this particular subscription
     */
-   public String getUniqueKey()
+   public String getUniqueKey() throws XmlBlasterException
    {
-      return "Subscription-" + clientInfo.hashCode() + "-" + xmlKey.hashCode() + "-" + xmlQoS.hashCode(); // !!!hack?
+      return "Subscription-" + clientInfo.getUniqueKey() + "-" + xmlKey.getUniqueKey() + "-" + xmlQoS.toString(); // !!!hack?
    }
    /*
    public final BlasterCallback getCB() throws XmlBlasterException

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.1 $  $Date: 1999/11/11 12:03:46 $
+           $Revision: 1.2 $  $Date: 1999/11/11 16:15:00 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 
 
 /**
- * ClientInfo
+ * ClientInfo stores all known data about a client
  */
 public class ClientInfo
 {
@@ -38,9 +38,14 @@ public class ClientInfo
       return callback;
    }
 
-   public String getUniqueKey()
+
+   /**
+    * The Callback IOR is a unique identifier for the client
+    */
+   public String getUniqueKey() throws XmlBlasterException
    {
-      return xmlKey.getUniqueKey();
+      // return xmlKey.getUniqueKey();
+      return getCallbackIOR();
    }
 
 

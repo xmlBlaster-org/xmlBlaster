@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling exactly one message content
-           $Revision: 1.1 $  $Date: 1999/11/11 12:17:52 $
+           $Revision: 1.2 $  $Date: 1999/11/11 16:15:00 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -34,15 +34,15 @@ public class MessageUnitHandler
     * It is a TreeMap, that means it keeps order information.
     * TODO: express order attribute so that the first client will be served first.
     */
-   final private Set subscriberSet = Collections.synchronizedSet(new TreeSet(/*new Comparator()*/));
+   final private Map subscriberMap = Collections.synchronizedMap(new TreeMap(/*new Comparator()*/));
 
 
    /**
     * This is the Message itself
     */
    private XmlKey xmlKey;
-   private String uniqueKey;
-   private byte[] content;
+   private String uniqueKey; // Attribute oid of key tag: <key oid="..."> </key>
+   private byte[] content;   // the data BLOB
 
 
    /**
@@ -50,8 +50,8 @@ public class MessageUnitHandler
     */
    public MessageUnitHandler(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
    {
-      this.uniqueKey = sub.getUniqueKey();
       this.xmlKey = sub.getXmlKey();
+      this.uniqueKey = xmlKey.getUniqueKey();
       this.content = new byte[0];
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
@@ -115,13 +115,29 @@ public class MessageUnitHandler
 
    public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
-      synchronized(subscriberSet) {
-         if (subscriberSet.contains(sub)) {
-            Log.warning(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
-            throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
-         }
-         subscriberSet.add(sub);
+      Object oldOne;
+      synchronized(subscriberMap) {
+         oldOne = subscriberMap.put(sub.getUniqueKey(), sub);
       }
+      if (oldOne != null) {
+         Log.warning(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
+         throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
+      }
+   }
+
+
+   public int removeSubscriber(SubscriptionInfo sub) throws XmlBlasterException
+   {
+      Object removedIt;
+      synchronized(subscriberMap) {
+         removedIt = subscriberMap.remove(sub.getUniqueKey());
+      }
+      if (removedIt == null) {
+         Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to " + uniqueKey);
+         return 0;
+         // throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to " + uniqueKey);
+      }
+      return 1;
    }
 
 
@@ -143,9 +159,13 @@ public class MessageUnitHandler
       return xmlKey.getMimeType();
    }
 
-   public Set getSubscriberSet()
+   /**
+    * A Set subscriberMap.entrySet() would be enough in most cases
+    * but I'm not quite shure how to synchronize it ...
+    */
+   public Map getSubscriberMap()
    {
-      return subscriberSet;
+      return subscriberMap;
    }
 
 

@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.2 $
-           $Date: 1999/11/11 12:17:52 $
+           $Revision: 1.3 $
+           $Date: 1999/11/11 16:15:00 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -62,14 +62,14 @@ public class RequestBroker
 
    /**
     */
-   public ClientInfo getClientInfo(XmlKey xmlKey, XmlQoS qos)
+   public ClientInfo getClientInfo(XmlKey xmlKey, XmlQoS qos) throws XmlBlasterException
    {
       synchronized(clientInfoMap) {
          Object obj = clientInfoMap.get(xmlKey);
          if (obj == null) {
-            ClientInfo cl = new ClientInfo(this, xmlKey, qos);
-            clientInfoMap.put(cl.getUniqueKey(), cl);
-            return cl;
+            ClientInfo clientInfo = new ClientInfo(this, xmlKey, qos);
+            clientInfoMap.put(clientInfo.getUniqueKey(), clientInfo);
+            return clientInfo;
          }
          return (ClientInfo)obj;
       }
@@ -78,8 +78,9 @@ public class RequestBroker
 
    /**
     */
-   public MessageUnitHandler getMessageUnitHandler(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   public void subscribe(XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
+      ClientInfo clientInfo = getClientInfo(xmlKey, subscribeQoS);
       String uniqueKey = xmlKey.getUniqueKey();
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
 
@@ -88,30 +89,44 @@ public class RequestBroker
          if (obj == null) {
             MessageUnitHandler msg = new MessageUnitHandler(this, subs);
             messageContainerMap.put(uniqueKey, msg);
-            return msg;
          }
          else {
             MessageUnitHandler msg = (MessageUnitHandler)obj;
             msg.addSubscriber(subs);
          }
       }
-      return (MessageUnitHandler)null;
    }
 
 
    /**
     */
-   public void subscribe(XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   public void unSubscribe(XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
-      ClientInfo cl = getClientInfo(xmlKey, subscribeQoS);
-      MessageUnitHandler msg = getMessageUnitHandler(cl, xmlKey, subscribeQoS);
+      ClientInfo clientInfo = getClientInfo(xmlKey, unSubscribeQoS);
+      String uniqueKey = xmlKey.getUniqueKey();
+
+      synchronized(messageContainerMap) {
+         Object obj = messageContainerMap.remove(uniqueKey);
+         if (obj == null) {
+            Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
+            throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
+         }
+         MessageUnitHandler msg = (MessageUnitHandler)obj;
+         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS);
+         int numRemoved = msg.removeSubscriber(subs);
+         if (numRemoved < 1) {
+            Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
+            throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
+         }
+      }
    }
 
 
    /**
     */
-   public int set(XmlKey xmlKey, byte[] content) throws XmlBlasterException
+   public int set(XmlKey xmlKey, byte[] content, XmlQoS setQoS) throws XmlBlasterException
    {
+      // !!! TODO: handling of setQoS
 
       MessageUnitHandler msg;
 
@@ -127,10 +142,10 @@ public class RequestBroker
          }
       }
 
-      Set subscriberSet = msg.getSubscriberSet();
-      if (Log.DEBUG) Log.trace(ME, "subscriberSet.size() = " + subscriberSet.size());
-      synchronized(subscriberSet) {
-         Iterator iterator = subscriberSet.iterator();
+      Map subscriberMap = msg.getSubscriberMap();
+      if (Log.DEBUG) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
+      synchronized(subscriberMap) {
+         Iterator iterator = subscriberMap.values().iterator();
 
          while (iterator.hasNext())
          {
@@ -142,5 +157,25 @@ public class RequestBroker
       }
 
       return 1;
+   }
+
+
+   /**
+    */
+   public int erase(XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
+   {
+      String uniqueKey = xmlKey.getUniqueKey();
+      synchronized(messageContainerMap) {
+         Object obj = messageContainerMap.remove(uniqueKey);
+         if (obj == null) {
+            Log.warning(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+            return 0;
+            // throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+         }
+         else {
+            obj = null;
+            return 1;
+         }
+      }
    }
 }

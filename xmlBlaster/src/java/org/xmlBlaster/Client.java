@@ -54,10 +54,30 @@ public class Client
             val += 8;
 
          Log.trace(ME, "Sending some new Smiley data ...");
-         String str = "Smiley changed";
-         xmlServer.set(xmlKey, str.getBytes());
+         try {
+            String str = "Smiley changed";
+            xmlServer.publish(xmlKey, str.getBytes());
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
 
-         Log.trace(ME, "Sending done, waiting for response ...");
+         Log.info(ME, "Sending done, waiting for response ...");
+
+         Log.trace(ME, "Trying unsubscribe ...");
+         try {
+            xmlServer.unSubscribe(xmlKey, qos);
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
+         Log.info(ME, "Unsubscribe done");
+
+         try {
+            String str = "Smiley changed again, but i'm not interested";
+            xmlServer.publish(xmlKey, str.getBytes());
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
+         Log.info(ME, "Sending done, there shouldn't be a callback anymore ...");
          /*
          xmlServer._release();
          System.out.println("done. ");

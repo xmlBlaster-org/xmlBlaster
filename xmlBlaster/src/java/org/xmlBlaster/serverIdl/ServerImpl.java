@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/11 12:03:06 $
+           $Date: 1999/11/11 16:15:00 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -16,223 +16,94 @@ import java.util.*;
 
 
 /**
-<p>
-<ul>
-<li> <b>Java Class</b> org.xmlBlaster.ServerImpl
-<li> <b>Source File</b> org/xmlBlaster/ServerImpl.java
-<li> <b>IDL Source File</b> xmlBlaster.idl
-<li> <b>IDL Absolute Name</b> ::org::xmlBlaster::Server
-<li> <b>Repository Identifier</b> IDL:org/xmlBlaster/Server:1.0
-</ul>
-<b>IDL definition:</b>
-<pre>
-    #pragma prefix "org/xmlBlaster"
-    interface Server {
-      void initCallback(
-        in Object iorCallback
-      );
-      void subscribe(
-        in ::org::xmlBlaster::XmlType xmlKey,
-        in ::org::xmlBlaster::XmlType qos
-      )
-      raises(
-        ::org::xmlBlaster::XmlBlasterException
-      );
-      void unSubscribe(
-        in ::org::xmlBlaster::XmlType xmlKey,
-        in ::org::xmlBlaster::XmlType qos
-      )
-      raises(
-        ::org::xmlBlaster::XmlBlasterException
-      );
-      long set(
-        in ::org::xmlBlaster::XmlType xmlKey,
-        in ::org::xmlBlaster::ContentType content
-      )
-      raises(
-        ::org::xmlBlaster::XmlBlasterException
-      );
-      long setQos(
-        in ::org::xmlBlaster::XmlType xmlKey,
-        in ::org::xmlBlaster::ContentType content,
-        in ::org::xmlBlaster::XmlType qos
-      )
-      raises(
-        ::org::xmlBlaster::XmlBlasterException
-      );
-      long erase(
-        in ::org::xmlBlaster::XmlType xmlKey,
-        in ::org::xmlBlaster::XmlType qos
-      )
-      raises(
-        ::org::xmlBlaster::XmlBlasterException
-      );
-    };
-</pre>
-</p>
+   Implements the xmlBlaster server CORBA Interface
 */
-//public class ServerImpl extends ServerPOA {
-public class ServerImpl implements ServerOperations {
+//public class ServerImpl extends ServerPOA {            // inheritance approach
+public class ServerImpl implements ServerOperations {    // tie approach
 
-  private final String ME = "ServerImpl";
-  private org.omg.CORBA.ORB orb;
-  private RequestBroker requestBroker;
-
-
-  /** Construct a persistently named object.
-   */
-  public ServerImpl(org.omg.CORBA.ORB orb) {
-    if (Log.CALLS) Log.trace(ME, "Entering constructor with ORB argument");
-    this.orb = orb;
-    this.requestBroker = RequestBroker.getInstance(this);
-  }
+   private final String ME = "ServerImpl";
+   private org.omg.CORBA.ORB orb;
+   private RequestBroker requestBroker;
 
 
-  /** Construct a transient object.
-   */
-  public ServerImpl() {
-    super();
-    if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
-    this.requestBroker = RequestBroker.getInstance(this);
-  }
+   /**
+    * Construct a persistently named object.
+    */
+   public ServerImpl(org.omg.CORBA.ORB orb)
+   {
+      if (Log.CALLS) Log.trace(ME, "Entering constructor with ORB argument");
+      this.orb = orb;
+      this.requestBroker = RequestBroker.getInstance(this);
+   }
 
 
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::Server::initCallback</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/Server"
-    void initCallback(
-      in Object iorCallback
-    );
-  </pre>
-  </p>
-  */
-  public void initCallback(
-    org.omg.CORBA.Object iorCallback
-  ) {
-    // IMPLEMENT: Operation
-  }
+   /**
+    * Construct a transient object.
+    */
+   public ServerImpl()
+   {
+      super();
+      if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
+      this.requestBroker = RequestBroker.getInstance(this);
+   }
 
 
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::Server::subscribe</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/Server"
-    void subscribe(
-      in ::org::xmlBlaster::XmlType xmlKey,
-      in ::org::xmlBlaster::XmlType qos
-    )
-    raises(
-      ::org::xmlBlaster::XmlBlasterException
-    );
-  </pre>
-  </p>
-  */
-  public void subscribe(String xmlKey, String qos) throws XmlBlasterException {
-    if (Log.CALLS) Log.trace(ME, "Got subscribe request: xmlKey=" + xmlKey + ", qos=" + qos);
-    XmlKey keyObj = new XmlKey(xmlKey);
-    XmlQoS qosObj = new XmlQoS(qos);
-    requestBroker.subscribe(keyObj, qosObj);
-  }
+   /**
+    * @see xmlBlaster.idl
+    */
+   public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.trace(ME, "Entering subscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
+      XmlKey xmlKey = new XmlKey(xmlKey_literal);
+      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      requestBroker.subscribe(xmlKey, xmlQoS);
+   }
 
 
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::Server::unSubscribe</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/Server"
-    void unSubscribe(
-      in ::org::xmlBlaster::XmlType xmlKey,
-      in ::org::xmlBlaster::XmlType qos
-    )
-    raises(
-      ::org::xmlBlaster::XmlBlasterException
-    );
-  </pre>
-  </p>
-  */
-  public void unSubscribe(
-    java.lang.String xmlKey,
-    java.lang.String qos
-  ) throws
-    XmlBlasterException {
-    // IMPLEMENT: Operation
-  }
+   /**
+    * @see xmlBlaster.idl
+    */
+   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.trace(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
+      XmlKey xmlKey = new XmlKey(xmlKey_literal);
+      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      requestBroker.unSubscribe(xmlKey, xmlQoS);
+   }
 
 
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::Server::set</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/Server"
-    long set(
-      in ::org::xmlBlaster::XmlType xmlKey,
-      in ::org::xmlBlaster::ContentType content
-    )
-    raises(
-      ::org::xmlBlaster::XmlBlasterException
-    );
-  </pre>
-  </p>
-  */
-  public int set(String xmlKey_literal, byte[] content) throws XmlBlasterException {
-
-    XmlKey xmlKey = new XmlKey(xmlKey_literal);
-    if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
-    return requestBroker.set(xmlKey, content);
-  }
+   /**
+    * @see xmlBlaster.idl
+    */
+   public int publish(String xmlKey_literal, byte[] content) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.trace(ME, "Entering set(xmlKey=" + xmlKey_literal + ")");
+      return setQoS(xmlKey_literal, content, (String)null);
+   }
 
 
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::Server::setQos</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/Server"
-    long setQos(
-      in ::org::xmlBlaster::XmlType xmlKey,
-      in ::org::xmlBlaster::ContentType content,
-      in ::org::xmlBlaster::XmlType qos
-    )
-    raises(
-      ::org::xmlBlaster::XmlBlasterException
-    );
-  </pre>
-  </p>
-  */
-  public int setQos(
-    java.lang.String xmlKey,
-    byte[] content,
-    java.lang.String qos
-  ) throws
-    XmlBlasterException {
-    // IMPLEMENT: Operation
-    return 0;
-  }
-  /**
-  <p>
-  Operation: <b>::org::xmlBlaster::Server::erase</b>.
-  <pre>
-    #pragma prefix "org/xmlBlaster/Server"
-    long erase(
-      in ::org::xmlBlaster::XmlType xmlKey,
-      in ::org::xmlBlaster::XmlType qos
-    )
-    raises(
-      ::org::xmlBlaster::XmlBlasterException
-    );
-  </pre>
-  </p>
-  */
-  public int erase(
-    java.lang.String xmlKey,
-    java.lang.String qos
-  ) throws
-    XmlBlasterException {
-    // IMPLEMENT: Operation
-    return 0;
-  }
+   /**
+    * @see xmlBlaster.idl
+    */
+   public int setQoS(String xmlKey_literal, byte[] content, String qos_literal) throws XmlBlasterException
+   {
+      XmlKey xmlKey = new XmlKey(xmlKey_literal);
+      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.setQos(" + xmlKey.getUniqueKey() + ")");
+      return requestBroker.set(xmlKey, content, xmlQoS);
+   }
+
+
+   /**
+    * @see xmlBlaster.idl
+    */
+   public int erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   {
+      XmlKey xmlKey = new XmlKey(xmlKey_literal);
+      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
+      return requestBroker.erase(xmlKey, xmlQoS);
+   }
 
 
    /**

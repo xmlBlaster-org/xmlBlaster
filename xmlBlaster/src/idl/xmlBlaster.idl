@@ -3,8 +3,9 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.5 1999/11/11 12:00:31 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.6 1999/11/11 16:14:53 ruff Exp $
 Comment:   Not even alpha
+           String arguments my be used empty "", but never with null
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 ================================================================================
 */
@@ -165,8 +166,8 @@ module org { module xmlBlaster { module serverIdl
 
       /**
        * Write-Access Method
-       * They trigger the method update() if observed by somebody
-       * If the given key doesn't exist, the set() method adds it.<br>
+       * This triggers the method update() if observed by somebody
+       * If the given key doesn't exist, it will be automatically added, <br>
        * so this covers the SQL'ish INSERT and UPDATE
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
@@ -174,7 +175,7 @@ module org { module xmlBlaster { module serverIdl
        *
        * @return number of keys successfully set
        */
-      long set(in XmlType xmlKey, in ContentType content)
+      long publish(in XmlType xmlKey, in ContentType content)
                                           raises(XmlBlasterException);
 
       /**
@@ -192,7 +193,7 @@ module org { module xmlBlaster { module serverIdl
        *
        * @return number of keys successfully set
        */
-      long setQos(in XmlType xmlKey, in ContentType content, in XmlType qos)
+      long setQoS(in XmlType xmlKey, in ContentType content, in XmlType qos)
                                           raises(XmlBlasterException);
 
       /**
