@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.3 2001/01/30 14:03:14 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.4 2001/08/31 15:25:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -179,17 +179,17 @@ public class CallbackAddress
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(300);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<callback type='").append(getType()).append("'>");
-      sb.append(offset + "   ").append(getAddress());
-      sb.append(offset + "   ").append("<burstMode collectTime='").append(getCollectTime()).append("' />");
-      sb.append(offset + "   ").append("<compress type='").append(getCompressType()).append("' minSize='").append(getMinSize()).append("' />");
-      sb.append(offset + "   ").append("<PtP>").append(isPtpAllowed()).append("</PtP>");
-      sb.append(offset + "</callback>");
+      sb.append(offset).append("<callback type='").append(getType()).append("'>");
+      sb.append(offset).append("   ").append(getAddress());
+      sb.append(offset).append("   ").append("<burstMode collectTime='").append(getCollectTime()).append("' />");
+      sb.append(offset).append("   ").append("<compress type='").append(getCompressType()).append("' minSize='").append(getMinSize()).append("' />");
+      sb.append(offset).append("   ").append("<PtP>").append(isPtpAllowed()).append("</PtP>");
+      sb.append(offset).append("</callback>");
 
       return sb.toString();
    }
