@@ -115,7 +115,7 @@ public final class TelnetGateway implements CommandHandlerIfc
 
          String query = cmd.substring(cmdType.length()).trim();
 
-         log.info(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
+         if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
             return manager.get(query) + "\r\n";
@@ -154,16 +154,8 @@ public final class TelnetGateway implements CommandHandlerIfc
    }
 
    public CommandHandlerIfc getInstance() {
-      log.warn(ME, "getInstance() is not supported");
+      if (log.TRACE) log.trace(ME, "getInstance() is returning myself");
       return this;
-      /*
-      try {
-         return new TelnetGateway(glob, manager, port);
-      } catch(XmlBlasterException e) {
-         log.error(ME, "Can't create new instance: " + e.toString());
-         throw new IllegalArgumentException(e.toString());
-      }
-      */
    }
 
    public void shutdown() {
