@@ -264,6 +264,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          }
          */
          subjectInfo = getSubjectInfoByName(subjectName);
+         //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
          if (subjectInfo == null) {
             subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectCbQueueProperty());
             loginNameSubjectInfoMap.put(subjectInfo.getLoginName(), subjectInfo);
