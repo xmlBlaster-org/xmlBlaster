@@ -71,6 +71,8 @@ Else add it manually.
   <property name="demo.dir" value="./demo"/>
   <property name="bin.dir" value="./bin"/>
   <property name="lib.dir" value="./lib"/>
+  <property name="req.dir" value="./doc/requirements"/>
+  <property name="classes.webinf.dir" value="./demo/html/WEB-INF/classes"/>
   <property name="packages" value="org.xmlBlaster.*"/>
 
   <property name="www.dir"              value="${demo.dir}/html"/>
@@ -90,7 +92,7 @@ Else add it manually.
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -395,6 +397,16 @@ Else add it manually.
    <target name="clean">
       <delete>
          <fileset dir="${build.dir}"/>
+         <fileset dir="${classes.dir}/org"/>
+         <fileset dir="${classes.dir}/html"/>
+         <fileset dir="${classes.dir}/javaclients"/>
+         <fileset dir="${classes.dir}/testsuite"/>
+         <fileset dir="${classes.dir}/doc"/>
+         <fileset dir="${classes.dir}" includes="DomQueryTest.class"/>
+         <fileset dir="${classes.dir}" includes="XtOmQueryTest.class"/>
+         <!-- fileset dir="${req.dir}" includes="*.class"/ -->
+         <fileset dir="${classes.webinf.dir}/org"/>
+         <fileset dir="${classes.webinf.dir}/html"/>
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
       </delete>
    </target>
