@@ -182,6 +182,152 @@ public class SocketUrl
       return false;
    }
 
+   /**
+    * Helper to create a server side SSL socket, uses reflection to compile with JDK 1.3
+    * SSL support can't be used with a standard JDK 1.3
+    * <p />
+    * Setup:
+    * <pre>
+keytool -genkey -keystore testStore -keyalg RSA   (using password 'testtest')
+
+java org.xmlBlaster.Main -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest  
+
+java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest
+    * </pre>
+    * @param backlog Socket parameter
+    * @param address The configuration environment
+    */
+   public java.net.ServerSocket createServerSocketSSL(int backlog, AddressBase address) throws XmlBlasterException {
+      String keystore = address.getEnv("keystore", "keystore").getValue();
+      String pass = address.getEnv("keystorepass", "").getValue();
+      log.info(ME, "SSL server socket enabled, keystore="+keystore);
+      System.setProperty("javax.net.ssl.keyStore", keystore);
+      System.setProperty("javax.net.ssl.keyStorePassword", pass);
+
+      // Use Reflection because of JDK 1.3 has no SSL
+      try  {
+         Class clazz = java.lang.Class.forName("javax.net.ssl.SSLServerSocketFactory");
+         Class[] paramCls = new Class[0];
+         Object[] params = new Object[0];
+         java.lang.reflect.Method method = clazz.getMethod("getDefault", paramCls);
+         Object socketFactory = method.invoke(clazz, params); // Returns "SSLServerSocketFactory"
+
+         paramCls = new Class[] {
+            int.class,                     // port
+            int.class,                     // backlog
+            java.net.InetAddress.class,    // address
+         };
+         params = new Object[] {
+            new Integer(getPort()),
+            new Integer(backlog),
+            getInetAddress(),
+         };
+         method = socketFactory.getClass().getMethod("createServerSocket", paramCls);
+         Object serverSocket = method.invoke(socketFactory, params);  // Returns "SSLServerSocket"
+
+
+         paramCls = new Class[] { boolean.class };
+         params = new Object[] {  Boolean.FALSE };
+         // serverSocket: can not access a member of class com.sun.net.ssl.internal.ssl.SSLServerSocketImpl with modifiers "public"
+         // so we force access to the base class:
+         Class clazzI = java.lang.Class.forName("javax.net.ssl.SSLServerSocket");
+         method = clazzI.getMethod("setNeedClientAuth", paramCls);
+         method.invoke(serverSocket, params);
+
+         return (java.net.ServerSocket)serverSocket;
+      }
+      catch (Exception e) {
+         log.trace(ME, "Can't switch on SSL socket: " + e.toString());
+         e.printStackTrace();
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
+                        "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
+      }
+      /* JDK 1.4 and higher:
+      try {
+         javax.net.ssl.SSLServerSocket sock = (javax.net.ssl.SSLServerSocket)
+                 javax.net.ssl.SSLServerSocketFactory.getDefault().createServerSocket(getPort(), backlog, getInetAddress());
+         sock.setNeedClientAuth(false);
+         return sock;
+      }
+      catch (java.io.IOException e) {
+         log.trace(ME, "Can't switch on SSL server socket: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
+                        "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
+      }
+      */
+   }
+
+   /**
+    * Helper to create a SSL socket, uses reflection to compile with JDK 1.3
+    * SSL support can't be used with a standard JDK 1.3
+    * @param localSocketUrl null or a configured local socket setting
+    * @param address The configuration environment
+    */
+   public java.net.Socket createSocketSSL(SocketUrl localSocketUrl, AddressBase address) throws XmlBlasterException {
+      String keystore = address.getEnv("keystore", "keystore").getValue();
+      String pass = address.getEnv("keystorepass", "").getValue();
+      log.info(ME, "SSL connection enabled, keystore="+keystore);
+      System.setProperty("javax.net.ssl.trustStore", keystore);
+      System.setProperty("javax.net.ssl.trustStorePassword", pass);
+
+      // Use Reflection because of JDK 1.3 has no SSL
+      try  {
+         Class clazz = java.lang.Class.forName("javax.net.ssl.SSLSocketFactory");
+         Class[] paramCls = new Class[0];
+         Object[] params = new Object[0];
+         java.lang.reflect.Method method = clazz.getMethod("getDefault", paramCls);
+         Object socketFactory = method.invoke(clazz, params); // Returns "SocketFactory"
+
+         if (localSocketUrl != null && localSocketUrl.getPort() > -1) {
+            paramCls = new Class[] {
+               java.net.InetAddress.class,        // address
+               int.class,                         // port
+               java.net.InetAddress.class,        // localAddress
+               int.class,                         // localPort
+            };
+            params = new Object[] {
+               getInetAddress(),
+               new Integer(getPort()),
+               localSocketUrl.getInetAddress(),
+               new Integer(localSocketUrl.getPort())
+            };
+         }
+         else {
+            paramCls = new Class[] {
+               java.net.InetAddress.class,
+               int.class,
+            };
+            params = new Object[] {
+               getInetAddress(),
+               new Integer(getPort()),
+            };
+         }
+
+         method = socketFactory.getClass().getMethod("createSocket", paramCls);
+         return (java.net.Socket)method.invoke(socketFactory, params);
+      }
+      catch (Exception e) {
+         log.trace(ME, "Can't switch on SSL socket: " + e.toString());
+         e.printStackTrace();
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
+                        "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
+      }
+      /* JDK 1.4 and higher:
+      try {
+         if (localSocketUrl != null && localSocketUrl.getPort() > -1)
+            return javax.net.ssl.SSLSocketFactory.getDefault().createSocket(getInetAddress(),
+                     getPort(), localSocketUrl.getInetAddress(), localSocketUrl.getPort());
+         else
+            return javax.net.ssl.SSLSocketFactory.getDefault().createSocket(getInetAddress(), getPort());
+      }
+      catch (java.io.IOException e) {
+         log.trace(ME, "Can't switch on SSL server socket: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
+                        "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
+      }
+      */
+   }
+
    /** java org.xmlBlaster.protocol.socket.SocketUrl socket://localhost:7609 */
    public static void main(String[] args) {
       try {
