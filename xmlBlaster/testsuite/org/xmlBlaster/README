@@ -37,11 +37,11 @@ Start the test suite manually:
 
    Start the test suite with GUI support:
 
-      java -Djava.compiler= junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= junit.ui.TestRunner -noloading AllTests
 
    For command line output invoke:
 
-      java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= junit.textui.TestRunner AllTests
 
    Start one test without testsuite (and with debugging output on console):
 

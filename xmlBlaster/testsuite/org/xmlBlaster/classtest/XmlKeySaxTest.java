@@ -26,7 +26,7 @@ public class XmlKeySaxTest extends TestCase {
    }
 
    public void testXPath() {
-      System.out.println("TestXPath ...");
+      System.out.println("***XmlKeySaxTest: TestXPath and filter ...");
       try {
          Global glob = new Global();
          String xpath = "//STOCK";
@@ -47,6 +47,7 @@ public class XmlKeySaxTest extends TestCase {
          assertEquals("Wrong filter", "8000", qosArr[0].getQuery().toString());
          assertEquals("Wrong filter", "bug", qosArr[1].getQuery().toString());
          assertEquals("XPath is different", xmlKey.getQueryString(), xpath);
+         System.out.println("***XmlKeySaxTest: TestXPath and filter [SUCCESS]");
       }
       catch(Throwable e) {
          fail("Exception thrown: " + e.toString());

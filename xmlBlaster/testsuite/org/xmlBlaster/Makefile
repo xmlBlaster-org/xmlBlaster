@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/org/xmlBlaster
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = query xmldb
+SUB_DIRS = classtest query xmldb
 #LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
@@ -49,7 +49,8 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestInvocationRecorder.class \
     $(CLASS_DIR)/TestSubManyClients.class \
     $(CLASS_DIR)/TestSubLostClient.class \
-    $(CLASS_DIR)/TestAll.class
+    $(CLASS_DIR)/TestAll.class \
+    $(CLASS_DIR)/AllTests.class
 #------------------------------------------------------------------------------
 
 $(CLASS_DIR)/%.class: %.java

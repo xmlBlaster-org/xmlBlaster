@@ -13,7 +13,8 @@ import junit.framework.*;
 
 
 /**
- * This test client starts all known tests.
+ * This test client starts all known tests in directory xmlBlaster/testsuite/org/xmlBlaster
+ * these are remote tests between clients and a running xmlBlaster. 
  * <p />
  * The complete testsuite runs ~2 minutes.
  * <p />
