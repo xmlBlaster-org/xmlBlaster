@@ -6,6 +6,7 @@ Changes for 0.8x [xxx, xx 2002]
   - Fixed memory leak for volatile messages, happened when a volatile
     message is in a callback queue and the client disappears silently
     Reported by David Kerry
+    Further volatile bug fixes by David Kerry and Russell Chan
   
   - Bugfix in SOCKET protocol to ignore InterruptedException
     from other code
