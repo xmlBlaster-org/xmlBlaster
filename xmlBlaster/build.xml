@@ -799,12 +799,21 @@ TODO
             <patternset>
                <include name="**/*.idl"/>
                <include name="**/*.java"/>
-               <include name="**/*.cpp,**/*.c,**/*.h,**/*.hpp"/>
-               <include name="**/*.pl,**/*.pm,**/*.perl"/>
-               <include name="**/*.py,**/*.python"/>
-               <include name="**/*.php,**/*.inc"/>
+               <include name="**/*.cpp"/>
+               <include name="**/*.c"/>
+               <include name="**/*.h"/>
+               <include name="**/*.hpp"/>
+               <include name="**/*.pl"/>
+               <include name="**/*.pm"/>
+               <include name="**/*.perl"/>
+               <include name="**/*.py"/>
+               <include name="**/*.python"/>
+               <include name="**/*.php"/>
+               <include name="**/*.inc"/>
                <include name="**/*.js"/>
                <include name="**/*.tcl"/>
+               <exclude name="build/**"/>
+               <exclude name="classes/**"/>
             </patternset>
          </fileset>
          <mapper type="glob" from="*" to="*.html"/>
@@ -817,10 +826,16 @@ TODO
             <patternset>
                <include name="**/*.idl.html"/>
                <include name="**/*.java.html"/>
-               <include name="**/*.cpp,**/*.c,**/*.h,**/*.hpp.html"/>
-               <include name="**/*.pl,**/*.pm,**/*.perl.html"/>
-               <include name="**/*.py,**/*.python.html"/>
-               <include name="**/*.php,**/*.inc.html"/>
+               <include name="**/*.cpp.html"/>
+               <include name="**/*.c.html"/>
+               <include name="**/*.hpp.html"/>
+               <include name="**/*.pl.html"/>
+               <include name="**/*.pm.html"/>
+               <include name="**/*.perl.html"/>
+               <include name="**/*.py.html"/>
+               <include name="**/*.python.html"/>
+               <include name="**/*.php.html"/>
+               <include name="**/*.inc.html"/>
                <include name="**/*.js.html"/>
                <include name="**/*.tcl.html"/>
             </patternset>
