@@ -198,6 +198,8 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_CONFIGURATION_PLUGINFAILED = new ErrorCode("resource.configuration.pluginFailed",
          "A plugin required couldn't be loaded, please check your configuration.",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "The runlevel manager howto", "engine.runlevel.howto"),
+            new ResourceInfo(ResourceInfo.REQ, "The runlevel manager", "engine.runlevel")
          }
       );
 
