@@ -47,7 +47,7 @@ Then configure xmlBlaster for that htpasswd auth plugin :
 
 5/ Now try an invalid password:
 
-                java javaclients.ClientSub -Security.Client.DefaultPlugin htpasswd,1.0 -user <username> -passwd <BadPassword>
+     java javaclients.ClientSub -Security.Client.DefaultPlugin htpasswd,1.0 -name <username> -passwd <BadPassword>
 
    You should get an authentication error from HTPASSWD
 
