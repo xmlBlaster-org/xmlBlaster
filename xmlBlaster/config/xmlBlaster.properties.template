@@ -61,14 +61,7 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
 # For supported protocol types see xmlBlaster/src/java/org/xmlBlaster/protocol directory
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html 
-
-ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver
-ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
-ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
-ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
-ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
-#ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
-#ProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.NativeDriver
+# NOTE: Please use xmlBlasterPlugins.xml to configure which protocols to offer
 
 CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
