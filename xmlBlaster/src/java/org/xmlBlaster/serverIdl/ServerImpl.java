@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.28 2000/01/07 20:32:38 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.29 2000/01/23 19:02:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -63,7 +63,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering subscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.CALLS) Log.calls(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
@@ -85,7 +85,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-unSubscribe()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
@@ -148,7 +148,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering erase(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.CALLS) Log.calls(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + requestBroker.printOn().toString());
       ClientInfo clientInfo = authenticate.check();
 
@@ -171,7 +171,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering get(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
