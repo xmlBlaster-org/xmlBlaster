@@ -20,7 +20,7 @@ int argc = 0;
 char** argv = 0;
 #define  ERRORSTR_LEN 4096
 char errorString[ERRORSTR_LEN+1];
-char *updateContent = 0;
+char updateContent[256];
 void *updateUserData;
 const char *CONTENT = "Some message payload";
 int updateCounter = 0;
@@ -34,12 +34,12 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException
    size_t i;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    updateUserData = xa;
-   updateCounter++;
+   updateCounter += msgUnitArr->len;
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit *msg = &msgUnitArr->msgUnitArr[i];
       if (xa->logLevel>=LOG_TRACE)
          xa->log(xa->logLevel, LOG_TRACE, __FILE__, "CALLBACK update(): Asynchronous message update arrived\n"); 
-      updateContent = strFromBlobAlloc(msg->content, msg->contentLen);
+      strncpy0(updateContent, msg->content, msg->contentLen+1); /* Adds '\0' to the end */
       msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
    }
    return true;
@@ -76,12 +76,12 @@ static const char * test_stress()
       char connectQos[2048];
       char callbackQos[1024];
       sprintf(callbackQos,
-               "<queue relating='callback' maxEntries='%d'>" /* maxEntriesCache='%d'>" */
+               "<queue relating='callback' maxEntries='%d' maxEntriesCache='%d'>"
                "  <callback type='SOCKET' sessionId='%s'>"
                "    socket://%.120s:%d"
                "  </callback>"
                "</queue>",
-               numPublish, callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+               numPublish, numPublish, callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
       sprintf(connectQos,
                "<qos>"
                " <securityService type='htpasswd' version='1.0'>"
@@ -127,7 +127,7 @@ static const char * test_stress()
       MsgUnit msgUnit;
       char tmp[200];
       msgUnit.key = strcpyAlloc("<key oid='TestStress'/>");
-      sprintf(tmp, "#%d %s", iPub, CONTENT);
+      sprintf(tmp, "#%d %s", (iPub+1), CONTENT);
       msgUnit.content = strcpyAlloc(tmp);
       msgUnit.contentLen = strlen(msgUnit.content);
       msgUnit.qos =strcpyAlloc("<qos><persistent>false</persistent></qos>");
@@ -152,12 +152,14 @@ static const char * test_stress()
       sleepMillis(500);
    }
 
-   mu_assert("[TEST FAIL] No update arrived", updateContent != 0);
-   mu_assert("[TEST FAIL] Missing updates", updateCounter == numPublish);
+   mu_assert("[TEST FAIL] No update arrived", *updateContent != '\0');
+   if (updateCounter != numPublish ) {
+      freeXmlBlasterAccessUnparsed(xa);
+      mu_assert("[TEST FAIL] Missing updates", updateCounter == numPublish);
+   }
    printf("[client] updateContent = %s, CONTENT = %s\n", updateContent, CONTENT);
    mu_assert("[TEST FAIL] Received wrong message in update()", strstr(updateContent, CONTENT) != 0);
-   free(updateContent);
-   updateContent = 0;
+   *updateContent = '\0';
 
    mu_assert("[TEST FAIL] UserData from update() is invalid", updateUserData == xa);
 
@@ -186,9 +188,8 @@ static const char * test_stress()
    }
    mu_assert("[TEST FAIL] disconnect() returned false", retBool == true);
 
-   if (updateContent != 0) { /* The erase event is sent as update as well */
-      free(updateContent);
-      updateContent = 0;
+   if (*updateContent != '\0') { /* The erase event is sent as update as well */
+      *updateContent = '\0';
    }
 
    freeXmlBlasterAccessUnparsed(xa);
