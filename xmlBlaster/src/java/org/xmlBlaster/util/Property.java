@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.1 2000/01/19 22:21:41 ruff Exp $
+Version:   $Id: Property.java,v 1.2 2000/01/19 22:56:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -30,7 +30,78 @@ public class Property
 
 
    /**
-    * This loads xmlBlaster.properties file. 
+    * Try to find the given key in xmlBlaster.properties
+    * @param key the key to look for
+    * @param defaultVal the default value to return if key is not found
+    * @return The String value for the given key
+    */
+   public static final String getProperty(String key, String defaultVal)
+   {
+      return getProps().getProperty(key, defaultVal);
+   }
+
+
+   /**
+    * Try to find the given key in xmlBlaster.properties
+    * @param key the key to look for
+    * @param defaultVal the default value to return if key is not found
+    * @return The int value for the given key
+    */
+   public final static int getProperty(String key, int defaultVal)
+   {
+      String str = getProps().getProperty(key);
+      if (str == null)
+         return defaultVal;
+      try {
+         return Integer.parseInt(str);
+      } catch (Exception e) {
+         return defaultVal;
+      }
+   }
+
+
+   /**
+    * Try to find the given key in xmlBlaster.properties
+    * @param key the key to look for
+    * @param defaultVal the default value to return if key is not found
+    * @return The long value for the given key
+    */
+   public final static long getProperty(String key, long defaultVal)
+   {
+      String str = getProps().getProperty(key);
+      if (str == null)
+         return defaultVal;
+      try {
+         return Long.parseLong(str);
+      } catch (Exception e) {
+         return defaultVal;
+      }
+   }
+
+
+   /**
+    * Try to find the given key in xmlBlaster.properties
+    * <p />
+    * See toBool() for a list of recognized strings.
+    * @param key the key to look for
+    * @param defaultVal the default value to return if key is not found
+    * @return The boolean value for the given key
+    */
+   public final static boolean getProperty(String key, boolean defaultVal)
+   {
+      String str = getProps().getProperty(key);
+      if (str == null)
+         return defaultVal;
+      try {
+         return toBool(str);
+      } catch (Exception e) {
+         return defaultVal;
+      }
+   }
+
+
+   /**
+    * This loads xmlBlaster.properties file.
     * @return the initialized Properties
     */
    public static final Properties getProps()
@@ -66,20 +137,28 @@ public class Property
     * @return true for one of "true", "yes", "1", "ok"<br />
     *         else false
     */
-   public static final boolean toBool(String token)
+   public static final boolean toBool(String token) throws Exception
    {
-      if (token == null) return false;
+      if (token == null)
+         throw new Exception("Can't parse <null> to true or false");
+
       if (token.equalsIgnoreCase("true") ||
          token.equalsIgnoreCase("1") ||
          token.equalsIgnoreCase("ok") ||
          token.equalsIgnoreCase("yes"))
          return true;
-      return false;
+
+      if (token.equalsIgnoreCase("false") ||
+         token.equalsIgnoreCase("0") ||
+         token.equalsIgnoreCase("no"))
+         return false;
+   
+      throw new Exception("Can't parse <" + token + "> to true or false");
    }
 
 
    /**
-    * Look for properties file. 
+    * Look for properties file.
     * 1) In $HOME
     * 2) Im $XMLBLASTER_HOME
     * 3) Local directory
@@ -146,7 +225,7 @@ public class Property
 
 
    /**
-    * Find xmlBlaster.properties. 
+    * Find xmlBlaster.properties.
     * <p />
     * See findPath() for search - logic
     *
@@ -174,7 +253,22 @@ public class Property
     */
    public static void main(String args[])
    {
+      String ME = "Property";
+      try {
+         Log.info(ME, "yes=" + Property.toBool("yes"));
+         Log.info(ME, "no=" + Property.toBool("no"));
+         Log.info(ME, "aaa=" + Property.toBool("aaa"));
+      }
+      catch (Exception e) {
+         Log.info(ME, "OK, aaa=ERROR");
+      }
+
+      Log.info(ME, "Persistence=" + Property.getProperty("Persistence", false));
+      Log.info(ME, "Persistence.Dummy=" + Property.getProperty("Persistence.Dummy", false));
+      Log.info(ME, "Persistence.Driver=" + Property.getProperty("Persistence.Driver", "NONE"));
+      Log.info(ME, "Persistence.Dummy=" + Property.getProperty("Persistence.Dummy", "NONE"));
       Properties props = Property.getProps();
+      Log.info(ME, "All properties: " + props);
       Log.exit(ME, "Found xmlBlaster.properties:\n" + props);
    }
 }

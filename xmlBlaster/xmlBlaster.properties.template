@@ -1,0 +1,13 @@
+#------------------------------------------------------------------------------
+# Name:      xmlBlaster.properties
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Properties for xmlBlaster MOM server, copy into you home directory
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Persistent store
+Persistence.Driver=org.xmlBlaster.engine.persistence.FileDriver
+Persistence.Path=/tmp
+#------------------------------------------------------------------------------
