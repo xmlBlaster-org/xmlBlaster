@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# Name: xmlBlaster/demo/perl/xmlrpc/hello.pl (xmlBlaster.org)
 # Invoke
 #   perl hello.pl http://myHost:8080/
 # if xmlBlaster runs on 'myHost'
@@ -12,7 +13,7 @@ $server_url = @ARGV[0];
 if ($#ARGV == -1) {
    $host = `uname -n`;
    $host =~ s/^\s*(.*?)\s*$/$1/; # trim whitespace
-   $server_url = "http://" . $host . ":8080/";  # guess where the xmlBlaster server is
+   $server_url = "http://" . $host . ":8080/";  # guess where xmlBlaster is
 }
 print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
 
@@ -21,7 +22,8 @@ $server = Frontier::Client->new(url => $server_url);
 print "Connected to xmlBlaster server on $server_url \n";
 
 # Call the remote server and get our result.
-$sessionId = $server->call('authenticate.login', "ben", "secret", "<qos></qos>", "");
+$sessionId = $server->call('authenticate.login', "ben", "secret",
+                                                 "<qos></qos>", "");
 print "Login success, got secret sessionId=$sessionId \n";
 
 # Call the server and get its current memory consumption.
@@ -46,8 +48,10 @@ for $i (0 .. $#msgUnits) {
 }
 
 # Try publishing a message:
-$returnQos = $server->call('xmlBlaster.publish', $sessionId, "<key oid='MyMessage'></key>", "Hello world", "<qos><forceUpdate /></qos>");
-print "\nResult for a publish():\n----------------", $returnQos, "\n----------------\n";
+$returnQos = $server->call('xmlBlaster.publish', $sessionId,
+                           "<key oid='MyMessage'></key>",
+                           "Hello world", "<qos><forceUpdate /></qos>");
+print "\nResult for a publish():\n------------", $returnQos, "\n------------\n";
 
 
 # Logout from xmlBlaster
