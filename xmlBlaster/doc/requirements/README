@@ -43,3 +43,16 @@ java dom.DOMWriter -p dom.wrappers.DOMParser engine.get.no.xml
 
 ruff@swand.lake.de
 
+
+
+
+---- snippet how to pass parameters from command line ----
+If I try this from the command-line with Oracle XSLT,
+passing a value for the parameter, I get:
+
+$ oraxsl -p key='9988' data.xml test.xsl
+
+http://localhost:8000/servlet/servletName?objectKey=9988
+http://localhost:8000/servlet/servletName?objectKey=9988
+
+
