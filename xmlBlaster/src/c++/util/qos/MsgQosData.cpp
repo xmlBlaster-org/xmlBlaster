@@ -45,7 +45,7 @@ void MsgQosData::init()
 {
    ME = "MsgQosData";
    subscriptionId_ = "";
-   isSubscribeable_.setValue(global_.getProperty(), "isSubscribeable"); // true;
+   subscribeable_.setValue(global_.getProperty(), "isSubscribeable"); // true;
    redeliver_ = 0;
    queueIndex_ = -1;
    queueSize_ = -1;
@@ -65,7 +65,7 @@ void MsgQosData::init()
 void MsgQosData::copy(const MsgQosData& data)
 {
    subscriptionId_ = data.subscriptionId_;
-   isSubscribeable_ = data.isSubscribeable_;
+   subscribeable_ = data.subscribeable_;
    redeliver_ = data.redeliver_;
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
@@ -87,7 +87,7 @@ void MsgQosData::copy(const MsgQosData& data)
 
 MsgQosData::MsgQosData(Global& global, const string& serialData)
    : QosData(global, serialData),
-     isSubscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
+     subscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
      sender_(SessionQos(global)),
      destinationList_(),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
@@ -98,7 +98,7 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
 
 MsgQosData::MsgQosData(const MsgQosData& data)
    : QosData(data),
-     isSubscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
+     subscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
      sender_(data.sender_),
      destinationList_(data.destinationList_),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
@@ -122,14 +122,14 @@ MsgQosData::~MsgQosData()
 /**
  * @param isSubscribeable if false PtP messages are invisible for subscriptions
  */
-void MsgQosData::setIsSubscribeable(const bool isSubscribeable)
+void MsgQosData::setSubscribeable(const bool isSubscribeable)
 {
-   isSubscribeable_ = isSubscribeable;
+   subscribeable_ = isSubscribeable;
 }
 
 bool MsgQosData::isSubscribeable() const
 {
-   return isSubscribeable_.getValue();
+   return subscribeable_.getValue();
 }
 
 bool MsgQosData::isPtp() const
@@ -464,8 +464,8 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += "'/>";
    }
 
-   if (isSubscribeable_.isModified())
-      ret += offset + " <subscribeable>" + Global::getBoolAsString(isSubscribeable_.getValue()) + "</subscribeable>";
+   if (subscribeable_.isModified())
+      ret += offset + " <subscribeable>" + Global::getBoolAsString(subscribeable_.getValue()) + "</subscribeable>";
 
    vector<Destination>::const_iterator iter = destinationList_.begin();
    while (iter != destinationList_.end()) {

@@ -80,7 +80,7 @@ private:
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    string subscriptionId_;
 
-   Prop<bool> isSubscribeable_;
+   Prop<bool> subscribeable_;
 
    /** the number of resend tries on failure */
    int redeliver_;
@@ -145,7 +145,7 @@ public:
 
    virtual ~MsgQosData();
 
-   void setIsSubscribeable(const bool isSubcribeable);
+   void setSubscribeable(const bool isSubcribeable);
 
    /**
     * Test if Publish/Subscribe style is used for PtP messages.
