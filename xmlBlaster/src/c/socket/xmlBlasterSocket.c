@@ -327,9 +327,12 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
       socketDataHolder->blob.dataLen = 6;
       socketDataHolder->blob.data = strcpyAlloc("<qos/>");
       */
+      /*
+      Allow empty message for example for get() returns with no match
       socketDataHolder->blob.dataLen = 1;
       socketDataHolder->blob.data = (char *)malloc(1);
       *socketDataHolder->blob.data = 0;
+      */
    }
 
    free(rawMsg);
@@ -354,6 +357,24 @@ void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exc
 }
 
 /**
+ * Parses the QoS XML string array returned by erase() and unSubscribe()
+ * @return The returned status QoS, never null, needs to be freed with freeQosArr() after usage.
+ */
+QosArr *parseQosArr(size_t dataLen, char *data)
+{
+   int ii;
+   MsgUnitArr *msgUnitArr = parseMsgUnitArr(dataLen, data);
+   QosArr* qosArr = (QosArr *)calloc(1, sizeof(QosArr));
+   qosArr->len = msgUnitArr->len;
+   qosArr->qosArr = (const char **)calloc(qosArr->len, sizeof(const char *));
+   for (ii=0; ii<msgUnitArr->len; ii++) {
+      qosArr->qosArr[ii] = strcpyAlloc(msgUnitArr->msgUnitArr[ii].qos);
+   }
+   freeMsgUnitArr(msgUnitArr);
+   return qosArr;
+}
+
+/**
  * Parses the userData part of a raw socket message and fills an array
  * of MsgUnit structs.
  * @return The messages (never NULL), you need to free them after usage with freeMsgUnitArr(MsgUnitArr *)
@@ -363,6 +384,9 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
    MsgUnitArr *msgUnitArr = (MsgUnitArr *)calloc(1, sizeof(MsgUnitArr));
    size_t currpos = 0;
    size_t currIndex = 0;
+   if (dataLen <= 0) {
+      return msgUnitArr; /* Empty messageUnit array, only a first \0 for the qos */
+   }
    msgUnitArr->len = 10;
    msgUnitArr->msgUnitArr = (MsgUnit *)calloc(msgUnitArr->len, sizeof(MsgUnit));
    while (currpos < dataLen) {
@@ -395,6 +419,7 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
         
          /* read content */
          if (currpos < dataLen) {
+            char *tmp;
             strcpy(ptr, data+currpos);
             currpos += strlen(ptr)+1;
             trim(ptr);
@@ -404,8 +429,9 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
             }
             msgUnit->contentLen = (size_t)msgLenL;
         
-            msgUnit->content = (char *)malloc(msgUnit->contentLen * sizeof(char));
-            memcpy(msgUnit->content, data+currpos, msgUnit->contentLen);
+            tmp = (char *)malloc(msgUnit->contentLen * sizeof(char));
+            memcpy(tmp, data+currpos, msgUnit->contentLen);
+            msgUnit->content = tmp;
             currpos += msgUnit->contentLen;
          }
       }
