@@ -12,14 +12,14 @@
 ==============
    XPath Version 0.85 from Takuki Kamiya, Fujitsu Limited, 1999/11/15
    
-	 Download http://www.246.ne.jp/~kamiya/pub/omquery.zip
+   Download http://www.246.ne.jp/~kamiya/pub/omquery.zip
 
 
 2) xtdash.jar
 =============
    XSL Version 19991105 from James Clark
    XT is an implementation in Java of 
-	    href="http://www.w3.org/TR/1999/PR-xslt-19991008">XSL Transformations
+      href="http://www.w3.org/TR/1999/PR-xslt-19991008">XSL Transformations
 
    Download http://www.jclark.com/xml/xt.html
 
