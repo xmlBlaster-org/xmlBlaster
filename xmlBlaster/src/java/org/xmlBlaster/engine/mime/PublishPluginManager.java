@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.9 2002/06/08 23:00:21 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.10 2002/06/10 08:23:41 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -71,6 +71,7 @@ public class PublishPluginManager extends PluginManagerBase {
             String version = key.substring(key.indexOf(":")+1);
             I_PublishFilter plugin = (I_PublishFilter)getPluginObject(type, version);
             if (plugin != null) {
+               plugin.initialize(glob);
                if (pluginMap.get(plugin.getName()) != null)
                   log.warn(ME, "Instantiating publish filter plugin '" + plugin.getName() + "' again, have you configured it twice?");
                   
