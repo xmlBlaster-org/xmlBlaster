@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    xmlBlaster@marcelruff.info
-Version:   $Id: xmlBlaster.idl,v 1.15 2003/10/12 10:10:48 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.16 2004/09/16 19:32:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -369,7 +369,6 @@ module authenticateIdl
        * Disconnects the client from the xmlBlaster and closes the session.
        * <br>(Counterpart of connect( ... ); )
        * <p>
-       * @deprecated      Replaced by disconnect(in serverIdl::XmlType qosDisconnect
        * @param sessionId The server interface handle returned in the init qos.
        * @param qos       An optional signature etc.
        */
