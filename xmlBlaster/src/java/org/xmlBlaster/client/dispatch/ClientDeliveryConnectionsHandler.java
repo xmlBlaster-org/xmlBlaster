@@ -101,7 +101,7 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
                entry.getSubscribeQos().setSubscriptionId(subscriptionId);
             }
             statRetQos.setSubscriptionId(entry.getSubscribeQos().getData().getSubscriptionId());
-            SubscribeReturnQos subscribeReturnQos = new SubscribeReturnQos(glob, statRetQos);
+            SubscribeReturnQos subscribeReturnQos = new SubscribeReturnQos(glob, statRetQos, true);
             entry.setReturnObj(subscribeReturnQos);
          }
 
