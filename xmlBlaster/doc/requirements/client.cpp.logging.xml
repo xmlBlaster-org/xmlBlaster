@@ -53,6 +53,20 @@ XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
      <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/util/Log4cplus.cpp.html">Log4cplus.cpp</a> if you
      are curious about details.
      </p>
+     <p>Lookup of the configuration file:
+     </p>
+     <p>You can take a copy of the example configuration file <code>xmlBlaster/config/log4cplus.properties</code>
+     and customize logging to your needs. The C++ library looks at following locations
+     for the configuration file: 
+     </p>
+     <ol>
+       <li><code>-xmlBlaster/logging/configFileName [pathAndFile]</code>You can pass the
+         configuration file on command line or in the xmlBlaster.properties file.
+         Command line has highest priority.</li>
+       <li>If the file is not found we look into the <code>xmlBlaster/logging/configFileName</code>
+       environment variable.</li>
+       <li>Finally the local directory is checked for a file named <code>log4cplus.properties</code></li>
+     </ol>
      <h2>
      Redirect logging to your own logging library
      </h2>
@@ -100,6 +114,6 @@ class I_Log
    <see type="REQ">client.cpp.compile</see>
    <author><a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 02 11</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 
