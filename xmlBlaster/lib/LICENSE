@@ -153,12 +153,9 @@ only the SNMP subagent module jax.jar is GPL only!
   http://jakarta.apache.org/builds/ant/release/
 
 
-12) servlet.jar Servlet API 2.0
-===============================
-  (Not yet:
-  servlet.jar from jakarta-servletapi-4.0-m5
-  Java Servlet 2.3 and JSP 1.2 specifications
-  http://jakarta.apache.org/builds/jakarta-tomcat-4.0/release)
+12) servlet.jar Servlet API 2.1 from tomcat 3.2.4
+=================================================
+  http://jakarta.apache.org
 
 
 13) connector.jar jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar
@@ -289,3 +286,17 @@ only the SNMP subagent module jax.jar is GPL only!
    http://jhotdraw.sourceforge.net/
    Is used for the graphical chat only, see
    xmlBlaster/demo/javaclients/graphical/README
+
+32) commons-codec.jar
+=========================
+  http://jakarta.apache.org/commons/codec/index.html
+  commons-codec-1.1, downloaded Nov,8 2003
+  Base64 encode/decode need for XmlBlasterApplet support, see
+  xmlBlaster/src/java/org/xmlBlaster/client/protocol/http/applet
+
+33) commons-lang-2.0.jar
+========================
+  http://jakarta.apache.org/commons/lang/index.html
+  commons-codec-2.0, built from cvs Nov, 18 2003
+  different utilities (extention of java.util.*)
+ 
