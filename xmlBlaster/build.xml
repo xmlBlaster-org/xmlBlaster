@@ -271,7 +271,7 @@ TODO
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to suppress warning: ANSI C does not support `long long', C99 supports it -->
       <compilerarg value="-D_REENTRANT" />
-      <compilerarg value="-rdynamic" />  <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="-rdynamic" unless="sun"/>  <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-D${thread.impl}" />
@@ -455,10 +455,17 @@ TODO
          <case value="1.5"> <!-- for JDK 1.5 choose 1.4, otherwise it won't compile generics in JMS api -->
             <property name="JVM.target" value="1.4" />
             <property name="JVM.source" value="1.4" />
+            <property name="DO_FILTERING" value="true" />
+         </case>
+         <case value="1.3">
+            <property name="JVM.target" value="1.1" />
+            <property name="JVM.source" value="1.3" />
+            <property name="DO_FILTERING" value="false" /> <!-- Does not work with JDK 1.3 (because of ant??) -->
          </case>
          <default>
             <property name="JVM.target" value="1.1" />
             <property name="JVM.source" value="1.3" />
+            <property name="DO_FILTERING" value="true" />
          </default>
       </switch>
 
@@ -519,7 +526,7 @@ TODO
    <!-- Generate the lexical files (JFlex and JavaCup)                      -->
    <!-- JFlex is normally not in the distribution. If a JFlex.jar file is   -->
    <!-- found in ${xmlBlaster.lib} then JFlex is generated if not uptodate. -->
-   <!-- JavaCup is always generated if not uptodate (since the license	    -->
+   <!-- JavaCup is always generated if not uptodate (since the license      -->
    <!-- allows to have it in the distribution                               -->
    <!-- =================================================================== -->
    <target name="lexicalCheck" depends="prepare" description="checks if JFlex exists">
@@ -581,7 +588,7 @@ TODO
    <!-- =================================================================== -->
    <target name="xmlBlaster" depends="java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
 
-      <copy todir="${build.src}/xmlBlaster" filtering="true">
+      <copy todir="${build.src}/xmlBlaster" filtering="${DO_FILTERING}">
          <fileset dir="${src.java.dir}">
             <exclude name="org/jutils"/>
             <exclude name="README"/>
@@ -1383,7 +1390,7 @@ TODO
       </pathconvert>
       <echo file="${docbookReq.dir}/all.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
    <files><url>${files}</url></files>]]></echo>
-      <!-- Create the overview -->		     
+      <!-- Create the overview -->                   
       <!--
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/all.xml"
@@ -2930,11 +2937,11 @@ TODO
          </defineset>
 
          <linker name="gcc" if="use-gcc">
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}" />
-            <linkerarg value="-Wl" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}" unless="sun"/>
             <libset dir="${lib.dir}" libs="${c.lib.name}" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
+            <syslibset dir="/lib" libs="socket" if="sun"/>
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
             <!-- syslibset dir="/usr/lib" libs="socket" if="unix"/ -->
