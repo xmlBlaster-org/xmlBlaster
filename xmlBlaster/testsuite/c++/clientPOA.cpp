@@ -17,6 +17,7 @@
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
+#include <generated/xmlBlaster.h>
 
 #include <fstream.h>
 #include <string>
