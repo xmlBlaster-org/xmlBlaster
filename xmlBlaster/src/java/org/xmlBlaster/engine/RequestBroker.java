@@ -89,6 +89,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
    private final SessionInfo unsecureSessionInfo;
    private final String myselfLoginName; // "__RequestBroker_internal[heron]";
+   public final static String internalLoginNamePraefix = "__RequestBroker_internal";
 
    /**
     * Helper to handle the subscriptions
@@ -147,10 +148,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       this.burstModeTimer = new Timeout("BurstmodeTimer");
 
-      myselfLoginName = "__RequestBroker_internal[" + glob.getId() + "]";
+      myselfLoginName = internalLoginNamePraefix + "[" + glob.getId() + "]";
       unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
 
-      useCluster = glob.getProperty().get("cluster", true);
+      useCluster = glob.useCluster();
       if (useCluster) {
          this.ME += "-" + glob.getId();
          glob.getClusterManager(this.unsecureSessionInfo); // Initialize ClusterManager
@@ -461,7 +462,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    String subscribe(SessionInfo sessionInfo, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') from client '" + sessionInfo.getLoginName() + "' ...");
+         if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
 
          if (xmlKey.isInternalMsg()) {
             updateInternalStateInfo(unsecureSessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
@@ -1453,7 +1454,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
 
    /**
-    * Event invoked on new SubjectInfo. 
+    * Event invoked on new created SubjectInfo. 
     */
    public void subjectAdded(ClientEvent e) throws XmlBlasterException
    {
