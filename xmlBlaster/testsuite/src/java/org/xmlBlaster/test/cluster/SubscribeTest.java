@@ -139,14 +139,15 @@ public class SubscribeTest extends TestCase {
 
          {
             System.err.println("->Connect to bilbo 2 ...");
-            bilboCon2 = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
+            final Global bilboGlob2 = serverHelper.getBilboGlob().getClone(null);
+            bilboCon2 = serverHelper.connect(bilboGlob2, new I_Callback() {  // Login to xmlBlaster, register for updates
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                      if (updateQos.isErased()) {
                         log.info(ME, "Ignoring erase message");
                         return "";
                      }
                      updateCounterBilbo2++;
-                     log.info(ME+":"+serverHelper.getBilboGlob().getId() + "#2",
+                     log.info(ME+":"+bilboGlob2.getId() + "#2",
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo2 + " ...");
                      assertEquals("#2 Wrong message updated", oid, updateKey.getOid());
                      return "";
@@ -229,17 +230,18 @@ public class SubscribeTest extends TestCase {
          for (int ii=0; ii<num; ii++) {
             final int counter = ii;
             System.err.println("->Connect to bilbo #" + ii + " ...");
-            bilboCons[ii] = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
+            final Global bilboGlobii = serverHelper.getBilboGlob().getClone(null);
+            bilboCons[ii] = serverHelper.connect(bilboGlobii, new I_Callback() {  // Login to xmlBlaster, register for updates
                   int bilboConInstanceCounter = counter; 
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                     log.info(ME+":"+serverHelper.getBilboGlob().getId() + "#" + bilboConInstanceCounter,
+                     log.info(ME+":"+bilboGlobii.getId() + "#" + bilboConInstanceCounter,
                               "Receiving update '" + updateKey.getOid() + "' state=" + updateQos.getState() + ", " + updateCounterBilbo + " ...");
                      if (updateQos.isErased()) {
                         log.info(ME, "Ignoring erase message");
                         return "";
                      }
                      updateCounterBilbo++;
-                     log.info(ME+":"+serverHelper.getBilboGlob().getId() + "#" + bilboConInstanceCounter,
+                     log.info(ME+":"+bilboGlobii.getId() + "#" + bilboConInstanceCounter,
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo + " ...");
                      assertEquals("Wrong message updated", oid, updateKey.getOid());
                      return "";
