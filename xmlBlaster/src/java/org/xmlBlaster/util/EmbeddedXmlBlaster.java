@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.10 2003/03/27 12:14:30 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.11 2003/04/03 09:05:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -176,6 +176,7 @@ public class EmbeddedXmlBlaster
             log.info(ME, "Server is processing shutdown!");
       }
       finally {
+         if (log.TRACE) log.trace(ME, "stopServer done");
          this.glob = null;
          this.xmlBlasterMain = null;
          this.log = null;
