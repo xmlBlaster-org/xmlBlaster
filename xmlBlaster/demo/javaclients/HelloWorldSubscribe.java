@@ -69,6 +69,8 @@ public class HelloWorldSubscribe implements I_Callback
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("HelloWorldSubscribe");
+      I_XmlBlasterAccess con = null;
+      boolean disconnect = glob.getProperty().get("disconnect", true);
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
          this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
@@ -85,7 +87,6 @@ public class HelloWorldSubscribe implements I_Callback
          String filterVersion = glob.getProperty().get("filter.version", "1.0");
          String filterQuery = glob.getProperty().get("filter.query", "");
          boolean unSubscribe = glob.getProperty().get("unSubscribe", true);
-         boolean disconnect = glob.getProperty().get("disconnect", true);
 
          if (oid.length() < 1 && xpath.length() < 1) {
             log.warn(ME, "No -oid or -xpath given, we subscribe to oid='Hello'.");
@@ -125,7 +126,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
 
-         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
+         con = glob.getXmlBlasterAccess();
 
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
@@ -197,11 +198,6 @@ public class HelloWorldSubscribe implements I_Callback
 
          log.info(ME, "Hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
-
-         if (disconnect) {
-            DisconnectQos dq = new DisconnectQos(glob);
-            con.disconnect(dq);
-         }
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());
@@ -209,6 +205,13 @@ public class HelloWorldSubscribe implements I_Callback
       catch (Exception e) {
          e.printStackTrace();
          log.error(ME, e.toString());
+      }
+      finally {
+         if (con != null && disconnect) {
+            DisconnectQos dq = new DisconnectQos(glob);
+            con.disconnect(dq);
+            log.info(ME, "Disconnected");
+         }
       }
    }
 
