@@ -70,10 +70,10 @@ if ! [ ${JacORB_HOME} ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
-		PATH=${JacORB_HOME}/bin:${PATH}
-		export PATH
-		CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
-		export CLASSPATH
+      PATH=${JacORB_HOME}/bin:${PATH}
+      export PATH
+      CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
+      export CLASSPATH
    else
       echo -e ""
       echo -e "$BLACK_RED   Please set environment variable JacORB_HOME                       $ESC"
@@ -84,15 +84,18 @@ if ! [ ${JacORB_HOME} ] ; then
    fi
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 else
-   export PATH=${JacORB_HOME}/bin:${PATH}
+   PATH=${JacORB_HOME}/bin:${PATH}
+   export PATH
+   CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
+   export CLASSPATH
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 fi
 
 if [ -d ${JacORB_HOME} ] ; then
    if ! [ -f ${HOME}/.jacorb_properties ]; then
-	   cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
-		echo -e "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
-	fi
+      cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
+      echo -e "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
+   fi
 else
    echo -e "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
 fi
