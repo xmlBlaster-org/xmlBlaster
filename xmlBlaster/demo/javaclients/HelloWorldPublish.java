@@ -137,7 +137,9 @@ public class HelloWorldPublish
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
             else {
-               try { Thread.currentThread().sleep(sleep); } catch( InterruptedException e) {}
+               if (sleep > 0) {
+                  try { Thread.currentThread().sleep(sleep); } catch( InterruptedException e) {}
+               }
                log.info(ME, "Publish '" + oid + "' #" + (i+1) + "/" + numPublish);
             }
 
