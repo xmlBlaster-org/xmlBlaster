@@ -507,6 +507,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       sb.append(offset).append("<SessionInfo id='").append(getId());
       long timeToLife = this.expiryTimer.spanToTimeout(timerKey);
       sb.append("' timeout='").append(timeToLife).append("'>");
+      // Avoid dump of password: ?
+      //sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT));
       if (hasCallback()) {
          sb.append(this.dispatchManager.toXml(extraOffset+Constants.INDENT));
       }
