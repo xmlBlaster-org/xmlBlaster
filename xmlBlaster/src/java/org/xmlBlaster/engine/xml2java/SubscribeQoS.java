@@ -3,13 +3,14 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.8 2002/03/13 16:41:21 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.9 2002/03/15 13:06:27 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.SubscribeFilterQos;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.Constants;
@@ -36,8 +37,14 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    /** <local>false</local>  Inhibit the delivery of messages to myself if i have published it */
    private boolean local = true;
 
+   private transient SubscribeFilterQos tmpFilter = null;
+   protected Vector filterVec = null;                         // To collect the filter when sax parsing
+   protected transient SubscribeFilterQos[] filterArr = null; // To cache the filters in an array
+   private transient boolean inFilter = false;
+
    private transient QueueProperty tmpProp = null;
    protected Vector queuePropertyVec = new Vector();
+   protected transient QueueProperty[] queuePropertyArr = null; // To cache the properties in an array
    private transient boolean inQueue = false;
    private transient CallbackAddress tmpAddr = null;
    private transient boolean inCallback = false;
@@ -52,17 +59,34 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       init(xmlQoS_literal);
    }
 
-
-   public QueueProperty[] getQueueProperties()
+   /**
+    * Return the subscribe filters or null if none is specified. 
+    */
+   public final SubscribeFilterQos[] getFilterQos()
    {
-      if (queuePropertyVec.size() < 1) {
-         queuePropertyVec.addElement(new QueueProperty(Constants.RELATING_SESSION)); // defaults to session queue
-      }
-      QueueProperty[] arr = new QueueProperty[queuePropertyVec.size()];
-      queuePropertyVec.toArray(arr);
-      return arr;
+      if (filterArr != null || filterVec == null || filterVec.size() < 1)
+         return filterArr;
+
+      filterArr = new SubscribeFilterQos[filterVec.size()];
+      filterVec.toArray(filterArr);
+      return filterArr;
    }
 
+   /**
+    * The properties of the specified queues
+    */
+   public QueueProperty[] getQueueProperties()
+   {
+      if (queuePropertyArr != null)
+         return queuePropertyArr;
+
+      if (queuePropertyVec.size() < 1)
+         queuePropertyVec.addElement(new QueueProperty(Constants.RELATING_SESSION)); // defaults to session queue
+
+      queuePropertyArr = new QueueProperty[queuePropertyVec.size()];
+      queuePropertyVec.toArray(queuePropertyArr);
+      return queuePropertyArr;
+   }
 
    /**
     * Does client wants to have the XmlKey meta tags on update?
@@ -150,6 +174,19 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          tmpProp.startElement(uri, localName, name, attrs);
          return;
       }
+
+      if (name.equalsIgnoreCase("filter")) {
+         inQueue = true;
+         tmpFilter = new SubscribeFilterQos();
+         boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
+         if (ok) {
+            if (filterVec == null) filterVec = new Vector();
+            filterVec.addElement(tmpFilter);
+         }
+         else
+            tmpFilter = null;
+         return;
+      }
    }
 
 
@@ -194,6 +231,13 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if (name.equalsIgnoreCase("filter")) {
+         inFilter = false;
+         if (tmpFilter != null)
+            tmpFilter.endElement(uri, localName, name, character);
+         return;
+      }
+
       if (inCallback) {
          if (name.equalsIgnoreCase("callback")) inCallback = false;
          tmpAddr.endElement(uri, localName, name, character);
@@ -233,8 +277,54 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          sb.append(offset).append("   <content>false</content>");
       if (!local)
          sb.append(offset).append("   <local>false</local>");
+
+      SubscribeFilterQos[] filterArr = getFilterQos();
+      for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
+         sb.append(filterArr[ii].toXml(extraOffset+"   "));
+
+      for (int ii=0; ii<queuePropertyVec.size(); ii++) {
+         QueueProperty ad = (QueueProperty)queuePropertyVec.elementAt(ii);
+         sb.append(ad.toXml(extraOffset+"   "));
+      }
       sb.append(offset + "</" + ME + ">\n");
 
       return sb.toString();
+   }
+
+   /** For testing: java org.xmlBlaster.engine.xml2java.SubscribeQoS */
+   public static void main(String[] args)
+   {
+      try {
+         SubscribeQoS qos = null;
+         String xml =
+            "<qos>\n" +
+            "   <meta>false</meta>\n" +
+            "   <content>false</content>\n" +
+            "   <local>false</local>\n" +
+            "   <filter type='ContentLength' version='1.0'>\n" +
+            "      8000\n" +
+            "   </filter>\n" +
+            "   <filter type='ContainsChecker' version='7.1' xy='true'>\n" +
+            "      bug\n" +
+            "   </filter>\n" +
+            "   <filter>\n" +
+            "      invalid filter without type\n" +
+            "   </filter>\n" +
+            "   <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>\n" +
+            "      <callback type='EMAIL' sessionId='sd3lXjs9Fdlggh'>\n" +
+            "         et@mars.universe   <!-- Sends messages to et with specified queue attributes -->\n" +
+            "      </callback>\n" +
+            "   </queue>\n" +
+            "</qos>\n";
+         System.out.println("=====Original XML========\n");
+         System.out.println(xml);
+         qos = new SubscribeQoS(xml);
+         System.out.println("=====Parsed and dumped===\n");
+         System.out.println(qos.toXml());
+      }
+      catch(Throwable e) {
+         e.printStackTrace();
+         Log.error("TestFailed", e.toString());
+      }
    }
 }
