@@ -16,7 +16,7 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-XmlQoSBase::XmlQoSBase(Global& global) : XmlHandlerBase(global)
+XmlQoSBase::XmlQoSBase(Global& global) : XmlHandlerBase(global), ReferenceCounterBase()
 {
    inQos_ = false;
    if (log_.call()) log_.trace(me(), "Creating new XmlQoSBase");

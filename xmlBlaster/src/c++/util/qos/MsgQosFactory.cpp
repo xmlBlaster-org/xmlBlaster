@@ -121,9 +121,9 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       inDestination_ = true;
       destination_ = Destination(global_);
       AttributeMap::const_iterator iter = attrs.begin();
-      string tmpName = (*iter).first;
-      string tmpValue = (*iter).second;
       while (iter != attrs.end()) {
+         string tmpName = (*iter).first;
+         string tmpValue = (*iter).second;
          if (tmpName.compare("queryType") == 0) {
             string queryType = tmpValue;
             if (queryType == "EXACT")      destination_.setQueryType(queryType);

@@ -11,6 +11,7 @@ Comment:   Implementation of ConnectQos (ConnectReturnQos ConnectQosData)
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
+
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace std;
@@ -25,7 +26,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
     : global_(global),
       log_(global.getLog("org.xmlBlaster.util.qos")),
       securityQos_(global, user, passwd),
-      sessionQos_(global, user, publicSessionId),
+      sessionQos_(new SessionQos(global, user, publicSessionId)),
       ptp_(true),
       //addresses_(),
       //cbAddresses_(),
@@ -82,22 +83,35 @@ void ConnectQosData::setPtp(bool ptp)
 
 void ConnectQosData::setSessionQos(const SessionQos& sessionQos)
 {
-   sessionQos_ = sessionQos;
+   SessionQos *p = new SessionQos(sessionQos);
+   SessionQosRef r(p);
+   sessionQos_ = r;
 }
 
 SessionQos& ConnectQosData::getSessionQos() const
 {
+   return *sessionQos_;
+}
+
+
+void ConnectQosData::setSessionQos(SessionQosRef sessionQos) {
+   sessionQos_ = sessionQos;
+}
+
+SessionQosRef ConnectQosData::getSessionQosRef() const {
    return sessionQos_;
 }
 
+
+
 string ConnectQosData::getSecretSessionId() const
 {
-   return sessionQos_.getSecretSessionId();
+   return sessionQos_->getSecretSessionId();
 }
 
 string ConnectQosData::getUserId() const
 {
-   return sessionQos_.getAbsoluteName();
+   return sessionQos_->getAbsoluteName();
 }
 
 string ConnectQosData::getCallbackType() const
@@ -273,7 +287,7 @@ string ConnectQosData::toXml(const string& extraOffset) const
    if (isPersistent())
       ret += offset + " <persistent/>";
 
-   ret += sessionQos_.toXml(indent);
+   ret += sessionQos_->toXml(indent);
 
    {  // client queue properties 
       vector<ClientQueueProperty>::const_iterator

@@ -28,7 +28,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 
 
-class Dll_Export SessionQosData
+class Dll_Export SessionQosData : public org::xmlBlaster::util::ReferenceCounterBase
 {
 private:
    const std::string ME;
@@ -44,17 +44,7 @@ private:
 
    friend class SessionQosFactory;
 
-   void copy(const SessionQosData& data)
-   {
-      timeout_       = data.timeout_;
-      maxSessions_   = data.maxSessions_;
-      clearSessions_ = data.clearSessions_;
-      reconnectSameClientOnly_ = data.reconnectSameClientOnly_;
-      sessionId_     = data.sessionId_;
-      clusterNodeId_ = data.clusterNodeId_;
-      subjectId_     = data.subjectId_;
-      pubSessionId_  = data.pubSessionId_;
-   }
+   void copy(const SessionQosData& data);
 
    void initialize(const std::string& absoluteName, const std::string& defaultUserName, long publicSessionId);
 
@@ -162,6 +152,9 @@ public:
 typedef SessionQosData SessionQos;
 
 typedef SessionQosData SessionReturnQos;
+
+typedef org::xmlBlaster::util::ReferenceHolder<SessionQosData> SessionQosRef;
+typedef org::xmlBlaster::util::ReferenceHolder<SessionReturnQos> SessionReturnQosRef;
 
 }}}} // namespaces
 

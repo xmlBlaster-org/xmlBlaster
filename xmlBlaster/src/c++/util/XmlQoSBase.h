@@ -11,6 +11,8 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 
 #include <util/xmlBlasterDef.h>
 #include <util/parser/XmlHandlerBase.h>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
 #include <string>
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -26,7 +28,7 @@ namespace org { namespace xmlBlaster { namespace util {
      * The &lt;qos> tag is parsed here, and you provide the parsing of the 
      * inner tags.
      */
-    class Dll_Export XmlQoSBase : public parser::XmlHandlerBase
+    class Dll_Export XmlQoSBase : public parser::XmlHandlerBase, public ReferenceCounterBase
     {
 
     private:
@@ -102,6 +104,7 @@ namespace org { namespace xmlBlaster { namespace util {
        void endElement(const std::string &name);
     };
 }}} // namespace
+
 
 #endif
 

@@ -61,7 +61,7 @@ private:
    org::xmlBlaster::util::Global&     global_;
    org::xmlBlaster::util::I_Log&        log_;
    mutable org::xmlBlaster::authentication::SecurityQos securityQos_;
-   mutable org::xmlBlaster::util::qos::SessionQos  sessionQos_;
+   mutable org::xmlBlaster::util::qos::SessionQosRef  sessionQos_;
    bool        ptp_;
    bool        clusterNode_;
    bool        duplicateUpdates_;
@@ -84,7 +84,10 @@ private:
    void copy(const ConnectQosData& data)
    {
       securityQos_            = data.securityQos_;
-      sessionQos_             = data.sessionQos_;
+      org::xmlBlaster::util::qos::SessionQosData* p = data.sessionQos_.getElement();
+      org::xmlBlaster::util::qos::SessionQosData* p2 = new org::xmlBlaster::util::qos::SessionQosData(*p);
+      org::xmlBlaster::util::qos::SessionQosRef r(p2);
+      sessionQos_             = r;
       ptp_                    = data.ptp_;
       clusterNode_            = data.clusterNode_;
       duplicateUpdates_       = data.duplicateUpdates_;
@@ -109,6 +112,8 @@ public:
    void setPtp(bool ptp);
    void setSessionQos(const org::xmlBlaster::util::qos::SessionQos& sessionQos);
    org::xmlBlaster::util::qos::SessionQos& getSessionQos() const;
+   void setSessionQos(org::xmlBlaster::util::qos::SessionQosRef sessionQos);
+   org::xmlBlaster::util::qos::SessionQosRef getSessionQosRef() const;
    std::string getSecretSessionId() const;
    std::string getUserId() const;
    std::string getCallbackType() const;
