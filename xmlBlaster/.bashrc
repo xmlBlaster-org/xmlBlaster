@@ -99,7 +99,11 @@ if [ -d ${JacORB_HOME} ] ; then
    fi
    CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
+   # The following two entries are only useful if you have JacORB installed separately:
+   # To use JacORB demo:
    CLASSPATH=${CLASSPATH}:${JacORB_HOME}
+   # To compile JacORB yourself:
+   CLASSPATH=${CLASSPATH}:${JacORB_HOME}/classes
    export CLASSPATH
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
