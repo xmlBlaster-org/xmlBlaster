@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      MsgStoreCachePlugin.java
+Name:      MsgUnitStoreCachePlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.MsgStorePluginManager;
+import org.xmlBlaster.engine.msgstore.MsgUnitStorePluginManager;
 
 import java.util.ArrayList;
 
@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Map
+public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Map
 {
    private String ME;
    private Global glob;
@@ -115,17 +115,17 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.queueId = uniqueQueueId;
 
-         MsgStorePluginManager pluginManager = glob.getMsgStorePluginManager();
+         MsgUnitStorePluginManager pluginManager = glob.getMsgUnitStorePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
 
          //instantiate and initialize the underlying queues
 
-         String defaultTransient = glob.getProperty().get("msgstore.cache.transientQueue", "RAM,1.0");
+         String defaultTransient = glob.getProperty().get("msgUnitStore.cache.transientQueue", "RAM,1.0");
          this.transientStore = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
          //log.error(ME, "Debug only: " + this.transientStore.toXml(""));
          
          try {
-            String defaultPersistent = glob.getProperty().get("msgstore.cache.persistentQueue", "JDBC,1.0");
+            String defaultPersistent = glob.getProperty().get("msgUnitStore.cache.persistentQueue", "JDBC,1.0");
             this.persistentStore = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
 
             this.isConnected = true;
@@ -189,7 +189,6 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
       QueuePropertyBase ramCopy = (QueuePropertyBase)queuePropertyBase.clone();
       ramCopy.setMaxMsg(queuePropertyBase.getMaxMsgCache());
       ramCopy.setMaxBytes(queuePropertyBase.getMaxBytesCache());
-      ramCopy.setCacheQueue(true);
       return ramCopy;
    }
 
@@ -536,7 +535,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<MsgStoreCachePlugin id='").append(getStorageId().getId());
+      sb.append(offset).append("<MsgUnitStoreCachePlugin id='").append(getStorageId().getId());
       sb.append("' type='").append(getType());
       sb.append("' version='").append(getVersion());
       sb.append("' numOfEntries='").append(getNumOfEntries());
@@ -545,7 +544,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
       sb.append(this.transientStore.toXml(extraOffset+Constants.INDENT));
       if (this.persistentStore != null)
          sb.append(this.persistentStore.toXml(extraOffset+Constants.INDENT));
-      sb.append(offset).append("</MsgStoreCachePlugin>");
+      sb.append(offset).append("</MsgUnitStoreCachePlugin>");
       return sb.toString();
    }
 
