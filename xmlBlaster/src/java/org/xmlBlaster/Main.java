@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.48 2000/07/02 17:19:35 ruff Exp $
+Version:   $Id: Main.java,v 1.49 2000/07/03 13:39:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -144,11 +144,11 @@ public class Main
    /**
     * Load the drivers from xmlBlaster.properties.
     * <p />
-    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver"
+    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver"
     */
    private void loadDrivers()
    {
-      String drivers = XmlBlasterProperty.get("Protocol.Drivers", "IOR:org.xmlBlaster.protocol.corba.CorbaDriver");
+      String drivers = XmlBlasterProperty.get("Protocol.Drivers", "IOR:org.xmlBlaster.protocol.corba.CorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver");
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.38 2000/06/26 07:12:35 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.39 2000/07/03 13:40:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.38 $
+ * @version $Revision: 1.39 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -93,7 +93,7 @@ public class ClientInfo
     * Accessing the CallbackDriver for this client, supporting the
     * desired protocol (CORBA, EMAIL, HTTP).
     * <p />
-    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver"
+    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver"
     */
    private final void loadDrivers()
    {
@@ -101,7 +101,7 @@ public class ClientInfo
          return;
 
       protocols = new Hashtable();
-      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver");
+      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver");
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {
