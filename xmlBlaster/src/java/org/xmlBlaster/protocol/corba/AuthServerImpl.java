@@ -28,6 +28,39 @@ import org.xmlBlaster.protocol.corba.serverIdl.ServerPOATie;
 
 import org.omg.PortableServer.*;
 
+/* Obtain remote IP address (from jacorb mailing list):
+
+I'm not sure, but I think, the only standard way to achieve this, is to use
+PortableInterceptors on the client side too, adding some information to
+PortableInterceptor::ClientRequestInfo_ptr, or not?
+Then, you don't need the cast. 
+
+
+public void receive_request(ServerRequestInfo requestInfo) throws ForwardRequest {
+    java.net.InetAddress remoteAddress = getRemoteAddress(requestInfo);
+    ... etc ...
+ 
+
+public java.net.InetAddress getRemoteAddress(ServerRequestInfo requestInfo) {
+  try {
+            org.jacorb.orb.portableInterceptor.ServerRequestInfoImpl serverRequestInfo =
+        (org.jacorb.orb.portableInterceptor.ServerRequestInfoImpl)requestInfo;
+                org.jacorb.orb.dsi.ServerRequest serverRequest = serverRequestInfo.request;
+    org.jacorb.orb.giop.GIOPConnection giopConnection = serverRequest.getConnection();
+    org.jacorb.orb.iiop.ServerIIOPConnection serverIIOPTransport = (org.jacorb.orb.iiop.ServerIIOPConnection)giopConnection.getTransport();
+                java.net.Socket socket = serverIIOPTransport.getSocket();
+
+    java.net.InetSocketAddress remoteSockAddr = (java.net.InetSocketAddress)socket.getRemoteSocketAddress();
+    java.net.InetAddress remoteInetAddr = remoteSockAddr.getAddress();
+
+    return remoteInetAddr;
+  }
+  catch(ClassCastException e) {
+    e.printStackTrace();
+  }
+  return null;
+}
+*/
 
 /**
  * Implements the xmlBlaster AuthServer CORBA Interface.
