@@ -232,7 +232,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *      &lt;oid>aMessage&lt;/oid>
     *   &lt;key>
     * </pre>
-    * @return State inforamtion (is never null)
+    * @return State information returned from the publish call (is never null)
     */
    public String[] deadLetter(MsgQueueEntry[] entries)
    {
@@ -258,7 +258,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                }
 
                log.warn(ME, "Generating dead letter oid=" + entry.getMessageUnitWrapper().getUniqueKey() + " from publisher=" + entry.getPublisherName() +
-                            ", can't deliver to=" + entry.getReceiverName());
+                            " because delivery to '" + entry.getReceiverName() + "' failed.");
                StringBuffer buf = new StringBuffer(256);
                buf.append("<key oid='").append(Constants.OID_DEAD_LETTER).append("'><oid>").append(entry.getMessageUnitWrapper().getUniqueKey()).append("</oid></key>");
                msgUnit.setKey(buf.toString());
