@@ -16,7 +16,10 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * Example code how to access the xmlBlaster JDBC service
  * synchronous with the get() method.
  *
- * @see README for usage
+ * See README for usage
+ *
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html">Requirement engine.service.rdbms</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.jdbcpool.html">Requirement engine.service.rdbms.jdbcpool</a>
  */
 public class XmlDBClientSync
 {
