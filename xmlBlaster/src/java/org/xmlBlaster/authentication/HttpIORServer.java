@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.26 2003/03/27 10:33:43 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.27 2003/03/27 12:18:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -94,9 +94,9 @@ public class HttpIORServer extends Thread
    {
       try {
          int backlog = glob.getProperty().get("http.backlog", 50); // queue for max 50 incoming connection request
-         listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
+         this.listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
-            Socket accept = listen.accept();
+            Socket accept = this.listen.accept();
             log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
             if (!running) {
                log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
@@ -118,9 +118,9 @@ public class HttpIORServer extends Thread
          log.error(ME, "HTTP server problem on " + ip_addr + ":" + HTTP_PORT + ": " + e.toString());
       }
 
-      if (listen != null) {
-         try { listen.close(); } catch (java.io.IOException e) { log.warn(ME, "listen.close()" + e.toString()); }
-         listen = null;
+      if (this.listen != null) {
+         try { this.listen.close(); } catch (java.io.IOException e) { log.warn(ME, "this.listen.close()" + e.toString()); }
+         this.listen = null;
       }
    }
 
@@ -134,11 +134,11 @@ public class HttpIORServer extends Thread
       running = false;
 
       boolean closeHack = true;
-      if (listen != null && closeHack) {
+      if (this.listen != null && closeHack) {
          // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
          // force closing by invoking server with this temporary client:
          try {
-            java.net.Socket socket = new Socket(listen.getInetAddress(), HTTP_PORT);
+            java.net.Socket socket = new Socket(this.listen.getInetAddress(), HTTP_PORT);
             socket.close();
          } catch (java.io.IOException e) {
             log.warn(ME, "shutdown problem: " + e.toString());
@@ -146,9 +146,9 @@ public class HttpIORServer extends Thread
       }
 
       try {
-         if (listen != null) {
-            listen.close();
-            listen = null;
+         if (this.listen != null) {
+            this.listen.close();
+            this.listen = null;
          }
       } catch (java.io.IOException e) {
          log.warn(ME, "shutdown problem: " + e.toString());
