@@ -12,6 +12,8 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 
+import org.xmlBlaster.client.qos.ConnectQos;
+
 /**
  * XBQueueSession
  *
@@ -22,8 +24,8 @@ public class XBQueueSession extends XBSession implements QueueSession {
 
    private final static String ME = "XBQueueSession";
 
-   XBQueueSession(XBConnection connection, int ackMode, boolean transacted) {
-      super(connection, ackMode, transacted);
+   XBQueueSession(ConnectQos connectQos, int ackMode, boolean transacted) {
+      super(connectQos, ackMode, transacted);
    }
 
    /* (non-Javadoc)

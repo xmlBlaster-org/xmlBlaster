@@ -10,7 +10,6 @@ import java.util.Enumeration;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 
@@ -22,8 +21,8 @@ import org.xmlBlaster.util.qos.MsgQosData;
  */
 public class XBMapMessage extends XBMessage implements MapMessage {
 
-   XBMapMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos) {
-      super(global, key, content, qos, XBMessage.MAP);
+   XBMapMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos) {
+      super(session, key, content, qos, XBMessage.MAP);
    }
 
    /* (non-Javadoc)

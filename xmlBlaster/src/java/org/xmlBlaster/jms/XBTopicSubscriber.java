@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
@@ -19,15 +20,16 @@ public class XBTopicSubscriber extends XBMessageConsumer implements TopicSubscri
 
    private final static String ME = "XBTopicSubscriber";
 
-   XBTopicSubscriber(XBSession session, String msgSelector) {
-      super(session, msgSelector);
+   XBTopicSubscriber(XBSession session, Destination destination, String msgSelector, boolean noLocal) 
+      throws JMSException {
+      super(session, destination, msgSelector, noLocal);
    }
 
    public boolean getNoLocal() throws JMSException {
-      return this.session.noLocal;
+      return this.noLocal;
    }
 
    public Topic getTopic() throws JMSException {
-      return (Topic)this.session.destination;
+      return (Topic)this.destination;
    }
 }

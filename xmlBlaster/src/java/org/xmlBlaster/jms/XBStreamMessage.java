@@ -8,7 +8,6 @@ package org.xmlBlaster.jms;
 import javax.jms.JMSException;
 import javax.jms.StreamMessage;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 
@@ -22,8 +21,8 @@ public class XBStreamMessage extends XBMessage implements StreamMessage {
 
    private final static String ME = "XBStreamMessage";
 
-   XBStreamMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos) {
-      super(global, key, content, qos, XBMessage.TEXT);
+   XBStreamMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos) {
+      super(session, key, content, qos, XBMessage.TEXT);
    }
    
 

@@ -7,6 +7,7 @@ package org.xmlBlaster.jms;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
@@ -33,18 +34,23 @@ public class XBMessageProducer implements MessageProducer {
    protected int priority = 5;
    protected long timeToLive = -1L;
    protected PublishReturnQos publishReturnQos;      
-      
+   protected ExceptionListener exceptionListener;
+   protected XBSession session;
+  
    
-   XBMessageProducer(I_XmlBlasterAccess access, Destination destination) {
-      this.access = access;
+   XBMessageProducer(XBSession session, Destination destination) {
+      this.session = session;
+      this.access = this.session.global.getXmlBlasterAccess();
       this.destination = destination;
    }
 
+   // TODO implement the close logics 
    public void close() throws JMSException {
       // only the administrator should erase the topic
    }
 
    public int getDeliveryMode() throws JMSException {
+      this.session.checkControlThread();
       return this.deliveryMode;
    }
 
@@ -52,6 +58,7 @@ public class XBMessageProducer implements MessageProducer {
     * xmlBlaster always creates a unique message id (the unique timestamp)
     */
    public boolean getDisableMessageID() throws JMSException {
+      this.session.checkControlThread();
       return false;
    }
 
@@ -59,18 +66,22 @@ public class XBMessageProducer implements MessageProducer {
     * Ignored here since we always send the timestamp
     */
    public boolean getDisableMessageTimestamp() throws JMSException {
+      this.session.checkControlThread();
       return false;
    }
 
    public int getPriority() throws JMSException {
+      this.session.checkControlThread();
       return this.priority;
    }
 
    public long getTimeToLive() throws JMSException {
+      this.session.checkControlThread();
       return this.timeToLive;
    }
 
    public void setDeliveryMode(int deliveryMode) throws JMSException {
+      this.session.checkControlThread();
       this.deliveryMode = deliveryMode;
    }
 
@@ -78,6 +89,7 @@ public class XBMessageProducer implements MessageProducer {
     * @see javax.jms.MessageProducer#setDisableMessageID(boolean)
     */
    public void setDisableMessageID(boolean arg0) throws JMSException {
+      this.session.checkControlThread();
       // TODO Auto-generated method stub
    }
 
@@ -85,14 +97,17 @@ public class XBMessageProducer implements MessageProducer {
     * @see javax.jms.MessageProducer#setDisableMessageTimestamp(boolean)
     */
    public void setDisableMessageTimestamp(boolean arg0) throws JMSException {
+      this.session.checkControlThread();
       // TODO Auto-generated method stub
    }
 
    public void setPriority(int priority) throws JMSException {
+      this.session.checkControlThread();
       this.priority = priority;
    }
 
    public void setTimeToLive(long timeToLive) throws JMSException {
+      this.session.checkControlThread();
       this.timeToLive = timeToLive;
    }
 
@@ -112,6 +127,7 @@ public class XBMessageProducer implements MessageProducer {
 
    public void send(Destination dest, Message message, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
+      this.session.checkControlThread();
       if (message instanceof XBMessage) {
          XBMessage msg = (XBMessage)message;
          msg.setJMSDeliveryMode(deliveryMode);
@@ -126,7 +142,7 @@ public class XBMessageProducer implements MessageProducer {
             // what to do whith the publish return qos ?
          }
          catch (XmlBlasterException ex) {
-            throw XBConnectionFactory.convert(ex, ME + ".send: ");         
+            throw new XBException(ex, ME + ".send: ");         
          }
       }
       else {
@@ -135,6 +151,7 @@ public class XBMessageProducer implements MessageProducer {
    }
 
    public Destination getDestination() throws JMSException {
+      this.session.checkControlThread();
       return this.destination;
    }
 

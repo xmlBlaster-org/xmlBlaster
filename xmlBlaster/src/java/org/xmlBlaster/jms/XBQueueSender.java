@@ -10,7 +10,8 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueSender;
 
-import org.xmlBlaster.client.I_XmlBlasterAccess;
+
+// TODO implement check for thread of control
 
 /**
  * XBQueueSender
@@ -22,8 +23,8 @@ public class XBQueueSender extends XBMessageProducer implements QueueSender {
 
    private final static String ME = "XBQueueSender";
 
-   XBQueueSender(I_XmlBlasterAccess access, Queue queue) {
-      super(access, queue);
+   XBQueueSender(XBSession session, Queue queue) {
+      super(session, queue);
    }
 
    public Queue getQueue() throws JMSException {

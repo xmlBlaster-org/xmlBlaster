@@ -9,7 +9,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
+
+// TODO implement the check for thread of control ...
 
 /**
  * XBTopicPublisher
@@ -21,8 +22,8 @@ public class XBTopicPublisher extends XBMessageProducer implements TopicPublishe
 
    private final static String ME = "XBTopicPublisher";
 
-   XBTopicPublisher(I_XmlBlasterAccess access, Topic topic) {
-      super(access, topic);
+   XBTopicPublisher(XBSession session, Topic topic) {
+      super(session, topic);
    }
 
    public Topic getTopic() throws JMSException {

@@ -57,9 +57,12 @@ public class XBMessage implements Message {
    protected boolean writeOnly;
    protected Hashtable extraHeader; 
    private boolean propertyReadOnly;
+   protected XBSession session;
    
-   public XBMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
-      this.global = global;
+   public XBMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
+      this.session = session;
+      if (this.session == null) this.global = new Global();
+      else this.global = this.session.global;
       this.log = this.global.getLog("jms");
       this.qos = qos;
       this.content = content;
@@ -69,7 +72,7 @@ public class XBMessage implements Message {
       if (this.qos == null) this.qos = new MsgQosData(this.global, MethodName.PUBLISH);
       if (this.key == null) this.key = new MsgKeyData(this.global);
       this.type = type;
-      this.qos.addClientProperty("jmsMessageType", "" + this.type);
+      this.qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, this.type);
       if (this.content == null) this.writeOnly = true;
       else {
          this.readOnly = true;
@@ -84,8 +87,8 @@ public class XBMessage implements Message {
       if (this.qos != null) { 
          String[] keys = (String[])this.qos.getClientProperties().keySet().toArray(new String[this.qos.getClientProperties().size()]);
          for (int i=0; i < keys.length; i++) {
-            if (keys[i].startsWith("jms/")) {
-               this.extraHeader.put(keys[i].substring("jms/".length()), this.qos.getClientProperties().get(keys[i]));
+            if (keys[i].startsWith(XBPropertyNames.JMS_HEADER_PREFIX)) {
+               this.extraHeader.put(keys[i].substring(XBPropertyNames.JMS_HEADER_PREFIX.length()), this.qos.getClientProperties().get(keys[i]));
             }
          }
       }
@@ -100,7 +103,7 @@ public class XBMessage implements Message {
          while (enumer.hasMoreElements()) {
             String key = (String)enumer.nextElement();
             Object value = this.extraHeader.get(key);
-            this.qos.addClientProperty("jms/" + key, ClientProperty.getPropertyType(value), (String)value);
+            this.qos.addClientProperty(XBPropertyNames.JMS_HEADER_PREFIX + key, ClientProperty.getPropertyType(value), (String)value);
          }
       }
    }
@@ -115,7 +118,10 @@ public class XBMessage implements Message {
 
    synchronized public void acknowledge() throws JMSException {
       this.acknowledged = true;
-      this.notify();
+      if (this.session == null) return;
+      synchronized (this.session) {
+         this.session.notifyAll();
+      }
    }
 
    /**
@@ -185,7 +191,7 @@ public class XBMessage implements Message {
    }
 
    public String getJMSCorrelationID() throws JMSException {
-      return (String)this.qos.getClientProperties().get("correlationId");
+      return (String)this.qos.getClientProperties().get(XBPropertyNames.JMS_CORRELATION_ID);
    }
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException {
@@ -231,7 +237,7 @@ public class XBMessage implements Message {
    }
 
    public String getJMSType() throws JMSException {
-      return (String)qos.getClientProperties().get("JMSType");
+      return (String)qos.getClientProperties().get(XBPropertyNames.JMS_TYPE);
       // return this.key.getContentMime();
    }
 
@@ -300,7 +306,7 @@ public class XBMessage implements Message {
    }
 
    public void setJMSCorrelationID(String correlationId) throws JMSException {
-      this.qos.addClientProperty("correlationId", correlationId);
+      this.qos.addClientProperty(XBPropertyNames.JMS_CORRELATION_ID, correlationId);
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationId) throws JMSException {
@@ -352,7 +358,7 @@ public class XBMessage implements Message {
     * This method is invoked by the send method
     */
    public void setJMSMessageID(String messageId) throws JMSException {
-      this.qos.addClientProperty("JMSMessageID", messageId);
+      this.qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_ID, messageId);
    }
 
    /**
@@ -372,7 +378,7 @@ public class XBMessage implements Message {
     * This method is normally invoked by the provider
     */
    public void setJMSRedelivered(boolean redelivered) throws JMSException {
-      this.qos.addClientProperty("JMSRedelivered", redelivered);
+      this.qos.addClientProperty(XBPropertyNames.JMS_REDELIVERED, redelivered);
    }
 
    public void setJMSReplyTo(Destination sender) throws JMSException {
@@ -395,12 +401,12 @@ public class XBMessage implements Message {
     */
    public void setJMSTimestamp(long timestamp) throws JMSException {
       // not processed by xmlBlaster, only transported for jms purposes (we have an own set on server side)
-      this.qos.addClientProperty("jmsTimestamp", "" + timestamp);
+      this.qos.addClientProperty(XBPropertyNames.JMS_TIMESTAMP, timestamp);
    }
 
    public void setJMSType(String jmsType) throws JMSException {
       // this.key.setContentMime(jmsType);
-      this.qos.addClientProperty("JMSType", jmsType);
+      this.qos.addClientProperty(XBPropertyNames.JMS_TYPE, jmsType);
    }
 
    public void setLongProperty(String key, long value) throws JMSException {

@@ -30,8 +30,8 @@ public class XBObjectMessage extends XBMessage implements ObjectMessage {
 
    private final static String ME = "XBTextMessage";
 
-   XBObjectMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos) {
-      super(global, key, content, qos, XBMessage.OBJECT);
+   XBObjectMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos) {
+      super(session, key, content, qos, XBMessage.OBJECT);
    }
    
    public Serializable getObject() throws JMSException {

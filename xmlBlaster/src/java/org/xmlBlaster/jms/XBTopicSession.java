@@ -12,6 +12,8 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
+import org.xmlBlaster.client.qos.ConnectQos;
+
 /**
  * XBTopicSession
  *
@@ -22,24 +24,21 @@ public class XBTopicSession extends XBSession implements TopicSession {
 
    private final static String ME = "XBTopicSession";
 
-   XBTopicSession(XBConnection connection, int ackMode, boolean transacted) {
-      super(connection, ackMode, transacted);
+   XBTopicSession(ConnectQos connectQos, int ackMode, boolean transacted) {
+      super(connectQos, ackMode, transacted);
    }
 
    public TopicPublisher createPublisher(Topic topic) throws JMSException {
-      return new XBTopicPublisher(this.connection.getAccess(), topic);
+      return new XBTopicPublisher(this, topic);
    }
 
    public TopicSubscriber createSubscriber(Topic topic) throws JMSException {
-      this.destination = topic;
-      return new XBTopicSubscriber(this, null);
+      return new XBTopicSubscriber(this, topic, null, false);
    }
 
    public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal)
       throws JMSException {
-      this.destination = topic;
-      this.noLocal = noLocal;
-      return new XBTopicSubscriber(this, messageSelector);
+      return new XBTopicSubscriber(this, topic, messageSelector, noLocal);
    }
 
 }

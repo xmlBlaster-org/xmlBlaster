@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -22,7 +23,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBConnectionMetaData implements ConnectionMetaData {
+public class XBConnectionMetaData implements ConnectionMetaData, Serializable, Cloneable {
 
    private final static String ME = "XBConnectionMetaData";
    final static int MAJOR_VERSION = 1;

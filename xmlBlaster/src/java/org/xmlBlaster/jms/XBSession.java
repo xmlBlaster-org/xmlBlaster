@@ -7,9 +7,11 @@ package org.xmlBlaster.jms;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -29,16 +31,19 @@ import javax.jms.TopicSubscriber;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
+
+import EDU.oswego.cs.dl.util.concurrent.Channel;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+
 
 /**
  * XBSession
@@ -46,8 +51,12 @@ import org.xmlBlaster.util.def.ErrorCode;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBSession implements Session, I_Callback {
+public class XBSession extends Thread implements Session, I_Callback {
 
+   final static int MODE_UNSET = 0;
+   final static int MODE_ASYNC = 1;
+   final static int MODE_SYNC = 2;
+   
    private final static String ME = "XBSession";
    protected Global global;
    protected LogChannel log;
@@ -60,195 +69,199 @@ public class XBSession implements Session, I_Callback {
    protected HashMap durableSubscriptionMap;
    protected boolean open;
    protected boolean transacted;
-   protected Destination destination;
-   protected boolean noLocal = noLocalDefault;
-   protected String msgSelector = msgSelectorDefault;
-   protected SubscribeReturnQos subscribeReturnQos;
-   protected boolean durable = durableDefault;
-
-   private class UpdateThread extends Thread {
-      private XBMessage msg;
-      private XBSession parent;
-      
-      UpdateThread(XBSession parent, XBMessage msg) {
-         super("update-thread");
-         // setDaemon(true);
-         this.parent = parent;
-         this.msg = msg;
-      }
-      
-      public void run() {
-         if (this.msg != null) {
-            // synchronized(this.msg) {
-               if (this.parent.log.CALL) this.parent.log.call("UpdateThread.run()", "start");
-               this.parent.msgListener.onMessage(this.msg);
-               if (this.parent.log.CALL) this.parent.log.call("UpdateThread.run()", "end");
-            // }
-         }
-      }
-   }
-
-   XBSession(XBConnection connection, int ackMode, boolean transacted) {
-      this.connection = connection;
-      this.global = connection.getGlobal();
+   protected int syncMode = MODE_UNSET;
+   protected long updateTimeout = 60000L;
+   protected Map consumerMap;
+   
+   /**
+    * Set in the constructor it can be changed in the update methods 
+    * (also of the message consumers) only.
+    */
+   protected Thread controlThread;
+   protected ConnectQos connectQos;
+   protected String sessionName;
+   private I_StatusChangeListener statusChangeListener;
+   protected ExceptionListener exceptionListener;
+   protected boolean connectionActivated;
+   protected Channel channel;
+   private boolean started;
+   
+   /**
+    * This constructor creates a global which is a clone of the
+    * global contained in the connectQos.
+    * 
+    * @param connectQos is the connectQos to be used for this session. It is an own instance and can not be null.
+    */
+   XBSession(ConnectQos connectQos, int ackMode, boolean transacted) {
+      this.connectQos = connectQos;
+      this.global = this.connectQos.getData().getGlobal().getClone(null);
       this.log = this.global.getLog("jms");
+      if (this.log.CALL) this.log.call(ME, "constructor");
       this.ackMode = ackMode;
       this.durableSubscriptionMap = new HashMap();
       this.open = true;
       this.transacted = transacted;
+      this.controlThread = Thread.currentThread();
+      this.channel = new LinkedQueue();
+      this.consumerMap = new HashMap();
    }
 
-   private void subscribe() throws JMSException {
-      String oid = null;
-      if (this.destination instanceof Topic) 
-         oid = ((Topic)this.destination).getTopicName();
-      SubscribeKey key = new SubscribeKey(this.global, oid); 
-      SubscribeQos qos = new SubscribeQos(this.global);
-      qos.setWantInitialUpdate(false);
-      qos.setWantLocal(!this.noLocal);
-      qos.setPersistent(this.durable);
+   /**
+    * registeres the listener about status changes. In general this listener is the
+    * owner XBConnection since it needs to be notified everytime one of its sessions 
+    * is closing. Care must be used when invoking since this is not synchronized.
+    * @param statusChangeListener
+    */
+   void setStatusChangeListener(I_StatusChangeListener statusChangeListener) {
+      if (this.log.CALL) this.log.call(ME, "setStatusChangeListener");
+      if (statusChangeListener == null) {
+         this.statusChangeListener = null;
+      }
+      else {
+         if (statusChangeListener == this.statusChangeListener) return;
+         //synchronized(statusChangeListener) {
+            this.statusChangeListener = statusChangeListener;
+         //}
+      }
+   }
+
+   /**
+    * Activates or deactivates the dispatcher associated to this session.
+    * @param doActivate
+    */
+   final synchronized void activateDispatcher(boolean doActivate) throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "activateDispatcher '" + doActivate + "'");
+      this.connectionActivated = doActivate;
+      // only activate if already in asyc mode, i.e. if there is at least 
+      // one msgListener associated to this session
+      String oid = "__cmd:" + this.sessionName + "/?dispatcherActive=" + (doActivate && (this.syncMode == MODE_ASYNC)); 
+      PublishQos qos = new PublishQos(this.global);
+      PublishKey key = new PublishKey(this.global, oid);
+      this.global.getXmlBlasterAccess().publish(new MsgUnit(key, (byte[])null, qos));
+   }
+   
+   /**
+    * 
+    * @return a string containing the complete session name.
+    * @throws JMSException
+    */
+   String connect() throws JMSException {
+      if (this.log.CALL) this.log.call(ME, "connect");
       try {
-         this.subscribeReturnQos = this.connection.getAccess().subscribe(key, qos, this);
+         // TODO add a flag to the connectQos to inhibit the dispatcher already when connecting
+         this.sessionName = this.global.getXmlBlasterAccess().connect(this.connectQos, this).getSessionName().getRelativeName();
+         activateDispatcher(false);
+         return this.sessionName;
       }
       catch (XmlBlasterException ex) {
-         throw XBConnectionFactory.convert(ex, ME + ".subscribe: ");
+         throw new XBException(ex, ME + ".connect");   
       }
    }
-
-   synchronized public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
-      try {
-         if (this.msgListener != null) {
-            int type = XBMessage.STREAM;
-            try {
-               String val = (String)updateQos.getData().getClientProperties().get("jmsMessageType");
-               if (val != null) type = Integer.parseInt(val);
-            }
-            catch (Exception e) {
-            }
-            XBMessage msg;
-            switch (type) {
-               case XBMessage.TEXT: msg = new XBTextMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               case XBMessage.BYTES: msg = new XBBytesMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               case XBMessage.OBJECT: msg = new XBObjectMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               case XBMessage.MAP: msg = new XBMapMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               default: msg = new XBStreamMessage(this.global, updateKey.getData(), content, updateQos.getData());
-            }
-            
-            if (msg != null) {
-               if (this.ackMode == Session.AUTO_ACKNOWLEDGE) {
-                  if (this.log.TRACE) this.log.trace(ME, "update: ack mode: AUTO");
-                  this.msgListener.onMessage(msg);
-                  if (this.log.CALL) this.log.call(ME, "update stop");
-                  return "OK";
-               }
-               else { // start an own thread
-                  if (this.log.TRACE) {
-                     if (this.ackMode == Session.CLIENT_ACKNOWLEDGE) this.log.trace(ME, "update: ack mode: CLIENT");
-                     else this.log.trace(ME, "update: ack mode: DUPL");
-                  } 
-
-                  UpdateThread thread = new UpdateThread(this, msg);
-                  synchronized (msg) {
-                     if (this.log.TRACE) this.log.trace(ME, "update: starting the thread");
-                     thread.start();
-                     if (this.log.TRACE) this.log.trace(ME, "update: thread started");
-                     msg.wait(); // should it wait until a given timeout ?
-                     if (this.ackMode == Session.DUPS_OK_ACKNOWLEDGE || msg.isAcknowledged()) {
-                        if (this.log.CALL) this.log.call(ME, "update stop");
-                        return "OK";
-                     } 
-                     throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the acknowledge mode has not been invoked");         
-                  }
-               }
-            }
-            else {
-               throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message was null");         
-            }
-         }
-         else {
-            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message listener has not been assigned yet");         
-         }
-      }
-      catch (Throwable ex) {
-         ex.printStackTrace();
-         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update");         
-      }
-   }
-
-   protected void checkIfOpen(String methodName) throws JMSException {
+   
+   protected final void checkIfOpen(String methodName) {
       if (!this.open)
-         throw new JMSException(ME, "the session has been closed, operation '" + methodName + "' not permitted");
+         throw new IllegalStateException(ME + " the session has been closed, operation '" + methodName + "' not permitted");
    }
 
-   protected void checkIfTransacted(String methodName) throws JMSException {
+   protected final void checkIfTransacted(String methodName) throws JMSException {
       if (!this.transacted)
          throw new JMSException(ME, "the session is not transacted, operation '" + methodName + "' not permitted");
    }
 
+   final void checkControlThread() throws JMSException {
+      if (this.controlThread == null || this.controlThread == Thread.currentThread()) return;
+         throw new JMSException(ME, "the session must be used within the same thread");
+   }
+   
    public TopicSubscriber createDurableSubscriber(Topic topic, String name)
       throws JMSException {
-      checkIfOpen("createDurableSubscriber");
       return createDurableSubscriber(topic, name, this.msgSelectorDefault, this.noLocalDefault);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic, String name, String msgSelector, boolean noLocal)
       throws JMSException {
+      if (this.log.CALL) this.log.call(ME, "createDurableSubscriber '" + name + "' msgSelector=" + msgSelector + "' noLocal='" + noLocal + "'");
       checkIfOpen("createDurableSubscriber");
-      this.destination = topic;
-      this.noLocal = noLocal;
-      TopicSubscriber sub = new XBTopicSubscriber(this, msgSelector);
+      checkControlThread();
+      TopicSubscriber sub = new XBTopicSubscriber(this, topic, msgSelector, noLocal);
       this.durableSubscriptionMap.put(name, sub);
       return sub;
    }
 
-   synchronized public void close() throws JMSException {
-      this.open = true;
-      if (this.subscribeReturnQos != null) {
-         String oid = null;
-         if (this.destination instanceof Topic) 
-            oid = ((Topic)this.destination).getTopicName();
-         UnSubscribeKey key = new UnSubscribeKey(this.global, oid);
-         UnSubscribeQos qos = new UnSubscribeQos(this.global);
-         try {
-            this.connection.getAccess().unSubscribe(key, qos);
+   /**
+    * It disconnects from xmlBlaster and deregisters from its XBConnection 
+    */
+   public void close() throws JMSException {
+      if (this.log.CALL) this.log.call(ME, "close");
+      if (this.statusChangeListener != null)
+         this.statusChangeListener.statusPreChanged(this.sessionName, I_StatusChangeListener.RUNNING, I_StatusChangeListener.CLOSED);
+      try {
+         synchronized (this) {
+            try {
+               this.open = false;
+               Object[] keys = this.consumerMap.keySet().toArray();
+               if (this.log.TRACE) this.log.trace(ME, "close: going to close '" + keys.length + "' consumers too");
+               for (int i=0; i < keys.length; i++) {
+                  MessageConsumer consumer = (MessageConsumer)this.consumerMap.get(keys[i]);
+                  if (consumer != null) consumer.close();
+               }
+               this.consumerMap.clear();
+               this.global.getXmlBlasterAccess().disconnect(new DisconnectQos(this.global));
+            }
+            finally { // to avoid thread leak 
+               if (this.syncMode == MODE_ASYNC) {
+                  if (this.log.TRACE) this.log.trace(ME, "close: shutting down the running thread by sending a null message to its channel");
+                  XBMsgEvent event = new XBMsgEvent(null, null);
+                  try {
+                     this.channel.put(event);
+                  }
+                  catch (InterruptedException ex) {
+                     ex.printStackTrace();
+                  }
+               }
+            }
          }
-         catch (XmlBlasterException ex) {
-            throw XBConnectionFactory.convert(ex, ME + ".close(): ");
-         }
+      }
+      finally {
+         if (this.statusChangeListener != null) 
+            this.statusChangeListener.statusPostChanged(this.sessionName, I_StatusChangeListener.RUNNING, I_StatusChangeListener.CLOSED);
       }
    }
 
    public void commit() throws JMSException {
       checkIfOpen("commit");
       checkIfTransacted("commit");      
-      // TODO Auto-generated method stub
+      checkControlThread();
       this.log.warn(ME, "transacted sessions not implemented");
    }
 
    public BytesMessage createBytesMessage() throws JMSException {
       checkIfOpen("createBytesMessage");
-      return new XBBytesMessage(this.global, null, null, null);
+      checkControlThread();
+      return new XBBytesMessage(this, null, null, null);
    }
 
    public MapMessage createMapMessage() throws JMSException {
       checkIfOpen("createMapMessage");
-      return new XBMapMessage(this.global, null, null, null);
+      checkControlThread();
+      return new XBMapMessage(this, null, null, null);
    }
 
    public Message createMessage() throws JMSException {
       checkIfOpen("createMessage");
-      return new XBMessage(this.global, null, null, null, XBMessage.DEFAULT_TYPE);
+      checkControlThread();
+      return new XBMessage(this, null, null, null, XBMessage.DEFAULT_TYPE);
    }
 
    public ObjectMessage createObjectMessage() throws JMSException {
       checkIfOpen("createObjectMessage");
-      return new XBObjectMessage(this.global, null, null, null);
+      checkControlThread();
+      return new XBObjectMessage(this, null, null, null);
    }
 
-   public ObjectMessage createObjectMessage(Serializable content)
-      throws JMSException {
+   public ObjectMessage createObjectMessage(Serializable content) throws JMSException {
       checkIfOpen("createObjectMessage");
+      checkControlThread();
       ObjectMessage msg = createObjectMessage(); 
       msg.setObject(content);
       return msg;
@@ -256,26 +269,31 @@ public class XBSession implements Session, I_Callback {
 
    public StreamMessage createStreamMessage() throws JMSException {
       checkIfOpen("createStreamMessage");
-      return new XBStreamMessage(this.global, null, null, null);
+      checkControlThread();
+      return new XBStreamMessage(this, null, null, null);
    }
 
    public TextMessage createTextMessage() throws JMSException {
       checkIfOpen("createTextMessage");
-      return new XBTextMessage(this.global, null, null, null);      
+      checkControlThread();
+      return new XBTextMessage(this, null, null, null);      
    }
 
    public TextMessage createTextMessage(String text) throws JMSException {
       checkIfOpen("createTextMessage");
-      return new XBTextMessage(this.global, null, text.getBytes(), null);      
+      checkControlThread();
+      return new XBTextMessage(this, null, text.getBytes(), null);      
    }
 
    public MessageListener getMessageListener() throws JMSException {
       checkIfOpen("getMessageListener");
+      checkControlThread();
       return this.msgListener;
    }
 
    public boolean getTransacted() throws JMSException {
       checkIfOpen("getTransacted");
+      checkControlThread();
       return this.transacted;
    }
 
@@ -285,7 +303,7 @@ public class XBSession implements Session, I_Callback {
    public void recover() throws JMSException {
       checkIfOpen("recover");
       checkIfTransacted("recover");      
-      // TODO Auto-generated method stub
+      checkControlThread();
       this.log.warn(ME, "transacted sessions not implemented yet");
    }
 
@@ -295,37 +313,72 @@ public class XBSession implements Session, I_Callback {
    public void rollback() throws JMSException {
       checkIfOpen("rollback");
       checkIfTransacted("rollback");      
-      // TODO Auto-generated method stub
+      checkControlThread();
       this.log.warn(ME, "transacted sessions not implemented yet");
    }
 
    public void run() {
+      if (this.started) {
+         this.log.info(ME, "run: session was already started, not doing anything");
+         return;
+      }
+      this.started = true;
+      this.log.info(ME, "run: session started");
+      this.controlThread = Thread.currentThread();
+      while (true) {
+         try {
+            XBMsgEvent msgEvent = (XBMsgEvent)this.channel.take();
+            Message msg = msgEvent.getMessage();
+            if (msg == null) {
+               this.log.info(ME, "Shutting down the running thread since close event received");
+               break;
+            }
+            msgEvent.getListener().onMessage(msg);
+            // TODO notify the update thread waiting for ACK
+            if (this.log.TRACE) this.log.trace(ME, "run: msg='" + msg.getJMSMessageID() + "' ack='" + this.ackMode + "'");
+            if (this.ackMode == Session.DUPS_OK_ACKNOWLEDGE) msg.acknowledge();
+         }
+         catch (InterruptedException ex) {
+            this.log.error(ME, "run InterruptedException occured " + ex.getMessage());
+            ex.printStackTrace();
+         }
+         catch (Throwable ex) {
+            this.log.error(ME, "run a Throwable occured " + ex.getMessage());
+            ex.printStackTrace();
+         }
+      }
    }
-
+   
    public void setMessageListener(MessageListener msgListener) throws JMSException {
       checkIfOpen("setMessageListener");
+      checkControlThread();
+      this.log.warn(ME, "setMessageListener not implemented");
+      if (this.log.TRACE) Thread.dumpStack();
       this.msgListener = msgListener;
-      subscribe();
    }
 
    public Queue createQueue(String name) throws JMSException {
       checkIfOpen("createQueue");
+      checkControlThread();
       return new XBQueue(name);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException {
       checkIfOpen("createBrowser");
+      checkControlThread();
       return new XBQueueBrowser(queue, null);
    }
 
    public QueueBrowser createBrowser(Queue queue, String msgSelector)
       throws JMSException {
       checkIfOpen("createBrowser");
+      checkControlThread();
       return new XBQueueBrowser(queue, msgSelector);
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException {
       checkIfOpen("createTemporaryQueue");
+      checkControlThread();
       return new XBTemporaryQueue();
    }
 
@@ -337,38 +390,46 @@ public class XBSession implements Session, I_Callback {
    public MessageProducer createProducer(Destination destination)
       throws JMSException {
       checkIfOpen("createProducer");
-      return new XBMessageProducer(this.connection.getAccess(), destination);
+      checkControlThread();
+      return new XBMessageProducer(this, destination);
    }
 
+   /**
+    * For each consumer created, an own xmlBlaster subscription is done since
+    * the msgSelector (i.e. in xmlBlaster the mime plugin) could be different from
+    * one consumer to another. This is done in the constructor of the MessageConsumer and 
+    */
    public MessageConsumer createConsumer(Destination destination)
       throws JMSException {
       checkIfOpen("createConsumer");
-      this.destination = destination;
-      return new XBMessageConsumer(this, this.msgSelectorDefault); 
+      checkControlThread();
+      return new XBMessageConsumer(this, destination, this.msgSelectorDefault, this.noLocalDefault); 
    }
 
    public MessageConsumer createConsumer(Destination destination, String msgSelector)
       throws JMSException { 
       checkIfOpen("createConsumer");
-      this.destination = destination;
-      return new XBMessageConsumer(this, msgSelector); 
+      checkControlThread();
+      return new XBMessageConsumer(this, destination, msgSelector,  this.noLocalDefault); 
    }
 
    public MessageConsumer createConsumer(Destination destination, String msgSelector, boolean noLocal)
       throws JMSException {
       checkIfOpen("createConsumer");
-      this.destination = destination;
-      this.noLocal = noLocal;
-      return new XBMessageConsumer(this, msgSelector); 
+      checkControlThread();
+      return new XBMessageConsumer(this, destination, msgSelector, noLocal); 
    }
 
    public Topic createTopic(String name) throws JMSException {
       checkIfOpen("createTopic");
+      checkControlThread();
       return new XBTopic(name);
    }
 
    public void unsubscribe(String subName) throws JMSException {
+      if (this.log.CALL) this.log.call(ME, "unsubscribe '" + subName + "'");
       checkIfOpen("unsubscribe");
+      checkControlThread();
       try {
          TopicSubscriber sub = (TopicSubscriber)this.durableSubscriptionMap.remove(subName);
          if (sub == null) 
@@ -382,7 +443,37 @@ public class XBSession implements Session, I_Callback {
 
    public TemporaryTopic createTemporaryTopic() throws JMSException {
       checkIfOpen("createTemporaryTopic");
+      checkControlThread();
       return new XBTemporaryTopic();
    }
 
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+      this.log.error(ME, "update: should never be invoked ...");      
+      return "OK";
+   }
+
+
+   /**
+    * @return Returns the asyncMode.
+    */
+   int getSyncMode() {
+      return this.syncMode;
+   }
+   /**
+    * @param asyncMode The asyncMode to set. This method starts the 
+    * runner thread if not running yet in case async is set.
+    */
+   void setSyncMode(int asyncMode) {
+      this.syncMode = asyncMode;
+      if (asyncMode == XBSession.MODE_ASYNC && !this.started) start();
+   }
+   
+   void setControlThread(Thread controlThread) {
+      this.controlThread = controlThread;
+   }
+   
+   long getUpdateTimeout() {
+      return this.updateTimeout;
+   }
+   
 }
