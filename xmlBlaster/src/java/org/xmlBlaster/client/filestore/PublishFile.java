@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.1 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.2 2000/01/21 09:02:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.filestore;
 
@@ -20,7 +20,7 @@ import java.io.File;
 
 
 /**
- * Publish files to xmlBlaster. 
+ * Publish files to xmlBlaster.
  * <br />
  * Invoke examples:<br />
  * <code>
@@ -85,7 +85,8 @@ public class PublishFile
       // Determine content ...
       byte[] content = null;
       if (contentFile != null) {
-         content = FileUtil.readFile(contentFile);
+         try { content = FileUtil.readFile(contentFile); }
+         catch (XmlBlasterException e) { }
       }
       if (content == null && contentGiven != null) {
          content = contentGiven.getBytes();
@@ -97,7 +98,8 @@ public class PublishFile
       // Determine XmlKey ...
       String xmlKey = null;
       if (keyFile != null) {
-         xmlKey = FileUtil.readAsciiFile(keyFile);
+         try { xmlKey = FileUtil.readAsciiFile(keyFile); }
+         catch (XmlBlasterException e) { }
       }
       if (xmlKey == null) {
          xmlKey = xmlKeyGiven;
@@ -118,7 +120,8 @@ public class PublishFile
       // Determine XmlQoS ...
       String xmlQos = null;
       if (qosFile != null) {
-         xmlQos = FileUtil.readAsciiFile(qosFile);
+         try { xmlQos = FileUtil.readAsciiFile(qosFile); }
+         catch (XmlBlasterException e) { }
       }
       if (xmlQos == null) {
          xmlQos = xmlQosGiven;
