@@ -57,7 +57,7 @@ import java.util.*;
  * the boolean state access methods for a description
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecylce.html">The engine.message.lifecylce requirement</a>
- * @see org.xmlBlaster.test.msgexpiry.TestAliveUnreferencedDead
+ * @see org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
  * @author xmlBlaster@marcelruff.info
  */
 public final class TopicHandler implements I_Timeout
@@ -524,7 +524,7 @@ public final class TopicHandler implements I_Timeout
       if (!hasCacheEntries() && !hasSubscribers()) {
          try {
             if (isSoftErased()) {
-               toDead();
+               toDead(false);
             }
             else {
                toUnreferenced();
@@ -630,9 +630,13 @@ public final class TopicHandler implements I_Timeout
 
       if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());
 
+      if (isDead()) {
+         return subs; // during cleanup process
+      }
+
       if (!hasCacheEntries() && !hasSubscribers()) {
          if (isUnconfigured())
-            toDead();
+            toDead(false);
          else {
             try {
                toUnreferenced();
@@ -1044,7 +1048,7 @@ public final class TopicHandler implements I_Timeout
                addToBigDom();
             } catch (XmlBlasterException e) {
                if (isUnreferenced())
-                  toDead();
+                  toDead(false);
                else if (isUnconfigured())
                   ; // ignore
                throw e;
@@ -1056,9 +1060,8 @@ public final class TopicHandler implements I_Timeout
 
    private void toUnreferenced() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering toUnreferenced(oldState="+getStateStr()+")");
-
       synchronized (this) {
-         if (isUnreferenced()) {
+         if (isUnreferenced() || isDead()) {
             return;
          }
          if (hasHistoryEntries()) {
@@ -1072,7 +1075,7 @@ public final class TopicHandler implements I_Timeout
 
          this.state = UNREFERENCED;
          if (topicProperty == null) {
-            toDead();
+            toDead(true);
          }
          if (this.timerKey == null) {
             this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), null);
@@ -1085,7 +1088,6 @@ public final class TopicHandler implements I_Timeout
 
    private void toSoftErased() {
       if (log.CALL) log.call(ME, "Entering toSoftErased(oldState="+getStateStr()+")");
-
       synchronized (this) {
          if (isSoftErased()) {
             return;
@@ -1106,9 +1108,8 @@ public final class TopicHandler implements I_Timeout
       }
    }
 
-   private void toDead() {
+   private void toDead(boolean forceDestroy) {
       if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
-
       synchronized (this) {
          if (isDead()) {
             return;
@@ -1119,68 +1120,43 @@ public final class TopicHandler implements I_Timeout
                          getNumOfCacheEntries() + " cache messages and " +
                          getNumOfHistoryEntries() + " history messages.");
          }
+
+         if (!forceDestroy && !isSoftErased()) {
+            notifySubscribersAboutErase();
+         }
+
          if (hasHistoryEntries()) {
-            log.warn(ME, getStateStr() + "->" + "DEAD: Clearing " + getNumOfHistoryEntries() + " history entries");
-            this.historyQueue.clear();
+            try {
+               long num = this.historyQueue.clear();
+               log.warn(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " history entries");
+            }
+            catch (Throwable e) {
+               log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the history queue: " + e.getMessage());
+            }
          }
          if (hasCacheEntries()) {
             try {
                long num = this.msgUnitCache.clear();
-               log.warn(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " cache entries");
+               log.warn(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " message storage entries");
             }
             catch (XmlBlasterException e) {
-               log.error(ME,  getStateStr() + "->" + "DEAD: " + e.getMessage());
+               log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the message store: " + e.getMessage());
             }
          }
+
+         this.state = DEAD;
 
          removeFromBigSubscriptionSet();
          removeFromBigDom();
-
-         if (!isSoftErased()) {
-            notifySubscribersAboutErase();
-         }
-
+         clearSubscribers(); // see notifySubscribersAboutErase() above
          removeFromBigMessageMap();
 
-         int oldState = this.state;
-         this.state = DEAD;
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
          }
-
-         try {
-            if (hasHistoryEntries()) {
-               //getMsgUnitWrapper().erase();  // from persistent store
-               historyQueue.clear();
-            }
-         }
-         catch (Throwable e) {
-            log.error(ME, "Problems erasing message: " + e.getMessage());
-         }
-
-         clearSubscribers(); // see notifySubscribersAboutErase() above
-
-         /*
-         // We are DEAD already do we need this? (fireMessageEraseEvent() does nothing)
-         try {
-            // clean up previously erased message as no subscribers exist any more
-            // we use internal session to assure we are authorized to do it
-            SessionInfo sessionInfo = requestBroker.getInternalSessionInfo();
-            //EraseQosServer eraseQos = new EraseQosServer(glob);
-            //eraseQos.setNotify(false);
-            //String[] dummy = requestBroker.erase(requestBroker.getInternalSessionInfo(), xmlKey, eraseQos);
-            if (log.TRACE) log.trace(ME, "Erasing message '" + getUniqueKey() + "' with last subscriber disappearing");
-            EraseQosServer eraseQos = new EraseQosServer(glob, new QueryQosData(glob));
-            eraseQos.setForceDestroy(true);
-            fireMessageEraseEvent(sessionInfo, eraseQos);
-         }
-         catch(XmlBlasterException e) {
-            log.error(ME, "Internal problem erasing the message skeleton of '" + getUniqueKey() + "', ignoring problem: " + e.toString());
-            e.printStackTrace();
-         }
-         */
       }
+      //log.info(ME, "Topic reached state " + getStateStr());
    }
 
    /**
@@ -1233,7 +1209,7 @@ public final class TopicHandler implements I_Timeout
             pq.setVolatile(true);
             MsgUnit msgUnit = new MsgUnit(glob, pk, getId(), pq); // content contains the global name?
             PublishQosServer ps = new PublishQosServer(glob, pq.getData());
-            log.error(ME, "DEBUG ONLY" + msgUnit.toXml() + " PublishQosServer=" + ps.toXml());
+            //log.error(ME, "DEBUG ONLY" + msgUnit.toXml());
             publish(publisherSessionInfo, msgUnit, ps);
          }
          catch (XmlBlasterException e) {
@@ -1282,13 +1258,13 @@ public final class TopicHandler implements I_Timeout
       synchronized (this) {
          if (isAlive()) {
             if (eraseQos.getForceDestroy()) {
-               toDead();
+               toDead(eraseQos.getForceDestroy());
             }
             else {
                toSoftErased(); // kills all history entries
                long numMsgStore = this.msgUnitCache.getNumOfEntries();
                if (numMsgStore < 1) { // has no callback references?
-                  toDead();
+                  toDead(eraseQos.getForceDestroy());
                }
                else {
                   log.info(ME, "Erase not possible, we are still referenced by " + numMsgStore +
@@ -1298,11 +1274,11 @@ public final class TopicHandler implements I_Timeout
          }
 
          if (isUnreferenced()) {
-            toDead();
+            toDead(eraseQos.getForceDestroy());
          }
 
          if (isUnconfigured()) {
-            toDead();
+            toDead(eraseQos.getForceDestroy());
          }
       }
 
@@ -1321,7 +1297,7 @@ public final class TopicHandler implements I_Timeout
       synchronized (this) {
          if (isAlive()) // interim message arrived?
             return;
-         toDead();
+         toDead(false);
       }
    }
 
@@ -1394,7 +1370,7 @@ public final class TopicHandler implements I_Timeout
     * @return XML state of TopicHandler
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(1000);
+      StringBuffer sb = new StringBuffer(2000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
