@@ -24,6 +24,8 @@ AUTHOR:
    <head>
       <title>XmlBlaster Persistent HTTP Demo</title>
       <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <meta http-equiv='Pragma' content='no-cache'>
+      <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
 
       <script language="Javascript1.2">
          systemInfoWindow = self;
@@ -41,7 +43,7 @@ AUTHOR:
          /**
           * Callback from callbackFrame that the persistent http connection
           * is established.
-          * Now we may load our application.
+          * Now (and not earlier) we may load our application. 
           */
          function loginSucceeded(persistentWindow)
          {
@@ -50,10 +52,22 @@ AUTHOR:
             Log.INFO = false;
             Log.TRACE = false;
             Log.trace("Login succeeded, loading application ...");
-            // use absolute name, since this method is called from persistentWindow servlet
-            top.systemInfoWindow.northFrame.location.href = "../systemInfo/northFrame.html";
-            cpuinfoFrame.location.href = "/servlet/SystemInfo?ActionType=cpuinfo";
-            meminfoFrame.location.href = "/servlet/SystemInfo?ActionType=meminfo";
+
+            // use absolute name, since this method is called from persistentWindow servlet?
+            //top.systemInfoWindow.northFrame.location.href = "../systemInfo/northFrame.html";
+
+            isExplorer = (navigator.appVersion.indexOf("MSIE") != -1);
+            if (isExplorer) { // With MSIE 5 the reload seems to be more reliable!
+               //alert("Explorer");
+               northFrame.location.replace("../systemInfo/northFrame.html");
+               cpuinfoFrame.location.replace("/servlet/SystemInfo?ActionType=cpuinfo");
+               meminfoFrame.location.replace("/servlet/SystemInfo?ActionType=meminfo");
+            }
+            else {
+               northFrame.location.href = "../systemInfo/northFrame.html";
+               cpuinfoFrame.location.href = "/servlet/SystemInfo?ActionType=cpuinfo";
+               meminfoFrame.location.href = "/servlet/SystemInfo?ActionType=meminfo";
+            }
          }
       </script>
 
