@@ -12,18 +12,24 @@
    <example lang="Java">
       <![CDATA[
       The "Persistence.Path" is set in xmlBlaster.properties and may be overwritten on command line:
+
          "jaco org.xmlBlaster.Main -Persistence.Path /tmp"
+
       You need to activate this feature in your code like follows:
+
          "Property.loadProps(args);"
+
       If you set the log level already somewhere:
+
          "Log.setLogLevel(args);"
+
       the args feature is activated automatically as well (so you don't need to
       call loadProps() explicitly).
       ]]>
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 14</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
