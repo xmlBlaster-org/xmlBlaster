@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.4 2002/04/19 10:55:47 ruff Exp $
+Version:   $Id: Global.java,v 1.5 2002/04/29 09:43:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -79,7 +79,7 @@ public class Global
          if (showUsage) return 1;
          return 0;
       } catch (JUtilsException e) {
-         Log.error(ME, e.toString());
+         System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
          return -1;
       }
    }
