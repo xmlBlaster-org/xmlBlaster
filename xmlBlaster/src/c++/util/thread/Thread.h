@@ -83,6 +83,10 @@ public:
    /** Sleeps the specified amount of time in nanoseconds */
    static void sleepSecs(long secs);
 
+   /** returns the current timestamp */
+   static Timestamp getCurrentTimestamp();
+
+
    /**
     * Joins the thread to the current thread, in other words, the it will wait until the 
     * thread on which this method is invoked, will terminate, before it continues.

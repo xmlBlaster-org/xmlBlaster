@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.8 2002/12/19 12:12:07 laghi Exp $
+Version:   $Id: Timestamp.h,v 1.9 2002/12/31 11:29:02 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -15,8 +15,10 @@ Version:   $Id: Timestamp.h,v 1.8 2002/12/19 12:12:07 laghi Exp $
 #include <util/xmlBlasterDef.h>
 #include <string>
 #include <time.h>
+#include <util/thread/Thread.h>
 
 using namespace std;
+using namespace org::xmlBlaster::util::thread;
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -44,7 +46,8 @@ namespace org { namespace xmlBlaster { namespace util {
       
    private:
       Timestamp lastTimestamp_;
-      boost::mutex *getterMutex_;
+//      boost::mutex *getterMutex_;
+      Mutex getterMutex_;
 
       /**
        * The default constructor is made private to implement the singleton
@@ -72,15 +75,15 @@ namespace org { namespace xmlBlaster { namespace util {
        * Sleeps for the time specified in the delay argument. This is a portable
        * way of sleeping for the specified amount of time.
        */
-      static void sleep(Timestamp nanoSecondDelay);
+//      static void sleep(Timestamp nanoSecondDelay);
 
       static string toXml(Timestamp timestamp, const string& extraOffset="", bool literal=false);
 
       static string getTimeAsString(Timestamp timestamp);
 
-      static void sleepMillis(long millis);
+//      static void sleepMillis(long millis);
 
-      static void sleepSecs(long secs);
+//      static void sleepSecs(long secs);
 
    };
 

@@ -15,6 +15,9 @@ Comment:   Allows you be called back after a given delay.
 
 #include <string>
 #include <map>
+#include <util/thread/Thread.h>
+
+using namespace org::xmlBlaster::util::thread;
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -78,13 +81,14 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-class Dll_Export Timeout {
+class Dll_Export Timeout : public Thread
+{
 
  private: 
    /** Name for logging output */
    const string ME; //  = "Timeout";
    string threadName_;
-   boost::thread* runningThread_;
+//   boost::thread* runningThread_;
    /** Sorted map */
    TimeoutMap timeoutMap_;
    // private TreeMap map = null;
@@ -98,16 +102,21 @@ class Dll_Export Timeout {
    /** Switch on debugging output */
    const bool isDebug_; //  = false;
 
-    /** The synchronization object */
-   boost::mutex *invocationMutex_;
-   boost::mutex *waitForTimeoutMutex_;
-   boost::condition *waitForTimeoutCondition_;
    TimestampFactory& timestampFactory_;
 
    Global& global_;
    Log&    log_;
 
-   friend class TimeoutRunner;
+   /** The synchronization object */
+//   boost::mutex *invocationMutex_;
+   Mutex invocationMutex_;   
+//   boost::mutex *waitForTimeoutMutex_;
+   Mutex waitForTimeoutMutex_;
+//   boost::condition *waitForTimeoutCondition_;
+   Condition waitForTimeoutCondition_;
+
+
+//   friend class TimeoutRunner;
  public:
 
    /**
@@ -243,7 +252,12 @@ class Dll_Export Timeout {
     * Reset and stop the Timeout manager thread. 
     */
    void shutdown();
+
+   void run();
+
 };
+
+/*
 
 class TimeoutRunner {
 private:
@@ -255,7 +269,7 @@ public:
    void operator()();
 
 };
-
+*/
 
 }}}; // namespaces
 

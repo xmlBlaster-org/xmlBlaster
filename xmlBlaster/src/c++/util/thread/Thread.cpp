@@ -99,6 +99,15 @@ void Thread::join()
 }
 
 
+Timestamp Thread::getCurrentTimestamp()
+{
+   boost::xtime xt;
+   boost::xtime_get(&xt, boost::TIME_UTC);
+   return Constants::BILLION * xt.sec + xt.nsec;
+}
+
+
+
 // ----------------------------- Mutex ----------------------------------
 
 Mutex::Mutex() 

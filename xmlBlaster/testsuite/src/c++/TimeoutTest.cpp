@@ -9,9 +9,11 @@ Comment:   Testing the Timeout Features
 #include <iostream>
 #include <string>
 #include <util/Global.h>
+#include <util/thread/Thread.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -58,7 +60,7 @@ public:
       Timestamp delay = 10000;
       delay *= 1000000;
       std::cout << ME << " main thread is sleeping now" << std::endl;
-      TimestampFactory::getInstance().sleep(delay);
+      Thread::sleep(delay);
       std::cout << ME << " after waiting to complete" << std::endl;
    }
 

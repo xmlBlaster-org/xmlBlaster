@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.7 2002/12/26 22:36:26 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.8 2002/12/31 11:29:03 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
@@ -14,6 +14,7 @@ Version:   $Id: TestSub.cpp,v 1.7 2002/12/26 22:36:26 laghi Exp $
 
 #include <util/StopWatch.h>
 #include <util/Global.h>
+#include <util/thread/Thread.h>
 
 /**
  * This client tests the method subscribe() with a later publish() with XPath
@@ -27,9 +28,11 @@ Version:   $Id: TestSub.cpp,v 1.7 2002/12/26 22:36:26 laghi Exp $
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
+
 using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
@@ -418,7 +421,8 @@ private:
 private:
    void waitOnUpdate(long timeout) {
       Timestamp delay = 1000000ll * timeout;
-      TimestampFactory::getInstance().sleep(delay);
+//      TimestampFactory::getInstance().sleep(delay);
+      Thread::sleep(delay);
 /*
       util::StopWatch stopWatch(timeout);
       while (stopWatch.isRunning()) {
