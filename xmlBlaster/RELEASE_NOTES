@@ -1,18 +1,18 @@
 Bom dia,
 
-the new release 0.849 is out (Jul, 15 2003).
+the new release 0.85 beta is out (Sep, 25 2003).
 
-We wait with the stable release 0.85 until we got feedback about 0.849
+We wait with the stable release 0.85 until we got feedback about 0.85b
 
 
 IMPORTANT NOTE:
 ---------------
 
-1. This update is mostly backward compatible to 0.848.
-   Please read accurate xmlBlaster/CHANGES for details.
+1. This update is backward compatible to 0.849
+   Please read xmlBlaster/CHANGES for details.
 
-2. Remove your old xmlBlaster.properties, xmlBlasterPlugins.xml
-   and jacorb.properties files.
+2. For older updates remove your old xmlBlaster.properties,
+   xmlBlasterPlugins.xml and jacorb.properties files.
    Use the new files from directory xmlBlaster/config.
   
 
@@ -32,19 +32,13 @@ KNOWN BUGS:
 1. telnet/remoteconsole loops forever after shutdown of embeeded xmlBlaster
    (switch off in such a case with -admin.remoteconsole.port 0)
 
-2. On some JDK 1.2x variants there is a delay of 10 seconds on client login.
-   The reason is not known.
+2. JacORB deadlock in seldom cases during login
 
 
 NEXT RELEASES:
 --------------
 
-0.849 is already considered stable for production use.
-
-As we have reached the minor version number '9' the next
-release is the long waited stable release 0.85.
-
-This is the 0.85 beta release.
+0.85 beta is already considered stable for production use.
 
 For 0.85 we try to resolve the JacORB deadlock
 bug which occurres in seldom circumstances
