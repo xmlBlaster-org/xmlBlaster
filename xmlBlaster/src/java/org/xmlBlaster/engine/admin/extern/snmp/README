@@ -46,7 +46,14 @@ The subagent is using jax.jar from jax-0.0.15
 you don't need to download it, it is supplied in xmlBlaster/lib/jax.jar
 
 
-  java XmlBlasterTest
+  java SubagentTest n
+  where n is a non negative number, identifying a testcase.
+  n = 0: tests all traps.
+  n = 1: tests valid table entry inserts.
+  n = 2: tests more complex valid table entry inserts.
+  n = 3: tests invalid table entry inserts. No parent entry.
+  n = 4: tests invalid table entry removes. Child entries exist.
+  n = 5: tests valid table entry removes.
 
   java org.xmlBlaster.Main -admin.snmp.debug true -admin.snmp.port 705
 
@@ -58,3 +65,9 @@ you don't need to download it, it is supplied in xmlBlaster/lib/jax.jar
 snmpwalk -m ~/.snmp/mibs/XMLBLASTER-MIB  develop private .1.3.6.1.4.1.11662
 
 snmpget -m ~/.snmp/mibs/XMLBLASTER-MIB  develop private enterprises.xmlblaster.node.connectionTable.connectionEntry.connectionHost.1.1
+
+
+
+
+
+
