@@ -87,7 +87,7 @@ extern int xmlBlaster_endZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP);
 extern int xmlBlaster_initZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP);
 
 /**
- * Compress given bytes with zlib and write them to the socket
+ * Read compressed data from the socket and uncompress it. 
  * @param zlibReadBufP Struct holding necessary variables to use zlib
  * @param fd The socket descriptor
  * @param ptr The empty buffer which gets filled with raw bytes from socket (out parameter)
