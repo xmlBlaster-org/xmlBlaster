@@ -691,10 +691,10 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xb, const char * const qos
 {
    ResponseHolder responseHolder;
    char *response;
+   XmlBlasterException exception;
 
    if (!xb->isInitialized || !xb->isConnected(xb)) return (char *)0;
    
-   XmlBlasterException exception;
    if (sendData(xb, XMLBLASTER_PING, (const unsigned char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseHolder, &exception) == false) {
@@ -720,6 +720,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
    size_t currpos = 0;
    size_t currIndex;
    ResponseHolder responseHolder;
+   MsgUnitArr *msgUnitArr = malloc(sizeof(MsgUnitArr));
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -751,7 +752,6 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
 
    currpos = 0;
    currIndex = 0;
-   MsgUnitArr *msgUnitArr = malloc(sizeof(MsgUnitArr));
    msgUnitArr->len = 10;
    msgUnitArr->msgUnitArr = (MsgUnit *)calloc(msgUnitArr->len, sizeof(MsgUnit));
    while (currpos < responseHolder.dataLen) {
@@ -762,28 +762,30 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
          msgUnitArr->msgUnitArr = realloc(msgUnitArr->msgUnitArr, msgUnitArr->len * sizeof(MsgUnit));
       }
 
-      MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[currIndex++];
-
-      // read QoS
-      msgUnit->qos = strcpyAlloc(responseHolder.data+currpos);
-      currpos += strlen(msgUnit->qos)+1;
-
-      // read key
-      if (currpos < responseHolder.dataLen) {
-         msgUnit->key = strcpyAlloc(responseHolder.data+currpos);
-         currpos += strlen(msgUnit->key)+1;
-      }
-
-      // read content
-      if (currpos < responseHolder.dataLen) {
-         strcpy(ptr, responseHolder.data+currpos);
-         currpos += strlen(ptr)+1;
-         trim(ptr);
-         sscanf(ptr, "%u", &msgUnit->contentLen);
-
-         msgUnit->content = malloc(msgUnit->contentLen * sizeof(unsigned char));
-         memcpy(msgUnit->content, responseHolder.data+currpos, msgUnit->contentLen);
-         currpos += msgUnit->contentLen;
+      {
+         MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[currIndex++];
+        
+         // read QoS
+         msgUnit->qos = strcpyAlloc(responseHolder.data+currpos);
+         currpos += strlen(msgUnit->qos)+1;
+        
+         // read key
+         if (currpos < responseHolder.dataLen) {
+            msgUnit->key = strcpyAlloc(responseHolder.data+currpos);
+            currpos += strlen(msgUnit->key)+1;
+         }
+        
+         // read content
+         if (currpos < responseHolder.dataLen) {
+            strcpy(ptr, responseHolder.data+currpos);
+            currpos += strlen(ptr)+1;
+            trim(ptr);
+            sscanf(ptr, "%u", &msgUnit->contentLen);
+        
+            msgUnit->content = malloc(msgUnit->contentLen * sizeof(unsigned char));
+            memcpy(msgUnit->content, responseHolder.data+currpos, msgUnit->contentLen);
+            currpos += msgUnit->contentLen;
+         }
       }
    }
 

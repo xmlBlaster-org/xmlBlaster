@@ -17,8 +17,8 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
  */
 void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
 {
-   if (msgUnitArr == (MsgUnitArr *)0) return;
    size_t i;
+   if (msgUnitArr == (MsgUnitArr *)0) return;
    for (i=0; i<msgUnitArr->len; i++) {
       freeMsgUnitData(&msgUnitArr->msgUnitArr[i]);
    }
