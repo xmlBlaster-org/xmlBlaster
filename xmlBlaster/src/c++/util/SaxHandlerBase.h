@@ -8,6 +8,7 @@ Comment:   Default handling of Sax callbacks
 #ifndef _UTIL_SAXHANDLERBASE_H
 #define _UTIL_SAXHANDLERBASE_H
 
+#include <util/xmlBlasterDef.h>
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <sax/DocumentHandler.hpp> // xerces xml parser (www.apache.org)
@@ -56,7 +57,7 @@ namespace util {
        * Constructs an new object.
        * You need to call the init() method to parse the XML string.
        */
-      SaxHandlerBase(int args=0, char *argc[]=0);
+      SaxHandlerBase(int args=0, const char * const argc[]=0);
 
       
       /*

@@ -11,7 +11,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
-SecurityQos::SecurityQos(int args, char *argc[])
+SecurityQos::SecurityQos(int args, const char * const argc[])
    : SaxHandlerBase(args, argc),
      ME("SecurityQos-simple"),
      trim_()
@@ -20,7 +20,7 @@ SecurityQos::SecurityQos(int args, char *argc[])
    prep(args, argc);
 }
 
-SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, char *argc[]=0)
+SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, const char * const argc[]=0)
    : SaxHandlerBase(args, argc),
      ME("SecurityQos-simple"),
      trim_()
@@ -33,7 +33,7 @@ SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, char *argc[]=
 SecurityQos::SecurityQos(const string& loginName,
                          const string& password,
                          int args=0,
-                         char *argc[]=0)
+                          const char * const argc[]=0)
    : SaxHandlerBase(args, argc), ME("SecurityQos-simple"), trim_()
 {
    log_.call(ME, "third constructor");

@@ -25,12 +25,13 @@ Comment:   Interface for clients, used by xmlBlaster to send messages back
 #ifndef _CLIENT_PROTOCOL_I_CALLBACKSERVER
 #define _CLIENT_PROTOCOL_I_CALLBACKSERVER
 
+#include <util/xmlBlasterDef.h>
 #include <string>
 #include <client/I_Callback.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
-   class I_CallbackServer 
+   class Dll_Export I_CallbackServer
    {
    public:
 

@@ -16,6 +16,7 @@ Comment:   Interface (virtual class)
 #ifndef _CLIENT_PROTOCOL_I_XMLBLASTERCONNECTION_H
 #define _CLIENT_PROTOCOL_I_XMLBLASTERCONNECTION_H
 
+#include <util/xmlBlasterDef.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQos.h>
 #include <string>
@@ -26,7 +27,7 @@ using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
-   class I_XmlBlasterConnection
+   class Dll_Export I_XmlBlasterConnection
    {
    public:
 

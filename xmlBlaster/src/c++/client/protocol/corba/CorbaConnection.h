@@ -20,11 +20,13 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <util/NameServerControl.h>
 #include <util/CallbackAddress.h>
 #include <util/MessageUnit.h>
+#include <util/qos/ConnectQos.h>
 
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
 using namespace std;
+using namespace org::xmlBlaster::util::qos; // ConnectQos + ConnectReturnQos
 
 namespace org {
  namespace xmlBlaster {
@@ -52,8 +54,11 @@ namespace org {
       mutable util::Log               log_;
       int                             numLogins_;
       bool                            orbOwner_;
-
       DefaultCallback*                defaultCallback_;
+      ConnectReturnQos                connectReturnQos_;
+      int                             args_;
+      const char * const*             argc_;
+      string                          sessionId_;
 
    public:
       /**
@@ -190,6 +195,13 @@ namespace org {
        */
       serverIdl::Server_ptr login(const string &loginName, const string &passwd, 
                    const LoginQosWrapper &qos, I_Callback *client=0);
+
+
+      /**
+       * The new way to connect (i.e. login to xmlBlaster)
+       */
+       ConnectReturnQos connect(const ConnectQos& connectQos);
+
 
       /**
        * Building a Callback server.

@@ -20,7 +20,7 @@ using namespace std;
 using namespace org::xmlBlaster::util;
     
    
-SaxHandlerBase::SaxHandlerBase(int args, char *argc[]) 
+SaxHandlerBase::SaxHandlerBase(int args, const char * const argc[]) 
 : log_(args, argc),
   charTrimmer_(),
   xmlChTrimmer_() 

@@ -6,23 +6,17 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.4 2002/11/27 10:53:40 laghi Exp $
+Version:   $Id: Timestamp.h,v 1.5 2002/12/02 18:54:54 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
 #define _UTIL_TIMESTAMP_H
 
+#include <util/xmlBlasterDef.h>
 #include <string>
 #include <time.h>
 #include <util/xmlBlasterDef.h>
 
-/*
-#ifndef BOOST_MUTEX_WEK070601_HPP 
-namespace boost { 
-class mutex;
-}
-#endif
-*/
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -47,7 +41,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 
-   class TimestampFactory {
+   class Dll_Export TimestampFactory {
       
    private:
       Timestamp lastTimestamp_;

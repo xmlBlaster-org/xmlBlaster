@@ -18,11 +18,19 @@ using namespace org::xmlBlaster::util;
 ConnectQosData::ConnectQosData() : securityQos_(), serverRef_("")
 {
    sessionId_ = "";
+   isDirty_ = true;
+}
+
+void ConnectQosData::setLiteral(const string& literal)
+{
+   literal_ = literal;
+   isDirty_ = false;
 }
 
 void ConnectQosData::setSessionId(const string& sessionId)
 {
    sessionId_ = sessionId;
+   isDirty_ = true;
 }
 
 string ConnectQosData::getSessionId() const
@@ -43,6 +51,7 @@ string ConnectQosData::getCallbackType() const
 void ConnectQosData::setSecurityQos(const SecurityQos& securityQos)
 {
    securityQos_ = securityQos;
+   isDirty_ = true;
 }
 
 SecurityQos ConnectQosData::getSecurityQos() const
@@ -53,6 +62,7 @@ SecurityQos ConnectQosData::getSecurityQos() const
 void ConnectQosData::setServerRef(const ServerRef& serverRef)
 {
    serverRef_ = serverRef;
+   isDirty_ = true;
 }
 
 ServerRef ConnectQosData::getServerRef() const
@@ -60,9 +70,16 @@ ServerRef ConnectQosData::getServerRef() const
    return serverRef_;
 }
 
+string ConnectQosData::toXml() const
+{
+   if (isDirty_) ConnectQosFactory::writeObject(*this);
+   return literal_;
+}
+
+
 /*-------------------------- ConnectQosFactory -------------------------------*/
 
-ConnectQosFactory::ConnectQosFactory(int args, char *argc[])
+ConnectQosFactory::ConnectQosFactory(int args, const char * const argc[])
    : XmlQoSBase(args, argc), ME("ConnectQosFactory")
 {
    log_.call(ME, "constructor");
@@ -175,8 +192,17 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
    data.setSessionId(sessionId_);
    if (securityQos_ != NULL) data.setSecurityQos(*securityQos_);
    if (serverRef_ != NULL) data.setServerRef(*serverRef_);
+   data.setLiteral(qos);
    return data;
 }
+
+
+string ConnectQosFactory::writeObject(const ConnectQosData& qos)
+{
+   std::cout << "ConnectQosFactory::writeObject not implemented yet" << std::endl;
+   return string("");
+}
+
 
 }}}} // namespaces
 

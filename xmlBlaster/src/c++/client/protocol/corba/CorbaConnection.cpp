@@ -23,6 +23,8 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #  include <unistd.h>      // gethostname()
 #endif
 
+using org::xmlBlaster::util::qos;
+
 namespace org {
  namespace xmlBlaster {
   namespace client {
@@ -31,7 +33,7 @@ namespace org {
 
 
 CorbaConnection::CorbaConnection(int args, const char * const argc[], bool orbOwner)
-  : loginQos_(), log_(args, argc) 
+  : loginQos_(), log_(args, argc), connectReturnQos_()
 {
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
@@ -44,7 +46,10 @@ CorbaConnection::CorbaConnection(int args, const char * const argc[], bool orbOw
   authServer_        = 0; // getAuthenticationService();
   callback_          = 0;
   defaultCallback_   = 0;
+  sessionId_         = "";
   orbOwner_          = orbOwner;
+  args_              = args;
+  argc_              = argc;
 }
 
 
@@ -165,7 +170,7 @@ CorbaConnection::getAuthenticationService()
         int s = socket(AF_INET, SOCK_STREAM, 0);
         if (s != -1) {
            int ret=0;
-           if ((ret=connect(s, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
+           if ((ret= ::connect(s, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
               string req="GET /AuthenticationService.ior HTTP/1.0\r\n \n";
               int numSent = send(s, req.c_str(), req.size(), 0);
               if (numSent < (int)req.size()) {
@@ -310,12 +315,50 @@ CorbaConnection::loginRaw()
 }
 
 
-bool 
+ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
+{
+   if ( !CORBA::is_nil(xmlBlaster_)) {
+      string msg = "You are already logged in, returning cached handle";
+      msg += " on xmlBlaster";
+      log_.warn(me(), msg);
+      return connectReturnQos_;
+   }
+
+   loginName_ = connectQos.getUserId();
+   if (log_.CALL) log_.call(me(),"connect(" + loginName_ + ") ...");
+   try {
+      if (CORBA::is_nil(authServer_)) getAuthenticationService();
+      string reqQos = connectQos.toXml();
+      if (log_.TRACE) log_.trace(me(), string("connect req: ") + reqQos);
+      string retQos = authServer_->connect(reqQos.c_str());
+      if (log_.TRACE) log_.trace(me(), string("connect ret: ") + retQos);
+      ConnectQosFactory factory(args_, argc_);
+      connectReturnQos_ = factory.readObject(retQos);
+      sessionId_ = connectReturnQos_.getSessionId();
+      string xmlBlasterIOR = connectReturnQos_.getServerRef().getAddress();
+
+      CORBA::Object_var obj = orb_->string_to_object(xmlBlasterIOR.c_str());
+      xmlBlaster_ = serverIdl::Server::_narrow(obj);
+
+      numLogins_++;
+      if (log_.TRACE) log_.trace(me(),"Success, connect for "+loginName_);
+      return connectReturnQos_;
+   }
+   catch(serverIdl::XmlBlasterException &e) {
+      string msg = "Connect failed for ";
+      msg +=  loginName_; //  + ", numLogins=" + numLogins_;
+      if (log_.TRACE) log_.trace(me(), msg);
+      throw e;
+   }
+}
+
+
+bool
 CorbaConnection::logout() 
 {
   if (log_.CALL) log_.call(me(), "logout() ...");
 
-  if ( CORBA::is_nil(xmlBlaster_ /*.in()*/ )) {
+  if ( CORBA::is_nil(xmlBlaster_)) {
      log_.warn(me(), "No logout, you are not logged in");
      return false;
   }
@@ -335,6 +378,64 @@ CorbaConnection::logout()
   xmlBlaster_ = 0;
   return false;
 }
+
+
+/*
+bool
+disconnect(const string& qos)
+{
+   if (log_.CALL) log_.call(me(), "disconnect() ...");
+
+   if (xmlBlaster_ == NULL) {
+      shutdown();
+      // Thread leak !!!
+      // orb.shutdown(true);
+      // orb = null;
+      return false;
+   }
+
+
+
+
+
+
+      try {
+         if (authServer != null) {
+            if(sessionId==null) {
+               authServer.logout(xmlBlaster);
+            }
+            else {
+               authServer.disconnect(sessionId, (qos==null)?"":qos.toXml()); // secPlgn.exportMessage(""));
+            }
+         }
+         shutdown();
+         // Thread leak !!!
+         // orb.shutdown(true);
+         // orb = null;
+         xmlBlaster = null;
+         return true;
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
+      } catch(org.omg.CORBA.OBJ_ADAPTER e) {
+         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "No disconnect possible, no CORBA connection", e);
+         log.warn(ME, xmlBlasterException.getMessage());
+      } catch(Throwable e) {
+         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, null, e);
+         log.warn(ME, xmlBlasterException.getMessage());
+         e.printStackTrace();
+      }
+
+      shutdown();
+      // Thread leak !!!
+      // orb.shutdown(true);
+      // orb = null;
+      xmlBlaster = null;
+      return false;
+   }
+*/
+
+
+
 
 /**
 * Subscribe a message. 

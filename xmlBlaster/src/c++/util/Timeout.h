@@ -78,7 +78,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author ruff@swand.lake.de
  * @author laghi@swissinfo.org
  */
-class Timeout {
+class Dll_Export Timeout {
 
  private: 
    /** Name for logging output */

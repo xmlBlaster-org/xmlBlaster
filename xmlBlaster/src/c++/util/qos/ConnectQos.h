@@ -5,29 +5,63 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 ------------------------------------------------------------------------------*/
 
-/**
- */
-
 #ifndef _UTIL_QOS_CONNECTQOS_H
 #define _UTIL_QOS_CONNECTQOS_H
 
+#include <util/xmlBlasterDef.h>
 #include <string>
 #include <util/XmlQoSBase.h>
 #include <util/StringTrim.h>
 #include <util/ServerRef.h>
 #include <authentication/SecurityQos.h>
 
+
+/**
+ * <qos>\n") +
+ *    <securityService type='htpasswd' version='1.0'>
+ *      <![CDATA[
+ *      <user>joe</user>
+ *      <passwd>secret</passwd>
+ *      ]]>
+ *    </securityService>
+ *    <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
+ *    <ptp>true</ptp>
+ *    <!-- The client side queue: -->
+ *    <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>
+ *       <address type='IOR' sessionId='4e56890ghdFzj0'>
+ *          IOR:10000010033200000099000010....
+ *       </address>
+ *    </queue>
+ *    <!-- The server side callback queue: -->
+ *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>
+ *       <callback type='IOR' sessionId='4e56890ghdFzj0'>
+ *          IOR:10000010033200000099000010....
+ *          <burstMode collectTime='400' />
+ *       </callback>
+ *    </queue>
+ * </qos>
+ */
+
+
+
+
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
 
-class ConnectQosData
+class Dll_Export ConnectQosData
 {
 private:
    string      sessionId_;
    SecurityQos securityQos_;
    ServerRef   serverRef_;
+   bool        isDirty_;
+   string      literal_;
+
+   void setLiteral(const string& literal);
+
+   friend class ConnectQosFactory;
 
 public:
    ConnectQosData();
@@ -39,9 +73,10 @@ public:
    SecurityQos getSecurityQos() const;
    void setServerRef(const ServerRef& serverRef);
    ServerRef getServerRef() const;
+   string toXml() const;
 };
 
-class ConnectQosFactory: public util::XmlQoSBase
+class Dll_Export ConnectQosFactory: public util::XmlQoSBase
 {
 private:
    const string ME;
@@ -56,10 +91,10 @@ private:
    bool inSecurityService_;
    bool inCallback_;
    int args_;
-   char** argc_;
+   const char * const* argc_;
    util::StringTrim<char> trim_;
 
-   void prep(int args, char* argc[])
+   void prep(int args, const char * const argc[])
    {
       args_ = args;
       argc_ = argc;
@@ -71,7 +106,7 @@ private:
    }
 
 public:
-   ConnectQosFactory(int args=0, char *argc[]=0);
+   ConnectQosFactory(int args=0, const char * const argc[]=0);
 
    ~ConnectQosFactory();
 
@@ -97,6 +132,9 @@ public:
    void endElement(const XMLCh* const name);
 
    ConnectQosData readObject(const string& qos);
+
+   static string writeObject(const ConnectQosData& qos);
+
 };
 
 typedef ConnectQosData ConnectQos;

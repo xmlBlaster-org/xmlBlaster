@@ -6,11 +6,12 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
            with SAX
 -----------------------------------------------------------------------------*/
 
-#include <string>
-#include <util/SaxHandlerBase.h>
-
 #ifndef _UTIL_XMLQOSBASE_H
 #define _UTIL_XMLQOSBASE_H
+
+#include <util/xmlBlasterDef.h>
+#include <string>
+#include <util/SaxHandlerBase.h>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ namespace util {
      * The &lt;qos> tag is parsed here, and you provide the parsing of the 
      * inner tags.
      */
-    class XmlQoSBase : public SaxHandlerBase {
+    class Dll_Export XmlQoSBase : public SaxHandlerBase {
 
     private:
 
@@ -46,7 +47,7 @@ namespace util {
         * Constructs an un initialized QoS (quality of service) object.
         * You need to call the init() method to parse the XML string.
         */
-       XmlQoSBase(int args=0, char *argc[]=0) : SaxHandlerBase(args,argc) {
+       XmlQoSBase(int args=0, const char * const argc[]=0) : SaxHandlerBase(args,argc) {
           inQos_ = false;
           if (log_.CALL) log_.trace(me(), "Creating new XmlQoSBase");
        }

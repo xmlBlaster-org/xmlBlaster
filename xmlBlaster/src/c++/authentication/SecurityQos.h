@@ -19,6 +19,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 #ifndef _AUTHENTICATION_SECURITY_QOS_H
 #define _AUTHENTICATION_SECURITY_QOS_H
 
+#include <util/xmlBlasterDef.h>
 #include <string>
 #include <util/SaxHandlerBase.h>
 #include <util/StringTrim.h>
@@ -27,7 +28,7 @@ Comment:   The qos for the security (a subelement of connect qos)
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
-   class SecurityQos: public util::SaxHandlerBase
+   class Dll_Export SecurityQos: public util::SaxHandlerBase
    {
    private:
       const string ME;
@@ -42,11 +43,11 @@ namespace org { namespace xmlBlaster { namespace authentication {
       string user_;
       string passwd_;
       int args_;
-      char **argc_;
+      const char * const* argc_;
 
       util::StringTrim<char> trim_;
 
-      void prep(int args, char *argc[])
+      void prep(int args,const char * const argc[])
       {
          inSecurityService_ = false;
          inUser_            = false;
@@ -74,7 +75,7 @@ namespace org { namespace xmlBlaster { namespace authentication {
       }
 
    public:
-      SecurityQos(int args=0, char *argc[]=0);
+      SecurityQos(int args=0, const char * const argc[]=0);
 
       void parse(const string& xmlQoS_literal)
       {
@@ -101,12 +102,12 @@ namespace org { namespace xmlBlaster { namespace authentication {
          init(ret);
       }
 
-      SecurityQos(const string& xmlQoS_literal, int args=0, char *argc[]=0);
+      SecurityQos(const string& xmlQoS_literal, int args=0, const char * const argc[]=0);
 
       SecurityQos(const string& loginName,
                   const string& password,
                   int args=0,
-                  char *argc[]=0);
+                   const char * const argc[]=0);
 
       SecurityQos(const SecurityQos& securityQos);
       SecurityQos& operator =(const SecurityQos& securityQos);
