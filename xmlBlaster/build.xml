@@ -5,8 +5,8 @@
  xmlBlaster build file
 
 Authors:
- James Birchfield <jmbirchfield@proteustechnologies.com>
- Marcel Ruff <xmlBlaster@marcelruff.info>
+ James Birchfield "jmbirchfield@proteustechnologies.com"
+ Marcel Ruff "xmlBlaster@marcelruff.info"
 
 Installing the build tools
 ==========================
@@ -74,7 +74,7 @@ TODO
 
    <property name="name" value="xmlBlaster"/>
    <property name="version" value="0.8x"/>
-   <property name="year" value="1999-2002"/>
+   <property name="year" value="1999-2003"/>
 
    <!-- property name="build.compiler" value="classic"/ -->
    <property name="debug" value="on"/>
