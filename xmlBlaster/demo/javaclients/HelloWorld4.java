@@ -58,6 +58,7 @@ public class HelloWorld4
          conRetQos = con.connect(qos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+               if (log.DUMP) log.dump(ME, "UpdateKey.toString()=" + updateKey.toString());
                if (updateKey.isInternal()) {
                   log.error(ME, "Receiving unexpected asynchronous internal message '" + updateKey.getOid() +
                                 "' in default handler");
@@ -67,7 +68,7 @@ public class HelloWorld4
                   log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
                   return "";
                }
-               if (updateKey.getOid().equals("SomeOtherMessage"))
+               if (updateKey.getOid().equals("Banking"))
                   log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
                else
@@ -86,7 +87,7 @@ public class HelloWorld4
             log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
 
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("SomeOtherMessage");
+         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("Banking");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
          SubscribeRetQos sr1 = con.subscribe(sk.toXml(), sq.toXml());
 
@@ -113,7 +114,8 @@ public class HelloWorld4
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
 
-         pk = new PublishKeyWrapper("SomeOtherMessage", "text/plain", "1.0");
+         pk = new PublishKeyWrapper("Banking", "text/plain", "1.0");
+         pk.wrap("<Account><withdraw/></Account>"); // Add banking specific meta data
          pq = new PublishQosWrapper();
          msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
          retQos = con.publish(msgUnit);
@@ -135,7 +137,7 @@ public class HelloWorld4
                EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld4");
                EraseRetQos[] er = con.erase(ek.toXml(), eq.toXml());
                
-               ek = new EraseKeyWrapper("SomeOtherMessage");
+               ek = new EraseKeyWrapper("Banking");
                er = con.erase(ek.toXml(), eq.toXml());
 
                // Wait on message erase events
