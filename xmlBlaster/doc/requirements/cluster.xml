@@ -109,8 +109,8 @@
       <img src="cluster.domain.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
       <p>
-      As we can see the node <i>heron</i> is master of messages of the domain "STOCK_EXCHANGE" but
-      caches "RUGBY_NEWS" as well.
+      As we can see the node <i>heron</i> is master of messages of the domain "RUGBY_NEWS" but
+      caches "STOCK_EXCHANGE" as well.
       </p>
       </li>
       <li><h4>Load balancing:</h4><br />
@@ -203,7 +203,9 @@
 
       <li>Plugin interface for load balancing logic<br />
       XmlBlaster supplies a plugin interface for the load balancing logic.
-      The default load balancing logic uses the round robin approach.
+      The default load balancing logic uses the round robin approach.<br />
+      Further plugins may support Least Loaded Server(LLS),
+      Threshold Loaded Sever(TLS), Least Memory Consumed Host (LMCH), see <a href="http://www.icmgworld.com/corp/k2/k2.features.asp" target="others">K2 Component server cluster features</a>.
       </li>
 
       <li>Default master<br />
@@ -626,7 +628,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
