@@ -58,6 +58,8 @@ Else add it manually.
   <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
   <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
 
+  <property file="build.properties"/>
+
   <property name="name" value="xmlBlaster"/>
   <property name="version" value="0.74-dev"/>
   <property name="year" value="2000"/>
@@ -119,6 +121,7 @@ Else add it manually.
     <echo message="   demo        --> generates the demo.jar file"/>
     <echo message="   testsuite   --> generates the testsuite.jar file"/>
     <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library/dll)"/>
+    <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
     <echo message="   cpp-test    --> generates C++ test clients"/>
     <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
     <echo message="   javadocs    --> generates the javadoc documentation"/>
@@ -419,11 +422,18 @@ Else add it manually.
   <!-- =================================================================== -->
   <target name="cpp-lib">
 
+     <echo message="Adjust following settings in build.properties if necessary:"/>
+     <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
+     <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
+     <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
+     <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
+
      <!-- A typical idl CORBA compile:
        /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
      -->
      <!-- exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl" os="Linux" -->
      <exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl">
+        <env key="PATH" path="${CORBACPP_HOME}/bin"/>
         <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
         <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX -->
         <arg line="--poa"/>
