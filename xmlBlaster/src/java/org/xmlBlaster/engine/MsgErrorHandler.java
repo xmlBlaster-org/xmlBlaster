@@ -20,6 +20,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.qos.DisconnectQos;
 
 import java.util.ArrayList;
@@ -193,30 +194,50 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          throws XmlBlasterException {
       if (entries == null || entries.length < 1) return entries;
       if (log.CALL) log.call(ME, "Entering putPtPBackToSubjectQueue() for " + entries.length + " entries");
-      I_Queue subjectQueue = sessionInfo.getSubjectInfo().getSubjectQueue();
-      ArrayList list = new ArrayList(entries.length);
-      for(int ii=0; ii<entries.length; ii++) {
-         ReferenceEntry en = (ReferenceEntry)entries[ii];
-         if (en.getMsgQosData().isPtp() && !en.getReceiver().isSession() &&
-             en.getMsgUnitWrapper().getReferenceCounter() <= 2) {
-            // The getReferenceCounter() check is buggy (Marcel 2003.03.20):
-            // 1. It includes a history entry and this entry but the history is optional
-            // 2. We may send the same message twice with another session if such a callback references the message
-            //    and we stuff the message back to the subject queue
-            // -> We need to specify a PtP load balancer plugin framework and than resolve this issue
-            log.info(ME, "We are the last session taking care on PtP message '" + en.getLogId() + "', putting it back to subject queue");
-            try {
-               subjectQueue.put(en, false);
-               continue;
-            }
-            catch (XmlBlasterException e) {
-               log.error(ME, "Failed to put entry '" + en.getLogId() + "' into subject queue, forwarding it to error handling manager: " + e.getMessage());
-            }
-         }
-         list.add(entries[ii]);
+      if (sessionInfo == null) {
+         return entries;
       }
-      
-      return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+      SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
+      if (subjectInfo == null) {
+         return entries;
+      }
+      I_Queue subjectQueue = subjectInfo.getSubjectQueue();
+      if (subjectQueue == null) {
+         return entries;
+      }
+
+      try {
+         ArrayList list = new ArrayList(entries.length);
+         for(int ii=0; ii<entries.length; ii++) {
+            ReferenceEntry en = (ReferenceEntry)entries[ii];
+            if (en.getMsgQosData().isPtp() && !en.getReceiver().isSession() &&
+                en.getMsgUnitWrapper().getReferenceCounter() <= 2) {
+               // The getReferenceCounter() check is buggy (Marcel 2003.03.20):
+               // 1. It includes a history entry and this entry but the history is optional
+               // 2. We may send the same message twice with another session if such a callback references the message
+               //    and we stuff the message back to the subject queue
+               // -> We need to specify a PtP load balancer plugin framework and than resolve this issue
+               log.info(ME, "We are the last session taking care on PtP message '" + en.getLogId() + "', putting it back to subject queue");
+               try {
+                  subjectQueue.put(en, false);
+                  continue;
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "Failed to put entry '" + en.getLogId() + "' into subject queue, forwarding it to error handling manager: " + e.getMessage());
+               }
+            }
+            list.add(entries[ii]);
+         }
+         return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.getMessage());
+         return entries;
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.toString());
+         return entries;
+      }
    }
 
    /**
