@@ -3,7 +3,7 @@ Name:      Timeout.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Allows you be called back after a given delay.
-Version:   $Id: Timeout.java,v 1.3 2000/05/26 20:47:21 ruff Exp $
+Version:   $Id: Timeout.java,v 1.4 2000/05/27 22:32:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -55,16 +55,20 @@ public class Timeout extends Thread
    private TreeMap map = null;
    /** Start/Stop the Timeout manager thread */
    private boolean running = true;
+   /** To protect the singleton */
+   private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
 
    /**
     * Access to Timeout singleton
     */
    public static Timeout getInstance()
    {
-      synchronized (Timeout.class) {
-         if (theTimeout == null) {
-            theTimeout = new Timeout();
-            theTimeout.start();
+      if (theTimeout == null) { // avoid 'expensive' synchronized
+         synchronized (SYNCHRONIZER) {
+            if (theTimeout == null) {
+               theTimeout = new Timeout();
+               theTimeout.start();
+            }
          }
       }
       return theTimeout;
@@ -132,7 +136,7 @@ public class Timeout extends Thread
     * @param userData Some arbitrary data you supply, it will be routed back to you when the timeout occurs through method I_Timeout.timeout()
     * @return A handle which you can use to unregister with removeTimeoutListener()
     */
-   public final Long addTimeoutListener(I_Timeout listener, long delay, Object userData) throws XmlBlasterException
+   public final Long addTimeoutListener(I_Timeout listener, long delay, Object userData)
    {
       if (Log.CALLS) Log.calls(ME, "Entering addTimeoutListener(" + delay + ") ...");
       Long key = null;
@@ -160,11 +164,49 @@ public class Timeout extends Thread
 
 
    /**
+    * Refresh a listener before the timeout happened.
+    * <p />
+    * NOTE: The returned timeout handle is different from the original one.
+    *
+    * @param key The timeout handle you received by a previous addTimeoutListener() call<br />
+    *            It is invalid after this call.
+    * @param delay The timeout in milliseconds measured from now.
+    * @return A new handle which you can use to unregister with removeTimeoutListener()
+    * @exception XmlBlasterException if key is invalid
+    */
+   public final Long refreshTimeoutListener(Long key, long delay) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.calls(ME, "Entering refreshTimeoutListener(" + key + ") ...");
+      Long newKey = null;
+      synchronized(map) {
+         Container container = (Container)map.remove(key);
+         if (container == null) {
+            Log.warning(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+            throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+         }
+         while (true) {
+            Date date = new Date();
+            newKey = new Long(date.getTime() + delay);
+            Object obj = map.get(newKey);
+            if (obj == null) {
+               map.put(newKey, container);
+               break;
+            } 
+            // We loop to avoid two similar keys, this should happen very seldom
+         }
+      }
+      if (Log.TRACE) Log.trace(ME, "refreshTimeoutListener(" + delay + ") with newKey=" + newKey);
+      synchronized(theTimeout) { theTimeout.notify(); }
+      return newKey;
+   }
+
+
+   /**
     * Remove a listener before the timeout happened.
     * <p />
     * @param key The timeout handle you received by a previous addTimeoutListener() call
     */
-   public final void removeTimeoutListener(Long key) throws XmlBlasterException
+   public final void removeTimeoutListener(Long key)
    {
       if (Log.CALLS) Log.calls(ME, "Entering removeTimeoutListener(" + key + ") ...");
       synchronized(map) {
@@ -192,14 +234,14 @@ public class Timeout extends Thread
 
 
    /**
-    * Reset this singleton, stop the Timeout manager thread. 
+    * Reset this singleton, stop the Timeout manager thread.
     */
    public final void destroy()
    {
       removeAll();
       running = false;
       synchronized(theTimeout) { theTimeout.notify(); }
-      synchronized (Timeout.class) {
+      synchronized (SYNCHRONIZER) {
          theTimeout = null;
       }
    }
@@ -241,9 +283,9 @@ public class Timeout extends Thread
       // so we use it here for testing ...
       final Long[] keyArr =  new Long[4];
 
-      class Dummy implements I_Timeout
+      class Dummy1 implements I_Timeout
       {
-         private String ME = "Dummy";
+         private String ME = "Dummy1";
          private int counter = 0;
          public void timeout(Object userData)
          {
@@ -258,13 +300,22 @@ public class Timeout extends Thread
          }
       }
 
-      Dummy dummy = new Dummy();
+      Dummy1 dummy = new Dummy1();
       keyArr[2] = timeout.addTimeoutListener(dummy, 4000L, "timer-4000");
       keyArr[3] = timeout.addTimeoutListener(dummy, 5000L, "timer-5000");
+      keyArr[3] = timeout.refreshTimeoutListener(keyArr[3], 5500L);
       keyArr[0] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
       keyArr[1] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
+      
       Long key = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
       timeout.removeTimeoutListener(key);
+
+      try {
+         timeout.refreshTimeoutListener(key, 1500L);
+      }
+      catch (XmlBlasterException e) {
+         Log.info(ME, "Refresh failed which is OK (it is a test): " + e.reason);
+      }
 
       try { Thread.currentThread().sleep(7000L); } catch (Exception e) { Log.panic(ME, "main interrupt: " + e.toString());}
 
