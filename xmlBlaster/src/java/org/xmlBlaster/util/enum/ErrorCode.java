@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.enum;
 
-import java.util.Hashtable;
+import java.util.TreeMap;
 import java.util.Iterator;
 
 /**
@@ -21,7 +21,7 @@ import java.util.Iterator;
  */
 public final class ErrorCode implements java.io.Serializable
 {
-   private final static Hashtable hash = new Hashtable(); // The key is the 'errorCode' String and the value is an 'ErrorCode' instance
+   private final static TreeMap hash = new TreeMap(); // The key is the 'errorCode' String and the value is an 'ErrorCode' instance
    private final String errorCode;
    private final String description;
    private final ResourceInfo[] resourceInfos;
@@ -147,7 +147,7 @@ public final class ErrorCode implements java.io.Serializable
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "engine.queue", "engine.queue"),
             new ResourceInfo(ResourceInfo.REQ, "engine.qos.update.queue", "engine.qos.update.queue"),
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.QueueProperty"),
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.ClientQueueProperty"),
             new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.storage.CbQueueProperty")
          }
       );
@@ -157,7 +157,7 @@ public final class ErrorCode implements java.io.Serializable
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "engine.queue", "engine.queue"),
             new ResourceInfo(ResourceInfo.REQ, "engine.qos.update.queue", "engine.qos.update.queue"),
-            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.QueueProperty"),
+            new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.ClientQueueProperty"),
             new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.storage.CbQueueProperty")
          }
       );
@@ -254,6 +254,7 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode USER_CONFIGURATION = new ErrorCode("user.configuration",
          "Login to xmlBlaster failed due to configuration problems.",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "client.configuration", "client.configuration"),
             new ResourceInfo(ResourceInfo.REQ, "client.failsafe", "client.failsafe"),
             new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
          }
@@ -408,7 +409,7 @@ public final class ErrorCode implements java.io.Serializable
       );
 
    public static final ErrorCode USER_MESSAGE_INVALID = new ErrorCode("user.message.invalid",
-         "Usually thrown by a mime plugin if your MIME type does not fit to your message content, e.g. mime='text/xml' and content='<<<a>'.",
+         "Usually thrown by a mime plugin if your MIME type does not fit to your message content, e.g. mime='text/xml' and content='Nice weather'.",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "mime.plugin.accessfilter", "mime.plugin.accessfilter")
          }
@@ -511,6 +512,77 @@ public final class ErrorCode implements java.io.Serializable
       return (ErrorCode)entry;
    }
 
+   public static String toHtmlTable() {
+      StringBuffer sb = new StringBuffer(2560);
+      String offset = "\n ";
+      sb.append(offset).append("<table border='1'>");
+      Iterator it = hash.keySet().iterator();
+      sb.append(offset).append("<tr><th>Error Code</th><th>Description</th><th>See</th></tr>");
+      while (it.hasNext()) {
+         sb.append(offset).append("<tr>");
+         String code = (String)it.next();
+         ErrorCode errorCode = (ErrorCode)hash.get(code);
+
+         sb.append(offset).append(" <td><a name='").append(errorCode.getErrorCode()).append("'></a>");
+         sb.append(errorCode.getErrorCode()).append("</td>");
+
+         String desc = org.jutils.text.StringHelper.replaceAll(errorCode.getDescription(),
+                              "&", "&amp;");
+         desc = org.jutils.text.StringHelper.replaceAll(errorCode.getDescription(),
+                              "<", "&lt;");
+         sb.append(offset).append(" <td>").append(desc).append("</td>");
+         
+         ResourceInfo[] resourceInfos = errorCode.getResourceInfos();
+         sb.append(offset).append(" <td>");
+         for (int i=0; i<resourceInfos.length; i++) {
+            if (i>0)
+               sb.append("<br />");
+
+            String resource = org.jutils.text.StringHelper.replaceAll(resourceInfos[i].getResource(),
+                              "<", "&lt;"); 
+            String url=null;
+
+            if (ResourceInfo.REQ.equals(resourceInfos[i].getType()))
+               url="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/"+resource+".html";
+            else if (ResourceInfo.URL.equals(resourceInfos[i].getType()))
+               url= resource;
+            else if (ResourceInfo.API.equals(resourceInfos[i].getType())) {
+               String replace = org.jutils.text.StringHelper.replaceAll(resource, ".", "/"); 
+               url="http://www.xmlBlaster.org/xmlBlaster/doc/api/"+replace+".html";
+            }
+            else {
+               System.out.println("Ignoring unknown resource type '" + resourceInfos[i].getType() + "'");
+               continue;
+            }
+
+            sb.append("<a href='").append(url).append("' target='others'>");
+            sb.append(resourceInfos[i].getLabel()).append("</a>");
+         }
+         if (resourceInfos.length == 0)
+            sb.append("-");
+
+         sb.append("</td>");
+         sb.append(offset).append("</tr>");
+      }
+      sb.append(offset).append("</table>");
+
+      return sb.toString();
+   }
+
+   public static String toRequirement() {
+      String req=
+         "<?xml version='1.0' encoding='ISO-8859-1' ?>\n"+
+         "<!DOCTYPE requirement SYSTEM 'requirement.dtd'>\n" +
+         "<requirement id='admin.errorcodes.listing' type='NEW' prio='LOW' status='CLOSED'>\n" +
+         "   <topic>XmlBlaster error code reference</topic>\n" +
+         "   <description>\n" +
+         toHtmlTable() +
+         "\nGenerated by org.xmlBlaster.util.enum.ErrorCode\n" +
+         "   </description>\n" +
+         "</requirement>";
+      return req;
+   }
+
    public static String toXmlAll(String extraOffset) {
       StringBuffer sb = new StringBuffer(2560);
       String offset = "\n ";
@@ -569,14 +641,24 @@ public final class ErrorCode implements java.io.Serializable
    ///////////////END
 
    /**
-    * Dump all codes to xml notation
+    * Generate a requirement file for all error codes. 
     * <pre>
     *  java org.xmlBlaster.util.enum.ErrorCode
     * </pre>
     */
-   public static void main (String [] args) {
-      System.out.println(toXmlAll(""));
-      //verifySerialization();
+   public static void main(String [] args) {
+      String file = "doc/requirements/admin.errorcodes.listing.xml";
+      if (args.length > 0) {
+         file = args[0];
+      }
+      String req = toRequirement();
+      try {
+         org.jutils.io.FileUtil.writeFile(file, req);
+         System.out.println("Created requirement file '" + file + "'");
+      }
+      catch (Exception e) {
+         System.out.println("Writing file '" + file + "' failed: " + e.toString());
+      }
    }
 
    private static void verifySerialization() {
@@ -650,9 +732,11 @@ public final class ErrorCode implements java.io.Serializable
       public ResourceInfo(String type, String label, String resource) {
          if (!REQ.equalsIgnoreCase(type) && !API.equalsIgnoreCase(type) && !URL.equalsIgnoreCase(type))
             throw new IllegalArgumentException("Construction of ResourceInfo with illegal type=" + type);
+         if (label == null || label.length() < 1)
+            throw new IllegalArgumentException("Construction of ResourceInfo with empty lable");
          this.type = type.toUpperCase();
          this.label = label;
-         this.resource = resource;
+         this.resource = (resource==null) ? "" : resource;
       }
 
       public String getType() { return this.type; }
