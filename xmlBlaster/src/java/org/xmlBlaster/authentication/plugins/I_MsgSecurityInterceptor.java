@@ -42,9 +42,9 @@ public interface I_MsgSecurityInterceptor {
     * @exception XmlBlasterException Thrown if the message cannot be processed
     * @see #importMessage(String)
     */
-   public String exportMessage(String xmlMsg) throws XmlBlasterException;
+   public String exportMessage(String str) throws XmlBlasterException;
    /** Use this to export (encrypt) the content */
-   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException;
+   public byte[] exportMessage(byte[] content) throws XmlBlasterException;
    /** Use this to export (encrypt) separately the xmlKey,content,qos of MsgUnitRaw */
    public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException;
 }
