@@ -245,7 +245,7 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher] true
      </tr>
      <tr>
        <td>DELETE</td>
-       <td>OK</td>
+       <td>OK (see <tt>mom.eraseOnDelete</tt> setting)</td>
        <td>Not detected</td>
      </tr>
      <tr>
@@ -557,6 +557,8 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
    &lt;/desc>
 &lt;/sql>
 </pre>
+   <p>Use the <tt>mom.eraseOnDelete=true</tt> configuration to delete the topic on
+   a table row DELETE event.</p>
 
    <h2>Example for a drop entry message</h2>
 <pre>
@@ -762,6 +764,15 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          <td>false</td>
          <td>When a table drop is detected, shall we erase the topic in xmlBlaster or shall we just send
          a message containing the <tt>DROP</tt> command?
+         </td>
+       </tr>
+       <tr>
+         <td>mom.eraseOnDelete</td>
+         <td>String</td>
+         <td>no</td>
+         <td>false</td>
+         <td>When a table row delete is detected, shall we erase the topic in xmlBlaster or shall we just send
+         a message containing the <tt>DELETE</tt> command?
          </td>
        </tr>
        <tr>
