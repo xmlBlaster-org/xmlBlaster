@@ -7,6 +7,7 @@
       XmlBlaster provides access from C# and VisualBasic with ActiveX.
    </topic>
    <description>
+   <h3>Overview</h3>
      <p>
      With the free ActiveX bridge from SUN (JDK 1..4.2 and 1.5) we can export
      the Java client library into an ActiveX control (Windows only). With this
@@ -18,16 +19,20 @@
       which again connects to the xmlBlaster server.
       All invocations are done with Micheles xml scripting
       client, see
-      <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html" target="others">client.script requirements</a>
+      <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html" target="others">client.script requirement</a>
       and
       <a href="http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html" target="others">ActiveX bridge howto</a>
      </p>
+
      <h3>Limitations</h3>
      <p>
       It seems to work only with the ActiveX bridge from JDK 1.5 or higher.
       JDK 1.4.2 failed on my Windows XP.
+      Probably we need to create a ActiveX VisualBasic 6.0 proxy control
+      which delegates the calls from VisualBasic .net for JDK 1.4.2
      </p>
-     <h3>Installations</h3>
+     
+     <h3>Installation</h3>
      <p>
       First you need to create a dll and register it, theses steps are described
       in the above mentioned howto. We have added these steps into a new <code>ant</code> task
@@ -86,7 +91,7 @@ xmlBlaster\demo\activex
    </description>
 
    <example lang="Csharp" type="HTML">
-      <p><a NAME="example"></a>C# example</p>
+      <h3><a NAME="example"></a>C# example</h3>
    <pre><![CDATA[
 // HelloWorld.cs
 using System;
@@ -128,7 +133,7 @@ namespace demo
    </example>
 
    <example lang="VisualBasic" type="HTML">
-      <p><a NAME="example"></a>VisualBasic.net example</p>
+      <h3><a NAME="example"></a>VisualBasic.net example</h3>
    <pre><![CDATA[
 // HelloWorld.vb
 ' Simple VisualBasic HelloWorld example how to access xmlBlaster
@@ -163,29 +168,62 @@ End Module
    </example>
 
    <configuration where="client">
+   <p>
+   Set JRE_HOME to point to your java runtime environment, for example<br />
+   <code>set JRE_HOME=C:\PROGRA~1\Java\j2re1.5.0</code>
+   </p>
    </configuration>
 
    <todo where="client" type="HTML">
       <ol>
-<li>Fix HSQLDB driver and CORBA loading problem.
-  There seems to be a CLASSLOADER problem which we need to solve</li>
+         <li>Fix HSQLDB (JDBC database) driver loading problem.
+           There seems to be a CLASSLOADER problem which we need to solve.<br/>
+           A work around is to copy <code>xmlBlaster\lib\hsqldb.jar</code> to <code>%JRE_HOME%\lib\ext</code>.
+           Do the same with any other JDBC driver you want to use.</li>
 
-<li>Callback events don't work: They are fired in the Java bean
-  but never arrive in C#/VB</li>
+         <li>Fix CORBA driver loading problem.
+           There seems to be a CLASSLOADER problem which we need to solve.<br/>
+           Copying <code>xmlBlaster\lib\jacorb.jar</code> to <code>%JRE_HOME%\lib\ext</code>
+           doe not seem to solve the problem entirely, so please stick to the SOCKET
+           protocol until this issue is resolved.</li>
 
-<li>How are XmlScriptAccess exceptions passed back to the VB/C# layer?
-  RuntimeExceptions arrive as expected</li>
+         <li>Callback events don't work: They are fired in the Java bean
+           but never arrive in C#/VB.<br/>
+           Probable reasons:
+           <ul>
+            <li>I use the wrong code in C#/VB to get the event<br />
+            We can see in the object browser of Visual Studio following objects:
+            <pre>XmlScriptAccess.XmlScriptAccessSource_SinkHelper()
+XmlScriptAccess.XmlScriptAccessDispatch()
+XmlScriptAccess.XmlScriptAccessSource().update()</pre>
+            but how to use them??
+            </li>
+            <li>We could try an ActiveX control with VB 6 instead of with .net</li>
+            <li>The returned event is not multi threaded and needs to somehow enter
+                an event loop
+            </li>
+           </ul>
+           Any feedback of people knowing more about the Windows/ActiveX environment
+           is very welcome (please send it to xmlBlaster@marcelruff.info or to the xmlBlaster
+           mailing list).<br />
+           A not very smart work around could be to poll from VB/C# into java which
+           holds received messages in a list.
+         </li>
+
+         <li>How are XmlScriptAccess exceptions passed back to the VB/C# layer?
+           RuntimeExceptions arrive as expected</li>
      </ol>
    </todo>
 
    <see type="REQ">interface</see>
    <see type="REQ">client.script</see>
    <see type="INTERNET">http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html</see>
+   <see type="INTERNET">http://forum.java.sun.com/forum.jsp?forum=40</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/activex/README</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/demo/activex</see>
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 
