@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.25 2000/05/14 11:12:36 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.26 2000/05/19 17:33:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -311,8 +311,12 @@ public class HttpPushHandler
    {
       if (Log.CALLS) Log.calls(ME, "Entering pushToBrowser() ...");
       synchronized(pushQueue) {
-         if( pushQueue.size() == 0 || !isBrowserReady() )
+         if(pushQueue.size() == 0)
             return;
+         if(!isBrowserReady() ) {
+            Log.info(ME, "Waiting until browser is ready to send " + pushQueue.size() + " messages");
+            return;
+         }
 
          //setting Http push connection to false.
          if (handlesMultipart) {
