@@ -153,8 +153,6 @@ TODO
    <property name="CORBACPP_VER" value="2.3.7"/>
    <property name="CORBACPP_HOME" value="/opt/local/mico"/>
    <property name="XMLCPP_VER" value="2"/>  <!-- 1_7_0 -->
-   <property name="THREAD_SRC" value="src/c++/libs/thread/src"/> <!-- use the internal boost library -->
-   <property name="THREAD_INC" value="src/c++"/> <!-- use the internal boost library -->
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
@@ -1264,8 +1262,6 @@ TODO
       <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
-      <echo message=" THREAD_SRC    = ${THREAD_SRC}"/>
-      <echo message=" THREAD_INC    = ${THREAD_INC}"/>
 
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
@@ -1282,6 +1278,9 @@ TODO
       <echo message=" Setting ${corba.product} = true" />
       <property name="${corba.product},${os.family}" value="true" /> <!-- Setting e.g. "MICO,windows" or "TAO,unix" to be used in if="" clause below -->
       <echo message=" Setting ${corba.product},${os.family} = true" />
+      <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNIORB" to be used in if="" clause below -->
+      <echo message=" Setting ${thread.impl} = true" />
+
    </target>
 
    <!-- =================================================================== -->
@@ -1426,8 +1425,8 @@ TODO
          <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
-         <fileset dir="${THREAD_SRC}" includes="*.cpp"/> <!-- BOOST or OMNITHREAD -->
-         <sysincludepath location="${THREAD_INC}" />     <!-- omnithread.h -->
+         <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
+         <fileset dir="${src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}" /> <!-- TAO -->
