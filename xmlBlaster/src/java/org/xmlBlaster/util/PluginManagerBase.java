@@ -21,8 +21,11 @@ abstract public class PluginManagerBase {
 
    private static String ME = "PluginManagerBase";
    protected Hashtable managers = new Hashtable(); // currently loaded plugins
+   private Global glob;
 
-   protected PluginManagerBase() {}
+   protected PluginManagerBase(org.xmlBlaster.util.Global glob) {
+      this.glob = glob;
+   }
 
    /**
     * Return a specific plugin.
@@ -192,7 +195,7 @@ abstract public class PluginManagerBase {
       // Initialize the plugin
       if (manager != null) {
          try {
-            manager.init(param);
+            manager.init(glob, param);
             Log.info(ME, "Plugin '" + pluginName + "' successfully initialized!");
          } catch (XmlBlasterException e) {
             //Log.error(ME, "Initializing of plugin " + manager.getType() + " failed:" + e.reason);

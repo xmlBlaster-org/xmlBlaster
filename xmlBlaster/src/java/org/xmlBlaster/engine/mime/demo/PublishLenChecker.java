@@ -3,7 +3,7 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.2 2002/04/05 18:51:46 ruff Exp $
+Version:   $Id: PublishLenChecker.java,v 1.3 2002/04/19 11:00:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -65,9 +65,10 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
     *   options[1]="200"
     * </pre>
     * <p/>
+    * @param Global   An xmlBlaster instance global object holding logging and property informations
     * @param String[] Some arguments from xmlBlaster.properties.
     */
-   public void init(String[] options) throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
       if (options != null) {
          for (int ii=0; ii<options.length-1; ii++) {
             if (options[ii].equalsIgnoreCase("DEFAULT_MAX_LEN")) {

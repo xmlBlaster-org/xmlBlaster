@@ -4,7 +4,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author  goetzger
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/04/05 18:57:57 $)
+ * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/04/19 10:56:58 $)
  */
 
 public interface I_Plugin
@@ -21,9 +21,10 @@ public interface I_Plugin
     *   options[2]=DEFAULT_MIN_LEN
     *   options[3]=20
     * </pre>
+    * @param Global   An xmlBlaster instance global object holding logging and property informations
     * @param String[] Some arguments from xmlBlaster.properties.
     */
-   public void init(String[] options) throws XmlBlasterException;
+   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException;
 
    public String getType();
    public String getVersion();

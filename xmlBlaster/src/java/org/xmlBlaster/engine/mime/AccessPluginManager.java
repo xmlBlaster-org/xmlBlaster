@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.4 2002/04/18 12:25:07 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.5 2002/04/19 11:00:18 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -36,6 +36,7 @@ public class AccessPluginManager extends PluginManagerBase {
 
    public AccessPluginManager(Global glob)
    {
+      super(glob);
       this.glob = glob;
       this.log = this.glob.getLog();
    }
