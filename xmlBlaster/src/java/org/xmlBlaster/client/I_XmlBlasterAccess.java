@@ -76,6 +76,11 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    public SynchronousCache createSynchronousCache(int size);
 
    /**
+    * Use a specific error handler instead of the default one. 
+    */
+   public void setClientErrorHandler(I_MsgErrorHandler msgErrorHandler);
+
+   /**
     * Login to xmlBlaster. 
     * <p>
     * Connecting with the default configuration (which checks xmlBlaster.properties and
