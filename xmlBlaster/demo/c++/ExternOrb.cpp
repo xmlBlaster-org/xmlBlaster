@@ -9,6 +9,14 @@
 #include <client/protocol/corba/CorbaDriver.h>
 
 /**
+ * This demo shows how to use XmlBlasterAccess with an orb which is already initialized. Since
+ * XmlBlasterAccess does not know anything about CORBA, you must instantiate a CorbaDriver outside.
+ * To make sure that the XmlBlasterAccess instance you use will internally use the CorbaDriver you
+ * instantiated, you have to pass the same instanceName to both.
+ * When passing an orb to CorbaDriver::getInstance(...) the CorbaDriver does not start a thread to
+ * perform the orb work. You have to provide it yourself (See here the run() method provided).
+ *
+ *
  * This client connects to xmlBlaster and subscribes to a message.
  * <p />
  * We then publish the message and receive it asynchronous in the update() method.
@@ -26,18 +34,20 @@ using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster;
 
+namespace org { namespace xmlBlaster { namespace demo {
+
 class ExternOrb : public I_Callback,           // for the asynchroneous updates
                   public I_ConnectionProblems, // for notification of connection problems when failsafe
-                  public Thread		       // the thread to perform the orb work
+                  public Thread                // the thread to perform the orb work
 {
 private:
    string         ME;                          // the string identifying this class when logging
-   Global&        global_;                            
+   Global&        global_;
    Log&           log_;                                                                                                                                // the reference to the log object for this instance
    bool           doRun_;
    CORBA::ORB_ptr orb_;
 public:
-   ExternOrb(Global& glob, CORBA::ORB_ptr orb) 
+   ExternOrb(Global& glob, CORBA::ORB_ptr orb)
    : Thread(),
      ME("ExternOrb"),
      global_(glob), 
@@ -45,8 +55,8 @@ public:
    {                  
       doRun_ = true;
       orb_   = orb;
-   }                  
-                      
+   } 
+
 
    virtual ~ExternOrb()                                                                                               // the constructor does nothing for the moment
    {
@@ -87,8 +97,8 @@ public:
    {
       start(); // to start the orb worker ...
       try {
-         // CorbaDriver driver = 
-         CorbaDriver::getInstance(global_, "externOrb", false, orb_);
+      // CorbaDriver driver = 
+      CorbaDriver::getInstance(global_, "externOrb", false, orb_);
          XmlBlasterAccess con(global_, "externOrb");
          con.initFailsafe(this);
 
@@ -158,6 +168,7 @@ public:
 
 };
 
+}}} // namespace
 /**
  * Try
  * <pre>
@@ -174,7 +185,7 @@ int main(int args, char ** argv)
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
 
-   ExternOrb hello(glob, orb);
+   org::xmlBlaster::demo::ExternOrb hello(glob, orb);
    hello.execute();
    return 0;
 }
