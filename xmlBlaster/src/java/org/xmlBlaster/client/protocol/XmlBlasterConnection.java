@@ -112,6 +112,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private String ME = "XmlBlasterConnection";
    protected Global glob = null;
 
+   private boolean disconnectInProgress = false;
+
    /** The driver, e.g. Corba/Rmi/XmlRpc */
    private I_XmlBlasterConnection driver = null;
    /** The callback server, e.g. Corba/Rmi/XmlRpc */
@@ -886,62 +888,98 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * @see #disconnect()
+    * @deprecated Please use disconnect() instead
     */
    public synchronized boolean logout()
    {
+      if (Log.CALL) Log.call(ME, "logout() ...");
       return disconnect(new DisconnectQos());
    }
 
+   /**
+    * Flushes pending publishOneway messages if any and destroys low level connection and callback server. 
+    * @see #disconnect(DisconnectQos qos, boolean flush)
+    */
+   public boolean disconnect(DisconnectQos qos) {
+      return disconnect(qos, true, true, true);
+   }
 
    /**
     * Logout from the server.
     * The callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
     * Note that this kills the server ping thread as well (if in fail save mode)
+    * @param qos The disconnect quality of service
+    * @param flush Flushed pending publishOneway() messages if any
+    * @param shutdown shutdown lowlevel connection as well (e.g. CORBA connection)
+    * @param shutdownCb shutdown callback server as well (if any was established)
     * @return true successfully logged out
     *         false failure on logout
     */
-   public synchronized boolean disconnect(DisconnectQos qos)
+   public synchronized boolean disconnect(DisconnectQos qos, boolean flush, boolean shutdown, boolean shutdownCb)
    {
-      if (Log.CALL) Log.call(ME, "logout() ...");
+      if (Log.CALL) Log.call(ME, "disconnect() ...");
+      disconnectInProgress = true;
 
       killPing();
 
       if (!isLoggedIn()) {
-         if (!isInFailSaveMode() || recorder.size() == 0)
-            Log.warn(ME, "No logout, you are not logged in");
+         if (isInFailSaveMode() || recorder.size() > 0)
+            Log.warn(ME, "Logout! Please note that there are " + recorder.size() + " unsent invocations/messages in the queue");
          else
-            Log.warn(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
-         synchronized (callbackMap) {
-            Set keys = callbackMap.keySet();
-            Iterator it = keys.iterator();
-            while(it.hasNext()) {
-               String subscriptionId = (String)it.next();
-               KeyWrapper key = new KeyWrapper(subscriptionId);
-               try {
-                  driver.unSubscribe(key.toString(), "");
-               }
-               catch(XmlBlasterException e) {
-                  Log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
-               }
-               catch(ConnectionException e) {
-                  break;
-               }
+            Log.trace(ME, "No logout, you are not logged in");
+         disconnectInProgress = false;
+         return false;
+      }
+
+      synchronized (callbackMap) {
+         Set keys = callbackMap.keySet();
+         Iterator it = keys.iterator();
+         while(it.hasNext()) {
+            String subscriptionId = (String)it.next();
+            KeyWrapper key = new KeyWrapper(subscriptionId);
+            try {
+               driver.unSubscribe(key.toString(), "");
             }
-            callbackMap.clear();
+            catch(XmlBlasterException e) {
+               Log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
+            }
+            catch(ConnectionException e) {
+               break;
+            }
          }
-         boolean ret = driver.logout();
-         Log.info(ME, "Successful logout");
-         return ret;
+         callbackMap.clear();
       }
 
+      if (this.publishOnewayTimer != null) {
+         if (flush) {
+            flushPublishOnewaySet();
+         }
+      }
+
+      boolean ret = false;
       try {
-         driver.logout();
-      } catch(Exception e) {
-         Log.warn(ME, e.toString());
+         ret = driver.logout();
+         Log.info(ME, "Successful disconnect");
+      } catch(Throwable e) {
          e.printStackTrace();
+         Log.warn(ME+".disconnect()", e.toString());
       }
 
-      return false;
+      if (shutdown) {
+         shutdown(false);
+      }
+
+      if (shutdownCb) {
+         try {
+           shutdownCb();
+         } catch (Throwable e) {
+            e.printStackTrace();
+            Log.warn(ME+".disconnect()", e.toString());
+         }
+      }
+
+      disconnectInProgress = false;
+      return ret;
    }
 
    /**
@@ -984,15 +1022,17 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public boolean shutdownCb() throws XmlBlasterException
    {
+      if (Log.CALL) Log.call(ME, "shutdownCb() ...");
+      //Thread.currentThread().dumpStack();
       if (this.cbServer != null)
          return this.cbServer.shutdownCb();
       return false;
    }
 
    /**
-    * Shut down the callback server.
-    * Is called by logout() automatically.
-    * If burst mode messages are in the queue, they are flushed
+    * Shut down the server connection. 
+    * Calls disconnect() first if still connected.
+    * If burst mode messages are in the queue, they are flushed.
     *
     * @return true CB server successfully shut down
     *         false failure on shutdown
@@ -1003,21 +1043,26 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * Shut down the callback server.
-    * Is called by logout() automatically.
+    * Shut down the callback server. 
+    * Calls disconnect() first if still connected.
     *
-    * @param flush true: If burst mode messages are in the queue, they are flushed
+    * @param flush true: If burst mode messages are in the queue, they are flushed (only if connected)
     *              false: Unsent messages are lost
-    * @return true CB server successfully shut down
+    * @return true server successfully shut down
     *         false failure on shutdown
     */
    public synchronized boolean shutdown(boolean flush)
    {
+      if (Log.CALL) Log.call(ME, "shutdown(" + flush + ") ...");
+
       try {
-         if (this.publishOnewayTimer != null) {
-            if (flush) {
-               flushPublishOnewaySet();
+         if (isLoggedIn() && !disconnectInProgress) {
+            if (this.publishOnewayTimer != null) {
+               if (flush) {
+                  flushPublishOnewaySet();
+               }
             }
+            disconnect(new DisconnectQos(), flush, false, true);
          }
          return driver.shutdown();
       } catch(Exception e) {
