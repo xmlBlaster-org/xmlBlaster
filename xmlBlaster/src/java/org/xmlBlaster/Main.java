@@ -289,7 +289,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                   try { runlevelManager.changeRunlevel(runlevel, true); } catch(XmlBlasterException e) { log.error(ME, e.toString()); }
                }
                else
-                  log.info(ME, "Current runlevel is " + RunlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()));
+                  log.info(ME, "Current runlevel is " + RunlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()) + "=" + runlevelManager.getCurrentRunlevel() + "");
             }
             else if (line.toLowerCase().startsWith("d")) {
                try {
