@@ -3,9 +3,9 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.1 2000/01/17 16:50:33 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.2 2000/01/17 19:57:13 ruff Exp $
 ------------------------------------------------------------------------------*/
-package javaclients.applet;
+package javaclients.HelloWorldApplet;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -17,8 +17,12 @@ import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 
+import java.applet.*;
 import java.awt.event.*;
 import java.awt.*;
+
+// export CLASSPATH=$CLASSPATH:/opt/netscape/java/classes/java40.jar
+// import netscape.security.*; // PrivilegeManager
 
 
 /**
@@ -30,16 +34,16 @@ import java.awt.*;
  *    application:  jaco javaclients.applet.HelloWorld
  * </code>
  */
-public class HelloWorld extends Frame implements I_Callback, ActionListener, org.xmlBlaster.util.LogListener
+public class HelloWorld extends Applet implements I_Callback, ActionListener, org.xmlBlaster.util.LogListener, WindowListener
 {
    private static String ME = "HelloWorld";
+   public static boolean isApplet = false;     // usually true; but jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
+   public static HelloWorld helloWorld = null; // reference to myself (only for main)
 
-   private String publishOid = "";
    private String oid = "HelloWorld-Message";
    private CorbaConnection senderConnection;
    private Server xmlBlaster = null;
-   private String senderName;
-   private String senderContent;
+   private String senderName = "HelloWorld-Applet";
 
    private MessageUnit messageUnit;     // a message to play with
    private final String contentMime = "text/plain";
@@ -50,48 +54,39 @@ public class HelloWorld extends Frame implements I_Callback, ActionListener, org
    private Panel fPanel;
    private TextArea output;
    private TextField logOutput;
-   private String args[];
 
 
    /**
     * Constructs the HelloWorld object.
-    * <p />
-    * @param testName  The name used as title
-    * @param loginName The name to login to the xmlBlaster
     */
-   public HelloWorld(String testName, String senderName)
-   {
-      super(testName);
-      this.senderName = senderName;
-      this.args = args;
-
-      Log.setDefaultLogLevel();
-      Log.addLogListener(this);
-
-      this.addWindowListener(
-         new WindowAdapter() {
-            public void windowClosing(WindowEvent event)
-            {
-               if (xmlBlaster != null) {
-                  tearDown();
-               }
-               Log.exit(HelloWorld.ME, "Exit!");
-            }
-         }
-      );
-
+   public void init()
+   {  
       initUI();
+
+      /*
+      try {
+         PrivilegeManager MyPrivilegeManager=PrivilegeManager.getPrivilegeManager();
+         MyPrivilegeManager.enablePrivilege("UniversalPropertyRead");
+      }
+      catch (netscape.security.ForbiddenTargetException e) {
+        System.out.println("Ignoring netscape.security.ForbiddenTargetException");
+      }
+      */
 
       setUp();
 
-      pack();
+      Log.setDefaultLogLevel();
+      Log.addLogListener(this);
+      Log.info(ME, "Connected to xmlBlaster");
+
+      validate();
    }
 
 
    /**
     * initialize UI
     */
-   public void initUI()
+   private void initUI()
    {
       // MAIN-Frame
       this.setLayout(new BorderLayout());
@@ -121,19 +116,22 @@ public class HelloWorld extends Frame implements I_Callback, ActionListener, org
     * <p />
     * Connect to xmlBlaster and login
     */
-   protected void setUp()
+   void setUp()
    {
       try {
          String passwd = "secret";
          String qos = "<qos></qos>";
 
-         senderConnection = new CorbaConnection(); // Find orb
+         if (isApplet)
+            senderConnection = new CorbaConnection(this); // Find orb
+         else
+            senderConnection = new CorbaConnection(); // Find orb
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                          "</key>";
-         senderContent = "Hello world!";
+         String senderContent = "Hello world!";
          messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
 
          doSubscribe();
@@ -153,20 +151,23 @@ public class HelloWorld extends Frame implements I_Callback, ActionListener, org
     */
    protected void tearDown()
    {
-      String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
-      String qos = "<qos></qos>";
-      String[] strArr = null;
-      try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+      if (xmlBlaster != null) {
+         String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
+         String qos = "<qos></qos>";
+         String[] strArr = null;
+         try {
+            strArr = xmlBlaster.erase(xmlKey, qos);
+         } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+      }
 
-      senderConnection.logout(xmlBlaster);
+      if (senderConnection != null)
+         senderConnection.logout(xmlBlaster);
       Log.info(ME+"-tearDown", "Success: Logged out");
    }
 
 
    /**
-    * TEST: Subscribe to message.
+    * Subscribe to message.
     */
    public void doSubscribe()
    {
@@ -183,15 +184,14 @@ public class HelloWorld extends Frame implements I_Callback, ActionListener, org
 
 
    /**
-    * TEST: Construct a message and publish it.
-    * <p />
-    * The returned publishOid is checked
+    * Construct a message and publish it.
     */
    public void doPublish()
    {
       try {
+         // With ForceUpdate, following messages with the same content will be updated
          String qos = "<qos><ForceUpdate /></qos>";
-         publishOid = xmlBlaster.publish(messageUnit, qos);
+         xmlBlaster.publish(messageUnit, qos);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-doPublish", "XmlBlasterException: " + e.reason);
       }
@@ -244,19 +244,46 @@ public class HelloWorld extends Frame implements I_Callback, ActionListener, org
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.HelloWorld
+    * WindowListener Events
+    */
+   public void windowOpened(WindowEvent e) { Log.info(ME, "Event windowOpened"); }
+   public void windowClosing(WindowEvent e) { Log.info(ME, "Event windowClosing"); tearDown(); }
+   public void windowClosed(WindowEvent e) { Log.info(ME, "Event windowClosed"); tearDown(); }
+   public void windowIconified(WindowEvent e) { Log.info(ME, "Event windowIconified"); }
+   public void windowDeiconified(WindowEvent e) { Log.info(ME, "Event windowDeiconified"); }
+   public void windowActivated(WindowEvent e) { Log.info(ME, "Event windowActivated"); }
+   public void windowDeactivated(WindowEvent e) { Log.info(ME, "Event windowDeactivated"); }
+
+
+   /**
+    * To start it as an application invoke: jaco javaclients.HelloWorldApplet.HelloWorld
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
-    * <br />
-    * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.HelloWorld</code>
     */
    public static void main(String args[])
    {
-      HelloWorld helloWorld = new HelloWorld("HelloWorld", "Tim");
-      //helloWorld.setSize(320,350);
-      helloWorld.show();
+      HelloWorld.isApplet = false;
+      Frame frame = new Frame("HelloWorld v1.0");
+      HelloWorld helloWorld = new HelloWorld();
+      HelloWorld.helloWorld = helloWorld;
+      //helloWorld.isApp_ = true;
+      helloWorld.init();
+      helloWorld.start();
+
+      frame.addWindowListener(
+         new WindowAdapter() {
+            public void windowClosing(WindowEvent event) {
+               HelloWorld.helloWorld.tearDown();
+               Log.exit(ME, "Exit!");
+            }
+         }
+      );
+      
+      frame.add("Center", helloWorld);
+      frame.setSize(350, 250);
+      frame.validate();
+      frame.show();
    }
 }
 

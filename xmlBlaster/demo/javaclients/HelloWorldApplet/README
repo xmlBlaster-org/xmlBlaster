@@ -1,0 +1,49 @@
+Start applet as application:
+============================
+
+   jaco org.xmlBlaster.MainGUI
+    
+   jaco javaclients.applet.HelloWorld
+
+
+
+Start applet in appletviewer:
+=============================
+
+   jaco org.xmlBlaster.MainGUI
+
+   jacapplet $XMLBLASTER_HOME/demo/javaclients/HelloWorldApplet/HelloWorld.html
+
+
+
+Start applet in netscape:
+=========================
+
+ 1) Setup Apache DocumentRoot:
+
+   cd /usr/local/apache/htdocs
+   ln -s $XMLBLASTER_HOME/demo/javaclients/HelloWorldApplet/HelloWorld.html HelloWorld.html
+   ln -s $XMLBLASTER_HOME/classes/javaclients javaclients
+   cd org
+   ln -s $XMLBLASTER_HOME/classes/org/xmlBlaster xmlBlaster
+
+ 
+ 2) Start xmlBlaster server:
+
+   jaco org.xmlBlaster.MainGUI
+ 
+ 
+ 3) Start applet:
+
+    Leads to security exception. Reason not yet analyzed.
+
+       netscape.security.AppletSecurityException: security.checkpropsaccess.key
+        at netscape.security.AppletSecurity.checkPropertyAccess(AppletSecurity.java:484)
+        at java.lang.SecurityManager.checkPropertyAccess(SecurityManager.java:958)
+        at java.lang.System.getProperty(System.java:456)
+        at org.omg.CORBA.ORB.init(ORB.java:37)
+      * at org.xmlBlaster.client.CorbaConnection.<init>(CorbaConnection.java:60)
+        at javaclients.HelloWorldApplet.HelloWorld.setUp(HelloWorld.java:128)
+
+    The JacORB mtclient.html example works well, so it must be possible.
+
