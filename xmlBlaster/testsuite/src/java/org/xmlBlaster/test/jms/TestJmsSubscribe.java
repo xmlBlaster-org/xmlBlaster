@@ -44,14 +44,13 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    protected Global glob;
    protected LogChannel log;
    int counter = 0, nmax;
-
+   private Throwable ex;
+   
    private ConnectionFactory factory;
    private Destination topic;
    private Connection connection;
+   private Message msg;
    
-   /** used for waiting for responses */
-   private Object latch = new Object();
-   private long[] timestamps;
    private String[] args;
    private NamingService namingService;
 
@@ -102,38 +101,23 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    public void prepare(String[] args) {
       this.args = args;
       this.glob = new Global(args);
-      // this.glob.init(args);
       this.glob.getLog("test");
    }
 
    public void onMessage(Message message) {
-      if (this.log.CALL) this.log.call(ME, "onMessage start");
       try {
+         if (this.log.CALL) this.log.call(ME, "onMessage start");
          if (message instanceof TextMessage) {
-            this.timestamps[this.counter] = System.currentTimeMillis();
             this.counter++;
-            System.out.println(((TextMessage)message).getText());
-            Thread.sleep(200L);
-            if (this.log.TRACE) this.log.trace(ME, "onMessage before ack");
-            message.acknowledge();
-            if (this.log.TRACE) this.log.trace(ME, "onMessage after ack");
-            Thread.sleep(300L);
-            if (this.log.TRACE) this.log.trace(ME, "onMessage after final sleeping");
-            if (this.counter == this.nmax) {
-               synchronized (this.latch) {
-                  this.latch.notify();
-               }
-            } 
+            this.log.trace(ME, ((TextMessage)message).getText());
+            this.msg = message;
+            // message.acknowledge();
          }
          if (this.log.CALL) this.log.call(ME, "onMessage stop");
       }
-      catch (JMSException ex) {
-         System.err.println(ex.getMessage());
+      catch (Throwable ex) {
          ex.printStackTrace();
-      }
-      catch (InterruptedException ex) {
-         System.err.println(ex.getMessage());
-         ex.printStackTrace();
+         this.ex = ex;
       }
    }
 
@@ -143,7 +127,7 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       this.log = this.glob.getLog("test");
       try {
          adminJmsStart();
-
+         this.ex = null;
          try {
             InitialContext ctx = new InitialContext();
             this.factory = (XBConnectionFactory)ctx.lookup(CONNECTION_FACTORY);
@@ -157,7 +141,6 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
          this.connection = this.factory.createConnection();
          this.connection.start();
          this.nmax = 5;
-         this.timestamps = new long[this.nmax];
          this.counter = 0;
 
       }
@@ -169,10 +152,11 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
 
    protected void tearDown() {
       try {
-         this.connection.stop();
+         this.connection.close();
          InitialContext ctx = new InitialContext();
          ctx.unbind(CONNECTION_FACTORY);
          ctx.unbind(TOPIC);
+         this.connection = null;
       }
       catch (JMSException ex) {
          ex.printStackTrace();
@@ -189,7 +173,7 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
          // System.setProperty("java.naming.factory.initial", "org.apache.naming.modules.memory.MemoryURLContextFactory");
          // System.setProperty("java.naming.factory.url.pkgs", "org.apache.naming.modules");
          InitialContext ctx = new InitialContext();
-         ctx.bind(CONNECTION_FACTORY, new XBConnectionFactory(this.args));            
+         ctx.bind(CONNECTION_FACTORY, new XBConnectionFactory(null, this.args, false));            
          ctx.bind(TOPIC, new XBTopic(TOPIC));
       }
       catch (NamingException ex) {
@@ -202,88 +186,122 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       }
    }
    
-
-   public void testSubAutoAck() {
+   private void async(int ackMode, String type) {
+      // Session.AUTO_ACKNOWLEDGE
       try {
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer subscriber = session.createConsumer(this.topic);
+         boolean transacted = false;
+         Session consumerSession = connection.createSession(transacted, ackMode);
+         MessageConsumer subscriber = consumerSession.createConsumer(this.topic);
          subscriber.setMessageListener(this);
-         Session session2 = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer publisher = session2.createProducer(this.topic);
-         TextMessage msg = session2.createTextMessage();
-         msg.setText("this is a simple jms AUTO acknowlegded test message");
-         
+         Session producerSession = connection.createSession(transacted, ackMode);
+         MessageProducer publisher = producerSession.createProducer(this.topic);
+
          for (int i=0; i < this.nmax; i++) {
+            TextMessage msg = producerSession.createTextMessage();
+            msg.setText("this is a " + type + " jms message nr. " + i);
             publisher.send(this.topic, msg);
-            Thread.sleep(50L);
          }
-         synchronized(this.latch) {
-            this.latch.wait(this.nmax * 700L);
-            Thread.sleep(100L);
-            assertEquals("number of onMessage invocations is wrong", this.nmax, this.counter);
+         
+         if (ackMode == Session.CLIENT_ACKNOWLEDGE) {
+            for (int i=0; i < this.nmax; i++) {
+               Thread.sleep(250L);
+               if (this.ex != null) {
+                  assertTrue("An exception occured in the onMessage method. It should not. " + this.ex.getMessage(), false);
+               }
+               assertEquals("wrong number of " + type + " messages arrived", i+1, this.counter);
+               this.msg.acknowledge(); // now it should continue
+            }
          }
-         double expDt = 500.0;
-         double dt = 1.0 * (this.timestamps[this.nmax-1] - this.timestamps[0]) / (this.nmax - 1.0);
-         this.log.info("", "The processing time is '" + dt + "' ms and expected is '" + expDt + "' ms");
-         assertEquals("The expected processing time wrong", 1.0*expDt, 1.0*dt, 0.2*dt);
+         else {
+            Thread.sleep(1000L);
+            if (this.ex != null) {
+               assertTrue("An exception occured in the onMessage method. It should not. " + this.ex.getMessage(), false);
+            }   
+            assertEquals("wrong number of " + type + " messages arrived", this.nmax, this.counter);
+         }
+         this.counter = 0;
       }
       catch (Exception ex) {
          ex.printStackTrace();
-         assertTrue(false);
+         assertTrue("Exception occured when it should not. " + ex.getMessage(), false);
       }
    }
 
    public void testSubClientAck() {
-      try {
-         Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer subscriber = session.createConsumer(this.topic);
-         subscriber.setMessageListener(this);
-         Session session2 = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer publisher = session2.createProducer(this.topic);
-         TextMessage msg = session2.createTextMessage();
-         msg.setText("this is a simple jms CLIENT acknowlegded test message");
-         
-         long t1 = System.currentTimeMillis();
-         for (int i=0; i < this.nmax; i++) {
-            publisher.send(this.topic, msg);
-            Thread.sleep(50L);
-         }
-         synchronized(this.latch) {
-            this.latch.wait(this.nmax * 700L);
-            Thread.sleep(100L);
-            assertEquals("number of onMessage invocations is wrong", this.nmax, this.nmax);
-         }
-         double expDt = 200.0;
-         double dt = 1.0 * (this.timestamps[this.nmax-1] - this.timestamps[0]) / (this.nmax - 1.0);
-         this.log.info("", "The processing time is '" + dt + "' ms and expected is '" + expDt + "' ms");
-         assertEquals("The expected processing time wrong", 1.0*expDt, 1.0*dt, 0.2*dt);
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-         assertTrue(false);
-      }
+      async(Session.CLIENT_ACKNOWLEDGE, "clientAcknowledge");
    }
 
+   public void testSubAutoAck() {
+      async(Session.AUTO_ACKNOWLEDGE, "autoAcknowledge");
+   }
+   
+   public void testSubDupsOk() {
+      async(Session.DUPS_OK_ACKNOWLEDGE, "dupsOkAcknowledge");
+   }
+   
    public void testSyncReceiver() {
       try {
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer subscriber = session.createConsumer(this.topic);
-         subscriber.setMessageListener(this);
-         Session session2 = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer publisher = session2.createProducer(this.topic);
-         TextMessage msg = session2.createTextMessage();
-         msg.setText("this message will be consumed synchronously");
-         PublisherThread pub = new PublisherThread(publisher, msg, 6, 100L);
-         pub.start();
-         for (int i=0; i < 3; i++) {
-            Message msg2 = subscriber.receive();
-            assertEquals("receive(): messages are not the same", msg, msg2);         
+         Session consumerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer consumer = consumerSession.createConsumer(this.topic);
+         Session publisherSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer publisher = publisherSession.createProducer(this.topic);
+         int nmax = 3;
+
+         // test receiveNoWait()
+         TextMessage[] msgIn = new TextMessage[nmax];
+         Message msg2 = null;
+         for (int i=0; i < nmax; i++) {
+            msgIn[i] = publisherSession.createTextMessage();
+            msgIn[i].setText("msg " + i);
+            publisher.send(this.topic, msgIn[i]);
+         }
+         for (int i=0; i < nmax; i++) {
+            msg2 = consumer.receiveNoWait();
+            if (!(msg2 instanceof TextMessage)) {
+               assertTrue("received message if of wrong type, should be TextMessage but is '" + msg2.getClass().getName() + "'", false);
+            }
+            assertEquals("receive(): messages are not the same", msgIn[i].getText(), ((TextMessage)msg2).getText());         
+         }
+         msg2 = consumer.receiveNoWait();
+         if (msg2 != null) {
+            assertTrue("no message was sent, so null should have been returned here but it was " + msg.toString(), false);
+         }
+         
+         // test receive(long)
+         msgIn = new TextMessage[nmax];
+         for (int i=0; i < nmax; i++) {
+            msgIn[i] = publisherSession.createTextMessage();
+            msgIn[i].setText("msg " + i);
+            publisher.send(this.topic, msgIn[i]);
+         }
+         for (int i=0; i < nmax; i++) {
+            msg2 = consumer.receive(200L);
+            if (!(msg2 instanceof TextMessage)) {
+               assertTrue("received message if of wrong type, should be TextMessage but is '" + msg2.getClass().getName() + "'", false);
+            }
+            assertEquals("receive(): messages are not the same", msgIn[i].getText(), ((TextMessage)msg2).getText());         
+         }
+         msg2 = consumer.receive(200L);
+         if (msg2 != null) {
+            assertTrue("no message was sent, so null should have been returned here but it was " + msg.toString(), false);
          }
 
-         for (int i=0; i < 3; i++) {
-            Message msg2 = subscriber.receive(300L);         
-            assertEquals("receive(delay): messages are not the same", msg, msg2);         
+         // test receive()
+         msgIn = new TextMessage[nmax];
+         for (int i=0; i < nmax; i++) {
+            msgIn[i] = publisherSession.createTextMessage();
+            msgIn[i].setText("msg " + i);
+            publisher.send(this.topic, msgIn[i]);
          }
+         for (int i=0; i < nmax; i++) {
+            msg2 = consumer.receive();
+            if (!(msg2 instanceof TextMessage)) {
+               assertTrue("received message if of wrong type, should be TextMessage but is '" + msg2.getClass().getName() + "'", false);
+            }
+            assertEquals("receive(): messages are not the same", msgIn[i].getText(), ((TextMessage)msg2).getText());         
+         }
+         //PublisherThread pub = new PublisherThread(publisher, msg, 6, 100L);
+         //pub.start();
       }
       catch (Exception ex) {
          ex.printStackTrace();
@@ -300,12 +318,19 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    {
       TestJmsSubscribe test = new TestJmsSubscribe("TestJmsSubscribe");
       test.prepare(args);
+      
+      test.setUp();
+      test.testSubDupsOk();
+      test.tearDown();
+      
       test.setUp();
       test.testSubAutoAck();
       test.tearDown();
+      
       test.setUp();
       test.testSubClientAck();
       test.tearDown();
+      
       test.setUp();
       test.testSyncReceiver();
       test.tearDown();

@@ -103,7 +103,7 @@ public class TestMessages extends TestCase {
          byte[] content = null;
          MsgQosData qos = null;
          int type = XBMessage.TEXT;
-         XBMessage msg = new XBMessage(this.glob, key, content, qos, type);
+         XBMessage msg = new XBMessage(null, key, content, qos, type);
 
          String[] keys = new String[] {"Boolean", "Byte", "Short", "Int", "Long", "Float", "Double", "String"};
          Object[] values = new Object[] { new Boolean(false), new Byte((byte)1), new Short((short)2), new Integer(3), new Long(4), new Float(5.01), new Double(6.02), new String("7 String")  };
@@ -173,7 +173,7 @@ public class TestMessages extends TestCase {
          byte[] content = "testReadOnlyProperties".getBytes();
          MsgQosData qos = null;
          int type = XBMessage.TEXT;
-         XBMessage msg = new XBMessage(this.glob, key, content, qos, type);
+         XBMessage msg = new XBMessage(null, key, content, qos, type);
 
          String[] keys = new String[] {"Boolean", "Byte", "Short", "Int", "Long", "Float", "Double", "String"};
 
@@ -289,7 +289,7 @@ public class TestMessages extends TestCase {
             MsgKeyData key = null;
             MsgQosData qos = null;
             byte[] content = null;
-            XBTextMessage msg = new XBTextMessage(this.glob, key, content, qos);
+            XBTextMessage msg = new XBTextMessage(null, key, content, qos);
 
             String txt1 = "funny Things happen";
             msg.setText(txt1);
@@ -306,7 +306,7 @@ public class TestMessages extends TestCase {
             MsgKeyData key = null;
             MsgQosData qos = null;
             byte[] content = null;
-            XBTextMessage msg = new XBTextMessage(this.glob, key, "oh I am a text msg".getBytes(), qos);
+            XBTextMessage msg = new XBTextMessage(null, key, "oh I am a text msg".getBytes(), qos);
 
             String txt1 = "funny Things happen";
             msg.setText(txt1);
