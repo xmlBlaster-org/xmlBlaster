@@ -192,7 +192,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     */
    public void resetConnection() {
       this.authServer   = null;
-      xmlBlaster   = null;
+      this.xmlBlaster = null;
    }
 
    /**
@@ -217,12 +217,12 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @return Server
     */
    private Server getXmlBlaster() throws XmlBlasterException {
-      if (xmlBlaster == null) {
+      if (this.xmlBlaster == null) {
          if (log.TRACE) log.trace(ME, "No CORBA connection available.");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                                        "The CORBA xmlBlaster handle is null, no connection available");
       }
-      return xmlBlaster;
+      return this.xmlBlaster;
    }
 
 
@@ -500,8 +500,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please pass a valid QoS for connect()");
 
       this.ME = "CorbaConnection";
-      if (log.CALL) log.call(ME, "connect() ...");
-      if (xmlBlaster != null) {
+      if (log.CALL) log.call(ME, "connect(xmlBlaster="+xmlBlaster+") ...");
+      if (this.xmlBlaster != null) {
          log.warn(ME, "You are already logged in.");
          return "";
       }
@@ -544,6 +544,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
          this.xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          this.ME = "CorbaConnection-"+connectReturnQos.getSessionName().toString();
+         if (log.TRACE) log.trace(ME, "setConnectReturnQos(): xmlBlaster=" + this.xmlBlaster);
       }
       catch(Throwable e) {
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "Login failed", e);
@@ -561,16 +562,13 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public boolean disconnect(String qos) {
       if (log.CALL) log.call(ME, "disconnect() ...");
 
-      if (xmlBlaster == null) {
+      if (this.xmlBlaster == null) {
          try {
             shutdown();
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
          }
-         // Thread leak !!!
-         // orb.shutdown(true);
-         // orb = null;
          return false;
       }
 
@@ -584,10 +582,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             }
          }
          shutdown();
-         // Thread leak !!!
-         // orb.shutdown(true);
-         // orb = null;
-         xmlBlaster = null;
+         this.xmlBlaster = null;
          return true;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
@@ -605,10 +600,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       catch (XmlBlasterException ex) {
          this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
       }
-      // Thread leak !!!
-      // orb.shutdown(true);
-      // orb = null;
-      xmlBlaster = null;
+      this.xmlBlaster = null;
       return false;
    }
 
@@ -641,7 +633,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @return true if you are logged in
     */
    public boolean isLoggedIn() {
-      return xmlBlaster != null;
+      return this.xmlBlaster != null;
    }
 
    /**
