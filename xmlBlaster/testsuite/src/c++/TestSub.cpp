@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.16 2003/02/13 14:01:16 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.17 2003/02/13 19:44:38 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -357,6 +357,11 @@ private:
          log_.error(ME, "Wrong oid of message returned");
          assert(0);
       }
+
+      if (updateQos.getState() == Constants::STATE_ERASED) {
+         return "<qos><state id='OK'/></qos>";
+      }
+
       if (senderContent_ != contentStr) {
          log_.error(ME, "Corrupted content expected '" + senderContent_ + "' size=" +
                            lexical_cast<string>(senderContent_.size()) + " but was '" + contentStr +
