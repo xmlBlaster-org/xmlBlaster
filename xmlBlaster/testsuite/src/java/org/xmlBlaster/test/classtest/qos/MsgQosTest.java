@@ -119,7 +119,40 @@ public class MsgQosTest extends TestCase {
       //assertEquals("", true, ((Destination)qos.getDestinations().get(2)).isXPathQuery());
       */
 
-      System.out.println("***MsgQosTest: testParse [SUCCESS]");
+      System.out.println("***MsgQosTest: testMethods [SUCCESS]");
+   }
+
+   public void testDestination() {
+      System.out.println("***MsgQosTest: testDestination ...");
+
+      MsgQosData qos = new MsgQosData(this.glob, MethodName.PUBLISH);
+      assertEquals("", null, qos.getDestinations());
+      
+      Destination destination = new Destination("a@b", Constants.EXACT);
+
+      assertNull("", qos.getDestinations());
+      assertEquals("", 0, qos.getNumDestinations());
+      assertEquals("", 0, qos.getDestinationArr().length);
+
+      qos.addDestination(destination);
+      assertNotNull("", qos.getDestinations());
+      assertEquals("", 1, qos.getDestinations().size());
+      assertEquals("", 1, qos.getNumDestinations());
+      assertEquals("", 1, qos.getDestinationArr().length);
+
+      MsgQosData qos2 = (MsgQosData)qos.clone();
+      assertNotNull("", qos2.getDestinations());
+      assertEquals("", 1, qos2.getDestinations().size());
+      assertEquals("", 1, qos2.getNumDestinations());
+      assertEquals("", 1, qos2.getDestinationArr().length);
+
+      String xml = qos.toXml();
+      MsgQosData qos3 = (MsgQosData)qos.clone();
+
+
+      //dest.setDestination(new SessionName(Global.instance(), "Johann"));
+
+      System.out.println("***MsgQosTest: testDestination [SUCCESS]");
    }
 
    /**
@@ -131,7 +164,8 @@ public class MsgQosTest extends TestCase {
    {
       MsgQosTest testSub = new MsgQosTest("MsgQosTest");
       testSub.setUp();
-      testSub.testMethods();
+      //testSub.testMethods();
+      testSub.testDestination();
       //testSub.tearDown();
    }
 }
