@@ -110,6 +110,8 @@ proprietary Protocol plugins (not CORBA)
      http://www.soap-wrc.com
      http://www.alphaWorks.ibm.com/tech/soap4j
      http://msdn.microsoft.com/xml/general/toolkit_intro.asp
+     http://msdn.microsoft.com/msdnmag/issues/0300/soap/soap.asp (tutorial)
+     http://windows.oreilly.com/news/soapreview_0600.html (IBM versus M$ comparison)
 - http protocol Java servlet (including a Java web server):
      http://www.mortbay.com/software/iX.html
 
