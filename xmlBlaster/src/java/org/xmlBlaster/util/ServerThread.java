@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.5 2002/05/01 21:40:14 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.6 2002/05/03 10:27:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,7 +14,9 @@ import org.xmlBlaster.client.*;
 
 
 /**
- * Helper to create/start/stop a xmlBlaster server instance in a thread.
+ * Helper to create/start/stop a xmlBlaster server instance in a thread. 
+ * <p />
+ * TODO: change to use util.Global (or engine.Global as xmlBlaster.Main needs it).
  */
 public class ServerThread extends Thread
 {
