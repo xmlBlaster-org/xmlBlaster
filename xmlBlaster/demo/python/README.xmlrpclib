@@ -1,3 +1,32 @@
+ The python 'struct' module handles the task of converting such
+binary 'struct'/'record' data to Python thingies.  You do have
+to open the file for reading in binary mode and read the right
+number of bytes at a time, but then struct will nicely unpack
+them for you.
+
+Suppose for example that the file is made up of records each
+of which is a (binary little-endian) IEEE-double precision
+(64-bit) number followed by two signed 4-byte integers.
+
+    import struct
+
+    format = "<dll"
+    reclen = struct.calcsize(format)
+    try:
+        fileob = open("file.dat","rb")
+        while 1:
+            record = fileob.read(calcsize)
+            if not record: break;
+            myfloat, myint1, myint2 = struct.unpack(format, record)
+            # now work with myfloat, myint1, myint2 ...
+    finally:
+        fileob.close()
+
+
+http://www.python.org/doc/current/lib/module-struct.html
+
+
+
 ====================
 The xmlrpclib module
 ====================
@@ -30,15 +59,15 @@ This is beta software.  There are no known bugs.
 
 The XML-RPC specification can be found at:
 
-	http://www.xml-rpc.com
+        http://www.xml-rpc.com
 
 The sgmlop parser can be found at:
 
-	http://www.pythonware.com/madscientist
+        http://www.pythonware.com/madscientist
 
 Comments, bug reports, and patches are welcome.  Send them to:
 
-	fredrik@pythonware.com
+        fredrik@pythonware.com
 
 Note that this is free software, with limited support.  If you need
 commercial support on this module, please contact info@pythonware.com.
@@ -47,13 +76,13 @@ commercial support on this module, please contact info@pythonware.com.
 contents
 --------
 
-README			this file
+README                  this file
 
-xmlrpclib.py		client library
-xmlrpcserver.py		a very simple server
+xmlrpclib.py            client library
+xmlrpcserver.py         a very simple server
 
-xmlrpc_handler.py	an XML RPC handler for Medusa
-			(written by Sam Rushing).
+xmlrpc_handler.py       an XML RPC handler for Medusa
+                        (written by Sam Rushing).
 
 license
 -------
