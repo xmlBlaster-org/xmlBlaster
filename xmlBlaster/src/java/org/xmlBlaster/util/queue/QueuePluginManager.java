@@ -14,8 +14,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.QueuePropertyBase;
 import org.xmlBlaster.util.XmlBlasterException;
 
-import java.util.Vector;
-
 /**
  * QueuePluginManager loads the I_Queue implementation plugins. 
  * <p>
@@ -27,10 +25,11 @@ import java.util.Vector;
  * </pre>
  * <pre>
  * // Access it in the code
- * I_Queue queue = glob.getQueuePluginManager().getPlugin("JDBC", "1.0", "SpecialJdbcQueue", queuePropertyBase);
+ * String defaultPersistent = glob.getProperty().get("queue.cache.persistentQueue", "JDBC,1.0");
+ * I_Queue queue = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
  * </pre>
  * @author <a href="mailto:laghi@swissinfo.com">Michele Laghi</a>.
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.queue.html" target="others">engine.queue</a>
  */
 public class QueuePluginManager extends PluginManagerBase
@@ -40,7 +39,6 @@ public class QueuePluginManager extends PluginManagerBase
    private final LogChannel log;
    private static final String defaultPluginName = "org.xmlBlaster.util.queue.ram.RamQueuePlugin";
    public static final String pluginPropertyName = "QueuePlugin";
-   public final I_QueueEntryFactory entryFactory = null;
 
    public QueuePluginManager(Global glob) {
       super(glob);
@@ -53,7 +51,7 @@ public class QueuePluginManager extends PluginManagerBase
    /**
     * @see #getPlugin(String, String, String, QueuePropertyBase)
     */
-   public I_Queue getPlugin(String typeVersion, String uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
+   public I_Queue getPlugin(String typeVersion, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
       if (typeVersion == null)
          return null;
       String version;
@@ -77,7 +75,7 @@ public class QueuePluginManager extends PluginManagerBase
     * @param fn The file name for persistence or null (will be generated or ignored if RAM based)
     * @return The plugin for this type and version or null if none is specified or type=="undef"
     */
-   public I_Queue getPlugin(String type, String version, String uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
+   public I_Queue getPlugin(String type, String version, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
 
       if (log.CALL) log.call(ME+".getPlugin()", "Loading " + createPluginPropertyKey(type, version));
       I_Queue plugin = null;
