@@ -93,8 +93,10 @@ CorbaDriverFactory::~CorbaDriverFactory()
       if (!CORBA::is_nil(orb_)) {
          if (log_.trace()) log_.trace(ME, "shutting down the orb");
          orb_->shutdown(true);
+#if      !(defined(_WINDOWS) && defined(XMLBLASTER_TAO))
          if (log_.trace()) log_.trace(ME, "destroying the orb");
-         orb_->destroy();
+         orb_->destroy();         // blocks forever on Windows XP VC7 with TAO 1.3
+#endif
          if (log_.trace()) log_.trace(ME, "releasing the orb");
          CORBA::release(orb_);
       }                                 
