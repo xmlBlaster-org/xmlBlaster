@@ -1,7 +1,6 @@
 // xmlBlaster/demo/javaclients/HelloWorld.java
+
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -16,8 +15,7 @@ public class HelloWorld
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(args);
 
-         ConnectQos qos = new ConnectQos("simple", "1.0", "joe", "secret");
-         con.connect(qos, null);      // Login to xmlBlaster
+         con.connect(null, null);    // Login to xmlBlaster as "guest"
 
          MessageUnit[] msgs = con.get("<key oid='__sys__FreeMem'/>", null);
 
