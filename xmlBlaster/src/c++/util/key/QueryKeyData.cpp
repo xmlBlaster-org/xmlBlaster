@@ -97,7 +97,7 @@ string QueryKeyData::toXml(const string& extraOffset) const
       ret += (*iter).toXml(extraOffset + Constants::INDENT);
       iter++;
    }
-   ret += "<key/>";
+   ret += "</key>";
   return ret;
 }
 

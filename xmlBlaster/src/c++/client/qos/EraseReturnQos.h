@@ -33,4 +33,5 @@ typedef PublishReturnQos EraseReturnQos;
 
 }}}} // namespace
 
+#endif
 

@@ -60,7 +60,7 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
 
 
 CorbaDriver::CorbaDriver(Global& global, bool connectionOwner)
-   : ME("CorbaDriver"), global_(global)
+   : ME("CorbaDriver"), global_(global), statusQosFactory_(global), msgQosFactory_(global)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;
@@ -117,10 +117,10 @@ ConnectReturnQos CorbaDriver::connect(const ConnectQos& qos)
    _COMM_CATCH("::connect", false, false)
 }
 
-bool CorbaDriver::disconnect(const string& qos)
+bool CorbaDriver::disconnect(const DisconnectQos& qos)
 {
    _COMM_TRY
-      return connection_->disconnect(qos);
+      return connection_->disconnect(qos.toXml());
    _COMM_CATCH("::disconnect", false, false)
 }
 
@@ -170,32 +170,41 @@ string CorbaDriver::ping(const string& qos)
    _COMM_CATCH("::ping", false, false)
 }
 
-string CorbaDriver::subscribe(const string& xmlKey, const string& qos)
+SubscribeReturnQos CorbaDriver::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
    _COMM_TRY
-      return connection_->subscribe(xmlKey, qos);
+      string ret = connection_->subscribe(key.toXml(), qos.toXml());
+      return SubscribeReturnQos(global_, statusQosFactory_.readObject(ret));
    _COMM_CATCH("::subscribe", false, false)
 }
 
-vector<MessageUnit> CorbaDriver::get(const string& xmlKey, const string& qos)
+vector<MessageUnit> CorbaDriver::get(const GetKey& key, const GetQos& qos)
 {
    _COMM_TRY
-      return connection_->get(xmlKey, qos);
+      return connection_->get(key.toXml(), qos.toXml());
    _COMM_CATCH("::get", false, false)
 }
 
-vector<string>
-CorbaDriver::unSubscribe(const string& xmlKey, const string& qos)
+vector<UnSubscribeReturnQos>
+CorbaDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
    _COMM_TRY
-      return connection_->unSubscribe(xmlKey, qos);
+      vector<string> tmp = connection_->unSubscribe(key.toXml(), qos.toXml());
+      vector<string>::const_iterator iter = tmp.begin();
+      vector<UnSubscribeReturnQos> ret;
+      while (iter != tmp.end()) {
+         ret.insert(ret.end(),  UnSubscribeReturnQos(global_, statusQosFactory_.readObject(*iter)));
+         iter++;
+      }
+      return ret;
    _COMM_CATCH("::unSubscribe", false, false)
 }
 
-string CorbaDriver::publish(const MessageUnit& msgUnit)
+PublishReturnQos CorbaDriver::publish(const MessageUnit& msgUnit)
 {
    _COMM_TRY
-      return connection_->publish(msgUnit);
+      string ret = connection_->publish(msgUnit);
+      return PublishReturnQos(global_, statusQosFactory_.readObject(ret));
    _COMM_CATCH("::publish", false, false)
 }
 
@@ -206,17 +215,31 @@ void CorbaDriver::publishOneway(const vector<MessageUnit> &msgUnitArr)
    _COMM_CATCH("::publishOneway", false, false)
 }
 
-vector<string> CorbaDriver::publishArr(vector<MessageUnit> msgUnitArr)
+vector<PublishReturnQos> CorbaDriver::publishArr(vector<MessageUnit> msgUnitArr)
 {
    _COMM_TRY
-      return connection_->publishArr(msgUnitArr);
+      vector<string> tmp = connection_->publishArr(msgUnitArr);
+      vector<string>::const_iterator iter = tmp.begin();
+      vector<PublishReturnQos> ret;
+      while (iter != tmp.end()) {
+         ret.insert(ret.end(),  PublishReturnQos(global_, statusQosFactory_.readObject(*iter)) );
+         iter++;
+      }
+      return ret;
    _COMM_CATCH("::publishArr", false, false)
 }
 
-vector<string> CorbaDriver::erase(const string& xmlKey, const string& qos)
+vector<EraseReturnQos> CorbaDriver::erase(const EraseKey& key, const EraseQos& qos)
 {
    _COMM_TRY
-      return connection_->erase(xmlKey, qos);
+      vector<string> tmp = connection_->erase(key.toXml(), qos.toXml());
+      vector<string>::const_iterator iter = tmp.begin();
+      vector<EraseReturnQos> ret;
+      while (iter != tmp.end()) {
+         ret.insert(ret.end(),  EraseReturnQos(global_, statusQosFactory_.readObject(*iter)) );
+         iter++;
+      }
+      return ret;
    _COMM_CATCH("::erase", false, false)
 }
 

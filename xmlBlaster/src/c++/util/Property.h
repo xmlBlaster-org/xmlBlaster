@@ -157,11 +157,19 @@ namespace util {
       string getStringProperty(const string &name, const string &def, 
                             bool env=true);
 
-
-      bool setProperty(const string &name, const string &value,
+      /**
+       * To allow templatized getting of properties. It returns true if the property has been found. In that
+       * case, the return value is put into the 'value' argument.
+       */
+      bool getTypedProperty(const string& name, string& value, bool env=true);
+      bool getTypedProperty(const string& name, int& value, bool env=true);
+      bool getTypedProperty(const string& name, long& value, bool env=true);
+      bool getTypedProperty(const string& name, bool& value, bool env=true);
+      bool getTypedProperty(const string& name, Timestamp& value, bool env=true);
+	
+       bool setProperty(const string &name, const string &value,
                        bool overwrite=true);
-
-
+ 
       /**
        * Loads the properties read from the command line (or another array).
        * The syntax for passing properties is the same as in java if the 

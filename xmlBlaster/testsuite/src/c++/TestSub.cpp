@@ -3,21 +3,17 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.6 2002/12/13 12:23:58 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.7 2002/12/26 22:36:26 laghi Exp $
 -----------------------------------------------------------------------------*/
 
-#include <boost/lexical_cast.hpp>
 #include <client/XmlBlasterAccess.h>
-#include <util/qos/ConnectQos.h>
-#include <authentication/SecurityQos.h>
+#include <boost/lexical_cast.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Timestamp.h>
 #include <util/PlatformUtils.hpp>
 
 #include <util/StopWatch.h>
 #include <util/Global.h>
-#include <util/MessageUnit.h>
-#include <client/I_Callback.h>
 
 /**
  * This client tests the method subscribe() with a later publish() with XPath
@@ -29,14 +25,12 @@ Version:   $Id: TestSub.cpp,v 1.6 2002/12/13 12:23:58 laghi Exp $
  */
 
 using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 using boost::lexical_cast;
-using org::xmlBlaster::util::Global;
-using org::xmlBlaster::client::XmlBlasterAccess;
-using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::qos::ConnectReturnQos;
-using org::xmlBlaster::util::XmlBlasterException;
-using org::xmlBlaster::authentication::SecurityQos;
 
 namespace org { namespace xmlBlaster {
 
@@ -133,20 +127,23 @@ private:
       //senderConnection_->run();
       log_.info(me(), "Cleaning up test - erasing message.");
 
-      string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
-         + "<key oid='" + publishOid_ + "' queryType='EXACT'>\n</key>";
-      string qos = "<qos></qos>";
-      vector<string> strArr;
+      EraseKey eraseKey(global_);
+      eraseKey.setOid(publishOid_);
+      eraseKey.setQueryType("EXACT");
+      EraseQos eraseQos(global_);
+
+      vector<EraseReturnQos> retArr;
       try {
-         strArr = senderConnection_->erase(xmlKey, qos);
+         retArr = senderConnection_->erase(eraseKey, eraseQos);
       }
       catch(XmlBlasterException &e) {
          log_.error(me(), string("XmlBlasterException: ") + e.toXml());
       }
-      if (strArr.size() != 1) {
-         log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
+      if (retArr.size() != 1) {
+         log_.error(me(), "Erased " + lexical_cast<string>(retArr.size()) + " messages");
       }
-      senderConnection_->disconnect("<qos/>");
+      // still old fashioned
+      senderConnection_->disconnect(DisconnectQos(global_));
    }
 
 
@@ -156,13 +153,14 @@ private:
     */
    void testSubscribeXPath() {
       if (log_.TRACE) log_.trace(me(), "Subscribing using XPath syntax ...");
-      string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
-         + "<key oid='' queryType='XPATH'>\n   //TestSub-AGENT\n</key>";
-      string qos = "<qos></qos>";
+      SubscribeKey subKey(global_);
+      subKey.setQueryType("XPATH");
+      subKey.setQueryString("//TestSub-AGENT");
+      SubscribeQos subQos(global_);
       numReceived_ = 0;
       subscribeOid_ = "";
       try {
-         subscribeOid_ = senderConnection_->subscribe(xmlKey, qos);
+         subscribeOid_ = senderConnection_->subscribe(subKey, subQos).getSubscriptionId();
          log_.info(me(), string("Success: Subscribe subscription-id=") +
                    subscribeOid_ + " done");
       }
@@ -190,16 +188,19 @@ private:
    void testPublishCorbaMethods(TestType testType) {
       if (log_.TRACE) log_.trace(me(), "Publishing a message (old style) ...");
       numReceived_ = 0;
-      string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")+
-         "<key oid='" + publishOid_ + "' contentMime='" + contentMime_ +
-         "' contentMimeExtended='" + contentMimeExtended_ + "'>\n" +
+      PublishKey pubKey(global_);
+      pubKey.setOid(publishOid_);
+      pubKey.setContentMime(contentMime_);
+      pubKey.setContentMimeExtended(contentMimeExtended_);
+      string xmlKey = string("") +
          "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
          "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
          "      </TestSub-DRIVER>"+
-         "   </TestSub-AGENT>" +
-         "</key>";
+         "   </TestSub-AGENT>";
+      pubKey.setClientTags(xmlKey);
 
-      MessageUnit msgUnit(xmlKey, senderContent_, "<qos></qos>");
+      PublishQos pubQos(global_);
+      MessageUnit msgUnit(pubKey, senderContent_, pubQos);
       try {
 
          if (testType == TEST_ONEWAY) {
@@ -210,7 +211,7 @@ private:
             log_.info(me(), string("Success: Publishing oneway done (old style)"));
          }
          else if (testType == TEST_PUBLISH) {
-            string tmp = senderConnection_->publish(msgUnit);
+            string tmp = senderConnection_->publish(msgUnit).getKeyOid();
             if (tmp.find(publishOid_) == string::npos) {
                log_.error(me(), "Wrong publishOid: " + tmp);
                assert(0);
@@ -248,7 +249,10 @@ private:
          "      </TestSub-DRIVER>"+
          "   </TestSub-AGENT>" +
          "</key>";
-      MessageUnit msgUnit(xmlKey, senderContent_);
+      PublishKey key(global_);
+      key.setClientTags(xmlKey);
+      PublishQos pubQos(global_);
+      MessageUnit msgUnit(key, senderContent_, pubQos);
       try {
          if (testType == TEST_ONEWAY) {
             vector<MessageUnit> msgVec;
@@ -257,7 +261,7 @@ private:
             log_.info(me(), string("Success: Publishing oneway done (the STL way)"));
          }
          else if (testType == TEST_PUBLISH) {
-            string tmp = senderConnection_->publish(msgUnit);
+            string tmp = senderConnection_->publish(msgUnit).getKeyOid();
             if (tmp.find(publishOid_) == string::npos) {
                log_.error(me(), "Wrong publishOid: " + tmp);
                assert(0);
@@ -268,7 +272,7 @@ private:
          else {
             vector<MessageUnit> msgVec;
             msgVec.push_back(msgUnit);
-            vector<string> retArr = senderConnection_->publishArr(msgVec);
+            vector<PublishReturnQos> retArr = senderConnection_->publishArr(msgVec);
             log_.info(me(), string("Success: Publishing array of size " + lexical_cast<string>(retArr.size())
                                    + " done (the STL way)"));
          }
@@ -358,7 +362,7 @@ private:
                void *content, long contentSize,
                UpdateQos &updateQos) {
       log_.info(me(), string("Receiving update of message oid=") +
-                updateKey.getUniqueKey() + " state=" + updateQos.getState() +
+                updateKey.getOid() + " state=" + updateQos.getState() +
                 " authentication sessionId=" + sessionId + " ...");
       numReceived_ ++;
 
@@ -371,8 +375,8 @@ private:
       }
 
       string name = returnQos_.getSessionQos().getAbsoluteName();
-      if (/*senderName_*/ name != updateQos.getSender()) {
-         log_.error(me(), string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender());
+      if (/*senderName_*/ name != updateQos.getSender().getAbsoluteName()) {
+         log_.error(me(), string("Wrong Sender, should be: '") + name + "' but is: '" + updateQos.getSender().getAbsoluteName());
          assert(0);
       }
       if (subscribeOid_.find(updateQos.getSubscriptionId()) == string::npos) {
@@ -380,7 +384,7 @@ private:
                     + "Wrong subscriptionId, expected=" + subscribeOid_ + " received=" + updateQos.getSubscriptionId());
          //assert(0);
       }
-      if (publishOid_ != updateKey.getUniqueKey()) {
+      if (publishOid_ != updateKey.getOid()) {
          log_.error(me(), "Wrong oid of message returned");
          assert(0);
       }

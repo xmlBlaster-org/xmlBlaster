@@ -260,4 +260,44 @@ Property::setProperty(const string &name, const string &value,
    return true;
 }
 
+
+/**
+ * To allow templatized getting of properties. It returns true if the property has been found. In that
+ * case, the return value is put into the 'value' argument.
+ */
+bool Property::getTypedProperty(const string& name, string& value, bool env)
+{
+   if (!propertyExists(name, env)) return false;
+   value = getStringProperty(name, "", env);
+   return true;
+}
+
+bool Property::getTypedProperty(const string& name, int& value, bool env)
+{
+   if (!propertyExists(name, env)) return false;
+   value = getIntProperty(name, 0, env);
+   return true;
+}
+
+bool Property::getTypedProperty(const string& name, long& value, bool env)
+{
+   if (!propertyExists(name, env)) return false;
+   value = getLongProperty(name, 0, env);
+   return true;
+}
+
+bool Property::getTypedProperty(const string& name, bool& value, bool env)
+{
+   if (!propertyExists(name, env)) return false;
+   value = getBoolProperty(name, false, env);
+   return true;
+}
+
+bool Property::getTypedProperty(const string& name, Timestamp& value, bool env)
+{
+   if (!propertyExists(name, env)) return false;
+   value = getTimestampProperty(name, 0, env);
+   return true;
+}
+  
 #endif 

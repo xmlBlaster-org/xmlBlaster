@@ -34,6 +34,11 @@ MsgKeyBase& MsgKeyBase::operator =(const MsgKeyBase& key)
    return *this;
 }
 
+MsgKeyData MsgKeyBase::getData() const
+{
+   return msgKeyData_;
+}
+
 string MsgKeyBase::getOid() const
 {
    return msgKeyData_.getOid();

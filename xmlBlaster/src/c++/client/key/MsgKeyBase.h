@@ -52,6 +52,9 @@ public:
 
    MsgKeyBase& operator =(const MsgKeyBase& key);
 
+   MsgKeyData getData() const;
+
+
    /**
     *  @return The key oid or "" if not set (see MsgKeyData.getOid() which generates the oid if it was "").
     */

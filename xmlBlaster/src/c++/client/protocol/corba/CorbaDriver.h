@@ -19,6 +19,10 @@ Comment:   The client driver for the corba protocol
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/XmlBlasterException.h>
 
+#include <client/xmlBlasterClient.h>
+#include <util/qos/StatusQosFactory.h>
+#include <util/qos/MsgQosFactory.h>
+
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::Global;
 using namespace org::xmlBlaster::util::qos;
@@ -39,6 +43,8 @@ namespace org {
       DefaultCallback* defaultCallback_;
       const string     ME;
       Global&          global_;
+      StatusQosFactory statusQosFactory_;
+      MsgQosFactory    msgQosFactory_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -59,22 +65,31 @@ namespace org {
 
       // methods inherited from I_XmlBlasterConnection
       ConnectReturnQos connect(const ConnectQos& qos);
-//      string connect(const string& qos);
-      bool disconnect(const string& qos="");
+      bool disconnect(const DisconnectQos& qos);
       string getProtocol();
       string loginRaw();
       bool shutdown();
       void resetConnection();
       string getLoginName();
       bool isLoggedIn();
+
       string ping(const string& qos);
-      string subscribe(const string& xmlKey, const string& qos);
-      vector<MessageUnit> get(const string& xmlKey, const string& qos);
-      vector<string> unSubscribe(const string& xmlKey, const string& qos);
-      string publish(const MessageUnit& msgUnit);
+
+      SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos);
+
+      vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
+
+      vector<UnSubscribeReturnQos> unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos);
+
+      PublishReturnQos publish(const MessageUnit& msgUnit);
+
       void publishOneway(const vector<MessageUnit> &msgUnitArr);
-      vector<string> publishArr(vector<MessageUnit> msgUnitArr);
-      vector<string> erase(const string& xmlKey, const string& qos);
+
+      vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr);
+
+      vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos);
+
+
 
       // following methods are not defined in any parent class
       static void usage();

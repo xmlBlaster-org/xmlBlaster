@@ -16,7 +16,7 @@ using namespace org::xmlBlaster::client::protocol::corba;
 
 DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback *boss,
                 /*BlasterCache*/ void* /*cache*/) 
-:global_(global), log_(global.getLog("corba"))
+:global_(global), log_(global.getLog("corba")), msgKeyFactory_(global), msgQosFactory_(global)
 {
    boss_         = boss;
    loginName_    = name;
@@ -66,20 +66,21 @@ DefaultCallback::update(const char* sessionId,
       UpdateKey *updateKey = 0;
       UpdateQos *updateQos = 0;
       try {
-         updateKey = new UpdateKey(global_);
-         updateKey->init(string(msgUnit.xmlKey));
-         updateQos = new UpdateQos(global_, string(msgUnit.qos));
+//         updateKey = new UpdateKey(global_);
+//         updateKey->init(string(msgUnit.xmlKey));
+	 updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(string(msgUnit.xmlKey)));
+         updateQos = new UpdateQos(global_, msgQosFactory_.readObject(string(msgUnit.qos)));
          // Now we know all about the received msg, dump it or do 
          // some checks
-         if (log_.DUMP) log_.dump("UpdateKey", string("\n") + updateKey->printOn());
+         if (log_.DUMP) log_.dump("UpdateKey", string("\n") + updateKey->toXml());
          if (log_.DUMP) {
             string msg = "\n";
             for (string::size_type j=0; j < msgUnit.content.length(); j++) 
                msg += (char)msgUnit.content[j];
             log_.dump("content", "Message received '" + msg + "' with size=" + lexical_cast<string>(msgUnit.content.length()));
          }
-         if (log_.DUMP) log_.dump("UpdateQos", "\n" + updateQos->printOn());
-         if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQos->getSender());
+         if (log_.DUMP) log_.dump("UpdateQos", "\n" + updateQos->toXml());
+         if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
 
          //Checking whether the Update is for the Cache or for the boss
          //The boss should not be interested in cache updates
@@ -102,7 +103,7 @@ DefaultCallback::update(const char* sessionId,
          (*res)[i] = str;
       } 
       catch (serverIdl::XmlBlasterException &e) {
-         log_.error(me(), string(e.message) + " message is on error state: " + updateKey->printOn());
+         log_.error(me(), string(e.message) + " message is on error state: " + updateKey->toXml());
          string oneRes = "<qos><state id='ERROR'/></qos>";
          CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
          (*res)[i] = str;
@@ -147,15 +148,14 @@ DefaultCallback::updateOneway(const char* sessionId,
       try {
          const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
          try {
-            updateKey = new UpdateKey(global_);
-            updateKey->init(string(msgUnit.xmlKey));
-            updateQos = new UpdateQos(global_, string(msgUnit.qos));
+            updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(string(msgUnit.xmlKey)));
+            updateQos = new UpdateQos(global_, msgQosFactory_.readObject(string(msgUnit.qos)));
          } 
          catch (serverIdl::XmlBlasterException &e) {
             log_.error(me(), string(e.message) );
          }
 
-         if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQos->getSender());
+         if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getOid() + "] from publisher " + updateQos->getSender().toXml());
 
          if (boss_) {
             boss_->update(sessionId, *updateKey,

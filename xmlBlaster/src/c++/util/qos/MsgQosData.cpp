@@ -41,12 +41,7 @@ using org::xmlBlaster::util::qos::SessionQos;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
-/*
-Dll_Export const bool DEFAULT_isVolatile  = false;
-Dll_Export const bool DEFAULT_isDurable   = false;
-Dll_Export const bool DEFAULT_forceUpdate = true;
-Dll_Export const bool DEFAULT_readonly    = false;
-*/
+
 void MsgQosData::init()
 {
    ME = "MsgQosData";
@@ -64,7 +59,8 @@ void MsgQosData::init()
    isExpired_ = false; // cache the expired state for performance reasons
    maxLifeTime_ = global_.getProperty().getLongProperty("message.maxLifeTime", -1);
    receiveTimestampHumanReadable_ = global_.getProperty().getBoolProperty("cb.receiveTimestampHumanReadable", false);
-   topicProperty_ = NULL;
+   topicProperty_ = NULL; 
+   forceDestroy_.setValue(global_.getProperty(), "forceDestroy");
 }
 
 void MsgQosData::copy(const MsgQosData& data)
@@ -86,13 +82,15 @@ void MsgQosData::copy(const MsgQosData& data)
    topicProperty_ = NULL;
    if (data.topicProperty_)
       topicProperty_ = new TopicProperty(*data.topicProperty_);
+   forceDestroy_ = data.forceDestroy_;
 }
 
 
 MsgQosData::MsgQosData(Global& global, const string& serialData)
    : QosData(global, serialData),
      sender_(SessionQos(global)),
-     destinationList_()
+     destinationList_(),
+     forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
 {
    init();
 }
@@ -101,7 +99,8 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
 MsgQosData::MsgQosData(const MsgQosData& data)
    : QosData(data),
      sender_(data.sender_),
-     destinationList_(data.destinationList_)
+     destinationList_(data.destinationList_),
+     forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
 {
    copy(data);
 }
@@ -498,6 +497,8 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += offset + " <isDurable/>";
    if (!isForceUpdateDefault())
       ret += offset + " <forceUpdate>" + Global::getBoolAsString(isForceUpdate()) + "</forceUpdate>";
+   if (!forceDestroy_.getOrigin() > CREATED_BY_DEFAULT)
+      ret += offset + " <forceDestroy>" + Global::getBoolAsString(forceDestroy_.getValue()) + "</forceDestroy>";
    if (isReadonly())
       ret += offset + " <readonly/>";
 
@@ -535,6 +536,17 @@ TopicProperty MsgQosData::getTopicProperty()
 bool MsgQosData::hasTopicProperty() const
 {
    return (topicProperty_ != NULL);
+}
+
+
+bool MsgQosData::getForceDestroy() const
+{
+   return forceDestroy_.getValue();
+}
+
+void MsgQosData::setForceDestroy(bool forceDestroy)
+{
+   forceDestroy_.setValue(forceDestroy, CREATED_BY_SETTER);
 }
 
 }}}}

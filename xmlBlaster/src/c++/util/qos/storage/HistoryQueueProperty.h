@@ -32,6 +32,10 @@ public:
     */
    HistoryQueueProperty(Global& global, const string& nodeId);
 
+   HistoryQueueProperty(const QueuePropertyBase& prop);
+
+   HistoryQueueProperty& operator =(const QueuePropertyBase& prop);
+
    /**
     * Show some important settings for logging
     */

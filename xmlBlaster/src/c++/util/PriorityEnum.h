@@ -67,6 +67,8 @@ enum Priority {
 
 typedef enum Priority PriorityEnum;
 
+Dll_Export PriorityEnum int2Priority(int val);
+
 }}} // namespaces
 
 #endif

@@ -38,6 +38,7 @@ protected:
    Global&      global_;
    QueryQosData data_;
 
+public:
    /**
     * Constructor for default qos (quality of service).
     */

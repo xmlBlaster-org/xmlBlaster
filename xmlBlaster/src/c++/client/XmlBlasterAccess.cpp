@@ -94,18 +94,13 @@ XmlBlasterAccess::initSecuritySettings(const string& secMechanism, const string&
    log_.error(ME, "initSecuritySettings not implemented yet");
 }
 
-bool XmlBlasterAccess::disconnect(const string& qos)
-{
-   return disconnect(qos, true, true, true);
-}
-
 bool
-XmlBlasterAccess::disconnect(const string& qos, bool flush, bool shutdown, bool shutdownCb)
+XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown, bool shutdownCb)
 {
    if (connection_ == NULL) return false;
    bool ret  = connection_->disconnect(qos);
    status_ = DEAD;
-   return true;
+   return ret;
 }
 
 string XmlBlasterAccess::getId()
@@ -152,28 +147,26 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
    return entries;
 }
 
-string
-XmlBlasterAccess::subscribe(const string& xmlKey, const string& qos)
+SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
    if (status_ != CONNECTED) { // throw an exception back to the user ...
 
    }
-   return connection_->subscribe(xmlKey, qos);
+   return connection_->subscribe(key, qos);
 }
 
-vector<MessageUnit>
-XmlBlasterAccess::get(const string&  xmlKey, const string& qos)
+vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 {
-   return connection_->get(xmlKey, qos);
+   return connection_->get(key, qos);
 }
 
-vector<string>
-XmlBlasterAccess::unSubscribe(const string&  xmlKey, const string&  qos)
+vector<UnSubscribeReturnQos> 
+XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
-    return connection_->unSubscribe(xmlKey, qos);
+    return connection_->unSubscribe(key, qos);
 }
 
-string XmlBlasterAccess::publish(const MessageUnit& msgUnit)
+PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
 {
    return connection_->publish(msgUnit);
 }
@@ -183,15 +176,14 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
    return connection_->publishOneway(msgUnitArr);
 }
 
-vector<string>
-XmlBlasterAccess::publishArr(const vector<MessageUnit>& msgUnitArr)
+vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUnitArr)
 {
    return connection_->publishArr(msgUnitArr);
 }
 
-vector<string> XmlBlasterAccess::erase(const string& xmlKey, const string& qos)
+vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQos& qos)
 {
-   return connection_->erase(xmlKey, qos);
+   return connection_->erase(key, qos);
 }
 
 string
@@ -242,33 +234,34 @@ int main(int args, char* argv[])
        Log& log = glob.getLog("client");
 
        XmlBlasterAccess xmlBlasterAccess(glob);
-       ConnectQos qos(glob);
+       ConnectQos connectQos(glob);
 
-       log.info("main", string("the connect qos is: ") + qos.toXml());
+       log.info("main", string("the connect qos is: ") + connectQos.toXml());
 
-       ConnectReturnQos retQos = xmlBlasterAccess.connect(qos, NULL);
+       ConnectReturnQos retQos = xmlBlasterAccess.connect(connectQos, NULL);
        log.info("", "Successfully connect to xmlBlaster");
 
        if (log.TRACE) log.trace("main", "Subscribing using XPath syntax ...");
-       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
-           + "<key oid='HelloWorld' queryType='XPATH'>//test</key>";
-       string subQos = "<qos></qos>";
-       string subReturnQos;
+       SubscribeKey subKey(glob);
+       subKey.setOid("HelloWorld");
+       subKey.setQueryType("XPATH");
+       subKey.setQueryString("//test");
+       log.info("main", string("subscribe key: ") + subKey.toXml());
+       SubscribeQos subQos(glob);
+       log.info("main", string("subscribe qos: ")  + subQos.toXml());
        try {
-          subReturnQos = xmlBlasterAccess.subscribe(xmlKey, subQos);
+          SubscribeReturnQos subReturnQos = xmlBlasterAccess.subscribe(subKey, subQos);
           log.info("main", string("Success: Subscribe return qos=") +
-                   subReturnQos + " done");
+                   subReturnQos.toXml() + " done");
        }
        catch (XmlBlasterException &ex) {
           log.error("main", ex.toXml());
        }
 
-
-
        MessageUnit msgUnit(string("<key oid='HelloWorld'><test></test></key>"), string("Hi"), string("<qos/>"));
 
-       string pubRetQos = xmlBlasterAccess.publish(msgUnit);
-       log.info("main", string("successfully published, publish return qos: ") + pubRetQos);
+       PublishReturnQos pubRetQos = xmlBlasterAccess.publish(msgUnit);
+       log.info("main", string("successfully published, publish return qos: ") + pubRetQos.toXml());
 
        log.info("", "Successfully published a message to xmlBlaster");
        log.info("", "Sleeping");

@@ -369,6 +369,23 @@ bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* co
    return false;
 }
 
+/**
+ * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
+ * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
+ * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
+ * method.
+ */
+bool SaxHandlerBase::getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value)
+{
+   string buf;
+   bool ret = getStringAttr(list, name, buf);
+   if (ret) {
+      value = ( (buf == "true") || (buf == "TRUE") );
+      return true;
+   }
+   return false;
+}
+
 
 /**
  * returns a value (usually from an attribute) as an integer
@@ -391,7 +408,7 @@ SaxHandlerBase::getIntValue(const XMLCh* const value)
 }
 
 /**
- * returns a value (usually from an attribute) as a string
+ * returns a value (usually from an attribute) as a long
  */
 long
 SaxHandlerBase::getLongValue(const XMLCh* const value)
@@ -411,7 +428,7 @@ SaxHandlerBase::getLongValue(const XMLCh* const value)
 }
 
 /**
- * returns a value (usually from an attribute) as a string
+ * returns a value (usually from an attribute) as a Timestamp
  */
 Timestamp
 SaxHandlerBase::getTimestampValue(const XMLCh* const value)
@@ -428,6 +445,37 @@ SaxHandlerBase::getTimestampValue(const XMLCh* const value)
    catch (...) {}
    delete help1;
    delete help2;
+   return ret;
+}
+
+/**
+ * returns a value (usually from an attribute) as a bool
+ */
+bool SaxHandlerBase::getBoolValue(const XMLCh* const value)
+{
+   char* help1   = NULL;
+   char* help2   = NULL;
+   bool ret = false;
+   try {
+      help1 = XMLString::transcode(value);
+      help2 = charTrimmer_.trim(help1);
+      ret = ( (string("true")== help2) || (string("TRUE")==help2) );
+   }
+   catch (...) {}
+   delete help1;
+   delete help2;
+   return ret;
+}
+
+/**
+ * returns the input string trimmed
+ */
+string SaxHandlerBase::stringTrim(const string& str) const
+{
+   char* help = charTrimmer_.trim(str.c_str());
+   if (help==NULL) return string("");
+   string ret = string(help);
+   delete help;
    return ret;
 }
 

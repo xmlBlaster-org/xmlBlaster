@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/cluster/RouteInfo.h>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using boost::lexical_cast;
 
@@ -13,6 +14,14 @@ using namespace org::xmlBlaster::util;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
+
+RouteInfo::RouteInfo(Global& global) : nodeId_(global, "")
+{
+   stratum_   = 0;
+   timestamp_ = 0;
+   dirtyRead_ = false;
+}
+
 
 RouteInfo::RouteInfo(const NodeId& nodeId, int stratum, Timestamp timestamp)
 : nodeId_(nodeId)

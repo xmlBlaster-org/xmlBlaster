@@ -20,6 +20,8 @@ Comment:   Holding a message
 using namespace std;
 
 using namespace org::xmlBlaster::util;
+using org::xmlBlaster::util::key::MsgKeyData;
+using org::xmlBlaster::util::qos::MsgQosData;
    
 /**
  * Holding a message. 
@@ -29,15 +31,15 @@ using namespace org::xmlBlaster::util;
  * @since 0.79e
  * @author xmlBlaster@marcelruff.info
  */
-   
+
 /**
  * Constructs with a 'char *' and its length 'len'. 
  */
-MessageUnit::MessageUnit(const string &xmlKey,
+MessageUnit::MessageUnit(const MsgKeyData &key,
                          unsigned long len,
                          const unsigned char * content, 
-                         const string &qos) 
-:key_(xmlKey), len_(len), qos_(qos) 
+                         const MsgQosData &qos)
+:key_(key), len_(len), qos_(qos) 
 {
    
   content_ = new unsigned char[len_];
@@ -52,10 +54,10 @@ MessageUnit::MessageUnit(const string &xmlKey,
 /**
  * Constructs a MessageUnit with a string. 
  */
-MessageUnit::MessageUnit(const string &xmlKey,
+MessageUnit::MessageUnit(const MsgKeyData &key,
                          const string &content, 
-                         const string &qos) 
-:key_(xmlKey), len_(content.size()), qos_(qos) 
+                         const MsgQosData &qos)
+:key_(key), len_(content.size()), qos_(qos) 
 {
    
   content_ = new unsigned char[len_];
@@ -71,10 +73,10 @@ MessageUnit::MessageUnit(const string &xmlKey,
 /**
  * Constructs a MessageUnit with a string and a PublishQos object
  */
-MessageUnit::MessageUnit(const string &xmlKey,
-                         const string &content,
+MessageUnit::MessageUnit(const PublishKey& xmlKey,
+                         const string &content, 
                          PublishQos& publishQos)
-   : key_(xmlKey), len_(content.size()), qos_(publishQos.toXml())
+   : key_(xmlKey.getData()), len_(content.size()), qos_(publishQos.getData())
 {
   content_ = new unsigned char[len_];
   memcpy(content_, content.c_str(), len_);
@@ -84,9 +86,9 @@ MessageUnit::MessageUnit(const string &xmlKey,
 /**
  * Constructs the message unit. 
  */
-MessageUnit::MessageUnit(const string &xmlKey,
+MessageUnit::MessageUnit(const MsgKeyData &xmlKey,
                          const vector<unsigned char> &contentVec, 
-                         const string &qos) 
+                         const MsgQosData &qos)
 :key_(xmlKey), /*contentVec_(contentVec),*/ len_(contentVec.size()), qos_(qos) 
 {
   content_ = new unsigned char[len_];
@@ -99,10 +101,10 @@ MessageUnit::MessageUnit(const string &xmlKey,
 /**
  * Constructs the message unit by taking a PublishQos object.
  */
-MessageUnit::MessageUnit(const string &xmlKey,
-            const vector<unsigned char> &contentVec,
-            PublishQos& publishQos)
-   : key_(xmlKey), len_(contentVec.size()), qos_(publishQos.toXml())
+MessageUnit::MessageUnit(const PublishKey &xmlKey,
+                         const vector<unsigned char> &contentVec, 
+                         PublishQos& publishQos)
+   : key_(xmlKey.getData()), len_(contentVec.size()), qos_(publishQos.getData())
 {
   content_ = new unsigned char[len_];
   for (unsigned int ii=0; ii<len_; ii++) {
@@ -110,20 +112,16 @@ MessageUnit::MessageUnit(const string &xmlKey,
   }
 }
 
-
-
-
 /**
  * Copy constructor
  */
 MessageUnit::MessageUnit(const MessageUnit& rhs) 
+   : key_(rhs.getKey()), qos_(rhs.getQos())
 {
-  key_ = rhs.getKey();
   //contentVec = rhs.getContentVec();
   len_ = rhs.getContentLen();
   content_ = new unsigned char[len_];
   memcpy(content_, rhs.getContent(), len_);
-  qos_ = rhs.getQos();
 }
 
 /**
@@ -181,9 +179,11 @@ string MessageUnit::toXml(const string &extraOffset)
    string offset = extraOffset;
 
    ret += offset + "<MessageUnit>";
-   ret += offset + "  <key>" + getKey() + "</key>";
+//   ret += offset + "  <key>" + getKey() + "</key>";
+   ret += offset + getKey().toXml(extraOffset);
    ret += offset + "  <content>" + getContentStr() + "</content>";
-   ret += offset + "  <qos>" + getQos() + "</qos>";
+//   ret += offset + "  <qos>" + getQos() + "</qos>";
+   ret += offset + getQos().toXml(extraOffset);
    ret += offset + "</MessageUnit>";
    return ret;
 }

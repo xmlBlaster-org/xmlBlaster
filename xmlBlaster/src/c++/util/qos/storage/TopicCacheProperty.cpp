@@ -30,6 +30,19 @@ TopicCacheProperty::TopicCacheProperty(Global& global, const string& nodeId)
    initialize();
 }
 
+TopicCacheProperty::TopicCacheProperty(const QueuePropertyBase& prop)
+   : QueuePropertyBase(prop)
+{
+}
+
+TopicCacheProperty& TopicCacheProperty::operator =(const QueuePropertyBase& prop)
+{
+   copy(prop);
+   return *this;
+}
+
+
+
 /**
  * Configure property settings
  */

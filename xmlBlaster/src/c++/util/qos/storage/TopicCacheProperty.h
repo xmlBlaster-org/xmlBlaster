@@ -33,7 +33,11 @@ public:
     */
    TopicCacheProperty(Global& global, const string& nodeId);
 
-   /**
+   TopicCacheProperty(const QueuePropertyBase& prop);
+
+   TopicCacheProperty& operator =(const QueuePropertyBase& prop);
+
+    /**
     * Configure property settings
     */
    void initialize();

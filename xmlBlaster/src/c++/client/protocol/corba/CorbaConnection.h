@@ -21,12 +21,16 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <util/qos/address/CallbackAddress.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQosFactory.h>
+#include <util/qos/MsgQosFactory.h>
+#include <util/key/MsgKeyFactory.h>
 
 #define  SERVER_HEADER generated/xmlBlaster
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
 using namespace std;
 using namespace org::xmlBlaster::util::qos; // ConnectQos + ConnectReturnQos
+using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util::qos;
 using org::xmlBlaster::client::protocol::corba::NameServerControl;
 using org::xmlBlaster::util::Global;
 
@@ -63,6 +67,8 @@ namespace org {
       Global&                         global_;
       //mutable util::Log               log_;
       util::Log&                      log_;
+      MsgKeyFactory                   msgKeyFactory_;
+      MsgQosFactory                   msgQosFactory_;
 
    public:
       /**
@@ -375,7 +381,7 @@ namespace org {
        */
       void copyToCorba(serverIdl::MessageUnitArr_var &units, const vector<util::MessageUnit> &msgVec) const;
 
-      void copyFromCorba(vector<util::MessageUnit> &vecArr, serverIdl::MessageUnitArr_var &units) const;
+      void copyFromCorba(vector<util::MessageUnit> &vecArr, serverIdl::MessageUnitArr_var &units);
 
       /**
        * Command line usage.

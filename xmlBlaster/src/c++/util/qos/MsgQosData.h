@@ -42,6 +42,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/PriorityEnum.h>
 #include <util/cluster/RouteInfo.h>
 #include <util/cluster/NodeId.h>
+#include <util/Prop.h>
 #include <vector>
 #include <string>
 
@@ -121,6 +122,8 @@ protected:
 
    // TODO: Pass with client QoS!!!
    bool receiveTimestampHumanReadable_; // = Global.instance().getProperty().get("cb.receiveTimestampHumanReadable", false);
+
+   Prop<bool> forceDestroy_;
 
    virtual void init();
 
@@ -376,6 +379,10 @@ public:
    TopicProperty getTopicProperty();
 
    bool hasTopicProperty() const;
+
+   void setForceDestroy(bool forceDestroy);
+
+   bool getForceDestroy() const;
 
 };
 

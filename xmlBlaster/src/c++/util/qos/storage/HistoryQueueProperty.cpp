@@ -36,6 +36,17 @@ HistoryQueueProperty::HistoryQueueProperty(Global& global, const string& nodeId)
    initialize();
 }
 
+HistoryQueueProperty::HistoryQueueProperty(const QueuePropertyBase& prop)
+   : QueuePropertyBase(prop)
+{
+}
+
+HistoryQueueProperty& HistoryQueueProperty::operator =(const QueuePropertyBase& prop)
+{
+   copy(prop);
+   return *this;
+}
+
 string HistoryQueueProperty::getSettings()
 {
    string ret;

@@ -31,6 +31,9 @@ private:
    bool      dirtyRead_;
 
 public:
+
+   RouteInfo(Global& global);
+
    /**
     * @param nodeId The unique name of the xmlBlaster instance
     * @param stratum The distance from the node to the master node, if you don't know

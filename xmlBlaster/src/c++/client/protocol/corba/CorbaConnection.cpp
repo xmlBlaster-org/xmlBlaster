@@ -36,7 +36,12 @@ namespace org {
 
 
 CorbaConnection::CorbaConnection(Global& global, bool orbOwner)
-  : loginQos_(), connectReturnQos_(global), global_(global), log_(global.getLog("corba"))
+  : loginQos_(), 
+    connectReturnQos_(global), 
+    global_(global), 
+    log_(global.getLog("corba")),
+    msgKeyFactory_(global),
+    msgQosFactory_(global)
 {
   log_.getProperties().loadPropertyFile();
   log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
@@ -823,13 +828,13 @@ void
 CorbaConnection::copyToCorba(serverIdl::MessageUnit &dest,
                              const util::MessageUnit &src) const 
 {
-  dest.xmlKey = src.getKey().c_str();
+  dest.xmlKey = src.getKey().toXml().c_str();
   serverIdl::ContentType content(src.getContentLen(),
                                  src.getContentLen(),
                                  (CORBA::Octet*)src.getContent(),
                                  false); // our src does memory management itself
   dest.content = content;  // dest.content and content point to same memory? memory leak?
-  dest.qos = src.getQos().c_str();
+  dest.qos = src.getQos().toXml().c_str();
 }
 
    
@@ -856,18 +861,18 @@ CorbaConnection::copyToCorba(serverIdl::MessageUnitArr_var &units,
 */
 void 
 CorbaConnection::copyFromCorba(vector<util::MessageUnit> &msgVec,
-                               serverIdl::MessageUnitArr_var &units) const 
+                               serverIdl::MessageUnitArr_var &units)
 {
   unsigned int len = units->length();
   msgVec.reserve(len);
   for (unsigned int ii=0; ii<len; ii++) {
      const serverIdl::MessageUnit &msgUnit = static_cast<const serverIdl::MessageUnit>(units[ii]);
-     string key(msgUnit.xmlKey);
      unsigned long len = static_cast<unsigned long>(msgUnit.content.length());
      const unsigned char * blob = static_cast<const unsigned char *>(&msgUnit.content[0]);
      if (log_.TRACE) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<string>(len));
-     string qos(msgUnit.qos);
-     const util::MessageUnit msg(key, len, blob, string(qos));
+     MsgKeyData key = msgKeyFactory_.readObject(string(msgUnit.xmlKey));
+     MsgQosData qos = msgQosFactory_.readObject(string(msgUnit.qos)); 
+     const util::MessageUnit msg(key, len, blob, qos);
      msgVec.push_back(msg);
   }
 }

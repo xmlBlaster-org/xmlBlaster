@@ -11,14 +11,19 @@ Comment:   Holding a message
 #include <string>
 #include <vector>
 #include <util/Log.h>
-
 #include <client/qos/PublishQos.h>
+#include <client/key/PublishKey.h>
+#include <util/qos/MsgQosData.h>
+#include <util/key/MsgKeyData.h>
+
 
 using namespace std;
 using org::xmlBlaster::client::qos::PublishQos;
+using org::xmlBlaster::client::key::PublishKey;
+using org::xmlBlaster::util::key::MsgKeyData;
+using org::xmlBlaster::util::qos::MsgQosData;
 
-namespace org { namespace xmlBlaster {
-namespace util {
+namespace org { namespace xmlBlaster { namespace util {
    
    /**
     * Holding a message. 
@@ -27,56 +32,60 @@ namespace util {
     * but uses standard STL only.
     * @since 0.79e
     * @author xmlBlaster@marcelruff.info
+    * @author laghi@swissinfo.org
     */
-   class MessageUnit {
+   class MessageUnit 
+   {
 
    private:
       string me() {
          return "MessageUnit";
       }
 
-      string key_;
+//      string key_;
+      MsgKeyData key_;
 
       //vector<unsigned char> contentVec_;
       unsigned long len_;
       unsigned char *content_;
 
-      string qos_;
+//      string qos_;
+      MsgQosData qos_;
 
    public:
       /**
        * Constructs with a 'char *' and its length 'len'. 
        */
-      MessageUnit(const string &xmlKey,
+      MessageUnit(const MsgKeyData &key,
                   unsigned long len,
                   const unsigned char * content, 
-                  const string &qos="<qos/>");
+                  const MsgQosData &qos);
 
       /**
        * Constructs a MessageUnit with a string. 
        */
-      MessageUnit(const string &xmlKey,
+      MessageUnit(const MsgKeyData &key,
                   const string &content, 
-                  const string &qos="<qos/>");
+                  const MsgQosData &qos);
 
       /**
        * Constructs a MessageUnit with a string and a PublishQos object
        */
-      MessageUnit(const string &xmlKey,
+      MessageUnit(const PublishKey& xmlKey,
                   const string &content, 
                   PublishQos& publishQos);
 
       /**
        * Constructs the message unit. 
        */
-      MessageUnit(const string &xmlKey,
+      MessageUnit(const MsgKeyData &xmlKey,
                   const vector<unsigned char> &contentVec, 
-                  const string &qos="<qos/>");
+                  const MsgQosData &qos);
 
       /**
        * Constructs the message unit by taking a PublishQos object.
        */
-      MessageUnit(const string &xmlKey,
+      MessageUnit(const PublishKey &xmlKey,
                   const vector<unsigned char> &contentVec, 
                   PublishQos& publishQos);
 
@@ -98,7 +107,7 @@ namespace util {
       /**
        * @return The xml based key
        */
-      const string& getKey() const {
+      const MsgKeyData& getKey() const {
          return key_;
       }
 
@@ -135,7 +144,7 @@ namespace util {
       /**
        * @return The quality of service of this message. 
        */
-      const string& getQos() const {
+      const MsgQosData& getQos() const {
          return qos_;
       }
 

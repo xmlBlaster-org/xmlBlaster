@@ -232,6 +232,11 @@ protected:
      */
      Timestamp getTimestampValue(const XMLCh* const value);
 
+    /**
+     * returns a value (usually from an attribute) as a bool
+     */
+     bool getBoolValue(const XMLCh* const value);
+
      /**
       * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
       * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
@@ -263,6 +268,20 @@ protected:
       * method.
       */
      bool getTimestampAttr(const AttributeList& list, const XMLCh* const name, Timestamp& value);
+
+     /**
+      * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
+      * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
+      * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
+      * method.
+      */
+     bool getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value);
+
+     /**
+      * returns the input string trimmed
+      */
+     string stringTrim(const string& str) const;
+
    };
 }}} // namespace
 

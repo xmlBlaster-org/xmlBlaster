@@ -5,26 +5,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing get()
 -----------------------------------------------------------------------------*/
 
-#include <string>
-#include <boost/lexical_cast.hpp>
-#include <util/Constants.h>
-#include <util/StopWatch.h>
 #include <client/XmlBlasterAccess.h>
-#include <util/qos/ConnectQos.h>
-#include <authentication/SecurityQos.h>
+#include <boost/lexical_cast.hpp>
+#include <util/StopWatch.h>
 #include <util/XmlBlasterException.h>
 #include <util/PlatformUtils.hpp>
-
-#include <client/PublishQosWrapper.h>
 #include <util/Global.h>
 
 using namespace std;
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 using boost::lexical_cast;
-using org::xmlBlaster::client::XmlBlasterAccess;
-using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::XmlBlasterException;
 using org::xmlBlaster::authentication::SecurityQos;
 
 /**
@@ -114,21 +107,25 @@ public:
     * cleaning up .... erase() the previous message OID and logout
     */
    void tearDown() {
-      string xmlKey = "<key oid='" + publishOid_ + "' queryType='EXACT'>\n" +
-         "</key>";
-      string qos = "<qos></qos>";
-      vector<string> strArr;
+      EraseKey eraseKey(global_);
+      eraseKey.setOid(publishOid_);
+      eraseKey.setQueryType("EXACT");
+
+      EraseQos eraseQos(global_);
+
+      vector<EraseReturnQos> returnQosArr;
       try {
-         strArr = connection_->erase(xmlKey, qos);
+         returnQosArr = connection_->erase(eraseKey, eraseQos);
          log_.info(me(), "Success, erased a message");
       }
       catch(XmlBlasterException &e) {
          log_.error(me(), "XmlBlasterException: " + e.toXml());
       }
-      if (strArr.size() != 1) {
-         log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
+      if (returnQosArr.size() != 1) {
+         log_.error(me(), "Erased " + lexical_cast<string>(returnQosArr.size()) + " messages");
       }
-      connection_->disconnect("<qos/>");
+      // this is still old fashion ...
+      connection_->disconnect(DisconnectQos(global_));
       // Give the server some millis to finish the iiop handshake ...
       util::StopWatch stopWatch;
       stopWatch.wait(200);
@@ -144,10 +141,11 @@ public:
    void testGet() {
       if (log_.TRACE) log_.trace(me(), "1. Get a not existing message " + publishOid_ + " ...");
       try {
-         string xmlKey = string("<key oid='") + publishOid_
-            + "' queryType='EXACT'></key>";
-         string qos = "<qos></qos>";
-         vector<util::MessageUnit> msgVec = connection_->get(xmlKey, qos);
+         GetKey getKey(global_);
+	 getKey.setOid(publishOid_);
+	 getKey.setQueryType("EXACT");
+	 GetQos getQos(global_);
+         vector<util::MessageUnit> msgVec = connection_->get(getKey, getQos);
          log_.info(me(), "Success, got array of size " + lexical_cast<string>(msgVec.size()) +
                          " for trying to get unknown message");
          assert(msgVec.size() == 0);
@@ -161,12 +159,12 @@ public:
       if (log_.TRACE) log_.trace(me(), "2. Publish a message ...");
 
       try {
-         string xmlKey = string("<key oid='") + publishOid_
-            + "' contentMime='text/plain'>\n</key>";
-//         serverIdl::MessageUnit msgUnit;
+         PublishKey publishKey(global_);
+	 publishKey.setOid(publishOid_);
+	 publishKey.setContentMime("text/plain");
 
-         PublishQosWrapper qosWrapper = new PublishQosWrapper();
-         MessageUnit msgUnit(xmlKey, senderContent_, qosWrapper.toXml());
+         PublishQos publishQos(global_);
+         MessageUnit msgUnit(publishKey, senderContent_, publishQos);
          connection_->publish(msgUnit);
          log_.info(me(), "Success, published a message");
       }
@@ -178,10 +176,11 @@ public:
 
       if (log_.TRACE) log_.trace(me(), "3. Get an existing message ...");
       try {
-         string xmlKey = string("<key oid='") + publishOid_
-            + "' queryType='EXACT'></key>";
-         string qos = "<qos></qos>";
-         vector<MessageUnit> msgVec = connection_->get(xmlKey, qos);
+         GetKey getKey(global_);
+	 getKey.setOid(publishOid_);
+	 getKey.setQueryType("EXACT");
+	 GetQos getQos(global_);
+         vector<MessageUnit> msgVec = connection_->get(getKey, getQos);
          log_.info(me(), "Success, got " + lexical_cast<string>(msgVec.size()) + " message");
          assert(msgVec.size() == 1);
          string str = msgVec[0].getContentStr();
@@ -209,11 +208,13 @@ public:
    void testGetMany() {
       int num = 50;
       log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages ...");
-      string xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
-      string qos    = "<qos></qos>";
+      GetKey getKey(global_);
+      getKey.setOid("NotExistingMessage");
+      getKey.setQueryType("EXACT");
+      GetQos getQos(global_);
       for (int i=0; i < num; i++) {
          try {
-            vector<MessageUnit> msgVec = connection_->get(xmlKey, qos);
+            vector<MessageUnit> msgVec = connection_->get(getKey, getQos);
             assert(msgVec.size() == 0);
             log_.info(me(), string("Success"));
          }

@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.6 2002/12/13 12:23:58 laghi Exp $
+Version:   $Id: RamTest.cpp,v 1.7 2002/12/26 22:36:26 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -116,11 +116,12 @@ public:
       log_.info(me(), "tearDown() ...");
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
-         string xmlKey = "<key oid='RamTest-" + lexical_cast<string>(i+1) + "'/>";
-         string qos = "<qos/>";
-         vector<string> strArr;
+         EraseKey key(global_);
+	 key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
+         EraseQos qos(global_);
+         vector<EraseReturnQos> strArr;
          try {
-            strArr = senderConnection_->erase(xmlKey, qos);
+            strArr = senderConnection_->erase(key, qos);
             if (strArr.size() != 1) {
                log_.error(me(), "num erased messages is wrong");
                assert(0);
@@ -132,7 +133,7 @@ public:
       }
       log_.info(me(), "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
 
-      senderConnection_->disconnect("<qos></qos>");
+      senderConnection_->disconnect(DisconnectQos(global_));
    }
 
 
@@ -148,17 +149,21 @@ public:
       msgVec.reserve(NUM_PUBLISH);
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
-         string xmlKey = string("<key oid='RamTest-") + lexical_cast<string>(i+1) + "'></key>";
+         PublishKey key(global_);
+         key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
          senderContent_ = lexical_cast<string>(i+1);
-         util::MessageUnit msgUnit(xmlKey, senderContent_, "<qos/>");
+	 PublishQos qos(global_);
+         util::MessageUnit msgUnit(key, senderContent_, qos);
          msgVec.push_back(msgUnit);
       }
 
       try {
          // 1. Query the current memory allocated in xmlBlaster
-         string xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'/>";
-         string qos    = "<qos></qos>";
-         vector<util::MessageUnit> msgRetVec = senderConnection_->get(xmlKey, qos);
+         GetKey key(global_);
+	 key.setQueryString("__cmd:?usedMem");
+	 key.setQueryType("EXACT");
+	 GetQos qos(global_);
+         vector<util::MessageUnit> msgRetVec = senderConnection_->get(key, qos);
          if (msgRetVec.size() != 1) {
             log_.error(me(), "msgRetVec.length!=1");
             assert(0);
@@ -175,11 +180,11 @@ public:
          log_.info(me(), "Publishing " + lexical_cast<string>(NUM_PUBLISH) + " messages ...");
          stopWatch_.restart();
          // 2. publish all the messages
-         vector<string> publishOidArr = senderConnection_->publishArr(msgVec);
+         vector<PublishReturnQos> publishOidArr = senderConnection_->publishArr(msgVec);
          double elapsed = 0.001 * stopWatch_.elapsed();
 
          for (unsigned int i=0; i < NUM_PUBLISH; i++) {
-            cout << msgVec[i].getKey() << endl;
+            cout << msgVec[i].getKey().toXml() << endl;
             //cout << msgVec[i].getContentStr() << endl;
          }
 
@@ -193,7 +198,7 @@ public:
 
          // 3. Query the memory allocated in xmlBlaster after publishing all
          // the messages
-         msgRetVec = senderConnection_->get(xmlKey, qos);
+         msgRetVec = senderConnection_->get(key, qos);
          string usedMemAfter = msgRetVec[0].getContentStr();
          long usedAfter = lexical_cast<long>(usedMemAfter);
          log_.info(me(), string("xmlBlaster used allocated memory after ") +

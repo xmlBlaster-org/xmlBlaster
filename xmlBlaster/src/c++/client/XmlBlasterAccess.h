@@ -16,7 +16,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/protocol/CbServerPluginManager.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <client/I_Callback.h>
-
+#include <client/xmlBlasterClient.h>
 #include <util/Log.h>
 #include <string>
 #include <vector>
@@ -108,14 +108,6 @@ public:
    void initSecuritySettings(const string& secMechanism, const string& secVersion);
 
    /**
-    * Logout from the server.
-    * <p />
-    * Flushes pending publishOneway messages if any and destroys low level connection and callback server.
-    * @see org.xmlBlaster.client.protocol.XmlBlasterConnection#disconnect(DisconnectQos, boolean, boolean, boolean)
-    */
-   bool disconnect(const string& qos);
-
-   /**
     * Logout from the server. 
     * <p>
     * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
@@ -129,7 +121,7 @@ public:
     *         <code>false</code> failure on logout
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
-   bool disconnect(const string& qos, bool flush, bool shutdown, bool shutdownCb);
+   bool disconnect(const DisconnectQos& qos, bool flush=true, bool shutdown=true, bool shutdownCb=true);
 
    /**
     * Create a descriptive ME, for logging only
@@ -173,22 +165,29 @@ public:
    vector<MsgQueueEntry*> queueMessage(const vector<MsgQueueEntry*>& entries);
 
    // SubscribeReturnQos
-   string subscribe(const string& xmlKey, const string& qos);
+//   string subscribe(const string& xmlKey, const string& qos);
+   SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos);
 
-   vector<MessageUnit> get(const string&  xmlKey, const string& qos);
+//   vector<MessageUnit> get(const string&  xmlKey, const string& qos);
+   vector<MessageUnit> get(const GetKey& key, const GetQos& qos);
 
    // UnSubscribeReturnQos[]
-   vector<string> unSubscribe(const string&  xmlKey, const string&  qos);
+//   vector<string> unSubscribe(const string&  xmlKey, const string&  qos);
+   vector<UnSubscribeReturnQos> unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos);
 
    // PublishReturnQos
-   string publish(const MessageUnit& msgUnit);
+//   string publish(const MessageUnit& msgUnit);
+   PublishReturnQos publish(const MessageUnit& msgUnit);
 
    void publishOneway(const vector<MessageUnit>& msgUnitArr);
 
-   vector<string> publishArr(const vector<MessageUnit>& msgUnitArr);
+//   vector<string> publishArr(const vector<MessageUnit>& msgUnitArr);
+   vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr);
 
    // EraseReturnQos[]
-   vector<string> erase(const string& xmlKey, const string& qos);
+//   vector<string> erase(const string& xmlKey, const string& qos);
+   vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos);
+
 
    /**
     * This is the callback method invoked from xmlBlaster

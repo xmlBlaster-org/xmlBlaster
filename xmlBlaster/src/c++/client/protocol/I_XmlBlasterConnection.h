@@ -22,6 +22,8 @@ Comment:   Interface (virtual class)
 #include <string>
 #include <vector>
 
+#include <client/xmlBlasterClient.h>
+
 using org::xmlBlaster::util::MessageUnit;
 using namespace org::xmlBlaster::util::qos;
 
@@ -53,7 +55,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        * Logout from xmlBlaster.
        * @param qos The QoS or null
        */
-      virtual bool disconnect(const string& qos) = 0;
+      virtual bool disconnect(const DisconnectQos& qos) = 0;
 
       // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
       //public I_CallbackServer getCbServerInstance() throws XmlBlasterException;
@@ -80,20 +82,30 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
       virtual string ping(const string& qos) = 0;
 
       // The following methods correspond to the I_XmlBlaster interface
-
+/*
       virtual string subscribe(const string& xmlKey, const string& qos) = 0;
-
       virtual vector<MessageUnit> get(const string& xmlKey, const string& qos) = 0;
-
       virtual vector<string> unSubscribe(const string& xmlKey, const string& qos) = 0;
-
       virtual string publish(const MessageUnit& msgUnit) = 0;
+      virtual void publishOneway(const vector<MessageUnit> &msgUnitArr) = 0;
+      virtual vector<string> publishArr(vector<MessageUnit> msgUnitArr) = 0;
+      virtual vector<string> erase(const string& xmlKey, const string& qos) = 0;
+*/
+
+      virtual SubscribeReturnQos subscribe(const SubscribeKey& key, const SubscribeQos& qos) = 0;
+
+      virtual vector<MessageUnit> get(const GetKey& key, const GetQos& qos) = 0;
+
+      virtual vector<UnSubscribeReturnQos> 
+         unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos) = 0;
+
+      virtual PublishReturnQos publish(const MessageUnit& msgUnit) = 0;
 
       virtual void publishOneway(const vector<MessageUnit> &msgUnitArr) = 0;
 
-      virtual vector<string> publishArr(vector<MessageUnit> msgUnitArr) = 0;
+      virtual vector<PublishReturnQos> publishArr(vector<MessageUnit> msgUnitArr) = 0;
 
-      virtual vector<string> erase(const string& xmlKey, const string& qos) = 0;
+      virtual vector<EraseReturnQos> erase(const EraseKey& key, const EraseQos& qos) = 0;
    };
 
 }}}} // namespaces
