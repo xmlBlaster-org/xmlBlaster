@@ -64,6 +64,8 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.socket \
 			org.xmlBlaster.protocol.nativ \
 			org.xmlBlaster.util \
+			org.xmlBlaster.util.classloader \
+			org.xmlBlaster.util.plugin \
 			org.xmlBlaster.util.protocol \
 			org.xmlBlaster.util.recorder \
 			org.xmlBlaster.util.recorder.file \
