@@ -165,7 +165,7 @@ TODO
       <compilerarg value="/Gm" if="is-debug"/>      
       <compilerarg value="/Zi" if="is-debug"/>      
       <!-- compilerarg value="/G6"/ -->                  <!-- target Pentium Pro -->
-      <!-- <compilerarg value="/MDd" />  -->        <!-- multi threading with debug -->      
+      <!-- <compilerarg value="/MDd" />  -->        <!-- multi threading with debug and dll (/MT = multithreaded without DLL) will force MSVCRT[D].DLL to be included -->      
       <compilerarg value="/W3"/>                    <!-- display many warnings -->
       <!-- <compilerarg value="/Od" unless="is-debug"/> --> <!-- maximize speed --> 
       <!-- compilerarg value="/Ob2" unless="is-debug"/ --> <!-- auto-inlining -->      
