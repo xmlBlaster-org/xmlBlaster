@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: SocketConnection.java,v 1.4 2002/02/15 19:09:07 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.5 2002/02/15 19:52:07 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -701,69 +701,5 @@ public class SocketConnection implements I_XmlBlasterConnection
       text += "\n";
       return text;
    }
-
-
-   /**
-    * For Testing.
-    * <pre>
-    * java org.xmlBlaster.client.protocol.socket.SocketConnection
-    * </pre>
-    */
-   public static void main(String args[])
-   {
-   /*
-      final String ME = "SocketHttpClient";
-      try { XmlBlasterProperty.init(args); } catch(org.jutils.JUtilsException e) { Log.panic(ME, e.toString()); }
-      // build the proxy
-      try {
-         SocketConnection proxy = new SocketConnection("http://localhost:7607", 8081);
-
-         String qos = "<qos><callback type='SOCKET'>http://localhost:8081</callback></qos>";
-         String sessionId = "Session1";
-
-         String loginAnswer = proxy.login("LunaMia", "silence", qos, sessionId);
-         Log.info(ME, "The answer from the login is: " + loginAnswer);
-
-         String contentString = "This is a simple Test Message for the xml-rpc Protocol";
-         byte[] content = contentString.getBytes();
-
-         org.xmlBlaster.client.PublishKeyWrapper xmlKey = new org.xmlBlaster.client.PublishKeyWrapper("", "text/xml", null);
-
-         MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos></qos>");
-         String publishOid = proxy.publish(sessionId, msgUnit);
-         Log.info(ME, "Published message with " + publishOid);
-
-         org.xmlBlaster.client.SubscribeKeyWrapper subscribeKey = new org.xmlBlaster.client.SubscribeKeyWrapper(publishOid);
-
-         Log.info(ME, "Subscribe key: " + subscribeKey.toXml());
-
-         proxy.subscribe(sessionId, subscribeKey.toXml(), "");
-
-         // wait some time if necessary ....
-         proxy.erase(sessionId, subscribeKey.toXml(), "");
-
-         Log.exit(ME, "Good bye.");
-
-      } catch(XmlBlasterException e) {
-         Log.error(ME, "XmlBlasterException: " + e.toString());
-      }
-
-      // wait for some time here ....
-     */
-   }
-
-/*
-callback.addResponseListener(requestId, new I_ResponseListener() {
-   public void responseEvent(String reqId, String qos) {
-      Log.info(ME, "!!!RequestId=" + reqId + ": Return QoS value arrived ...");
-      synchronized(this) {
-         responseObject = qos;
-         notifying = true;
-         this.notify();
-      }
-   }
-});
-*/
-
 }
 
