@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.10 1999/11/30 09:29:31 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.11 1999/12/01 17:24:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -15,9 +15,12 @@ import java.util.List;
 
 
 /**
- * ClientInfo stores all known data about a client
+ * ClientInfo stores all known data about a client. 
+ * <p>
+ * It also contains a message queue, where messages are stored
+ * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author $Name:  $
  */
 public class ClientInfo
@@ -40,6 +43,13 @@ public class ClientInfo
       if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
    }
 
+
+   /**
+    * Accessing the CORBA Callback reference of the client. 
+    * <p />
+    * @return BlasterCallback reference <br />
+    *         null if the client has no callback
+    */
    public final BlasterCallback getCB() throws XmlBlasterException
    {
       return authInfo.getCB();
@@ -47,8 +57,9 @@ public class ClientInfo
 
 
    /**
-    * This is the unique identifier of the client
-    * it is currently the byte[] oid from the POA active object map.
+    * This is the unique identifier of the client,
+    * it is currently the byte[] oid from the POA active object map. 
+    * <p />
     * @return oid
     */
    public final String getUniqueKey() throws XmlBlasterException
@@ -58,6 +69,8 @@ public class ClientInfo
 
 
    /**
+    * The uniqueKey in hex notation. 
+    * <p />
     * @return the uniqueKey in hex notation for dumping it (readable form)
     */
    public final String getUniqueKeyHex() throws XmlBlasterException
@@ -67,6 +80,8 @@ public class ClientInfo
 
 
    /**
+    * The unique login name. 
+    * <p />
     * @return the loginName
     */
    public final String toString()
@@ -75,6 +90,11 @@ public class ClientInfo
    }
 
 
+   /**
+    * Accessing the CORBA Callback reference of the client in string notation. 
+    * <p />
+    * @return BlasterCallback-IOR The CORBA callback reference in string notation
+    */
    public String getCallbackIOR() throws XmlBlasterException
    {
       return authInfo.getCallbackIOR();
