@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: Util.java,v 1.5 2002/12/18 12:39:09 ruff Exp $
+Version:   $Id: Util.java,v 1.6 2003/05/18 10:14:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -58,6 +58,7 @@ public class Util
     */
    public static final boolean getParameter(HttpServletRequest req, String name, boolean defaultVal)
    {
-      return Boolean.getBoolean(getParameter(req, name, new Boolean(defaultVal).toString()));
+      Boolean b = new Boolean(getParameter(req, name, new Boolean(defaultVal).toString()));
+      return b.booleanValue();
    }
 }
