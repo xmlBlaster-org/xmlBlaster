@@ -64,7 +64,7 @@ namespace org { namespace xmlBlaster {
       }
       
 
-      LoginQosWrapper(const LoginQosWrapper &el) {
+      LoginQosWrapper(const LoginQosWrapper &el) : QosWrapper(el) {
          init(el);
       }
 
