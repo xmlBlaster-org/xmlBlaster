@@ -41,14 +41,14 @@ and
 
 Configure it in webserver.xml:
    <Service id="service0" port="8082">
-	....
+   ....
 
 Start the server:
    startserver
 
 Test it (netscape):
    http://localhost:8082/
-	http://localhost:8082/examples/servlet/HelloWorldExample
+   http://localhost:8082/examples/servlet/HelloWorldExample
 
 (The servlets are in examples/WEB-INF/servlets)
 
@@ -102,21 +102,26 @@ Config files setup:
       # List of Repositories
       #######################
       repositories=/home/ruff/xmlBlaster/classes
-		or:
+      or:
       repositories=/home/ruff/xmlBlaster/lib/xmlBlaster.jar
       
       
       # Servlet Aliases
       ##################
-		servlet.BlasterHttpProxyServlet.code=org.xmlBlaster.protocol.http.BlasterHttpProxyServlet
+      servlet.BlasterHttpProxyServlet.code=org.xmlBlaster.protocol.http.BlasterHttpProxyServlet
       servlet.BrowserTest.code=org.xmlBlaster.protocol.http.BrowserTest
       servlet.ReqListServlet.code=org.xmlBlaster.util.servlet.ReqListServlet
       servlet.ReqItemServlet.code=org.xmlBlaster.util.servlet.ReqItemServlet
       servlet.PXSLServlet.code=PXSLServlet
 
-	Edit /etc/httpd/conf/jserv/jserv.properties
+   Edit /etc/httpd/conf/jserv/jserv.properties
 
-	   security.authentication=false
+      wrapper.bin=/usr/local/jdk/bin/java
+
+      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+
+      security.authentication=false
 
 6) We need to run the JVM with the jacorb.jar file first in the bootclasspath
    otherwise the JDK-internal CORBA is used.
@@ -157,21 +162,6 @@ Config files setup:
  
       tail -f  /var/log/httpd/jserv.log
 
-   Start xmlBlaster:
+8) For an example see:
 
-      jaco org.xmlBlaster.Main +trace
-
-	Start the callback servlet:
-
-      http://localhost/servlet/Callback?ActionType=login&loginName=martin&passwd=secret
-
-   Have a look at the integrate servlet:
-
-	   Make a link to you web server document root:
-   	   
-			ln -s ~/xmlBlaster/src/java/org/xmlBlaster/protocol/http/javascript cb
-
-	   And look at it in your browser (netscape 4+ or MSIE 4+):
-
-         http://localhost/cb
-		   
+      xmlBlaster/demo/html/systemInfo       
