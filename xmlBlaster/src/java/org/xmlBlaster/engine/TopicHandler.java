@@ -1120,8 +1120,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     */
    public boolean checkIfAllowedToSend(SessionInfo publisherSessionInfo, SubscriptionInfo sub) {
       if (!sub.getSessionInfo().hasCallback()) {
-         log.error(ME, "Internal problem: A client which subcribes should have a callback server: "
-                       + ((publisherSessionInfo != null) ? publisherSessionInfo.toXml("") : ""));
+         log.warn(ME, "A client which subscribes " + sub.toXml() + " should have a callback server: "
+                       + sub.getSessionInfo().toXml(""));
          Thread.dumpStack();
          return false;
       }
