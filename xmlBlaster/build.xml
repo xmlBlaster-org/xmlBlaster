@@ -822,7 +822,9 @@ TODO
          <test name="org.xmlBlaster.test.topic.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.authentication.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.mime.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.jms.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.dispatch.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.distributor.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.jdbc.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.snmp.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.persistence.AllTests" fork="yes" todir="${report.dir}"/>
@@ -830,6 +832,7 @@ TODO
          <test name="org.xmlBlaster.test.j2ee.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.stress.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.jmx.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.classloader.AllTests" fork="yes" todir="${report.dir}"/>
          <!-- build -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
          <!-- test name="${test.class}" fork="yes" todir="${report.dir}"/ -->
       </junit>
