@@ -8,6 +8,11 @@
    <h1>xmlBlaster.org white paper</h1>
    </center>
 
+   xmlBlaster is suitable for a typical client/server or message based application<br>
+   where the clients need instant notification about changes in the system.<p>
+
+   Access control list can be achived through QOS tags.
+
    <h2>Performance issues</h2>
 
    <p>
@@ -29,6 +34,13 @@
                The Ticker should use the &lt;key oid=""> for identifying the message<br>
                The xmlBlaster should have a quick lookup for key-oid (Map)
          </td>
+      </tr>
+      <tr>
+         <td>get()</td>
+         <td>high</td>
+         <td>For examples many client over internet/intranet<br>
+               by manual invokation (e.g. a mouse click by a user)<br>
+               The get may use complicated query syntax (SQL,XQL,XSL,REGEX)</td>
       </tr>
       <tr>
          <td>subscribe()</td>
@@ -91,7 +103,7 @@
    <p><table border="8" bgcolor="#F0F0F0" cellpadding=8 cellspacing=8><tr><td><pre>
       &lt;Airport icao="EDDI">
         &lt;Runway id="1">
-           &lt;WindVeloc w_id="2" oid_reference="Number2">
+           &lt;WindVeloc w_id="2" oid_reference="Number1">
              12
            &lt;/WindVeloc>
            &lt;WindVeloc w_id="1" oid_reference="Number2">
