@@ -11,7 +11,9 @@ Configure: Take a copy of xmlBlaster/build.properties to your home directory
 
 OS:      Currently Windows only (for UNIX see xmlBlaster/build.xml)
 
-Invoke:  ..\..\build.bat -verbose -f tao.xml all
+Invoke:  set XMLBLASTER_HOME=C:\xmlBlaster
+         cd %XMLBLASTER_HOME%\src\c++
+         ..\..\build.bat -verbose -f tao.xml all
 
 Success: ACE-5.3+TAO-1.3.zip + xerces-c2_2_0-win32.zip + WindowsXp + VC++7.1.2292 + xmlBlaster 0.841 (2003-02-06)
 -->
