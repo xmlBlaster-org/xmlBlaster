@@ -146,7 +146,14 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
     * Use for domain specific query
     */
    public void setDomain(String domain) {
-      this.queryType = Constants.DOMAIN;
+      // We don't force the queryType to DOMAIN here as this lets
+      // the cluster tests e.g.
+      //   java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.cluster.DirtyReadTest
+      // fail. For clustering the domain='' is just an attribute used to
+      // find a master.
+      // On the other hand there is query support for DOMAIN in RequestBroker (in none cluster environment)
+      // --> We need to resolve this!
+      //this.queryType = Constants.DOMAIN;
       super.setDomain(domain);
    }
 
