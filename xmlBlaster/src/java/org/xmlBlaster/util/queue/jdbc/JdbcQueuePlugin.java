@@ -22,6 +22,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
@@ -1085,6 +1086,22 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
 
          return 0;
       }
+   }
+
+   /**
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
+    */
+   public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) {
+      log.error(ME, "change() is not implemented");
+      return entry;
+   }
+
+   /**
+   * @see I_Map#change(long, I_ChangeCallback)
+    */
+   public I_MapEntry change(long uniqueId, I_ChangeCallback callback) {
+      log.error(ME, "change() is not implemented");
+      return null;
    }
 
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
