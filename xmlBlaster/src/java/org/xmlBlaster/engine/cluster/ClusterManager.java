@@ -483,6 +483,7 @@ public final class ClusterManager
       if (clusterNode.isLocalNode()) {
          if (log.TRACE) log.trace(ME, "Using local node '" + clusterNode.getId() + "' as master for message oid='"
                + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         return null;
       }
       else
          log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
