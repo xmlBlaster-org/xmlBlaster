@@ -26,7 +26,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/QueryQosData.h>
 
 using namespace std;
-using namespace org::xmlBlaster::util;
 using org::xmlBlaster::util::qos::QueryQosData;
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {

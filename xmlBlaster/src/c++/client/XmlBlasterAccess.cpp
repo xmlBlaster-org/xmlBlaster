@@ -8,9 +8,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Global.h>
 #include <boost/lexical_cast.hpp>
 
-using boost::lexical_cast;
-using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::dispatch::DeliveryManager;
+using namespace std;
+using namespace boost;
+using namespace org::xmlBlaster::util::dispatch;
 
 namespace org { namespace xmlBlaster { namespace client {
 

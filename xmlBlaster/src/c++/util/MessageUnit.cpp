@@ -19,9 +19,7 @@ Comment:   Holding a message
 
 using namespace std;
 
-using namespace org::xmlBlaster::util;
-using org::xmlBlaster::util::key::MsgKeyData;
-using org::xmlBlaster::util::qos::MsgQosData;
+using namespace org::xmlBlaster::util::key;
    
 /**
  * Holding a message. 

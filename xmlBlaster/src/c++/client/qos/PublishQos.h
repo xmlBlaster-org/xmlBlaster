@@ -45,7 +45,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/PriorityEnum.h>
 #include <util/qos/MsgQosData.h>
 
-using namespace org::xmlBlaster::util;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {

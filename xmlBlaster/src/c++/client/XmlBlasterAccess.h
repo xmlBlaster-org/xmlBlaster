@@ -34,8 +34,6 @@ namespace org { namespace xmlBlaster { namespace client {
  * </p>
  */
 
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::protocol;
 // using org::xmlBlaster::util::queue::MsgQueueEntry;
 

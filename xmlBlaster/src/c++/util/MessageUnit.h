@@ -18,10 +18,8 @@ Comment:   Holding a message
 
 
 using namespace std;
-using org::xmlBlaster::client::qos::PublishQos;
-using org::xmlBlaster::client::key::PublishKey;
-using org::xmlBlaster::util::key::MsgKeyData;
-using org::xmlBlaster::util::qos::MsgQosData;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 namespace org { namespace xmlBlaster { namespace util {
    

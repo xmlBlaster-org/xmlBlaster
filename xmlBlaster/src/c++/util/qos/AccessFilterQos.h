@@ -33,7 +33,6 @@ Comment:   Holding filter address string and protocol string
 #include <vector>
 #include <string>
 
-using namespace org::xmlBlaster::util;
 using namespace std;
 using org::xmlBlaster::util::qos::Query;
 

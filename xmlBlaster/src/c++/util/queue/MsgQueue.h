@@ -30,7 +30,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <set>
 
 using namespace std;
-using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
 using org::xmlBlaster::util::qos::storage::QueueProperty;
 

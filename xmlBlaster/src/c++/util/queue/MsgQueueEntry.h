@@ -22,9 +22,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <stddef.h>
 
 using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util;
 using org::xmlBlaster::client::protocol::I_XmlBlasterConnection;
 using org::xmlBlaster::util::qos::ConnectQos;
 using org::xmlBlaster::util::ReferenceCounterBase;
