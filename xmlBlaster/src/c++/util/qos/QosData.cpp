@@ -42,7 +42,7 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
                                           
-const bool DEFAULT_isSubscribeable = true;
+const bool DEFAULT_isSubscribable = true;
 const bool DEFAULT_isVolatile   = false;
 const bool DEFAULT_persistent   = false;
 const bool DEFAULT_forceUpdate  = true;
@@ -218,6 +218,18 @@ int QosData::size() const
 {
    return toXml().size();
 }
+
+string QosData::dumpClientProperties(const string& extraOffset) const
+{
+   string ret = "";
+   QosData::ClientPropertyMap::const_iterator iter = clientProperties_.begin();
+   while (iter != clientProperties_.end()) {
+      ret += extraOffset + "   <clientProperty name='" + (*iter).first + "'><![CDATA [" + (*iter).second + "]]></clientProperty>";
+      iter++;
+   }
+   return ret;
+}
+
 
 }}}}
 

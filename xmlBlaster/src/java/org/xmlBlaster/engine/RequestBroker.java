@@ -748,7 +748,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.publish requirement</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
    String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException
    {
@@ -1581,7 +1581,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                         return publishReturnQos.toXml();
                      }
                   }
-                  else { // if (publishQos.isSubscribeable()) {
+                  else { // if (publishQos.isSubscribable()) {
                      try {
                         PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
                         //Thread.currentThread().dumpStack();

@@ -8,6 +8,10 @@ package org.xmlBlaster.util.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.MethodName;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
 
 /**
  * Data container handling of status returned by subscribe(), unSubscribe(), erase() and ping(). 
@@ -101,6 +105,40 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     */
    public void setKeyOid(String oid) {
       this.keyOid = oid;
+   }
+
+   /**
+    * Dump the QoS to a flattened JXPath representation. 
+    * <p>
+    * This is experimental code for the simple Applet client
+    * </p>
+    * <pre>
+    *   /qos/state/@id             -> getState()
+    *   /qos/state/@info           -> getStateInfo()
+    *   /qos/rcvTimestamp/@nanos   -> getRcvTimestamp()
+    *   /qos/rcvTimestamp/text()   -> getRcvTime()
+    *   /qos/methodName/text()     -> getMethod()
+    *   /qos/key/@oid              -> getKeyOid()
+    *   /qos/subscribe/@id         -> getSubscriptionId()
+    * </pre>
+    * <p>
+    * Currently only an UpdateQos dump is supported
+    * @see <a href="http://jakarta.apache.org/commons/jxpath/">Apache JXPath</a>
+    */
+   public Map toJXPath() {
+      /* Problems with current java objects / JXPath mapping:
+        1.  getState() returns the <state id=''> instead of a state object with state.getId(), state.getInfo()
+      */
+
+      TreeMap map = new TreeMap();
+      map.put("/qos/rcvTimestamp/@nanos", ""+getRcvTimestamp());
+      map.put("/qos/rcvTimestamp/text()", ""+getRcvTime());
+      map.put("/qos/methodName/text()", getMethod());
+      map.put("/qos/state/@id", getState());
+      map.put("/qos/state/@info", getStateInfo());
+      map.put("/qos/key/@oid", getKeyOid());
+      map.put("/qos/subscribe/@id", getSubscriptionId());
+      return map;
    }
 
    /**

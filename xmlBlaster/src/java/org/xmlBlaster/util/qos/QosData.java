@@ -181,6 +181,16 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    /**
+    * Human readable form of message receive time in xmlBlaster server,
+    * in SQL representation e.g.:<br />
+    * 2001-12-07 23:31:45.862000004
+    * @deprecated Use getXmlRcvTimestamp()
+    */
+   public String getRcvTime() {
+      return (rcvTimestamp != null) ? rcvTimestamp.toString() : "";
+   }
+
+   /**
     * @param persistent mark a message as persistent
     */
    public void setPersistent(boolean persistent) {

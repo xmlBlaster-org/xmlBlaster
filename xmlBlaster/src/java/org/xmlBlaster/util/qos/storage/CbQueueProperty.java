@@ -60,7 +60,7 @@ public class CbQueueProperty extends QueuePropertyBase
       else if (Constants.RELATING_SUBJECT.equals(relating))
          this.relating = Constants.RELATING_SUBJECT;
       else {
-         log.warn(ME, "The queue relating attribute is invalid '" + relating + "', setting to session scope");
+         log.warn(ME, "setRelating: The queue relating attribute is invalid '" + relating + "', setting to session scope");
          this.relating = Constants.RELATING_CALLBACK;
       }
    }

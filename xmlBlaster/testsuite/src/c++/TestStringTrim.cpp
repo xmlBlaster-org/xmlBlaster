@@ -8,7 +8,6 @@ Comment:   Testing the Timeout Features
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
-#include <util/PlatformUtils.hpp>
 #include "TestSuite.h"
 #include <iostream>
 

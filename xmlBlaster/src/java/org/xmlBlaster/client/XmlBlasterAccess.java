@@ -18,7 +18,6 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
@@ -28,25 +27,19 @@ import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -54,13 +47,9 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
-import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
 
 /**
  * This is the default implementation of the java client side remote access to xmlBlaster. 
@@ -206,7 +195,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
             this.updateListener = updateListener;
 
-            initSecuritySettings(this.connectQos.getSecurityPluginType(), this.connectQos.getSecurityPluginVersion());
+            // TODO: This is done by ConnectQos already, isn't it?
+            initSecuritySettings(this.connectQos.getData().getClientPluginType(), 
+                                 this.connectQos.getData().getClientPluginVersion());
 
             this.ME = "XmlBlasterAccess-" + getId();
 
@@ -266,7 +257,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
             log.info(ME, "Sending now our " + num + " client side queued tail back messages");
             this.dispatchManager.switchToASyncMode();
             while (this.clientQueue.getNumOfEntries() > 0) {
-               try { Thread.currentThread().sleep(20L); } catch( InterruptedException i) {}
+               try { Thread.sleep(20L); } catch( InterruptedException i) {}
             }
             log.info(ME, (num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
             this.dispatchManager.switchToSyncMode();
@@ -349,8 +340,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          if (secMechanism != null)  // to avoid double logging for login()
             log.info(ME, "Loaded security plugin=" + secMechanism + " version=" + secVersion);
       }
-      catch (Exception e) {
-         log.error(ME, "Security plugin initialization failed. Reason: "+e.toString());
+      catch (XmlBlasterException e) {
+         log.error(ME, "Security plugin '" + secMechanism + "/" + secVersion +
+                       "' initialization failed. Reason: "+e.getMessage());
          this.secPlgn = null;
       }
    }
@@ -518,7 +510,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       //if (this.connectReturnQos != null)
       //   return this.connectReturnQos.getLoginName();
       //try {
-         if (connectQos != null) {
+         if (connectQos != null && connectQos.getSecurityQos() != null) {
             String nm = connectQos.getSecurityQos().getUserId();
             if (nm != null && nm.length() > 0)
                return nm;
@@ -1072,7 +1064,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
             MsgUnit msgUnit = new MsgUnit(glob, "<key oid='"+oid+"'/>", "Hi".getBytes(), "<qos><persistent>true</persistent></qos>");
             PublishReturnQos publishReturnQos = xmlBlasterAccess.publish(msgUnit);
             log.info(ME, "Successfully published message to xmlBlaster, msg=" + msgUnit.toXml() + "\n returned QoS=" + publishReturnQos.toXml());
-            try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // wait for update
+            try { Thread.sleep(1000L); } catch( InterruptedException i) {} // wait for update
 
             {
                log.info(ME, "Hit a key to 3 times publishOneway '" + oid + "'");
@@ -1084,7 +1076,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                };
                xmlBlasterAccess.publishOneway(msgUnitArr);
                log.info(ME, "Successfully published " + msgUnitArr.length + " messages oneway");
-               try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // wait for update
+               try { Thread.sleep(1000L); } catch( InterruptedException i) {} // wait for update
             }
 
             {
@@ -1097,7 +1089,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                };   
                PublishReturnQos[] retArr = xmlBlasterAccess.publishArr(msgUnitArr);
                log.info(ME, "Successfully published " + retArr.length + " acknowledged messages");
-               try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // wait for update
+               try { Thread.sleep(1000L); } catch( InterruptedException i) {} // wait for update
             }
 
             {

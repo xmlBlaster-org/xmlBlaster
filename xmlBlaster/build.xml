@@ -61,6 +61,9 @@ TODO
    <taskdef resource="cpptasks.tasks"/> <!-- cc defineset compiler linker -->
    <typedef resource="cpptasks.types"/>
 
+   <!-- Access environment variables, for example "env.XMLBLASTER_HOME" -->
+   <property environment="env"/>
+
    <!-- taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask" />
    <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
    <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
@@ -88,10 +91,12 @@ TODO
    <property name="xmlblaster_absolute_home" value="${user.dir}"/>
    <property name="xmlBlaster.home" value="${basedir}"/>
    <property name="src.java.dir" value="./src/java"/>
+   <property name="config.dir" value="./config"/>
    <property name="dtd.dir" value="./src/dtd"/>
    <property name="doc.dir" value="./doc"/>
    <property name="classes.dir" value="./classes"/>
    <property name="javadoc.dir" value="./doc/api"/>
+   <property name="javadoc.client.dir" value="./doc/client-api"/>
    <property name="testsuite.dir" value="./testsuite"/>
    <property name="testsuite.java.dir" value="./testsuite/src/java"/>
    <property name="demo.dir" value="./demo"/>
@@ -105,7 +110,7 @@ TODO
    <property name="demo.http.dir"        value="${demo.dir}/http"/>
    <property name="WEB-INF"              value="${demo.http.dir}/WEB-INF"/>
    <!-- The document root of the servlet engine (deploy dir for war files): -->
-   <property name="TOMCAT_HOME"          value="${user.home}/jakarta-tomcat"/>
+   <property name="TOMCAT_HOME"          value="${env.CATALINA_HOME}"/> <!-- "${user.home}/jakarta-tomcat" -->
    <property name="WWW_ROOT"             value="${TOMCAT_HOME}/webapps"/>
 
    <property name="idl" value="org.xmlBlaster.protocol.corba"/>
@@ -345,7 +350,8 @@ TODO
       <echo message="   runTestsAndReport --> does both of above"/>
       <echo message="   -Dtest.class=nameOfTestClass  runJunit --> run junit on the specifyed testclass"/>
       <echo message=""/>
-      <echo message="   javadocs    --> generates the javadoc documentation"/>
+      <echo message="   javadocs    --> generates the complete javadoc documentation"/>
+      <echo message="   javadocs-client --> generates the client side javadoc documentation"/>
       <echo message="   javadocs-delete --> remove the above"/>
       <echo message="   html        --> generates the html file of each java/cpp/python ... file in same directory"/>
       <echo message="   html-delete --> remove the above"/>
@@ -462,8 +468,8 @@ TODO
          </fileset>
       </copy>
 
-      <copy file="./config/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
-      <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
+      <copy file="${config.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
+      <copy file="${config.dir}/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/AppIcon.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/question.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/question.gif"/>
@@ -471,9 +477,9 @@ TODO
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/node.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/node.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/globe.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/globe.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/config.xml" tofile="${build.dest}/org/xmlBlaster/jmxgui/util/config.xml"/>
-      <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
-      <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
-      <copy file="./config/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
+      <copy file="${config.dir}/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
+      <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
+      <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
       <copy verbose="true" file="${soap.dir}/service.xml" tofile="${build.dest}/service.xml"/>
 
       <javac srcdir="${build.src}/xmlBlaster"
@@ -524,40 +530,7 @@ TODO
             <exclude name="**/*.pl"/>
             <exclude name="**/*.py"/>
             <exclude name="**/XmlRpcHttpClient.java"/>
-            <exclude name="javaclients/HelloWorld.java"/>
-            <exclude name="javaclients/HelloWorld2.java"/>
-            <exclude name="javaclients/HelloWorld3.java"/>
-            <exclude name="javaclients/HelloWorld4.java"/>
-            <exclude name="javaclients/HelloWorld5.java"/>
-            <exclude name="javaclients/HelloWorld6.java"/>
-            <exclude name="javaclients/HelloWorldMime.java"/>
-            <exclude name="javaclients/HelloWorldVolatile.java"/>
-            <exclude name="javaclients/HelloWorldVolatile2.java"/>
-            <exclude name="javaclients/Latency.java"/>
-            <exclude name="javaclients/PtpReceive.java"/>
-            <exclude name="javaclients/PtpSend.java"/>
             <exclude name="queryXML/**"/>
-         </fileset>
-      </copy>
-
-      <!-- This is because of the files do not have any package declaration in it. -->
-      <!-- See the exclude in the copy statement above. -->
-      <!-- Ant compiles all classes, even if they are up to date, if they are not -->
-      <!-- residing in the path where they belong to regarding to their packet instruction. -->
-      <copy todir="${build.src}/demo">
-         <fileset dir="${demo.java.dir}">
-            <include name="HelloWorld.java"/>
-            <include name="HelloWorld2.java"/>
-            <include name="HelloWorld3.java"/>
-            <include name="HelloWorld4.java"/>
-            <include name="HelloWorld5.java"/>
-            <include name="HelloWorld6.java"/>
-            <include name="HelloWorldMime.java"/>
-            <include name="HelloWorldVolatile.java"/>
-            <include name="HelloWorldVolatile2.java"/>
-            <include name="Latency.java"/>
-            <include name="PtpReceive.java"/>
-            <include name="PtpSend.java"/>
          </fileset>
       </copy>
 
@@ -570,8 +543,6 @@ TODO
          </fileset>
       </copy>
 
-
-
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" todir="${build.dest}/javaclients/simplereader"/>
       <copy file="${demo.java.dir}/simplereader/blue.gif" todir="${build.dest}/javaclients/simplereader"/>
       <copy file="${demo.java.dir}/simplereader/red.gif" todir="${build.dest}/javaclients/simplereader"/>
@@ -583,7 +554,7 @@ TODO
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
-      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*,Ptp*,Latency*,DomQuery*,javaclients/**/*.gif"/>
+      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*,DomQuery*,javaclients/**/*.gif"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
    </target>
 
@@ -618,7 +589,7 @@ TODO
          </fileset>
       </copy>
       <copy tofile="${build.dest}/org/xmlBlaster/test/j2ee/blasterClient.properties" file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties"/>
-      <copy tofile="${build.dest}/org/xmlBlaster/test/j2ee/blasterServer.properties" file="./config/xmlBlaster-jmx.properties.template"/>
+      <copy tofile="${build.dest}/org/xmlBlaster/test/j2ee/blasterServer.properties" file="${config.dir}/xmlBlaster-jmx.properties.template"/>
       <javac srcdir="${build.src}/testsuite/src/java"
             destdir="${build.dest}"
             classpath="${cp}:${lib.dir}/${name}.jar"
@@ -636,8 +607,8 @@ TODO
    <!-- =================================================================== -->
    <target name="jboss-sar" depends="xmlBlaster">
       <mkdir dir="${build.dir}/sar"/>
-      <copy file="./config/xmlBlaster-jmx.properties.template" tofile="${build.dir}/sar/xmlBlaster.properties" filtering="true"/>
-      <copy file="./config/jbossPlugins.xml.template" tofile="${build.dir}/sar/xmlBlasterPlugins.xml" filtering="true"/>
+      <copy file="${config.dir}/xmlBlaster-jmx.properties.template" tofile="${build.dir}/sar/xmlBlaster.properties" filtering="true"/>
+      <copy file="${config.dir}/jbossPlugins.xml.template" tofile="${build.dir}/sar/xmlBlasterPlugins.xml" filtering="true"/>
     <!-- Clean xmlBlaster -->
     <jar destfile="${build.dir}/sar/xmlBlaster.jar">
       <zipfileset src="${build.dir}/xmlBlaster.jar"
@@ -714,28 +685,33 @@ TODO
       <delete dir="${build.dir}/jms"/>
    </target>
 
-   <target name="applet_jar" depends="prepare" description="Creates a little jar file with an generic applet to access xmlBlaster">
-      <mkdir dir="${build.war}/WEB-INF/lib"/>
-      <!-- copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/client/protocol/http/applet">
-        <fileset dir="${build.dest}/org/xmlBlaster/client/protocol/http/applet"/>
-      </copy -->
-      <!-- For simple CODEBASE demo only: -->
-      <!-- copy todir="${build.war}/org/xmlBlaster/client/protocol/http/applet">
-         <fileset file="${build.dest}/org/xmlBlaster/client/protocol/http/applet/HelloApplet.class"/>
-      </copy -->
+   <target name="appletLib_jar" depends="prepare" description="Creates a jar file with a client library for applets">
+      <mkdir dir="${build.war}"/>
       <copy todir="${build.war}">
          <fileset file="${src.java.dir}/org/xmlBlaster/client/protocol/http/applet/*.html"/>
       </copy>
-      <jar destfile="${build.war}/xmlBlasterApplet.jar"
+      <unjar src="${lib.dir}/commons-codec.jar" dest="${build.dest}"/>
+      <jar destfile="${build.war}/xmlBlasterAppletLib.jar"
            basedir="${build.dest}/"
-           includes="**/org/xmlBlaster/client/protocol/http/applet/*.class">
+           includes="**/org/xmlBlaster/client/protocol/http/applet/*.class,**/org/xmlBlaster/util/enum/MethodName*,**/org/apache/commons/codec/binary/Base64.class,**/org/apache/commons/codec/*.class">
+      </jar>
+   </target>
+
+   <target name="appletDemo_jar" depends="prepare" description="Creates appletDemo.jar with applet examples">
+      <mkdir dir="${build.war}"/>
+      <copy todir="${build.war}">
+         <fileset file="${demo.http.dir}/applet/*.html"/>
+      </copy>
+      <jar destfile="${build.war}/appletDemo.jar"
+           basedir="${build.dest}/"
+           includes="http/applet/*.class">
       </jar>
    </target>
 
    <!-- =================================================================== -->
    <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
    <!-- =================================================================== -->
-   <target name="deploy_war" depends="prepare, applet_jar" description="Creates a web archive (.war) to deploy to a modern servlet engine">
+   <target name="deploy_war" depends="prepare, all, appletLib_jar, appletDemo_jar" description="Creates a web archive (.war) to deploy to a modern servlet engine">
       <echo message="Please run 'build.sh all' before if you have changed some code"/>
       <mkdir dir="${build.war}"/>
       <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
@@ -743,12 +719,18 @@ TODO
       <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http">
         <fileset dir="${build.dest}/org/xmlBlaster/protocol/http"/>
       </copy>
+      <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http/appletproxy/">
+        <fileset dir="${build.dest}/org/xmlBlaster/protocol/http/appletproxy/"/>
+      </copy>
       <copy todir="${build.war}/WEB-INF/classes/http">
          <fileset dir="${build.dest}/http"/>
       </copy>
       <copy file="${lib.dir}/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
+      <copy file="${config.dir}/jacorb.properties.template" tofile="${build.war}/WEB-INF/classes/jacorb.properties" filtering="false"/>
+      <jar destfile="${build.war}/WEB-INF/lib/jacorb.jar" update="yes" file="${build.war}/WEB-INF/classes/jacorb.properties"/>
       <copy file="${lib.dir}/xmlBlaster.jar" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
       <copy file="${lib.dir}/parser.jar" tofile="${build.war}/WEB-INF/lib/parser.jar"/>
+      <copy file="${lib.dir}/commons-codec.jar" tofile="${build.war}/WEB-INF/lib/commons-codec.jar"/> <!-- Base64 for applet -->
 
       <!-- unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
       <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
@@ -787,10 +769,13 @@ TODO
       <echo message="      java org.xmlBlaster.Main -plugin/xmlrpc/port 8089    (we switch port to allow tomcat on 8080)"/>
       <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
       <echo message=""/>
-      <echo message="   Start tomcat and invoke the demo with:"/>
-      <echo message="      ${TOMCAT_HOME}/startup.sh"/>
-      <echo message="      http://HOSTNAME:8080/xmlBlaster         or:"/>
-      <echo message="      http://HOSTNAME:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
+      <echo message="   Start tomcat and invoke the persistent HTTP HTML demo with:"/>
+      <echo message="      ${TOMCAT_HOME}/bin/startup.sh"/>
+      <echo message="      http://localhost:8080/xmlBlaster         or:"/>
+      <echo message="      http://localhost:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
+      <echo message=""/>
+      <echo message="   Start the persistent HTTP applet demo with:"/>
+      <echo message="      http://localhost:8080/xmlBlaster/BasicApplet.html"/>
    </target>
 
    <!-- =================================================================== -->
@@ -923,21 +908,49 @@ TODO
    <target name="javadocs" description="Creates the complete javadoc documentation">
       <echo message="Creating javadoc documentation"/>
       <mkdir dir="${javadoc.dir}"/>
-      <javadoc packagenames="org.xmlBlaster.*,javaclients"
+      <javadoc packagenames="org.xmlBlaster.*,javaclients,http.*,html.*"
                sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.java.dir}:${demo.dir}"
                excludepackagenames="org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap"
                classpath="${cp}"
                destdir="${javadoc.dir}"
+               private="true"
                author="true"
                version="true"
                use="true"
                windowtitle="xmlBlaster ${version} API"
                doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;"
+               header="xmlBlaster ${version} API"
+               bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
+      <!-- javadoc does not like missing package names in demo.dir:  sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}" -->
+   </target>
+   <!-- =================================================================== -->
+   <!-- Creates the javadoc documentation                                   -->
+   <!-- =================================================================== -->
+   <target name="javadocs-client" description="Creates the client side javadoc documentation">
+      <echo message="Creating javadoc documentation"/>
+      <mkdir dir="${javadoc.client.dir}"/>
+      <!-- sourcefiles="${demo.dir}/HelloWorld.java,${demo.dir}/HelloWorld2.java,${demo.dir}/HelloWorld3.java,${demo.dir}/HelloWorld4.java,${demo.dir}/HelloWorld5.java,${demo.dir}/HelloWorld6.java" -->
+      <javadoc packagenames="org.xmlBlaster.client.*,org.xmlBlaster.util.*,javaclients,http.*,html.*"
+               sourcefiles="${demo.dir}/HelloWorld.java"
+               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}"
+               excludepackagenames="org.xmlBlaster.util.servlet,org.xmlBlaster.util.recorder.*,org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap"
+               classpath="${cp}"
+               destdir="${javadoc.client.dir}"
+               protected="true"
+               package="false"
+               private="false"
+               author="true"
+               version="true"
+               use="true"
+               windowtitle="xmlBlaster ${version} client API"
+               doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;"
+               header="xmlBlaster ${version} client API"
                bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
       <!-- javadoc does not like missing package names in demo.dir:  sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}" -->
    </target>
    <target name="javadocs-delete" description="Removes the javadoc documentation">
       <delete dir="${javadoc.dir}" failonerror="false"/>
+      <delete dir="${javadoc.client.dir}" failonerror="false"/>
    </target>
 
    <!-- =================================================================== -->
@@ -1279,7 +1292,7 @@ TODO
 
       <!-- Create xmlBlaster/dist/lib/xmlBlaster.jar with ALL classes ...-->
       <delete file="${dist.dir}/lib/${name}.jar" failonerror="false"/>
-      <jar destfile="${dist.dir}/lib/${name}.jar" manifest="./config/manifest.xmlBlaster" basedir="${dist-classes.dir}"/>
+      <jar destfile="${dist.dir}/lib/${name}.jar" manifest="${config.dir}/manifest.xmlBlaster" basedir="${dist-classes.dir}"/>
 
       <!-- Create xmlBlasterDist-0.79e.zip with everything ...-->
       <delete file="${DIST_PATH}/${zipFile}" failonerror="false"/>
@@ -1398,7 +1411,7 @@ TODO
       <switch value="${ADD_MANIFEST}">
          <case value="false">
             <echo message="Using default manifest.xmlBlaster" />
-            <copy file="./config/manifest.xmlBlaster" tofile="${dist-client.dir}/config/manifest.xmlBlaster" overwrite="yes"/>
+            <copy file="${config.dir}/manifest.xmlBlaster" tofile="${dist-client.dir}/config/manifest.xmlBlaster" overwrite="yes"/>
          </case>
          <default>
             <echo message="Using ${ADD_MANIFEST}" />
@@ -1510,9 +1523,11 @@ TODO
       <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
+            <property name="idl.cmd.flag" value="" />
             <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
          </case>
          <default>
+            <property name="idl.cmd.flag" value="--windows-dll" />
             <property name="idl.cmd" value="${CORBACPP_HOME}/win32-bin/idl" />
          </default>
       </switch>
@@ -1538,7 +1553,7 @@ TODO
                <env key="PATH" path="${CORBACPP_HOME}/bin" />
                <arg line="--poa"/>
                <arg line="--c++-suffix cpp"/>
-               <arg line="--windows-dll"/>                               <!-- To export from windows DLL -->
+               <arg line="${idl.cmd.flag}"/>                             <!-- To export from windows DLL -->
                <arg line="../../../${idl.file}"/>
             </exec>
             <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
@@ -1603,6 +1618,11 @@ TODO
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
+               <env key="PYTHONPATH" path="${CORBACPP_HOME}/lib/python2.2/site-packages" /> <!-- Linux -->
+               <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
+               <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
+               <env key="PATH" path="${CORBACPP_HOME}/bin" />
                <arg line="-bcxx -Wbh=.h -Wbs=.cpp"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
@@ -1641,50 +1661,6 @@ TODO
                <arg line="-poa:-c.cpp:-h.h:-bS.h"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
-            <echo message="IDL compilation returned ${idl.returnvalue}"/>
-         </else>
-      </if>
-   </target>
-
-   <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
-   <!-- =================================================================== -->
-   <target name="cpp-corba-idl-MICO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
-      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
-      <switch value="${os.family}" caseinsensitive="false">
-         <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
-         </case>
-         <default>
-            <property name="idl.cmd" value="${CORBACPP_HOME}/win32-bin/idl" />
-         </default>
-      </switch>
-
-      <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-
-      <if><equals arg1="${idlBuild.done}" arg2="true" />
-         <then>
-            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
-         </then>
-         <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <!-- A typical MICO idl CORBA compile:
-              /opt/mico/bin/idl - -poa - -c++-suffix cpp - -windows-dll /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
-            -->
-            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
-               <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
-               <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
-               <env key="PATH" path="${CORBACPP_HOME}/bin" />
-               <arg line="--poa"/>
-               <arg line="--c++-suffix cpp"/>
-               <arg line="--windows-dll"/>                               <!-- To export from windows DLL -->
-               <arg line="../../../${idl.file}"/>
-            </exec>
-            <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
       </if>
@@ -1822,13 +1798,13 @@ TODO
          <includepath location="${src.cpp.dir}" />
 
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
-         <sysincludepath location="${CORBACPP_HOME}" /> <!-- TAO -->
-         <sysincludepath location="${CORBACPP_HOME}/.." /> <!-- TAO -->
-         <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
+         <sysincludepath location="${CORBACPP_HOME}" if="TAO" /> <!-- TAO -->
+         <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" /> <!-- TAO -->
+         <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO, OMNIORB -->
          <sysincludepath location="${src.cpp.dir}/generated" /> <!-- ORBACUS -->
 
-         <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
+         <sysincludepath location="${CORBACPP_HOME}/include/windows" if="MICO,windows" /> <!-- MICO necessary for mico on win32 -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
@@ -1949,7 +1925,7 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
-      <foreach list="TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread"
+      <foreach list="TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       </foreach>
@@ -1981,7 +1957,7 @@ TODO
 
 
    <target name="cpp-demo" depends="prepare-cpp" description="Create C++ demo clients">
-      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb"
+      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb,TestEmptyContent"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${demo.dir}/c++" />
       </foreach>
@@ -2255,7 +2231,7 @@ TODO
    </target>  <!-- C lib -->
 
    <target name="c-test" depends="prepare-cpp" description="Create C test clients">
-      <foreach list="TestMethods,TestError,TestStress"
+      <foreach list="TestUtil,TestMethods,TestError,TestStress"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${testsuite.dir}/src/c" />
       </foreach>

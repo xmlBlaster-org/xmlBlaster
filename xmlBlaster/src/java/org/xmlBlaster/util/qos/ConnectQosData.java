@@ -73,8 +73,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    private SessionQos sessionQos;
 
    protected transient PluginLoader pMgr;
-   protected I_ClientPlugin securityPluginCache;
-   protected I_SecurityQos securityQos;
+   protected I_ClientPlugin clientPlugin;
+   protected I_SecurityQos securityQos; // We need to cache ita as each call to clientPlugin.createSecurityQos() creates a new instance
 
    /**
     * The server reference, e.g. the CORBA IOR string or the XMLRPC url
@@ -106,7 +106,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    /**
     * Constructs the specialized quality of service object for a connect() or connect-return call. 
     * NOTE: The serialData is not parsed - use the factory for it.
-    * NOTE: The security plugin is not initialized, use setSecurityPluginData() to do it
+    * NOTE: The security plugin is not initialized, use loadClientPlugin() to do it
     *
     * @param factory The factory which knows how to serialize and parse me
     * @param serialData The XML based ASCII string (syntax is described in requirement interface.connect)
@@ -130,7 +130,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    private void initialize(Global glob) {
-      this.securityQos = getSecurityPlugin(null,null).getSecurityQos();
+      this.securityQos = getClientPlugin().createSecurityQos();
       this.securityQos.setCredential(accessPassword(null));
       if (this.sessionQos.getSessionName() != null) {
          this.securityQos.setUserId(this.sessionQos.getSessionName().getLoginName());
@@ -181,12 +181,10 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    /**
     * Force a security configuration. 
     * <p>
-    * You can use setSecurityPluginData() or setUserId() instead which loads the 
+    * You can use loadClientPlugin() or setUserId() instead which loads the 
     * given/default security plugin and does a lookup in the environment.
-    * </p>
-    * @see org.xmlBlaster.client.qos.ConnectQos#setSecurityQos(I_SecurityQos)
     */
-   public void setSecurityQos(I_SecurityQos securityQos) {
+   void setSecurityQos(I_SecurityQos securityQos) {
       this.securityQos = securityQos;
       if (!this.sessionQos.isSessionNameModified()) {
          SessionName sessionName = new SessionName(glob, this.securityQos.getUserId()); // parse it and strip it if user has given an absolute name
@@ -195,29 +193,43 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    /**
-    * Allows to set or overwrite the parsed security plugin. 
+    * Allows to set or overwrite the client side security plugin. 
+    * <p />
+    * The first goal is a proper connect QoS xml string for authentication.
+    * <p />
+    * The second goal is to intercept the messages for encryption (or whatever the
+    * plugin supports).
+    * <p />
+    * See xmlBlaster.properties, for example:
+    * <pre>
+    *   Security.Client.DefaultPlugin=gui,1.0
+    *   Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
+    * </pre>
     * <p />
     * &lt;securityService type='simple' version='1.0'>...&lt;/securityService>
-    * @param passwd If null the environment -passwd is checked
+    *
+    * @param credential passwd If null the environment -passwd is checked
     */
-   public void setSecurityPluginData(String mechanism, String version, String loginName, String passwd) throws XmlBlasterException {
-      this.securityQos = getSecurityPlugin(mechanism, version).getSecurityQos();
-      setUserId(loginName);
-      this.securityQos.setCredential(accessPassword(passwd));
+   public I_ClientPlugin loadClientPlugin(String type, String version, String userId, String credential) throws XmlBlasterException {
+      I_ClientPlugin c = getClientPlugin(type, version);
+      this.securityQos = c.createSecurityQos();
+      setUserId(userId);
+      this.securityQos.setCredential(accessPassword(credential));
+      return c;
    }
 
    /**
     * Allows to set or overwrite the login name for I_SecurityQos. 
     * <p />
-    * @param loginName The unique user id
+    * @param userId The unique user id (loginName)
     */
-   public void setUserId(String loginName) throws XmlBlasterException {
+   public void setUserId(String userId) throws XmlBlasterException {
       if (this.securityQos == null) {
-         this.securityQos = getSecurityPlugin(null, null).getSecurityQos();
+         this.securityQos = getClientPlugin().createSecurityQos();
          this.securityQos.setCredential(accessPassword(null));
       }
 
-      SessionName sessionName = new SessionName(glob, loginName); // parse it and strip it if user has given an absolute name
+      SessionName sessionName = new SessionName(glob, userId); // parse it and strip it if user has given an absolute name
       this.securityQos.setUserId(sessionName.getLoginName());
 
       if (!this.sessionQos.isSessionNameModified()) {
@@ -227,17 +239,17 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
 
    /**
     * Load a client side security plugin (for internal use only), is needed to create the security QoS string. 
-    * @param mechanism If null, the current plugin is used
+    * @param type If null, the current plugin is used
+    * @return
     */
-   protected I_ClientPlugin getSecurityPlugin(String mechanism, String version) {
-      // Performance TODO: for 'null' mechanism every time a new plugin is incarnated
-      if (this.securityPluginCache==null || !this.securityPluginCache.getType().equals(mechanism) || !this.securityPluginCache.getVersion().equals(version)) {
+   protected I_ClientPlugin getClientPlugin(String type, String version) {
+      if (this.clientPlugin==null || !this.clientPlugin.getType().equals(type) || !this.clientPlugin.getVersion().equals(version)) {
          if (pMgr==null) pMgr=glob.getClientSecurityPluginLoader();
          try {
-            if (mechanism != null)
-               this.securityPluginCache=pMgr.getClientPlugin(mechanism, version);
+            if (type != null)
+               this.clientPlugin=pMgr.getClientPlugin(type, version);
             else
-               this.securityPluginCache=pMgr.getCurrentClientPlugin();
+               this.clientPlugin=pMgr.getCurrentClientPlugin();
          }
          catch (XmlBlasterException e) {
             log.error(ME+".ConnectQosData", "Security plugin initialization failed. Reason: "+e.toString());
@@ -245,11 +257,18 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
          }
       }
 
-      return this.securityPluginCache;
+      return this.clientPlugin;
+   }
+
+   private I_ClientPlugin getClientPlugin() {
+      if (this.clientPlugin == null) {
+          getClientPlugin(null, null);  
+      }
+      return this.clientPlugin;
    }
 
    /**
-    * Private environment lookup if given passwd is null
+    * Private environment lookup if given passwd/credential is null
     * @return Never null, defaults to "secret"
     */
    private String accessPassword(String passwd) {
@@ -277,8 +296,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @return The unique SessionName (never null)
     */
    public SessionName getSessionName() {
-      if (this.sessionQos.getSessionName() == null && this.securityQos != null) {
-         this.sessionQos.setSessionName(new SessionName(glob, this.securityQos.getUserId()), false);
+      if (this.sessionQos.getSessionName() == null && getSecurityQos() != null) {
+         this.sessionQos.setSessionName(new SessionName(glob, getSecurityQos().getUserId()), false);
       }
       return this.sessionQos.getSessionName();
    }
@@ -528,35 +547,40 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    /**
-    * Return the type of the referenced SecurityPlugin.
+    * Return the type of the referenced security plugin. 
     * <p/>
     * @return The type or null if not known
     */
-   public String getSecurityPluginType() {
-      if (this.securityQos != null)
-         return this.securityQos.getPluginType();
-      return null;
+   public String getClientPluginType() {
+      I_ClientPlugin c = getClientPlugin();
+      if (c == null) {
+         return null;
+      }
+      return c.getType();
    }
 
    /**
-    * Return the version of the referenced SecurityPlugin.
+    * Return the version of the referenced security plugin. 
     * <p/>
     * @return The version or null if not known
     */
-   public String getSecurityPluginVersion() {
-      if (this.securityQos != null)
-         return this.securityQos.getPluginVersion();
-      return null;
+   public String getClientPluginVersion() {
+      I_ClientPlugin c = getClientPlugin();
+      if (c == null) {
+         return null;
+      }
+      return c.getVersion();
    }
 
    /**
     * @return The user ID or "NoLoginName" if not known
     */
    public String getUserId() {
-      if (this.securityQos==null)
+      I_SecurityQos securityQos = getSecurityQos();
+      if (securityQos==null)
          return "NoLoginName";
       else
-         return this.securityQos.getUserId();
+         return securityQos.getUserId();
    }
 
    /**

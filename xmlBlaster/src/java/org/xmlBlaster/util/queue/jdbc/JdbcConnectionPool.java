@@ -8,6 +8,7 @@ Author:    laghi@swissinfo.org
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import org.apache.commons.lang.Tokenizer;
 import org.jutils.log.LogChannel;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -19,7 +20,6 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.DatabaseMetaData;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 
 // only for testing
 import org.xmlBlaster.util.I_Timeout;
@@ -70,6 +70,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private int managerCount = 0;
    private boolean isShutdown = false;
    private boolean enableBatchMode;
+   private String configurationIdentifier;
+   private boolean cascadeDeleteSupported;
+   private boolean nestedBracketsSupported;
 
    /**
     * returns the plugin properties, i.e. the specific properties passed to the jdbc queue plugin.
@@ -165,7 +168,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          this.wait(this.connectionBusyTimeout);
       }
       catch (Exception ex) {
-         this.log.error(ME, "get: exception when waiting for a connection: " + ex.toString());
+         this.log.error(ME, "get:  waiting for a connection: " + ex.toString());
          ex.printStackTrace();
       }
       this.isWaiting = false;
@@ -187,7 +190,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             if (!conn.getAutoCommit()) this.log.error(ME, "put: error: the connection has not properly been reset: autocommit is 'false'");
          }
          catch (Throwable ex) {
-            this.log.error(ME, "put: exception when checking for autocommit. reason: " + ex.toString());
+            this.log.error(ME, "put:  checking for autocommit. reason: " + ex.toString());
+            ex.printStackTrace();
          }
       }
       synchronized(this) {
@@ -361,16 +365,40 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.dbAdmin = true;
       if ("false".equalsIgnoreCase(tmp)) this.dbAdmin = false;
 
+      this.configurationIdentifier =  pluginProp.getProperty("configurationIdentifier", null);
+      if (this.configurationIdentifier != null) 
+         this.configurationIdentifier = this.configurationIdentifier.trim();
+
+      help = pluginProp.getProperty("cascadeDeleteSupported", "true");
+      try {
+         this.cascadeDeleteSupported = Boolean.getBoolean(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'cascadeDeleteSupported' plugin-property is not parseable: '" + help + "' will be using the default '" + this.cascadeDeleteSupported + "'");
+      }
+
+      help = pluginProp.getProperty("nestedBracketsSupported", "true");
+      try {
+         this.nestedBracketsSupported = Boolean.getBoolean(help);
+      }
+      catch (Exception ex) {
+         this.log.warn(ME, "the 'nestedBracketsSupported' plugin-property is not parseable: '" + help + "' will be using the default '" + this.nestedBracketsSupported + "'");
+      }
+
       if (this.log.DUMP) {
-         this.log.dump(ME, "initialize -url                 : " + this.url);
-         this.log.dump(ME, "initialize -user                : " + this.user);
-         this.log.dump(ME, "initialize -password            : " + this.password);
-         this.log.dump(ME, "initialize -max number of conn  : " + this.capacity);
-         this.log.dump(ME, "initialize -conn busy timeout   : " + this.connectionBusyTimeout);
-         this.log.dump(ME, "initialize -driver list         : " + xmlBlasterJdbc);
-         this.log.dump(ME, "initialize -max. waiting Threads:" + this.maxWaitingThreads);
-         this.log.dump(ME, "initialize -tableNamePrefix     :" + this.tableNamePrefix);
-         this.log.dump(ME, "initialize -dbAdmin             :" + this.dbAdmin);
+         this.log.dump(ME, "initialize -url                    : " + this.url);
+         this.log.dump(ME, "initialize -user                   : " + this.user);
+         this.log.dump(ME, "initialize -password               : " + this.password);
+         this.log.dump(ME, "initialize -max number of conn     : " + this.capacity);
+         this.log.dump(ME, "initialize -conn busy timeout      : " + this.connectionBusyTimeout);
+         this.log.dump(ME, "initialize -driver list            : " + xmlBlasterJdbc);
+         this.log.dump(ME, "initialize -max. waiting Threads   :" + this.maxWaitingThreads);
+         this.log.dump(ME, "initialize -tableNamePrefix        :" + this.tableNamePrefix);
+         this.log.dump(ME, "initialize -dbAdmin                :" + this.dbAdmin);
+         this.log.dump(ME, "initialize -cascadeDeleteSupported :" + this.cascadeDeleteSupported);
+         this.log.dump(ME, "initialize -nestedBracketsSupported:" + this.nestedBracketsSupported);
+         if (this.configurationIdentifier != null) 
+            this.log.dump(ME, "initialize -configurationIdentifier:" + this.configurationIdentifier);
       }
 
       // could block quite a long time if the number of connections is big
@@ -386,7 +414,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       catch (SQLException ex) {
          if (firstConnectError) {
             firstConnectError = false;
-            this.log.error(ME, "exception when connecting to DB, error code : '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+            this.log.error(ME, " connecting to DB, error code : '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
             this.log.info(ME, "diagnostics: initialize -url                 : '" + url + "'");
             this.log.info(ME, "diagnostics: initialize -user                : '" + user + "'");
             this.log.info(ME, "diagnostics: initialize -password            : '" + password + "'");
@@ -395,9 +423,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             this.log.info(ME, "diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
             this.log.info(ME, "diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
             this.log.dump(ME, "diagnostics: initialize -tableNamePrefix     :" + this.tableNamePrefix);
+            ex.printStackTrace();
          }
          else {
-            if (this.log.TRACE) this.log.trace(ME, "exception when connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+            if (this.log.TRACE) this.log.trace(ME, " connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
          }
 
          // clean up the connections which might have been established
@@ -431,29 +460,41 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          throws XmlBlasterException, SQLException {
       if (this.log.CALL) this.log.call(ME, "parseMapping");
       if (this.isShutdown) connect(false);
-      Connection conn = null;
-      String productName = null;
-      try {
-         conn = this.getConnection();
-         productName = conn.getMetaData().getDatabaseProductName();
-         // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
-         // blanks are not allowed, thanks to zhang zhi wei
-         productName = StringHelper.replaceAll(productName, " ", "");
+
+
+      String mappingKey = null;
+      
+      if (this.configurationIdentifier == null) {
+         Connection conn = null;
+         try {
+            conn = this.getConnection();
+            mappingKey = conn.getMetaData().getDatabaseProductName();
+            // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
+            // blanks are not allowed, thanks to zhang zhi wei
+            mappingKey = StringHelper.replaceAll(mappingKey, " ", "");
+            if (this.log.TRACE) 
+               this.log.trace(ME, "parseMapping: the mapping will be done for the keyword (which is here is the DB product name)'" + mappingKey + "'");
+         }
+         finally {
+            if (conn != null) releaseConnection(conn);
+         }
+      }
+      else {
+         mappingKey = this.configurationIdentifier;
          if (this.log.TRACE) 
-            this.log.trace(ME, "parseMapping: the mapping will be done for the DB '" + productName + "'");
-      }
-      finally {
-         if (conn != null) releaseConnection(conn);
-      }
+            this.log.trace(ME, "parseMapping: the mapping will be done for the keyword (name given in the plugin)'" + mappingKey + "'");
+      } 
+
 //      String mappingText = prop.get("JdbcDriver." + productName + ".mapping", "");
-      String mappingText = prop.get("JdbcDriver.mapping[" + productName + "]", "");
+      String mappingText = prop.get("JdbcDriver.mapping[" + mappingKey + "]", "");
       if (this.log.TRACE) 
          this.log.trace(ME, "parseMapping: the string to be mapped is '" + mappingText + "'");
       
       this.mapping = new Hashtable();
-      StringTokenizer tokenizer = new StringTokenizer(mappingText, ",");
+      // StringTokenizer tokenizer = new StringTokenizer(mappingText, ",");
+      Tokenizer tokenizer = new Tokenizer(mappingText, ',', '"');
       XmlBlasterException ex = null;
-      while (tokenizer.hasMoreTokens()) {
+      while (tokenizer.hasNext()) {
          String singleMapping = tokenizer.nextToken();
          int pos = singleMapping.indexOf("=");
          if (pos < 0)
@@ -504,6 +545,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (Throwable ex) {
          log.error(ME, "could not close connection " + connNumber + " correctly but resource is set to null. reason " + ex.toString());
+         ex.printStackTrace();
       }
    }
 
@@ -578,7 +620,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
                connect(false);
             }
             catch (SQLException ex) {
-               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, ex.getMessage());
+               String additionalMsg = "check system classpath and 'jdbc.drivers' system property\n";
+               additionalMsg += "'classpath' is: '" + System.getProperty("classpath", "") + "'\n";
+               additionalMsg +=  "'jdbc.drivers' is: '" + System.getProperty("jdbc.drivers", "") + "'\n";
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getConnection()", ex.getMessage() + " " + additionalMsg);
             }
          }
          return get();
@@ -646,16 +691,19 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "dumpMetaData: exception: " + ex.getMessage());
+         ex.printStackTrace();
       }
       catch (SQLException ex) {
          this.log.error(ME, "dumpMetaData: SQL exception: " + ex.getMessage());
+         ex.printStackTrace();
       }
       finally {
          try {
             if (conn != null) releaseConnection(conn);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "dumpMetaData: exception when releasing the connection: " + ex.getMessage());
+            this.log.error(ME, "dumpMetaData:  releasing the connection: " + ex.getMessage());
+            ex.printStackTrace();
          }
       }
    }
@@ -706,7 +754,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (/*SQL*/Exception ex) {
          if (log !=null)
-            log.error(ME, "exception when connecting to DB, error code: " + " : " + ex.getMessage());
+            log.error(ME, " connecting to DB, error code: " + " : " + ex.getMessage());
+            ex.printStackTrace();
       }
       finally {
          try {
@@ -752,6 +801,23 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public boolean isBatchModeEnabled() {
       return this.enableBatchMode;
    }   
+
+   /**
+    * 
+    * @return true if 'cascadeDeleteSupported' has been set to true
+    */
+   public boolean isCascadeDeleteSuppported() {
+      return this.cascadeDeleteSupported;
+   }
+   
+   /**
+    * 
+    * @return true if 'nestedBracketsSupported' has been set to true
+    */
+   public boolean isNestedBracketsSuppported() {
+      return this.nestedBracketsSupported;
+   }
+
 
 }
 

@@ -6,33 +6,24 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 
-//import org.mozilla.javascript.Context;
-//import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.Context;
 
 import org.apache.batik.script.rhino.WindowWrapper;
 import org.apache.batik.script.rhino.RhinoInterpreter;
 import org.apache.batik.script.Interpreter;
-import org.apache.batik.script.InterpreterException;
 import org.apache.batik.script.Window;
 import org.apache.batik.util.RunnableQueue;
 
 /**
- * This is a little helper class wraps the different, protocol specific
- * update() methods, and delivers the client a nicer update() method.
+ * Forwards callback messages to Javascript code. 
  * <p>
- * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
- * or RMI or XMLRPC.
- *
- * @version $Revision: 1.10 $
+ * We use this dispatcher for example in the SVG example
+ * <code>xmlBlaster/demo/javaclients/svg/rhino/chessRhino.svg</code>.
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
+ * @see http://xml.apache.org/batik
  */
 public class JavascriptCallback implements I_Callback
 {
@@ -61,7 +52,7 @@ public class JavascriptCallback implements I_Callback
       // http://xml.apache.org/batik/svgcanvas.html
       //this.javascriptWindow = org.xmlBlaster.util.Global.instance().getObjectEntry("SVG/Javascript/Interpreter");
 
-      this.javascriptWindow = javascriptWindow;
+      JavascriptCallback.javascriptWindow = javascriptWindow;
 
       Window window = ((RhinoInterpreter.ExtendedContext)Context.getCurrentContext()).getWindow();
       this.updateQueue = window.getBridgeContext().getUpdateManager().getUpdateRunnableQueue();

@@ -1,4 +1,6 @@
 // xmlBlaster/demo/javaclients/HelloWorldVolatile.java
+package javaclients;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -41,9 +43,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * </pre>
  * </p>
  * <p />
- * Invoke: java HelloWorldVolatile
+ * Invoke: java javaclients.HelloWorldVolatile
  * <p />
- * Invoke: java HelloWorldVolatile -session.name joe -passwd secret
+ * Invoke: java javaclients.HelloWorldVolatile -session.name joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>
  */
@@ -114,7 +116,7 @@ public class HelloWorldVolatile implements I_Callback
    /**
     * Try
     * <pre>
-    *   java HelloWorldVolatile -help
+    *   java javaclients.HelloWorldVolatile -help
     * </pre>
     * for usage help
     */
@@ -123,7 +125,7 @@ public class HelloWorldVolatile implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         System.err.println("Example: java HelloWorldVolatile -session.name Jeff\n");
+         System.err.println("Example: java javaclients.HelloWorldVolatile -session.name Jeff\n");
          System.exit(1);
       }
 

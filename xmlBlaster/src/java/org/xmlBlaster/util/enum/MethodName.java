@@ -79,6 +79,16 @@ public final class MethodName implements java.io.Serializable
    }
 
    /**
+    * When you compare two methodName with == and they are
+    * loaded by different Classloaders it will fail (return false even
+    * if they are the same method), using
+    * this equals() method is safe under such circumstances
+    */
+   public boolean equals(MethodName other) {
+      return getMethodName().equals(other.getMethodName());
+   }
+
+   /**
     * For better performance in SOCKET protocol. 
     * @return methodName dumped to a byte[]
     */
@@ -134,7 +144,7 @@ public final class MethodName implements java.io.Serializable
       if (entry != null)
          return (MethodName)entry;
 
-      // 2. try case insensitive
+      // 2. try case insensitive: Buggy as it does not work for "unSubscribe" with big letter 'S'
       methodName = methodName.toLowerCase();
       entry = hash.get(methodName);
       if (entry == null)

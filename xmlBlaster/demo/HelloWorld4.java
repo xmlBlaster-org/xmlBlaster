@@ -1,4 +1,4 @@
-// xmlBlaster/demo/javaclients/HelloWorld4.java
+// xmlBlaster/demo/HelloWorld4.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;

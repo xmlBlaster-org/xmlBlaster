@@ -13,9 +13,7 @@ import java.sql.SQLException;
 //import java.sql.PreparedStatement; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
 import java.sql.Statement;
 import java.sql.ResultSet;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.jutils.log.LogChannel;
-
 
 /**
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
@@ -61,7 +59,8 @@ public class PreparedQuery {
          this.rs = this.st.executeQuery(request);
       }
       catch (XmlBlasterException ex) {
-         this.log.trace(ME, "Constructor. Exception: " + ex.getMessage());
+         String additionalInfo = "request='" + request + "' isAutocommit='" + isAutoCommit + "' fetchSize='" + fetchSize + "' ";
+         this.log.trace(ME, "Constructor. Exception. " + additionalInfo + ": " + ex.getMessage());
          if (this.conn != null) {
             try {
                if (!this.conn.getAutoCommit()) {
@@ -71,7 +70,7 @@ public class PreparedQuery {
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
-               this.log.warn(ME, "constructor exception occured: " + ex2.toString());
+               this.log.warn(ME, "constructor exception occured when rolling back " + additionalInfo + ": " + ex2.toString());
             }
             if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
@@ -80,7 +79,8 @@ public class PreparedQuery {
          throw ex;
       }
       catch (SQLException ex) {
-         this.log.trace(ME, "Constructor. SQLException: " + ex.getMessage());
+         String additionalInfo = "request='" + request + "' isAutocommit='" + isAutoCommit + "' fetchSize='" + fetchSize + "' ";
+         this.log.trace(ME, "Constructor. " + additionalInfo + " SQLException: " + ex.getMessage());
          if (this.conn != null) {
             try {
                if (!this.conn.getAutoCommit()) {
@@ -90,7 +90,7 @@ public class PreparedQuery {
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
-               this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + ex2.toString());
+               this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + additionalInfo + ex2.toString());
             }
             if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
@@ -99,7 +99,8 @@ public class PreparedQuery {
          throw ex;
       }
       catch (Throwable ex) {
-         this.log.warn(ME, "Constructor. Throwable: " + ex.toString());
+         String additionalInfo = "request='" + request + "' isAutocommit='" + isAutoCommit + "' fetchSize='" + fetchSize + "' ";
+         this.log.warn(ME, "Constructor. Throwable: " + additionalInfo + ex.toString());
          if (this.conn != null) {
             try {
                if (!this.conn.getAutoCommit()) {
@@ -109,17 +110,15 @@ public class PreparedQuery {
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
-               this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + ex2.toString());
+               this.log.warn(ME, "constructor: " + additionalInfo + " exception occured when handling SQL Exception: " + ex2.toString());
             }
             if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
-         throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".constructor", "", ex);
+         throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".constructor " + additionalInfo, "", ex);
       }
    }
-
-
 
    public final ResultSet inTransactionRequest(String request /*, int fetchSize */)
       throws XmlBlasterException, SQLException {

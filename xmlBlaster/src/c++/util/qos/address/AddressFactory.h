@@ -18,12 +18,12 @@ Author:    laghi
 #ifndef _UTIL_CFG_ADDRESSFACTORY_H
 #define _UTIL_CFG_ADDRESSFACTORY_H
 
-#include <util/SaxHandlerBase.h>
+#include <util/parser/XmlHandlerBase.h>
 #include <util/qos/address/AddressBase.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
-class Dll_Export AddressFactory : public SaxHandlerBase
+class Dll_Export AddressFactory : public parser::XmlHandlerBase
 {
 private:
    const std::string ME;
@@ -40,11 +40,11 @@ public:
     * Called for SAX callback start tag
     */
    // void startElement(const std::string& uri, const std::string& localName, const std::string& name, const std::string& character, Attributes attrs)
-   void startElement(const XMLCh* const name, AttributeList& attrs);
+   void startElement(const std::string &name, const parser::AttributeMap& attrs);
 
    /** End element. */
    // public final void endElement(String uri, String localName, String name, StringBuffer character) {
-   void endElement(const XMLCh* const name);
+   void endElement(const std::string &name);
 
    org::xmlBlaster::util::qos::address::AddressBase& readAddress(const std::string& litteral, org::xmlBlaster::util::qos::address::AddressBase& address);
 };

@@ -79,26 +79,14 @@ SessionQos Destination::getDestination() const
    return sessionQos_;
 }
 
-bool Destination::caseCompare(const char *name1, const char *name2)
-{
-   XMLCh* name1Helper = XMLString::transcode(name1);
-   XMLString::upperCase(name1Helper);
-   XMLCh* name2Helper = XMLString::transcode(name2);
-   XMLString::upperCase(name2Helper);
-   bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
-   SaxHandlerBase::releaseXMLCh(&name1Helper);
-   SaxHandlerBase::releaseXMLCh(&name2Helper);
-   return ret;
-}
-
 void Destination::setQueryType(const string &queryType)
 {
-   if (caseCompare(queryType.c_str(), "EXACT")) queryType_ = queryType;
+   if (queryType.compare("EXACT") == 0) queryType_ = queryType;
    else
-      if (caseCompare(queryType_.c_str(), "XPATH")) {}
+      if (queryType.compare("XPATH") == 0) {}
       else
          log_.error(ME, string("Sorry, destination queryType='")
-                    + queryType_ + "' is not supported");
+                    + queryType_ + string("' is not supported"));
 }
 
 string Destination::toXml(const string &extraOffset) const

@@ -18,6 +18,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 
 
 /**
@@ -32,7 +33,7 @@ public final class ConnectQos
    private final Global glob;
    private final ConnectQosData connectQosData;
    /** Access to encrypt/decrypt framework, used by protocol plugins */
-   private I_MsgSecurityInterceptor securityInterceptor;
+   //private I_MsgSecurityInterceptor securityInterceptor;
 
    /**
     * Default constructor. 
@@ -50,14 +51,14 @@ public final class ConnectQos
 
    /**
     * Login with the default security plugin as given by <i>-Security.Client.DefaultPlugin htpasswd,1.0</i>
-    * @param loginName e.g. "joe" or "joe/7" if you want to connect to joe's seventh session
+    * @param userId e.g. "joe" or "joe/7" if you want to connect to joe's seventh session
     * @param passwd The password if you use a password based authentication
     * @exception XmlBlasterException if the default security plugin couldn't be loaded
     */
-   public ConnectQos(Global glob, String loginName, String passwd) throws XmlBlasterException {
+   public ConnectQos(Global glob, String userId, String passwd) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = new ConnectQosData(this.glob, this.glob.getConnectQosFactory(), null, null); 
-      this.connectQosData.setSecurityPluginData(null, null, loginName, passwd);
+      this.connectQosData.loadClientPlugin(null, null, userId, passwd);
    }
 
    /**
@@ -139,6 +140,8 @@ public final class ConnectQos
     * <p>
     * This will call setSessionName() as well if sessionName is not set yet.
     * </p>
+    * This is a convenience method to set the securityQos userId
+    *
     * @param loginName The unique user id
     */
    public void setUserId(String loginName) throws XmlBlasterException {
@@ -153,14 +156,22 @@ public final class ConnectQos
    }
 
    /**
-    * Allows to set or overwrite the parsed security plugin. 
-    * <p />
-    * &lt;securityService type='simple' version='1.0'>...&lt;/securityService>
-    * @param mechanism The client side security plugin to use
-    * @param passwd If null the environment -passwd is checked
+    * Allows to set or overwrite the client side security plugin. 
+    *
+    * @param type The client side security plugin to use
+    * @param credential For 'htpasswd' the password, if null the environment -passwd is checked (default plugin)
+    * @see ConnectQosData#loadClientPlugin(String, String, String, String)
     */
-   public void setSecurityPluginData(String mechanism, String version, String loginName, String passwd) throws XmlBlasterException {
-      this.connectQosData.setSecurityPluginData(mechanism, version, loginName, passwd);
+   public I_ClientPlugin loadClientPlugin(String type, String version, String userId, String credential) throws XmlBlasterException {
+   //public void setSecurityPluginData(String mechanism, String version, String loginName, String passwd) throws XmlBlasterException {
+      return this.connectQosData.loadClientPlugin(type, version, userId, credential);
+   }
+
+   /**
+    * Access the default plugin or the previously added by load loadClientPlugin()
+    */
+   public I_ClientPlugin getClientPlugin() {
+      return this.getClientPlugin();
    }
 
    /**
@@ -174,13 +185,15 @@ public final class ConnectQos
     *    qos.setSecurityQos(new SecurityQos("joe", "secret"));
     *    xmlBlasterConnection.connect(qos);
     * </pre>
-    * NOTE: Usually setSecurityPluginData() is easier to use.
+    * NOTE: Usually loadClientPlugin() is easier to use.
+    * @deprecated This is specific to the loaded I_ClientPlugin, please use getClientPlugin().setSecurityQos()
     */
-   public void setSecurityQos(I_SecurityQos securityQos) {
-      this.connectQosData.setSecurityQos(securityQos);
-   }
+   //public void setSecurityQos(I_SecurityQos securityQos) {
+   //   this.connectQosData.setSecurityQos(securityQos);
+   //}
 
    /**
+    * This is a convenience method for <code>getClientPlugin().getSecurityQos()</code>. 
     * @return Access the login credentials or null if not set
     */
    public I_SecurityQos getSecurityQos() {
@@ -190,20 +203,26 @@ public final class ConnectQos
    /**
     * Return the type of the referenced SecurityPlugin.
     * <p/>
+    * This is a convenience access similiar to 
+    * <code>getClientPlugin().getPluginType()</code>
+    *
     * @return The type or null if not known
     */
-   public String getSecurityPluginType() {
-      return this.connectQosData.getSecurityPluginType();
-   }
+   //public String getSecurityPluginType() {
+   //   return this.connectQosData.getSecurityPluginType();
+   //}
 
    /**
     * Return the version of the referenced SecurityPlugin.
     * <p/>
+    * This is a convenience access similiar to 
+    * <code>getClientPlugin().getPluginVersion()</code>
+    *
     * @return The version or null if not known
     */
-   public String getSecurityPluginVersion() {
-      return this.connectQosData.getSecurityPluginVersion();
-   }
+   //public String getSecurityPluginVersion() {
+   //   return this.connectQosData.getSecurityPluginVersion();
+   //}
 
    /**
     * @param Set if we accept point to point messages
@@ -333,18 +352,20 @@ public final class ConnectQos
    /**
     * Access the security interceptor to encrypt/decrypt. 
     * @return I_MsgSecurityInterceptor plugin or null
+    * @deprecated No use for this
     */
-   public I_MsgSecurityInterceptor getSecurityInterceptor() {
-      return this.securityInterceptor;
-   }
+   //public I_MsgSecurityInterceptor getSecurityInterceptor() {
+   //   return this.securityInterceptor;
+   //}
 
    /**
     * Access the security interceptor to encrypt/decrypt. 
     * @return I_MsgSecurityInterceptor
+    * @deprecated No use for this
     */
-   public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
-      this.securityInterceptor = securityInterceptor;
-   }
+   //public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
+   //   this.securityInterceptor = securityInterceptor;
+   //}
 
    /**
     * Sets a client property (an application specific property) to the

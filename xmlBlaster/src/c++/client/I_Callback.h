@@ -19,8 +19,7 @@ namespace org { namespace xmlBlaster { namespace client {
  * You may use this, if you don't want to program with the rawer CORBA 
  * BlasterCallback.update()
  *
- * @version $Revision: 1.18 $
- * @author $Author: laghi $
+ * @author laghi
  */
 class Dll_Export I_Callback {
    /**

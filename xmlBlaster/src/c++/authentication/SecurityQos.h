@@ -19,8 +19,8 @@ Comment:   The qos for the security (a subelement of connect qos)
 #define _AUTHENTICATION_SECURITY_QOS_H
 
 #include <util/xmlBlasterDef.h>
+#include <util/Log.h>
 #include <string>
-#include <util/SaxHandlerBase.h>
 
 namespace org { namespace xmlBlaster { namespace authentication {
 

@@ -12,6 +12,11 @@ import org.jutils.text.StringHelper;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 
 import java.rmi.RemoteException;
 import java.io.*;
@@ -19,6 +24,12 @@ import java.util.*;
 import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import java.io.ObjectInputStream;
+import java.io.FileInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileOutputStream;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * This handles and hides the different http push modes when sending
@@ -30,15 +41,11 @@ import javax.servlet.http.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * <p />
- * This could (should) be an interface and the different https methods
- * should be implemented in derived classes, but this is better performing :-)
- * <p />
  * See Java Servlet Programming from Jason Hunter
  * @author Marcel Ruff xmlBlaster@marcelruff.info
  */
-public class HttpPushHandler
+public class HttpPushHandler implements I_Callback 
 {
-   boolean isApplet = false;
    private String ME  = "HttpPushHandler";
    private LogChannel log;
 
@@ -49,6 +56,9 @@ public class HttpPushHandler
     * if you change the value here.
     */
    private final long PING_INTERVAL = 10000L;
+
+   private I_XmlBlasterAccess xmlBlasterAccess;
+   private I_Callback callbackInterceptor;
 
    private HttpServletRequest req = null;
    private HttpServletResponse res = null;
@@ -84,16 +94,18 @@ public class HttpPushHandler
     * @param req The request object
     * @param res The response object
     * @param sessionId The browser id
-    * @param loginName For debugging only
+    * @param loginName For loggin only
+    * @param xmlBlasterAccess Not yet logged in
     */
-   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId, String loginName, boolean isApplet)
+   public HttpPushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId,
+                          String loginName, I_XmlBlasterAccess xmlBlasterAccess)
                                throws ServletException, IOException
    {
       this.log = org.xmlBlaster.util.Global.instance().getLog("http");
       this.req = req;
       this.res = res;
       this.sessionId = sessionId;
-      this.isApplet = isApplet;
+      this.xmlBlasterAccess = xmlBlasterAccess;
       String browserId = req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
       this.ME  = "HttpPushHandler-" + browserId;
 
@@ -113,6 +125,9 @@ public class HttpPushHandler
       pingThread = new HttpPingThread(this, PING_INTERVAL, browserId);
    }
 
+   public I_XmlBlasterAccess getXmlBlasterAccess() {
+      return this.xmlBlasterAccess;
+   }
 
    /**
     */
@@ -130,8 +145,7 @@ public class HttpPushHandler
       log.trace(ME, "Initialize ...");
 
       if (this.head == null) {
-         if (!isApplet)
-            this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
+         this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
                                  "<HTML>\n" +
           "<HEAD>\n" +
           "   <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>\n" +
@@ -147,15 +161,11 @@ public class HttpPushHandler
           "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\" />\n" +
           "   </form>\n" +
           "   <script language='JavaScript'>\n";
-         if(isApplet) this.head  = "";
       }
 
       if (handlesMultipart) {
          if (this.tail == null) {
-            if(isApplet)
-               this.tail  = "\n";
-            else
-               this.tail  =   "</script>\n</BODY></HTML>";
+            this.tail  =   "</script>\n</BODY></HTML>";
          }
          res.setContentType("multipart/x-mixed-replace;boundary=End");
 
@@ -170,7 +180,7 @@ public class HttpPushHandler
    /**
     * Don't forget to call this method when you want to close the connection.
     */
-   public void deinitialize()
+   public void shutdownBrowserConnection()
    {
       try {
          setClosed(true);
@@ -191,25 +201,42 @@ public class HttpPushHandler
       }
    }
 
+   /**
+    * If you implement I_ProxyInterceptor and register it here,
+    * your update() implementation is called and may manipulate the
+    * received message from xmlBlaster before it is sent to the browser.
+    * @param interceptor Your optional implementation
+    */
+   public void setProxyInterceptor( I_Callback interceptor )
+   {
+      this.callbackInterceptor = interceptor;
+   }
 
    /**
     * Delegates the cleanup call to HttpPushHandler
     */
-   private void cleanup()
-   {
+   public void cleanup() {
       if (log.CALL) log.call(ME, "Entering cleanup(" + sessionId + ") ...");
       try {
-         ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
-         if (pc != null) {
-            pc.cleanup(sessionId);
-            if (log.TRACE) log.trace(ME, "Deleted " + sessionId + " ...");
+         if (this.sessionId != null) {
+            BlasterHttpProxy.cleanup(this.sessionId);
          }
+
+         if (this.xmlBlasterAccess != null) {
+            this.xmlBlasterAccess.disconnect(null);
+            log.info(ME, "XmlBlaster connection removed");
+            this.xmlBlasterAccess = null;
+         }
+
+         this.callbackInterceptor = null;
+
+         shutdownBrowserConnection();
       }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + org.jutils.runtime.StackTrace.getStackTrace());
+      catch (Exception e) {
+         e.printStackTrace();
+         log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ": " + e.toString());
       }
    }
-
 
    public void startPing() throws ServletException, IOException
    {
@@ -265,7 +292,7 @@ public class HttpPushHandler
          }
          catch(Exception e) {
             log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
-            deinitialize();
+            shutdownBrowserConnection();
          }
       }
    }
@@ -285,8 +312,6 @@ public class HttpPushHandler
       boolean doesMulti = false;
       if (browser == null)
          doesMulti = false;
-      else if (isApplet)
-         doesMulti = true;
       else if (browser.indexOf("Mozilla") != -1 &&
                browser.indexOf("MSIE") == -1  &&
                browser.indexOf("Opera") == -1)
@@ -421,27 +446,28 @@ public class HttpPushHandler
 
 
    /**
-    * calls the update method in the parentframe of the callback frame
+    * Pushes received message back to browser or applet. 
+    * <p>
+    * Browser: Calls the update method in the parentframe of the callback frame
     * The data must be Javascript code
+    * </p>
+    * <p>
+    * Applet: The callbacks are java-serialized Map for key/qos etc.
+    * </p>
     */
-   public void update( String updateKey, String content, String updateQos )
-   {
+   public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       try {
-         String codedKey     = Global.encode( updateKey.trim(), BlasterHttpProxyServlet.ENCODING );
-         String codedContent = Global.encode( content, BlasterHttpProxyServlet.ENCODING );
-         String codedQos     = Global.encode( updateQos.trim(), BlasterHttpProxyServlet.ENCODING );
+         if (log.TRACE) log.trace(ME,"update '" + updateKey.getOid() + "'");
 
-         if (log.TRACE) log.trace(ME,"update dump: " + ((updateKey.length() < 50) ? updateKey.toString() : updateKey.substring(0,50)) + " ...");
-         /*
-         log.plain(ME,"Key:"+updateKey);
-         log.plain(ME,"\nContent:"+content);
-         log.trace(ME,"************* End of Update *************************");
-         */
+         if(callbackInterceptor != null) {
+            callbackInterceptor.update(sessionId, updateKey, content, updateQos);
+         }
+
          String pushStr="";
-         if (isApplet)
-            pushStr = "##content##"+codedKey+"##"+codedContent+"##\n";
-         else
-            pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
+         String codedKey     = Global.encode(updateKey.toXml().trim(), BlasterHttpProxyServlet.ENCODING );
+         String codedContent = Global.encode(new String(content), BlasterHttpProxyServlet.ENCODING );
+         String codedQos     = Global.encode(updateQos.toXml().trim(), BlasterHttpProxyServlet.ENCODING );
+         pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
 
          push(new PushDataItem(PushDataItem.MESSAGE, pushStr));
       }
@@ -449,6 +475,7 @@ public class HttpPushHandler
          e.printStackTrace();
          log.error(ME,e.toString());
       }
+      return "<qos/>"; // TODO: Async wait on return value from browser/applet
    }
 
 
@@ -484,11 +511,7 @@ public class HttpPushHandler
    {
       try {
          String codedText = Global.encode(text, BlasterHttpProxyServlet.ENCODING);
-
-         if (isApplet)
-            push(new PushDataItem(PushDataItem.LOGGING, "##message##"+codedText+"##\n"));
-         else
-           push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
+         push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
       }
       catch(Exception e) {
          log.error(ME,e.toString());
@@ -506,11 +529,7 @@ public class HttpPushHandler
    {
       try {
          String codedText = Global.encode(text, BlasterHttpProxyServlet.ENCODING);
-
-         if (isApplet)
-            push(new PushDataItem(PushDataItem.LOGGING, "##error##"+codedText+"##\n"));
-         else
-            push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
+         push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
       }
       catch(Exception e) {
          log.error(ME,e.toString());
@@ -531,10 +550,7 @@ public class HttpPushHandler
          log.warn(ME, "Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
          setBrowserIsReady(true);
       }
-      if (isApplet)
-         push(new PushDataItem(PushDataItem.PING, "##ping##" + state + "##\n"));
-      else
-         push(new PushDataItem(PushDataItem.PING, "if (parent.ping != null) parent.ping('" + state + "');\n"));
+      push(new PushDataItem(PushDataItem.PING, "if (parent.ping != null) parent.ping('" + state + "');\n"));
    }
 
 

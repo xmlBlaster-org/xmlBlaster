@@ -1,4 +1,4 @@
-// xmlBlaster/demo/javaclients/HelloWorld3.java
+// xmlBlaster/demo/HelloWorld3.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;

@@ -18,7 +18,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #ifndef _UTIL_QOS_MSGQOSFACTORY_H
 #define _UTIL_QOS_MSGQOSFACTORY_H
 
-#include <util/SaxHandlerBase.h>
+#include <util/parser/XmlHandlerBase.h>
 #include <util/Log.h>
 #include <util/Destination.h>
 #include <util/qos/MsgQosData.h>
@@ -31,13 +31,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-class Dll_Export MsgQosFactory : public SaxHandlerBase
+class Dll_Export MsgQosFactory : public parser::XmlHandlerBase
 {
 private:
    std::string          ME;
    MsgQosData           msgQosData_;
    Destination          destination_;
-   org::xmlBlaster::util::cluster::RouteInfo            routeInfo_;
+   org::xmlBlaster::util::cluster::RouteInfo routeInfo_;
    org::xmlBlaster::util::qos::storage::QueuePropertyFactory queuePropertyFactory_;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
@@ -59,19 +59,19 @@ private:
    bool sendRemainingLife_; //  true;
    bool inQos_;
 
-   XMLCh* LIFE_TIME;
-   XMLCh* FORCE_DESTROY;
-   XMLCh* REMAINING_LIFE;
-   XMLCh* READ_ONLY;
-   XMLCh* DESTROY_DELAY;
-   XMLCh* CREATE_DOM_ENTRY;
-   XMLCh* NANOS;
-   XMLCh* ID;
-   XMLCh* STRATUM;
-   XMLCh* TIMESTAMP;
-   XMLCh* DIRTY_READ;
-   XMLCh* INDEX;
-   XMLCh* SIZE;
+   std::string LIFE_TIME;
+   std::string FORCE_DESTROY;
+   std::string REMAINING_LIFE;
+   std::string READ_ONLY;
+   std::string DESTROY_DELAY;
+   std::string CREATE_DOM_ENTRY;
+   std::string NANOS;
+   std::string ID;
+   std::string STRATUM;
+   std::string TIMESTAMP;
+   std::string DIRTY_READ;
+   std::string INDEX;
+   std::string SIZE;
 
    std::string clientPropertyKey_;
 
@@ -96,7 +96,7 @@ public:
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   void startElement(const XMLCh* const name, AttributeList& attrs);
+   void startElement(const std::string &name, const parser::AttributeMap& attrs);
 
    /**
     * Characters.
@@ -105,14 +105,14 @@ public:
     * since the c++ parser always starts at the first character, so you
     * don't specify start.
     */
-   void characters(const XMLCh* const ch, const unsigned int length);
+   void characters(const std::string &ch);
 
    /**
     * End element, event from SAX parser.
     * <p />
     * @param name Tag name
     */
-   void endElement(const XMLCh* const name);
+   void endElement(const std::string &name);
 
    /** Configure if remaingLife is sent in Qos (redesign approach to work with all QoS attributes */
    void sendRemainingLife(bool sendRemainingLife);

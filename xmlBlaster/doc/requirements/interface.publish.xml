@@ -296,7 +296,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       </pre>
 
    <p>
-   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   See xmlBlaster/demo/HelloWorld*.java for more examples.
    </p>
    </example>
 

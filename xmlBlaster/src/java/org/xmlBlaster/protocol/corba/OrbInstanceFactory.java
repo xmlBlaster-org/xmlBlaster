@@ -39,6 +39,7 @@ public final class OrbInstanceFactory
    private static boolean first=true;
    private static String origORBClass;
    private static String origORBSingletonClass;
+   private static boolean nameServiceStarted;
 
    /**
     * Sets the environment for CORBA. 
@@ -155,6 +156,7 @@ public final class OrbInstanceFactory
          props.put("ORBInitRef", tmp);
          if (log.TRACE) log.trace(ME, "Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef",(String)null)+" to find a naming service");
       }
+
       return props;
    }
 
@@ -185,6 +187,12 @@ public final class OrbInstanceFactory
             JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", origORBSingletonClass);
          }
          */
+
+         boolean startNamingService = glob.getProperty().get("plugin/ior/useNameService", false);
+         if (startNamingService) {
+            startNameService(glob);
+         }
+
          return anOrb;
       }
    }
@@ -276,5 +284,30 @@ public final class OrbInstanceFactory
          }
       }
       return host;
+   }
+
+   /**
+    * Note: This code is not yet tested to be functional (Marcel 2003-12-12)
+    */
+   public static void startNameService(Global glob_) {
+      if (nameServiceStarted)
+         return;
+      final String[] s = new String[0]; // new String[]{"-p","1077"}; // See OAPort discussion below
+      final Global glob = (glob_ == null) ? Global.instance() : glob_;
+      new Thread() {
+         public void run() {
+            glob.getLog("corba").info("OrbInstanceFactory", "Starting embedded Jacorb namingService");
+            org.xmlBlaster.util.JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB");
+            org.xmlBlaster.util.JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
+            // This does not work as the name service will collide with our ORB:
+            // OAPort=7608 forces both to the same port
+            // So we need to let the NamingService to choose its own port
+            //org.xmlBlaster.util.JdkCompatible.setSystemProperty("OAPort", "7608");
+            org.jacorb.naming.NameServer.main(s);
+            // How to get the NameServer IOR?
+         }
+      }.start();
+      nameServiceStarted = true;
+      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
    }
 }

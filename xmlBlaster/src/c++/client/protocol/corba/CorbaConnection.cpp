@@ -371,10 +371,23 @@ void CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implO
      PortableServer::POAManager_var poa_mgr = poa_->the_POAManager();
      // _this() incarnates with the servant ...
      callback_ = implObj->_this();
+     if (log_.trace()) log_.trace(me(), "Trying object_to_string POA ...");
      CORBA::String_var tmp = orb_->object_to_string(callback_);
      callbackIOR_ = tmp;
+     if (log_.trace()) log_.trace(me(), "Trying activate POA ...");
      poa_mgr->activate();
-     while (orb_->work_pending()) orb_->perform_work();
+#if  defined(XMLBLASTER_MICO) && defined(ORB_IS_THREAD_SAFE)
+     // - multi threaded mico 2.3.11 sometimes blocked forever in work_pending()
+     // - omniORB doesn't need perform_work() either but it doesn't harm
+#else
+     // - TAO seems to need it (callback messages won't arrive without)
+     if (log_.trace()) log_.trace(me(), "Trying orb.work_pending ...");
+     while (orb_->work_pending()) {
+        if (log_.trace()) log_.trace(me(), "Entering perform_work ...");
+        orb_->perform_work();
+     }
+     if (log_.trace()) log_.trace(me(), "Trying work_pending POA done ...");
+#endif
      return;
      // add exception handling here !!!!!
   }

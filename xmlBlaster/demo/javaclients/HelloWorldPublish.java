@@ -61,7 +61,7 @@ import org.xmlBlaster.client.I_ConnectionHandler;
  * java javaclients.HelloWorldPublish -session.name joe/5 -passwd secret -persistent true -dump[HelloWorldPublish] true
  *
  *Send a PtP message:
- * java javaclients.HelloWorldPublish -destination jack/17 -forceQueuing true -persistent true -subscribeable true
+ * java javaclients.HelloWorldPublish -destination jack/17 -forceQueuing true -persistent true -subscribable true
  *
  *Add some client properties which will be send in the qos to the receivers:
  * java javaclients.HelloWorldPublish -clientProperty[transactionId] 0x23345 -clientProperty[myName] jack
@@ -108,7 +108,7 @@ public class HelloWorldPublish
          boolean createDomEntry = glob.getProperty().get("createDomEntry", true);
          long historyMaxMsg = glob.getProperty().get("queue/history/maxEntries", -1L);
          boolean forceQueuing = glob.getProperty().get("forceQueuing", true);
-         boolean subscribeable = glob.getProperty().get("subscribeable", true);
+         boolean subscribable = glob.getProperty().get("subscribable", true);
          String destination = glob.getProperty().get("destination", (String)null);
          boolean erase = glob.getProperty().get("erase", true);
          boolean disconnect = glob.getProperty().get("disconnect", true);
@@ -158,7 +158,7 @@ public class HelloWorldPublish
          log.info(ME, "   -createDomEntry " + createDomEntry);
          log.info(ME, "   -queue/history/maxEntries " + historyMaxMsg);
          log.info(ME, " PtP settings");
-         log.info(ME, "   -subscribeable  " + subscribeable);
+         log.info(ME, "   -subscribable  " + subscribable);
          log.info(ME, "   -forceQueuing   " + forceQueuing);
          log.info(ME, "   -destination    " + destination);
          log.info(ME, "For more info please read:");
@@ -222,7 +222,7 @@ public class HelloWorldPublish
             pq.setPersistent(persistent);
             pq.setLifeTime(lifeTime);
             pq.setForceDestroy(forceDestroy);
-            pq.setSubscribeable(subscribeable);
+            pq.setSubscribable(subscribable);
             if (clientPropertyMap != null) {
                Iterator it = clientPropertyMap.keySet().iterator();
                while (it.hasNext()) {

@@ -44,7 +44,7 @@ import org.xml.sax.*;
  * Example for PtP addressing style:&lt;p />
  * <pre>
  *  &lt;qos>
- *     &lt;subscribeable>false&lt;/subscribeable>  &lt;!-- false to make PtP message invisible for subscribes -->
+ *     &lt;subscribable>false&lt;/subscribable>  &lt;!-- false to make PtP message invisible for subscribes -->
  *     &lt;destination queryType='EXACT' forceQueuing='true'>
  *        Tim
  *     &lt;/destination>
@@ -117,7 +117,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inTopic = false;
    private boolean inQueue = false;
    private boolean inPersistence = false;
-   private boolean inSubscribeable = false;
+   private boolean inSubscribable = false;
    private boolean inDestination = false;
    private boolean inSender = false;
    private boolean inPriority = false;
@@ -191,18 +191,18 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("subscribeable")) {
+      if (name.equalsIgnoreCase("subscribable")) {
          if (!inQos)
             return;
-         inSubscribeable = true;
+         inSubscribable = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <subscribeable> tag " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <subscribable> tag " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (log.TRACE) log.trace(ME, "Found subscribeable tag");
+            // if (log.TRACE) log.trace(ME, "Found subscribable tag");
          }
-         msgQosData.setSubscribeable(true);
+         msgQosData.setSubscribable(true);
          return;
       }
 
@@ -579,11 +579,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("subscribeable")) {
-         inSubscribeable = false;
+      if(name.equalsIgnoreCase("subscribable")) {
+         inSubscribable = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
-            msgQosData.setSubscribeable(new Boolean(tmp).booleanValue());
+            msgQosData.setSubscribable(new Boolean(tmp).booleanValue());
          }
          character.setLength(0);
          return;
@@ -769,11 +769,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append("'/>");
       }
 
-      if (msgQosData.getSubscribeableProp().isModified()) {
-         if (msgQosData.isSubscribeable())
-            sb.append(offset).append(" <subscribeable/>");
+      if (msgQosData.getSubscribableProp().isModified()) {
+         if (msgQosData.isSubscribable())
+            sb.append(offset).append(" <subscribable/>");
          else
-            sb.append(offset).append(" <subscribeable>false</subscribeable>");
+            sb.append(offset).append(" <subscribable>false</subscribable>");
       }
 
       ArrayList list = msgQosData.getDestinations();

@@ -134,6 +134,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "storageUnavailable: exception occured when peeking the transient queue: " + ex.getMessage());
+         ex.printStackTrace();
       }
    }
 
@@ -193,6 +194,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "exception occured when reconnecting. " + ex.getMessage());
+         ex.printStackTrace();
       }
       finally {
          try {
@@ -200,6 +202,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "storageAvailable: exception when loading from persistence: " + ex.getMessage());
+            ex.printStackTrace();
          }
       }
    }
@@ -258,7 +261,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                 " Is the DB up and running ? We continue RAM based ..." + ex.getMessage() +
                 " The propery settings are:" + queuePropertyBase.toXml());
             // start a polling thread to see if the connection can be established later 
-
+            ex.printStackTrace();
          }
 
          // do the queue specific stuff like delete all volatile entries in
@@ -269,6 +272,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
             catch (XmlBlasterException ex) {
                this.log.error(ME, "could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down");
+               ex.printStackTrace();
             }
 
             setProperties(userData);
@@ -306,6 +310,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
       catch(Throwable e) {
          log.error(ME, "Can't configure queue, your properties are invalid: " + e.toString());
+         e.printStackTrace();
          return;
       }
 
@@ -486,6 +491,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                }
                catch (XmlBlasterException ex) {
                   this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+                  ex.printStackTrace();
                }
                catch (Throwable ex) {
                   this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.toString());
@@ -573,6 +579,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                catch (Throwable ex) {
                   handlePersistents = false;
                   this.log.error(ME, "takeLowest: exception occured when taking the lowest entry from the persitent queue: " + ex.toString());
+                  ex.printStackTrace();
                }
            
                if (handlePersistents) {
@@ -668,6 +675,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.getMessage());
+            ex.printStackTrace();
          }
          catch (Throwable ex) {
             this.log.error(ME, "removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.toString());
@@ -805,6 +813,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "exception occured when trying to remove entries which have supposely been swapped since the last peek. reason: " + ex.getMessage());
+         ex.printStackTrace();
          return ret;
       }
       return ret;
@@ -831,6 +840,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                }
                catch (XmlBlasterException ex) {
                   this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB exception: " +  ex.getMessage());
+                  ex.printStackTrace();
                }
             }
            
@@ -842,6 +852,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
             catch (XmlBlasterException ex) {
                this.log.error(ME, "could not remove " + queueEntries.length + " entries from the transient queue.: " + ex.getMessage());
+               ex.printStackTrace();
             }
          }
          finally {
@@ -850,6 +861,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
             catch (XmlBlasterException ex1) {
                this.log.error(ME, "removeRandom exception occured when loading from persistence: " + ex1.getMessage());
+               ex1.printStackTrace();
             }
          }
       }
@@ -909,6 +921,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "could not read back data from persistence: " + ex.getMessage());
+            ex.printStackTrace();
          }
 
          if (list == null || list.size() < 1) {
@@ -921,6 +934,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "loadFromPeristence: no space left on transient queue: " + ex.getMessage());
+            ex.printStackTrace();
             return 0;
          }
 
@@ -1148,10 +1162,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
       try {
 //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
-         this.persistentQueue.unRegisterStorageProblemListener(this);
+         if (this.persistentQueue != null) this.persistentQueue.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+         ex.printStackTrace();
       }
    }
 

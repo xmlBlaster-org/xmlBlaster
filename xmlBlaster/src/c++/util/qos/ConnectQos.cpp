@@ -253,7 +253,7 @@ string ConnectQosData::toXml(const string& extraOffset) const
       ConnectQosData::ClientPropertyMap::const_iterator 
          iter = clientProperties_.begin();
       while (iter != clientProperties_.end()) {
-         offset + "   <clientProperty name='" + (*iter).first + "'>" + (*iter).second + "</clientProperty>";
+         offset + "   <clientProperty name='" + (*iter).first + "'><![CDATA[" + (*iter).second + "]]></clientProperty>";
          iter++;
       }
 

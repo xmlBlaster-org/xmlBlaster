@@ -16,8 +16,7 @@ cn: __sys__jdbc
 userPassword: __sys__jdbc
 sn: JDBC driver for xmlBlaster
 description: This driver is used to query arbitrary JDBC databases from any client (Python,C++,...)
-seeAlso: href=http://www.xmlBlaster.org
-objectclass: person
+objectclass: organizationalPerson
 
 dn: cn=tim, ou=clients, o=xmlBlaster, c=ORG
 cn: tim

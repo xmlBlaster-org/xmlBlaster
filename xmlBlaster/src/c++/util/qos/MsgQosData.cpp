@@ -45,7 +45,7 @@ void MsgQosData::init()
 {
    ME = "MsgQosData";
    subscriptionId_ = "";
-   subscribeable_.setValue(global_.getProperty(), "isSubscribeable"); // true;
+   subscribable_.setValue(global_.getProperty(), "isSubscribable"); // true;
    redeliver_ = 0;
    queueIndex_ = -1;
    queueSize_ = -1;
@@ -65,7 +65,7 @@ void MsgQosData::init()
 void MsgQosData::copy(const MsgQosData& data)
 {
    subscriptionId_ = data.subscriptionId_;
-   subscribeable_ = data.subscribeable_;
+   subscribable_ = data.subscribable_;
    redeliver_ = data.redeliver_;
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
@@ -87,7 +87,7 @@ void MsgQosData::copy(const MsgQosData& data)
 
 MsgQosData::MsgQosData(Global& global, const string& serialData)
    : QosData(global, serialData),
-     subscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
+     subscribable_(Prop<bool>(DEFAULT_isSubscribable)),
      sender_(SessionQos(global)),
      destinationList_(),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
@@ -98,7 +98,7 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
 
 MsgQosData::MsgQosData(const MsgQosData& data)
    : QosData(data),
-     subscribeable_(Prop<bool>(DEFAULT_isSubscribeable)),
+     subscribable_(Prop<bool>(DEFAULT_isSubscribable)),
      sender_(data.sender_),
      destinationList_(data.destinationList_),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy))
@@ -120,16 +120,16 @@ MsgQosData::~MsgQosData()
 }
 
 /**
- * @param isSubscribeable if false PtP messages are invisible for subscriptions
+ * @param isSubscribable if false PtP messages are invisible for subscriptions
  */
-void MsgQosData::setSubscribeable(const bool isSubscribeable)
+void MsgQosData::setSubscribable(const bool isSubscribable)
 {
-   subscribeable_ = isSubscribeable;
+   subscribable_ = isSubscribable;
 }
 
-bool MsgQosData::isSubscribeable() const
+bool MsgQosData::isSubscribable() const
 {
-   return subscribeable_.getValue();
+   return subscribable_.getValue();
 }
 
 bool MsgQosData::isPtp() const
@@ -464,8 +464,8 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += "'/>";
    }
 
-   if (subscribeable_.isModified())
-      ret += offset + " <subscribeable>" + Global::getBoolAsString(subscribeable_.getValue()) + "</subscribeable>";
+   if (subscribable_.isModified())
+      ret += offset + " <subscribable>" + Global::getBoolAsString(subscribable_.getValue()) + "</subscribable>";
 
    vector<Destination>::const_iterator iter = destinationList_.begin();
    while (iter != destinationList_.end()) {
@@ -513,13 +513,7 @@ string MsgQosData::toXml(const string& extraOffset) const
       routeIter++;
    }
    ret += offset + " </route>";
-
-   QosData::ClientPropertyMap::const_iterator iter1 = clientProperties_.begin();
-   while (iter1 != clientProperties_.end()) {
-      offset + "   <clientProperty name='" + (*iter1).first + "'>" + (*iter1).second + "</clientProperty>";
-      iter1++;
-   }
-
+   ret += dumpClientProperties(extraOffset + Constants::INDENT);
    ret += offset + "</qos>";
 
    if (ret.length() < 16) return "";

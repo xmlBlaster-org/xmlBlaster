@@ -38,9 +38,9 @@ UpdateQos& UpdateQos::operator=(const UpdateQos& data)
 * @return true if Publish/Subscribe style is used
 *         false if addressing of the destination is used
 */
-bool UpdateQos::isSubscribeable() const
+bool UpdateQos::isSubscribable() const
 {
-   return data_.isSubscribeable();
+   return data_.isSubscribable();
 }
 
 /**

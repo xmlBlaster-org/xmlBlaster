@@ -9,7 +9,6 @@ Comment:   Testing the Timeout Features
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
-#include <util/PlatformUtils.hpp>
 #include "TestSuite.h"
 #include <iostream>
 
@@ -201,7 +200,6 @@ int main(int args, char ** argv)
 {
    try {
       org::xmlBlaster::util::Object_Lifetime_Manager::init();
-      XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
 

@@ -12,6 +12,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::parser;
 using namespace org::xmlBlaster::util::cluster;
 using namespace org::xmlBlaster::util::qos::storage;
 using namespace std;
@@ -19,7 +20,7 @@ using namespace std;
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 MsgQosFactory::MsgQosFactory(Global& global)
-   : SaxHandlerBase(global), 
+   : XmlHandlerBase(global), 
      ME("MsgQosFactory"),
      msgQosData_(global), 
      destination_(global), 
@@ -27,19 +28,19 @@ MsgQosFactory::MsgQosFactory(Global& global)
      queuePropertyFactory_(global)
 {
    ME                 = string("MsgQosFactory");
-   LIFE_TIME          = XMLString::transcode("lifeTime");
-   FORCE_DESTROY      = XMLString::transcode("forceDestroy");
-   REMAINING_LIFE     = XMLString::transcode("remainingLife");
-   READ_ONLY          = XMLString::transcode("readOnly");
-   DESTROY_DELAY      = XMLString::transcode("destroyDelay");
-   CREATE_DOM_ENTRY   = XMLString::transcode("createDomEntry");
-   NANOS              = XMLString::transcode("nanos");
-   ID                 = XMLString::transcode("id");
-   STRATUM            = XMLString::transcode("stratum");
-   TIMESTAMP          = XMLString::transcode("timestamp");
-   DIRTY_READ         = XMLString::transcode("dirtyRead");
-   INDEX              = XMLString::transcode("index");
-   SIZE               = XMLString::transcode("size");
+   LIFE_TIME          = string("lifeTime");
+   FORCE_DESTROY      = string("forceDestroy");
+   REMAINING_LIFE     = string("remainingLife");
+   READ_ONLY          = string("readOnly");
+   DESTROY_DELAY      = string("destroyDelay");
+   CREATE_DOM_ENTRY   = string("createDomEntry");
+   NANOS              = string("nanos");
+   ID                 = string("id");
+   STRATUM            = string("stratum");
+   TIMESTAMP          = string("timestamp");
+   DIRTY_READ         = string("dirtyRead");
+   INDEX              = string("index");
+   SIZE               = string("size");
    inState_           = false;
    inSubscribe_       = false;
    inRedeliver_       = false;
@@ -60,19 +61,6 @@ MsgQosFactory::MsgQosFactory(Global& global)
 
 MsgQosFactory::~MsgQosFactory() 
 {
-   SaxHandlerBase::releaseXMLCh(&LIFE_TIME);
-   SaxHandlerBase::releaseXMLCh(&FORCE_DESTROY);
-   SaxHandlerBase::releaseXMLCh(&REMAINING_LIFE);
-   SaxHandlerBase::releaseXMLCh(&READ_ONLY);
-   SaxHandlerBase::releaseXMLCh(&DESTROY_DELAY);
-   SaxHandlerBase::releaseXMLCh(&CREATE_DOM_ENTRY);
-   SaxHandlerBase::releaseXMLCh(&NANOS);
-   SaxHandlerBase::releaseXMLCh(&ID);
-   SaxHandlerBase::releaseXMLCh(&STRATUM);
-   SaxHandlerBase::releaseXMLCh(&TIMESTAMP);
-   SaxHandlerBase::releaseXMLCh(&DIRTY_READ);
-   SaxHandlerBase::releaseXMLCh(&INDEX);
-   SaxHandlerBase::releaseXMLCh(&SIZE);
 }                
 
 MsgQosData MsgQosFactory::readObject(const string& xmlQos)
@@ -82,67 +70,61 @@ MsgQosData MsgQosFactory::readObject(const string& xmlQos)
    return msgQosData_;
 }
 
-void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
+void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
    bool      tmpBool;
 //      int       tmpInt;
    string    tmpString;
    long      tmpLong;
    Timestamp tmpTimestamp;
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
      msgQosData_ = MsgQosData(global_); // kind of reset
      inQos_ = true;
      return;
    }
-   /*
-   if ( SaxHandlerBase::caseCompare(name, "queue") || inQueue_) {
-      if (!inQos_) return;
-      inQueue_ = true;
-      // get the index and the size in the queue
-      if (getLongAttr(attrs, INDEX, tmpLong)) msgQosData_.setQueueIndex(tmpLong);
-      if (getLongAttr(attrs, SIZE, tmpLong)) msgQosData_.setQueueSize(tmpLong);
-
-      queuePropertyFactory_.startElement(name, attrs);
-      return;
-   }
-   */
-   if (SaxHandlerBase::caseCompare(name, "persistence") || inPersistence_) {
+   if (name.compare("persistence") == 0 || inPersistence_) {
       if (!inQos_) return;
       inPersistence_ = true;
       queuePropertyFactory_.startElement(name, attrs);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "state")) {
+   if (name.compare("state") == 0) {
       if (!inQos_) return;
       inState_ = true;
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "id")) {
-            msgQosData_.setState(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      string tmpName = (*iter).first;
+      string tmpValue = (*iter).second;
+      while (iter != attrs.end()) {
+         if (tmpName.compare("id") == 0) {
+            msgQosData_.setState(tmpValue);
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "info")) {
-            msgQosData_.setStateInfo(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+         else if (tmpName.compare("info") == 0) {
+            msgQosData_.setStateInfo(tmpValue);
          }
+         iter++;
       }
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "destination")) {
+   if (name.compare("destination") == 0) {
       if (!inQos_) return;
       inDestination_ = true;
       destination_ = Destination(global_);
-      int len = attrs.getLength();
-
-      for (int i = 0; i < len; i++)   {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "queryType")) {
-            string queryType = SaxHandlerBase::getStringValue(attrs.getValue(i));
+      AttributeMap::const_iterator iter = attrs.begin();
+      string tmpName = (*iter).first;
+      string tmpValue = (*iter).second;
+      while (iter != attrs.end()) {
+         if (tmpName.compare("queryType") == 0) {
+            string queryType = tmpValue;
             if (queryType == "EXACT")      destination_.setQueryType(queryType);
             else if (queryType == "XPATH") destination_.setQueryType(queryType);
-            else log_.error(ME, string("Sorry, destination queryType='") + queryType + "' is not supported");
+            else log_.error(ME, string("Sorry, destination queryType='") + queryType + string("' is not supported"));
          }
-         else if( SaxHandlerBase::caseCompare(attrs.getName(i), "forceQueuing") ) {
-            destination_.forceQueuing(SaxHandlerBase::getBoolValue(attrs.getValue(i)));
+         else if( tmpName.compare("forceQueuing") == 0) {
+            destination_.forceQueuing(XmlHandlerBase::getBoolValue(tmpValue));
          }
+         iter++;
       }
+
       StringTrim::trim(character_);
       if (!character_.empty()) {
          destination_.setDestination(SessionQos(global_, character_)); // set address or XPath query string if it is before inner tags
@@ -150,17 +132,17 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       }
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "sender")) {
+   if (name.compare("sender") == 0) {
       if (!inQos_) return;
       inSender_ = true;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "priority")) {
+   if (name.compare("priority") == 0) {
       if (!inQos_) return;
       inPriority_ = true;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "expiration")) {
+   if (name.compare("expiration") == 0) {
       if (!inQos_) return;
       inExpiration_ = true;
 //         int len = attrs.getLength();
@@ -173,28 +155,28 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       if (getLongAttr(attrs, REMAINING_LIFE, tmpLong)) msgQosData_.setRemainingLifeStatic(tmpLong);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "rcvTimestamp")) {
+   if (name.compare("rcvTimestamp") == 0) {
       if (!inQos_) return;
       if (getTimestampAttr(attrs, NANOS, tmpTimestamp)) msgQosData_.setRcvTimestamp(tmpTimestamp);
       inRcvTimestamp_ = true;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "redeliver")) {
+   if (name.compare("redeliver") == 0) {
       if (!inQos_) return;
       inRedeliver_ = true;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "route")) {
+   if (name.compare("route") == 0) {
       if (!inQos_) return;
       inRoute_ = true;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "node")) {
+   if (name.compare("node") == 0) {
       if (!inRoute_) {
          log_.error(ME, "Ignoring <node>, it is not inside <route>");
          return;
       }
-      if (attrs.getLength() > 0) {
+      if (attrs.size() > 0) {
          if (!getStringAttr(attrs, ID, tmpString)) {
             log_.error(ME, "QoS <route><node> misses id attribute, ignoring node");
             return;
@@ -216,63 +198,64 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       }
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "subscribe")) {
+   if (name.compare("subscribe") == 0) {
       if (!inQos_) return;
       inSubscribe_ = true;
-
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "id")) {
-            msgQosData_.setSubscriptionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         if ( ((*iter).first).compare("id") == 0) {
+            msgQosData_.setSubscriptionId( (*iter).second );
          }
+         iter++;
       }
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "persistent")) {
+   if (name.compare("persistent") == 0) {
       if (!inQos_) return;
       msgQosData_.setPersistent(true);
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "forceUpdate")) {
+   if (name.compare("forceUpdate") == 0) {
       if (!inQos_) return;
       msgQosData_.setForceUpdate(true);
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "readonly")) {
+   if (name.compare("readonly") == 0) {
       if (!inQos_) return;
       msgQosData_.setReadonly(true);
       log_.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
       return;
    }
    
-   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+   if (name.compare("clientProperty") == 0) {
       if (!inQos_) return;
       character_.erase();
-      clientPropertyKey_ = SaxHandlerBase::getStringValue(attrs.getValue("name"));
+      AttributeMap::const_iterator iter = attrs.find("name");
+      if (iter != attrs.end()) clientPropertyKey_ = (*iter).second;
    }
       
 }
 
 
-void MsgQosFactory::characters(const XMLCh* const ch, const unsigned int length) 
+void MsgQosFactory::characters(const string &ch) 
 {
-   SaxHandlerBase::characters(ch, length);
-   if (inQueue_ || inPersistence_) queuePropertyFactory_.characters(ch, length);
+   XmlHandlerBase::characters(ch);
+   if (inQueue_ || inPersistence_) queuePropertyFactory_.characters(ch);
 }
 
 
-void MsgQosFactory::endElement(const XMLCh* const name) 
+void MsgQosFactory::endElement(const string &name) 
 {
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
       inQos_ = false;
       return;
    }
    if (inQueue_ || inPersistence_) {
       queuePropertyFactory_.endElement(name);
-      if(SaxHandlerBase::caseCompare(name, "queue")) {
+      if(name.compare("queue") == 0) {
          inQueue_ = false;
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
@@ -288,7 +271,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
          return;
       }
 
-      if(SaxHandlerBase::caseCompare(name, "persistence")) { // topic: RELATING_MSGUNITSTORE
+      if(name.compare("persistence") == 0) { // topic: RELATING_MSGUNITSTORE
          inPersistence_ = false;
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
@@ -299,32 +282,33 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       }
    }
 
-   if (SaxHandlerBase::caseCompare(name, "state")) {
+   if (name.compare("state") == 0) {
       inState_ = false;
       character_.erase();
       return;
    }
 
-   if( SaxHandlerBase::caseCompare(name, "destination") ) {
+   if( name.compare("destination") ) {
       inDestination_ = false;
-      string tmp = StringTrim::trim(character_); // The address or XPath query string
-      if (!tmp.empty()) {
-         destination_.setDestination(SessionQos(global_, tmp)); // set address or XPath query string if it is before the forceQueuing tag
+      StringTrim::trim(character_); // The address or XPath query string
+      if (!character_.empty() == 0) {
+         destination_.setDestination(SessionQos(global_, character_)); // set address or XPath query string if it is before the forceQueuing tag
          character_.erase();
       }
       msgQosData_.addDestination(destination_);
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "sender")) {
+   if(name.compare("sender") == 0) {
       inSender_ = false;
-      msgQosData_.setSender(SessionQos(global_, StringTrim::trim(character_)));
+      StringTrim::trim(character_);
+      msgQosData_.setSender(SessionQos(global_, character_));
       // if (log.trace()) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
       character_.erase();
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "priority")) {
+   if(name.compare("priority") == 0) {
       inPriority_ = false;
       int prio = atoi(character_.c_str());
       msgQosData_.setPriority(int2Priority(prio));
@@ -332,23 +316,23 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "expiration")) {
+   if(name.compare("expiration") == 0) {
       inExpiration_ = false;
       character_.erase();
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "rcvTimestamp")) {
+   if(name.compare("rcvTimestamp") == 0) {
       inRcvTimestamp_ = false;
       character_.erase();
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "forceUpdate")) {
+   if(name.compare("forceUpdate") == 0) {
       inIsVolatile_ = false;
-      string tmp = StringTrim::trim(character_);
-      if (!tmp.empty()) {
-         if (tmp == "true") msgQosData_.setForceUpdate(true);
+      StringTrim::trim(character_);
+      if (!character_.empty()) {
+         if (character_ == "true") msgQosData_.setForceUpdate(true);
          else msgQosData_.setForceUpdate(false);
       }
       // if (log.trace()) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
@@ -356,55 +340,55 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "subscribe")) {
+   if (name.compare("subscribe") == 0) {
       inSubscribe_ = false;
       character_.erase();
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "persistent")) {
+   if(name.compare("persistent") == 0) {
       inIsPersistent_ = false;
-      string tmp = StringTrim::trim(character_);
-      if (!tmp.empty())
-         if (tmp == "true") msgQosData_.setPersistent(true);
+      StringTrim::trim(character_);
+      if (!character_.empty())
+         if (character_ == "true") msgQosData_.setPersistent(true);
          else  msgQosData_.setPersistent(false);
       // if (log.trace()) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
       character_.erase();
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "readonly")) {
+   if(name.compare("readonly") == 0) {
       inReadonly_ = false;
-      string tmp = StringTrim::trim(character_);
-      if (!tmp.empty())
-         if (tmp == "true") msgQosData_.setReadonly(true);
+      StringTrim::trim(character_);
+      if (!character_.empty())
+         if (character_ == "true") msgQosData_.setReadonly(true);
          else  msgQosData_.setReadonly(false);
       // if (log.trace()) log.trace(ME, "Found readonly = " + msgQosData.readonly());
       character_.erase();
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "redeliver")) {
+   if(name.compare("redeliver") == 0) {
       inRedeliver_ = false;
-      string tmp = StringTrim::trim(character_);
-      msgQosData_.setRedeliver(atoi(tmp.c_str()));
+      StringTrim::trim(character_);
+      msgQosData_.setRedeliver(atoi(character_.c_str()));
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "node")) {
+   if (name.compare("node") == 0) {
       msgQosData_.addRouteInfo(routeInfo_);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "route")) {
+   if (name.compare("route") == 0) {
       inRoute_ = false;
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+   if (name.compare("clientProperty") == 0) {
       msgQosData_.setClientProperty(clientPropertyKey_, character_);
       character_.erase();
    }
@@ -429,18 +413,13 @@ bool MsgQosFactory::sendRemainingLife()
 
 #ifdef _XMLBLASTER_CLASSTEST
 
-#include <util/PlatformUtils.hpp>
-
 using namespace std;
 using namespace org::xmlBlaster::util::qos;
 
 int main(int args, char* argv[])
 {
-    // Init the XML platform
     try
     {
-       XMLPlatformUtils::Initialize();
-
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);
 
@@ -452,12 +431,10 @@ int main(int args, char* argv[])
        cout << "data before parsing: " << data1.toXml() << endl;
        cout << "data after parsing : " << data2.toXml() << endl;
     }
-    catch(const XMLException& toCatch)  {
-       cout << "Error during platform init! Message:\n";
-       cout <<toCatch.getMessage() << endl;
+    catch(...)  {
+       cout << "exception occured\n";
        return 1;
     }
-
    return 0;
 }
 

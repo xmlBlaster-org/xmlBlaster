@@ -165,9 +165,9 @@ namespace util {
        * @param Returns the trimmed given parameter (the str instance)
        * @see #trim(const char *)
        */
-      static std::string& trim(std::string &str)
+      static void trim(std::string &str)
       {
-         if (str.capacity() < 1 || str.size() < 1) return str;
+         if (str.capacity() < 1 || str.size() < 1) return;
 
          int jj=0;
          if (isspace(str[str.size()-1])) {
@@ -180,20 +180,27 @@ namespace util {
          }
          if (jj<0) {
             str = EMPTY_STRING;
-            return str;
+            return;
          }
 
          if (!isspace(str[0]))
-            return str;
+            return;
          for (std::string::size_type ii=1; ii<str.size(); ii++) {
             if (!isspace(str[ii])) {
                str = str.substr(ii);
-               return str;
+               return;
             }
          }
-         return str;
       }
+
+      static std::string trim(const std::string &str) {
+         std::string tmp = str;
+         trim(tmp);
+         return tmp;
+      }
+
    };
+
 }}} // namespace
 
 #endif

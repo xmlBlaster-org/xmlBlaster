@@ -60,7 +60,7 @@ public class AllTests
       suite.addTest(TestUnSub.suite());
       suite.addTest(TestPtD.suite());
       suite.addTest(TestPtSession.suite());
-      suite.addTest(TestPtPSubscribeable.suite());
+      suite.addTest(TestPtPSubscribable.suite());
       suite.addTest(TestPtDQueue.suite());
       suite.addTest(TestPtDQueueRedeliver.suite());
       suite.addTest(TestPub.suite());

@@ -22,6 +22,9 @@ Comment:   Login/logout test for xmlBlaster
 #include "TestSuite.h"
 #include <util/qos/ConnectQosFactory.h>
 #include <iostream>
+#ifdef XMLBLASTER_MICO
+#  include <mico/version.h>
+#endif
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -197,11 +200,16 @@ int main(int args, char *argc[]) {
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
 
 # ifdef XMLBLASTER_MICO
+   if (MICO_BIN_VERSION < 0x02030b) {
         std::cout << " !!!!! THIS TEST CAN NOT BE RUN WITH MICO SINCE AN ORB WHICH IS SHUTDOWN CAN NOT BE REUSED !!!!" << std::endl;
         std::cout << " !!!!! IT HAS BEEN TESTED AND IS PROVEN TO FAIL WITH MICO 2.3.7 AND 2.3.8                  !!!!" << std::endl;
         std::cout << " !!!!! IT IS PROVEN TO FAIL WITH MICO 2.3.7 AND 2.3.8                                      !!!!" << std::endl;
         std::cout << " !!!!! TRY IT WITH ANOTHER CORBA IMPLEMENTATION (for example TAO)                          !!!!" << std::endl;
         exit(-1);
+   }
+   else {
+      std::cout << "MICO Version " << MICO_VERSION << " should run fine" << std::endl;
+   }
 # endif
 
    string qos1 =

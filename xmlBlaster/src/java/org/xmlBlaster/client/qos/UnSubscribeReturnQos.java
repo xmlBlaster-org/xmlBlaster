@@ -48,6 +48,13 @@ public final class UnSubscribeReturnQos
    }
 
    /**
+    * Access the raw data object. 
+    */
+   public StatusQosData getData() {
+      return this.statusQosData;
+   }
+
+   /**
     * Access the state of message. 
     * @return OK (Other values are not yet supported)
     */

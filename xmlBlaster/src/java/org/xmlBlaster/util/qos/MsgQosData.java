@@ -16,6 +16,10 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.MethodName;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
+
 
 
 /**
@@ -61,9 +65,9 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId;
 
-   public transient final static boolean DEFAULT_isSubscribeable = true;
+   public transient final static boolean DEFAULT_isSubscribable = true;
    /** As default you can subscribe even PtP messages, set it to false if you don't want any subscriber to see your PtP message */
-   private PropBoolean subscribeable = new PropBoolean(DEFAULT_isSubscribeable);
+   private PropBoolean subscribable = new PropBoolean(DEFAULT_isSubscribable);
 
    /** the number of resend tries on failure */
    private int redeliver;
@@ -155,10 +159,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @see #isSubscribeable()
+    * @see #isSubscribable()
     */
-   public void setSubscribeable(boolean isSubscribeable) {
-      this.subscribeable.setValue(isSubscribeable);
+   public void setSubscribable(boolean isSubscribable) {
+      this.subscribable.setValue(isSubscribable);
    }
 
    /**
@@ -167,12 +171,12 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @return true if Publish/Subscribe style is used<br />
     *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
     */
-   public boolean isSubscribeable() {
-      return this.subscribeable.getValue();
+   public boolean isSubscribable() {
+      return this.subscribable.getValue();
    }
 
-   public PropBoolean getSubscribeableProp() {
-      return this.subscribeable;
+   public PropBoolean getSubscribableProp() {
+      return this.subscribable;
    }
 
    /**
@@ -635,6 +639,71 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
+    * Dump the QoS to a flattened JXPath representation. 
+    * <p>
+    * This is experimental code for the simple Applet client
+    * </p>
+    * <pre>
+    *   /qos/rcvTimestamp/@nanos                  -> 1042815836675000001
+    *   /qos/methodName/text()                    -> update
+    *   /qos/clientProperty[@name='myAge']/text() -> 12
+    *   /qos/state/@id                            -> OK
+    * </pre>
+    * <p>
+    * Currently only an UpdateQos dump is supported
+    * @see <a href="http://jakarta.apache.org/commons/jxpath/">Apache JXPath</a>
+    */
+   public Map toJXPath() {
+      /* Problems with current java objects / JXPath mapping:
+        1. <persistent />:  "/qos/persistent/text()"  -> returns nothing instead of true
+        2.  getState() returns the <state id=''> instead of a state object with state.getId(), state.getInfo()
+        3. "/qos/route/node/@id" returns three nodes -> we need something like nodeList
+        4. Priority is returned as '4' or as 'LOW': With java this is handled by PriorityEnum.java
+      */
+
+      TreeMap map = new TreeMap();
+      map.put("/qos/rcvTimestamp/@nanos", ""+getRcvTimestamp());
+      map.put("/qos/rcvTimestamp/text()", ""+getRcvTime());
+      map.put("/qos/methodName/text()", getMethod());
+      map.put("/qos/persistent/text()", ""+isPersistent());
+
+      Map pMap = getClientProperties();
+      Iterator it = pMap.keySet().iterator();
+      while (it.hasNext()) {
+         String key = (String)it.next();
+         map.put("/qos/clientProperty[@name='"+key+"']/text()", pMap.get(key));
+         map.put("/qos/clientProperty[@name='"+key+"']/@type", pMap.get(key));
+      }
+
+      if (isUpdate() || isGet()) {
+         org.xmlBlaster.util.cluster.RouteInfo[] routes = getRouteNodes();
+         for (int i=0; i<routes.length; i++) {
+            map.put("/qos/route/node[@id='"+routes[i].getId()+"']/@stratum", ""+routes[i].getStratum());
+            map.put("/qos/route/node[@id='"+routes[i].getId()+"']/@timestamp", ""+routes[i].getTimestamp());
+            map.put("/qos/route/node[@id='"+routes[i].getId()+"']/@dirtyRead", ""+routes[i].getDirtyRead());
+         }
+         map.put("/qos/state/@id", getState());
+         map.put("/qos/state/@info", getStateInfo());
+      }
+
+      if (isUpdate()) {
+         map.put("/qos/subscribe/@id", getSubscriptionId());
+         map.put("/qos/queue/@index", ""+getQueueIndex());
+         map.put("/qos/queue/@size", ""+getQueueSize());
+         map.put("/qos/redeliver/text()", ""+getRedeliver());
+      }
+
+      map.put("/qos/sender/text()", getSender().toString());
+      map.put("/qos/expiration/@lifeTime", ""+getLifeTime());
+      map.put("/qos/expiration/@remainingLife", ""+getRemainingLife());
+
+      if (isPublish()) {
+         // TopicProperty ?
+      }
+      return map;
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of the message QoS as a XML ASCII string
@@ -663,7 +732,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       //try {
          newOne = (MsgQosData)super.clone();
          synchronized(this) {
-            newOne.subscribeable = (PropBoolean)this.subscribeable.clone();
+            newOne.subscribable = (PropBoolean)this.subscribable.clone();
             newOne.persistent = (PropBoolean)this.persistent.clone();
             newOne.forceUpdate = (PropBoolean)this.forceUpdate.clone();
             newOne.lifeTime = (PropLong)this.lifeTime.clone();
@@ -683,5 +752,15 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    public void setGlobal(Global glob) {
       super.setGlobal(glob);
       this.factory = glob.getMsgQosFactory();
+   }
+
+   public static void main(String[] args) {
+      MsgQosData md = new MsgQosData(new Global(args), MethodName.UPDATE);
+      Map map = md.toJXPath();
+      Iterator it = map.keySet().iterator();
+      while (it.hasNext()) {
+         String key = (String)it.next();
+         System.out.println(key + " -> '" + map.get(key) + "'");
+      }
    }
 }

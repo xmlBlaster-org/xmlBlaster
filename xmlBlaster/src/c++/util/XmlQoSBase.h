@@ -10,7 +10,7 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 #define _UTIL_XMLQOSBASE_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/SaxHandlerBase.h>
+#include <util/parser/XmlHandlerBase.h>
 #include <string>
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -26,7 +26,7 @@ namespace org { namespace xmlBlaster { namespace util {
      * The &lt;qos> tag is parsed here, and you provide the parsing of the 
      * inner tags.
      */
-    class Dll_Export XmlQoSBase : public SaxHandlerBase
+    class Dll_Export XmlQoSBase : public parser::XmlHandlerBase
     {
 
     private:
@@ -68,7 +68,7 @@ namespace org { namespace xmlBlaster { namespace util {
         *         need to look at this tag anymore
         *         false this tag is not handled by this Base class
         */
-       bool startElementBase(const XMLCh* const name, AttributeList& /*attrs*/);
+       bool startElementBase(const std::string &name, const parser::AttributeMap& /*attrs*/);
 
     public:
        /**
@@ -76,7 +76,7 @@ namespace org { namespace xmlBlaster { namespace util {
         * Default implementation, knows how to parse &lt;qos> but knows 
         * nothing about the tags inside of qos
         */
-       void startElement(const XMLCh* const name, AttributeList &attrs);
+       void startElement(const std::string &name, const parser::AttributeMap &attrs);
        
     protected:
        /**
@@ -91,7 +91,7 @@ namespace org { namespace xmlBlaster { namespace util {
         *         need to look at this tag anymore
         *         false this tag is not handled by this Base class
         */
-       bool endElementBase(const XMLCh* const name);
+       bool endElementBase(const std::string &name);
 
     public:
        /** End element.
@@ -99,7 +99,7 @@ namespace org { namespace xmlBlaster { namespace util {
         * Default implementation, knows how to parse &lt;qos> but knows 
         * nothing about the tags inside of qos
         */
-       void endElement(const XMLCh* const name);
+       void endElement(const std::string &name);
     };
 }}} // namespace
 

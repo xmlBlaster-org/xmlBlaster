@@ -1,6 +1,12 @@
 This is the framework to allow callbacks from xmlBlaster to browsers.
 
-We provide the JSDK from SUN  xmlBlaster/lib/servlet.jar (2.0)
+SEE: xmlBlaster/demo/http/README
+     http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
+     http://www.xmlblaster.org/xmlBlaster/demo/http/index.html
+
+TODO: Remove all applet specific stuff, this is now seperately handled in package appletproxy
+
+We provide the JSDK from SUN  xmlBlaster/lib/servlet.jar (2.1 (copied from tomcat 3.2.4)?)
 in this distribution to allow compilation.
 
 The servlets connects to xmlBlaster using CORBA

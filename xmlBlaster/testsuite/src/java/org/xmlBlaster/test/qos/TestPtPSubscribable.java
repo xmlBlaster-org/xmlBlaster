@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TestPtPSubscribeable.java
+Name:      TestPtPSubscribable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -33,46 +33,46 @@ import junit.framework.*;
 
 
 /**
- * Here we test how to make PtP messages invisible to subscribers using the <i>subscribeable</i> QoS. 
+ * Here we test how to make PtP messages invisible to subscribers using the <i>subscribable</i> QoS. 
  * <p>
  * </p>
  * <p>
  * Invoke examples:
  * </p>
  * <pre>
- *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtPSubscribeable
- *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtPSubscribeable
+ *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtPSubscribable
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtPSubscribable
  * </pre>
  */
-public class TestPtPSubscribeable extends TestCase
+public class TestPtPSubscribable extends TestCase
 {
-   private static String ME = "TestPtPSubscribeable";
+   private static String ME = "TestPtPSubscribable";
    private final Global glob;
    private final LogChannel log;
    private String passwd = "secret";
    private int serverPort = 7615;
-   private String oid = "TestPtPSubscribeable.Msg";
+   private String oid = "TestPtPSubscribable.Msg";
    private EmbeddedXmlBlaster serverThread = null;
-   private String sessionNameRcv = "TestPtPSubscribeableReceiver";
+   private String sessionNameRcv = "TestPtPSubscribableReceiver";
    private I_XmlBlasterAccess conRcv;
    private boolean connectedRcv = false;
    private MsgInterceptor updateInterceptorRcv;
 
-   private String sessionNameSnd = "TestPtPSubscribeableSender";
+   private String sessionNameSnd = "TestPtPSubscribableSender";
    private I_XmlBlasterAccess conSnd;
    private MsgInterceptor updateInterceptorSnd;
 
    /** For Junit */
-   public TestPtPSubscribeable() {
-      this(new Global(), "TestPtPSubscribeable");
+   public TestPtPSubscribable() {
+      this(new Global(), "TestPtPSubscribable");
    }
 
    /**
-    * Constructs the TestPtPSubscribeable object.
+    * Constructs the TestPtPSubscribable object.
     * <p />
     * @param testName   The name used in the test suite and to login to xmlBlaster
     */
-   public TestPtPSubscribeable(Global glob, String testName) {
+   public TestPtPSubscribable(Global glob, String testName) {
        super(testName);
        this.glob = glob;
        this.log = glob.getLog(null);
@@ -111,8 +111,8 @@ public class TestPtPSubscribeable extends TestCase
     * 3. receiver start and should receive the message
     * </p>
     */
-   public void testSubscribeable() {
-      log.info(ME, "testSubscribeable("+sessionNameRcv+") ...");
+   public void testSubscribable() {
+      log.info(ME, "testSubscribable("+sessionNameRcv+") ...");
 
       try {
          log.info(ME, "============ STEP 1: Start publisher client");
@@ -150,12 +150,12 @@ public class TestPtPSubscribeable extends TestCase
          log.info(ME, "Connect as subscriber '" + crqRcv.getSessionName() + "' success");
 
          {
-            log.info(ME, "============ STEP 4: Publish PtP message which is NOT subscribeable");
+            log.info(ME, "============ STEP 4: Publish PtP message which is NOT subscribable");
             PublishKey pk = new PublishKey(globSnd, oid, "text/xml", "1.0");
             PublishQos pq = new PublishQos(globSnd);
             Destination dest = new Destination(globSnd, new SessionName(globSnd, sessionNameRcv));
             pq.addDestination(dest);
-            pq.setSubscribeable(false);
+            pq.setSubscribable(false);
             byte[] content = "Hello".getBytes();
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             PublishReturnQos prq = conSnd.publish(msgUnit);
@@ -170,12 +170,12 @@ public class TestPtPSubscribeable extends TestCase
          }
 
          {
-            log.info(ME, "============ STEP 5: Publish PtP message which IS subscribeable");
+            log.info(ME, "============ STEP 5: Publish PtP message which IS subscribable");
             PublishKey pk = new PublishKey(globSnd, oid, "text/xml", "1.0");
             PublishQos pq = new PublishQos(globSnd);
             Destination dest = new Destination(globSnd, new SessionName(globSnd, sessionNameRcv));
             pq.addDestination(dest);
-            pq.setSubscribeable(true);
+            pq.setSubscribable(true);
             byte[] content = "Hello".getBytes();
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             PublishReturnQos prq = conSnd.publish(msgUnit);
@@ -200,7 +200,7 @@ public class TestPtPSubscribeable extends TestCase
          if (conRcv != null) conRcv.disconnect(null);
          if (conSnd != null) conSnd.disconnect(null);
       }
-      log.info(ME, "Success in testSubscribeable()");
+      log.info(ME, "Success in testSubscribable()");
    }
 
    /**
@@ -208,22 +208,22 @@ public class TestPtPSubscribeable extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "TestPtPSubscribeable";
-       suite.addTest(new TestPtPSubscribeable(Global.instance(), "testSubscribeable"));
+       String loginName = "TestPtPSubscribable";
+       suite.addTest(new TestPtPSubscribable(Global.instance(), "testSubscribable"));
        return suite;
    }
 
    /**
     * Invoke: 
     * <pre>
-    *   java org.xmlBlaster.test.qos.TestPtPSubscribeable
-    *   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtPSubscribeable
+    *   java org.xmlBlaster.test.qos.TestPtPSubscribable
+    *   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtPSubscribable
     * <pre>
     */
    public static void main(String args[]) {
-      TestPtPSubscribeable testSub = new TestPtPSubscribeable(new Global(args), "TestPtPSubscribeable");
+      TestPtPSubscribable testSub = new TestPtPSubscribable(new Global(args), "TestPtPSubscribable");
       testSub.setUp();
-      testSub.testSubscribeable();
+      testSub.testSubscribable();
       testSub.tearDown();
    }
 }

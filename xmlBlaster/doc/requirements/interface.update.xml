@@ -139,9 +139,10 @@
 
   &lt;sender>/node/heron/client/Tim/-2&lt;/sender>
 
-  &lt;priority>5&lt;/priority>
+  &lt;priority>5&lt;/priority>  <!-- "MIN", "LOW", "NORM", "HIGH", "MAX" -->
 
-  &lt;subscribe id='__subId:1'/> &lt;!-- Showing which subscription forced the update -->
+  &lt;subscribe id='__subId:heron-2'/>
+                                 &lt;!-- Showing which subscription forced the update -->
                                  &lt;!-- PtP messages are marked with '__subId:PtP' -->
 
   &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call,
@@ -159,6 +160,10 @@
   
   &lt;route> &lt;!-- Routing information in cluster environment -->
      &lt;node id='heron'/>
+  &lt;/route>
+  &lt;route>
+     &lt;node id='avalon' stratum='1' timestamp='1068026303739000001' dirtyRead='false'/>
+     &lt;node id='heron' stratum='0' timestamp='1068026303773000001' dirtyRead='false'/>
   &lt;/route>
 &lt;/qos>
       </pre>
@@ -200,7 +205,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
    }
       </pre>
    <p>
-   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   See xmlBlaster/demo/HelloWorld*.java for more examples.
    </p>
    </example>
 
@@ -253,7 +258,7 @@ java javaclients.HelloWorldSubscribe -oid __sys__deadMessage
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>

@@ -17,14 +17,14 @@ using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
-Dll_Export const char* CONTENTMIME_DEFAULT = ""; // "text/plain";
+Dll_Export const char* CONTENTMIME_DEFAULT = "text/plain";
 Dll_Export const char* DEFAULT_DOMAIN = "";
 Dll_Export const char* QUERYTYPE_DEFAULT = Constants::EXACT;
 
 void KeyData::init() 
 {
    oid_                 = "";
-   contentMime_         = CONTENTMIME_DEFAULT;
+   contentMime_         = "";
    contentMimeExtended_ = "";
    domain_              = DEFAULT_DOMAIN;
    isGeneratedOid_      = false;
@@ -103,8 +103,8 @@ void KeyData::setContentMime(const string& contentMime)
 }
 
 string KeyData::getContentMime() const
-{
-   return contentMime_;
+{  
+   return (contentMime_.empty()) ? CONTENTMIME_DEFAULT : contentMime_;
 }
 
 void KeyData::setContentMimeExtended(const string& contentMimeExtended)

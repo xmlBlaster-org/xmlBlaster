@@ -39,7 +39,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-extern Dll_Export const bool DEFAULT_isSubscribeable;
+extern Dll_Export const bool DEFAULT_isSubscribable;
 extern Dll_Export const bool DEFAULT_isVolatile;
 extern Dll_Export const bool DEFAULT_persistent;
 extern Dll_Export const bool DEFAULT_forceUpdate;
@@ -83,6 +83,8 @@ protected:
    ClientPropertyMap clientProperties_;	
 
    void copy(const QosData& data);
+
+   std::string dumpClientProperties(const std::string& extraOffset) const;
 
 public:
    /**
@@ -203,6 +205,8 @@ public:
    void clearRoutes();
 
    int size() const;
+
+   
 
    // copy constructor plus assignment operator ...
 

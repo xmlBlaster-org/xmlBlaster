@@ -1,0 +1,25 @@
+author: xmlBlaster@marcelruff.info 2003-11-09
+
+NOTE: The code is fully functional but still considered alpha.
+
+This servlet supports a communication with a simple applet.
+
+No classes from xmlBlaster are necessary (only MethodName.java)
+to be downloaded by the applet, the overall download size is
+approximately 26 kBytes.
+
+
+o For the applet client library code see 
+
+  xmlBlaster/src/java/org/xmlBlaster/client/protocol/http/applet/README
+
+
+o For applets example how to use it see
+
+  xmlBlaster/demo/http/applet
+
+
+o Compile:
+
+  cd xmlBlaster
+  build.sh deploy_war

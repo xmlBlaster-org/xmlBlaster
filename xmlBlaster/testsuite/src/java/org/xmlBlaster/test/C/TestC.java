@@ -188,6 +188,41 @@ public class TestC extends TestCase
    }
 
    /**
+    * Test all C method invocations against a running xmlBlaster. 
+    */
+   public void test_C_Util()
+   {
+      Runtime runtime = Runtime.getRuntime();
+      String[] commandArr = { "../../../../c/bin/TestUtil" };
+      //String[] commandArr = { "../../../../../c/bin/TestUtil" };
+      //String[] commandArr = { "testsuite/src/c/bin/TestUtil" };
+      String[] envArr = { "" };
+
+      log.info(ME, "######## Start test_C_Util('" + commandArr[0] + "')");
+
+      Execute e = new Execute(glob, commandArr, envArr);
+      e.run();
+
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info(ME, "######## SUCCESS test_C_Util('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
+   }
+
+   /**
     * Invoke: java org.xmlBlaster.test.C.TestC
     * @deprecated Use the TestRunner from the testsuite to run it
     */
@@ -199,6 +234,7 @@ public class TestC extends TestCase
       }
       TestC test = new TestC("TestC");
       test.setUp();
+      test.test_C_Util();
       test.test_C_MethodInvocations();
       test.test_C_IllegalArguments();
       test.test_C_Stress();

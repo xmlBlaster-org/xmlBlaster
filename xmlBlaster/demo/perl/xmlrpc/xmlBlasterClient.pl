@@ -197,7 +197,7 @@ sub getServerSysInfo {
         # Call the server and get its current memory consumption.
 
         # 08/07/02 15:39 cyrille@ktaland.com 
-        # from demo/javaclients/HelloWorld.java :
+        # from demo/HelloWorld.java :
         # MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
         #
 

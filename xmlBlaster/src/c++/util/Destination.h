@@ -11,10 +11,7 @@ Comment:   Holding destination address attributes
 #include <util/xmlBlasterDef.h>
 #include <string>
 #include <util/Log.h>
-#include <util/XMLString.hpp> // xerces: used to compare case insensitive str.
 #include <util/qos/SessionQos.h>
-
-
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -101,15 +98,6 @@ public:
     * @param The destination address or XPath query std::string
     */
    org::xmlBlaster::util::qos::SessionQos getDestination() const;
-
-   /**
-    * Compares two std::strings (where name1 is a Unicode3.0 std::string!!) for
-    * unsensitive case compare. It returns true if the content of the
-    * std::strings is equal (no matter what the case is). Using this method to
-    * compare the std::strings should be portable to all platforms supported by
-    * xerces.
-    */
-   bool caseCompare(const char *name1, const char *name2);
 
    /**
     * @param queryType The query type, one of "EXACT" | "XPATH"

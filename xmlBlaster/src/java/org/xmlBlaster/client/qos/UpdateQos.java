@@ -167,8 +167,8 @@ public final class UpdateQos
    /**
     * Was this message subscribed?
     */
-   public boolean isSubscribeable() {
-      return this.msgQosData.isSubscribeable();
+   public boolean isSubscribable() {
+      return this.msgQosData.isSubscribable();
    }
 
    /**

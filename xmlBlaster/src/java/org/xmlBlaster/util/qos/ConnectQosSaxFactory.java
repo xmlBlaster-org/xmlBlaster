@@ -425,7 +425,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
         String tmp = character.toString().trim();
         // delegate the collected tags to our security plugin
         try {
-           I_SecurityQos securityQos = this.connectQosData.getSecurityPlugin(tmpSecurityPluginType, tmpSecurityPluginVersion).getSecurityQos();
+           I_SecurityQos securityQos = this.connectQosData.getClientPlugin(tmpSecurityPluginType, tmpSecurityPluginVersion).createSecurityQos();
            /*
            "<securityService type=\""+tmpSecurityPluginType+"\" version=\""+tmpSecurityPluginVersion+"\">\n"+
                <user>user</user>

@@ -9,7 +9,6 @@ Author:    Michele Laghi
 #include <util/ErrorCode.h>
 #include <util/Global.h>
 #include <util/Log.h>
-#include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
 
 using namespace std;
@@ -173,7 +172,6 @@ public:
 int main(int args, char ** argv)
 {
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
-   XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
 // XmlBlasterAccess::usage();

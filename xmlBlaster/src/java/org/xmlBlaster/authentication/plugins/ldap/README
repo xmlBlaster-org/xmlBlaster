@@ -25,7 +25,7 @@ you can try this:
 
 2. Start a client (all in one line), e.g.
 
-      java javaclients.ClientSub -loginName tim -passwd tim -Security.Client.DefaultPlugin ldap,1.0
+      java HelloWorld3 -session.name tim -passwd tim -Security.Client.DefaultPlugin ldap,1.0
 
    In the log output of xmlBlaster server you should see something like:
 
@@ -40,12 +40,12 @@ you can try this:
 
    Now LDAP is switched on as default, try again:
 
-      java javaclients.ClientSub -loginName tim -passwd tim
+      java HelloWorld3 -session.name tim -passwd tim
 
 
 4. Now try an invalid password:
 
-      java javaclients.ClientSub -loginName tim -passwd aaah
+      java HelloWorld3 -session.name tim -passwd aaah
 
    You should get an authentication error from LDAP
 

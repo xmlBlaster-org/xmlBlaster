@@ -4,7 +4,6 @@
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
-#include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
 #include <client/protocol/corba/CorbaDriverFactory.h>
 #include <iostream>
@@ -187,7 +186,6 @@ int main(int args, char ** argv)
    // suppose you have already initialized an orb
    CORBA::ORB_ptr orb = CORBA::ORB_init(args, argv);
 
-   XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
 

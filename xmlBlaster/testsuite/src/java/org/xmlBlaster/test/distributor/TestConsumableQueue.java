@@ -9,24 +9,10 @@ package org.xmlBlaster.test.distributor;
 import java.util.ArrayList;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.qos.TopicProperty;
 
 import junit.framework.*;
 
@@ -48,83 +34,9 @@ public class TestConsumableQueue extends TestCase {
    private String[] args;
    // as a container and as a latch
    static ArrayList responses = new ArrayList();
-
-   class Client implements I_Callback {
-      private String ME = "Client-";
-      private Global global;
-      private LogChannel log;
-      private I_XmlBlasterAccess accessor;
-      private String name;
-      private String publishOid;
-      private String subscribeOid;
-      private boolean consumable;
-      
-      public Client(Global global, String name) {
-         this.global = global.getClone(null);
-         this.log = this.global.getLog("test");
-         this.accessor = this.global.getXmlBlasterAccess();
-         this.name = name;
-         this.ME += this.name;
-         if (this.log.CALL) this.log.call(ME, "constructor");
-      }
-
-      public void init(String publishOid, String subscribeOid, boolean consumable, int session) throws XmlBlasterException {
-         if (this.log.CALL) this.log.call(ME, "init");
-         this.consumable = consumable;
-         ConnectQos connectQos = new ConnectQos(this.global, name, "secret");
-         if (session > 0) {
-         	SessionName sessionName = new SessionName(this.global, name + "/" + session);
-				connectQos.setSessionName(sessionName);
-         } 
-         this.accessor.connect(connectQos, this);
-         this.publishOid = publishOid;
-         this.subscribeOid = subscribeOid;
-         if (this.subscribeOid != null) {
-         	SubscribeQos subQos = new SubscribeQos(this.global);
-				this.accessor.subscribe(new SubscribeKey(this.global, this.subscribeOid), subQos);
-         }
-      }
-
-      public void publish(String content) throws XmlBlasterException {
-         if (this.log.CALL) this.log.call(ME, "publish");
-         if (this.publishOid == null)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_CLIENTCODE, ME, "no oid configured for publishing");
-         if (content == null)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_CLIENTCODE, ME, "no content passed");
-         
-         PublishQos pubQos = new PublishQos(this.global);
-         TopicProperty topicProp = new TopicProperty(this.global);
-         topicProp.setMsgDistributor("ConsumableQueue,1.0");
-         if (this.consumable) pubQos.setTopicProperty(topicProp);
-         MsgUnit msgUnit = new MsgUnit(new PublishKey(this.global, this.publishOid), content, pubQos);
-         this.accessor.publish(msgUnit);
-      }
-
-      public void shutdown(boolean doEraseTopic) throws XmlBlasterException {
-         if (this.log.CALL) this.log.call(ME, "shutdown");
-         if (this.publishOid != null && doEraseTopic) {
-            this.accessor.erase(new EraseKey(this.global, this.publishOid), new EraseQos(this.global));
-         }
-         this.accessor.disconnect(new DisconnectQos(this.global));
-      }
-
-
-      public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-         throws XmlBlasterException {
-         if (this.log.CALL) this.log.call(ME, "update '" + cbSessionId + "' content='" + new String(content) + "'");
-         String clientProp = (String)updateQos.getData().getClientProperties().get("MsgDistributorPlugin");
-         if (this.consumable) {
-            assertNotNull("the client property 'MsgDistributorPlugin' has not been set on server side: plugin not invoked", clientProp);
-            assertEquals("the client property 'MsgDistributorPlugin' has not been set by the wrong plugin", "ConsumableQueue,1.0", clientProp);
-         }
-         synchronized(responses) {
-            responses.add(this.name);
-            responses.notify();
-         }
-         return "OK";
-      }
-   }
-
+   private static long WAIT_DELAY = 1000L;
+   private static long FAIL_WAIT_DELAY = 1000L;
+   private Client client;
 
    public TestConsumableQueue(String name) {
       super(name);
@@ -156,26 +68,61 @@ public class TestConsumableQueue extends TestCase {
       try {
          boolean consumable = true;
          int session = 1;
-         Client pub1 = new Client(this.global, "pub1");
+         Client pub1 = new Client(this.global, "pub1", responses);
          pub1.init("testConsumableQueue", null, consumable, session);
 
-         Client sub1 = new Client(this.global, "sub1");
+         Client sub1 = new Client(this.global, "sub1", responses);
          sub1.init(null, "testConsumableQueue", consumable, session);
-         Client sub2 = new Client(this.global, "sub2");
+         Client sub2 = new Client(this.global, "sub2", responses);
          sub2.init(null, "testConsumableQueue", consumable, session);
+         Client deadMsg = new Client(this.global, "deadMsg", responses);
+         deadMsg.init(null, "__sys__deadMessage", !consumable, session);
          
          assertEquals("wrong number of initial responses", 0, responses.size());
 
          synchronized(responses) {
             pub1.publish("firstMessage");
-            responses.wait(5000L);
-            Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
+            for (int i=0; i < 1; i++) responses.wait(WAIT_DELAY);
+            Thread.sleep(200L); // wait in case an unexpected update comes in betweeen
             assertEquals("wrong number of updates", 1, responses.size());
+         }
+         responses.clear();         
+
+         synchronized(responses) {
+            sub1.setUpdateException(new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, "testSubSubPub"));
+            pub1.publish("firstMessage");
+            for (int i=0; i < 2; i++) responses.wait(WAIT_DELAY);
+            Thread.sleep(200L); // wait in case an unexpected update comes in betweeen
+            assertEquals("wrong number of updates", 2, responses.size());
+            assertEquals("update should be a dead message", "deadMsg", (String)responses.get(1));
+         }
+
+         responses.clear();         
+         synchronized(responses) {
+            sub1.setUpdateException(null);
+            sub2.setUpdateException(new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, "testSubSubPub"));
+            pub1.publish("firstMessage");
+            for (int i=0; i < 1; i++) responses.wait(WAIT_DELAY);
+            Thread.sleep(200L); // wait in case an unexpected update comes in betweeen
+            assertEquals("wrong number of updates, since the first sub receives, so it should not even try the second", 1, responses.size());
+         }
+
+         /** only one dead message here since the first gives up delivery */         
+         responses.clear();         
+         synchronized(responses) {
+            sub1.setUpdateException(new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, "testSubSubPub"));
+            sub2.setUpdateException(new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, "testSubSubPub"));
+            pub1.publish("firstMessage");
+            for (int i=0; i < 2; i++) responses.wait(WAIT_DELAY);
+            Thread.sleep(200L); // wait in case an unexpected update comes in betweeen
+            assertEquals("wrong number of updates", 2, responses.size());
+            assertEquals("update should be a dead message", "deadMsg", (String)responses.get(1));
          }
          
          sub1.shutdown(false);
          sub2.shutdown(false);
          pub1.shutdown(true);
+         deadMsg.shutdown(false);
       }
       catch (Exception ex) {
          ex.printStackTrace();
@@ -192,18 +139,18 @@ public class TestConsumableQueue extends TestCase {
       try {
          boolean consumable = true;
          int session = 1; 
-         Client pub1 = new Client(this.global, "pub1");
+         Client pub1 = new Client(this.global, "pub1", responses);
          pub1.init("testConsumableQueue", null, consumable, session);
 
          pub1.publish("firstMessage");
 
-         Client sub1 = new Client(this.global, "sub1");
+         Client sub1 = new Client(this.global, "sub1", responses);
          assertEquals("wrong number of initial responses", 0, responses.size());
 
          synchronized(responses) {
             sub1.init(null, "testConsumableQueue", consumable, session);
 
-            responses.wait(5000L);
+            responses.wait(WAIT_DELAY);
             Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
             assertEquals("wrong number of updates", 1, responses.size());
          }
@@ -226,20 +173,20 @@ public class TestConsumableQueue extends TestCase {
       try {
          boolean consumable = true; 
          int session = 1;
-         Client pub1 = new Client(this.global, "pub1");
+         Client pub1 = new Client(this.global, "pub1", responses);
          pub1.init("testConsumableQueue", null, consumable, session);
 
          pub1.publish("firstMessage");
 
-         Client sub1 = new Client(this.global, "sub1");
-         Client sub2 = new Client(this.global, "sub2");
+         Client sub1 = new Client(this.global, "sub1", responses);
+         Client sub2 = new Client(this.global, "sub2", responses);
          assertEquals("wrong number of initial responses", 0, responses.size());
 
          synchronized(responses) {
             sub1.init(null, "testConsumableQueue", consumable, session);
             sub2.init(null, "testConsumableQueue", consumable, session);
 
-            responses.wait(5000L);
+            responses.wait(WAIT_DELAY);
             Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
             assertEquals("wrong number of updates", 1, responses.size());
          }

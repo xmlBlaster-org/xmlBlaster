@@ -49,7 +49,7 @@ public class ClientPlugin implements I_ClientPlugin {
     * The client application can use this method to get a new I_SecurityQos instance,
     * and use it to set userId/password etc.
     */
-   public I_SecurityQos getSecurityQos()
+   public I_SecurityQos createSecurityQos()
    {
       return new SecurityQos(this.glob); // "ldap" "1.0"
    }

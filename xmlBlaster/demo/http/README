@@ -6,8 +6,8 @@ NOTE: http callbacks are tested with tomcat 3.2.x, 4.x and 5.x
       (jserv was OK as well)
 
 See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
+     http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.java.applet.html
      http://www.xmlblaster.org/xmlBlaster/demo/http/index.html
-     http://www.xmlblaster.org/xmlBlaster/doc/howto/http/http_tutorial.html
 
 1. Run (after compiling with 'build.sh all' or 'build.bat all'):
 

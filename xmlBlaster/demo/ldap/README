@@ -82,7 +82,7 @@ Recursiv remove all data:
   echo "o=xmlBlaster, c=ORG" | ldapdelete -x -D "cn=Manager,o=xmlBlaster,c=ORG" -w secret -v -r
 
 
-Query ldap server with netscape:
+Query ldap server with netscape or konqueror (Linux):
 
   ldap://localhost/o=xmlBlaster, c=ORG??base
   ldap://localhost/o=xmlBlaster, c=ORG??sub

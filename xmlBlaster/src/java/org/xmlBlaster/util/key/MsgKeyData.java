@@ -7,6 +7,9 @@ package org.xmlBlaster.util.key;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
 
 /**
  * This class encapsulates the Message meta data and unique identifier (key)
@@ -14,13 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p />
  * A typical key could look like this:<br />
  * <pre>
- *     &lt;key oid='4711' contentMime='text/xml'>
- *        &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
- *           &lt;DRIVER id='FileProof' pollingFreq='10'>
- *           &lt;/DRIVER>
- *        &lt;/AGENT>
- *     &lt;/key>
- * </pre>
+c* </pre>
  * <br />
  * Note that the AGENT and DRIVER tags are application know how, which you have
  * to supply to the setClientTags() method.<br />
@@ -139,14 +136,48 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
       return super.clone();
    }
 
+   /**
+    * Dump the key to a flattened JXPath representation. 
+    * <p>
+    * This is experimental code for the simple Applet client
+    * </p>
+    * <pre>
+    *   /key/@oid                 -> Rugby
+    *   /key/@contentMime         -> text/plain
+    *   /key/@contentMimeExtended -> Version-1.0
+    *   /key/child::node()        -> &lt;myTeam>Munich&lt;numPlayers>6&lt;/numPlayers>&lt;/myTeam>
+    * </pre>
+    * <p>
+    * @see <a href="http://jakarta.apache.org/commons/jxpath/">Apache JXPath</a>
+    */
+   public Map toJXPath() {
+      TreeMap map = new TreeMap();
+      map.put("/key/@oid", getOid());
+      map.put("/key/@contentMime", getContentMime());
+      map.put("/key/@contentMimeExtended", getContentMimeExtended());
+      map.put("/key/child::node()", getClientTags());
+      return map;
+   }
+
    /** java org.xmlBlaster.util.key.MsgKeyData */
    public static void main(String[] args) {
-      MsgKeyData key = new MsgKeyData(null);
-      String clientTags = "<agent xmlns:aa='http://XX'>\n" +
-                          "<![CDATA[ Hello\n" +
-                          " world\n]]>" +
-                          "</agent>";
-      key.setClientTags(clientTags);
-      System.out.println(key.getClientTags());
+      {
+         MsgKeyData key = new MsgKeyData(null);
+         String clientTags = "<agent xmlns:aa='http://XX'>\n" +
+                             "<![CDATA[ Hello\n" +
+                             " world\n]]>" +
+                             "</agent>";
+         key.setClientTags(clientTags);
+         System.out.println(key.getClientTags());
+      }
+      {
+         MsgKeyData md = new MsgKeyData(new Global(args));
+         Map map = md.toJXPath();
+         Iterator it = map.keySet().iterator();
+         while (it.hasNext()) {
+            String key = (String)it.next();
+            System.out.println(key + " -> '" + map.get(key) + "'");
+         }
+      }
    }
 }

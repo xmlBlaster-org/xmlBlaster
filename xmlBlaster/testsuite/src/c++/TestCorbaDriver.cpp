@@ -120,7 +120,6 @@ int main(int args, char ** argv)
 {
    try {
       org::xmlBlaster::util::Object_Lifetime_Manager::init();
-      XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
 

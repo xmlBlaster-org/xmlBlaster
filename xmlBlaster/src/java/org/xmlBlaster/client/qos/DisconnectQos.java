@@ -3,7 +3,6 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.6 2003/12/07 11:57:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
@@ -35,7 +34,6 @@ public class DisconnectQos
 {
    private final Global glob;
    private final DisconnectQosData disconnectQosData;
-   private I_MsgSecurityInterceptor securityInterceptor;
 
    private PropBoolean clearClientQueue = new PropBoolean(true);
    private boolean shutdownDispatcher = true;
@@ -98,7 +96,9 @@ public class DisconnectQos
 
    /**
     * Sets a client property (an application specific property) to the
-    * given value
+    * given value. 
+    * <p>
+    * Note that this is no multimap, later similar keys will overwrite the previous
     * @param key
     * @param value
     */
@@ -128,22 +128,6 @@ public class DisconnectQos
     */
    public String toXml() {
       return this.disconnectQosData.toXml();
-   }
-
-   /**
-    * Access the security interceptor to encrypt/decrypt. 
-    * @return I_MsgSecurityInterceptor plugin or null
-    */
-   public I_MsgSecurityInterceptor getSecurityInterceptor() {
-      return this.securityInterceptor;
-   }
-
-   /**
-    * Access the security interceptor to encrypt/decrypt. 
-    * @return I_MsgSecurityInterceptor
-    */
-   public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
-      this.securityInterceptor = securityInterceptor;
    }
 
    /**

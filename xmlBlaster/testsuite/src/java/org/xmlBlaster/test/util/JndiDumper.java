@@ -8,6 +8,7 @@ package org.xmlBlaster.test.util;
 
 import java.io.PrintStream;
 import java.util.HashSet;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -51,31 +52,78 @@ public class JndiDumper {
          }
       }
    }
-   
+
+   /**
+    * JNDI determines each property's value by merging the values from the following two sources, in order: 
+    * <p/>
+    * The first occurrence of the property from the constructor's environment parameter and (for appropriate properties) the applet parameters and system properties. 
+    * The application resource files (jndi.properties).
+    * <p/>
+    * <pre>
+    * com.sun.jndi.ldap.LdapCtxFactory
+    * com.sun.jndi.fscontext.RefFSContextFactory
+    * com.ibm.ejs.ns.jndi.CNInitialContextFactory
+    * com.ibm.websphere.naming.WsnInitialContextFactory
+    * 
+    * java -Djava.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory org.xmlBlaster.test.util.JndiDumper -startNamingService true -fillNames true
+    * </pre>
+    */
    public static void main(String[] args) {
       try {
-         NamingService namingService = new NamingService();
-         namingService.start();
-         
-         InitialContext context = new InitialContext();
-         context.bind("first", new String("first"));
-         context.bind("second", new String("first"));
-         context.bind("third", new String("first"));
-         context.createSubcontext("dir1");
-         context.createSubcontext("dir2");
-         context.createSubcontext("dir3");
-         context.bind("dir1/first", new String("first"));
-         context.bind("dir1/second", new String("first"));
-         context.bind("dir1/third", new String("first"));
-                  
-         Context ctx = (Context)context.lookup("dir2");
-         ctx.bind("first", new String("first"));
-         ctx.bind("second", new String("first"));
-         ctx.bind("third", new String("first"));
-         
-         JndiDumper.scanContext(null, null, System.out);
+         boolean startNamingService = false;
+         boolean fillNames = true;
+         String factory = null;
+         for (int i=0; i<args.length-1; i++) {
+            if (args[i].equalsIgnoreCase("-startNamingService")) {
+               startNamingService = (new Boolean(args[++i])).booleanValue();
+            }
+            else if (args[i].equalsIgnoreCase("-java.naming.factory.initial")) {
+               factory = args[++i];
+            }
+            else if (args[i].equalsIgnoreCase("-fillNames")) {
+               fillNames = (new Boolean(args[++i])).booleanValue();
+            }
+         }
 
-         namingService.stop();
+         NamingService namingService = null;
+         if (startNamingService) {
+            namingService = new NamingService();
+            namingService.start();
+            System.out.println("Started an ebedded naming service.");
+         }
+
+         Hashtable properties = new Hashtable();
+         if (factory != null) {
+            properties.put("java.naming.factory.initial", factory);
+            System.out.println("Forcing java.naming.factory.initial=" + factory);
+         }
+         else {
+            System.out.println("Using System.getProperty(java.naming.factory.initial)=" + System.getProperty("java.naming.factory.initial"));
+         }
+         
+         InitialContext context = new InitialContext(properties);
+         if (fillNames) {
+            context.bind("first", new String("first"));
+            context.bind("second", new String("first"));
+            context.bind("third", new String("first"));
+            context.createSubcontext("dir1");
+            context.createSubcontext("dir2");
+            context.createSubcontext("dir3");
+            context.bind("dir1/first", new String("first"));
+            context.bind("dir1/second", new String("first"));
+            context.bind("dir1/third", new String("first"));
+                     
+            Context ctx = (Context)context.lookup("dir2");
+            ctx.bind("first", new String("first"));
+            ctx.bind("second", new String("first"));
+            ctx.bind("third", new String("first"));
+         }
+         
+         System.out.println("================JNDI CONTENT START=============");
+         JndiDumper.scanContext(null, context, System.out);
+         System.out.println("================JNDI CONTENT END  =============");
+
+         if (namingService != null) namingService.stop();
       }
       catch (Exception ex) {
          ex.getMessage();

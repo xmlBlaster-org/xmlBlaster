@@ -83,7 +83,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
       if (entryType == null || priority == null || glob == null || storageId ==null) {
          glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
       }
 
@@ -352,6 +352,15 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     */
    public boolean wantReturnObj() {
       return this.wantReturnObj;
+   }
+
+   /**
+    * sets the 'wantReturnObj' flag to what you specify (overwrites the default for
+    * the implementing class).
+    * @param wantReturnObj
+    */
+   public void setWantReturnObject(boolean wantReturnObj) {
+      this.wantReturnObj = wantReturnObj;
    }
 
    /**

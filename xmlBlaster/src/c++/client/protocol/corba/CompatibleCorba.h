@@ -84,26 +84,33 @@ Author:    <Michele Laghi> laghi@swissinfo.org
  *                     MICO (ver. 2.3.1)
  *****************************************************************/
 #elif defined(XMLBLASTER_MICO)
-#define ORB_IS_THREAD_SAFE        false
+# include <mico/version.h>
+# if MICO_BIN_VERSION < 0x02030b  // mico older MICO_VERSION 2.3.11
+#   define ORB_IS_THREAD_SAFE   false
+#   define MICO_INCLUDE_PREAFIX mico
+# else
+#   define ORB_IS_THREAD_SAFE   true
+#   define MICO_INCLUDE_PREAFIX coss
+# endif
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlaster.h>
 #else
 #  include <generated/xmlBlaster.h> // client side include header
 #endif
 #define CORBA_HEADER              <CORBA.h>
-#define COSCONTAINEMENT           <mico/CosContainment.h>
-#define COSOBJECTIDENTITY         <mico/CosObjectIdentity.h>
-#define COSREFERENCE              <mico/CosReference.h>
-#define COSEVENTCHANNELADMIN      <mico/CosEventChannelAdmin.h>
-#define COSEVENTCOMM              <mico/CosEventComm.h>
-#define COSRELATIONSHIPS          <mico/CosRelationships.h>
-#define COSGRAPHS                 <mico/CosGraphs.h>
-#define COSTIME                   <mico/CosTime.h>
-#define COSGRAPHSEXTENSION        <mico/CosGraphsExtension.h>
-#define COSTRADING                <mico/CosTrading.h>
-#define COSNAMING                 <mico/CosNaming.h>
+#define COSCONTAINEMENT           <MICO_INCLUDE_PREAFIX/CosContainment.h>
+#define COSOBJECTIDENTITY         <MICO_INCLUDE_PREAFIX/CosObjectIdentity.h>
+#define COSREFERENCE              <MICO_INCLUDE_PREAFIX/CosReference.h>
+#define COSEVENTCHANNELADMIN      <MICO_INCLUDE_PREAFIX/CosEventChannelAdmin.h>
+#define COSEVENTCOMM              <MICO_INCLUDE_PREAFIX/CosEventComm.h>
+#define COSRELATIONSHIPS          <MICO_INCLUDE_PREAFIX/CosRelationships.h>
+#define COSGRAPHS                 <MICO_INCLUDE_PREAFIX/CosGraphs.h>
+#define COSTIME                   <MICO_INCLUDE_PREAFIX/CosTime.h>
+#define COSGRAPHSEXTENSION        <MICO_INCLUDE_PREAFIX/CosGraphsExtension.h>
+#define COSTRADING                <MICO_INCLUDE_PREAFIX/CosTrading.h>
+#define COSNAMING                 <MICO_INCLUDE_PREAFIX/CosNaming.h>
 #define COSPROPERTY               <not_implemented.h>
-#define COSTRADINGREPOS           <mico/CosTradingRepos.h>
+#define COSTRADINGREPOS           <MICO_INCLUDE_PREAFIX/CosTradingRepos.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <not_implemented.h>
 #define UPDATE_THROW_SPECIFIER    
@@ -128,11 +135,11 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSRELATIONSHIPS          <not_implemented.h>
 #define COSGRAPHS                 <not_implemented.h>
 #define COSTIME                   <orbsvcs/CosTimeC.h>
-#define COSGRAPHSEXTENSION        <not_implemented>
-#define COSTRADING                <mico/CosTradingC.h>
+#define COSGRAPHSEXTENSION        <not_implemented.h>
+#define COSTRADING                <not_implemented.h>
 #define COSNAMING                 <orbsvcs/CosNamingC.h>
 #define COSPROPERTY               <orbsvcs/CosPropertyServiceC.h>
-#define COSTRADINGREPOS           <mico/CosTradingReposC.h>
+#define COSTRADINGREPOS           <not_implemented.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <not_implemented.h>
 #define UPDATE_THROW_SPECIFIER    ACE_THROW_SPEC (( CORBA::SystemException, serverIdl::XmlBlasterException ))

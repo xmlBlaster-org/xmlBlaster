@@ -1,6 +1,18 @@
+***************************************
+DEPRECATED: 
+
+  This directory is deprecated!
+
+  Please use 
+    ~/xmlBlaster/demo/http/applet
+  and read
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.java.applet.html
+**************************************
+
+
 NOTE:
 
-  This applet is not functional yet!
+  This applet is not functional!
 
 
 Start applet as application:

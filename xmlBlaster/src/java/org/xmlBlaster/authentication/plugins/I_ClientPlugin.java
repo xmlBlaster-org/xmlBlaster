@@ -40,7 +40,7 @@ public interface I_ClientPlugin extends I_MsgSecurityInterceptor {
     * which you have to initialize with your credentials (e.g. your 
     * login name and password).
     */
-   public I_SecurityQos getSecurityQos();
+   public I_SecurityQos createSecurityQos();
    
    public void setSessionData(String sessionData);
 }

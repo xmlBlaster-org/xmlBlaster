@@ -48,7 +48,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_KEY_MSGKEYFACTORY_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/SaxHandlerBase.h>
+// #include <util/SaxHandlerBase.h>
+#include <util/parser/XmlHandlerBase.h>
 #include <util/key/MsgKeyData.h>
 
 
@@ -56,19 +57,23 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 
-class Dll_Export MsgKeyFactory : public SaxHandlerBase
+class Dll_Export MsgKeyFactory : public parser::XmlHandlerBase
 {
 private:
     std::string ME;
     org::xmlBlaster::util::key::MsgKeyData msgKeyData_;
 
-    XMLCh* OID; //                   = "oid";
-    XMLCh* CONTENT_MIME; //          = "contentMime";
-    XMLCh* CONTENT_MIME_EXTENDED; // = "contentMimeExtended";
-    XMLCh* D_O_M_A_I_N; //           = "domain";
+    std::string OID; //                   = "oid";
+    std::string CONTENT_MIME; //          = "contentMime";
+    std::string CONTENT_MIME_EXTENDED; // = "contentMimeExtended";
+    std::string D_O_M_A_I_N; //           = "domain";
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    int inKey_; // = 0;
+   std::string clientTags_;
+   std::string clientTagsOffset_;
+   int clientTagsDepth_;
+   
 public:
    /**
     * Can be used as singleton. 
@@ -90,14 +95,14 @@ public:
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   void startElement(const XMLCh* const name, AttributeList& attrs);
+   void startElement(const std::string &name, const parser::AttributeMap &attrs);
 
    /**
     * End element, event from SAX parser.
     * <p />
     * @param name Tag name
     */
-   void endElement(const XMLCh* const name);
+   void endElement(const std::string &name);
 };
 
 }}}} // namespace

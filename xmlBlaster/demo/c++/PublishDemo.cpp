@@ -7,13 +7,13 @@ Comment:   Little demo to show how a publish is done
 
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
-#include <util/PlatformUtils.hpp>
 #include <util/lexical_cast.h>
 #include <iostream>
 
 using namespace std;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
@@ -64,6 +64,8 @@ public:
       key.setOid("c++-demo");
       EraseQos qos(global_);
       connection_.erase(key, qos);
+      connection_.disconnect(DisconnectQos(global_));
+
    }
    
 };
@@ -101,7 +103,6 @@ int main(int args, char ** argv)
 {
    try {
       org::xmlBlaster::util::Object_Lifetime_Manager::init();
-      XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
       Log& log  = glob.getLog("demo");
@@ -115,14 +116,15 @@ int main(int args, char ** argv)
 
       int numOfRuns     = glob.getProperty().getIntProperty("numOfRuns", 10);
       long publishDelay = glob.getProperty().getIntProperty("publishDelay", -1L);
-      PublishDemo demo(glob);
-      demo.connect();
+      PublishDemo *demo = new PublishDemo(glob);
+      demo->connect();
       for (int i=0; i < numOfRuns; i++) {
-         demo.publish();
+         demo->publish();
          if (publishDelay > 0) org::xmlBlaster::util::thread::Thread::sleep(publishDelay);
       }
-      demo.erase();
-      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
+      demo->erase();
+      delete demo;
+      demo = NULL;
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
@@ -141,6 +143,15 @@ int main(int args, char ** argv)
    }
    catch (...) {
       cout << "unknown exception occured" << endl;
+      XmlBlasterException e(INTERNAL_UNKNOWN, "main", "main thread");
+      cout << e.toXml() << endl;
+   }
+
+	try {
+	   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
+	}
+   catch (...) {
+      cout << "unknown exception occured in fini()" << endl;
       XmlBlasterException e(INTERNAL_UNKNOWN, "main", "main thread");
       cout << e.toXml() << endl;
    }

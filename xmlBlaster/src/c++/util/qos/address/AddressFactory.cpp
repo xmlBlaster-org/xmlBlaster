@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.12 2003/10/01 16:55:40 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.13 2003/12/15 15:39:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -24,9 +24,11 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::parser;
+
 
 AddressFactory::AddressFactory(Global& global)
-   : SaxHandlerBase(global), ME("AddressFactory")
+   : XmlHandlerBase(global), ME("AddressFactory")
 {
    address_ = NULL;
 }
@@ -45,16 +47,14 @@ AddressBase& AddressFactory::getAddress()
  * Called for SAX callback start tag
  */
 // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
-void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
+void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
 {
 //   log_.info(ME, string("startElement(rootTag=") + address_->rootTag_ +
 //    string("): name=") + name + " character='" + character_ + "'");
 
    if (log_.call()) log_.call(ME, "::startElement");
    if (log_.trace()) {
-     char* txt = XMLString::transcode(name);
-     log_.trace(ME, string("::startElement: '") + string(txt) + string("'"));
-     SaxHandlerBase::releaseXMLCh(&txt);
+     log_.trace(ME, string("::startElement: '") + name + string("'"));
    }
 
    if (character_.length() > 0) {
@@ -65,55 +65,53 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       character_.erase();
    }
 
-   if (SaxHandlerBase::caseCompare(name, address_->rootTag_.c_str())) { // callback
-      int len = attrs.getLength();
-      if (len > 0) {
-         for (int i = 0; i < len; i++) {
-            if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
-                  address_->setType(SaxHandlerBase::getStringValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "version")) {
-               address_->setVersion(SaxHandlerBase::getStringValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "bootstrapHostname")) {
-               address_->setHostname(SaxHandlerBase::getStringValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "bootstrapPort")) {
-               address_->setPort(SaxHandlerBase::getIntValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "sessionId")) {
-               address_->setSecretSessionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "pingInterval")) {
-               address_->setPingInterval(SaxHandlerBase::getLongValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "retries")) {
-               address_->setRetries(SaxHandlerBase::getLongValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "delay")) {
-               address_->setDelay(SaxHandlerBase::getLongValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "oneway")) {
-               string str1 = SaxHandlerBase::getStringValue(attrs.getValue(i));
-               bool ret = false;
-               if (str1 == "true") ret = true;
-               address_->setOneway(ret);
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "useForSubjectQueue")) {
-               string str1 = SaxHandlerBase::getStringValue(attrs.getValue(i));
-               bool ret = false;
-               if (str1 == "true") ret = true;
-               address_->useForSubjectQueue_ = ret;
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "dispatchPlugin")) {
-               address_->dispatchPlugin_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
-            }
-            else {
-               log_.error(ME, string("Ignoring unknown attribute ") +
-                 SaxHandlerBase::getStringValue(attrs.getName(i)) +
-                 string(" in ") + address_->rootTag_ + string(" section."));
-            }
+   if (name.compare(address_->rootTag_) == 0) { // callback
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         string tmpName = (*iter).first;
+         string tmpValue = (*iter).second;
+         if (tmpName.compare("type") == 0) {
+               address_->setType(tmpValue);
          }
+         else if (tmpName.compare("version") == 0) {
+            address_->setVersion(tmpValue);
+         }
+         else if (tmpName.compare("bootstrapHostname") == 0) {
+            address_->setHostname(tmpValue);
+         }
+         else if (tmpName.compare("bootstrapPort") == 0) {
+            address_->setPort(XmlHandlerBase::getIntValue(tmpValue));
+         }
+         else if (tmpName.compare("sessionId") == 0) {
+            address_->setSecretSessionId(tmpValue);
+         }
+         else if (tmpName.compare("pingInterval") == 0) {
+            address_->setPingInterval(XmlHandlerBase::getLongValue(tmpValue));
+         }
+         else if (tmpName.compare("retries") == 0) {
+            address_->setRetries(XmlHandlerBase::getLongValue(tmpValue));
+         }
+         else if (tmpName.compare("delay") == 0) {
+            address_->setDelay(XmlHandlerBase::getLongValue(tmpValue));
+         }
+         else if (tmpName.compare("oneway") == 0) {
+            bool ret = false;
+            if (tmpValue == "true") ret = true;
+            address_->setOneway(ret);
+         }
+         else if (tmpName.compare("useForSubjectQueue") == 0) {
+            bool ret = false;
+            if (tmpValue == "true") ret = true;
+            address_->useForSubjectQueue_ = ret;
+         }
+         else if (tmpName.compare("dispatchPlugin") == 0) {
+            address_->dispatchPlugin_ = tmpValue;
+         }
+         else {
+            log_.error(ME, string("Ignoring unknown attribute ") +
+              tmpName +  string(" in ") + address_->rootTag_ + string(" section."));
+         }
+         iter++;
       }
       if (address_->getType() == "") {
          log_.error(ME, string("Missing '") + address_->rootTag_ + string("' attribute 'type' in QoS"));
@@ -126,39 +124,39 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "burstMode")) {
-      int len = attrs.getLength();
-      if (len > 0) {
-         int i=0;
-         for (i = 0; i < len; i++) {
-            if (SaxHandlerBase::caseCompare(attrs.getName(i), "collectTime")) {
-               address_->setCollectTime(SaxHandlerBase::getLongValue(attrs.getValue(i)));
-            }
+   if (name.compare("burstMode") == 0) {
+      AttributeMap::const_iterator iter = attrs.begin();
+      bool found = false;
+      while (iter != attrs.end()) {
+         if (((*iter).first).compare("collectTime") == 0) {
+            address_->setCollectTime(XmlHandlerBase::getLongValue((*iter).second));
+            found = true;
          }
+         iter++;
       }
-      else {
-         log_.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
-      }
+      if (!found) log_.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "compress")) {
-      int len = attrs.getLength();
-      if (len > 0) {
-         for (int i = 0; i < len; i++) {
-            if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
-               address_->setCompressType(SaxHandlerBase::getStringValue(attrs.getValue(i)));
-            }
-            else if (SaxHandlerBase::caseCompare(attrs.getName(i), "minSize")) {
-               address_->setMinSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
-            }
+
+   if (name.compare("compress") == 0) {
+      AttributeMap::const_iterator iter = attrs.begin();
+      string tmpName = (*iter).first;
+      string tmpValue = (*iter).second;
+      bool found = false;
+      while (iter != attrs.end()) {
+         if (tmpName.compare("type") == 0) {
+            address_->setCompressType(tmpValue);
+            found = true;
          }
+         else if (tmpName.compare("minSize") == 0) {
+            address_->setMinSize(XmlHandlerBase::getLongValue(tmpValue));
+         }
+         iter++;
       }
-      else {
-         log_.error(ME, "Missing 'type' attribute in qos <compress>");
-      }
+      if (!found) log_.error(ME, "Missing 'type' attribute in qos <compress>");
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "ptp")) {
+   if (name.compare("ptp") == 0) {
       return;
    }
 }
@@ -169,26 +167,24 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 
 /** End element. */
 // public final void endElement(String uri, String localName, String name, StringBuffer character) {
-void AddressFactory::endElement(const XMLCh* const name)
+void AddressFactory::endElement(const string &name)
 {
    if (log_.call()) log_.call(ME, "::endElement");
    if (log_.trace()) {
-     char* txt = XMLString::transcode(name);
-     log_.trace(ME, string("::endElement: '") + string(txt) + string("'"));
-     SaxHandlerBase::releaseXMLCh(&txt);
+     log_.trace(ME, string("::endElement: '") + name + string("'"));
    }
-   if (SaxHandlerBase::caseCompare(name, address_->rootTag_.c_str())) { // callback
+   if (name.compare(address_->rootTag_) == 0) { // callback
       StringTrim::trim(character_);
       if (!character_.empty()) address_->setAddress(character_);
       else if (address_->getAddress() == "")
          log_.error(ME, address_->rootTag_ + string(" QoS contains no address data"));
 
    }
-   else if (SaxHandlerBase::caseCompare(name, "burstMode")) {
+   else if (name.compare("burstMode") == 0) {
    }
-   else if (SaxHandlerBase::caseCompare(name, "compress")) {
+   else if (name.compare("compress") == 0) {
    }
-   else if (SaxHandlerBase::caseCompare(name, "ptp")) {
+   else if (name.compare("ptp") == 0) {
       StringTrim::trim(character_);
       if (!character_.empty()) {
          address_->ptpAllowed_ = string("true")==character_ || string("TRUE")==character_;
@@ -210,7 +206,6 @@ AddressBase& AddressFactory::readAddress(const string& litteral, AddressBase& ad
 
 #ifdef _XMLBLASTER_CLASSTEST
 #include <util/qos/address/Address.h>
-#include <util/PlatformUtils.hpp>
 
 using namespace std;
 using namespace org::xmlBlaster::util::qos::address;
@@ -219,50 +214,44 @@ using namespace org::xmlBlaster::util::qos::address;
 int main(int args, char* argv[])
 {
    try {
-      {
-         XMLPlatformUtils::Initialize();
+      Global& glob = Global::getInstance();
+      glob.initialize(args, argv);
+      Log& log = glob.getLog("core");
+      log.info("main", "This is a simple info");
+      Address a(glob);
+      a.setType("SOCKET");
+      a.setAddress("127.0.0.1:7600");
+      a.setCollectTime(12345l);
+      a.setPingInterval(54321l);
+      a.setRetries(17);
+      a.setDelay(7890l);
+      a.setOneway(true);
+      a.setSecretSessionId("0x4546hwi89");
+      cout << a.toXml() << endl;
 
-         Global& glob = Global::getInstance();
-         glob.initialize(args, argv);
-         Log& log = glob.getLog("core");
-         log.info("main", "This is a simple info");
-         Address a(glob);
-         a.setType("SOCKET");
-         a.setAddress("127.0.0.1:7600");
-         a.setCollectTime(12345l);
-         a.setPingInterval(54321l);
-         a.setRetries(17);
-         a.setDelay(7890l);
-         a.setOneway(true);
-         a.setSecretSessionId("0x4546hwi89");
-         cout << a.toXml() << endl;
+      AddressFactory factory(glob);
+      Address addr(glob);
+      AddressBase* ptr = &factory.readAddress(a.toXml(), addr);
+      cout << "parsed one: " << endl << ptr->toXml() << endl;
 
-         AddressFactory factory(glob);
-         Address addr(glob);
-         AddressBase* ptr = &factory.readAddress(a.toXml(), addr);
-         cout << "parsed one: " << endl << ptr->toXml() << endl;
+      string nodeId = "heron";
+      int                nmax = 8;
+      const char** argc = new const char*[nmax];
+      argc[0] = "-sessionId";
+      argc[1] = "ERROR";
+      string help = string("-sessionId[") + nodeId + string("]");
+      argc[2] = string(help).c_str();
+      argc[3] = "OK";
+      argc[4] = "-pingInterval";
+      argc[5] = "8888";
+      help = string("-delay[") + nodeId + string("]");
+      argc[6] = help.c_str();
+      argc[7] = "8888";
 
-      }
-      {
-         string nodeId = "heron";
-         int                nmax = 8;
-         const char** argc = new const char*[nmax];
-         argc[0] = "-sessionId";
-         argc[1] = "ERROR";
-         string help = string("-sessionId[") + nodeId + string("]");
-         argc[2] = string(help).c_str();
-         argc[3] = "OK";
-         argc[4] = "-pingInterval";
-         argc[5] = "8888";
-         help = string("-delay[") + nodeId + string("]");
-         argc[6] = help.c_str();
-         argc[7] = "8888";
-
-         Global& glob = Global::getInstance();
-         glob.initialize(nmax, argc);
-         Address a(glob, "RMI", nodeId);
-         cout << a.toXml() << endl;
-      }
+      Global& glob = Global::getInstance();
+      glob.initialize(nmax, argc);
+      Address a(glob, "RMI", nodeId);
+      cout << a.toXml() << endl;
    }
    catch(...) {
       cout << "unknown uncatched exception" << endl;

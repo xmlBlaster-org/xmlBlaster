@@ -1,4 +1,4 @@
-// xmlBlaster/demo/javaclients/HelloWorld5.java
+// xmlBlaster/demo/HelloWorld5.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;

@@ -264,13 +264,7 @@ string QueryQosData::toXml(const string& extraOffset) const
       iter++;
    }
    ret += historyQos_.toXml(extraOffset + Constants::INDENT);
-
-   QosData::ClientPropertyMap::const_iterator iter1 = clientProperties_.begin();
-   while (iter1 != clientProperties_.end()) {
-      offset + "   <clientProperty name='" + (*iter1).first + "'>" + (*iter1).second + "</clientProperty>";
-      iter1++;
-   }
-
+   ret += dumpClientProperties(extraOffset + Constants::INDENT);
    ret += offset + "</qos>";
 
    if (ret.length() < 16)

@@ -11,6 +11,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::parser;
 
 void StatusQosFactory::prep()
 {
@@ -21,7 +22,7 @@ void StatusQosFactory::prep()
 }
 
 StatusQosFactory::StatusQosFactory(Global& global)
-   : SaxHandlerBase(global),
+   : XmlHandlerBase(global),
      ME("StatusQosFactory"),
      global_(global),
      log_(global.getLog("core")),
@@ -30,89 +31,93 @@ StatusQosFactory::StatusQosFactory(Global& global)
    prep();
 }
 
-void StatusQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
+void StatusQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
    log_.call(ME, "startElement");
 
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
      statusQosData_ = StatusQosData(global_); // kind of reset
      prep();
      inQos_ = true;
      return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "rcvTimestamp")) {
+   if (name.compare("rcvTimestamp") == 0) {
       if (!inQos_) return;
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "nanos")) {
-            statusQosData_.setRcvTimestamp(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         if (((*iter).first).compare("nanos") == 0) {
+            statusQosData_.setRcvTimestamp(getTimestampValue((*iter).second));
          }
+         iter++;
       }
       return;
    }
  
-   if (SaxHandlerBase::caseCompare(name, "state")) {
+   if (name.compare("state") == 0) {
       if (!inQos_) return;
       inState_ = true;
 
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "id")) {
-            statusQosData_.setState(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      string tmpName = (*iter).first;
+      string tmpValue = (*iter).second;
+      while (iter != attrs.end()) {
+         if (tmpName.compare("id") == 0) {
+            statusQosData_.setState(tmpValue);
          }
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "info")) {
-            statusQosData_.setStateInfo(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+         if (tmpName.compare("info") == 0) {
+            statusQosData_.setStateInfo(tmpValue);
          }
+         iter++;
       }
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "subscribe")) {
+   if (name.compare("subscribe") == 0) {
       if (!inQos_) return;
       inSubscribe_ = true;
-
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "id")) {
-            statusQosData_.setSubscriptionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         if (((*iter).first).compare("id") == 0) {
+            statusQosData_.setSubscriptionId((*iter).second);
          }
+         iter++;
       }
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "key")) {
+   if (name.compare("key") == 0) {
       if (!inQos_) return;
       inKey_ = true;
-
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "oid")) {
-            statusQosData_.setKeyOid(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         if (((*iter).first).compare("oid") == 0) {
+            statusQosData_.setKeyOid((*iter).second);
          }
+         iter++;
       }
       return;
    }
 }
 
-void StatusQosFactory::endElement(const XMLCh* const name)
+void StatusQosFactory::endElement(const string &name)
 {
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
       character_.erase();
       inQos_ = false;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "state")) {
+   if (name.compare("state") == 0) {
       inState_ = false;
       character_.erase();
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "subscribe")) {
+   if (name.compare("subscribe") == 0) {
       inSubscribe_ = false;
       character_.erase();
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "key")) {
+   if (name.compare("key") == 0) {
       inKey_ = false;
       character_.erase();
       return;
@@ -131,18 +136,13 @@ StatusQosData StatusQosFactory::readObject(const string& qos)
 
 #ifdef _XMLBLASTER_CLASSTEST
 
-#include <util/PlatformUtils.hpp>
-
 using namespace std;
 using namespace org::xmlBlaster::util::qos;
 
 int main(int args, char* argv[])
 {
-    // Init the XML platform
     try
     {
-       XMLPlatformUtils::Initialize();
-
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);
 
@@ -154,9 +154,8 @@ int main(int args, char* argv[])
        cout << "data before parsing: " << data1.toXml() << endl;
        cout << "data after parsing : " << data2.toXml() << endl;
     }
-    catch(const XMLException& toCatch)  {
-       cout << "Error during platform init! Message:\n";
-       cout <<toCatch.getMessage() << endl;
+    catch(...)  {
+       cout << "Error occured";
        return 1;
     }
 

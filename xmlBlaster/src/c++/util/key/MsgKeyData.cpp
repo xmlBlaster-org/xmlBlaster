@@ -53,9 +53,9 @@ string MsgKeyData::toXml(const string& extraOffset) const
    string offset = Constants::OFFSET + extraOffset;
 
    ret += offset + "<key oid='" + oid_ + "'";
-   if (!getContentMime().empty())
+   if (!contentMime_.empty())
       ret += " contentMime='" + getContentMime() + "'";
-   if (!getContentMimeExtended().empty())
+   if (!contentMimeExtended_.empty())
       ret += " contentMimeExtended='" + getContentMimeExtended() + "'";
    if (!getDomain().empty())
       ret += " domain='" + getDomain() + "'";

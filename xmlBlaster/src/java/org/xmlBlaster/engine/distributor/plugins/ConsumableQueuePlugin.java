@@ -14,13 +14,19 @@ import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.distributor.I_MsgDistributor;
+import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchWorker;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * ConsumableQueuePlugin
@@ -30,63 +36,48 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  */
 public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStatusListener {
 
-   public final static int UNINITIALIZED = 0;
-   public final static int WORKING = 1;
-   public final static int SLEEPING = 2;
-   public final static int DEAD = 3;
    private final static String ME = "ConsumableQueuePlugin";
-   private int status;
+   // int status;
+   boolean isReady;
+   boolean isRunning;
    private Global global;
    private LogChannel log;
    private PluginInfo pluginInfo;
    private TopicHandler topicHandler;
-   
+
+   /**
+    * The default constructor. Currently does nothing.
+    */   
    public ConsumableQueuePlugin() {
-      this.status = UNINITIALIZED;
+      this.isReady = false;
+   }
+
+   /**
+    * Invoked to distribute entries. This can either happen on publish, on 
+    * subscribe or when a dispatcher becomes alive again.
+    */
+   private void toRunning() {
+      if (this.log.CALL) this.log.call(ME, "toRunning, isRunning='" + this.isRunning + "' isReady='" + this.isReady + "'");
+      if (this.isRunning || !this.isReady) return;
+      this.isRunning = true;
+      try {
+         this.global.getDispatchWorkerPool().execute(new ConsumableQueueWorker(this.log, this));
+      }
+      catch (InterruptedException ex) {
+         this.log.error(ME, "toRunning: exception " + ex.getMessage());
+         ex.printStackTrace();
+      }
    }
 
    /**
     * @see org.xmlBlaster.engine.distributor.I_MsgDistributor#distribute(org.xmlBlaster.engine.TopicHandler, org.xmlBlaster.authentication.SessionInfo, org.xmlBlaster.engine.MsgUnitWrapper)
-    */
-   synchronized public void distribute(MsgUnitWrapper msgUnitWrapper) { 
-      try {
-         if (this.log.CALL) this.log.call(ME, "distribute '" + msgUnitWrapper.getUniqueId() + "' '" + msgUnitWrapper.getKeyOid() + "'");
-         if (this.log.DUMP) {
-            this.log.dump(ME, "distribute");
-            Thread.dumpStack();
-         } 
-         this.status = WORKING;
-         // Take a copy of the map entries (a current snapshot)
-         // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
-         // when one of the callback fails and the entry is removed by the callback worker thread
-         SubscriptionInfo[] subInfoArr = this.topicHandler.getSubscriptionInfoArr();
-         Set removeSet = null;
-         int count = 0;
-         for (int ii=0; ii<subInfoArr.length; ii++) {
-            SubscriptionInfo sub = subInfoArr[ii];
-            if (!this.topicHandler.subscriberMayReceiveIt(sub, msgUnitWrapper)) continue;
-            if (!sub.getSessionInfo().hasCallback()) continue;
-            if (sub.getSessionInfo().getDispatchManager() == null) continue;
-            if (!sub.getSessionInfo().getDispatchManager().getDispatchConnectionsHandler().isAlive()) continue;
-         
-            // modify the qos to see if it has passed this plugin ...
-            msgUnitWrapper.getMsgQosData().addClientProperty("MsgDistributorPlugin", this.getType() + "," + this.getVersion());
-            if (this.topicHandler.invokeCallback(null, sub, msgUnitWrapper) < 1) continue;
-            else {
-               count++;
-               break;
-            } 
-         }
-         if (count == 1) this.topicHandler.removeFromHistory(msgUnitWrapper);
-         
-      }
-      catch (Throwable ex) {
-         ex.printStackTrace();
-         this.log.error(ME, "syncDistribution " + ex.getMessage());
-      }
-      status = SLEEPING;
+    * Invoked by the TopicHandler on publish or subscribe
+    **/
+   public void distribute(MsgUnitWrapper msgUnitWrapper) {
+      if (this.log.CALL) this.log.call(ME, "distribute");
+      toRunning(); 
    }
-
+   
    synchronized public void init(Global global, PluginInfo pluginInfo)
       throws XmlBlasterException {
       this.global = global;
@@ -94,7 +85,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       if (this.log.CALL) this.log.call(ME, "init");
       this.pluginInfo = pluginInfo;
       this.topicHandler = (TopicHandler)this.pluginInfo.getUserData();
-      this.status = SLEEPING;
+      this.isReady = true;
+      toRunning();
    }
 
    public String getType() {
@@ -109,7 +101,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       if (this.log.CALL) this.log.call(ME, "shutdown");
       SubscriptionInfo[] subs = this.topicHandler.getSubscriptionInfoArr();
       for (int i=0; i < subs.length; i++) onRemoveSubscriber(subs[i]);
-      this.status = DEAD;
+      this.isReady = false;
    }
 
    
@@ -142,7 +134,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       if (this.log.CALL) this.log.call(ME, "onAddSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.addConnectionStatusListener(this);
-      wakeUp();
+      this.isReady = true;
+      toRunning();
    }
    
    /**
@@ -156,26 +149,14 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    }
 
 
-   synchronized private void wakeUp() {
-      if (this.log.CALL) this.log.call(ME, "wakeUp");
-      if (this.status != SLEEPING) return;
-      try {
-         ArrayList lst = this.topicHandler.peekFromHistory(-1, -1L);
-         for (int i=0; i < lst.size(); i++) {
-            MsgUnitWrapper msgUnitWrapper = ((MsgQueueHistoryEntry)lst.get(i)).getMsgUnitWrapper();
-            if (msgUnitWrapper != null) 
-               this.distribute(msgUnitWrapper);
-         }  
-      }
-      catch (Throwable ex) {
-         ex.printStackTrace();
-         this.log.error(ME, "toAlive: " + ex.getMessage());
-      }
-   }
-
+   /**
+    * Event arriving from one DispatchManager telling this plugin it can 
+    * start distribute again. 
+    */
    public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      if (this.log.CALL) this.log.call(ME, "wakeUp");
-      wakeUp();
+      if (this.log.CALL) this.log.call(ME, "toAlive");
+      this.isReady = true;
+      toRunning();
    }
 
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
@@ -183,4 +164,182 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
 
    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
    }
+
+   /**
+    * Takes entries from the history queue and distributes it to the dispatcher
+    * framework until there are entries available or until the dispatcher framework
+    * is alive.
+    */
+   void processHistoryQueue() {
+      if (this.log.CALL) this.log.call(ME, "processQueue");
+      try {
+         ArrayList lst = null;
+         while (true) {
+            lst = this.topicHandler.getHistoryQueue().peek(-1, -1L);
+            if (this.log.TRACE) this.log.trace(ME, "processQueue: processing '" + lst.size() + "' entries from queue");
+            if (lst == null || lst.size() < 1) break;
+            for (int i=0; i < lst.size(); i++) {
+               if (!this.isReady) return;
+               MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)lst.get(i);
+               MsgUnitWrapper msgUnitWrapper = (entry).getMsgUnitWrapper();
+               if (msgUnitWrapper != null) { 
+                  if (!this.distributeOneEntry(msgUnitWrapper, entry)) {
+                     this.isReady = false;
+                     return;
+                  } 
+               }
+            }
+              
+         }
+         this.isReady = true;
+      }
+      catch (Throwable ex) {
+         this.isReady = false;         
+         ex.printStackTrace();
+         this.log.error(ME, "processQueue: " + ex.getMessage());
+      }
+      finally {
+         this.isRunning = false;
+      }
+   }
+
+   /**
+    * Distributes one single entry taken from the history queue. This method 
+    * is strict, it does not throw any exceptions. If one exception occurs 
+    * inside this method, the distribution is interrupted, a dead letter is 
+    * generated and the entry is removed from the history queue.
+    * 
+    * @return true if the entry has been removed from the history queue. This happens
+    * if the entry could be sent successfully, or if distribution was given up due to
+    * an exception. It returns false if none of the subscribers were able to receive 
+    * the message (to tell the invoker not to continue with distribution until
+    * the next event.
+    */
+   private boolean distributeOneEntry(MsgUnitWrapper msgUnitWrapper, MsgQueueHistoryEntry entry) { 
+      I_Queue srcQueue = this.topicHandler.getHistoryQueue();
+      try {
+
+         if (msgUnitWrapper == null) {
+            log.error(ME, "distributeOneEntry() MsgUnitWrapper is null");
+            Thread.dumpStack();
+            givingUpDistribution(null, msgUnitWrapper, entry, null);
+            return true; // let the loop continue: other entries could be OK
+         }
+
+         if (this.log.CALL) this.log.call(ME, "distributeOneEntry '" + msgUnitWrapper.getUniqueId() + "' '" + msgUnitWrapper.getKeyOid() + "'");
+         // Take a copy of the map entries (a current snapshot)
+         // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
+         // when one of the callback fails and the entry is removed by the callback worker thread
+         SubscriptionInfo[] subInfoArr = this.topicHandler.getSubscriptionInfoArr();
+         Set removeSet = null;
+
+         for (int ii=0; ii<subInfoArr.length; ii++) {
+            SubscriptionInfo sub = subInfoArr[ii];
+            if (this.topicHandler.isDirtyRead(sub, msgUnitWrapper)) {
+               this.log.error(ME, "ConsumableQueuePlugin used together with 'dirtyRead' is not supported");
+               srcQueue.removeRandom(entry);
+               return true; // even if it has not been sent
+            } 
+         }   
+
+         for (int ii=0; ii<subInfoArr.length; ii++) {
+            SubscriptionInfo sub = subInfoArr[ii];
+            
+            if (!this.topicHandler.subscriberMayReceiveIt(sub, msgUnitWrapper)) continue;
+            if (!this.topicHandler.checkIfAllowedToSend(null, sub)) continue;
+
+            // this is specific for this plugin
+            if (sub.getSessionInfo().getDispatchManager() == null) continue;
+            if (!sub.getSessionInfo().getDispatchManager().getDispatchConnectionsHandler().isAlive()) continue;
+
+            try {
+
+               try {
+                  // the 'false' here is to tell the filter not to send a dead letter in case of an ex
+                  if (!this.topicHandler.checkFilter(null, sub, msgUnitWrapper, false)) continue;
+               }
+               catch (XmlBlasterException ex) {
+                  // continue;
+                  givingUpDistribution(sub, msgUnitWrapper, entry, ex);
+                  return true; // because the entry has been removed from the history queue
+               }
+
+               MsgQueueUpdateEntry updateEntry = this.topicHandler.createEntryFromWrapper(msgUnitWrapper,sub);
+
+               UpdateReturnQosServer retQos = doDistribute(sub, updateEntry);
+
+               if (this.log.TRACE) {
+                  if (retQos == null) this.log.trace(ME, "distributeOneEntry: the return object was null: callback has not sent the message (dirty reads ?)");
+               }
+               if (retQos == null || retQos.getException() == null) {
+                  srcQueue.removeRandom(entry); // success
+                  if (this.log.TRACE) this.log.trace(ME, "distributeOneEntry: successfully removed entry from queue");
+                  return true;
+               }
+               else {
+                  this.log.error(ME, "distributeOneEntry an exception occured: " + retQos.getException().getMessage());
+                  Throwable ex = retQos.getException();
+                  // continue if it is a communication exception stop otherwise
+                  if (ex instanceof XmlBlasterException && ((XmlBlasterException)ex).isCommunication()) continue;
+                  // we pass null for the exception since we don't want to shut down the dispatcher
+                  givingUpDistribution(sub, msgUnitWrapper, entry, null);
+                  return true; //since removed
+               }
+            }
+            catch (Throwable e) {
+               e.printStackTrace();
+               givingUpDistribution(sub, msgUnitWrapper, entry, e);
+               return true;
+            }
+         }
+      }
+      catch (Throwable ex) {
+         ex.printStackTrace();
+         this.log.error(ME, "distributeOneEntry " + ex.getMessage());
+         givingUpDistribution(null, msgUnitWrapper, entry, ex);         
+         // TODO or should we return true here to allow to continue ? 
+         // I think it is a serious ex: probably does not make sense to cont.
+      }
+      return false;
+   }
+
+   private void givingUpDistribution(SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper, MsgQueueEntry entry, Throwable e) {
+      try {
+         String id = "";
+         if (sub != null) id = sub.getSessionInfo().getId();
+         String exTxt = "";
+         if (e != null) exTxt = e.toString();
+         SessionName publisherName = msgUnitWrapper.getMsgQosData().getSender();
+         if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
+                            id + " failed: " + exTxt);
+               
+         if (sub != null && e != null) 
+            sub.getSessionInfo().getDispatchManager().internalError(e); // calls MsgErrorHandler
+         else {
+            this.topicHandler.getRequestBroker().deadMessage(new MsgQueueEntry[] { entry }, null, ME + ".givingUpDistribution: " + exTxt);
+         }
+         // remove the entry from the history queue now that a dead letter has been sent.
+         this.topicHandler.getHistoryQueue().removeRandom(entry);               
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "givingUpDistribution: " + ex.getMessage());
+         ex.printStackTrace();
+      }
+   }
+
+   /**
+    * Enforced by the I_DistributionInterceptor interface. It sends sychronously to
+    * the DispatchWorker this entry. 
+    */    
+   private UpdateReturnQosServer doDistribute(SubscriptionInfo sub, MsgQueueUpdateEntry entry) throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "doDistribute");
+      // this is a sync call (all in the same thread)
+      entry.setWantReturnObject(true);
+      DispatchWorker worker = new DispatchWorker(this.global, sub.getSessionInfo().getDispatchManager());
+      ArrayList list = new ArrayList();
+      list.add(entry);
+      worker.run(list);      
+      return (UpdateReturnQosServer)entry.getReturnObj();
+   }
 }
+   

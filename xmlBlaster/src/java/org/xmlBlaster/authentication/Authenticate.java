@@ -259,7 +259,11 @@ final public class Authenticate implements I_RunlevelListener
 
       try {
          // Get suitable SecurityManager and context ...
-         securityMgr = plgnLdr.getManager(connectQos.getSecurityPluginType(), connectQos.getSecurityPluginVersion());
+         securityMgr = plgnLdr.getManager(connectQos.getClientPluginType(), connectQos.getClientPluginVersion());
+         if (securityMgr == null) {
+            log.warn(ME, "Access is denied, there is no security manager configured for this connect QoS: " + connectQos.toXml());
+            throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "There is no security manager configured with the given connect QoS");
+         }
          sessionCtx = securityMgr.reserveSession(secretSessionId);  // allways creates a new I_Session instance
          String securityInfo = sessionCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions if authentication fails
          if (securityInfo != null && securityInfo.length() > 1) log.warn(ME, "Ignoring security info: " + securityInfo);
@@ -268,7 +272,7 @@ final public class Authenticate implements I_RunlevelListener
       catch (XmlBlasterException e) {
          // If access is denied: cleanup resources
          log.warn(ME, "Access is denied: " + e.getMessage());
-         securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
+         if (securityMgr != null) securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw e;
       }
       catch (Throwable e) {

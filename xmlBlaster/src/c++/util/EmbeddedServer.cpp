@@ -200,15 +200,12 @@ bool EmbeddedServer::isSomeServerResponding() const
 
 #ifdef _XMLBLASTER_CLASSTEST
 
-#include <util/PlatformUtils.hpp>
-
 using namespace std;
 using namespace org::xmlBlaster::util;
 
 
 int main(int args, char* argv[])
 {
-   XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
   

@@ -15,10 +15,11 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 using namespace std;
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::parser;
 using namespace org::xmlBlaster::util::qos::storage;
 
 ConnectQosFactory::ConnectQosFactory(Global& global)
-   : SaxHandlerBase(global),
+   : XmlHandlerBase(global),
      ME("ConnectQosFactory"),
      sessionQosFactory_(global),
      securityQosFactory_(global),
@@ -41,41 +42,34 @@ ConnectQosFactory::~ConnectQosFactory()
 }
 */
 
-void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int length)
+void ConnectQosFactory::characters(const string &ch)
 {
    if (subFactory_) {
-      subFactory_->characters(ch, length);
+      subFactory_->characters(ch);
       return;
    }
 
    if (inSession_) {
-      sessionQosFactory_.characters(ch, length);
+      sessionQosFactory_.characters(ch);
       return;
    }
 
-   char *chHelper = XMLString::transcode(ch);
-   if (chHelper != NULL) {
-      character_ += StringTrim::trim(chHelper);
-      SaxHandlerBase::releaseXMLCh(&chHelper);
-      if (log_.trace())
-         log_.trace(ME, string("characters, character:'") + character_ + string("'"));
-   }
+   character_ += StringTrim::trim(ch);
+   if (log_.trace()) log_.trace(ME, string("characters, character:'") + character_ + string("'"));
 }
 
-void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& attrs) {
+void ConnectQosFactory::startElement(const string& name, const AttributeMap& attrs) {
    log_.call(ME, "startElement");
    if (log_.trace()) {
-      char *help = XMLString::transcode(name);
-      log_.trace(ME, string("startElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
-      SaxHandlerBase::releaseXMLCh(&help);
+      log_.trace(ME, string("startElement. name:'") + name + string("' character: '") + character_ + string("'"));
    }
 
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
      connectQos_ = ConnectQos(global_); // kind of reset
      return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "queue")) {
+   if (name.compare("queue") == 0) {
       subFactory_ = &queuePropertyFactory_;
    }
 
@@ -84,13 +78,13 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "securityService")) {
+   if (name.compare("securityService") == 0) {
       inSecurityService_ = true;
-      character_ = SaxHandlerBase::getStartElementAsString(name, attrs);
+      character_ = getStartElementAsString(name, attrs);
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "session")) {
+   if (name.compare("session") == 0) {
       inSession_ = true;
       sessionQosFactory_.reset();
    }
@@ -99,53 +93,53 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "ptp")) {
+   if (name.compare("ptp") == 0) {
       connectQos_.setPtp(true);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "clusterNode")) {
+   if (name.compare("clusterNode") == 0) {
       connectQos_.setClusterNode(true);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "duplicateUpdates")) {
+   if (name.compare("duplicateUpdates") == 0) {
       connectQos_.setDuplicateUpdates(true);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "serverRef")) {
+   if (name.compare("serverRef") == 0) {
       character_.erase();
       inServerRef_ = true;
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
-            serverRefType_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         if (  ((*iter).first).compare("type") == 0) {
+            serverRefType_ = (*iter).second;
          }
+         iter++;
       }
    }
    
-   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+   if (name.compare("clientProperty") == 0) {
       character_.erase();
-      clientPropertyKey_ = SaxHandlerBase::getStringValue(attrs.getValue("name"));
+      AttributeMap::const_iterator iter = attrs.find("name");
+      if (iter != attrs.end()) clientPropertyKey_ = (*iter).second;
    }
    
 }
 
-void ConnectQosFactory::endElement(const XMLCh* const name) {
+void ConnectQosFactory::endElement(const string &name) {
    log_.trace(ME, "endElement");
    if (log_.trace()) {
-      char *help = XMLString::transcode(name);
-      log_.trace(ME, string("endElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
-      SaxHandlerBase::releaseXMLCh(&help);
+      log_.trace(ME, string("endElement. name:'") + name + string("' character: '") + character_ + string("'"));   
    }
 
    if (subFactory_) {
       subFactory_->endElement(name);
-      if (SaxHandlerBase::caseCompare(name, "queue")) {
+      if (name.compare("queue") == 0) {
          // determine wether it is a callback or a client queue ...
          QueuePropertyBase help = queuePropertyFactory_.getQueueProperty();
          if (help.getRelating() == Constants::RELATING_CLIENT) {
@@ -161,12 +155,12 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
      character_.erase();
      return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "securityService")) {
+   if (name.compare("securityService") == 0) {
       inSecurityService_ = false;
       character_ += string("\n</securityService>\n");
 //      securityQos_ = securityQosFactory_.parse(character_);
@@ -175,25 +169,25 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "session")) {
+   if (name.compare("session") == 0) {
       sessionQosFactory_.endElement(name);
       inSession_ = false;
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "ptp")) {
+   if (name.compare("ptp") == 0) {
       connectQos_.setPtp(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "clusterNode")) {
+   if (name.compare("clusterNode") == 0) {
       connectQos_.setClusterNode(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "duplicateUpdates")) {
+   if (name.compare("duplicateUpdates") == 0) {
       connectQos_.setDuplicateUpdates(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
@@ -204,7 +198,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "serverRef")) {
+   if (name.compare("serverRef") == 0) {
       inServerRef_ = false;
       string address = character_;
 //      serverRef_ = ServerRef(serverRefType_, address);
@@ -212,7 +206,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       character_.erase();
    }
 
-   if (SaxHandlerBase::caseCompare(name, "clientProperty")) {
+   if (name.compare("clientProperty") == 0) {
       connectQos_.setClientProperty(clientPropertyKey_, character_);
       character_.erase();
    }
@@ -240,69 +234,51 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
 
 #ifdef _XMLBLASTER_CLASSTEST
 
-#include <util/PlatformUtils.hpp>
-
 using namespace std;
 using namespace org::xmlBlaster::util::qos;
 
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
 int main(int args, char* argv[])
 {
-    // Init the XML platform
-    try
-    {
-       XMLPlatformUtils::Initialize();
-       string qos =
-       string("<qos>\n") +
-       string("   <securityService type='htpasswd' version='1.0'>\n") +
-       string("     <![CDATA[\n") +
-       string("     <user>joe</user>\n") +
-       string("     <passwd>secret</passwd>\n") +
-       string("     ]]>\n") +
-       string("   </securityService>\n") +
-       string("   <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>\n") +
-       string("   <ptp>true</ptp>\n") +
-       string("   <!-- The client side queue: -->\n") +
-       string("   <queue relating='client' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='exception'>\n") +
-       string("      <address type='IOR' sessionId='4e56890ghdFzj0'>\n") +
-       string("         IOR:10000010033200000099000010....\n") +
-       string("      </address>\n") +
-       string("   </queue>\n") +
-       string("   <!-- The server side callback queue: -->\n") +
-       string("   <queue relating='callback' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>\n") +
-       string("      <callback type='IOR' sessionId='4e56890ghdFzj0'>\n") +
-       string("         IOR:10000010033200000099000010....\n") +
-       string("         <burstMode collectTime='400' />\n") +
-       string("      </callback>\n") +
-       string("   </queue>\n") +
-       string("   <serverRef type='IOR'>IOR:100000100332...</serverRef>\n") +
-       string("</qos>\n");
+   string qos =
+   string("<qos>\n") +
+   string("   <securityService type='htpasswd' version='1.0'>\n") +
+   string("     <![CDATA[\n") +
+   string("     <user>joe</user>\n") +
+   string("     <passwd>secret</passwd>\n") +
+   string("     ]]>\n") +
+   string("   </securityService>\n") +
+   string("   <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>\n") +
+   string("   <ptp>true</ptp>\n") +
+   string("   <!-- The client side queue: -->\n") +
+   string("   <queue relating='client' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='exception'>\n") +
+   string("      <address type='IOR' sessionId='4e56890ghdFzj0'>\n") +
+   string("         IOR:10000010033200000099000010....\n") +
+   string("      </address>\n") +
+   string("   </queue>\n") +
+   string("   <!-- The server side callback queue: -->\n") +
+   string("   <queue relating='callback' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>\n") +
+   string("      <callback type='IOR' sessionId='4e56890ghdFzj0'>\n") +
+   string("         IOR:10000010033200000099000010....\n") +
+   string("         <burstMode collectTime='400' />\n") +
+   string("      </callback>\n") +
+   string("   </queue>\n") +
+   string("   <serverRef type='IOR'>IOR:100000100332...</serverRef>\n") +
+   string("</qos>\n");
 
-       Global& glob = Global::getInstance();
-       glob.initialize(args, argv);
-       ConnectQosFactory factory(glob);
-       ConnectQosData data = factory.readObject(qos);
-       cout << "sessionId    : " << data.getSecretSessionId() << endl;
-       cout << "userId       : " << data.getUserId() << endl;
-       cout << " type: " << data.getCallbackType() << endl;
-       cout << "is ptp       : " << data.getBoolAsString(data.getPtp()) << endl;
-//       cout << "server ref   : " << data.getServerRef().toXml() << endl;
-       cout << "securityQos  : " << data.getSecurityQos().toXml() << endl;
-       cout << "sessionQos   : " << data.getSessionQos().toXml() << endl;
+   Global& glob = Global::getInstance();
+   glob.initialize(args, argv);
+   ConnectQosFactory factory(glob);
+   ConnectQosData data = factory.readObject(qos);
+   cout << "sessionId    : " << data.getSecretSessionId() << endl;
+   cout << "userId       : " << data.getUserId() << endl;
+   cout << " type: " << data.getCallbackType() << endl;
+   cout << "is ptp       : " << data.getBoolAsString(data.getPtp()) << endl;
+   cout << "securityQos  : " << data.getSecurityQos().toXml() << endl;
+   cout << "sessionQos   : " << data.getSessionQos().toXml() << endl;
 
-       ServerRef ref = data.getServerRef();
-       cout << "server reference:  " << ref.toXml() << endl;
-
-    }
-
-    catch(const XMLException& toCatch)
-    {
-
-
-       cout << "Error during platform init! Message:\n";
-       cout <<toCatch.getMessage() << endl;
-       return 1;
-    }
+   ServerRef ref = data.getServerRef();
+   cout << "server reference:  " << ref.toXml() << endl;
 
    return 0;
 }

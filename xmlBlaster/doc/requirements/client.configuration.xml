@@ -51,7 +51,7 @@ java HelloWorld2 -help
       ...
         </pre>
         For a more detailed example have a look at the code for 
-        <a href='http://www.xmlblaster.org/xmlBlaster/demo/javaclients/HelloWorld6.java.html'>HelloWorld6</a>.
+        <a href='http://www.xmlblaster.org/xmlBlaster/demo/HelloWorld6.java.html'>HelloWorld6</a>.
      </p>
      <p>The following is a list of groups of properties used to configure xmlBlaster clients. <i><b>We
      are changing the syntax for the properties from the original "dot and bracket" syntax like
@@ -479,7 +479,7 @@ this.con.connect(qos, this);
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.25 $</revision>
+   <revision>$Revision: 1.26 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

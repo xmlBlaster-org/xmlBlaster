@@ -52,7 +52,37 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    SubjectInfo registered before it was fully initialized
    Thanks to Dimitri Devriendt his detailed report.
 
+ o C++ client library:
+   Created an abstract xml layer to allow to easily implement other xml parsers than xerces
+
+ o Changed the Subscribeable flag to Subscribable
+
+ o Updated LDAP authentication demo, see
+     xmlBlaster/demo/ldap/README
+
+ o ConnectQos: 
+   - Renamed setSecurityPluginData() to loadClientPlugin()
+   - Renamed I_ClientPlugin.getSecurityQos() to createSecurityQos()
+   - Removed setSecurityInterceptor() and getSecurityInterceptor()
+   - Removed getSecurityPluginType() and getSecurityPluginVersion() and setSecurityQos()
+
+ o C++ client: Ported to multi threaded Corba mico 2.3.11
+
+ o Added a new ant task 'javadocs-client' which only creates the Java client
+   side API documentation.
+
+ o Added tiny Applet which supports asynchronous callbacks using
+   a persistent http connection, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.java.applet.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
+
+ o Moved HelloWorld*.java examples to directory xmlBlaster/demo to
+   avoid package name problems
+
+ o QosData: embedded client each client property with CDATA (java and c++)
+
  o Fixed mouse sensitive area in chessRhino.svg
+
 
 Changes for 0.85e (beta) [2003-10-31]
 =====================================

@@ -131,6 +131,10 @@ public class PluginInfo {
                      ContextNode contextNode) throws XmlBlasterException {
       this.glob = glob;
       log = glob.getLog("plugin");
+      if (type_ == null) {
+         if (log.TRACE) log.trace(ME, "Plugin type is null, ignoring plugin");
+         return;
+      }
       this.type = type_.trim();
       this.version = (version_ == null) ? "1.0" : version_.trim();
 

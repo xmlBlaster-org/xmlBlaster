@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.13 2003/07/07 12:09:27 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.14 2003/12/15 15:40:32 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -25,7 +25,6 @@ Version:   $Id: TestLogin.cpp,v 1.13 2003/07/07 12:09:27 ruff Exp $
 #include <util/Log.h>
 #include <client/protocol/corba/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
-#include <util/PlatformUtils.hpp>
 #include <util/StopWatch.h>
 #include <util/Global.h>
 #include <client/I_Callback.h>
@@ -428,15 +427,6 @@ private:
 int main(int args, char *argc[]) {
    // Init the XML platform
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
-   try {
-      XMLPlatformUtils::Initialize();
-   }
-
-   catch(const XMLException& toCatch) {
-      cout << "Error during platform init! Message:\n"
-           << endl;
-      return 1;
-   }
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
    org::xmlBlaster::TestLogin *testSub = new org::xmlBlaster::TestLogin(glob, "Tim", "Joe");

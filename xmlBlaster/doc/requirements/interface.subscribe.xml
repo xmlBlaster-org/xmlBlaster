@@ -199,7 +199,7 @@
 
       </pre>
    <p>
-   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   See xmlBlaster/demo/HelloWorld*.java for more examples.
    </p>
    </example>
 
@@ -269,7 +269,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.24 2003/10/15 13:13:07 laghi Exp $
+Version:   $Id: Global.h,v 1.25 2003/12/15 15:39:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -54,6 +54,8 @@ private:
    // added for managed objects.
    static Global*         global_; // becomes pointer
 
+   bool usingXerces_ ;
+
    /**
     * The default constructor is made private to implement the singleton
     * pattern.
@@ -65,11 +67,12 @@ private:
 
    void copy()
    {
-      args_      = 0 ;
-      argc_      = NULL;
-      property_  = NULL;
-      pingTimer_ = NULL;
-      id_        = "";
+      args_        = 0 ;
+      argc_        = NULL;
+      property_    = NULL;
+      pingTimer_   = NULL;
+      id_          = "";
+      usingXerces_ = false;
    }
 
 public:
@@ -162,6 +165,16 @@ public:
      * @param a unique id
      */
     void setId(const std::string& id);
+    
+    /**
+     * returns true if the application is using Xerces as the xml parser.
+     * Used either for informative reasons but also to ensure the initialization
+     * of xerces is done only one time.
+     */
+    bool isUsingXerces() const { return usingXerces_; };
+    
+    void setUsingXerces() { usingXerces_ = true; };
+    
 };
 
 }}}; // namespace

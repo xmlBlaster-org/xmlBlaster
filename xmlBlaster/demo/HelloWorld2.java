@@ -1,4 +1,4 @@
-// xmlBlaster/demo/javaclients/HelloWorld2.java
+// xmlBlaster/demo/HelloWorld2.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;

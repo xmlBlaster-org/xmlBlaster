@@ -35,11 +35,11 @@ private:
    long         timeout_;
    int          maxSessions_;
    bool         clearSessions_;
-   std::string       sessionId_;
-   std::string       clusterNodeId_;
-   std::string       subjectId_;
+   std::string  sessionId_;
+   std::string  clusterNodeId_;
+   std::string  subjectId_;
    long         pubSessionId_;
-   org::xmlBlaster::util::Global&      global_;
+   org::xmlBlaster::util::Global& global_;
 
    friend class SessionQosFactory;
 
@@ -126,7 +126,7 @@ public:
     * This characters emulates the java version but keep in mind that it is
     * not the virtual method inherited from DocumentHandler !!
     */
-   void characters(const XMLCh* const ch, const unsigned int length);
+   void characters(const std::string &ch);
 
    /**
     * Start element, event from SAX parser.
@@ -134,14 +134,14 @@ public:
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   void startElement(const XMLCh* const name, AttributeList& attrs);
+   void startElement(const std::string &name, const parser::AttributeMap& attrs);
 
    /**
     * End element, event from SAX parser.
     * <p />
     * @param name Tag name
     */
-   void endElement(const XMLCh* const name);
+   void endElement(const std::string &name);
 
    void reset();
 

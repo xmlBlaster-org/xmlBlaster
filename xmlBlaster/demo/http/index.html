@@ -6,22 +6,55 @@
    <meta name="Author" content="Marcel Ruff">
    <title>XmlBlaster persistent HTTP demo</title>
    <link REL="stylesheet" type="text/css" href="xmlBlaster.css">
+   <script language="Javascript1.2">
+      function openAppletWindow(url, target) {
+         //alert("url=" + url + ", target=" + target);
+         var winOptions = "height=260,width=760,screenX=0,screenY=0,status=no,scrollbars=no,toolbar=no,directories=no,menubar=no,location=no,resizable=no";
+         var appletWindow = window.open(url, target, winOptions);
+      }
+   </script>
 </head>
 <body>
-   <h3>Real time browser update with persistent HTTP connection to xmlBlaster</h3>
+   <h1>Real time callback with persistent HTTP</h1>
    <p>
-   There are currently two demos online.<br />
-   Both show how a persistent HTTP connection between
-   the server (<a href="http://www.xmlBlaster.org">xmlBlaster.org</a>) and your browser is established.
+   The following demos show how a browser or an applet establishes a persistent http connection
+   to the web server on <a href="http://www.xmlBlaster.org">xmlBlaster.org</a>.
+   Messages are sent from the server to our browser (or applet) in <i>real
+   time</i> without polling. All examples tunnel internet proxies (like squid) and firewalls.
    </p>
+   <center><img src="images/persistentHttp.gif" name="persistentHttp" align="center" border="1"></center>
+
+   <ol>
+     <li><a href="#applet">Applet (Java) callback demo</a></i>
+     <li><a href="#dhtml">Browser (Javascript) callback demo with DHTML</a></i>
+     <li><a href="#svg">Browser (Javascript) callback demo with SVG</a></i>
+   </ol>
+
+   <br />
+   More details you find in our requirements
+   <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.java.applet.html" target="others">client.java.applet</a>
+   and
+   <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.browser.html" target="others">client.browser</a>.
+   <hr />
+   <h3><a NAME="applet"></a>Receiving messages with a tiny applet</h3>
+   
+   <a target="appletWindow" onClick='openAppletWindow("/xmlBlaster/HelloWorld3.html", "HelloWorld3")'>
+   Click here to run the HelloWorld3 demo</a> or have a look at the
+   <a href="/xmlBlaster/HelloWorld3.java.html" target="others">
+   applet source.</a><br />
    <p>
-   Messages are pushed in 'real time' back to your browser
-   and displayed there in a simple chart.
+   <a target="appletWindow" onClick='openAppletWindow("/xmlBlaster/SystemInfoApplet.html", "SystemInfoApplet")'>
+   Click here to run the SystemInfoApplet demo</a> or have a look at the
+   <a href="/xmlBlaster/SystemInfoApplet.html" target="others">
+   applet source.</a><br />
+   <p>
+   The xmlBlaster applet client library <i>xmlBlasterAppletLib.jar</i> has a size of appr. 25 kBytes,
+   and the applet itself 2,5 kBytes - thats' it.
    </p>
 
    <br />
    <hr />
-   <h3>Displaying messages with dynamic HTML (DHTML)</h3>
+   <h3><a NAME="dhtml"></a>Displaying messages with dynamic HTML (DHTML)</h3>
      <p>
      Try the 
      <a href="/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=dhtmlDemo&amp;xmlBlaster.passwd=secret">
@@ -34,7 +67,7 @@
 
    <br />
    <hr />
-   <h3>Displaying messages with scalable vector graphics (<a href="http://www.svgfaq.com/">SVG</a>)</h3>
+   <h3><a href="#svg">Displaying messages with scalable vector graphics (<a href="http://www.svgfaq.com/">SVG</a>)</h3>
      <p>
      Try first if your browser supports SVG with <a href="/xmlBlaster/svg/test">these tests</a>.
      </p>

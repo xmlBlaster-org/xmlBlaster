@@ -61,7 +61,7 @@ namespace client { namespace protocol { namespace corba {
 
       catch(const CORBA::ORB::InvalidName ex) {
 #        ifndef XMLBLASTER_OMNIORB
-         cerr << "Thrown invalid name exception: " << ex << endl;
+         std::cerr << "Thrown invalid name exception: " << ex << std::endl;
 #        endif
          std::string txt = me() + ".NameServerControl()";
          std::string msg = "can't resolve the NameService";

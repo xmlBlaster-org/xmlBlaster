@@ -1,4 +1,6 @@
 // xmlBlaster/demo/javaclients/Latency.java
+package javaclients;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.I_Callback;
@@ -23,19 +25,19 @@ import org.xmlBlaster.util.MsgUnit;
  * On localhost:
  * <pre>
  *   java org.xmlBlaster.Main
- *   java Latency -numSend 100
+ *   java javaclients.Latency -numSend 100
  * </pre>
  * <br />
  * Over the internet with CORBA:
  * <pre>
- *   java Latency -numSend 100 -bootstrapHostname server.xmlBlaster.org
+ *   java javaclients.Latency -numSend 100 -bootstrapHostname server.xmlBlaster.org
  *  or if you have a dynamic IP:
- *   java Latency -numSend 100 -bootstrapHostname server.xmlBlaster.org -dispatch/callback/plugin/ior/hostname <myCurrentIP>
+ *   java javaclients.Latency -numSend 100 -bootstrapHostname server.xmlBlaster.org -dispatch/callback/plugin/ior/hostname <myCurrentIP>
  * </pre>
  * <br />
  * Over the internet with XmlRpc:
  * <pre>
- *   java Latency -numSend 100 -dispatch/connection/protocol XMLRPC -dispatch/connection/plugin/xmlrpc/hostname server.xmlBlaster.org -dispatch/callback/plugin/xmlrpc/hostname <myCurrentIP>
+ *   java javaclients.Latency -numSend 100 -dispatch/connection/protocol XMLRPC -dispatch/connection/plugin/xmlrpc/hostname server.xmlBlaster.org -dispatch/callback/plugin/xmlrpc/hostname <myCurrentIP>
  * </pre>
  * <p />
  * Results, for one round trip including publish -> processing in xmlBlaster -> update -> parsing in client (600 MHz AMD Linux):
@@ -106,7 +108,7 @@ public class Latency implements I_Callback
    /**
     * Try
     * <pre>
-    *   java Latency -help
+    *   java javaclients.Latency -help
     * </pre>
     * for usage help
     */
@@ -116,7 +118,7 @@ public class Latency implements I_Callback
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
          Global.instance().usage();
-         System.err.println("Example: java Latency -loginName Jeff\n");
+         System.err.println("Example: java javaclients.Latency -loginName Jeff\n");
          System.exit(1);
       }
 

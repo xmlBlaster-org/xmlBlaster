@@ -354,7 +354,6 @@ bool XmlBlasterAccess::isConnected() const
 
 #ifdef _XMLBLASTER_CLASSTEST
 
-#include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
 #include <util/thread/ThreadImpl.h>
 
@@ -367,7 +366,6 @@ int main(int args, char* argv[])
     // Init the XML platform
     try
     {
-       XMLPlatformUtils::Initialize();
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);
        Log& log = glob.getLog("client");

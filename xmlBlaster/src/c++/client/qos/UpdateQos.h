@@ -70,7 +70,7 @@ public:
     *
     * @return true if Publish/Subscribe style is used
     */
-   bool isSubscribeable() const;
+   bool isSubscribable() const;
 
    /**
     * Test if Point to Point addressing style is used.

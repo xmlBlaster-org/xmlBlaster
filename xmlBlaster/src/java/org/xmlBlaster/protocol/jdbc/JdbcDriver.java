@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.45 2003/10/03 19:36:09 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.46 2003/12/15 15:40:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -178,7 +178,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
       connectQos.addCallbackAddress(cbAddress);
-      connectQos.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
+      connectQos.loadClientPlugin("htpasswd", "1.0", loginName, passwd);
       connectQos.getSessionQos().setSessionTimeout(0L);
 
       ConnectReturnQosServer returnQos = this.authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));

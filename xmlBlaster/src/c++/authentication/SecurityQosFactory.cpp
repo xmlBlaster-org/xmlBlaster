@@ -7,15 +7,15 @@ Comment:   The qos for the security (a subelement of connect qos)
 #include <authentication/SecurityQosFactory.h>
 #include <string>
 #include <util/StringTrim.h>
-#include <util/PlatformUtils.hpp>
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::parser;
 
 SecurityQosFactory::SecurityQosFactory(Global& global)
-   : SaxHandlerBase(global), ME("SecurityQosFactory-simple"), securityQos_(global)
+   : XmlHandlerBase(global), ME("SecurityQosFactory-simple"), securityQos_(global)
 {
    log_.call(ME, "first constructor");
    inSecurityService_ = false;
@@ -56,37 +56,35 @@ SecurityQos SecurityQosFactory::parse(const string& xmlQoS_literal)
  * @param name Tag name
  * @param attrs the attributes of the tag
  */
-void SecurityQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
+void SecurityQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
    if (log_.call()) log_.call(ME, "startElement");
    if (log_.trace()) {
-      string txt = SaxHandlerBase::getStartElementAsString(name, attrs);
+      string txt = getStartElementAsString(name, attrs);
       log_.trace(ME, string("startElement: ") + txt);
    }
-   if (SaxHandlerBase::caseCompare(name, "securityService")) {
+   if (name.compare("securityService") == 0) {
       inSecurityService_ = true;
-      unsigned int len = attrs.getLength();
-
-      unsigned int ii=0;
-      for (ii = 0; ii < len; ii++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(ii), "type")) {
-            securityQos_.type_ = SaxHandlerBase::getStringValue(attrs.getValue(ii));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         string tmpName = (*iter).first;
+         if ( tmpName.compare("type") == 0) securityQos_.type_ = (*iter).second;
+         else if (tmpName.compare("version") == 0) {
+            securityQos_.version_ = (*iter).second;
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(ii), "version")) {
-            securityQos_.version_ = SaxHandlerBase::getStringValue(attrs.getValue(ii));
-         }
+         iter++;
       }
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "user")) {
+   if (name.compare("user") == 0) {
       inUser_ = true;
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "passwd")) {
+   if (name.compare("passwd") == 0) {
       inPasswd_ = true;
       character_.erase();
       return;
@@ -98,24 +96,26 @@ void SecurityQosFactory::startElement(const XMLCh* const name, AttributeList& at
  * <p />
  * @param name Tag name
  */
- void SecurityQosFactory::endElement(const XMLCh* const name)
+ void SecurityQosFactory::endElement(const string &name)
 {
    log_.call(ME, "endElement");
-   if (SaxHandlerBase::caseCompare(name, "user")) {
+   if (name.compare("user") == 0) {
       inUser_ = false;
-      securityQos_.setUserId(StringTrim::trim(character_));
+      StringTrim::trim(character_);
+      securityQos_.setUserId(character_);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "passwd")) {
+   if (name.compare("passwd") == 0) {
       inPasswd_ = false;
-      securityQos_.setCredential(StringTrim::trim(character_));
+      StringTrim::trim(character_);
+      securityQos_.setCredential(character_);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "securityService")) {
+   if (name.compare("securityService") == 0) {
       inSecurityService_ = false;
       character_.erase();
       return;
@@ -132,19 +132,6 @@ using namespace org::xmlBlaster::authentication;
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQosFactory */
 int main(int args, char* argv[])
 {
-
-    // Init the XML platform
-    try
-    {
-       XMLPlatformUtils::Initialize();
-    }
-
-    catch(const XMLException& toCatch)
-    {
-  cout << "Error during platform init! Message:\n"
- << toCatch.getMessage() << endl;
-  return 1;
-    }
 
    string xml =
       string("<securityService type=\"  htpasswd \" version=\"1.0\">\n") +

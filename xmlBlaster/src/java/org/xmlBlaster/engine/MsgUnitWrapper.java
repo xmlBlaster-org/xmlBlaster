@@ -56,6 +56,9 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    private transient final StorageId storageId;   // the unique cache name
    private transient I_Map ownerCache;
    private transient final String embeddedType;
+   /** used to tell to the MsgQueueEntry if a return value is desidered */
+   private transient boolean wantReturnObj;
+   private transient Object returnObj;
 
    /**
     * This topic is destroyed after given timeout
@@ -490,6 +493,39 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    public final boolean isStored() {
       return this.stored;
    }
+   
+   /**
+    * Sets this flag to true/false. This flag can be passed to the MsgQueueEntry
+    * @param wantReturnObj
+    */
+   public void setWantReturnObj(boolean wantReturnObj) {
+      this.wantReturnObj = wantReturnObj;
+   }
+   
+   /**
+    * 
+    * @return
+    */   
+   public boolean getWantReturnObj() {
+      return this.wantReturnObj;
+   }
+   
+   /**
+    * @return returnObj The carried object used as return QoS in sync or async I_Queue.put() mode, can be null.
+    */
+   public Object getReturnObj() {
+      return this.returnObj;
+   }
+
+   /**
+    * Set the object to be carried as return value. 
+    * NOTE: This can be used only once as the first call to this method
+    * destroys the reference to the clone original instance.
+    */
+   public void setReturnObj(Object returnObj) {
+      this.returnObj = returnObj;
+   }
+
 
    /**
     * Measure size for XML-ASCII versus java.io.Serializable persistence. 

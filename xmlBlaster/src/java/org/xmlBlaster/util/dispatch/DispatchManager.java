@@ -612,7 +612,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                this.dispatchWorkerIsActive = true;
                this.notifyCounter = 0;
                try {
-                  this.glob.getDispatchWorkerPool().execute(this, new DispatchWorker(glob, this));
+                  this.glob.getDispatchWorkerPool().execute(new DispatchWorker(glob, this));
                }
                catch (Throwable e) {
                   this.dispatchWorkerIsActive = false;

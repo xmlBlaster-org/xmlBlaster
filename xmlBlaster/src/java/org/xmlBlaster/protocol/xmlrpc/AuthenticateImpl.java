@@ -71,7 +71,7 @@ public class AuthenticateImpl
 
 
       if (securityQos == null)
-         connectQos.setSecurityPluginData(null, null, loginName, passwd);
+         connectQos.loadClientPlugin(null, null, loginName, passwd);
       else {
          securityQos.setUserId(loginName);
          securityQos.setCredential(passwd);

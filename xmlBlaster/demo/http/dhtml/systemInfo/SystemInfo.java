@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.10 2003/03/24 16:12:45 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.11 2003/12/15 15:39:11 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
@@ -96,7 +96,7 @@ public class SystemInfo extends HttpServlet
             return;
          }
 
-         I_XmlBlasterAccess corbaConnection = BlasterHttpProxy.getXmlBlasterAccess(request, sessionId);
+         I_XmlBlasterAccess corbaConnection = BlasterHttpProxy.getXmlBlasterAccess(sessionId);
          if (corbaConnection == null) {
             String text = "Your Session ID is not valid, please try again with cookies enabled";
             log.error(ME, text);
@@ -113,6 +113,11 @@ public class SystemInfo extends HttpServlet
 
          String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml()).getSubscriptionId();
          log.info(ME, "Subscribed to " + actionType + "=" + ret);
+
+         // NOTE: The callback messages (update()) are handled by our
+         // BlasterHttpProxyServlet framework and pushed to the browser.
+         // Typically a browser (or applet) can subscribe itself directly at BlasterHttpProxyServlet
+         // so there is no need for this servlet
       }
       catch (XmlBlasterException e) {
          String text = "Error from xmlBlaster: " + e.getMessage();

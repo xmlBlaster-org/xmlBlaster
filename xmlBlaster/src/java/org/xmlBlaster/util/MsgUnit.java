@@ -5,14 +5,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Global;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.QosData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.KeyData;
-import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.enum.Constants;
@@ -122,7 +124,7 @@ public final class MsgUnit implements java.io.Serializable
     */
    public MsgUnit(KeyData key, byte[] content, QosData qos) {
       if (key == null && qos == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException("MsgUnit constructor with key=="+key+" AND qos="+qos+" is invalid");
       }
       this.glob = (key == null) ? qos.getGlobal() : key.getGlobal();
@@ -355,4 +357,5 @@ public final class MsgUnit implements java.io.Serializable
 
       return sb.toString();
    }
+   
 }

@@ -8,10 +8,14 @@ package org.xmlBlaster.util.dispatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.distributor.I_MsgDistributor;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 
 import java.util.ArrayList;
 
@@ -70,10 +74,61 @@ public final class DispatchWorker implements Runnable
          if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ...");
          
          dispatchManager.getDispatchConnectionsHandler().send(entries); // entries are filled with return values
+
+         ArrayList defaultEntries = filterDistributorEntries(entryList, null);
+         if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
       }
       catch(Throwable throwable) {
-         dispatchManager.handleSyncWorkerException(entryList, throwable);
+         ArrayList entriesWithNoDistributor = this.filterDistributorEntries(entryList, throwable);
+         if (entriesWithNoDistributor.size() > 0) dispatchManager.handleSyncWorkerException(entriesWithNoDistributor, throwable);
       }
+   }
+
+
+   /**
+    * scans through the entries array for such messages which want an async
+    * notification and sends such a notification.
+    * @param entries
+    * @return The MsgQueueEntry objects (as an ArrayList) which did not
+    * want such an async notification. This is needed to allow the core process
+    * such messages the normal way.
+    */
+   protected ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
+      // TODO move this on the server side 
+      ArrayList entriesWithNoDistributor = new ArrayList();
+      for (int i=0; i < entries.size(); i++) {
+         Object obj = entries.get(i); 
+         if (!(obj instanceof MsgQueueUpdateEntry)) return entries;
+         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)obj;
+         I_MsgDistributor msgDistributor = null;
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper(); 
+         try {
+            msgDistributor = wrapper.getTopicHandler().getMsgDistributorPlugin();
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+         }
+         if (msgDistributor != null) {
+            if (ex != null) { // in this case it is possible that retObj is not set yet
+               UpdateReturnQosServer retQos = (UpdateReturnQosServer)entry.getReturnObj();               
+               try {
+                  if (retQos == null) {
+                     retQos = new UpdateReturnQosServer(this.glob, "<qos/>");
+                     entry.setReturnObj(retQos);
+                  }    
+                  retQos.setException(ex);
+               }
+               catch (XmlBlasterException ee) {
+                  this.log.error(ME, "filterDistributorEntries: " + ee.getMessage());
+               }
+            } 
+            // msgDistributor.responseEvent((String)wrapper.getMsgQosData().getClientProperties().get("asyncAckCorrId"), entry.getReturnObj());
+         }
+         else {
+            entriesWithNoDistributor.add(entry);
+         }
+      }
+      return entriesWithNoDistributor;
    }
 
    /**
@@ -128,11 +183,19 @@ public final class DispatchWorker implements Runnable
          // We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
          this.msgQueue.removeRandom(entries);
-
-         if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
+         /*(currently only done in sync invocation)
+         ArrayList defaultEntries = sendAsyncResponseEvent(entryList);
+         if (defaultEntries.size() > 0) {
+            MsgQueueEntry[] entries = (MsgQueueEntry[])defaultEntries.toArray(new MsgQueueEntry[defaultEntries.size()]);
+            this.msgQueue.removeRandom(entries);
+         }
+         */
+         if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
       }
       catch(Throwable throwable) {
          dispatchManager.handleWorkerException(entryList, throwable);
+         // ArrayList entriesWithNoDistributor = this.sendAsyncResponseEvent(entryList);
+         // if (entriesWithNoDistributor.size() > 0) dispatchManager.handleWorkerException(entriesWithNoDistributor, throwable);
       }
       finally {
          this.dispatchManager.setDispatchWorkerIsActive(false);

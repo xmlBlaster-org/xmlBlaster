@@ -177,7 +177,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.intTxt == null) this.intTxt = "integer";
 
       this.booleanTxt = (String)names.get("boolean");
-      if (this.booleanTxt == null) this.booleanTxt = "boolean";
+      if (this.booleanTxt == null) this.booleanTxt = "char(1)";
 
       this.blobTxt = (String)names.get("blob");
       if (this.blobTxt == null) this.blobTxt = "bytea";
@@ -377,7 +377,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       while (rs.next()) { // retrieve the result set ...
          String table = rs.getString(3).toUpperCase();
          // if (table.startsWith(this.tablePrefix))
-         // we currently add everything since I don't know what's better: speed here or when searching 
+         // we currently add everything since I don't know what's better: speed here or when searching
+         if (this.log.TRACE) this.log.trace(ME, "getXbTableNames found table '" + table + "': adding to the of found tables"); 
          ret.add(table);
       }
       return ret;
@@ -435,7 +436,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   ", numOfBytes " + this.longintTxt +
                   ", numOfEntries " + this.longintTxt +
                   ", PRIMARY KEY (queueName, nodeId)" + 
-                  ", FOREIGN KEY (nodeId) REFERENCES " + this.nodesTableName + " ON DELETE CASCADE)";
+                  ", FOREIGN KEY (nodeId) REFERENCES " + this.nodesTableName + " (nodeId)";
+            if (this.pool.isCascadeDeleteSuppported()) req  += " ON DELETE CASCADE)";
+            else req += ")";
+            
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
             update(req, conn);
@@ -452,7 +456,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   ", byteSize " + this.longintTxt +
                   ", " + this.blobVarName + " " + this.blobTxt +
                   ", PRIMARY KEY (dataId, queueName)" + 
-                  ", FOREIGN KEY (queueName, nodeId) REFERENCES " + this.queuesTableName + " ON DELETE CASCADE)";
+                  ", FOREIGN KEY (queueName, nodeId) REFERENCES " + this.queuesTableName + " (queueName , nodeId)";
+            if (this.pool.isCascadeDeleteSuppported()) req  += " ON DELETE CASCADE)";
+            else req += ")";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
             update(req, conn);
@@ -580,6 +586,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (size < 1) return false;
      
             // remove all queues associated with this node here ...
+
+            if (!this.pool.isCascadeDeleteSuppported()) {
+               req = "DELETE FROM " + this.queuesTableName + " where nodeId='" + nodeId + "'";
+               update(req, query.conn);
+            }
             req = "DELETE FROM " + postfix;
             update(req, query.conn);
             return true;
@@ -1664,14 +1675,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       catch (Throwable ex) {
          try {
-            query.conn.rollback();
+            if (query != null && query.conn != null) query.conn.rollback();
          }
          catch (Throwable ex1) {
             this.log.error(ME, "could not rollback: " + ex.toString());
             ex1.printStackTrace();
          }
 
-         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex))
+         Connection tmpConn = null;
+         if (query != null) tmpConn = query.conn;
+         if (checkIfDBLoss(tmpConn, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getAndDeleteLowest", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getAndDeleteLowest", "", ex); 
       }
@@ -1860,16 +1873,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       Connection conn = null;
-      PreparedStatement st = null;
+      // PreparedStatement st = null;
+
       try {
-         String req = "delete from " + this.entriesTableName + " where queueName=? AND nodeId=? AND dataId=?";
-//         String req = "update " + this.entriesTableName + " SET durable='X' where queueName=? AND nodeId=? AND dataId=?";
+         // String req = "delete from " + this.entriesTableName + " where queueName=? AND nodeId=? AND dataId=?";
+         String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND nodeId='"+nodeId+"' AND dataId='"+uniqueId+"'";
          conn =  this.pool.getConnection();
-         st = conn.prepareStatement(req);
-         st.setString(1, queueName);
-         st.setString(2, nodeId);
-         st.setLong(3, uniqueId);
-         return st.executeUpdate();
+         // st = conn.prepareStatement(req);
+         // st.setString(1, queueName);
+         // st.setString(2, nodeId);
+         // st.setLong(3, uniqueId);
+         // return st.executeUpdate();
+         return update(req, conn);
       }
       catch (XmlBlasterException ex) {
          throw ex;
@@ -1880,12 +1895,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntry", "", ex); 
       }
       finally {
+         /*
          try {
             if (st != null) st.close();
          }
          catch (Throwable ex) {
             this.log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
          }
+         */
          if (conn != null) this.pool.releaseConnection(conn);
       }
    }
@@ -2051,14 +2068,28 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       String req = null;
-      req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
-            "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
-            "' AND nodeId='" + nodeId + "')  ORDER BY dataId ASC";
-
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
-
       PreparedQuery query = null;
+
       try {
+         if (!this.pool.isNestedBracketsSuppported()) {
+            int prio = 0;
+            req = "SELECT max(prio) from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + "'";
+            query = new PreparedQuery(pool, req, this.log, numOfEntries);
+            query.rs.next();
+            prio = query.rs.getInt(1);
+            if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Max prio " + new Integer(prio).toString());
+            query.close();
+            query = null;
+            req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
+                  "' and prio=" + prio + " ORDER BY dataId ASC";
+         }
+         else {
+            req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
+                  "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
+                  "' AND nodeId='" + nodeId + "')  ORDER BY dataId ASC";
+         }
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
+
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Found " + ret.size() + " entries");

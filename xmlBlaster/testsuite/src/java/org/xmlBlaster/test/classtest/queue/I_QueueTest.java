@@ -89,7 +89,7 @@ public class I_QueueTest extends TestCase {
 
          pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
-         this.queue = pluginManager.getPlugin(pluginInfo, queueId, new CbQueueProperty(this.glob, queueId.getStrippedId(), this.glob.getStrippedId()));
+         this.queue = pluginManager.getPlugin(pluginInfo, queueId, new CbQueueProperty(this.glob, Constants.RELATING_CALLBACK, this.glob.getStrippedId()));
          this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
@@ -593,6 +593,7 @@ public class I_QueueTest extends TestCase {
          queue.shutdown();
       }
       catch(XmlBlasterException e) {
+         e.printStackTrace();
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }

@@ -190,7 +190,7 @@ public class Global implements Cloneable
     * same as Global(null, true, true)
     */
    public Global() {
-      this(null, true, true);
+      this(null, true, false);
    }
 
    /**
@@ -208,7 +208,7 @@ public class Global implements Cloneable
     */
    public Global(String[] args)
    {
-      this(args, true, true);
+      this(args, true, false);
    }
 
    /**
@@ -239,14 +239,14 @@ public class Global implements Cloneable
    {
       counter++;
       if (checkInstance == true) {
-         if (this.firstInstance != null) {
+         if (firstInstance != null) {
             System.out.println("######Global args constructor invoked again, try Global.instance()");
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
          }
       }
       synchronized (Global.class) {
-         if (this.firstInstance == null)
-            this.firstInstance = this;
+         if (firstInstance == null)
+            firstInstance = this;
       }
       initProps(args,loadPropFile);
       initId();
@@ -428,7 +428,7 @@ public class Global implements Cloneable
     */
    public boolean addLogChannel(LogChannel log) {
       if (log == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException("Global.addLogChannel(null)");
       }
       String key = log.getChannelKey();
@@ -618,7 +618,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Calls init(String[] args)
+    * Calls init(String[] args), the props keys have no leading "-". 
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(Properties props) {
@@ -626,6 +626,7 @@ public class Global implements Cloneable
    }
 
    /**
+    * The args key needs a leading "-". 
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(String[] args)
@@ -1637,9 +1638,9 @@ public class Global implements Cloneable
       }
 
       synchronized (Global.class) {
-         if (this.firstInstance != null && this == this.firstInstance) {
+         if (firstInstance != null && this == firstInstance) {
             //System.out.println("###################################First instance of Global destroyed");
-            this.firstInstance = null;
+            firstInstance = null;
          }
       }
       

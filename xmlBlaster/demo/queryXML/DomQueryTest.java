@@ -16,7 +16,7 @@ Invoke:    With key oid:
              java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
            Normal XPath checks:
              java -DtestAgentNavigation=false DomQueryTest Qos.xml /qos/expiration
-Version:   $Id: DomQueryTest.java,v 1.10 2003/11/04 20:05:29 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.11 2003/12/15 15:39:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -168,12 +168,24 @@ class DomQueryTest
       {
          n++;
          Object obj = nodeIter.nextElement();
-         Element node = (Element)obj;
          if (dumpIt) {
-            System.out.println(node.toString());
+            if (obj instanceof String) {
+               String val = (String)obj;
+               System.out.println("TagValue="+val);
+            }
+            /* Does not compile with JDK 1.3, need 1.4:
+            else if (obj instanceof org.apache.crimson.tree.AttributeNode) {
+               org.apache.crimson.tree.AttributeNode attr = (org.apache.crimson.tree.AttributeNode)obj;
+               System.out.println("AttibuteValue="+attr.getValue());
+            }
+            */
+            else {
+               System.out.println(obj.toString());
+            }
 
             if (testAgentNavigation) {
                try {
+                  Element node = (Element)obj;
                   System.out.println("Found key oid=\"" + getKeyOID(node) + "\"\n");
                } catch (Exception e) {
                   System.out.println("ERROR: Found no xmlBlaster key oid. " + e.toString());

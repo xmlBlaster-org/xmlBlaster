@@ -13,6 +13,7 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -121,8 +122,8 @@ public final class ConnectQosServer
     * @param mechanism The client side security plugin to use
     * @param passwd If null the environment -passwd is checked
     */
-   public void setSecurityPluginData(String mechanism, String version, String loginName, String passwd) throws XmlBlasterException {
-      this.connectQosData.setSecurityPluginData(mechanism, version, loginName, passwd);
+   public I_ClientPlugin loadClientPlugin(String mechanism, String version, String loginName, String passwd) throws XmlBlasterException {
+      return this.connectQosData.loadClientPlugin(mechanism, version, loginName, passwd);
    }
 
    /**
@@ -138,9 +139,9 @@ public final class ConnectQosServer
     * </pre>
     * NOTE: Usually setSecurityPluginData() is easier to use.
     */
-   public void setSecurityQos(I_SecurityQos securityQos) {
-      this.connectQosData.setSecurityQos(securityQos);
-   }
+   //public void setSecurityQos(I_SecurityQos securityQos) {
+   //   this.connectQosData.setSecurityQos(securityQos);
+   //}
 
    /**
     * @return Access the login credentials or null if not set
@@ -154,8 +155,8 @@ public final class ConnectQosServer
     * <p/>
     * @return The type or null if not known
     */
-   public String getSecurityPluginType() {
-      return this.connectQosData.getSecurityPluginType();
+   public String getClientPluginType() {
+      return this.connectQosData.getClientPluginType();
    }
 
    /**
@@ -163,8 +164,8 @@ public final class ConnectQosServer
     * <p/>
     * @return The version or null if not known
     */
-   public String getSecurityPluginVersion() {
-      return this.connectQosData.getSecurityPluginVersion();
+   public String getClientPluginVersion() {
+      return this.connectQosData.getClientPluginVersion();
    }
 
    /**

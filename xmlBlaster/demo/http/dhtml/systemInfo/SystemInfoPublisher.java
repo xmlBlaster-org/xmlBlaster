@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.9 2003/03/24 16:12:45 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.10 2003/12/15 15:39:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
@@ -28,8 +28,6 @@ import java.util.Random;
  * <br />
  * Use this as a command line tool to publish cpu load and memory load.
  * <br />
- * Note: This publisher only works on Linux!
- * <br />
  * Invoke examples:<br />
  * <pre>
  *    jaco html.systemInfo.SystemInfoPublisher
@@ -51,13 +49,14 @@ public class SystemInfoPublisher
    public SystemInfoPublisher(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("client");
+      /*
       String osName = System.getProperty("os.name");     // "Linux" "Windows NT" ...
       if (!osName.startsWith("Linux")) {
          log.error(ME, "This system load publisher runs only on Linux, sorry about that\n" +
                    "Note that you can use own Perl or C++ or Java publishers to do this task");
          System.exit(1);
       }
-
+      */
       setUp();  // login
 
       while(true) {

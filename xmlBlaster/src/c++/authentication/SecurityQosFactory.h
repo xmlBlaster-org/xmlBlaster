@@ -20,10 +20,11 @@ Comment:   The Factory for the simple QosSecurityQos
 #define _AUTHENTICATION_SECURITYQOSFACTORY_H
 
 #include <authentication/SecurityQos.h>
+#include <util/parser/XmlHandlerBase.h>
 
 namespace org { namespace xmlBlaster { namespace authentication {
 
-   class Dll_Export SecurityQosFactory: public org::xmlBlaster::util::SaxHandlerBase
+   class Dll_Export SecurityQosFactory: public org::xmlBlaster::util::parser::XmlHandlerBase
    {
    private:
       const std::string ME;
@@ -46,7 +47,7 @@ namespace org { namespace xmlBlaster { namespace authentication {
        * @param name Tag name
        * @param attrs the attributes of the tag
        */
-      void startElement(const XMLCh* const name, AttributeList& attrs);
+      void startElement(const std::string &name, const org::xmlBlaster::util::parser::AttributeMap& attrs);
 
       /**
        * End element, event from SAX parser.
@@ -54,7 +55,7 @@ namespace org { namespace xmlBlaster { namespace authentication {
        * @param name Tag name
        */
 
-       void endElement(const XMLCh* const name);
+       void endElement(const std::string &name);
 
    };
 

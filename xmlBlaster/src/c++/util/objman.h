@@ -93,7 +93,7 @@ protected:
   virtual ~Object_Lifetime_Manager_Base (void) 
   {
     // Clear the flag so that fini
-    // doesn’t delete again.
+    // does not delete again.
     dynamically_allocated_ = 0;
   }
 

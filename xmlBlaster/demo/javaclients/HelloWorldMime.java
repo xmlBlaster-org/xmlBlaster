@@ -1,4 +1,6 @@
 // xmlBlaster/demo/javaclients/HelloWorldMime.java
+package javaclients;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -41,9 +43,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  *   &lt;key oid='HelloWorldMime' contentMime='text/xml'/>
  * </pre>
  *
- * Invoke: java HelloWorldMime
+ * Invoke: java javaclients.HelloWorldMime
  * <p />
- * Invoke: java HelloWorldMime -session.name joe -passwd secret
+ * Invoke: java javaclients.HelloWorldMime -session.name joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html" target="others">xmlBlaster mime.plugin.access.xpath requirement</a>
  */
@@ -123,7 +125,7 @@ public class HelloWorldMime implements I_Callback
    /**
     * Try
     * <pre>
-    *   java HelloWorldMime -help
+    *   java javaclients.HelloWorldMime -help
     * </pre>
     * for usage help
     */
@@ -132,7 +134,7 @@ public class HelloWorldMime implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         System.err.println("Example: java HelloWorldMime -session.name Jeff\n");
+         System.err.println("Example: java javaclients.HelloWorldMime -session.name Jeff\n");
          System.exit(1);
       }
 

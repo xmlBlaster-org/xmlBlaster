@@ -39,7 +39,7 @@ Comment:   Factory for org::xmlBlaster::util::qos::ConnectQosData (for org::xmlB
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-class Dll_Export ConnectQosFactory: public org::xmlBlaster::util::SaxHandlerBase
+class Dll_Export ConnectQosFactory: public org::xmlBlaster::util::parser::XmlHandlerBase
 {
 private:
    const std::string ME;
@@ -57,7 +57,7 @@ private:
 
    org::xmlBlaster::util::qos::ConnectQos connectQos_;
    /** when the current parsing point should be handled by another qos factory*/
-   SaxHandlerBase* subFactory_;
+   XmlHandlerBase* subFactory_;
 
    void prep()
    {
@@ -77,7 +77,7 @@ public:
     * This characters emulates the java version but keep in mind that it is
     * not the virtual method inherited from DocumentHandler !!
     */
-   void characters(const XMLCh* const ch, const unsigned int length);
+   void characters(const std::string &ch);
 
    /**
     * Start element, event from SAX parser.
@@ -85,14 +85,14 @@ public:
     * @param name Tag name
     * @param attrs the attributes of the tag
     */
-   void startElement(const XMLCh* const name, AttributeList& attrs);
+   void startElement(const std::string &name, const org::xmlBlaster::util::parser::AttributeMap& attrs);
 
    /**
     * End element, event from SAX parser.
     * <p />
     * @param name Tag name
     */
-   void endElement(const XMLCh* const name);
+   void endElement(const std::string& name);
 
    org::xmlBlaster::util::qos::ConnectQosData readObject(const std::string& qos);
 };

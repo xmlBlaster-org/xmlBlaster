@@ -9,11 +9,6 @@ package org.xmlBlaster.util.dispatch;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DispatchManager;
-//import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-//import org.xmlBlaster.engine.runlevel.RunlevelManager;
-import org.jutils.runtime.Sleeper;
 import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.enum.Constants;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -33,6 +28,8 @@ public class DispatchWorkerPool //implements I_RunlevelListener
    private PropInt minimumPoolSize = new PropInt(2);
    private PropInt createThreads = new PropInt(minimumPoolSize.getValue());
    private boolean isShutdown = false;
+   private final String poolId = "dispatch";
+
 
    protected static class DeamonThreadFactory implements ThreadFactory {
       private final String id;
@@ -52,7 +49,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
     */
    public DispatchWorkerPool(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+      this.log = glob.getLog(this.poolId);
       initialize();
       // Currently not used - on client side there is no RunlevelManager
       //glob.getRunlevelManager().addRunlevelListener(this);
@@ -68,9 +65,9 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       // -dispatch/connection/minimumPoolSize 28
       String context = null; // usually 'client/joe'
       String instanceName = (glob.isServerSide()) ? Constants.RELATING_CALLBACK : Constants.RELATING_CLIENT;
-      this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "maximumPoolSize");
-      this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "minimumPoolSize");
-      this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "createThreads");
+      this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "maximumPoolSize");
+      this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "minimumPoolSize");
+      this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "createThreads");
       if (log.TRACE) log.trace(ME, "maximumPoolSize=" + this.maximumPoolSize.getValue() + " minimumPoolSize=" +
                     this.minimumPoolSize.getValue() + " createThreads=" + this.createThreads.getValue());
 
@@ -85,8 +82,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       return this.isShutdown;
    }
 
-   final synchronized void execute(DispatchManager dispatchManager, java.lang.Runnable command) 
-                                   throws java.lang.InterruptedException {
+   final public synchronized void execute(java.lang.Runnable command) throws java.lang.InterruptedException {
       if (this.isShutdown) {
          log.trace(ME, "The pool is shudown, ignoring execute()");
          return;

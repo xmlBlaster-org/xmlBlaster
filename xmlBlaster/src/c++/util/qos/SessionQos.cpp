@@ -15,6 +15,7 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::parser;
 using namespace std;
 
 
@@ -241,59 +242,55 @@ SessionQosFactory::~SessionQosFactory()
    delete sessionQos_;
 }
 
-void SessionQosFactory::characters(const XMLCh* const ch, const unsigned int)
+void SessionQosFactory::characters(const string &ch)
 {
-   char *chHelper = XMLString::transcode(ch);
-   if (chHelper != NULL) {
-      string trimmedCh = StringTrim::trim(chHelper);
-      SaxHandlerBase::releaseXMLCh(&chHelper);
-      character_ += trimmedCh;
-      if (log_.trace())
-         log_.trace(ME, string("characters, character:'") + character_ + string("'"));
-   }
+   string trimmedCh = StringTrim::trim(ch);
+   character_ += trimmedCh;
+   if (log_.trace())
+      log_.trace(ME, string("characters, character:'") + ch + string("'"));
 }
 
-void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& attrs) {
+void SessionQosFactory::startElement(const string &name, const AttributeMap& attrs) {
    log_.call(ME, "startElement");
    if (log_.trace()) {
-      char *help = XMLString::transcode(name);
-      log_.trace(ME, string("startElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
-      SaxHandlerBase::releaseXMLCh(&help);
+      log_.trace(ME, string("startElement. name:'") + name + string("' character: '") + character_ + string("'"));
    }
 
    if (util::XmlQoSBase::startElementBase(name, attrs)) return;
 
-   if (SaxHandlerBase::caseCompare(name, "session")) {
+   if (name.compare("session") == 0) {
       // get all attributes which are needed ...
-      int len = attrs.getLength();
-      for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "name")) {
-            sessionQos_->setAbsoluteName(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+      AttributeMap::const_iterator iter = attrs.begin();
+      while (iter != attrs.end()) {
+         string tmpName = (*iter).first;
+         string tmpValue = (*iter).second;
+         if (tmpName.compare("name") == 0) {
+            sessionQos_->setAbsoluteName(tmpValue);
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "timeout")) {
-            sessionQos_->timeout_ = SaxHandlerBase::getLongValue(attrs.getValue(i));
+         else if (tmpName.compare("timeout") == 0) {
+            sessionQos_->timeout_ = XmlHandlerBase::getLongValue(tmpValue);
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxSessions")) {
-            sessionQos_->maxSessions_ = SaxHandlerBase::getIntValue(attrs.getValue(i));
+         else if (tmpName.compare("maxSessions") == 0) {
+            sessionQos_->maxSessions_ = XmlHandlerBase::getIntValue(tmpValue);
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "clearSessions")) {
-            string help = SaxHandlerBase::getStringValue(attrs.getValue(i));
-            if (help == "true") sessionQos_->clearSessions_ = true;
+         else if (tmpName.compare("clearSessions") == 0) {
+            if (tmpValue == "true") sessionQos_->clearSessions_ = true;
             else sessionQos_->clearSessions_ = false;
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "sessionId")) {
-            sessionQos_->sessionId_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
+         else if (tmpName.compare("sessionId") == 0) {
+            sessionQos_->sessionId_ = tmpValue;
          }
+         iter++;
       }
       return;
    }
 }
 
-void SessionQosFactory::endElement(const XMLCh* const name) {
+void SessionQosFactory::endElement(const string &name) {
    log_.trace(ME, "endElement");
    if (util::XmlQoSBase::endElementBase(name)) return;
 
-   if (SaxHandlerBase::caseCompare(name, "session")) {
+   if (name.compare("session") == 0) {
       return;
    }
 }
@@ -323,20 +320,13 @@ SessionQosData SessionQosFactory::readObject(const string& qos)
 
 #ifdef _XMLBLASTER_CLASSTEST
 
-#include <util/PlatformUtils.hpp>
-
 using namespace std;
 using namespace org::xmlBlaster::util::qos;
 
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
 int main(int args, char* argv[])
 {
-
-    // Init the XML platform
-    try
     {
-       XMLPlatformUtils::Initialize();
-
        string qos = "<session name='/node/http:/client/ticheta/-3' timeout='86400000' maxSessions='10' \n" +
              string("         clearSessions='false' sessionId='IIOP:01110728321B0222011028'/>\n");
 
@@ -359,13 +349,6 @@ int main(int args, char* argv[])
        cout << data2.getSubjectId() << endl;
        cout << data2.getClusterNodeId() << endl << endl;
     }
-    catch(const XMLException& toCatch)
-    {
-       cout << "Error during platform init! Message:\n";
-       cout <<toCatch.getMessage() << endl;
-       return 1;
-    }
-
    return 0;
 }
 

@@ -109,7 +109,7 @@
    con.unSubscribe(uk.toXml(), uq.toXml());
       </pre>
    <p>
-   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   See xmlBlaster/demo/HelloWorld*.java for more examples.
    </p>
    </example>
 
@@ -126,7 +126,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 28</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the unSubscribe method invocation</comment>

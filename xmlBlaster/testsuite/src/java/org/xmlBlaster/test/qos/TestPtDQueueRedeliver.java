@@ -159,7 +159,7 @@ public class TestPtDQueueRedeliver extends TestCase
             dest.forceQueuing(true);
             pq.addDestination(dest);
             pq.setForceUpdate(true);
-            pq.setSubscribeable(false);
+            pq.setSubscribable(false);
             pq.setLifeTime(60000L);
             
             if (i == 0) {

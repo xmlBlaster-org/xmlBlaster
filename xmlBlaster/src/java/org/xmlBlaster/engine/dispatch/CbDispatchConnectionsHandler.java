@@ -58,7 +58,11 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
          StatusQosData statRetQos = new StatusQosData(glob, MethodName.UPDATE);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
-         if (MethodName.UPDATE == msgQueueEntry.getMethodName()) {
+         // TODO check this: it is probably wrong since here comes UPDATE_REF and not UPDATE (Michele 2003-11-05)
+         // if (MethodName.UPDATE == msgQueueEntry.getMethodName()) {
+         // if ( MethodName.UPDATE.getMethodName().equalsIgnoreCase(msgQueueEntry.getEmbeddedType())) {
+         // !!! HACK !!!
+         if ( "update_ref".equalsIgnoreCase(msgQueueEntry.getEmbeddedType())) {
             UpdateReturnQosServer ret = new UpdateReturnQosServer(glob, statRetQos);
             msgQueueEntry.setReturnObj(ret);
          }

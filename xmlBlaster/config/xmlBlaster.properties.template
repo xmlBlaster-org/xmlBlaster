@@ -208,10 +208,28 @@ JdbcStorage[HSQLDatabaseEngine]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTa
                   entriesTableName=ENTRIES,\
                   dbAdmin=true
 
+JdbcStorage[ldbc]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                    url=jdbc:ldbc:postgresql://localhost/test,\
+                    user=postgres,\
+                    password=,\
+                    connectionPoolSize=1,\
+                    connectionBusyTimeout=90000,\
+                    maxWaitingThreads=300,\
+                    tableNamePrefix=XB_,\
+                    nodesTableName=NODES,\
+                    queuesTableName=QUEUES,\
+                    entriesTableName=ENTRIES,\
+                    dbAdmin=true,\
+                    cascadeDeleteSupported=false,\
+                    nestedBracketsSupported=false,\
+                    configurationIdentifier=ldbc
+
+
 StoragePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
 StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
 StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
 
@@ -228,6 +246,8 @@ QueuePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
+
 QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
 QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
 
@@ -268,15 +288,15 @@ queue/connection/maxEntries = 10000000
 # Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
 JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
+                   org.ldbc.jdbc.jdbcDriver:\
+                   com.mckoi.JDBCDriver:\
                    sun.jdbc.odbc.JdbcOdbcDriver:\
                    ORG.as220.tinySQL.dbfFileDriver:\
                    oracle.jdbc.driver.OracleDriver:\
                    com.mysql.jdbc.Driver:\
                    org.postgresql.Driver:\
                    de.sag.jdbc.adabasd.ADriver:\
-                   com.sybase.jdbc2.jdbc.SybDriver:\
-                   com.microsoft.jdbc.sqlserver.SQLServerDriver
-
+                   com.sybase.jdbc2.jdbc.SybDriver
 
 # Now you can configure your database access.
 
@@ -284,6 +304,7 @@ JdbcDriver.mapping[HSQLDatabaseEngine]=string=VARCHAR,longint=BIGINT,int=INTEGER
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1)
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
 JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
+JdbcDriver.mapping[ldbc]=string=varchar(128),"longint=decimal(19,0)",int=int,boolean=char(1),blob=blob,pingStatement=SHOW ALL,blobVarName=ablob,keyAttr=not null
 
 #------------------------------------------------------------------------------
 # Add here your MIME based plugins which allow to filter update messages

@@ -5,28 +5,88 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.http.applet;
 
-import org.xmlBlaster.util.MsgUnitRaw;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Interface for XmlBlaster, the supported methods on applet client side.
- * <p />
- * This allows string access, another interface allows object based access.
+ * <p>
+ * All returned parameters are hold in Maps, to access the different key/QoS elements use JXPath syntax,
+ * see the API references below for more details.
+ * </p>
+ * @see org.xmlBlaster.util.qos.MsgQosData#toJXPath()
+ * @see org.xmlBlaster.util.key.MsgKeyData#toJXPath()
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html">The interface requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
- * @author xmlBlaster@marcelruff.info
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public interface I_XmlBlasterAccessRaw
 {
+   /**
+    * Connect to xmlBlaster. 
+    * @param qos If your qos is null the APPLET PARAMs will be checked for"xmlBlaster/loginName" and "xmlBlaster/passwd"<br />
+    *            If your qos is "<qos/>" the servlet will choose its configured connectQoS (take care on security issues!)<br />
+    *            If qos is not null and pre-filled with authentication informations it will be used to authenticate at xmlBlaster<br />
+    *             
+    * @return never null TODO!!!: return JXPath Map for easier parameter access
+    */
    public String connect(String qos, I_CallbackRaw callback) throws Exception;
 
-   public String subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   /**
+    * @return never null, contains QoS in XJPath format
+    */
+   public Map subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
-   public MsgUnitRaw[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   /**
+    * @return never null, contains keys and QoS in XJPath format
+    */
+   public Msg[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
-   public String[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   /**
+    * @return never null, contains QoS in XJPath format
+    */
+   public Map[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
-   public String publish(MsgUnitRaw msgUnit) throws Exception;
+   /**
+    * @return never null, contains QoS in XJPath format
+    */
+   public Map publish(java.lang.String xmlKey, byte[] content, java.lang.String qos) throws Exception;
 
-   public String[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception;
+   /**
+    * @return never null, contains QoS in XJPath format
+    */
+   public Map[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception;
 
    public void disconnect(String qos);
+
+   /**
+    * Register to receive the logging output
+    */
+   public void setLogListener(I_Log logListener);
+
+   /**
+    * Log to the logListener or to the java console of the browser if logListener is null. 
+    * @param location Your class and/or method name
+    * @param leve One of "ERROR", "WARN", "INFO", "DEBUG"
+    * @param text The text to log
+    */
+   public void log(String location, String level, String text);
+
+   /**
+    * Get a list of all PARAM in the HTML file following our convention. 
+    * <p>
+    * As the applet class has no getAllParameters() method we expect a PARAM <i>deliveredParamKeys</i>
+    * which contains a list of all delivered PARAM in the HTML page:
+    * </p>
+    * <pre>
+    *  &lt;applet ...>
+    *     &lt;param name="deliveredParamKeys" value="protocol,anotherKey,Key3">
+    *     &lt;param name="protocol" value="SOCKET">
+    *     &lt;param name="anotherKey" value="someValue">
+    *     &lt;param name="Key3" value="xxx">
+    *  &lt;/applet>
+    * </pre>
+    * @return The found parameters
+    */
+   public Properties getHtmlProperties();
 }

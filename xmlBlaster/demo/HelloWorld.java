@@ -1,4 +1,4 @@
-// xmlBlaster/demo/javaclients/HelloWorld.java
+// xmlBlaster/demo/HelloWorld.java
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;

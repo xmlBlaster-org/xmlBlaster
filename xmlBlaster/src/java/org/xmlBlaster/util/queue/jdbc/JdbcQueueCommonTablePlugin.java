@@ -156,6 +156,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                }
                catch (ClassNotFoundException ex) {
                   this.log.error(location, "getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
+                  ex.printStackTrace();
                   throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager class not found", ex);
                }
                catch (SQLException ex) {
@@ -163,7 +164,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                   throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager SQL exception", ex);
                }
                catch (Throwable ex) {
-                  if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
+                  if (this.log.TRACE) {
+                     this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
+                     ex.printStackTrace();
+                  } 
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcCommonTableQueueManager throwable", ex);
                }
 
@@ -180,13 +184,16 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          }
       }
       catch (ClassNotFoundException ex) {
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: class not found when initializing the connection pool", ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueCommonTableManager: class not found when initializing the connection pool", ex);
       }
       catch (SQLException ex) {
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: sql exception when initializing the connection pool", ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager: sql exception when initializing the connection pool", ex);
       }
       catch (Throwable ex) {
-         if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
+         if (this.log.TRACE) {
+            this.log.trace(location, "getJdbcQueueCommonTableManager internal exception: " + ex.toString());
+            ex.printStackTrace();
+         }
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcQueueManager: throwable when initializing the connection pool", ex);
       }
 
@@ -253,6 +260,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
       catch(Throwable e) {
          log.error(ME, "Can't configure queue, your properties are invalid: " + e.toString());
+         e.printStackTrace();
          return;
       }
 

@@ -6,7 +6,6 @@ Comment:   Little demo to show how a subscribe is done
 -----------------------------------------------------------------------------*/
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
-#include <util/PlatformUtils.hpp>
 #include <util/lexical_cast.h>
 #include <iostream>
 
@@ -57,6 +56,7 @@ public:
    string update(const string& /*sessionId*/, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
       log_.info(ME, "update invoked");
+      //subscribe("anotherDummy");  -> subscribe in update does not work with single threaded 'mico'
       if (log_.trace()) log_.trace(ME, "update: key    : " + updateKey.toXml());
       if (log_.trace()) log_.trace(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
@@ -85,7 +85,6 @@ int main(int args, char ** argv)
    std::cout << " end time: " << tsFactory.toXml(startStamp, "", true) << std::endl;
 
    try {
-      XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
 
@@ -93,6 +92,7 @@ int main(int args, char ** argv)
       demo.connect();
 
       demo.subscribe();
+      std::cout << "Please use PublishDemo to publish a message 'c++-demo', i'm waiting ..." << std::endl;
       while (demo.doContinue_) {
          org::xmlBlaster::util::thread::Thread::sleepSecs(1);
       }

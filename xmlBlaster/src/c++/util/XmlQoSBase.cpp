@@ -3,7 +3,7 @@ Name:      XmlQoSBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it 
-           with SAX
+           with the implemented xml parser.
 -----------------------------------------------------------------------------*/
 
 #include <util/xmlBlasterDef.h>
@@ -16,7 +16,7 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-XmlQoSBase::XmlQoSBase(Global& global) : SaxHandlerBase(global)
+XmlQoSBase::XmlQoSBase(Global& global) : XmlHandlerBase(global)
 {
    inQos_ = false;
    if (log_.call()) log_.trace(me(), "Creating new XmlQoSBase");
@@ -25,7 +25,7 @@ XmlQoSBase::XmlQoSBase(Global& global) : SaxHandlerBase(global)
 bool XmlQoSBase::isEmpty(const string &qos) 
 {
    if (qos.empty()) return true;
-   string trimHelper  = StringTrim::trim(qos.c_str());
+   string trimHelper  = StringTrim::trim(qos);
    if (trimHelper.size() < 11) return true;
    
    string middle;
@@ -34,23 +34,23 @@ bool XmlQoSBase::isEmpty(const string &qos)
    return false;
 }
 
-bool XmlQoSBase::startElementBase(const XMLCh* const name, AttributeList& /*attrs*/) 
+bool XmlQoSBase::startElementBase(const string &name, const parser::AttributeMap& /*attrs*/) 
 {
-   if (SaxHandlerBase::caseCompare(name, "qos")) {
+   if (name.compare("qos") == 0) {
       inQos_ = true;
       return true;
    }
    return false;
 }
 
-void XmlQoSBase::startElement(const XMLCh* const name, AttributeList &attrs) 
+void XmlQoSBase::startElement(const string &name, const parser::AttributeMap &attrs) 
 {
    startElementBase(name, attrs);
 }
 
-bool XmlQoSBase::endElementBase(const XMLCh* const name) 
+bool XmlQoSBase::endElementBase(const string &name) 
 {
-   if( SaxHandlerBase::caseCompare(name, "qos") ) {
+   if (name.compare("qos") == 0) {
       inQos_     = false;
       character_ = "";
       return true;
@@ -58,7 +58,7 @@ bool XmlQoSBase::endElementBase(const XMLCh* const name)
    return false;
 }
 
-void XmlQoSBase::endElement(const XMLCh* const name) 
+void XmlQoSBase::endElement(const string &name) 
 {
    endElementBase(name);
 }

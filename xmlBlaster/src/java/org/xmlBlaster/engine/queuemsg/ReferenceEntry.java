@@ -9,7 +9,6 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -22,7 +21,6 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
@@ -56,7 +54,9 @@ public class ReferenceEntry extends MsgQueueEntry
       setMsgUnitWrapper(msgUnitWrapper);
       //setSender(msgUnitWrapper.getMsgQosData().getSender());
       setReceiver(receiver);
-      super.wantReturnObj = false;
+      if (msgUnitWrapper != null) 
+         super.wantReturnObj = msgUnitWrapper.getWantReturnObj();
+      else super.wantReturnObj = false; 
    }
 
    /**
@@ -100,6 +100,7 @@ public class ReferenceEntry extends MsgQueueEntry
                   msgUnitWrapper = topicHandler.addMsgUnitWrapper(msgUnitWrapper, storageId);
                   // NOTE: The returned msgUnitWrapper is not always identical to the passed one
                   // if two threads do this simultaneously, the topic handler sync this situation
+                  super.wantReturnObj = msgUnitWrapper.getWantReturnObj();
                   this.weakMsgUnitWrapper = new WeakReference(msgUnitWrapper);
                }
             }

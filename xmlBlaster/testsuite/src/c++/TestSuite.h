@@ -15,7 +15,6 @@ Comment:   Testing helper
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
-#include <util/PlatformUtils.hpp>
 #include <util/thread/ThreadImpl.h>
 #include <util/Timestamp.h>
 #include <util/lexical_cast.h>
@@ -31,7 +30,7 @@ template <class T>
 void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
 {
    if (should != is) {
-      log.error(who, txt + " FAILED: value is " + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' but should be '" + org::xmlBlaster::util::lexical_cast<std::string>(should) + "'");
+      log.error(who, txt + " FAILED: value is '" + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' but should be '" + org::xmlBlaster::util::lexical_cast<std::string>(should) + "'");
       assert(0);
    }
    else {
@@ -43,7 +42,7 @@ template <class T>
 void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
 {
    if (should == is) {
-      log.error(who, txt + " FAILED: value is " + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' in both cases but they should be different");
+      log.error(who, txt + " FAILED: value is '" + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' in both cases but they should be different");
       assert(0);
    }
    else {
@@ -57,7 +56,7 @@ void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, con
 void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should != is) {
-      log.error(who, txt + " FAILED: value is " + is + "' but should be '" + should + "'");
+      log.error(who, txt + " FAILED: value is '" + is + "' but should be '" + should + "'");
       assert(0);
    }
    else {
@@ -68,7 +67,7 @@ void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const
 void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should == is) {
-      log.error(who, txt + " FAILED: value is " + is + "' for both cases but they should be different");
+      log.error(who, txt + " FAILED: value is '" + is + "' for both cases but they should be different");
       assert(0);
    }
    else {
@@ -108,7 +107,6 @@ public:
       }
 
       if ( log_.call() ) log_.call(ME, "Entering TestSuite base class, initializing XML environment");
-      XMLPlatformUtils::Initialize();
       embeddedServer_    = NULL;
       useEmbeddedServer_ = global_.getProperty().getBoolProperty("embeddedServer", false);
       if (useEmbeddedServer_) {
