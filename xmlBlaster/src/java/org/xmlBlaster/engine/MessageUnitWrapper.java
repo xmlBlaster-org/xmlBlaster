@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.32 2002/03/17 13:39:14 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.33 2002/03/28 10:12:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -23,12 +23,15 @@ import java.util.*;
 
 
 /**
- * Wrapping the CORBA MessageUnit to allow some nicer usage.
+ * Wrapping the raw MessageUnit to allow some nicer usage.
  * <p />
- * If you look at the CORBA generated MessageUnit, its very raw and
- * does not allow any modifications.<br />
- * So this Wrapper encapsulates the CORBA generated MessageUnit and adds
+ * If you look at the CORBA generated MessageUnit or the over RMI transferred MessageUnit,
+ * its very raw and does not allow any modifications.<br />
+ * So this Wrapper encapsulates the simple MessageUnit and adds
  * some value to it.
+ * For example it holds the readily parsed XML QoS and XmlKey of a message.
+ * @see org.xmlBlaster.engine.helper.MessageUnit
+ * @see org.xmlBlaster.protocol.corba.serverIdl.MessageUnit
  */
 public class MessageUnitWrapper implements I_Timeout
 {
