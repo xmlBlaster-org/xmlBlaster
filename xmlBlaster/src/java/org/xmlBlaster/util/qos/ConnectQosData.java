@@ -122,7 +122,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
       this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.serialData = serialData;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
-      this.sessionQos = new SessionQos(this.glob, this.nodeId);
+      this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side
    }
 
    /**
