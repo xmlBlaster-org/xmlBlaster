@@ -7,7 +7,7 @@ TODO for release 0.80
 (4) Suport for searching in our Maillinglist                   [ok]
 (5) Integrate XmlRpc                                           [ok]
 (6) Integrate XmlRpc for Python                                [ok]
-(7) Autoconf for C++                                           [--]
+(7) Autoconf for C++                                           [ok]
 (8) XmlBlaster-Matrix                                          [--]
 (9) Documentation (some samll HOWTO'S)                         [--]
 (10) Integrate JacOrb 1.2.1                                    [ok]
