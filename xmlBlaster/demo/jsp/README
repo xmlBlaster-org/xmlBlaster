@@ -1,0 +1,17 @@
+This JSP (Java server pages) example demonstrates the access
+to xmlBlaster.
+
+Copy it into the webapps/ROOT directory of your servlet
+engine (for example tomcat from http://jakarta.apache.org).
+
+Start the servlet engine, it should include the xmlBlaster.jar
+file in its CLASSPATH.
+
+Start xmlBlaster server:
+
+  java -jar lib/xmlBlaster.jar
+
+and try it:
+
+  http://localhost:8080/ClientGet.jsp
+
