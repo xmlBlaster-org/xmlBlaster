@@ -23,6 +23,8 @@ TODO:
 * XmlBlaster internal statistic overview with http://www.object-refinery.com/jfreechart/
 * SMS protocol driver with http://www.imail.gr/jsmsengine/index.php
 * Performance analysis with garbage collector http://wireless.java.sun.com/midp/articles/garbage/
+  - Port to http://gongolo.usr.dsi.unimi.it/~vigna/fastUtil/?
+  - Port to use Piccolo SAX parser ?
 
 BUGS:
 
@@ -31,6 +33,11 @@ BUGS:
 
 Changes for xxxxx [xxx, xx 200x]
 ================================
+
+  - Added <duplicateUpdates>true/false</duplicateUpdates> to ConnectQos
+    This allows for multiple subscribes of one client sessions on
+    the same me message to only receive on update.
+    Defaults to true.
 
   - Added more administrative introspection properties:
     nodeId, version, buildTimestamp, buildJavaVendor, buildJavaVersion
