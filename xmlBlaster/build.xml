@@ -6,11 +6,42 @@
  
 Authors:
  James Birchfield <jmbirchfield@proteustechnologies.com>
+
+ToDo:
+
+Installing the build tools
+==========================
  
-Todo:
+The xmlBlaster build system is based on Jakarta Ant, which is a Java building
+tool originally developed for the Jakarta Tomcat project but now used in many
+other Apache projects and extended by many developers.
  
-Legal: 
-  Copyright (c) 1999 The Apache Software Foundation. All Rights Reserved.
+Ant is a little but very handy tool that uses a build file written in XML
+(this file) as building instructions. For more information refer to
+"http://jakarta.apache.org/ant/".
+ 
+To make things easier for you, the xmlBlaster distribution contains a
+precompiled version of Ant and the build scripts take care of all the
+classpath issues.
+ 
+The only thing that you have to make sure, is the "JAVA_HOME" environment
+property should be set to match the JVM you want to use. That's it.
+ 
+                      
+Building instructions
+=====================
+ 
+Ok, let's build the baby. First, make sure your current working directory is
+where this very file is located. Then type
+ 
+  ./build.sh (unix)
+  .\build.bat (win32)
+ 
+if everything is right and all the required packages are visible, this action
+will generate a file called "xmlBlaster.jar" in the "./lib" directory.
+Note, that if you do further development, compilation time is reduced
+since Ant is able to detect which files have changed an to recompile
+them at need. 
 
 ============================================================================ -->
 
@@ -27,6 +58,7 @@ Legal:
   <property name="dtd.dir" value="./src/dtd"/>
   <property name="idl.dir" value="./src/idl"/>
   <property name="doc.dir" value="./doc"/>
+  <property name="javadoc.dir" value="./doc/api"/>
   <property name="testsuite.dir" value="./testsuite"/>
   <property name="demo.dir" value="./demo"/>
   <property name="bin.dir" value="./bin"/>
@@ -38,16 +70,13 @@ Legal:
 
   <property name="build.dir" value="./build"/>
   <property name="build.src" value="./build/src"/>
-  <property name="build.idl" value="./build/idl"/>
-  <property name="build.dtd" value="./build/dtd"/>
   <property name="build.dest" value="./build/classes"/>
-  <property name="build.docs" value="./build/docs"/>
 
   <property name="dist.dir" value="./dist"/>
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/xml.jar:./lib/test.jar:./lib/xtdash.jar:./lib/collections.jar:"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/xml.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet-2.0.jar:"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -99,19 +128,18 @@ Legal:
     <!-- convert idl -->
 	<echo message="Converting idl..."/>
     <java
-		class="${idl.class}"
+		classname="${idl.class}"
 		args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>  
 
-    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" ignore="README, Makefile"/>
+    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile"/>
 
     <javac
 		srcdir="${build.src}/xmlBlaster"
 		destdir="${build.dest}/xmlBlaster"
 		classpath="${classpath}"
-		bootclasspath="${xmlblaster_home}/lib/jacorb.jar:${classpath}"
 		debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}/xmlBlaster" items="org"/>
+    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}/xmlBlaster" includes="org/**"/>
 
     <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
   </target>
@@ -121,15 +149,14 @@ Legal:
   <!-- =================================================================== -->
   <target name="demo" depends="xmlBlaster">
     <mkdir dir="${build.dest}/demo"/>
-    <copydir src="${demo.dir}" dest="${build.src}/demo" ignore="README, Makefile"/>
+    <copydir src="${demo.dir}" dest="${build.src}/demo" excludes="README, Makefile"/>
     <javac
 		srcdir="${build.src}/demo"
 		destdir="${build.dest}/demo"
-		classpath="${classpath}"
-		bootclasspath="${xmlblaster_home}/lib/jacorb.jar:${classpath}"
+		classpath="${classpath}:${lib.dir}/${name}.jar"
 		debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}/demo" items="javaclients"/>
+    <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}/demo"/>
 
     <copyfile src="${build.dir}/demo.jar" dest="${lib.dir}/demo.jar"/>
   </target>
@@ -145,21 +172,36 @@ Legal:
   <!-- =================================================================== -->
   <target name="testsuite" depends="xmlBlaster">
     <mkdir dir="${build.dest}/testsuite"/>
-    <copydir src="${testsuite.dir}/org" dest="${build.src}/testsuite/org" ignore="README, Makefile"/>
+    <copydir src="${testsuite.dir}/org" dest="${build.src}/testsuite/org" excludes="README, Makefile"/>
     <javac
 		srcdir="${build.src}/testsuite"
 		destdir="${build.dest}/testsuite"
-		classpath="${classpath}"
-		bootclasspath="${xmlblaster_home}/lib/jacorb.jar:${classpath}"
+		classpath="${classpath}:${lib.dir}/${name}.jar"
 		debug="${debug}"/>
-    <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}/testsuite" items="testsuite"/>
+    <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}/testsuite" includes="testsuite/**"/>
     <copyfile src="${build.dir}/testsuite.jar" dest="${lib.dir}/testsuite.jar"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the core javadoc documentation                              -->
+  <!-- =================================================================== -->
+  <target name="javadocs" depends="xmlBlaster">
+	<javadoc packagenames="org.xmlBlaster.*"
+		sourcepath="${src.dir}"
+		classpath="${classpath}"
+		destdir="${javadoc.dir}"
+		author="true"
+		version="true"
+		use="true"
+		windowtitle="xmlBlaster API"
+		doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;" />
+
   </target>
 
   <!-- =================================================================== -->
   <!-- Creates the distribution                                            -->
   <!-- =================================================================== -->
-  <target name="dist" depends="xmlBlaster,demo,testsuite">
+  <target name="dist" depends="all">
     <mkdir dir="${dist.dir}"/>
     <mkdir dir="${dist.dir}/bin"/>
     <mkdir dir="${dist.dir}/src"/>
@@ -184,9 +226,9 @@ Legal:
     <copyfile src="jacorb_properties.template" dest="${dist.dir}/jacorb_properties.template"/>
     <copyfile src=".bashrc" dest="${dist.dir}/.bashrc"/>
     <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
-
-    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}" items="."/>
-    <deltree dir="${dist.dir}"/>
+	<echo message="Creating jar file"/>
+    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}"/>
+	<echo message="Created jar file"/>
   </target>
 
   <!-- =================================================================== -->
