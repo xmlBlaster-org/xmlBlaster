@@ -410,7 +410,7 @@ void ConnectionsHandler::toPollingOrDead()
 }
 
 
-void ConnectionsHandler::timeout(void */*userData*/)
+void ConnectionsHandler::timeout(void * /*userData*/)
 {
 
   Lock lock(connectMutex_);
