@@ -100,8 +100,9 @@ function debugF(level, str, currentFrame)
 */
 var logWindow = null;         // the window handle - a popup with the log output table
 var collectForDisplay=false;  // To avoid for each logging a window update, collect log lines
+var newLogsAvailable = false; // Is there a new log message?
 var logStrippingInfo = null;  // Text to display if we stripped to many log entries from log window
-var MAX_LOG_ENTRIES = 60;     // max number of rows in window
+var MAX_LOG_ENTRIES = 100;    // max number of rows in window
 var levelColor = new Array(); // every log level is displayed in a characteristic color
 levelColor["ERROR"] = "red";
 levelColor["WARNING"] = "yellow";
@@ -234,8 +235,16 @@ function logToWindow(level, codePos, text)
 
    if (level == "CLEAR") {
       logEntries.length = 0;
+      displayLogs('forceRefresh');
+      return;
    }
-   else if (logEntries.length >= MAX_LOG_ENTRIES) {
+
+   if (level == "REFRESH") {
+      displayLogs('forceRefresh');
+      return;
+   }
+
+   if (logEntries.length >= MAX_LOG_ENTRIES) {
       // only half the logs, not empty them totally
       logStrippingInfo = "Stripping logging output to " + logEntries.length / 2 + " lines";
       var jj=0;
@@ -245,22 +254,36 @@ function logToWindow(level, codePos, text)
       }
       logEntries.length = logEntries.length / 2;
    }
-   else {
-      logEntries[logEntries.length] = new logObject(level, codePos, text);
-   }
 
-   // To avoid to many log refreshs, we collect for 2 seconds all logs and
-   // display them in one window refresh
-   if (collectForDisplay == false) {
-      collectForDisplay = true;
-      displayRefreshHandler = window.setTimeout( "displayLogs()", 2000 );
-   }
+   logEntries[logEntries.length] = new logObject(level, codePos, text);
+
+   //alert("codePos="+codePos+", text="+text);
+   displayLogs('newEntry');
 }
 
-function displayLogs()
+/**
+ * To avoid to many log refreshs, we collect for 2 seconds all logs and
+ * display them in one window refresh
+ * @param caller  Telling us if this call is invoked from a timeout
+ */
+function displayLogs(caller)
 {
-   collectForDisplay = false;
-   window.clearTimeout(displayRefreshHandler);
+   if (caller == 'forceRefresh') {
+      collectForDisplay = false;
+      window.clearTimeout(displayRefreshHandler);  // necessary?
+   }
+   else if (caller == 'newEntry') {
+      newLogsAvailable = true;
+      if (collectForDisplay)
+         return;
+   }
+   else if (caller == 'fromTimer' && !newLogsAvailable) {
+      collectForDisplay = false;
+      window.clearTimeout(displayRefreshHandler);  // necessary?
+      return;
+   }
+
+   newLogsAvailable = false;
 
    var d = logWindow.document;
    d.open("text/html","replace");
@@ -320,21 +343,22 @@ function displayLogs()
    var clearStr = 'javascript:opener.logToWindow("CLEAR", "CLEAR", "CLEAR")';
    tableStr += "<A HREF='" + clearStr + "'>clear</A>\n";
 
-   if (self.opener.top.Log.INFO == true) {
-      var noInfoStr = 'javascript:self.opener.top.Log.INFO=false; ' + clearStr;
+   var refreshStr = 'javascript:opener.logToWindow("REFRESH", "REFRESH", "REFRESH")';
+   if (top.Log.INFO == true) {
+      var noInfoStr = 'javascript:top.opener.top.Log.INFO=false; ' + refreshStr;
       tableStr += "&nbsp;<A HREF='" + noInfoStr + "'>Info off</A>\n";
    }
    else {
-      var infoStr = 'javascript:self.opener.top.Log.INFO=true; ' + clearStr;
+      var infoStr = 'javascript:top.opener.top.Log.INFO=true; ' + refreshStr;
       tableStr += "&nbsp;&nbsp;<A HREF='" + infoStr + "'>Info on</A>\n";
    }
 
-   if (self.opener.top.Log.TRACE == true) {
-      var noTraceStr = 'javascript:self.opener.top.Log.TRACE=false; ' + clearStr;
+   if (top.Log.TRACE == true) {
+      var noTraceStr = 'javascript:top.opener.top.Log.TRACE=false; ' + refreshStr;
       tableStr += "&nbsp;<A HREF='" + noTraceStr + "'>Trace off</A>\n";
    }
    else {
-      var traceStr = 'javascript:self.opener.top.Log.TRACE=true; ' + clearStr;
+      var traceStr = 'javascript:top.opener.top.Log.TRACE=true; ' + refreshStr;
       tableStr += "&nbsp;&nbsp;<A HREF='" + traceStr + "'>Trace on</A>\n";
    }
 
@@ -343,6 +367,12 @@ function displayLogs()
    d.close();
    //logWindow.focus();
    logWindow.scrollTo(0, 10000);
+
+   // To avoid to many log refreshs, we collect for 2 seconds all logs and
+   // display them in one window refresh
+   collectForDisplay = true;
+   displayRefreshHandler = window.setTimeout( "displayLogs('fromTimer')", 2000 );
+
    return;
 }
 
