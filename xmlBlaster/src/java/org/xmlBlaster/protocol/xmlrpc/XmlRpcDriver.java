@@ -3,11 +3,11 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.31 2002/05/30 09:52:56 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.32 2002/05/31 09:59:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -48,6 +48,7 @@ import java.io.IOException;
 public class XmlRpcDriver implements I_Driver
 {
    private static final String ME = "XmlRpcDriver";
+   private LogChannel log;
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -100,14 +101,15 @@ public class XmlRpcDriver implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering init()");
+      this.log = glob.getLog("xmlrpc");
+      if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
       xmlPort = glob.getProperty().get("xmlrpc.port", 8080);
 
       if (xmlPort < 1) {
-         Log.info(ME, "Option xmlrpc.port set to " + xmlPort + ", xmlRpc server not started");
+         log.info(ME, "Option xmlrpc.port set to " + xmlPort + ", xmlRpc server not started");
          return;
       }
 
@@ -120,7 +122,7 @@ public class XmlRpcDriver implements I_Driver
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
             hostname = addr.getHostName();
          } catch (Exception e) {
-            Log.info(ME, "Can't determine your hostname");
+            log.info(ME, "Can't determine your hostname");
             hostname = "localhost";
          }
       }
@@ -137,9 +139,9 @@ public class XmlRpcDriver implements I_Driver
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
          serverUrl = "http://" + hostname + ":" + xmlPort + "/";
-         Log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
+         log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
       } catch (IOException e) {
-         Log.error(ME, "Error creating webServer on '" + inetAddr + ":" + xmlPort + "': " + e.toString());
+         log.error(ME, "Error creating webServer on '" + inetAddr + ":" + xmlPort + "': " + e.toString());
          e.printStackTrace();
       }
    }
@@ -157,10 +159,10 @@ public class XmlRpcDriver implements I_Driver
          webServer.removeHandler("xmlBlaster");
          webServer.shutdown();
          webServer = null;
-         Log.info(ME, "XML-RPC driver stopped, handler released.");
+         log.info(ME, "XML-RPC driver stopped, handler released.");
       }
       else
-         Log.info(ME, "XML-RPC shutdown, nothing to do.");
+         log.info(ME, "XML-RPC shutdown, nothing to do.");
    }
 
 

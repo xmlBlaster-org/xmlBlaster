@@ -3,12 +3,12 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.16 2002/05/30 09:53:29 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.17 2002/05/31 09:59:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -36,6 +36,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 {
    private String ME = "CallbackXmlRpcDriver";
    private Global glob = null;
+   private LogChannel log;
    private CallbackAddress callbackAddress = null;
    private XmlRpcClient xmlRpcClient = null;
 
@@ -75,10 +76,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("xmlrpc");
       this.callbackAddress = callbackAddress;
       try {
          xmlRpcClient = new XmlRpcClient(callbackAddress.getAddress());
-         Log.info(ME, "Accessing client callback web server using given url=" + callbackAddress.getAddress());
+         if (log.TRACE) log.trace(ME, "Accessing client callback web server using given url=" + callbackAddress.getAddress());
       }
       catch (IOException ex1) {
          throw new XmlBlasterException(ME, ex1.toString());
@@ -114,11 +116,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
-            if (Log.TRACE) Log.trace(ME, "Send an update to the client ...");
+            if (log.TRACE) log.trace(ME, "Send an update to the client ...");
 
             retVal[ii] = (String)xmlRpcClient.execute("update", args);
 
-            if (Log.TRACE) Log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
+            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
                 + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
          }
          return retVal;
@@ -126,12 +128,12 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
          String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
-         if (Log.TRACE) Log.trace(ME + ".sendUpdate", str);
+         if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          throw new XmlBlasterException("CallbackFailed", str);
       }
       catch (Throwable e) {
          String str = "Sending message to " + callbackAddress.getAddress() + " failed: " + e.toString();
-         if (Log.TRACE) Log.trace(ME + ".sendUpdate", str);
+         if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          e.printStackTrace();
          throw new XmlBlasterException("CallbackFailed", str);
       }
@@ -155,23 +157,23 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
-            if (Log.TRACE) Log.trace(ME, "Send an updateOneway to the client ...");
+            if (log.TRACE) log.trace(ME, "Send an updateOneway to the client ...");
 
             xmlRpcClient.execute("updateOneway", args);
 
-            if (Log.TRACE) Log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
+            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
                 + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
          }
       }
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
          String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
-         if (Log.TRACE) Log.trace(ME + ".sendUpdateOneway", str);
+         if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
          throw new XmlBlasterException("CallbackFailed", str);
       }
       catch (Throwable e) {
          String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed: " + e.toString();
-         if (Log.TRACE) Log.trace(ME + ".sendUpdateOneway", str);
+         if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
          e.printStackTrace();
          throw new XmlBlasterException("CallbackFailed", str);
       }
@@ -204,6 +206,6 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       //if (xmlRpcClient != null) xmlRpcClient.shutdown(); method is missing in XmlRpc package !!!
       callbackAddress = null;
       xmlRpcClient = null;
-      if (Log.TRACE) Log.trace(ME, "Shutdown implementation is missing");
+      if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
 }

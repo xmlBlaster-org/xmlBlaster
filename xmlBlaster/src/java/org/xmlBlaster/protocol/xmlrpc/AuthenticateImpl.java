@@ -6,7 +6,7 @@ Comment:   Implementing the xmlBlaster interface for xml-rpc.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -29,6 +29,7 @@ public class AuthenticateImpl
 {
    private final String ME = "XmlRpc.AuthenticateImpl";
    private final Global glob;
+   private LogChannel log;
    private final I_Authenticate authenticate;
 
 
@@ -38,8 +39,9 @@ public class AuthenticateImpl
    public AuthenticateImpl(Global glob, I_Authenticate authenticate)
       throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering constructor ...");
       this.glob = glob;
+      this.log = glob.getLog("xmlrpc");
+      if (log.CALL) log.call(ME, "Entering constructor ...");
       this.authenticate = authenticate;
    }
 
@@ -52,15 +54,15 @@ public class AuthenticateImpl
                        String qos_literal, String sessionId)
                           throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering login() ...");
-      if (Log.DUMP) Log.dump(ME, qos_literal);
+      if (log.CALL) log.call(ME, "Entering login() ...");
+      if (log.DUMP) log.dump(ME, qos_literal);
 
       if (loginName==null || passwd==null || qos_literal==null) {
-         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
       }
 
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
       ConnectQos connectQos = new ConnectQos(glob, qos_literal);
       I_SecurityQos securityQos = connectQos.getSecurityQos();
@@ -69,12 +71,12 @@ public class AuthenticateImpl
       else {
          loginName = securityQos.getUserId();
          passwd = "";
-         if (Log.TRACE) Log.trace(ME, "login() method uses security plugin from qos instead of supplied loginName/password");
+         if (log.TRACE) log.trace(ME, "login() method uses security plugin from qos instead of supplied loginName/password");
       }
          
 
       ConnectReturnQos returnQos = authenticate.connect(connectQos);
-      if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+      if (log.TIME) log.time(ME, "Elapsed time in login()" + stop.nice());
       return returnQos.getSessionId();
    }
 
@@ -88,7 +90,7 @@ public class AuthenticateImpl
     */
    public String logout(String sessionId) throws XmlBlasterException
    {
-   if (Log.CALL) Log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
+   if (log.CALL) log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
       authenticate.disconnect(sessionId, (new DisconnectQos()).toXml());
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
@@ -103,9 +105,9 @@ public class AuthenticateImpl
    public String connect(String qos_literal) throws XmlBlasterException
    {
       String returnValue = null, returnValueStripped = null;
-      if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
+      if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
       try {
          ConnectQos connectQos = new ConnectQos(glob, qos_literal);
          ConnectReturnQos returnQos = authenticate.connect(connectQos);
@@ -114,10 +116,10 @@ public class AuthenticateImpl
          returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
          returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
          if (!returnValueStripped.equals(returnValue)) {
-            Log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+            log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
                            "This shouldn't be a problem as long as your credentials doesn't contain '<'");
          }
-         if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
+         if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
@@ -128,9 +130,9 @@ public class AuthenticateImpl
 
    public String disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering logout()");
+      if (log.CALL) log.call(ME, "Entering logout()");
       authenticate.disconnect(sessionId, qos_literal);
-      if (Log.CALL) Log.call(ME, "Exiting logout()");
+      if (log.CALL) log.call(ME, "Exiting logout()");
       return Constants.RET_OK;
    }
 
