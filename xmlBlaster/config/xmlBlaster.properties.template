@@ -131,6 +131,14 @@ RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
 
 
 #------------------------------------------------------------------------------
+# Telnet access to xmlBlaster for administration
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html
+#admin.remoteconsole.port=2702
+#admin.remoteconsole.sessionTimeout=600000
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
 # When an XmlBlasterException is thrown, log it to console
 Log.exception=false
 
