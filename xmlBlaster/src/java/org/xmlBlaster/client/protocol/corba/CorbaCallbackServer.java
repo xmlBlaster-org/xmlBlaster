@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.33 2003/03/27 19:43:42 laghi Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.34 2003/03/27 20:59:02 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -36,10 +36,9 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
  */
 public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations, I_CallbackServer
 {
-   /** made static that we can recycle the orb */
-   private static org.omg.CORBA.ORB orb = null;
-   private org.omg.PortableServer.POA rootPOA = null;
-   private BlasterCallback callback = null;
+   private org.omg.CORBA.ORB orb;
+   private org.omg.PortableServer.POA rootPOA;
+   private BlasterCallback callback;
 
    private String ME;
    private Global glob;
@@ -49,7 +48,8 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     */
-   public CorbaCallbackServer() {}
+   public CorbaCallbackServer() {
+   }
 
    /**
     * Construct a CORBA callback server for xmlBlaster, used by java/corba clients.
@@ -60,7 +60,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     */
    public CorbaCallbackServer(Global glob, String name, I_CallbackExtended boss, org.omg.CORBA.ORB orb_) throws XmlBlasterException
    {
-      orb = orb_;
+      //this.orb = orb_; // We create a new orb each time (Marcel 2003-03-27)
       initialize(glob, name, boss);
    }
 
@@ -75,17 +75,14 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.glob = glob;
       if (this.glob == null)
          this.glob = new Global();
-      this.log = glob.getLog("corba");
+      this.log = this.glob.getLog("corba");
 
       String cbHostname = null;
-      if (orb == null) {
-         cbHostname = CorbaDriver.initializeOrbEnv(glob, true);
-         orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
-      }
+      cbHostname = CorbaDriver.initializeOrbEnv(this.glob, true);
+      this.orb = org.omg.CORBA.ORB.init(this.glob.getArgs(), null);
 
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;
-      this.orb = orb;
       createCallbackServer();
       log.info(ME, "Success, created CORBA callback server on host " + cbHostname);
    }
@@ -155,14 +152,13 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
          } catch(Exception e) { log.warn(ME, "POA deactivate callback failed"); }
          callback = null;
-/*
+         if (log.TRACE) log.trace(ME, "Doing orb.shutdown()");
          try {
             this.orb.shutdown(false);
          }
          catch (Exception ex) {
             this.log.warn(ME, "shutdown:exception occured destroy(): " + ex.toString());
          }
-*/
       }
 
       // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
