@@ -52,7 +52,11 @@ Else add it manually.
 
 ============================================================================ -->
 
-<project default="xmlBlaster" basedir=".">
+<project default="usage" basedir=".">
+
+  <taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask"/>
+  <taskdef name="libraryset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet"/>
+  <taskdef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet"/>
 
   <property name="name" value="xmlBlaster"/>
   <property name="version" value="0.74-dev"/>
@@ -93,6 +97,12 @@ Else add it manually.
   <property name="xmlblaster_home" value="."/>
   <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar"/>
 
+  <property name="src.cpp.dir" value="./src/c++"/>
+  <property name="MICO_HOME" value="/opt/local/mico"/>
+  <property name="MICO_VER" value="2.3.5"/>
+  <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src1_6_0"/>
+  <property name="XMLCPP_VER" value="1_6_0"/>
+
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
   <!-- =================================================================== -->
@@ -107,6 +117,8 @@ Else add it manually.
     <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
     <echo message="   demo        --> generates the demo.jar file"/>
     <echo message="   testsuite   --> generates the testsuite.jar file"/>
+    <echo message="   cpp-lib     --> generates C++ xmlBlasterClient.sl (shared library/dll)"/>
+    <echo message="   cpp-test    --> generates C++ test clients"/>
     <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
     <echo message="   javadocs    --> generates the javadoc documentation"/>
     <echo message="   dist        --> generates the xmlBlaster distribution"/>
@@ -393,6 +405,78 @@ Else add it manually.
     <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}"/>
   </target>
 
+
+  <!-- =================================================================== -->
+  <!-- Corba/C++ integration                                               -->
+  <!-- =================================================================== -->
+
+  <target name="cpp-lib">
+
+     <!-- A typical idl CORBA compile:
+       /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+     -->
+     <exec dir="${src.cpp.dir}/generated" executable="${MICO_HOME}/bin/idl" os="Linux">
+        <arg line="--poa"/>
+        <arg line="--c++-suffix cpp"/>
+        <arg line="../../../${idl.dir}/xmlBlaster.idl"/>
+     </exec>
+     <!-- exec dir="${src}" executable="${MICO_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+
+
+     <!-- A typical compile:
+       g++ -g
+           -fpic -I/opt/local/mico/include -DMICO -c /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.cc
+      -->
+     <!-- A typical shared library link:
+       g++ -shared -g
+           -o /opt/local/xmlBlaster/lib/libxmlBlasterClient.so.0.79c
+           /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
+     -->
+     <!-- Build a shared library -->
+     <cc compiler="gcc" debug="true" link="shared"
+         outfile="${lib.dir}/xmlBlasterClient"
+         objdir="${build.dir}/obj"
+         >
+        <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
+        <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
+        <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
+        <includepath location="${src.cpp.dir}" />
+        <sysincludepath location="${MICO_HOME}/include" />
+        <sysincludepath location="${XMLCPP_HOME}/include" />
+        <defineset>
+           <define name="MICO" value="1" />
+           <!-- undefine name="UNWANTEDDEF" / -->
+        </defineset>
+        <linkerarg value="-fpic" />
+        <linkerarg value="-Wall" />
+        <linkerarg value="-Wstrict-prototypes" />
+        <linkerarg value="-Wimplicit-int" />
+        <linkerarg value="-Werror-implicit-function-declaration" />
+     </cc>
+  </target>
+
+  <target name="cpp-test" depends="cpp-lib">
+     <cc compiler="gcc" debug="true"
+         outfile="${testsuite.dir}/c++/bin/TestGet"
+         objdir="build/obj">
+        <fileset dir="${testsuite.dir}/c++" includes="TestGet.cpp"/>
+        <includepath location="${src.cpp.dir}" />
+        <sysincludepath location="${MICO_HOME}/include" />
+        <sysincludepath location="${XMLCPP_HOME}/include" />
+        <defineset>
+           <define name="MICO" value="1" />
+        </defineset>
+        <libset>
+           <!-- libs></libs -->
+            <!-- fileset dir="${MICO_HOME}/lib" includes="*mico${MICO_VER}.*" / -->
+        </libset>
+        <compilerarg value="-Wall" />
+        <compilerarg value="-Wstrict-prototypes" />
+        <compilerarg value="-Wimplicit-int" />
+        <compilerarg value="-Werror-implicit-function-declaration" />
+     </cc>
+  </target>
+
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
@@ -400,25 +484,9 @@ Else add it manually.
       <delete dir="${build.dir}"/>
       <delete>
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
-      </delete>
-
-      <delete>
-         <fileset dir="${build.dir}"/>
-      </delete>
-
-      <!-- delete>
-         <fileset dir="${classes.dir}/org"/>
-         <fileset dir="${classes.dir}/html"/>
-         <fileset dir="${classes.dir}/javaclients"/>
-         <fileset dir="${classes.dir}/testsuite"/>
-         <fileset dir="${classes.dir}/doc"/>
-         <fileset dir="${classes.dir}" includes="DomQueryTest.class"/>
-         <fileset dir="${classes.dir}" includes="XtOmQueryTest.class"/>
          <fileset dir="${req.dir}" includes="*.class"/>
-         <fileset dir="${classes.webinf.dir}/org"/>
-         <fileset dir="${classes.webinf.dir}/html"/>
-         <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
-      </delete -->
+         <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
+      </delete>
    </target>
 
    <target name="delete" depends="clean">
