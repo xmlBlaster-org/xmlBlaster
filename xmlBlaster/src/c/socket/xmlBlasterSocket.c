@@ -69,7 +69,7 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw 'serialized' MsgUnit as a char* in BlobHolder, the caller needs to free() it.
  */
-BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
+Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
 {
    size_t qosLen=0, keyLen=0;
    char contentLenStr[126];
@@ -123,7 +123,7 @@ BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
  */
-BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
+Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
 {
    size_t i;
    size_t currpos = 0;
@@ -455,7 +455,7 @@ QosArr *parseQosArr(size_t dataLen, char *data)
  * of MsgUnit structs.
  * @return The messages (never NULL), you need to free them after usage with freeMsgUnitArr(MsgUnitArr *)
  */
-MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
+Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
 {
    MsgUnitArr *msgUnitArr = (MsgUnitArr *)calloc(1, sizeof(MsgUnitArr));
    size_t currpos = 0;
