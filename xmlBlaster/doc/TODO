@@ -5,7 +5,7 @@
 
 - dtd support
 
-- Change our XmlKey <key> tag name to avoid conflicts with <xsl:key>
+- Add an AuthenticateException type
 
 - QoS support is still missing
 

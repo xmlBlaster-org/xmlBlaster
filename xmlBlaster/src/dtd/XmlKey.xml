@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<!DOCTYPE xmlBlaster SYSTEM "XmlKey.dtd">
+
+<!-- Example of possible XML keys -->
+<!-- Note that the <demo> and <publish> etc. tags are NOT used when sending messages -->
+<!-- you have to send only the <key ...> tag and its descendant to the xmlBlaster -->
+
+<demo>
+
+   <!-- Publishing message 4711 -->
+   <publish>
+      <key oid='4711' contentMime='text/xml'>
+         <AGENT id='192.168.124.20' subId='1' type='generic'>
+            <DRIVER id='FileProof' pollingFreq='10'>
+            </DRIVER>
+         </AGENT>
+      </key>
+   </publish>
+
+
+   <!-- Accessing message 4711 synchronous -->
+   <get>
+      <?xml version='1.0' encoding='ISO-8859-1' ?>
+      <key oid='4711' queryType='EXACT'>
+      </key>
+   </get>
+
+
+   <!-- Accessing message with XPath query synchronous -->
+   <get>
+      <key oid='' queryType='XPATH'>
+         //DRIVER[@id='FileProof']
+      </key>
+   </get>
+
+
+   <!-- Accessing message 4711 asynchronous -->
+   <subscribe>
+      <key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'>
+      </key>
+   </subscribe>
+
+
+   <!-- Accessing message with XPath query asynchronous -->
+   <subscribe>
+      <key oid='' queryType='XPATH'>
+      /xmlBlaster/key/AGENT
+      </key>
+   </subscribe>
+
+
+   <!-- Deleting message 4711 -->
+   <erase>
+      <key oid='4711' queryType='EXACT'>
+      </key>
+   </erase>
+
+
+</demo>
+
+

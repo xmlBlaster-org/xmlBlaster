@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<!DOCTYPE xmlBlaster SYSTEM "XmlKey.dtd">
+
+<!-- Example of possible XML QoS (quality of services) -->
+<!-- Note that the <demo> and <publish> etc. tags are NOT used when sending messages -->
+<!-- you have to send only the <qos ...> tag and its descendant to the xmlBlaster -->
+
+<demo>
+
+   <!-- QoS when publishing -->
+   <publish>
+      <qos>
+         <expires>        <!-- Expires after given milliseconds, clients will get a notify about expiration -->
+            12000         <!-- Default is no expiration (similar to pass 0 milliseconds) -->
+         </expires>
+         
+         <erase>          <!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
+            24000         <!-- Default is no erasing (similar to pass 0 milliseconds) -->
+         </erase>
+         
+         <IsDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
+                          <!-- Default is transient -->
+
+         <ForceUpdate />  <!-- An update is forced even when the content and meta data didn't change -->
+                          <!-- Default is that identical published messages aren't sent to clients again -->
+
+         <Readonly />     <!-- A final/const message which may not be changed with further updates -->
+                          <!-- Default is Read/Write -->
+
+         <DefaultContent> <!-- Used content if the content given is null -->
+            Empty
+         </DefaultContent>
+
+         <check lang='TCL'> <!-- Allow content checking with a scripting language -->
+            $content GE 100 <!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
+         </check>
+
+         <alter lang='TCL'> <!-- Allow content manipulation with a scripting language -->
+            set content [$key('4711') * 1.2 + $content] <!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
+         </alter>
+      </qos>
+   </publish>
+
+
+   <!-- QoS when accessing messages -->
+   <get>
+      <qos>
+         <NoMeta />       <!-- Don't send me the key meta data on updates -->
+         <NoContent />    <!-- Don't send me the content data on updates (notify only) -->
+      </qos>
+   </get>
+
+
+   <!-- QoS when subscribing to messages -->
+   <subscribe>
+      <qos>
+         <NoMeta />       <!-- Don't send me the key meta data on updates -->
+         <NoContent />    <!-- Don't send me the content data on updates (notify only) -->
+         <NoLocal />      <!-- Inhibit the delivery of messages to myself if i have published it -->
+      </qos>
+   </subscribe>
+
+
+   <!-- QoS when deleting messages -->
+   <erase>
+      <qos>
+         <NoNotify />     <!-- The subscribers shall not be notified when this message is destroyed -->
+      </qos>
+   </erase>
+
+
+   <!-- QoS when updating messages -->
+   <update>
+      <qos>
+         <state>          <!-- Server state -->
+            EXPIRED       <!-- OK | EXPIRED | ERASED -->
+         </state>
+      </qos>
+   </update>
+
+
+</demo>
+
+

@@ -47,7 +47,7 @@ $xmlKey .= "   </AGENT>\n";
 $xmlKey .= "</key>\n";
 print "publish() of xmlKey=\n$xmlKey";
 
-my $content = "Hello xmlBlaster, i'm a C++ client";
+my $content = "Hello xmlBlaster, i'm a Perl client";
 
 #$message = new serverIdl::MessageUnit xmlKey => $xmlKey, content => $content;
 $message = {xmlKey => $xmlKey, content => $content};

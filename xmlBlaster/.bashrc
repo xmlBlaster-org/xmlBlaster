@@ -3,12 +3,12 @@
 #
 # You may use this script to source into your sh, ksh, bash
 #
-# Example:
+# Example (copy this into your .profile or .bashrc):
 #   export JDK_HOME=/usr/local/jdk
 #   export XMLBLASTER_HOME=/home/paul/xmlBlaster
 #   export JacORB_HOME=/usr/local/JacORB
 #   export MICO_HOME=/usr/local/mico
-#   . /home/paul/xmlBlaster/.bashrc
+#   . ${XMLBLASTER_HOME}/.bashrc
 #
 # If you want to access xmlBlaster using cvs:
 #   export CVSROOT=:pserver:xmlblaster@193.197.24.129:/www/cvsroot

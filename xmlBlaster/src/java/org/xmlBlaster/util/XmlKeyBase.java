@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.13 1999/11/23 16:46:20 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.14 1999/11/29 18:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -69,6 +69,8 @@ public class XmlKeyBase
 {
    private String ME = "XmlKeyBase";
 
+   private XmlToDom xmlToDom = null;
+
    private static long uniqueCounter = 1L;
 
    public final static int PUBLISH     = 0; // no query: <key oid='myWhitePaper'><book><paper></paper></book></key> + content
@@ -88,8 +90,6 @@ public class XmlKeyBase
 
    protected String xmlKey_literal;
 
-   protected org.w3c.dom.Document xmlDoc = null;  // the parsed xmlKey_literal DOM
-   protected org.w3c.dom.Node rootNode = null; // this is always the <key ...>
    protected String keyOid = null;             // value from attribute <key oid="...">
 
 
@@ -219,7 +219,7 @@ public class XmlKeyBase
    public org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
       loadDomTree();
-      return rootNode;
+      return xmlToDom.getRootNode();
    }
 
 
@@ -229,7 +229,7 @@ public class XmlKeyBase
    public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException
    {
       loadDomTree();
-      return xmlDoc;
+      return xmlToDom.getXmlDoc();
    }
 
 
@@ -251,60 +251,20 @@ public class XmlKeyBase
     * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
     * <p>
     * The keyOid will be set properly if no error occures
-    * The rootNode will be set properly if no error occures
+    * The xmlToDom will be set properly if no error occures
     */
    private void loadDomTree() throws XmlBlasterException
    {
-      if (xmlDoc != null)
+      if (xmlToDom != null)
          return;       // DOM tree is already loaded
 
       if (keyType == ASCII_TYPE)
          return;       // no XML -> no DOM
 
-      java.io.StringReader reader = new java.io.StringReader(xmlKey_literal);
-      InputSource input = new InputSource(reader);
-      //input.setEncoding("ISO-8859-2");
-      //input.setSystemId("9999999999");
+      xmlToDom = new XmlToDom(xmlKey_literal);
+      org.w3c.dom.Node node = xmlToDom.getRootNode();
 
-      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = RequestBroker.getInstance().getXMLProcessorImpl();
-
-      try {
-         xmlDoc = xmlProc.load(input);
-      } catch (java.io.IOException e) {
-         Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-      } catch (org.xml.sax.SAXException e) {
-         Log.error(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
-      }
-
-      org.w3c.dom.Node tmpRootNode = xmlDoc.getDocumentElement();
-
-      checkForKeyAttr(tmpRootNode);
-
-      rootNode = tmpRootNode;  // everything successfull, assign the rootNode
-   }
-
-
-   /**
-    * Should be called by publish() to merge the local XmlKey DOM into the big xmlBlaster DOM tree
-    */
-   public void mergeRootNode() throws XmlBlasterException
-   {
-      org.w3c.dom.Node tmpRootNode = rootNode;
-      if (isPublish) {
-         if (Log.TRACE) Log.trace(ME, "Created DOM tree for " + getUniqueKey() + ", adding it to <xmlBlaster> tree");
-         org.w3c.dom.Node node = RequestBroker.getInstance().addKeyNode(tmpRootNode);
-      }
-      rootNode = tmpRootNode;  // everything successfull, assign the rootNode
-   }
-
-
-   /**
-    * Finds the <key oid="..." queryType="..."> attributes, or inserts a unique oid if empty
-    */
-   private void checkForKeyAttr(org.w3c.dom.Node node) throws XmlBlasterException
-   {
+      // Finds the <key oid="..." queryType="..."> attributes, or inserts a unique oid if empty
       if (node == null) {
          Log.error(ME+".Internal", "root node = null");
          throw new XmlBlasterException(ME+"Internal", "root node = null");
@@ -387,6 +347,21 @@ public class XmlKeyBase
 
 
    /**
+    * Should be called by publish() to merge the local XmlKey DOM into the big xmlBlaster DOM tree
+    */
+   public void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException
+   {
+      if (isPublish) {
+         if (Log.TRACE) Log.trace(ME, "Created DOM tree for " + getUniqueKey() + ", adding it to <xmlBlaster> tree");
+         xmlToDom.mergeRootNode(merger);
+      }
+      else {
+         Log.warning(ME, "You should call mergeNode only for publish");
+      }
+   }
+
+
+   /**
     * Generates a unique key
     * TODO: include IP adress and PID for global uniqueness
     */
@@ -446,6 +421,7 @@ public class XmlKeyBase
       sb.append(offset + "   <keyType>" + keyType + "</keyType>");
       sb.append(offset + "   <isGeneratedOid>" + isGeneratedOid + "</isGeneratedOid>");
       sb.append(offset + "   <isPublish>" + isPublish + "</isPublish>");
+      sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
       sb.append(offset + "</XmlKeyBase>\n");
       return sb;
    }

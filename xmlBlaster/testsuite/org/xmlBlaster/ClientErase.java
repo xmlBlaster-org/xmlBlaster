@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.1 1999/11/23 15:33:03 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.2 1999/11/29 18:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -107,7 +107,7 @@ public class ClientErase
          }
 
 
-         //----------- ease() the previous message OID -------
+         //----------- erase() the previous message OID -------
          {
             Log.trace(ME, "get() using the exact oid ...");
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +

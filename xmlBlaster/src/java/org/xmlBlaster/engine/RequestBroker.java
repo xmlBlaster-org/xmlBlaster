@@ -3,11 +3,13 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.25 1999/11/23 16:46:13 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.26 1999/11/29 18:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlToDom;
+import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
@@ -23,7 +25,7 @@ import java.io.*;
  *
  * The interface ClientListener informs about Client login/logout
  */
-public class RequestBroker implements ClientListener, MessageEraseListener
+public class RequestBroker implements ClientListener, MessageEraseListener, I_MergeDomNode
 {
    final private static String ME = "RequestBroker";
 
@@ -134,12 +136,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
    /**
     * Adding a new node to the xmlBlaster xmlKey tree
+    * @param the node to merge into the DOM tree
     * @return the node added
     */
-   public org.w3c.dom.Node addKeyNode(org.w3c.dom.Node node) throws XmlBlasterException
+   public org.w3c.dom.Node mergeNode(org.w3c.dom.Node node) throws XmlBlasterException
    {
       try {     // !!! synchronize is missing !!!
-         Log.info(ME, "addKeyNode=" + node.toString());
+         Log.info(ME, "mergeNode=" + node.toString());
 
          xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
 
@@ -154,16 +157,16 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             xmlKeyDoc.write(out);
          }
 
-         // !!! not performant, should be instantiated only just before needed
-         //     whith stale check
+         // !!! not performaning, should be instantiate only just before needed
+         //     with stale check
          queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
 
          return node;
 
       } catch (Exception e) {
-         Log.error(ME+".addKeyNode", "Problems adding new key tree: " + e.toString());
+         Log.error(ME+".mergeNode", "Problems adding new key tree: " + e.toString());
          e.printStackTrace();
-         throw new XmlBlasterException(ME+".addKeyNode", "Problems adding new key tree: " + e.toString());
+         throw new XmlBlasterException(ME+".mergeNode", "Problems adding new key tree: " + e.toString());
       }
    }
 
@@ -216,12 +219,12 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * This method does the XPath query. 
+    * This method does the XPath query.
     *
     * @param clientName is only needed for nicer logging output
     * @return Array of matching XmlKey objects (may contain null elements)
     *
-    * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries 
+    * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
    private Vector parseKeyOid(org.w3c.dom.Document xmlDoc/*, com.sun.xml.tree.XmlDocument xmlDoc*/,
                               ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
@@ -443,7 +446,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
                if (queryXmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
 
                   Vector matchVec = parseKeyOid(newXmlDoc, clientInfo, queryXmlKey, xmlQoS);
-               
+
                   if (matchVec != null && matchVec.size() == 1 && matchVec.elementAt(0) != null) {
                      if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
                      SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription.getClientInfo(),
@@ -532,7 +535,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
       else {
          try {
-            xmlKey.mergeRootNode();  // merge the message DOM tree into the big xmlBlaster DOM tree
+            xmlKey.mergeRootNode(this);  // merge the message DOM tree into the big xmlBlaster DOM tree
          } catch (XmlBlasterException e) {
             synchronized(messageContainerMap) {
                messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up

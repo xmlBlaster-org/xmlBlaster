@@ -13,8 +13,9 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.1 1999/11/17 16:21:14 kron Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.2 1999/11/29 18:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
+package testsuite.org.xmlBlaster.query;
 
 import com.jclark.xsl.om.*;
 import org.xmlBlaster.util.*;
@@ -145,10 +146,10 @@ class XtOmQueryTest
          Node node = (Node)obj;
          if (dumpIt) {
             //NameTableImpl nti = (NameTableImpl) node.getCreator();
- 
+
             System.out.println("Processing node " + node.getName() + ": " + node.getData());
             System.out.println("Processing node " + node.toString());
-            
+
             SafeNodeIterator siter = node.getAttributes();
 
             Object aobj = siter.next();
@@ -159,7 +160,7 @@ class XtOmQueryTest
             }
 
             com.jclark.xsl.om.Node parent = node.getParent();
-            
+
             if (parent == null)
                Log.warning(ME, "No parent");
             else {
