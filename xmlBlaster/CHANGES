@@ -3,6 +3,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o The jmxgui now uses only one XmlBlasterAccess to communicate with xmlBlaster
+
+ o fix in JdbcQueueManager to avoid batch mode invocations if the DB does not 
+   support this feature (particularly for hsqldb)
+
  o The SVG Javascript chess example is updated to this
    new release with some bugfixes, see
      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.javascript.rhino.html
