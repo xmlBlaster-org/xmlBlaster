@@ -273,7 +273,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       try {
          // Check if user is known, otherwise create an entry ...
          I_Subject subjectCtx = sessionCtx.getSubject();
-         SessionName subjectName = connectQos.getSessionName();
+         SessionName subjectName = new SessionName(glob, connectQos.getSessionName(), 0L); // Force to be of type subject (no public session ID)
 
          synchronized(this.loginNameSubjectInfoMap) { // Protect against two simultaneous logins
             subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
