@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes svn
 ===========
+ o Changed from cvs to subversion on 2004-10-17, see
+   http://subversion.tigris.org/
+
  o Added new property to delay xmlBlaster startup, for example
    -xmlBlaster/sleepOnStartup 5000 sets it to 5 seconds.
    Useful for example for Windows Service startup delay to wait on MSSQLServer JDBC listener
