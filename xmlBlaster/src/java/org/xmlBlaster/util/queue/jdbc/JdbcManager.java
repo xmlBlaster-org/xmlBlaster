@@ -104,11 +104,11 @@ public class JdbcManager implements I_ConnectionListener {
          conn = this.pool.getConnection();
          this.maxStatementLength = conn.getMetaData().getMaxStatementLength();
          if (this.maxStatementLength < 1) {
+            this.maxStatementLength = glob.getProperty().get("queue.persistent.maxStatementLength", 2048);
             if (first) {
-               this.log.warn(ME, "constructor: the maximum statement length is not defined, we set it to 2048");
+               this.log.info(ME, "The maximum SQL statement length is not defined in JDBC meta data, we set it to " + this.maxStatementLength);
                first = false;
             }
-            this.maxStatementLength = 2048;
          }
 
          if (!conn.getMetaData().supportsTransactions()) {
