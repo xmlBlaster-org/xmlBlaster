@@ -1,0 +1,15 @@
+This is the framework to allow callbacks from xmlBlaster to browsers.
+
+NOTE: Work is in progress, it is not totally finished.
+
+If you don't have the JSDK (java servlet development kit from Sun)
+installed, this will not compile.
+Just ignore the warnings in this case.
+
+The servlets connects to xmlBlaster using CORBA
+and to the browser using a persistent http connection
+(using a hidden frame to communicate).
+
+The messages are directly transferred to the browser, which has a
+XML parser and notifies the interested browser frames about the callback.
+For Javascript examples see the javascript directory.
