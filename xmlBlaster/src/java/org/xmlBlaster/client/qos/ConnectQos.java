@@ -82,7 +82,7 @@ public final class ConnectQos
    /**
     * Set the login session name. 
     * <p>
-    * This will set the security loginName as well (see setUserId()) it not set different.
+    * This will NOT set the security loginName (see setUserId()).
     * </p>
     * @param sessionName e.g. "joe" which is the loginName (subjectId) only<br />
     *        e.g. "joe/2" which forces a connect on the public session ID 2 of user joe
