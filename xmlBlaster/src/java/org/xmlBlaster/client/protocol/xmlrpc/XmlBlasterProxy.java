@@ -3,7 +3,7 @@ Name:      XmlBlasterProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlBlasterProxy.java,v 1.3 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: XmlBlasterProxy.java,v 1.4 2000/10/11 21:50:20 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -14,6 +14,7 @@ import java.util.Vector;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.client.UpdateQoS;
@@ -60,11 +61,12 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          this.url          = url;
          this.callbackPort = callbackPort;
          this.xmlRpcClient = new XmlRpcClient(url);
+         Log.info(ME, "Created XmlRpc client to " + url);
 
          // start the WebServer object here (to receive callbacks)
          webServer = new WebServer(callbackPort);
          webServer.addHandler("$default", this);
-
+         Log.info(ME, "Created XmlRpc callback web server on port " + callbackPort);
       }
 
       catch (java.net.MalformedURLException e) {
@@ -104,8 +106,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    public final String subscribe (String sessionId, String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
    {
-
-      if (Log.CALL) Log.call(ME, "Entering subscribe: id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering subscribe(id=" + sessionId + ")");
       try {
          // prepare the argument vector for the xml-rpc method call
          Vector args = new Vector();
@@ -117,17 +118,16 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
       catch (ClassCastException e) {
          Log.error(ME+".subscribe", "return value not a valid String: " + e.toString());
-         throw new XmlBlasterException("return value not a valid String",
-                                       "Class Cast Exception");
+         throw new XmlBlasterException(ME+".subscribe", "return value not a valid String, Class Cast Exception");
       }
 
       catch (IOException e1) {
          Log.error(ME+".subscribe", "IO exception: " + e1.toString());
-         throw new XmlBlasterException("IO exception", e1.toString());
+         throw new XmlBlasterException(ME+".subscribe", e1.toString());
       }
       catch (XmlRpcException e2) {
          Log.error(ME+".subscribe", "xml-rpc exception: " + e2.toString());
-         throw new XmlBlasterException("xml-rpc exception", e2.toString());
+         throw new XmlBlasterException(ME+".subscribe", e2.toString());
       }
 
    }
@@ -443,7 +443,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * @return sessionId The unique ID for this client
     * @exception XmlBlasterException If user is unknown
     */
-   public String login (String loginName, String password, String qos_literal,
+   public String login(String loginName, String password, String qos_literal,
                         String sessionId)
       throws XmlBlasterException
    {
@@ -484,7 +484,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
     * @param sessionId The client sessionId
     * @exception XmlBlasterException If sessionId is invalid
     */
-   public void logout (final String sessionId) throws XmlBlasterException
+   public void logout(final String sessionId) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout: id=" + sessionId);
 
@@ -522,11 +522,15 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
 
    /**
-    * For Testing
+    * For Testing. 
+    * <pre>
+    * java -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy
+    * </pre>
     */
-
    public static void main (String args[])
    {
+      final String ME = "XmlRpcHttpClient";
+      try { XmlBlasterProperty.init(args); } catch(org.jutils.JUtilsException e) { Log.panic(ME, e.toString()); }
       // build the proxy
       try {
          XmlBlasterProxy proxy = new XmlBlasterProxy("http://localhost:8080", 8081);
