@@ -54,6 +54,8 @@ public class FileIO
    private boolean firstLost = true;
    private long numLost;
    private final long LOST_POS = 16L;
+   /** Remember number of lost data when file was killed by somebody */
+   private long numFileDeleteLost = 0;
 
    // Syncs every write to HD, reduced performance
    // from 7000 writes/sec to 90 writes/sec
@@ -131,8 +133,17 @@ public class FileIO
     * the retrieved data successully with saveCurrReadPos(). If your
     * processing fails without a saveCurrReadPos() call the subsequent readNext()
     * gets the same data again.
+    * @exception XmlBlasterException<br />
+    * "FileRecorder.FileLost" If file disappeared, you can proceed
     */
-   public synchronized String readNext(boolean autoCommit) throws IOException {
+   public synchronized String readNext(boolean autoCommit) throws IOException, XmlBlasterException {
+      if (!f.exists()) {
+         numFileDeleteLost = getNumUnread();
+         initialize();
+         throw new XmlBlasterException("FileRecorder.FileLost",
+            fileName + " was lost, " + getNumUnread() + " are messages lost, no message retrieved");
+      }
+
       long pos = getCurrReadPos();
       if (pos > 0L) {
          ra.seek(currReadPos);
@@ -153,8 +164,17 @@ public class FileIO
 
    /**
     * Write more data. 
+    * @exception XmlBlasterException<br />
+    *  "FileRecorder.FileLost" If file disappeared, we create a new and store the message<br />
+    *  "FileRecorder.MaxEntries" Maximum size reached in Exception mode
     */
    public void writeNext(String data) throws IOException, XmlBlasterException {
+      String errorText = null;
+      if (!f.exists()) {
+         numFileDeleteLost = getNumUnread();
+         errorText = fileName + " was lost, " + getNumUnread() + " are messages lost, creating a new one and storing your message.";
+         initialize();
+      }
 
       if (numUnread >= maxEntries) {
          if (this.mode == modeDiscardOldest) {
@@ -180,6 +200,9 @@ public class FileIO
       numUnread++;
       ra.seek(UNREAD_POS);
       ra.writeLong(numUnread);
+
+      if (errorText != null)
+         throw new XmlBlasterException("FileRecorder.FileLost", errorText);
    }
 
    /** Write the first 8 bytes containing the offset to data to be read */
@@ -247,6 +270,13 @@ public class FileIO
          }
       }
       return this.numLost;
+   }
+
+   /**
+    * Returns the number of lost data objects when the file was deleted by somebody. 
+    */
+   public final long getNumFileDeleteLost() { 
+      return numFileDeleteLost;
    }
 
    /** Throw the message away if queue is full - the message is silently lost! */
