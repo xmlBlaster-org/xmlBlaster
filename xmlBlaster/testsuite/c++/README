@@ -39,7 +39,7 @@ You need to have a running web server and set the DocumentRoot to e.g.
 
 3) Start the naming service (with a running web server)
 
-   jaco jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
+   jaco org.jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
 
 
 4) Start the xmlBlaster server (The web server URL is in jacorb.properties)
