@@ -195,8 +195,11 @@ GlobalRef Global::createInstance(const string& name, const Property::MapType *pr
    {
       GlobalMap::iterator iter = globalMap_.find(name);
       if (iter != globalMap_.end()) {
-         Global* glP = (*iter).second;
-         return GlobalRef(glP);
+         //Global* glP = (*iter).second;
+         throw XmlBlasterException(USER_ILLEGALARGUMENT,
+                     "UNKNOWN NODE",
+                     string("Global::createInstance"),
+                      "Please call getInstance to access the '" + name + "' Global instance");
       }
    }
 
@@ -255,6 +258,8 @@ bool Global::destroyInstance(const std::string &name)
       bool ret = globalRefMap_.count(name) != 0;
       if (ret) {
          globalRefMap_.erase(name);
+         //cout << "DEBUG ONLY: " << name << " RefSize=" + lexical_cast<std::string>(globalRefMap_.size()) <<
+         //     " Size=" + lexical_cast<std::string>(globalMap_.size()) << endl;
          return ret;
       }
    }
@@ -262,6 +267,8 @@ bool Global::destroyInstance(const std::string &name)
       bool ret = globalMap_.count(name) != 0;
       if (ret) {
          globalMap_.erase(name);
+         //cout << "DEBUG ONLY: " << name << " Size=" + lexical_cast<std::string>(globalMap_.size()) <<
+         //     " RefSize=" + lexical_cast<std::string>(globalRefMap_.size()) << endl;
          return ret;
       }
    }
