@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.3 2003/01/05 23:11:07 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.4 2003/01/08 15:58:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -126,7 +126,6 @@ protected:
    string nodeId_; // = null;
 
    string propertyPrefix_;
-   bool isCacheQueue_;
 
    string rootTagName_;
 
@@ -154,7 +153,6 @@ protected:
       addressArr_          = prop.addressArr_;
       nodeId_              = prop.nodeId_;
       propertyPrefix_      = prop.propertyPrefix_;
-      isCacheQueue_        = prop.isCacheQueue_;
       rootTagName_         = prop.rootTagName_;
    }
 
@@ -424,11 +422,8 @@ public:
    string getPropertyPrefix() const;
    void setpropertyPrefix(const string& prefix);
 
-   bool isCacheQueue() const;
-   void setCacheQueue(bool cacheQueue);
-
    /**
-    * The command line prefix to configure the queue or msgstore
+    * The command line prefix to configure the queue or msgUnitStore
     * @return e.g. "topic." or "history.queue."
     */
    string getPrefix();

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.3 2003/01/05 23:11:07 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.4 2003/01/08 15:58:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -50,12 +50,12 @@ Dll_Export long DEFAULT_expires;
 
 /**
  * Configure property settings, add your own defaults in the derived class
- * @param propertyPrefix e.g. "history" or "cb"
+ * @param propertyPrefix e.g. "history" or "cb" or ""
  */
 void QueuePropertyBase::initialize(const string& propertyPrefix)
 {
+   this->propertyPrefix_ = propertyPrefix;
    string prefix = getPrefix();
-   if (!propertyPrefix.empty()) prefix = propertyPrefix;
 
    // Do we need this range settings?
    setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
@@ -65,7 +65,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
       setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max["+nodeId_+"]", getMaxExpires())); // Long.MAX_VALUE);
    }
 
-   // prefix is e.g. "cb.queue." or "topic"
+   // prefix is e.g. "cb.queue." or "msgUnitStore"
    setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg", DEFAULT_maxMsgDefault));
    setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
    setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes", DEFAULT_bytesDefault));
@@ -120,7 +120,6 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    {
       nodeId_ = nodeId;
       propertyPrefix_ = "";
-      isCacheQueue_ = false;
       rootTagName_ = "queue";
    }
 
@@ -575,37 +574,23 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
       propertyPrefix_ = prefix;
    }
 
-   bool QueuePropertyBase::isCacheQueue() const
-   {
-      return isCacheQueue_;
-   }
-
-   void QueuePropertyBase::setCacheQueue(bool cacheQueue)
-   {
-      isCacheQueue_ = cacheQueue;
-   }
-
    /**
-    * The command line prefix to configure the queue or msgstore
-    * @return e.g. "topic." or "history.queue."
+    * The command line prefix to configure the queue or msgUnitStore
+    * @return e.g. "history.queue." or "msgUnitStore."
     */
    string QueuePropertyBase::getPrefix()
    {
-      string prefix = (propertyPrefix_.length() > 0) ? propertyPrefix_ + ".queue." : "queue.";
-      if (prefix == "topic.queue.") { // we use this class for msgstore as well (which is in fact no queue)
-         prefix = "topic.";
-      }
-      return prefix;
+      return (propertyPrefix_.length() > 0) ? propertyPrefix_ + "."+getRootTagName()+"." : getRootTagName()+".";
    }
 
    /**
     * Helper for logging output, creates the property key for configuration (the command line property).
     * @param prop e.g. "maxMsg"
-    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
+    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache" or "-msgUnitStore.maxMsg"
     */
    string QueuePropertyBase::getPropName(const string& token)
    {
-      return "-" + getPrefix() + token + (isCacheQueue() ? "Cache" : "");
+      return "-" + getPrefix() + token;
    }
 
    string QueuePropertyBase::getRootTagName() const
