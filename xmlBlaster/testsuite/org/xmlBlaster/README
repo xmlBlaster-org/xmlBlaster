@@ -33,7 +33,7 @@ Start the test suite manually:
 
       jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
 
-	Start the tests without testsuite (and with debugging output on console):
+   Start one test without testsuite (and with debugging output on console):
 
       jaco -Djava.compiler= testsuite.org.xmlBlaster.TestUnSub +trace +dump +calls +time
 
