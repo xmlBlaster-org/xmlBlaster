@@ -2,6 +2,7 @@ package org.xmlBlaster.client;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -127,16 +128,16 @@ public class PluginLoader {
          if (log.TRACE) log.trace(ME, "Found I_ClientPlugin '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {
-         log.error(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
-         throw new XmlBlasterException(ME+".NoClass", "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
+         if (log.TRACE) log.trace(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH", e);
       }
       catch (SecurityException e) {
-         log.error(ME, "Couldn't load security plugin '"+param[0]+"'. Access Denied");
-         throw new XmlBlasterException(ME+".AccessDenied", "The plugin class '"+param[0]+"' couldn't be loaded!");
+         if (log.TRACE) log.trace(ME, "Couldn't load security plugin '"+param[0]+"'. Access Denied");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "The plugin class '"+param[0]+"' couldn't be loaded!", e);
       }
       catch (Throwable e) {
-         log.error(ME, "The plugin class '"+param[0]+"'is invalid!" + e.toString());
-         throw new XmlBlasterException(ME+".InvalidClassOrInitializer", "The plugin class '"+param[0]+"'is invalid!" + e.toString());
+         if (log.TRACE) log.trace(ME, "The plugin class '"+param[0]+"'is invalid!" + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "The plugin class '"+param[0]+"'is invalid!", e);
       }
 
       System.arraycopy(param,1,p,0,param.length-1);
@@ -201,7 +202,7 @@ public class PluginLoader {
          else if (mechanism.equals("ldap")) // xmlBlaster should run without xmlBlaster.properties
             s = "org.xmlBlaster.authentication.plugins.ldap.ClientPlugin";
          else
-            throw new XmlBlasterException(ME+".Unknown Plugin", "Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Unknown security plugin '" + mechanism + "' with version '" + version + "' is rejected.");
       }
 
       StringTokenizer st = new StringTokenizer(s,",");
