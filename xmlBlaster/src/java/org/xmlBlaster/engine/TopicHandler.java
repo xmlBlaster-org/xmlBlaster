@@ -26,6 +26,7 @@ import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -98,6 +99,8 @@ public final class TopicHandler implements I_Timeout
     * MsgUnit references are stored in a persistent history queue. 
     */
    private I_Queue historyQueue;
+
+   private SessionName creatorSessionName;
 
    /** The configuration for this TopicHandler */
    private TopicProperty topicProperty;
@@ -209,6 +212,7 @@ public final class TopicHandler implements I_Timeout
    private void administrativeInitialize(MsgQosData publishQos) throws XmlBlasterException {
       if (log.DUMP) log.dump(ME, "administrativeInitialize()" + publishQos.toXml());
 
+      this.creatorSessionName = publishQos.getSender();
       this.topicProperty = publishQos.getTopicProperty();
 
       startupMsgstore();
@@ -299,6 +303,11 @@ public final class TopicHandler implements I_Timeout
 
       MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
       MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
+      /* Happens in RequestBroker already
+      if (msgQosData.getSender() == null) {
+         msgQosData.setSender(publisherSessionInfo.getSessionName());
+      }
+      */
 
       if (this.msgKeyData == null) { // If TopicHandler existed because of a subscription: remember on first publish
          this.msgKeyData = msgKeyData;
@@ -535,7 +544,7 @@ public final class TopicHandler implements I_Timeout
       if (!hasCacheEntries() && !hasSubscribers()) {
          try {
             if (isSoftErased()) {
-               toDead(false);
+               toDead(this.creatorSessionName, false);
             }
             else {
                toUnreferenced();
@@ -598,7 +607,7 @@ public final class TopicHandler implements I_Timeout
          if (this.tmpVolatileMsgUnitWrapper != null)
             wrappers = new MsgUnitWrapper[] { this.tmpVolatileMsgUnitWrapper };
          else if (hasHistoryEntries())
-            wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries());
+            wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries(), false);
 
          if (wrappers != null) {
             if (invokeCallback(null, sub, wrappers) == 0) {
@@ -654,7 +663,7 @@ public final class TopicHandler implements I_Timeout
 
       if (!hasCacheEntries() && !hasSubscribers()) {
          if (isUnconfigured())
-            toDead(false);
+            toDead(this.creatorSessionName, false);
          else {
             try {
                toUnreferenced();
@@ -949,9 +958,10 @@ public final class TopicHandler implements I_Timeout
     * Returns a snapshot of all entries in the history
     * @param num Number of entries wanted, not more than size of history queue are returned.<br />
     *            If -1 all entries in history queue are returned
+    * @param reverseOrdered false is the normal case (the latest message is returned first)
     * @return Checked MsgUnitWrapper entries (destroyed and expired ones are removed), never null
     */
-   public MsgUnitWrapper[] getMsgUnitWrapperArr(int num) throws XmlBlasterException {
+   public MsgUnitWrapper[] getMsgUnitWrapperArr(int num, boolean reverseOrdered) throws XmlBlasterException {
       if (this.historyQueue == null)
          return new MsgUnitWrapper[0];
       ArrayList historyList = this.historyQueue.peek(num, -1);
@@ -978,17 +988,27 @@ public final class TopicHandler implements I_Timeout
          this.historyQueue.removeRandom((I_Entry[])historyDestroyList.toArray(new I_Entry[historyDestroyList.size()]));
       }
 
-      return (MsgUnitWrapper[])aliveMsgUnitWrapperList.toArray(new MsgUnitWrapper[aliveMsgUnitWrapperList.size()]);
+      if (reverseOrdered) {
+         MsgUnitWrapper[] arr = new MsgUnitWrapper[aliveMsgUnitWrapperList.size()];
+         int size = aliveMsgUnitWrapperList.size();
+         for(int i=0; i<size; i++)
+            arr[i] = (MsgUnitWrapper)aliveMsgUnitWrapperList.get(size-i-1);
+         return arr;
+      }
+      else {
+         return (MsgUnitWrapper[])aliveMsgUnitWrapperList.toArray(new MsgUnitWrapper[aliveMsgUnitWrapperList.size()]);
+      }
    }
 
    /**
     * Returns a snapshot of all entries in the history
     * @param num Number of entries wanted, not more than size of history queue are returned.<br />
     *            If -1 all entries in history queue are returned
+    * @param reverseOrdered false is the normal case (the latest message is returned first)
     * @return Checked entries (destroyed and expired ones are removed), never null
     */
-   public MsgUnit[] getHistoryMsgUnitArr(int num) throws XmlBlasterException {
-      MsgUnitWrapper[] msgUnitWrapper = getMsgUnitWrapperArr(num);
+   public MsgUnit[] getHistoryMsgUnitArr(int num, boolean reverseOrdered) throws XmlBlasterException {
+      MsgUnitWrapper[] msgUnitWrapper = getMsgUnitWrapperArr(num, reverseOrdered);
       MsgUnit[] msgUnitArr = new MsgUnit[msgUnitWrapper.length];
       for (int i=0; i<msgUnitWrapper.length; i++) {
          msgUnitArr[i] = msgUnitWrapper[i].getMsgUnit();
@@ -1066,7 +1086,7 @@ public final class TopicHandler implements I_Timeout
                addToBigDom();
             } catch (XmlBlasterException e) {
                if (isUnreferenced())
-                  toDead(false);
+                  toDead(this.creatorSessionName, false);
                else if (isUnconfigured())
                   ; // ignore
                throw e;
@@ -1093,7 +1113,7 @@ public final class TopicHandler implements I_Timeout
 
          this.state = UNREFERENCED;
          if (topicProperty == null) {
-            toDead(true);
+            toDead(this.creatorSessionName, true);
          }
          if (this.timerKey == null) {
             this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), null);
@@ -1104,7 +1124,10 @@ public final class TopicHandler implements I_Timeout
       }
    }
 
-   private void toSoftErased() {
+   /**
+    * @param sessionInfo The session which triggered the erase
+    */
+   private void toSoftErased(SessionInfo sessionInfo) {
       if (log.CALL) log.call(ME, "Entering toSoftErased(oldState="+getStateStr()+")");
       synchronized (this) {
          if (isSoftErased()) {
@@ -1117,7 +1140,7 @@ public final class TopicHandler implements I_Timeout
 
          if (hasSubscribers()) {
             if (log.TRACE) log.trace(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
-            notifySubscribersAboutErase();
+            notifySubscribersAboutErase(sessionInfo.getSessionName());
             clearSubscribers();
          }
 
@@ -1126,7 +1149,10 @@ public final class TopicHandler implements I_Timeout
       }
    }
 
-   private void toDead(boolean forceDestroy) {
+   /**
+    * @param sessionName The session which triggered this event
+    */
+   private void toDead(SessionName sessionName, boolean forceDestroy) {
       if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
       long numHistory = 0L;
       synchronized (this) {
@@ -1141,7 +1167,7 @@ public final class TopicHandler implements I_Timeout
          }
 
          if (!forceDestroy && !isSoftErased()) {
-            notifySubscribersAboutErase();
+            notifySubscribersAboutErase(sessionName);
          }
 
          if (hasHistoryEntries()) {
@@ -1221,8 +1247,9 @@ public final class TopicHandler implements I_Timeout
 
    /**
     * Send erase event
+    * @param sessionName The session which triggered the erase
     */
-   private void notifySubscribersAboutErase() {
+   private void notifySubscribersAboutErase(SessionName sessionName) {
       if (log.CALL) log.call(ME, "Sending client notification about message erase() event");
 
       if (hasSubscribers()) {
@@ -1233,6 +1260,7 @@ public final class TopicHandler implements I_Timeout
             org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
             pq.setState(Constants.STATE_ERASED);
             pq.setVolatile(true);
+            pq.setSender(sessionName);
             MsgUnit msgUnit = new MsgUnit(glob, pk, getId(), pq); // content contains the global name?
             PublishQosServer ps = new PublishQosServer(glob, pq.getData());
             //log.error(ME, "DEBUG ONLY" + msgUnit.toXml());
@@ -1284,13 +1312,13 @@ public final class TopicHandler implements I_Timeout
       synchronized (this) {
          if (isAlive()) {
             if (eraseQos.getForceDestroy()) {
-               toDead(eraseQos.getForceDestroy());
+               toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
             }
             else {
-               toSoftErased(); // kills all history entries
+               toSoftErased(sessionInfo); // kills all history entries
                long numMsgStore = this.msgUnitCache.getNumOfEntries();
                if (numMsgStore < 1) { // has no callback references?
-                  toDead(eraseQos.getForceDestroy());
+                  toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
                }
                else {
                   log.info(ME, "Erase not possible, we are still referenced by " + numMsgStore +
@@ -1300,11 +1328,11 @@ public final class TopicHandler implements I_Timeout
          }
 
          if (isUnreferenced()) {
-            toDead(eraseQos.getForceDestroy());
+            toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
          }
 
          if (isUnconfigured()) {
-            toDead(eraseQos.getForceDestroy());
+            toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
          }
       }
 
@@ -1323,7 +1351,7 @@ public final class TopicHandler implements I_Timeout
       synchronized (this) {
          if (isAlive()) // interim message arrived?
             return;
-         toDead(false);
+         toDead(this.creatorSessionName, false);
       }
    }
 
@@ -1414,7 +1442,7 @@ public final class TopicHandler implements I_Timeout
       }
 
       try {
-         MsgUnitWrapper[] msgUnitWrapperArr = getMsgUnitWrapperArr(-1);
+         MsgUnitWrapper[] msgUnitWrapperArr = getMsgUnitWrapperArr(-1, false);
          for (int ii=0; ii<msgUnitWrapperArr.length; ii++) {
             MsgUnitWrapper msgUnitWrapper = msgUnitWrapperArr[ii];
             if (msgUnitWrapper != null)
