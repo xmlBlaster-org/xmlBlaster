@@ -119,7 +119,7 @@ public class PublishTest extends TestCase {
          MsgUnit msgUnit = new MsgUnit(pk, contentStr, pq);
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
          heronCon = serverHelper.connect(serverHelper.getHeronGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
@@ -201,7 +201,7 @@ public class PublishTest extends TestCase {
          msgUnit = new MsgUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
 
@@ -209,6 +209,7 @@ public class PublishTest extends TestCase {
 
          serverHelper.startFrodo();
 
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("heron has not received message", 1, updateCounterHeron);
          updateCounterHeron = 0;
 
@@ -257,7 +258,7 @@ public class PublishTest extends TestCase {
          msgUnit = new MsgUnit(pk, contentStr, pq);
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node frodo with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time

@@ -172,15 +172,15 @@ public class ServerHelper {
                log.info(clientName, "Changed from connection state " + oldState +
                                      " to " + ConnectionStateEnum.ALIVE + " with " +
                                      connection.getQueue().getNumOfEntries() + " queue entries pending" +
-                                     ": We were lucky, reconnected to " + glob.getId());
+                                     ": We were lucky, reconnected to " + connection.getGlobal().getId());
             }
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.warn(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
-                                    ConnectionStateEnum.POLLING + ": Lost connection to " + glob.getId());
+                                    ConnectionStateEnum.POLLING + ": Lost connection to " + connection.getGlobal().getId());
             }
             public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.error(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
-                                     ConnectionStateEnum.DEAD + ": Lost connection to " + glob.getId());
+                                     ConnectionStateEnum.DEAD + ": Lost connection to " + connection.getGlobal().getId());
             }
          });
 
