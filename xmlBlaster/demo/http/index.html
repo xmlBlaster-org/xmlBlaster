@@ -5,9 +5,10 @@
    <meta name="Description" content="XmlBlaster persistent HTTP demo">
    <meta name="Author" content="Marcel Ruff">
    <title>XmlBlaster persistent HTTP demo</title>
+   <link REL="stylesheet" type="text/css" href="xmlBlaster.css">
 </head>
 <body>
-   <h2>Real time browser update with persistent HTTP connection to xmlBlaster</h2>
+   <h3>Real time browser update with persistent HTTP connection to xmlBlaster</h3>
    <p>
    There are currently two demos online.<br />
    Both show how a persistent HTTP connection between
@@ -18,46 +19,57 @@
    and displayed there in a simple chart.
    </p>
 
-
+   <br />
+   <hr />
    <h3>Displaying messages with dynamic HTML (DHTML)</h3>
-   Try the 
+     <p>
+     Try the 
      <a href="/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=dhtmlDemo&amp;xmlBlaster.passwd=secret">
      DHTML demo</a> first, as this runs on most browsers and does not need a plugin:
+     </p>
      <p>
      <image src="images/dhtml.png"/>
      </p>
 
 
+   <br />
+   <hr />
    <h3>Displaying messages with scalable vector graphics (<a href="http://www.svgfaq.com/">SVG</a>)</h3>
-   Try first if your browser supports SVG with <a href="/xmlBlaster/svg/test">these tests</a>.
-   <br /><br />
-   Try the 
+     <p>
+     Try first if your browser supports SVG with <a href="/xmlBlaster/svg/test">these tests</a>.
+     </p>
+     <p>
+     Try the 
      <a href="/xmlBlaster/svg/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=svgDemo&amp;xmlBlaster.passwd=secret">
      SVG demo</a>:
+     </p>
      <p>
      <image src="images/svg.png"/>
      </p>
-   <p>
-   Note: You need to have SVG support or an SVG plugin in your browser.
-   <br />
-   Adobe provides such a plugin.
-   For Linux/mozilla, the <a href="http://www.adobe.com/svg/viewer/install/old.html">Adobe plugin</a>
-   only runs with mozilla 0.91, all other versions are buggy.
-   <br /><br />
-   This combination (mozilla 0.91/Adobe plugin) is currently the only tested for our demo!
-   </p>
-   <p>
-   Please mail bugs, bugfixes or positive reports with other browsers
-   to our mailing list.
-   </p>
-   <p>
-   Native SVG support in mozilla is since December, 12th 2001 in the
-   mozilla main cvs branch, but must be compiled yourself.
-   </p>
 
-   <p>
-   Please read the <a href="README">xmlBlaster/demo/http/README</a>
-   how to setup the persistent http connection yourself.
-   </p>
+   <br /><p>Note:</p>
+   <ul>
+      <li>
+      You need to have SVG support or an SVG plugin in your browser.
+      Adobe provides such a plugin.
+      </li>
+      <li>
+      For Linux/mozilla, the <a href="http://www.adobe.com/svg/viewer/install/old.html">Adobe plugin</a>
+      only runs with mozilla 0.91, all other versions are buggy.
+      This combination (mozilla 0.91/Adobe plugin) is currently the only tested for our demo!
+      </li>
+      <li>
+      Please mail bugs, bugfixes or positive reports with other browsers
+      to our mailing list.
+      </li>
+      <li>
+      Native SVG support in mozilla is since December, 12th 2001 in the
+      mozilla main cvs branch, but must be compiled yourself.
+      </li>
+      <li>
+      Please read the <a href="README">xmlBlaster/demo/http/README</a>
+      how to setup the persistent http connection yourself.
+      </li>
+   </ul>
 </body>
 </html>
