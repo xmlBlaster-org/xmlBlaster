@@ -172,6 +172,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    # apache's embedded jndi naming service
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-java.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-logging.jar
 
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}

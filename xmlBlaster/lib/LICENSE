@@ -278,3 +278,9 @@ only the SNMP subagent module jax.jar is GPL only!
    batik 1.5
    Used for SVG GUI demo
 
+30) apache naming service (tomcat)
+==================================
+   http://jakarta.apache.org/
+   Used as an embedded naming service for testing (particularly the jms implementation)
+   tomcat 5.0.12 and commons-logging 1.0.3
+
