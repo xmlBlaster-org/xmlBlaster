@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.3 1999/12/12 15:24:09 ruff Exp $
+Version:   $Id: TestSub.java,v 1.4 1999/12/12 16:48:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,11 +19,12 @@ import test.framework.*;
 
 
 /**
- * This client tests the method subscribe() with a later publish() with XPath query
+ * This client tests the method subscribe() with a later publish() with XPath query. 
+ * <br />
  * The subscribe() should be recognized for this later arriving publish()
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
- * as it cleans up everything after his test are done.
+ * as it cleans up everything after his tests are done.
  * <p>
  * Invoke examples:<br />
  * <code>
@@ -45,6 +46,11 @@ public class TestSub extends TestCase
    private int numReceived = 0;         // error checking
 
    /**
+    * Constructs the TestSub object. 
+    * <p />
+    * @param testName  The name used in the test suite
+    * @param loginName The name to login for the xmlBlaster
+    * @param args      Array of command line start parameters
     */
    public TestSub(String testName, String loginName, String[] args)
    {
@@ -80,7 +86,7 @@ public class TestSub extends TestCase
    /**
     * Tears down the fixture.
     * <p />
-    * cleaning up .... erase() the previous message OID
+    * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown()
    {
@@ -109,7 +115,7 @@ public class TestSub extends TestCase
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='' queryType='XPATH'>\n" +
-                      "   /xmlBlaster/key/TestSub-AGENT" +
+                      "   //TestSub-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
       numReceived = 0;
@@ -138,10 +144,10 @@ public class TestSub extends TestCase
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                         "<key oid='' contentMime='text/xml'>\n" +
-                        "   <ClientSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                        "      <ClientSub-DRIVER id='FileProof' pollingFreq='10'>" +
-                        "      </ClientSub-DRIVER>"+
-                        "   </ClientSub-AGENT>" +
+                        "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                        "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
+                        "      </TestSub-DRIVER>"+
+                        "   </TestSub-AGENT>" +
                         "</key>";
       String content = "Yeahh, i'm the new content";
       MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
@@ -194,6 +200,7 @@ public class TestSub extends TestCase
     */
    public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
    {
+      Log.info(ME, "Receiving update of " + messageUnitArr.length + " message ...");
       if (Log.TRACE) Log.trace(ME, "Receiving update of " + messageUnitArr.length + " message ...");
 
       if (messageUnitArr.length != 0)
@@ -225,11 +232,12 @@ public class TestSub extends TestCase
 
    /**
     * Invoke: jaco testsuite.org.xmlBlaster.TestSub
+    * <p />
+    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
+    * instead of the JacORB ORB, which won't work.
+    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub</code>
-    * <br />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work
     */
    public static void main(String args[])
    {
