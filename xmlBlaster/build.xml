@@ -1556,6 +1556,12 @@ TODO
       <copy todir="${build.src.c.dir}" filtering="true">
          <fileset dir="${src.c.dir}">
             <exclude name="README"/>
+            <exclude name="**/pthreadVC.*"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.src.c.dir}" filtering="false">
+         <fileset dir="${src.c.dir}">
+            <include name="**/pthreadVC.*"/>
          </fileset>
       </copy>
 
