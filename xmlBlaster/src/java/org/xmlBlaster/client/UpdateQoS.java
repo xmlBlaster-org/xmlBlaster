@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.20 2002/03/13 16:41:08 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.21 2002/04/23 15:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -32,6 +32,9 @@ import org.xml.sax.Attributes;
  *     &lt;expiration remainingLife='1200'/> &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
  *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
  *     &lt;redeliver>4&lt;/redeliver>
+ *     &lt;route>
+ *        &lt;node id='heron'/>
+ *     &lt;/route>
  *  &lt;/qos>
  * </pre>
  */
@@ -61,6 +64,11 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    /** helper flag for SAX parsing: parsing inside <rcvTimestamp> ? */
    private boolean inRcvTimestamp = false;
    private Timestamp rcvTimestamp;
+
+   private boolean inNode = false;
+   private boolean inRoute = false;
+   /** The xmlBlaster cluster node which delivered the message */
+   private String nodeId = null; 
 
    private int queueIndex = -1;
    private int queueSize = -1;
@@ -144,6 +152,14 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    public final Timestamp getRcvTimestamp()
    {
       return rcvTimestamp;
+   }
+
+   /**
+    * The local xmlBlaster node which deliverd the node (does not need to be the master). 
+    * @return The xmlBlaster cluster node which delivered the message
+    */
+   public String getLocalNodeId() {
+      return nodeId;
    }
 
    /**
@@ -292,6 +308,26 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          }
          return;
       }
+
+      if (name.equalsIgnoreCase("route")) {
+         if (!inQos)
+            return;
+         inRoute = true;
+         return;
+      }
+
+      if (name.equalsIgnoreCase("node")) {
+         if (!inQos) return;
+         if (!inRoute) return;
+         inNode = true;
+         String tmp = attrs.getValue("id");
+         if (tmp != null) nodeId = tmp.trim();
+         tmp = attrs.getValue("stratum");
+         if (tmp != null) { try { /* Integer.parseInt(tmp.trim()); */ } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node stratum='" + tmp + "'"); }; }
+         tmp = attrs.getValue("timestamp");
+         if (tmp != null) { try { /* Long.parseLong(tmp.trim()); */ } catch(NumberFormatException e) { Log.error(ME, "Invalid <route><node timestamp='" + tmp + "'"); }; }
+         return;
+      }
    }
 
 
@@ -358,6 +394,17 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if(name.equalsIgnoreCase("route")) {
+         inRoute = false;
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("node")) {
+         inNode = false;
+         character.setLength(0);
+         return;
+      }
    }
 
 
@@ -450,7 +497,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public static final String toXml(String subscriptionId,
                  org.xmlBlaster.engine.MessageUnitWrapper msgUnitWrapper,
-                 int index, int max, String state, int redeliver) {
+                 int index, int max, String state, int redeliver, String nodeId) {
       if (msgUnitWrapper == null || state == null) {
          Log.error("UpdateQos", "Arguments for UpdateQos are invalid: subscriptionId == " + subscriptionId + " msgUnitWrapper=" + msgUnitWrapper + " state=" + state);
          throw new IllegalArgumentException("Arguments for UpdateQos are invalid");
@@ -477,6 +524,11 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          buf.append("\n <queue index='").append(index).append("' size='").append(max).append("'/>");
       if (redeliver > 0)
          buf.append("\n <redeliver>").append(redeliver).append("</redeliver>");
+      if (nodeId != null && nodeId.length() > 0) {
+         buf.append("   <route>\n"); // server internal added routing informations
+         buf.append("      <node id='").append(nodeId).append("'/>");
+         buf.append("   </route>\n"); // server internal added routing informations
+      }
       buf.append("\n</qos>");
       return buf.toString();
    }
@@ -508,6 +560,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "   <expiration remainingLife='12000'/>\n" +
                    "   <queue index='0' size='1'/>\n" +
                    "   <redeliver>4</redeliver>\n" +
+                   "   <route><node id='heron'/></route>\n" +
                    "</qos>";
 
       UpdateQoS up = new UpdateQoS(xml);
