@@ -3,9 +3,9 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.2 2002/09/13 23:18:33 ruff Exp $
+Version:   $Id: RamTest.java,v 1.3 2002/09/13 23:35:30 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.test.qos;
+package org.xmlBlaster.test.stress;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
