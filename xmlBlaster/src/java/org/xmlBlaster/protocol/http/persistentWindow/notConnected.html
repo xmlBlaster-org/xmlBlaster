@@ -9,7 +9,7 @@
       <script language="JavaScript1.2">
          function reconnect()
          {
-            parent.callbackFrame.location.reload();
+            top.opener.top.location.reload();
             parent.connectionTextFrame.document.location.href="connected.html";
          }
       </script>
