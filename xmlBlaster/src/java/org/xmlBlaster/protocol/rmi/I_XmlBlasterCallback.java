@@ -3,12 +3,14 @@ Name:      I_XmlBlasterCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The client callback server interface.
-Version:   $Id: I_XmlBlasterCallback.java,v 1.2 2000/06/25 18:32:43 ruff Exp $
+Version:   $Id: I_XmlBlasterCallback.java,v 1.3 2000/10/21 20:52:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+
 import java.rmi.RemoteException;
 
 /**
@@ -21,6 +23,6 @@ import java.rmi.RemoteException;
 public interface I_XmlBlasterCallback extends java.rmi.Remote
 {
    public void update(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
-                      throws RemoteException;
+                      throws RemoteException, XmlBlasterException;
 }
 
