@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.24 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.25 2002/06/03 15:33:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -111,7 +111,7 @@ public class TestPersistence extends TestCase implements I_Callback
    {
       if (Log.TRACE) Log.trace(ME, "Testing a durable message ...");
 
-      String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
+      String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'>\n" +
                       "</key>";
 
       String qos = "<qos>" +
@@ -153,8 +153,8 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    void checkContent(boolean checkContent)
    {
-      String driverClass = glob.getProperty().get("Persistence.Driver", (String)null);
-      if (driverClass == null || !driverClass.equals("org.xmlBlaster.engine.persistence.filestore.FileDriver")) {
+      String driverType = glob.getProperty().get("Persistence.Driver.Type", (String)null);
+      if (driverType == null || !driverType.equals("filestore")) {
          Log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
@@ -188,12 +188,15 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      Log.info(ME, "Receiving update of a message, checking ...");
 
       numReceived += 1;
 
       assertEquals("Wrong sender", senderName, updateQos.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong mime of message returned", "text/plain", updateKey.getContentMime());
+      assertEquals("Wrong extended mime of message returned", "2.0", updateKey.getContentMimeExtended());
+      assertEquals("Wrong domain of message returned", "RUGBY", updateKey.getDomain());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       return "";
    }
