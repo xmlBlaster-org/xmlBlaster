@@ -12,6 +12,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
+#include "helper.h"
 #include "Properties.h"
 
 static const char *getString(Properties *props, const char *key, const char *defaultValue);
@@ -129,7 +130,7 @@ static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue
    const char *valP = getString(props, key, 0);
    if (valP != 0) {
       int64_t val;
-      if (sscanf(valP, "%lld", &val) == 1)
+      if (strToInt64(&val, valP) == true)
          return val;
    }
    return defaultValue;
