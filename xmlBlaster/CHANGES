@@ -24,6 +24,9 @@ Changes for 0.xxx [xx, xxx 2003]
          public void setPluginProperty(String key, String value);
       or the old way with glob.setProperty()
       AddressBase.java is redesigned, please check the javadoc.
+      Further you can hardcode a destination host directly with e.g.
+        address.setType("XMLRPC");
+        address.setRawAddress("http://192.168.2.5:9955/");
 
    5. Renamed property to new schema, try
          java org.xmlBlaster.Main -help     (server side usage)
