@@ -271,14 +271,36 @@ abstract public class DispatchConnection implements I_Timeout
 
       if (isPing) {
          if (log.TRACE) log.trace(ME, "timeout -> Going to ping remote server ...");
-         try { String result = ping("", false); } catch (XmlBlasterException e) { e.printStackTrace(); log.error(ME, "PANIC: " + e.toString()); } // is handled in ping() itself
+         try {
+            String result = ping("", false);
+         }
+         catch (XmlBlasterException e) {
+            if (isDead()) {
+               log.trace(ME, "We are shutdown already: " + e.toString());
+            }
+            else {
+               e.printStackTrace();
+               log.error(ME, "PANIC: " + e.toString());
+            }
+         } // is handled in ping() itself
       }
       else { // reconnect polling
          try {
             retryCounter++;
             if (log.TRACE) log.trace(ME, "timeout -> Going to check #" + retryCounter + " if remote server is available again ...");
             reconnect();
-            try { String result = ping("", false); } catch (XmlBlasterException e) { e.printStackTrace(); log.error(ME, "PANIC: " + e.toString()); } // is handled in ping() itself
+            try {
+               String result = ping("", false);
+            } 
+            catch (XmlBlasterException e) {
+               if (isDead()) {
+                  log.trace(ME, "We are shutdown already: " + e.toString());
+               }
+               else {
+                  e.printStackTrace();
+                  log.error(ME, "PANIC: " + e.toString()); // is handled in ping() itself
+               }
+            }
          }
          catch (Throwable e) {
             if (log.TRACE) log.trace(ME, "Polling for remote connection failed:" + e.getMessage());
@@ -304,7 +326,7 @@ abstract public class DispatchConnection implements I_Timeout
 
       synchronized (this) {
          if (isDead()) {   // ignore, not possible
-            log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": We ignore it.");
+            if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": We ignore it.");
             //Thread.currentThread().dumpStack();
             throw XmlBlasterException.convert(glob, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString(), throwable);
          }
