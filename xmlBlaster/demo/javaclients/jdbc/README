@@ -1,3 +1,10 @@
+Please read the requirement
+
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+
+for an explanation and an example how to use.
+
+
 Ok, so this is a quick and dirty 'HOWTO' for the DB adapter.
 
 Note that you can query a database over xmlBlaster synchronously
