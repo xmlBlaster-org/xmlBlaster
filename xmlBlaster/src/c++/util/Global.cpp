@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.28 2003/03/02 19:10:58 ruff Exp $
+Version:   $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -12,11 +12,11 @@ Version:   $Id: Global.cpp,v 1.28 2003/03/02 19:10:58 ruff Exp $
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
-#ifdef _WINDOWS
-   // how to do it?
-#else
+#if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.28 2003/03/02 19:10:58 ruff Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $";
+#elif defined(__SUNPRO_CC)
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $";
 #endif
 
 using namespace std;
@@ -101,7 +101,7 @@ Property& Global::getProperty() const
 }
 
 
-Log& Global::getLog(char* logName)
+Log& Global::getLog(const char* logName)
 {
    LogMap::iterator pos = logMap_.find(logName);
    if (pos != logMap_.end()) return (*pos).second;
