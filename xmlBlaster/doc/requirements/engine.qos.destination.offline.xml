@@ -4,15 +4,36 @@
 <requirement id='engine.qos.destination.offline' type='NEW' prio='LOW' status="CLOSED">
    <topic>If the receiver of a PtP message is offline or has no callback, the sender gets an exception</topic>
    <description>
-      If you send a message to a named destination, using the qos &lt;destination&lt; tag,
+      If you send a message to a named destination, using the qos &lt;destination&gt; tag,
       and there is no callback for this receiver, or the receiver is not logged in
-      and the &lt;ForceUpdate&lt; qos tag is not set in this message, you get a
+      and the &lt;ForceUpdate&gt; qos tag is not set in this message, you get a
       XmlBlasterException.
    </description>
+   <example lang="Java">
+      <![CDATA[<pre>
+      // Construct a message and send it to 'Michelle', she is currently not logged in 
+      String xmlKey = "&lt;key oid='' contentMime='text/plain'>\n" +
+                      "&lt;/key>";
+
+      String qos = "&lt;qos>" +
+                   "   &lt;destination queryType='EXACT'>" +
+                   "      Michelle" +
+                   "   &lt;/destination>" +
+                   "&lt;/qos>";
+
+      content = "Hi Michelle";
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+      try {
+         xmlBlaster.publish(msgUnit, qos);
+      } catch(XmlBlasterException e) {
+         System.out.println("Exception is correct, Michelle is not logged in");
+      }
+      </pre>]]>
+   </example>
    <see>engine.qos.publish.ForceQueuing</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 17</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

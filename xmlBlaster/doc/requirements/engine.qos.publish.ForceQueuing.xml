@@ -14,15 +14,16 @@
    <pre>
       &lt;qos>
          &lt;destination queryType='EXACT'>
-            Tim
+            Michelle
             &lt;ForceQueuing /> &lt;!-- If the destination client is not logged in, queue the messages ->
-         &lt;/destination>      &lt;!-- Default is no queuing and you get an exception if the client is not reachable -->
+         &lt;/destination>      &lt;!-- Default is no queuing -->
       &lt;/qos></pre>
       ]]>
    </example>
+   <see>engine.qos.destination.offline</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

@@ -12,54 +12,53 @@
    </description>
    <example lang="Java">
       <![CDATA[<pre>
-   public void login()
-   {
-      try {
-         corbaConnection = new CorbaConnection(); // Hides Corba stuff
+      public void login()
+      {
+         try {
+            corbaConnection = new CorbaConnection(); // Hides Corba stuff
 
-         // Setup fail save handling (optional) ...
-         long retryInterval = 4000L; // if connection to xmlBlaster is lost,
-                                     // polling frequency in milli seconds
-         int retries = -1;           // -1 == forever
-         int maxMessages = 1000;     // if connection to xmlBlaster is lost,
-                                     // how many message to record locally and playback on reconnect
-         long pingInterval = 2000L;
-         corbaConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
+            // Setup fail save handling (optional) ...
+            long retryInterval = 4000L;// if connection to xmlBlaster is lost,
+                                       // polling frequency in milli seconds
+            int retries = -1;          // -1 == forever
+            int maxMessages = 1000;    // if connection to xmlBlaster is lost,
+                                       // no. of messages to record locally and playback on reconnect
+            long pingInterval = 2000L;
+            corbaConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
 
-         corbaConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
-      }
-      catch (XmlBlasterException e) {
-          System.out.println("Login failed, ID=" + e.id + " REASON=" + e.reason);
-      }
-   }
-
-   /**
-    * This is the callback method invoked from CorbaConnection
-    * informing the client in an asynchronous mode if the connection was established.
-    * This method is enforced through interface I_ConnectionProblems
-    */
-   public void reConnected()
-   {
-      // Code your recovery handling ...
-      try {
-         if (corbaConnection.queueSize() > 0) {
-            corbaConnection.flushQueue();    // send all tailback messages
+            corbaConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
          }
-      } catch (XmlBlasterException e) {
+         catch (XmlBlasterException e) {
+             System.out.println("Login failed, ID=" + e.id + " REASON=" + e.reason);
+         }
       }
-   }
 
-   /** listener callback allows to do actions if connection is lost */
-   public void lostConnection()
-   {
-      System.out.println("Lost connection to xmlBlaster");
-   }
+      /**
+       * This is the callback method invoked from CorbaConnection
+       * informing the client in an asynchronous mode if the connection was established.
+       * This method is enforced through interface I_ConnectionProblems
+       */
+      public void reConnected()
+      {
+         // Code your recovery handling ...
+         try {
+            if (corbaConnection.queueSize() > 0) {
+               corbaConnection.flushQueue();    // send all tailback messages
+            }
+         } catch (XmlBlasterException e) {
+         }
+      }
 
+      /** listener callback allows to do actions if connection is lost */
+      public void lostConnection()
+      {
+         System.out.println("Lost connection to xmlBlaster");
+      }
       </pre>]]>
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

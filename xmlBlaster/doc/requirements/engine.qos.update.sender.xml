@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.update.subscriptionId' type='NEW' prio='LOW' status="CLOSED">
-   <topic>XmlBlaster sends the sender name in the qos arguments of an update</topic>
+<requirement id='engine.qos.update.sender' type='NEW' prio='LOW' status="CLOSED">
+   <topic>XmlBlaster delivers the sender name of a message in the qos argument</topic>
    <description>
       When a client receives an update message, he can retrieve the sender of the
-      message in the qos argument of the update: &lt;sender&gt;. The sender is the
+      message in the qos argument of the update with the &lt;sender&gt; tag. The sender is the
       unique login name of the publisher. This works with PtP and with Pub/Sub style.
    </description>
    <example lang="Java">
@@ -20,7 +20,7 @@
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 02</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
