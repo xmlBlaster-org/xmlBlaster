@@ -10,8 +10,8 @@
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 
-#ifndef _UTIL_KEY_SUBSCRIBEKEY_H
-#define _UTIL_KEY_SUBSCRIBEKEY_H
+#ifndef _CLIENT_KEY_SUBSCRIBEKEY_H
+#define _CLIENT_KEY_SUBSCRIBEKEY_H
 
 #include <client/key/UnSubscribeKey.h>
 

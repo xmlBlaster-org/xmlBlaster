@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      UnSubscribeKey.h
+Name:      MsgKeyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -9,15 +9,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * <p>
  * See QueryKeySaxFactory for a syntax description of the allowed xml structure
  * </p>
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html" target="others">the interface.unSubscribe requirement</a>
+ * This is the base class for the UpdateKey and the PublishKey. 
+ *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 
-#ifndef _CLIENT_KEY_UNSUBSCRIBEKEY_H
-#define _CLIENT_KEY_UNSUBSCRIBEKEY_H
+#ifndef _CLIENT_KEY_MSGKEYBASE_H
+#define _CLIENT_KEY_MSGKEYBASE_H
 
-#include <util/key/QueryKeyData.h>
+#include <util/key/MsgKeyData.h>
 #include <util/Log.h>
 
 using namespace std;
@@ -26,7 +27,7 @@ using namespace org::xmlBlaster::util::key;
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
-class Dll_Export UnSubscribeKey
+class Dll_Export MsgKeyBase
 {
 protected:
    string  ME;
@@ -36,20 +37,20 @@ protected:
    /**
     * subscribe(), get() and cluster configuration keys may contain a filter rule
     */
-   QueryKeyData queryKeyData_;
+   MsgKeyData msgKeyData_;
 
 public:
 
    /**
     * Minimal constructor.
     */
-   UnSubscribeKey(Global& global);
+   MsgKeyBase(Global& global);
    
-   UnSubscribeKey(Global& global, const QueryKeyData& data);
+   MsgKeyBase(Global& global, const MsgKeyData& data);
 
-   UnSubscribeKey(const UnSubscribeKey& key);
+   MsgKeyBase(const MsgKeyBase& key);
 
-   UnSubscribeKey& operator =(const UnSubscribeKey& key);
+   MsgKeyBase& operator =(const MsgKeyBase& key);
 
    void setOid(const string& oid);
 
@@ -59,21 +60,29 @@ public:
    string getOid() const;
 
    /**
-    * Access the query type "XPATH" or "EXACT"
-    * @return A queryType string or ""
+    * Find out which mime type (syntax) the content of the message has.
+    * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'><br />
+    *         default is "text/plain" if not set
+    * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
     */
-   string getQueryType() const;
-
-
-   void setQueryType(const string& queryType);
+   string getContentMime() const;
 
    /**
-    * Your XPath query string. 
-    * @param str Your tags in ASCII XML syntax
+    * Some further specifying information of the content.
+    * <p />
+    * For example the application version number the document in the content.<br />
+    * You may use this attribute for you own purposes.
+    * @return The MIME-extended info, for example<br />
+    *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
+    *         or "" (empty string) if not known
     */
-   void setQueryString(const string& tags);
+   string getContentMimeExtended() const;
 
-   string getQueryString() const;
+   /**
+    * Access the domain setting
+    * @return A domain string or null
+    */
+   string getDomain() const;
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -82,13 +91,6 @@ public:
     * @return internal state of the query as a XML ASCII string
     */
    string toXml(const string& extraOffset="") const;
-
-   /**
-    * May be used to integrate your application tags.
-    * @param str Your tags
-    * @return The ASCII XML key containing the key tag and your tags
-    */
-   string wrap(const string& str);
 
 };
 
