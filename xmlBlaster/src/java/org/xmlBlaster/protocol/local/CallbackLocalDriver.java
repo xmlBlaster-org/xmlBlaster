@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: CallbackLocalDriver.java,v 1.1 2003/09/18 14:32:20 antman Exp $
+ * $Id: CallbackLocalDriver.java,v 1.2 2004/02/05 23:28:32 laghi Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,13 +26,12 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
-import org.xmlBlaster.client.I_CallbackRaw;
 /**
  * A server callback driver for in jvm calls.
  * <p>The requirements for this driver is that an object of type {@link I_LocalCallback} is registered in objectEntry at callbackAddress.getRawAddress().</p>
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @see org.xmlBlaster.client.protocol.local.LocalCallbackImpl
  */
 
@@ -178,5 +177,13 @@ public class CallbackLocalDriver implements I_CallbackDriver {
       callbackAddress = null;
       if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
+
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive() {
+      return true;
+   }
+
 
 }// CallbackLocalDriver

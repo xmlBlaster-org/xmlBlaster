@@ -198,6 +198,12 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.getKey(), mu.getContent(), mu.getQos());
    }
 
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive() {
+      return true;
+   }
 
    /**
     * This method shuts down the driver.

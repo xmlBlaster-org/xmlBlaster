@@ -179,5 +179,14 @@ public class CallbackJdbcDriver implements I_CallbackDriver
    public void shutdown()
    {
    }
+   
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive() {
+      return true;
+   }
+
+   
 
 }

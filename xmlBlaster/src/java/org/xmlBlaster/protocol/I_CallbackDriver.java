@@ -79,6 +79,12 @@ public interface I_CallbackDriver extends I_Plugin
     */
    public String ping(String qos) throws XmlBlasterException;
 
+
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive();
+
    /**
     * Shut down the driver.
     * <p />

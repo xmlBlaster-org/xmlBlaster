@@ -182,4 +182,11 @@ public class CallbackEmailDriver implements I_CallbackDriver
       log.warn(ME, "shutdown implementation is missing");
    }
 
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive() {
+      return true;
+   }
+
 }

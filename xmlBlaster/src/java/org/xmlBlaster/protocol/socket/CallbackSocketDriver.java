@@ -154,10 +154,21 @@ public class CallbackSocketDriver implements I_CallbackDriver
    }
 
    public void shutdown() {
-      if (log.CALL) log.call(ME, "shutdown()");
+      if (this.log != null) {
+         if (log.CALL) log.call(ME, "shutdown()");
+      } 
       if (this.handler != null) {
          this.handler.shutdown();
       }
    }
+   
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive() {
+      return this.handler != null;
+   }
+
+
 }
 

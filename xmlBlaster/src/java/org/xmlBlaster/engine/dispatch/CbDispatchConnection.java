@@ -51,6 +51,14 @@ public final class CbDispatchConnection extends DispatchConnection
       return ME;
    }
    
+   public void setAddress(AddressBase address) throws XmlBlasterException {
+      super.setAddress(address);
+      if (this.cbDriver == null || !this.cbDriver.isAlive())
+         loadPlugin();
+      this.cbDriver.init(this.glob, (CallbackAddress)address);   
+   }
+   
+   
    /**
     * The name of the protocol driver
     */

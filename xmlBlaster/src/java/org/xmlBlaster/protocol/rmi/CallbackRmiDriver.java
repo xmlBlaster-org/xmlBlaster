@@ -209,4 +209,12 @@ public class CallbackRmiDriver implements I_CallbackDriver
       if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
 
+   /**
+    * @return true if the plugin is still alive, false otherwise
+    */
+   public boolean isAlive() {
+      return true;
+   }
+
+
 }
