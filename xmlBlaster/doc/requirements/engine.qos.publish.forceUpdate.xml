@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.publish.ForceUpdate' type='NEW' prio='LOW' status="CLOSED">
+<requirement id='engine.qos.publish.forceUpdate' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster does not route identical messages in Publish/Subcribe mode</topic>
    <description>
-      Using the QOS flag &lt;ForceUpdate/&gt; allows to force a published message
+      Using the QOS flag &lt;forceUpdate/&gt; allows to force a published message
       to be sent to his subscribers, even when the content and the key meta data didn't change
       from the former message.
       Default is that identical published messages aren't sent to subscribers again.
@@ -12,7 +12,7 @@
    <example lang="Java">
       <![CDATA[
       <qos>
-         <ForceUpdate/>  <!-- An update is forced even when the content and meta data didn't change -->
+         <forceUpdate/>  <!-- An update is forced even when the content and meta data didn't change -->
                          <!-- Default is that identical published messages aren't sent to clients again -->
       </qos>
       ]]>
