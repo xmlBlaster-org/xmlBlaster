@@ -8,6 +8,8 @@
    <head>
       <title>XmlBlaster Persistent Callback Demo</title>
       <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <meta http-equiv='Pragma' content='no-cache'>
+      <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
 
       <!-- xparse is a Javascript XML-DOM parser from http://www.jeremie.com/Dev/XML/index.jer Copyright 1998 Jeremie -->
       <script Language="JavaScript" src="/javascript/util.js" type="text/javascript"></script>
@@ -60,8 +62,11 @@
          function browserReady()
          {
             if (Log.TRACE) Log.trace("Sending browserReady() to serlvet");
+            // add some dynamic data (milliseconds since 1970), that MSIE 5 resends it.
+            var date = new Date();
+            var millisec = Date.parse(date);
             self.frames["controlFrame"].location.reload(true);
-            self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=browserReady";
+            self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec;
          }
 
          queueing = true;
