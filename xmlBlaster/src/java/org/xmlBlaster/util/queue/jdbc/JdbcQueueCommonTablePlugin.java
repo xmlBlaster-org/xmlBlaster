@@ -879,7 +879,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
-         else if (this.log.TRACE) this.log.warn(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
+         else if (this.log.TRACE) this.log.trace(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
          return this.numOfEntries;
       }
    }
@@ -926,7 +926,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
-            else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
+            else if (this.log.TRACE) this.log.trace(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
             return this.numOfPersistentEntries;
          }
          catch (XmlBlasterException ex) {
