@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.10 2002/02/25 13:46:23 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.11 2002/02/25 17:04:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -92,7 +92,8 @@ public class HandleClient extends Executor implements Runnable
                                        "The argument of method update() are invalid");
       }
       try {
-         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, sessionId);
+         // currently we send the loginName of the sender as sessionId!!!
+         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.UPDATE, clientInfo.getLoginName()/*sessionId*/);
          parser.addMessage(msgUnitArr);
          if (updateIsOneway) {
             if (warnUpdateIsOneway) {

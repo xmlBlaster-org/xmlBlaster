@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.11 2002/02/25 13:46:23 ruff Exp $
+Version:   $Id: Executor.java,v 1.12 2002/02/25 17:04:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -336,77 +336,12 @@ public abstract class Executor implements ExecutorBase
          throw new XmlBlasterException(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + e.toString());
       }
    }
-    /*
-   public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
-
-      String requestId = parser.createRequestId(praefix);
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Invoking  '" + parser.getType() + "' message " + parser.getMethodName() + "(" + requestId + ") expectingResponse=" + expectingResponse);
-
-      final Object[] response = new Object[3];  // As only final variables are accessable from the inner class, we put changeable variables in this array
-      response[0] = response[1] = response[2] = null;
-      final Object monitor = new Object();
-
-      // Register the return value / Exception listener ...
-      if (expectingResponse) {
-         addResponseListener(requestId, new I_ResponseListener() {
-            public void responseEvent(String reqId, Object responseObj) {
-               if (Log.TRACE) Log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
-               response[0] = responseObj;
-               response[1] = DUMMY_OBJECT; // marker that notify() is called
-               while (true) {
-                  synchronized(monitor) {
-                     monitor.notify();
-                  }
-                  // If response is faster, we will go into wait() after notify()
-                  // In these cases we need to call notify() again (to be shure we awake from wait())
-                  //Thread.currentThread().yield();
-                  if (response[2] == null) {  // not awaken?
-                     if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Retrying notify ...");
-                     //try { Thread.currentThread().sleep(1); } catch(Exception e) {}
-                  }
-                  else
-                     break;
-               }
-            }
-         });
-      }
-
-      // Send the message / method invocation ...
-      byte[] rawMsg = parser.createRawMsg();
-      oStream.write(rawMsg);
-      oStream.flush();
-
-      if (!expectingResponse)
-         return null;
-      
-      // Waiting for the response to arrive ...
-      try {
-         synchronized(monitor) {
-            monitor.wait(responseWaitTime);
-         }
-         response[2] = DUMMY_OBJECT; // marker that we are waked up
-         if (response[1] != null) {
-            if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(" + requestId + ")");
-            if (response[0] instanceof XmlBlasterException)
-               throw (XmlBlasterException)response[0];
-            return response[0];
-         }
-         else {
-            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
-            throw new XmlBlasterException(ME, str);
-         }
-      }
-      catch (InterruptedException e) {
-         throw new XmlBlasterException(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + e.toString());
-      }
-   }
-   */
 
    /**
     * Send a one way message back to the other side
     */
    protected final void executeResponse(Parser receiver, Object response) throws XmlBlasterException, IOException {
-      Parser returner = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
+      Parser returner = new Parser(Parser.RESPONSE_BYTE, receiver.getRequestId(),
                            receiver.getMethodName(), receiver.getSessionId());
       if (response instanceof String)
          returner.addMessage((String)response);
@@ -428,7 +363,7 @@ public abstract class Executor implements ExecutorBase
     * Send a one way exception back to the other side
     */
    protected final void executeExecption(Parser receiver, XmlBlasterException e) throws XmlBlasterException, IOException {
-      Parser returner = new Parser(Parser.EXCEPTION_TYPE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
+      Parser returner = new Parser(Parser.EXCEPTION_BYTE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);

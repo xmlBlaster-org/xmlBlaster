@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.15 2002/02/25 13:46:23 ruff Exp $
+Version:   $Id: Parser.java,v 1.16 2002/02/25 17:04:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -73,13 +73,13 @@ import java.util.Vector;
  *
  * @author ruff@swand.lake.de
  */
-public class Parser extends Converter
+public class Parser
 {
    private static final String ME = "Parser";
    
-   public static final String INVOKE_TYPE = "I";
-   public static final String RESPONSE_TYPE = "R";
-   public static final String EXCEPTION_TYPE = "E";
+   public static final int NUM_FIELD_LEN = 10;
+   public static final int FLAG_FIELD_LEN = 6;
+   public static final int MAX_STRING_LEN = Integer.MAX_VALUE;
 
    public static final byte CHECKSUM_ADLER_BYTE = (byte)65; // 'A'
    public static final byte COMPRESSED_GZIP_BYTE = (byte)90; // 'Z'
@@ -92,17 +92,17 @@ public class Parser extends Converter
 
    private long msgLength;
 
-   /** flag fields 1 */
+   /** flag field number one */
    private boolean checksum;
-   /** flag fields 2 */
+   /** flag field 2 */
    private boolean compressed;
-   /** flag fields 3 */
-   private String type;
-   /** flag fields 4 */
+   /** flag field 3 */
+   private byte type;
+   /** flag field 4 */
    private byte byte4;
-   /** flag fields 5 */
+   /** flag field 5 */
    private byte byte5;
-   /** flag fields 6 */
+   /** flag field 6 */
    private int version;
 
    private String requestId;
@@ -114,7 +114,16 @@ public class Parser extends Converter
    /** Unique counter */
    private static long counter = 0L;
 
+   /** Holding MessageUnit objects which acts as a holder for the method arguments */
    private Vector msgVec;
+
+   /** Set debug level */
+   public int SOCKET_DEBUG=0;
+
+   protected long index = 0L;
+
+   // create only once, for low level parsing
+   private ByteArray byteArray = new ByteArray(126);
 
 
    /**
@@ -126,7 +135,7 @@ public class Parser extends Converter
    }
 
 
-   public Parser(String type, String methodName, String sessionId) {
+   public Parser(byte type, String methodName, String sessionId) {
       msgVec = new Vector();
       initialize();
       setType(type);
@@ -135,7 +144,7 @@ public class Parser extends Converter
    }
 
 
-   public Parser(String type, String requestId, String methodName, String sessionId) {
+   public Parser(byte type, String requestId, String methodName, String sessionId) {
       msgVec = new Vector();
       initialize();
       setType(type);
@@ -149,11 +158,11 @@ public class Parser extends Converter
     * This method allows to reuse a Parser instance. 
     */
    public void initialize() {
-      super.index = 0L;
+      index = 0L;
       msgLength = -1L;
       checksum = false;
       compressed = false;
-      type = INVOKE_TYPE; // request
+      type = INVOKE_BYTE; // request
       byte4 = 0;
       byte5 = 0;
       version = 1;
@@ -165,23 +174,28 @@ public class Parser extends Converter
       msgVec.clear();
    }
 
-   /** Parser.INVOKE_TYPE */
-   public void setType(String type) {
+   /**
+    * @param type The method type, e.g. Parser.INVOKE_BYTE
+    */
+   public final void setType(byte type) {
       this.type = type;
    }
 
-   public String getType() {
+   /**
+    * @return The method type, e.g. Parser.INVOKE_BYTE
+    */
+   public final byte getType() {
       return this.type;
    }
 
-   public boolean isInvoke() {
-      return (INVOKE_TYPE.equals(type));
+   public final boolean isInvoke() {
+      return (INVOKE_BYTE == type);
    }
-   public boolean isResponse() {
-      return (RESPONSE_TYPE.equals(type));
+   public final boolean isResponse() {
+      return (RESPONSE_BYTE == type);
    }
-   public boolean isException() {
-      return (EXCEPTION_TYPE.equals(type));
+   public final boolean isException() {
+      return (EXCEPTION_BYTE == type);
    }
 
    /**
@@ -192,7 +206,7 @@ public class Parser extends Converter
     * Note that you usually shouldn't set this value, this class generates
     * a unique requestId which you can access with getRequestId()
     */
-   public void setRequestId(String requestId) {
+   public final void setRequestId(String requestId) {
       this.requestId = requestId;
    }
 
@@ -206,7 +220,7 @@ public class Parser extends Converter
     * @param praefix If desired you can specify a prefix for the request ID, e.g. "joe:"
     * @return An ID (unique in this JVM scope), e.g. "joe:3400" or "3400" if praefix is null
     */
-   public String createRequestId(String praefix) {
+   public final String createRequestId(String praefix) {
       if (this.requestId == null || this.requestId.length() < 1) {
          if (praefix == null) praefix = "";
          synchronized(Parser.class) {
@@ -222,13 +236,13 @@ public class Parser extends Converter
     * Use this when receiving a message.
     * @return The received request ID
     */
-   public String getRequestId() {
+   public final String getRequestId() {
       if (requestId == null) throw new IllegalArgumentException(ME + ": getRequestId returns null");
       return this.requestId;
    }
 
    /** For example Constants.PUBLISH */
-   public void setMethodName(String methodName) {
+   public final void setMethodName(String methodName) {
       this.methodName = methodName;
    }
 
@@ -236,24 +250,24 @@ public class Parser extends Converter
     * For example Constants.PUBLISH
     * @return unchecked
     */
-   public String getMethodName() {
+   public final String getMethodName() {
       return this.methodName;
    }
    
    /** The authentication sessionId */
-   public void setSessionId(String sessionId) {
+   public final void setSessionId(String sessionId) {
       this.sessionId = sessionId;
    }
    
    /** The authentication sessionId */
-   public String getSessionId() {
+   public final String getSessionId() {
       if (sessionId == null) return "";
       return this.sessionId;
    }
 
 
    /** Enable checksum? */
-   public void setChecksum(boolean checksum) {
+   public final void setChecksum(boolean checksum) {
       if (checksum == true) {
          Log.warn(ME, "Checksum for raw socket message is not supported");
          return;
@@ -262,7 +276,7 @@ public class Parser extends Converter
    }
    
    /** Compress message? */
-   public void setCompressed(boolean compressed) {
+   public final void setCompressed(boolean compressed) {
       if (compressed == true) {
          Log.warn(ME, "Compression for raw socket message is not supported");
          return;
@@ -274,7 +288,7 @@ public class Parser extends Converter
     * Use for methods get, subscribe, unSubscribe, erase
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public void addKeyAndQos(String key, String qos) {
+   public final void addKeyAndQos(String key, String qos) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addKeyAndQos() may only be invoked once");
       MessageUnit msg = new MessageUnit(key, null, qos);
@@ -287,7 +301,7 @@ public class Parser extends Converter
     * NOTE: Exceptions don't return
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public void addException(XmlBlasterException e) {
+   public final void addException(XmlBlasterException e) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addException() may only be invoked once");
       MessageUnit msg = new MessageUnit(e.reason, null, e.id);
@@ -301,7 +315,7 @@ public class Parser extends Converter
     * <br />
     * Multiple adds are OK
     */
-   public void addMessage(MessageUnit msg) {
+   public final void addMessage(MessageUnit msg) {
       msgVec.add(msg);
    }
 
@@ -312,7 +326,7 @@ public class Parser extends Converter
     * <br />
     * Multiple adds are OK
     */
-   public void addMessage(MessageUnit[] arr) {
+   public final void addMessage(MessageUnit[] arr) {
       for (int ii=0; ii<arr.length; ii++)
          msgVec.add(arr[ii]);
    }
@@ -323,7 +337,7 @@ public class Parser extends Converter
     * Use for return value of methods connect, disconnect, ping, update, publish, subscribe, unSubscribe and erase
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public void addMessage(String qos) {
+   public final void addMessage(String qos) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
       MessageUnit msg = new MessageUnit(null, null, qos);
@@ -331,7 +345,7 @@ public class Parser extends Converter
    }
 
    /** @see #addMessage(String qos) */
-   public void addQos(String qos) {
+   public final void addQos(String qos) {
       addMessage(qos);
    }
 
@@ -341,7 +355,7 @@ public class Parser extends Converter
     * Use for return value of methods publishArr and erase
     * @exception IllegalArgumentException if invoked multiple times
     */
-   public void addMessage(String[] qos) {
+   public final void addMessage(String[] qos) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
       for (int ii=0; ii<qos.length; ii++) {
@@ -351,38 +365,35 @@ public class Parser extends Converter
    }
 
    /** @see #addMessage(String[] qos) */
-   public void addQos(String[] qos) {
+   public final void addQos(String[] qos) {
       addMessage(qos);
    }
 
    /**
     * Returns all messages in a Vector
     */
-   public Vector getMessages() {
+   public final Vector getMessages() {
       return msgVec;
    }
 
    /**
     * Returns all messages as an array
     */
-   public MessageUnit[] getMessageArr() {
+   public final MessageUnit[] getMessageArr() {
       if (msgVec.isEmpty()) return new MessageUnit[0];
       MessageUnit[] arr = new MessageUnit[msgVec.size()];
       for (int ii=0; ii<msgVec.size(); ii++) {
-         arr[ii] = (MessageUnit)msgVec.elementAt(ii);
+         arr[ii] = (MessageUnit)msgVec.elementAt(ii); // JDK 1.1 compatible
       }
       return arr;
    }
 
    /**
     * Response is usually only a QoS
+    * @exception IllegalArgumentException if there is no QoS to get
     */
-   public String getQos() {
+   public final String getQos() {
       if (msgVec.isEmpty()) {
-         /*
-         Log.warn(ME, "getQos() is called without having a response");
-         return "<qos></qos>";
-         */
          throw new IllegalArgumentException(ME + ": getQos() is called without having a response");
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
@@ -391,15 +402,10 @@ public class Parser extends Converter
 
    /**
     * Response is usually only a QoS
+    * @exception IllegalArgumentException if there is no QoS to get
     */
-   public String[] getQosArr() {
+   public final String[] getQosArr() {
       if (msgVec.isEmpty()) {
-         /*
-         Log.warn(ME, "getQosArr() is called without having a response");
-         String[] arr = new String[1];
-         arr[0] = "<qos></qos>";
-         return arr;
-         */
          throw new IllegalArgumentException(ME + ": getQos() is called without having a response");
       }
       Vector msgs = getMessages();
@@ -411,14 +417,11 @@ public class Parser extends Converter
    }
 
    /**
-    * Response is usually only a QoS
+    * On errors. 
+    * @exception IllegalArgumentException if there is no exception to get
     */
-   public XmlBlasterException getException() {
+   public final XmlBlasterException getException() {
       if (msgVec.isEmpty()) {
-         /*
-         Log.warn(ME, "getException() is called without having an exception");
-         return new XmlBlasterException(ME, "Invalid exception");
-         */
          throw new IllegalArgumentException(ME + ": getException() is called without having an exception");
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
@@ -429,7 +432,7 @@ public class Parser extends Converter
     * This parses the raw message from an InputStream (typically from a socket).
     * Use the get...() methods to access the data.
     */
-   public void parse(InputStream in) throws IOException {
+   public final void parse(InputStream in) throws IOException {
 
       initialize();
 
@@ -442,19 +445,23 @@ public class Parser extends Converter
          return; // The shortest ping ever
       }
 
-      checksum = (readNext(in) > 0);
-      compressed = (readNext(in) > 0);
+      index++;
+      checksum = (in.read() > 0);
 
-      byte[] dummy = new byte[1];
-      dummy[0] = (byte)readNext(in);
-      type = new String(dummy);
+      index++;
+      compressed = (in.read() > 0);
 
-      //type = Integer.toString(readNext(in)); Gives mit "82" instead of "R"
+      index++;
+      type = (byte)in.read();
 
-      byte4 = (byte)readNext(in);
-      byte5 = (byte)readNext(in);
+      index++;
+      byte4 = (byte)in.read();
 
-      version = readNext(in) - 48;
+      index++;
+      byte5 = (byte)in.read();
+
+      index++;
+      version = in.read() - 48;
       
       requestId = toString(in);
       methodName = toString(in);
@@ -466,13 +473,11 @@ public class Parser extends Converter
       String xmlKey = null;
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
-         //if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit qos index=" + index);
          qos = toString(in);
          MessageUnit msgUnit = new MessageUnit(null, null, qos);
          addMessage(msgUnit);
          if (index >= msgLength) break;
 
-         //if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit key index=" + index);
          msgUnit.setKey(toString(in));
          if (index >= msgLength) break;
 
@@ -480,22 +485,21 @@ public class Parser extends Converter
          msgUnit.setContent(toByte(in));
          if (index >= msgLength) break;
       }
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "messageUnit OK index=" + index);
 
       if (checksum)
          checkSumResult = toLong0(in, -1);
-
-      //if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got complete messageUnit index=" + index);
 
       if (index != msgLength) {
          String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength + " we need to disconnect the client, can't recover.";
          throw new IOException(str);
       }
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "messageUnit OK index=" + index);
    }
 
 
    /**
     * Calculates the length of user data including null bytes and len field
+    * @exception IllegalArgumentException Message size is limited to Integer.MAX_VALUE bytes
     */
    private long getUserDataLen() {
       long len=0L;
@@ -505,28 +509,11 @@ public class Parser extends Converter
          String tmp = ""+unit.getContent().length;
          len += tmp.length();
       }
+      if (len > Integer.MAX_VALUE)
+         throw new IllegalArgumentException("Message size is limited to " + Integer.MAX_VALUE + " bytes");
       return len;
    }
 
-   /**
-    * TODO:
-    * Move to Constants.java as soon as branch is merged to main trunc
-    * @param method E.g. "publish", this is checked if a known method
-    * @return true if method is known
-    */
-   public static boolean checkMethodName(String method) {
-      if (Constants.GET.equals(method) ||
-          Constants.ERASE.equals(method) ||
-          Constants.PUBLISH.equals(method) ||
-          Constants.SUBSCRIBE.equals(method) ||
-          Constants.UNSUBSCRIBE.equals(method) ||
-          Constants.UPDATE.equals(method) ||
-          Constants.PING.equals(method) ||
-          Constants.CONNECT.equals(method) ||
-          Constants.DISCONNECT.equals(method))
-          return true;
-      return false;
-   }
 
    /**
     * <pre>
@@ -539,15 +526,15 @@ public class Parser extends Converter
     *  qos      key    len   content
     *  +-----*---------*-----*----------+
     *
-    *  An example is ('*' mark a null byte):
+    *  An example is ('*' marks a null byte):
     *
     *  "        83**I**17711*publish*oxf6hZs**<qos></qos>*<key oid='hello'/>*11*Hello world"
     *
     * </pre>
     */
-   public byte[] createRawMsg() throws XmlBlasterException {
+   public final byte[] createRawMsg() throws XmlBlasterException {
 
-      if (checkMethodName(methodName) == false) {
+      if (Constants.checkMethodName(methodName) == false) {
          String str = "Can't send message, method '" + methodName + " is unknown";
          //Log.error(ME, str);
          throw new IllegalArgumentException(ME + ": " + str);
@@ -555,8 +542,6 @@ public class Parser extends Converter
 
       try {
          long len = getUserDataLen() + 500;
-         if (len > Integer.MAX_VALUE)
-            throw new IllegalArgumentException("Message size is limited to " + Integer.MAX_VALUE + " bytes");
          ByteArray out = new ByteArray((int)len);
 
             /*
@@ -574,6 +559,7 @@ public class Parser extends Converter
              Content-Length: 32
 
              home=Cosby&favorite+flavor=flies
+
             final byte[] CRLF = {13, 10};
             final String CRLFstr = new String(CRLF);
             StringBuffer buf = new StringBuffer(256);
@@ -583,18 +569,10 @@ public class Parser extends Converter
 
          out.write(EMPTY10, 0, EMPTY10.length); // Reserve 10 bytes at the beginning ...
 
+         // Write the 6 byte fields ...
          out.write((checksum)?CHECKSUM_ADLER_BYTE:NULL_BYTE);    // 'A'
          out.write((compressed)?COMPRESSED_GZIP_BYTE:NULL_BYTE); // 'Z'
-         if (isInvoke())
-            out.write(INVOKE_BYTE);
-         else if (isResponse())
-            out.write(RESPONSE_BYTE);
-         else if (isException())
-            out.write(EXCEPTION_BYTE);
-         else {
-            if (Log.TRACE) Log.trace(ME, "Unknown type '" + type + "', setting to invoke.");
-            out.write(INVOKE_BYTE); // INVOKE_TYPE = "I";
-         }
+         out.write(type); // 'I' or 'R' or 'E'
          out.write(NULL_BYTE);       // byte4
          out.write(NULL_BYTE);       // byte5
          out.write(VERSION_1_BYTE);  // '1'
@@ -645,10 +623,85 @@ public class Parser extends Converter
          return out.toByteArray();
       }
       catch(IOException e) {
-         String text = "Sending message failed.";
+         String text = "Creation of message failed.";
          Log.warn(ME, text + " " + e.toString());
          throw new XmlBlasterException(ME, text);
       }
+   }
+
+   /**
+    * Converts max. 10 bytes from InputStream to a long. 
+    * <br />
+    * If a null is read before
+    * 10 bytes are read, parsing is stopped there.
+    */
+   public final long toLong(InputStream in) throws IOException {
+      byteArray.reset();
+      for (int ii=0; ii<NUM_FIELD_LEN; ii++) {
+         index++;
+         int val = in.read();
+         if (val == 0)
+            break; // Field is terminated by null
+         if (val == -1)
+            throw new IOException("Can't read expected " + NUM_FIELD_LEN + " bytes from socket, only " + ii + " received");
+         byteArray.write(val);
+      }
+      try {
+         return Long.parseLong(byteArray.toString().trim());
+      }
+      catch (NumberFormatException e) {
+         throw new IOException("Format is corrupted '" + byteArray.toString() + "', expected integral value");
+      }
+   }
+
+   /**
+    * Reads the binary content of a message. First we parse the long value which
+    * holds the content length, than we retrieve the binary content. 
+    */
+   public final byte[] toByte(InputStream in) throws IOException {
+      byteArray.reset();
+      long len = toLong0(in, 0L);
+      if (len >= Integer.MAX_VALUE) throw new IllegalArgumentException("Length of data is bigger " + Integer.MAX_VALUE + " bytes");
+      byte[] b = new byte[(int)len];
+      if (len == 0L)
+         return b;
+      {
+         in.read(b, 0, (int)len);
+         index += len;
+      }
+      return b;
+   }
+
+   /**
+    * Converts bytes from InputStream until \0 to a long
+    */
+   public final long toLong0(InputStream in, long defaultVal) throws IOException {
+      String tmp = toString(in);
+      if (tmp == null || tmp.length() < 1)
+         return defaultVal;
+      try {
+         return Long.parseLong(tmp.trim());
+      }
+      catch (NumberFormatException e) {
+         throw new IOException("Format is corrupted '" + byteArray.toString() + "', expected integral value");
+      }
+   }
+
+   /**
+    * Extracts string until next null byte '\0'
+    */
+   public final String toString(InputStream in) throws IOException {
+      byteArray.reset();
+      for (int ii=0; ii<MAX_STRING_LEN; ii++) {
+         index++;
+         int val = in.read();
+         if (val == 0)
+            break; // end of string
+         if (val == -1)
+            throw new IOException("Can't read expected string '" + byteArray.toString()+ "' to its end");
+         byteArray.write(val);
+      }
+      return byteArray.toString();
    }
 
    private String dump() {
@@ -670,6 +723,7 @@ public class Parser extends Converter
    }
 
    /**
+    * Get the raw messages as a string, for tests and for dumping only
     * @return The stringified message, null bytes are replaced by '*'
     */
    public static String toLiteral(byte[] arr) {
@@ -697,7 +751,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.INVOKE_TYPE);
+            parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
@@ -727,7 +781,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.INVOKE_TYPE);
+            parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
@@ -759,7 +813,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.INVOKE_TYPE);
+            parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.GET);
             parser.setSessionId("oxf6hZs");
@@ -789,7 +843,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.RESPONSE_TYPE);
+            parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
@@ -818,7 +872,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.INVOKE_TYPE);
+            parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.GET);
             parser.setSessionId("oxf6hZs");
@@ -869,7 +923,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.EXCEPTION_TYPE);
+            parser.setType(Parser.EXCEPTION_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
@@ -900,7 +954,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.RESPONSE_TYPE);
+            parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.GET);
             //parser.setSessionId("oxf6hZs");
@@ -930,7 +984,7 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.RESPONSE_TYPE);
+            parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(Constants.ERASE);
             //parser.setSessionId("");
