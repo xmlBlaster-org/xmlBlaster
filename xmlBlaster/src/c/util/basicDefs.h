@@ -56,6 +56,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  endif
 #endif
 
+#define XB_USE_PTHREADS true /* Used to dump thread ID in default logging output, undef it if you run single threaded */
 
 #endif /* XMLBLASTER_basicDefs_H */
 
