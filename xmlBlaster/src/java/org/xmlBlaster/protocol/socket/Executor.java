@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.5 2002/02/16 11:51:37 ruff Exp $
+Version:   $Id: Executor.java,v 1.6 2002/02/16 12:13:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -57,6 +57,7 @@ public abstract class Executor implements ExecutorBase
    protected I_CallbackExtended callback = null;
    /** The singleton handle for this xmlBlaster server (the server side) */
    protected I_XmlBlaster xmlBlasterImpl = null;
+   private final String DUMMY_OBJECT = "";
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -261,18 +262,29 @@ public abstract class Executor implements ExecutorBase
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
-      final Object[] response = new Object[2];  // As only final variables are accessable from the inner class, we put changeable variables in this array
-      response[0] = response[1] = null;
+      final Object[] response = new Object[3];  // As only final variables are accessable from the inner class, we put changeable variables in this array
+      response[0] = response[1] = response[2] = null;
       final Object monitor = new Object();
 
       if (expectingResponse) {
          addResponseListener(requestId, new I_ResponseListener() {
             public void responseEvent(String reqId, Object responseObj) {
                if (Log.TRACE) Log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
-               synchronized(monitor) {
-                  response[0] = responseObj;
-                  response[1] = ""; // marker that notify() is called
-                  monitor.notify();
+               response[0] = responseObj;
+               response[1] = DUMMY_OBJECT; // marker that notify() is called
+               while (true) {
+                  synchronized(monitor) {
+                     monitor.notify();
+                  }
+                  // If response is faster, we will go into wait() after notify()
+                  // In these cases we need to call notify() again (to be shure we awake from wait())
+                  Thread.currentThread().yield();
+                  if (response[2] == null) {
+                     if (Log.TRACE) Log.trace(ME, "Retrying notify ...");
+                     try { Thread.currentThread().sleep(1); } catch(Exception e) {}
+                  }
+                  else
+                     break;
                }
             }
          });
@@ -290,8 +302,8 @@ public abstract class Executor implements ExecutorBase
       
       try {
          synchronized(monitor) {
-            // If response is faster, we will go into wait() after notify() TODO!!!
             monitor.wait(responseWaitTime);
+            response[2] = DUMMY_OBJECT; // marker that we are waked up
             if (response[1] != null) {
                if (Log.TRACE) Log.trace(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response)");
                if (Log.DUMP) Log.dump(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + response[0]);
