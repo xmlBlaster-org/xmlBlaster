@@ -3,7 +3,7 @@ Name:      xmlBlasterDef.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.21 2004/05/04 09:30:10 ruff Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.22 2004/05/04 17:21:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -23,11 +23,11 @@ namespace org { namespace xmlBlaster { namespace util {
 #if defined(_WINDOWS)
   typedef __int64 int64_t;
   typedef __int32 int32_t;
-  typedef __uint32 uint32_t;
+  //typedef __uint32 uint32_t; -> __uint32 is not correct, what is the correct type?
 #else
   typedef long long int int64_t;        // C99 standard: #include<stdint.h> has uint64_t etc.
   typedef int int32_t;
-  typedef unsigned int uint32_t;
+  //typedef unsigned int uint32_t;
 #endif
 typedef int64_t Timestamp;
 
