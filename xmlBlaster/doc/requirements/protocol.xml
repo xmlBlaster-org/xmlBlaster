@@ -42,7 +42,7 @@
       to xmlBlaster.properties, it is then loaded automatically on the next
       xmlBlaster startup:
       </p>
-      Example entry to xmlBlaster.properties for Corba and Email drivers:
+      Example entry to xmlBlaster.properties for Corba, RMI and XML-RPC drivers:
       <pre>
          #------------------------------------------------------------------------------
          # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
@@ -74,7 +74,7 @@
    <hacker>ruff@swand.lake.de</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>
