@@ -3,8 +3,7 @@ Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine 
-Version:   $Id: PMessageUnit.java,v 1.1 2000/06/13 16:08:11 kron Exp $
-Source:    $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/engine/Attic/PMessageUnit.java,v $
+Version:   $Id: PMessageUnit.java,v 1.2 2000/06/13 16:10:47 kron Exp $
 Author:    manuel.kron@gmx.net 
 ------------------------------------------------------------------------------*/
 
