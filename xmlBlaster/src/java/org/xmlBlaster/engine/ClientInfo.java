@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.18 1999/12/14 10:30:54 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.19 1999/12/14 23:21:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -64,6 +64,7 @@ public class ClientInfo
    public ClientInfo(String loginName)
    {
       if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
+      this.loginName = loginName;
    }
 
 
@@ -85,12 +86,14 @@ public class ClientInfo
    public final void sendUpdate(MessageUnitWrapper messageUnitWrapper) throws XmlBlasterException
    {
       if (isLoggedIn()) {
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
          getCallbackDriver().sendUpdate(this, messageUnitWrapper, getUpdateQoS(messageUnitWrapper));
       }
       else {
          if (messageQueue == null) {
             messageQueue = new ClientUpdateQueue();
          }
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is not logged in, queing message");
          messageQueue.push(messageUnitWrapper);
       }
    }
