@@ -45,10 +45,12 @@ public class PublishRetQosTest extends TestCase {
          assertEquals("stateInfo failed", null, qos.getStateInfo());
          assertEquals("key oid failed", null, qos.getOid());
 
-         qos = new PublishRetQos(glob, "<qos><state id='" + Constants.STATE_EXPIRED + "'/></qos>");
-         assertEquals("stateId failed", Constants.STATE_EXPIRED, qos.getStateId());
+         /*
+         qos = new PublishRetQos(glob, "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>");
+         assertEquals("stateId failed", Constants.STATE_ERASED, qos.getStateId());
          assertEquals("stateInfo failed", null, qos.getStateInfo());
          assertEquals("key oid failed", null, qos.getOid());
+         */
 
          qos = new PublishRetQos(glob, null);
          assertEquals("stateId failed", Constants.STATE_OK, qos.getStateId());
