@@ -30,6 +30,7 @@ and XML Shemas (xmlBlaster.xsd) are not yet supported.
 
    <qos>
       <!-- Some quality of service tags, to control xmlBlaster -->
+      <isDurable />
    </qos>
 </xmlBlaster>
 
@@ -68,7 +69,8 @@ Here a discussion about this approach
 
    The link="" attribute allows to specify a location where the content
    is delivered. For example a binary content could be in the attachment
-   of an email.
+   of an email. The empty string tells us that the content is directly
+   embeded.
 
    Note that for example a 'subscribe' method invocation does not need
    to specifiy the content.
@@ -81,6 +83,7 @@ Open questions with this apporach:
 
 a. How can we specifiy to send BLOB (binary data) contents with
    http (how to set the link attribute)?
+   Use some sort of multipart request?
 
 b. Is it possible to express this approach exactly with the coming
    XML Schema language?
@@ -92,7 +95,7 @@ c. How to do a login?
                callbackProtocol="EMAIL" callback="ruff@swand.lake.de">
       <qos>
       </qos>
-   </mlBlaster>
+   </xmlBlaster>
 
    This message could respond with the sessionId for a synchronous http
    invocation, but it would not be very smart with asynchronous emails.
@@ -104,13 +107,14 @@ c. How to do a login?
    It may be an email address, an URL to a HttpServlet, a CORBA IOR
    or whatever protocol xmlBlaster will support in future.
 
+   Note that the sender and the callback protocol may be different.
 
-More informations on RPC and XML you find on our homepage under
-'Internet Resources'.
 
 Please comment on this, since there are many out there who know
 more about the different technologies.
 
+More informations on RPC and XML you find on our homepage under
+'Internet Resources'.
 
 If i find time at the end of the week,
 i will implement a little demo with http,
