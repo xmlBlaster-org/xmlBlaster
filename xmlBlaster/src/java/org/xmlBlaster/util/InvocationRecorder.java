@@ -3,7 +3,7 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.1 2000/02/24 11:19:41 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.2 2000/02/24 22:00:57 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -20,7 +20,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements ServerOperations, BlasterCallbackOperations
@@ -96,7 +96,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * Playback the stored messages, the are removed from the recorder after the callback. 
+    * Playback the stored messages, the are removed from the recorder after the callback.
     * <p />
     * Every message is chronologically sent through the Operations interface to the client.
     * @param startDate Start date for playback, 0 means from the very start
@@ -104,8 +104,9 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
     * @param motionFactor for fast motion choose for example 4.0
     *        so four reals seconds are elapsing in one second.<br />
     *        For slow motion choose for example 0.5
+    *        0. does everything instantly.
     */
-   public void pullback(long startDate, long endDate, float motionFactor) throws XmlBlasterException
+   public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
       Log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ")");
 
@@ -126,18 +127,39 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       while(cont != null) {
          if (endDate != 0 && cont.timestamp > endDate) // break if the end date is reached
             break;
-             
-         long elapsed = (long)((System.currentTimeMillis() - playbackStart) * motionFactor);
-         if ((cont.timestamp - startTime) <= elapsed)
+
+         if (motionFactor == 0.)
             callback(cont);
-   
+         else {
+            long actualElapsed = (long)((System.currentTimeMillis() - playbackStart) * motionFactor);
+            long originalElapsed = cont.timestamp - startTime;
+            if (originalElapsed > actualElapsed) {
+               try {
+                  Thread.currentThread().sleep(originalElapsed - actualElapsed);
+               } catch(InterruptedException e) {
+                  Log.warning(ME, "Thread sleep got interrupted, this invocation is not in sync");
+               }
+            }
+            callback(cont);
+         }
+
          cont = (InvocationContainer)queue.pull();
       }
    }
 
 
    /**
-    * Playback the stored messages, without removing them form the recorder. 
+    * Reset the queue, throw all entries to garbage
+    */
+   public void reset()
+   {
+      while(queue.size() > 0)
+         queue.pull();
+   }
+
+
+   /**
+    * Playback the stored messages, without removing them form the recorder.
     * This you can use multiple times again.
     * <p />
     * NOT YET IMPLEMENTED
@@ -147,7 +169,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
     *        so four reals seconds are elapsing in one second.<br />
     *        For slow motion choose for example 0.5
     */
-   public void playback(long startDate, long endDate, float motionFactor) throws XmlBlasterException
+   public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
       // !!! implement similar to pullback() but using the iterator to process the queue
       Log.error(ME + ".NoImpl", "Sorry, only pullback is implemented");
@@ -289,7 +311,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
       queue.push(cont);
-      return dummyMArr; 
+      return dummyMArr;
    }
 
 
@@ -328,7 +350,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * This holds all the necessary info about one method invocation. 
+    * This holds all the necessary info about one method invocation.
     */
    private class InvocationContainer
    {
