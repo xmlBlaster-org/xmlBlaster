@@ -77,6 +77,9 @@ public class Session implements I_Session, I_Subject {
     *                                exist or the passwd is incorrect.
     */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
+      if (securityQos == null) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication failed, due to missing security QoS");
+      }
       this.authenticated = false;
       this.loginName = securityQos.getUserId();
       this.passwd = ((SecurityQos)securityQos).getCredential();
