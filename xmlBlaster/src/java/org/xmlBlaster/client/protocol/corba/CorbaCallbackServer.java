@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.12 2002/03/17 07:29:03 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.13 2002/03/17 13:37:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -200,13 +200,19 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
                         throws org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException
    {
-      if (msgUnitArr == null)
-         return new String[0];
+      if (msgUnitArr == null) {
+         org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
+             new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();
+         eCorba.id = ME;
+         eCorba.reason = "Received update of null message";
+         throw eCorba;
+      }
+      if (Log.CALL) Log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
 
       try {
          // convert Corba to internal MessageUnit and call update() ...
          MessageUnit[] localMsgUnitArr = CorbaDriver.convert(msgUnitArr);
-         boss.update(loginName, localMsgUnitArr);    // !!!! return value
+         boss.update(cbSessionId, localMsgUnitArr);    // !!!! return value
          String[] ret = new String[msgUnitArr.length];
          for (int ii=0; ii<ret.length; ii++)
             ret[ii] = "<qos><state>OK</state></qos>";
