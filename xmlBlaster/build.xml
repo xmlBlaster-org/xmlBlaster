@@ -429,15 +429,17 @@ TODO
       <echo message="xmlBlaster.home=${xmlBlaster.home}"/>
 
       <switch value="${java.specification.version}">
-         <case value="1.5"> <!-- for JDK 1.5 choose 1.4, otherwise it won't compile -->
+         <case value="1.5"> <!-- for JDK 1.5 choose 1.4, otherwise it won't compile generics in JMS api -->
             <property name="JVM.target" value="1.4" />
+            <property name="JVM.source" value="1.4" />
          </case>
          <default>
             <property name="JVM.target" value="1.1" />
+            <property name="JVM.source" value="1.1" />
          </default>
       </switch>
 
-      <echo message="JVM.target=${JVM.target}"/>
+      <echo message="JVM.target=${JVM.target}, JVM.source=${JVM.source}"/>
 
    </target>
 
@@ -552,6 +554,7 @@ TODO
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
+            source="${JVM.source}"
             target="${JVM.target}" />
 
       <!-- javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${cp}" / -->
@@ -618,6 +621,7 @@ TODO
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
+            source="${JVM.source}"
             target="${JVM.target}" />
       <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*,DomQuery*,javaclients/**/*.gif"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
@@ -661,6 +665,7 @@ TODO
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
+            source="${JVM.source}"
             target="${JVM.target}">
       </javac>
       <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="org/xmlBlaster/test/**"/>
@@ -741,6 +746,7 @@ TODO
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
+            source="${JVM.source}"
             target="${JVM.target}" />
 
       <jar destfile="${build.dir}/JmsAdapter.jar">
@@ -2373,7 +2379,6 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
-<!--
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
@@ -2381,7 +2386,6 @@ TODO
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
--->
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
@@ -2418,7 +2422,7 @@ TODO
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
-            <syslibset dir="/usr/lib" libs="socket" if="unix"/>
+            <!-- syslibset dir="/usr/lib" libs="socket" if="unix"/  NOT FOR G++ 3.3 and Linux 2.4.x, 2.6.x -->
             <syslibset dir="/usr/local/lib" libs="stdc++" if="unix"/>
             <syslibset dir="/usr/lib" libs="rt" if="unix"/>
 
@@ -2674,13 +2678,13 @@ TODO
          </defineset>
 
          <linker name="gcc" if="use-gcc">
-<!--            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" /> -->
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" />
             <linkerarg value="-Wl" />
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
-            <syslibset dir="/usr/lib" libs="socket" if="unix"/>
+            <!-- syslibset dir="/usr/lib" libs="socket" if="unix"/ -->
          </linker>
 
          <linker name="icc" if="use-icc">
