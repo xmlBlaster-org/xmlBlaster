@@ -161,7 +161,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    {
       try {
          if (log.CALL) log.call(ME, "Entering connect(sessionId=" + sessionId + ")");
-         if (log.DUMP) log.dump(ME, toXml());
+         if (log.DUMP) log.dump(ME, "ConnectQos=" + connectQos.toXml());
 
          I_Session sessionCtx = null;
          I_Manager securityMgr = null;
