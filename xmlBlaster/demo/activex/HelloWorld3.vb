@@ -1,7 +1,12 @@
-' XmlBlaster access with asynchronous callbacks
-' Visual Basic .net
-' @author Marcel Ruff
+'------------------------------------------------------------------------------
+' XmlBlaster access with asynchronous callbacks from Visual Basic .net
+' Calls are routed over ActiveX encapsulating a Java client bean which
+' connects to xmlBlaster
+' @file xmlBlaster/demo/activex/VisualBasic3.vb
+' @author Marcel Ruff, xmlBlaster@marcelruff.info (2004-03-17)
 ' @see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.activex.html
+' @see org.xmlBlaster.client.activex.XmlScriptAccess
+'------------------------------------------------------------------------------
 Imports System
 
 Module HelloWorld3
@@ -11,7 +16,15 @@ Module HelloWorld3
       Call HelloWorld3()
    End Sub
 
-   ' This method is called from java delivering a message
+   '---------------------------------------------------------------------------
+   ' This method is called asynchronously from java delivering a message. 
+   ' As events from java into ActiveX can't deliver a return value
+   ' or an exception back we need to call either
+   '    setUpdateReturn()        -> passes a return value to the server
+   ' or
+   '    setUpdateException()     -> throws an XmlBlasterException
+   ' If you forget this the update thread of the java bean will block forever
+   '---------------------------------------------------------------------------
    Private Sub XmlScriptAccess_update(ByVal msg As Object) _
                Handles xmlBlaster.XmlScriptAccessSource_Event_update
       Try
@@ -22,11 +35,16 @@ Module HelloWorld3
                  ", content=" & msg.getContentStr() & _
                  ", myAge=" & age)
          ' MsgBox("Success, message arrived:" & msg.getKey().toXml())
+         xmlBlaster.setUpdateReturn("<qos><state id='OK'/></qos>")
       Catch e As SystemException
          Console.WriteLine("Exception in update:" & e.ToString())
+         xmlBlaster.setUpdateException("user.update.internalError", e.ToString())
       End Try
    End Sub
 
+   '---------------------------------------------------------------------------
+   ' Connect to xmlBlaster and try all possible methods
+   '---------------------------------------------------------------------------
    Sub HelloWorld3()
       Dim key, qos As String
       'Dim content As Byte()
@@ -37,6 +55,7 @@ Module HelloWorld3
 
       prop = xmlBlaster.createPropertiesInstance()
       prop.setProperty("protocol", "SOCKET")
+      prop.setProperty("trace", "false")
       xmlBlaster.initialize(prop)
 
       Try
