@@ -89,7 +89,15 @@ public final class MomClientGateway implements I_ExternGateway
       }
       */
 
-      return commandManager.get(sessionInfo.getSessionId(), query);
+      MessageUnit[] msgs = commandManager.get(sessionInfo.getSessionId(), query);
+      for (int ii=0; ii<msgs.length; ii++) {
+         MessageUnit msg = msgs[ii];
+         if (msg.getQos().startsWith("text/plain")) { // A virtual msgUnit from a key/value property
+            msg.setQos("<qos/>");
+            msg.setKey("<key oid='__cmd:" + msg.getXmlKey() + "' contentMime='text/plain'/>");
+         }
+      }
+      return msgs;
    }
 
    /**
