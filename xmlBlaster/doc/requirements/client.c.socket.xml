@@ -622,7 +622,7 @@ int main(int argc, char** argv)
             <td>-dispatch/connection/plugin/socket/responseTimeout</td>
             <td>60000 (in milliseconds, defaults to one minute)</td>
             <td>How long to block on method invocation</td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" />UNIX only</td>
          </tr>
 
          <!-- A separate callback server is not yet supported
@@ -695,6 +695,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 </requirement>
 
