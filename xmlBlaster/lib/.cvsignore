@@ -1,3 +1,6 @@
 xmlBlaster.jar
 demo.jar
 testsuite.jar
+*.so
+*.sl
+*.dll
