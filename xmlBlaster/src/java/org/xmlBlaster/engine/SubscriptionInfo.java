@@ -439,13 +439,27 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<SubscriptionInfo id='").append(getSubscriptionId()).append("'>");
+      sb.append(offset).append("  <subscription id='").append(getSubscriptionId()).append("'");
+      sb.append(" sessionName='").append(getSessionInfo().getSessionName()).append("'");
+      if (this.topicHandler != null) {
+         sb.append(" oid='").append(topicHandler.getUniqueKey()).append("'");
+      }
+      if (this.querySub != null) {
+         sb.append(" parent='").append(this.querySub.getSubscriptionId()).append("'");
+      }
+      if (this.childrenVec != null) {
+         sb.append(" numChilds='").append(this.childrenVec.size()).append("'");
+      }
+      sb.append(" creationTime='" + TimeHelper.getDateTimeDump(this.creationTime) + "'");
+      sb.append(">");
+
+      //sb.append(offset).append("<SubscriptionInfo id='").append(getSubscriptionId()).append("'>");
       //sb.append(offset + "   <keyData oid='" + (keyData==null ? "null" : keyData.getUniqueKey()) + "'/>");
       if (keyData != null)
          sb.append(keyData.toXml(extraOffset+Constants.INDENT));
       sb.append(subscribeQos.toXml(extraOffset+Constants.INDENT));
-      sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
-      sb.append(offset).append(" <creationTime>").append(TimeHelper.getDateTimeDump(this.creationTime)).append("</creationTime>");
+      //sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
+      //sb.append(offset).append(" <creationTime>").append(TimeHelper.getDateTimeDump(this.creationTime)).append("</creationTime>");
       if (this.childrenVec != null) {
          for (int ii=0; ii<this.childrenVec.size(); ii++) {
             SubscriptionInfo child = (SubscriptionInfo)this.childrenVec.elementAt(ii);
