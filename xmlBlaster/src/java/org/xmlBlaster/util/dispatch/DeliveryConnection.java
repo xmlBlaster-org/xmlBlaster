@@ -63,6 +63,8 @@ abstract public class DeliveryConnection implements I_Timeout
    protected ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
 
    protected int retryCounter = 0;
+   private final long logEveryMillis; // 60000: every minute a log
+   private int logInterval = 10;
 
    /**
     * Our loadPlugin() and initialize() needs to be called next. 
@@ -75,6 +77,7 @@ abstract public class DeliveryConnection implements I_Timeout
       this.ME = "DeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getStorageId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
+      this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
       this.connectionsHandler = connectionsHandler;
       this.myId = connectionsHandler.getDeliveryManager().getQueue().getStorageId().getId();
       this.pingTimer = glob.getCbPingTimer();
@@ -120,6 +123,13 @@ abstract public class DeliveryConnection implements I_Timeout
          throw e;
       }
 
+      if (this.logEveryMillis <= 0) {
+         logInterval = -1; // no logging
+      }
+      else if (address.getDelay() < 1 || address.getDelay() > this.logEveryMillis)  // millisec
+         logInterval = 1;
+      else
+         logInterval = (int)(this.logEveryMillis / address.getDelay());
       if (log.TRACE) log.trace(ME, "Created driver for protocol '" + this.address.getType() + "'");
    }
 
@@ -264,12 +274,15 @@ abstract public class DeliveryConnection implements I_Timeout
       }
       else { // reconnect polling
          try {
-            if (log.TRACE) log.trace(ME, "timeout -> Going to check if remote server is available again ...");
+            retryCounter++;
+            if (log.TRACE) log.trace(ME, "timeout -> Going to check #" + retryCounter + " if remote server is available again ...");
             reconnect();
             try { String result = ping("", false); } catch (XmlBlasterException e) { e.printStackTrace(); log.error(ME, "PANIC: " + e.toString()); } // is handled in ping() itself
          }
          catch (Throwable e) {
             if (log.TRACE) log.trace(ME, "Polling for remote connection failed:" + e.getMessage());
+            if (logInterval > 0 && (retryCounter % logInterval) == 0)
+               log.warn(ME, "No connection established, " + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
             try { handleTransition(false, false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.error(ME, "PANIC: " + e.toString()); }
          }
       }
