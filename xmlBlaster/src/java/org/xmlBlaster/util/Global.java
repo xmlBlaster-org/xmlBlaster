@@ -159,7 +159,7 @@ public class Global implements Cloneable
    protected I_QueryQosFactory queryQosFactory;
    protected I_StatusQosFactory statusQosFactory;
 
-   protected Timeout cbPingTimer;
+   protected Timeout pingTimer;
    protected Timeout burstModeTimer;
    protected Timeout messageTimer;
    protected Timeout jdbcConnectionPoolTimer;
@@ -1511,17 +1511,17 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the callback ping timer thread.
+    * Access the handle of the ping timer thread to test a client or callback connection. 
     * @return The Timeout instance
     */
-   public final Timeout getCbPingTimer() {
-      if (this.cbPingTimer == null) {
+   public final Timeout getPingTimer() {
+      if (this.pingTimer == null) {
          synchronized(this) {
-            if (this.cbPingTimer == null)
-               this.cbPingTimer = new Timeout("XmlBlaster.CbPingTimer");
+            if (this.pingTimer == null)
+               this.pingTimer = new Timeout("XmlBlaster.PingTimer");
          }
       }
-      return this.cbPingTimer;
+      return this.pingTimer;
    }
 
    /**
@@ -1604,9 +1604,9 @@ public class Global implements Cloneable
          this.burstModeTimer.shutdown();
          this.burstModeTimer = null;
       }
-      if (this.cbPingTimer != null) {
-         this.cbPingTimer.shutdown();
-         this.cbPingTimer = null;
+      if (this.pingTimer != null) {
+         this.pingTimer.shutdown();
+         this.pingTimer = null;
       }
       if (this.messageTimer != null) {
          this.messageTimer.shutdown();
