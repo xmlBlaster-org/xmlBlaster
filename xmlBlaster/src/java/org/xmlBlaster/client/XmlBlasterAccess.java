@@ -192,11 +192,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   this.glob.setId(sn.toString());
                }
                else {
-                  this.glob.setId(sn.toString() + System.currentTimeMillis()); // Not secure if to clients start simultanously
+                  this.glob.setId(sn.toString() + System.currentTimeMillis()); // Not secure if two clients start simultaneously
                }
             }
             else {
-               this.glob.setId(getLoginName() + System.currentTimeMillis()); // Not secure if to clients start simultanously
+               this.glob.setId(getLoginName() + System.currentTimeMillis()); // Not secure if two clients start simultaneously
             }
 
             this.updateListener = updateListener;
