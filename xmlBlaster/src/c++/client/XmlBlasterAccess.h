@@ -40,6 +40,9 @@ namespace org { namespace xmlBlaster { namespace client {
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  * </p>
  */
+
+typedef std::map<std::string, I_Callback*> CallbackMapType;
+
 class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback
 {
 private:
@@ -68,7 +71,7 @@ private:
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log&    log_;
    std::string  instanceName_;
-   std::map<std::string, I_Callback*> subscriptionCallbackMap_;
+   CallbackMapType subscriptionCallbackMap_;
    org::xmlBlaster::util::thread::Mutex updateMutex_;
 
    /**

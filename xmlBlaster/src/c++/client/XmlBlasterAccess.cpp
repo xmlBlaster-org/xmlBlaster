@@ -339,13 +339,19 @@ XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, const un
    }
 
    if (!subscriptionCallbackMap_.empty()) {
-      // synchronization
-      org::xmlBlaster::util::thread::Lock lock(updateMutex_);
-      std::map<std::string, I_Callback*>::iterator 
+      // This is synchronized but you must ensure the callback is still in scope when the update method is 
+      // invoked. This could be more robust with a reference counted I_Callback.
+      I_Callback* subscriptionCallback = 0;
+      {
+         org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+         CallbackMapType::iterator iter = subscriptionCallbackMap_.end();
          iter = subscriptionCallbackMap_.find(updateQos.getSubscriptionId());
-      if (iter != subscriptionCallbackMap_.end()) {
+         if (iter != subscriptionCallbackMap_.end()) subscriptionCallback = (*iter).second;
+      }
+
+      if (subscriptionCallback != 0) {
          if (log_.trace()) log_.trace(ME, std::string("update: invoking specific subscription callback"));
-         return ((*iter).second)->update(sessionId, updateKey, content, contentSize, updateQos);
+         return subscriptionCallback->update(sessionId, updateKey, content, contentSize, updateQos);
       }
    }
 
