@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes cvs
 ===========
 
+ o xmlBlaster.properties.template:
+   Added CbProtocolPlugin[SOCKET][1.0] and CbProtocolPlugin[socket_ssl][1.0]
+   as dummy plugins. Those dummies are needed for persistent session recovery.
+
  o Reintroduced notify for XPATH subscriptions (they were removed in 0.91)
    NOTE: XPath subscriptions will match again if the erased topic is recreated
    Exact subscriptions are lost when a topic is explicitely erased, a subscriber
@@ -53,7 +57,7 @@ Changes cvs
    - BUGFIX: Corrected sender name in PublishQos after reconnect and flushing queue
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
      You can switch off debugging with "cpp.debug=false" in build.properties => "xmlBlasterClient.dll"
-   - Fixed initial queueing of connect request if xmlBlaster server is not available
+   - Fixed initial queueing of connect request if xmlBlaster server is not available (ConnectQos is not queued anymore)
    - We support now a debugging so/dll compilation with an added 'D' parallel to the optimized lib
    - Changed to initialize callback address in ConnectQos only if a callback server is created
    - Changed to only install a CORBA callback server if necessary
