@@ -79,7 +79,7 @@ TODO
    <property file="build.properties" />
 
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="1.RC2"/>
+   <property name="version" value="1.RC3"/>
    <property name="year" value="1999-2004"/>
 
    <!-- property name="build.compiler" value="classic"/ -->
