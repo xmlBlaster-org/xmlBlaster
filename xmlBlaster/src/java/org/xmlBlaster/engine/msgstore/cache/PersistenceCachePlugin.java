@@ -54,9 +54,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    
    /**
     * Triggered by persistent store (JDBC) on lost connection
-    * @see I_ConnectionListener#disconnected()
+    * @see org.xmlBlaster.util.queue.jdbc.I_ConnectionListener#disconnected()
     */
-
    public void storageUnavailable(int oldStatus) {
       this.log.call(ME, "storageUnavailable");
       this.isConnected = false;
@@ -190,17 +189,17 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   ArrayList entries = null;
                   try {
                      entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek((int)maxEntries, maxBytes);
+                     int n = entries.size();
+                     log.info(ME, "Prefilling cache with " + n + " entries");
+                     synchronized(this) {
+                        for(int i=0; i<n; i++) {
+                           I_MapEntry cleanEntry = (I_MapEntry)entries.get(i);
+                           this.transientStore.put(cleanEntry);
+                        }
+                     }
                   }
                   catch (XmlBlasterException ex) {
-                     this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running");
-                  }
-                  int n = entries.size();
-                  log.info(ME, "Prefilling cache with " + n + " entries");
-                  synchronized(this) {
-                     for(int i=0; i<n; i++) {
-                        I_MapEntry cleanEntry = (I_MapEntry)entries.get(i);
-                        this.transientStore.put(cleanEntry);
-                     }
+                     this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running: " + ex.getMessage());
                   }
                }
             }
