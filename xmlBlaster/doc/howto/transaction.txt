@@ -1,0 +1,869 @@
+From
+http://www.theserverside.com/home/thread.jsp?thread_id=18314
+(thanks to edesouza@jamcracker.com)
+
+Read
+http://www.research.ibm.com/AEM/d-spheres.html
+http://otn.oracle.com/tech/java/architect/distributed_transactions.html
+
+
+INTERVIEW:
+
+1. Tell us about yourself.
+
+-  My  name is Larry Jacobs. I'm the Director of Development of
+Oracle's  Web  Cache.  Prior  to  that  I worked on transaction
+processing  for  nearly  a  decade.  I was working on two-phase
+commit  protocols  used to ensure that distributed transactions
+reach  consistent  outcomes  as they're distributed across many
+systems  or  across large areas. After that I came to Oracle to
+work  on transaction models for Oracle's application server and
+then   I   noticed   that  Web  sites  were  being  built  with
+disproportionately  large  data  centers; huge, big, iron sites
+with  large  pipes  coming  in order to support the users and I
+thought  their  must be some better way to deliver this content
+without  requiring all this amount of hardware so I started the
+Web Cache group and that's what I run today.
+
+2.   Many   members  of  TheServerSide.com  have  heterogeneous
+applications,  and  we've  heard  of Two Phase Commit (2PC) and
+transactional    messaging    as    potential   solutions   for
+interoperability  between  hetergeneous  applications  that are
+transactional  in  nature.  What  is  2PC?  How  does that help
+interoperability?
+
+- Ok good question. So two-phase commit is a protocol where you
+can have a transaction co-ordinator control multiple resources;
+resources are like databases, and be able to make sure that all
+the  databases  and  all the resources that participate in this
+transaction  will  either  commit  together  or  they're  abort
+together.   That   is,   the  work,  the  transaction  that  is
+distributed,  is  performed  as an atom. So the co-ordinator is
+responsible  for  making  sure  that  all  the  databases  that
+participate  are  prepared  to  either  commit  or  abort  when
+instructed  to do so. So two-phase commit, as its name implies,
+has  two phases. The first phase is where the co-ordinator asks
+all  the  participants to prepapre, meaning it must log in some
+reliable,  persistent  storage,  the effect of the transaction.
+That  is,  here is the old value and here is the new value. And
+it  must record that and be able to survive almost any failure:
+a  disk  failure, a system crash, a network partition. And when
+the  co-ordinator gives it the outcome that it, say, committed,
+then  it must make the changes permanent and if it gives it the
+outcome that it should abort then it has to go through and undo
+all  the changes and make sure all of the resources are undone.
+So  the  problem its addressing is if I have a some transaction
+that  involves  updating  the  database  there  and  updating a
+database  here,  if at the end of the day, all the transactions
+didn't  both commit on both sides or abort on both sides you'll
+wind  up  destroying  data  or  creating  erroneous  data.  For
+example,  if  it  was  a bank transaction and you said remove a
+hundred  dollars  from  the  New  York  bank  and add a hundred
+dollars  to  the San Francisco bank, and the San Francisco bank
+transaction committed and the New York one aborted, you've just
+created   a  hundred  dollars  that  didn't  exist  before.  So
+two-phase commit is a mechanism that's been used in distributed
+transaction  processing,  and  TP  monitors, the predecessor to
+application servers for decades.
+
+3.   What   is   transactional  messaging?  How  does  it  help
+interoperability?
+
+- So transactional messaging is different from two-phase commit
+in  that,  in  two-phase  commit,  all  of the participants are
+active  in  this one transaction; all the databases and all the
+application  servers  involved are all actively working on that
+transaction at the same time. Transactional messaging allows us
+to decouple remote systems so that you now have a collection of
+local  transactions tied together with messages. So in the case
+where  we're  doing the funds transfer example from New York to
+San  Francisco,  you  could remove the hundred dollars from the
+New  York account and put it on a queue as one transaction. And
+a  separate  transaction,  a  transaction messaging system will
+deliver  that  message from New York to San Francisco. And then
+in  a  third  and independent transaction, you take the message
+off  of  the  queue and add it to the account in San Francisco.
+And   the  nice  thing  about  this  is  the  transactions  run
+independently.  When  you have any outage along the way, if you
+have  a  network  partition or the service goes down, the other
+systems can operate and independently continue to function.
+
+4.  When  would  you  use  each one: 2PC commit transactions vs
+transactional messaging?
+
+-  Good  question.  I  believe that after having spent 10 years
+working on the two-phase commit protocol, I think transactional
+messaging   is   a  much  more  flexible  way  of  implementing
+distributed  transactions  when  you  have  to  have updates on
+different  systems.  The  reason why is two-phase commit is all
+about  dealing  with failures: 'what happens if the server goes
+down.  How  do I make sure I get a consistent outcome.' But the
+way  its  designed, it's synchronous. If you take anything out,
+you   lose   availability   of  your  system.  You  get  global
+consistency  but  the  cost is high availability. Transactional
+messaging  gives you the ability to operate in failures: if one
+part fails the other can continue operating. So I almost always
+recommend  running transactional messaging because it gives you
+much  better  performance of the system. Everybody can continue
+operating  independently. Losing one system would bring out the
+whole system. Imagine every system had a reliability of 9/10ths
+of  the time it was up and running. Every time you add a server
+in  a  distributed transaction environment, you're reducing the
+availability  of the system as a whole because the availability
+of  the whole is a product of all of the servers. So if you had
+10 servers, it's 0.9 to the 10th and you can see it drastically
+reduces  the availability of a system. Transactional messaging,
+everything  is  independent;  it works much better. When do you
+have  to  use  two-phase  commit?  If  you're  stuck,  you have
+interoperability,  you have this old system, this legacy system
+speaking  some  old  protocol  like  LU 6.2 and that's the only
+thing  it  can talk and you need to get some data in and out of
+that  system  and  another  system  and  you  want to keep them
+consistent,  and  you  have no choice, you should use two-phase
+commit  co-ordination  and almost all app servers today support
+two-phase  commit  and  databases  support two-phase commit for
+that reason.
+
+5.  We've  heard  rumors  that because of the overhead involved
+with  messaging,  in  that  you  have  message  brokers, it can
+actually be slower than doing simple ACID transactions. What do
+you think about that?
+
+- Yeah good question. Is it faster to have to actually take the
+data  and put it on a message queue and then take the data from
+the message queue and push it to another message queue and then
+finally take the data from the other message queue and apply it
+to   the   database?   That   seems   to   be   more  expensive
+computationally than just taking the data from one database and
+sticking it in the other database. The answer comes from all of
+the  work  to  implement  the two-phase commit. If you're doing
+local  transactions,  you just tell the local resource manager,
+let's  say  the  database,  to  just do the work. When you have
+distributed  transactions,  you  go  through  this  dance, this
+two-phase  commit  dance.  You  tell everybody to prepare; they
+have to log these records to their persistence store, the final
+system,  usually a RAID final system because you don't want one
+disk  failure  to affect the availability of your data. And you
+have  to  wait  for  that log flush to commit and then you send
+back  the  response to prepare to the co-ordinator and then the
+co-ordinator  has to log a message and wait for it to come back
+and  then  the  co-ordinator  can  tell the participants of the
+outcome.  And  so  at the end of the day it actually takes more
+cycles  to  do  the distributed transaction then just to do the
+queuing because the queing can be very efficient.
+
+6. Do you have any recommended best practices developers should
+consider when doing messaging?
+
+-  When  messaging  I  think  it's  important  to  minimize the
+distribution.  You  want to keep all of your data on the fewest
+number of resource managers as possible. For example, you could
+put  a message broker, in the local locations, let's say in the
+New York and San Francisco offices, as I point out in a banking
+transaction,  but you have eliminated the two-phase commit from
+spanning   the   country  and  subjecting  the  transaction  to
+availability  loss if you have some outage between New York and
+San  Francisco. But if you put a message broker next to the New
+York  database  and  a  broker  next  to  the  database  in San
+Francisco,  you're  still  doing a two-phase commit between the
+database  and the local message broker in the local office, and
+a  database and a message broker in the remote office. Ideally,
+if  you  can  get  your queuing in the same resource manager as
+your data, that is, use queuing that's provided by the database
+with  your  schema,  your tables, in the same database, now the
+transactions  become  truly  local.  You  don't  have to do the
+two-phase  commit  between them. The benefits you get from that
+is  you  get  true  point-in-time  recovery.  If  you have some
+failure  in your application and you must restore the system to
+a precise state, at let's say 8 a.m., it's one resource manager
+to  roll the logs back and bring it right back to 8 a.m. If you
+had  a  message  queue  on a database it's nearly impossible to
+bring   them   back   to  the  same  time.  So  you  get  great
+point-in-time  recovery.  You  get  great  performance  because
+you're  not doing any of the two-phase commit dance between the
+servers  and  you  get the independence of the systems by using
+message  brokers  for distributing your transactions, your work
+across the servers.
+
+7. How does Oracle address this messaging challenge?
+
+-  We do this by using advanced queuing in the Oracle database.
+So our Java messaging service can use the advanced queue as the
+repository.  So  all the data that gets queued and gets shipped
+around  is  still stored in the Oracle database. And so when we
+commit  the transaction, it's committing just within the Oracle
+database  and you get the ability of distributing your work but
+all the transactions commit locally.
+
+8. If your background is TX why did you go into caching?
+
+-  Good question. Because caching is at the opposite end of the
+technology  of  two-phase commit. Two-phase commit is all about
+spending  a  tremendous  amount  of  time  making sure this one
+little  thing  comes  through and caching is all about 'hey, if
+you  can  cache this great and if you can't, so be it.' There's
+no recovery; it's a much simpler infrastructure. Why did I look
+at  doing  this?  Because  I  saw so many people building these
+large data centers to supply simple content. They would wind up
+having  huge  infrastructure  to be able to, on the fly, when a
+request  comes  in,  run  some  application  logic  in  a  J2EE
+container,  open  up database connections, do queries against a
+large  database  to present the content. And I saw that so much
+of  this was repetitive and I thought if we could just cache it
+in memory, we should be able to deliver it much faster. When we
+measure  the  Oracle  Web  Cache,  we're an in-memory cache, we
+measure  our  throughput  by saying how many cycles it takes to
+deliver  a  page.  It's  only  a  few  hundred  microseconds to
+actually  parse an HTTP request, do a lookup in memory and ship
+the  response  out.  And  if  you  have  to go into the JVM and
+instantiate   a   bunch   of   classes  and  open  up  database
+connections,  you're  looking at 2, 3, or 4 orders of magnitude
+greater  cost than just shipping the page out of the cache. The
+challenge  is knowing what pages to cache, and how to cache it,
+how you manage the coherence of the cache.
+
+9.  Caching  sounds great, but a lot of developers and IT shops
+would  say 'it's much cheaper and faster to throw more hardware
+at the problem and not use caching at all'. Why spend the extra
+time and effort and money on programmers' salaries and so forth
+when  I  can spend just a little bit more money on the hardware
+and solve the problem that way. What do you think about that?
+
+-  Good question. With caching we're out to solve two problems.
+One   is   latency  and  one  is  scalability.  So  first  with
+scalability,  if  you  want  to  double the amount of users you
+could  double  the  amount  of  hardware but that adds a lot of
+complexity  to the infrastructure and as we know, if you have a
+thousand  servers, there's always going to be one, or maybe two
+or  three servers down at any time. If you had one server, it's
+most  likey  going  to  be  operating. And so the complexity of
+operating  your  system is compounded by the number of servers.
+So  managing  twice the number of servers is more than twice as
+difficult  because  of  the  interdependencies of the different
+servers..."
+
+Ed  Roman:  "Isn't  there  also  an argument that says the more
+servers  you  have,  the  more  reliable your system is because
+there's back up for all your machines."
+
+"...Yes and no. It can be if your system is architected so that
+they're  all  independent  and  they can always run without the
+others   around,  then  in  some  sense  you  do  get  improved
+availability  but  if  there  isn't  any dependency on them the
+availability   is   actually   reduced   because  if  there  is
+interdependency, the availability of the system as a whole is a
+product  of  the  availability  of any of the systems. So every
+time  you  add a system, it brings the availability down of the
+system  as a whole. And even if you think your mid-tier servers
+are   independent,  there's  still  some  management  overhead,
+management infrastructure; there's metadata you keep on all the
+servers,  application  logic  that you keep on the servers, and
+there's data that's cached on the servers. And all those things
+get more complicated if you have servers that are coming up and
+down  all  the  time.  So  it  isn't cheaper to just throw more
+hardware at it."
+
+10. Can every IT shop benefit from caching? What about those IT
+shops  that  have  a  lof  of dynamic content? How do you cache
+dynamic content?
+
+-  I  see  there  are three different kinds of dynamic content.
+Dynamic  might  mean that it's truly different for each request
+like  getting a stock quote or looking at your account balance.
+It  may  be  dynamic  in  the  sense  of a portal in that every
+version  of  each page for the user is distinct but the content
+itself  is  shared.  Or it might be dynamic in the sense that I
+deliver a different version for each user who comes in, maybe a
+different  price  for  a  product depending on what category of
+customer  you  are. So in the first case where it's dynamic for
+each   request,  we  provide  a  big  benefit  by  caching  the
+boilerplate  on the page closer to the user. And if you look at
+a  traditional  html  page, it's 20k to 60k of html; the actual
+content that a human reads is actually only a few 100 bytes. So
+99%  of  the  html is really boiler plate. When we can separate
+that  boiler  plate  from the dynamic content, the request from
+the  client  to  the server becomes a lot smaller and if we can
+get  that  boiler  plate  out  on the user they get much faster
+response  time.  And  now  we're  getting back towards the half
+second   response   time  we  want.  In  the  case  where  it's
+dynamically  assembled content, like a portal, we've introduced
+ESI,  Edge  Side  Includes, which we've brought to the W3C with
+Accomi, as a standard for doing page assembly. And that's a way
+of  demarcating  pages  so  we  can templates separate from the
+actual  content.  And  portals  are  great use of that. Our own
+portal  uses  ESI  for  doing  page assembly and allows them to
+separate  the  templates  of  users  from the fragments. And by
+caching  those  on  the Edge, we're able to do the assembly for
+each  user  independently.  You request your page, we have your
+template cached. We see which fragments you want; we have those
+cached.  We  merely  assemble those and ship them out. It's not
+expensive  to do in the cache. You're just doing scatter-gather
+Unix  writes on the network interface, the network I/O. So it's
+a  very  efficient  way to get the data out to the user. And we
+don't have to go back to the server.
+
+11.  What are some best practices you'd recommend to developers
+in the area of caching?
+
+- If there's any message I could convey to developers, it would
+be  to  think  about your performance when you're designing the
+application.  Many  people  think  the objective is to just get
+something  to work and you leave to operational people to solve
+the  scalability problem and the performance. You let them tune
+the databases, let them figure out how many servers it takes to
+run  the site, or where they deploy the systems. But that's not
+really  always  the  case.  And  we're buidling larger and more
+complicated  systems today than we've done ten years ago. We're
+now  introducing  MVCs  with Struts and Faces and this has more
+abstraction,  more  ways  of  allowing  different  people  from
+choosing  how  to  separate the layout from the business logic.
+And  we  have  Enterprise  Javabeans as another abstraction. We
+have  lot's  of  things  that  make  it  easier  to  build  the
+applications,  but they all introduce overhead. And anything we
+can  do  up  front  to  think  about  what  can  be  cached and
+separating  the cacheable content from the dynamic content will
+provide  not  only  a  faster  application  but a more scalable
+application.  It  could  mean  supporting an order of magnitude
+more  users  with  just  a little bit of hardware. For example,
+with  Oracle  Web Cache, we can deliver a page in a few hundred
+microseconds.  You're  talking  about  supporting  thousands of
+concurrent  users with a single CPU. It could be a cheap, Intel
+commodity  machine  supporting  thousands  of  users.  It's  of
+tremendous value.
+
+12.  How  do  I  know  if  I  need  any  of this caching? As an
+application developer, how do I know for sure if my performance
+is  not going to be good enough for my end users and what if it
+is good enough?
+
+- Good question. And I would contend that most people may think
+that they know what their performance is but they really don't.
+A  lot  of  companies for the internet are using services where
+they  measure  from  let's  say  35  points  around the world a
+particular  URL  and  tell  you how long it took that URL to be
+deliverd  to  those  35 servers. That's nice but your customers
+don't  live  in  those  data centers where those 35 servers are
+running.  They live wherever they happen to live. And they have
+to  live  with  whatever the network bandwith is going to their
+house  and  the  number  of  Hopps  that they have. And I would
+contend  that most sites have no idea what the users are really
+experiencing because they aren't there at every site. This is a
+new  problem  we  introduce  with  the  World  Wide Web. We can
+deliver  content  to  everyone  around  the  world but we don't
+really  know  what they're experiencing. What we've introduced,
+and  part  of the new version of Oracle Enterprise Manager is a
+way  of  actually measuring the delivery of every page to every
+user.  We  know from the time that somebody clicks on a link on
+the  page,  we  start measuring the time from that point to the
+time  that  the last image is rendered on the page. And then we
+take  that  data,  and  it  gets  sent  back  to the log in our
+application  server  and  rolled up in a data warehouse. And we
+can  then  look  at  every URL and say for this URL in the past
+day,  week,  or month, what was the average delivery time, what
+were  the 100 slowest deliveries. We can look by regions of the
+world,  by  IP  address, by collection of URLs. There's so many
+ways  of  actually  looking at it. And actually when we started
+doing  that  here at Oracle for our own web site, we thought we
+were  delivering  our  homepage in half a second as measured by
+popular  services that people/companies use for measuring their
+performance.  But  when  we actually saw the deliveries, we saw
+that  we  actually  had  a large number of users in Russia that
+were  seeing  half minute loads for some of these pages. And so
+we  were  able to go back to our Russian content developers and
+start  trimming  the  content for the Russian users. We can put
+our  Web  caches  over  in Europe to cut down on the latency of
+delivering  the  content  over  there.  But  it's not until you
+really  understand  the problem can you go about fixing it. And
+so  that's  why it's really important to really understand what
+are  your  users  experiencing. And a service isn't necessarily
+the  solution because it's only measuring A URL to A site; it's
+not  measuring  what  real  users are requesting and their real
+experience.
+
+13.  Do  you have any final words for members of TheServerSide?
+Any final piece of advice?
+
+-  Yes  think  about caching up front. Think about what you can
+get  in  the  cache  and  how  you're  going to utilize caching
+whether  it's caching in the Web cache; You can cache fragments
+in  your JSPs. You can cache your relational data for some data
+that  you access like price lists and so on that doesn't change
+that  much. You can utilize various forms of caching within the
+J2EE  container.  Any  time  you  can  take  something that was
+constructed once and is usually delivered repetitively, you can
+cache it and avoid the subsequent constructions, you have a big
+win in performance. We think that Web cache living out in front
+of  the  whole  thing provides the greatest benefit because you
+eleminate the request, say, into the apache server, the request
+into  the J2EE container, instantiating of classes, the opening
+of  database  connections, the queries on the database. Anytime
+you  can  eliminate  a  huge  amount  of  execution,  you bring
+tremendous value in terms of scalability and performance of the
+site,  bringing  user response time down and by supporting more
+users with less hardware.
+
+
+
+===============================================================
+
+ 2PC  all  over the place Message #76377 Posted By: Mike Spille
+ on  March  12,  2003 @ 07:12 PM in response to Message #76368.
+
+ \Muntean\  The  story was about a TX that should spawn over 10
+ DB servers and the fact that if one server is down the TX will
+ abort.  What is the asynchronous architecture that can model a
+ TX  that  have  (business  requirement)  to  spawn over 10 DBs
+ servers? \Muntean\
+ 
+ Well,  if  you  use a messaging model that features guaranteed
+ messaging  in  some  form,  then you can do it. At the message
+ injection  and  reception  ends you may still need XA, but for
+ the   distribution  of  messages  (e.g.  getting  to  all  the
+ reception  ends)  you rely on the guaranteed messaging aspect.
+ BUT  - and this is a big but - you have to have an application
+ that  can  live  with data sources being slightly out of sync.
+ And you have to live with an application that can either:
+ 
+ - Get good performance by dealing with out-of-order messages -
+ Force message order at a significant hit to performance
+ 
+ \Horia\ What about parallel processing? (All the examples were
+ about  one operator that moves money from NY to San Francisco)
+ You  have  to  do  business  separation if you want to maitain
+ performance  and  use  messaging  to "distribute" transactions
+ (How  can  you  use  messaging when 1,000 operators are moving
+ money independently?). \Horia\
+ 
+ This  is  an  excellent point, and I'm sorry I didn't point it
+ out myself :-)
+ 
+ Assuming you're using a system like JMS queues to get messages
+ point-to-point    to    the   right   place,   you   can   get
+ parallelism/load  balancing by having lots of listeners on the
+ queue.  The  problem,  of  course,  is  the ordering problem I
+ mentioned  previously.  In  order  to  get good performance, a
+ queue-based  system is going to spread the queue messages over
+ all  the listeners - and this means you lose message ordering.
+ Even  if  you have only one listener, in the case of a failure
+ it's  common  for  messages  to  arrive  out  of  order. To do
+ otherwise,  once  again,  entails  a  big  performance  hit in
+ normal-path message delivery.
+ 
+ Why  does  this matter? Well, imagine an equity trading system
+ that's sending out these messages:
+ 
+ - Create trade - Cancel trade (trader screwed up!)
+ 
+ If you have N queue listeners, it's entirely possible that the
+ cancel  will  get  processed first, followed by the create. So
+ you  get  an error on the cancel, the create goes through, and
+ you've got bad data in your database.
+ 
+ There  are, of course, ways around this. But they incur either
+ alot  of  application  complexity,  or  taking  a  big  hit in
+ performance to guarantee messaging order.
+ 
+ 
+ \Muntean\  I think that the 2 processing models have their own
+ benefits and should be used with care. \Muntean\
+ 
+ I  agree.  And I'll go further and say that the two models are
+ fundamentally different in enough ways that it's going to have
+ a   big   impact  on  your  architecture.  2PC  does  imply  a
+ performance hit (I don't quite buy the HA hit in the article),
+ but  async messaging is _not_ a drop in replacement that fixes
+ all  of  2PC's  ills  without  any  downside. They're two very
+ distinct ways of passing data around in a distributed system.
+ 
+ As  a  complete  side  note  -  I wish the keepers of the J2EE
+ transactional  spec  would go back and reconsider asynchronous
+ XA  resources.  The  biggest  hit in J2EE XA processing is the
+ synchronous,  serial  nature  of the spec. In a typical system
+ with  2  XA  resources, 6 very expensive forces-to-disk happen
+ serially  -  1  for  the tran manager 2PC start, 1 prepare per
+ resource,  1  commit  per  resource, and 1 "done" for the tran
+ manager.  If JTA would allow asynchronous resource management,
+ then  the  XA  resource  prepare() and commit() calls could be
+ done  in parallel (e.g. issue prepare() to all XA Resources in
+ a transaction without waiting for a result, then then wait for
+ replies  to  come back, and do the same on commit()). This can
+ result  a  20%-40% performance improvement, and it scales much
+ better to many XAResources.
+ 
+ For those interested, look at the original C-based X/Open spec
+ and  its  async support. J2EE could benefit from such a model,
+ particularly as 2PC transaction processing becomes more common
+ as  higher  level  of  integration  are  being  sought on many
+ projects.
+ 
+ -Mike
+ 
+ 
+ 
+ 
+===============================================================
+  I'm  in  principle not against (transactional) messaging, but
+  what  Larry said about 2-phase commit (2pc) and transactional
+  messaging  is  not  correct.  When  talking about 2pc, he (by
+  accident)  mentions  storing logs to persistent store, a RAID
+  system  to make it more fail-safe, sending prepare and commit
+  requests  and  their  responses, etc. On the other side, when
+  speaking  about  messaging,  he  just  speaks  about  sending
+  message. I don't think that Larry doesn't know that it is not
+  so easy.
+  
+  First,  to  have  messaging  with  the  same  level  of  data
+  stability  as  distributed atomic transactions have, you have
+  of  course use the same means, e.g. logging any sent message,
+  having  persistent message queues, etc. There is a difference
+  with  high-level  abstractions,  but  the low level tools for
+  ensuring  reliability  remain  the same. In the example Larry
+  gives,  if  the  bank  in  San  Francisco  doesn't  know  the
+  requested  account  number,  a message has to be sent back to
+  New  York  to cancel the banking transaction. In other words,
+  you  have  to provide the same "two-phase commit dance" as in
+  true 2pc, but in terms of "messages".
+  
+  Second, with messaging as Larry describes, you don't have the
+  same level of data stability at all. If you commit your local
+  transaction at New York before the message is received in San
+  Francisco,  you  have a risk of compensating your transaction
+  in  New  York;  compensation  sometimes  cannot  be completed
+  (e.g.,  there is no longer enough money on the bank account).
+  If  you  have multiple banking transactions at the same time,
+  it's also not so simple that you send a message from one bank
+  to  another  one,  there  is  e.g. a risk of negative account
+  balance  when executing multiple withdraw operations from the
+  same account.
+  
+  So,  please,  do not say A without saying B, don't provide us
+  with  "simple solutions" by hiding lots of details, don't say
+  transaction  monitors  need RAID systems and reliable logging
+  while  transactional messaging systems do not, etc. Otherwise
+  your  interview  looks  like  a  paid advertisement of Oracle
+  products.
+  
+  Marek Prochazka ObjectWeb/JOTM INRIA Rhone-Alpes
+
+
+==============================================================
+ Some  messaing  performance  problems stem from the J2EE specs
+ Message  #76448  Posted  By:  Mike  Spille on March 13, 2003 @
+ 09:15  AM  in  response  to  Message  #76440.
+ 
+ \Purdy\  On the
+ messaging   side,   the   reason   that   so   many  messaging
+ implementations  are  slow  is  because they use the database.
+ Even MQ Series uses DB2 inside it. \Purdy\
+ 
+ While  this  is  true,  it's not the only slow aspect when you
+ consider   JMS   implementations.   For   example,  if  you're
+ publishing  under  XA then the JMS implementation must log its
+ prepare  and  "finished"  actions  to  disk  in a disk-forcing
+ manner. By disk-forcing I mean that you're not just doing I/O,
+ but  you  must force the data all the way out to disk. This is
+ typically done with a rolling-forward transaction log.
+ 
+ On  a plain old disk this forcing can take 10-20 milliseconds.
+ Adding  in  miscellaneous  overhead,  each  XAResource  in the
+ transaction  is  going  to  add  80-100  milliseconds  to  the
+ transaction  length  at  a  minimum  (large objects on the JMS
+ side, and complex transactions on the RDBMS side can obviously
+ increase this).
+ 
+ In   the  end,  a  naive  JMS  implementation  with  a  simple
+ transaction    log   is   going   to   max   out   around   30
+ transactions/second  on a regular disk. You can perhaps double
+ this   with  a  fast  RAID  array.  Techniques  like  batching
+ disk-forces  across  multiple  transactions  can  be  used  to
+ amortize the disk forcing cost over multiple transactions, and
+ boost  you  up  to  the  150-200  TPS range, at the expense of
+ slightly  lengthing  the  average  transaction  time. Even so,
+ these  numbers aren't great, and the JMS server spends most of
+ its  time  waiting  for  disk I/Os to complete. The problem is
+ exacerbated  on  the transaction manager side - it spends most
+ of  its time both waiting for disk I/O and for the XAResources
+ to return from their prepare or commit calls.
+ 
+ About  the only thing that can be done in these cases to speed
+ things  up  is to get very expensive disk arrays that force to
+ memory cache.
+ 
+ As more and more applications start using JMS, their JMS calls
+ are  invariably  going to get tied into RDBMS work - and hence
+ we  get  stuck  in  the  2  phase  commit cycle. This normally
+ wouldn't  be  so terrible, but the JTA spec is forcing us into
+ serial,   synchronous  access  to  the  XA  resources  by  the
+ transaction manager.
+ 
+ The  JMS  acking  model also slows things down significantly -
+ it's  ashame  they  don't  allow  message  gap-detection as an
+ alternative  model,  which  is  must  faster  (but  harder  to
+ implement).
+ 
+ To  give  you  an  example  -  in  the work I've done on a JMS
+ product,  I can pump out 600 messages/second per JMS server on
+ a  4-way  HP-UX machine. If I eliminate the acking model, that
+ tips  over  1000  messages/second.  But  involve  the same JMS
+ server  in  XA  transactions,  and the messaging rate drops to
+ about  160  messages/second.  And  that rate was only achieved
+ through  very aggressive optimization of the transaction logs.
+ And meanwhile, the a single app server/tran manager physically
+ cannot  drive  that  rate by itself - because its spending the
+ bulk  of  its  time  waiting  on its own tran log forces or XA
+ resource  calls  to  return.  I need 3 app server processes to
+ drive the JMS provider adequately.
+ 
+ So  -  while  using  a  RDBMS  under the covers will certainly
+ contribute to performance problems in JMS implementations, the
+ JMS  &  JTA  specs  force even more problems. If the spec were
+ changed  to  allow  alternate  implementations  of  guaranteed
+ messaging,   and   to   allow   for   asynchrous  dispatch  to
+ XAResources, then existing JMS implementations combined with a
+ global  transaction  manager  could  easily get 3x-5x gains in
+ their publishing rates.
+ 
+ 
+ 
+
+===============================================================
+ Combining  2PC  and  transactional  messaging  Message  #76480
+ Posted By: Stefan Tai on March 13, 2003 @ 02:59 PM in response
+ to  Message  #76377.  You may be interested to read about some
+ research     work     on     "Conditional    Messaging"    and
+ "Dependency-Spheres"   which   allows   to   combine  standard
+ 2PC-transactions  with  transactional  messaging  in  a single
+ atomic                                           unit-of-work.
+ http://www.research.ibm.com/AEM/d-spheres.html     Stefan
+ 
+===============================================================
+ 
+ 1  replies  in this thread Mark as Noisy | Reply Combining 2PC
+ and  transactional  messaging  Message  #76483 Posted By: Mike
+ Spille  on  March  13,  2003 @ 04:04 PM in response to Message
+ #76480.  \Tai\  You  may  be  interested  to  read  about some
+ research     work     on     "Conditional    Messaging"    and
+ "Dependency-Spheres"   which   allows   to   combine  standard
+ 2PC-transactions  with  transactional  messaging  in  a single
+ atomic unit-of-work. \Tai\
+ 
+ In  the  fairness of objectivity, perhaps you should point out
+ that  you  are  one  of  the primary creators of the D-Spheres
+ research :-)
+ 
+ I've  read  about  this  work  several times over the past few
+ months,  but  unfortunately I haven't had the time to study it
+ in-depth. From what I've read, though, I have a few issues...
+ 
+ -  Loss  of  isolation (the I in acid). I understand D-Spheres
+ needs   to  pump  messages  around,  and  therefore  a  global
+ transaction  can't  really be isolated. As a result, pieces of
+ global transaction are visible before its fully commited. This
+ can be problematic for some applications.
+ 
+ - Atomicity. There are repeated claims in the D-Spheres papers
+ as  to  it achieving atomicity, but I think its overtaxing the
+ word.  The overall result of transactions in this model appear
+ to  ultimately achieve consistency, but it's stretching things
+ to  claim  that  each  global  transaction  is  atomic  in any
+ meaningful way.
+ 
+ -  Compensating  actions.  This  is related to the above - the
+ middleware   at  times  needs  to  invoke  application-defined
+ compensating  actions  in  the event of certain failures. This
+ really   doesn't  meet  any  useful  definition  of  the  term
+ "atomic".  On  top  of that nitpick, it puts a heavy burden on
+ application   developers.   Compared   to  relying  on  XA/2PC
+ automatic  rollback by the XA Resources, in this model the app
+ effectively has to direct a sort-of manual rollback operation.
+ 
+ Overall  I  think  there are some good ideas in this research,
+ but  I'm  doubtful  of  this  or  anything  like it becoming a
+ widely-implemented  standard.  Beyond  my questions above, the
+ sheer  complexity  of  the  model  would  mitigate  against it
+ becoming  a  widely  used  model  e.g.  people  think EJBs are
+ complex - what are they going to think about D-Spheres and all
+ of its subtle implications?.
+ 
+ -Mike
+ 
+ 
+===============================================================
+ Middleware  Arch  Series  on  Distributed Transactions Message
+ #76486  Posted  By:  Sudhakar Ramakrishnan on March 13, 2003 @
+ 04:49  PM  in  response  to Message #76339. Thought this might
+ interest many on this thread.
+ 
+ Larry   Jacobs   contributed  to  week  6  of  the  Middleware
+ Architecture   Series   on   "Distributed   Transactions".  He
+ discusses  the  the  global  consistency promises of two-phase
+ commitment  protocols  and transactional messaging systems and
+ how  architects  can  select  the  right  technology  for  the
+ application.
+
+http://otn.oracle.com/tech/java/architect/distributed_transactions.html
+ 
+ Checkout   the   Middleware  Architecture  Series  Distributed
+ Transactions: What you need to know to stay out of trouble
+ 
+ Middleware Arch Series: http://otn.oracle.com/middleware
+ 
+ - Sudhakar Ramakrishnan Oracle Corp.
+ 
+ ==============================================================
+ =  1  replies  in this thread Mark as Noisy | Reply Middleware
+ Arch  Series on Distributed Transactions Message #76490 Posted
+ By:  Mike  Spille  on March 13, 2003 @ 05:44 PM in response to
+ Message  #76486.  \Ramakrishnan\  Thought  this might interest
+ many on this thread. Larry Jacobs contributed to week 6 of the
+ Middleware  Architecture Series on "Distributed Transactions".
+ He  discusses the the global consistency promises of two-phase
+ commitment  protocols  and transactional messaging systems and
+ how  architects  can  select  the  right  technology  for  the
+ application. \Ramakrishnan\
+ 
+ Well, here's what I got out of that article:
+ 
+ Number one point - Use Oracle products for everything!!!
+ 
+ According  to  the  article,  you  can avoid 2PC by having the
+ database  and  the  messaging  provider one and the same. Um -
+ this only works if every single database/messaging combination
+ in my system happens to be Oracle. Not bloody likely!
+ 
+ If  my database and messaging system aren't Oracle, we're back
+ to the in-doubt transaction problem.
+ 
+ The  article's  bottom  line "In just about every case you and
+ your  system  will  be  better  off  without  any  distributed
+ two-phase  commit".  The  author  lost  a tremendous amount of
+ credibility  with  this  one.  He's  advocating moving systems
+ towards   messaging-in-the-middle  -  and  thereby  completely
+ losing  the  "Isolation" part of ACID you get with true global
+ transactions.  Using  the  example  from the article, your New
+ York  system  will  _always_ be out of sync with your San Fran
+ one  (because  for  any  given  transaction,  San Fran will be
+ commited  and  just  sending  the  message over to NY. NY will
+ commit later when the message comes in).
+ 
+ On  point-in-time recovery: almost complete nonesense. In most
+ recovery  scenarios,  the  transaction  manager has sufficient
+ information to coordinate recovery. If the tran manager or one
+ of  the XA resources becomes "corrupted", as the article says,
+ you're  pretty  fairly  well  screwed whether you're using his
+ messaging solution or a 2PC solution. In the end, you've still
+ got  two databases, one of them is inconsistent due to "buggy"
+ app  code,  and  some poor schmoe is going to have to manually
+ slog through both sides to figure out what to do.
+ 
+ On  availability,  the  article  says  "Failure isolation, and
+ therefore   availability,   distinguishes  this  message-based
+ system  from  the  earlier  2PC  system.  The participants can
+ continue  executing  even when another participant fails....".
+ This  makes it sound like this messaging solution is a drop-in
+ replacement  for  2PC. It's not. This comes back to isolation,
+ atomicity, and consistency. In a typical 2PC situation, you're
+ doing  2PC  because  the resources involved must be in sync at
+ all  times.  To  go  out of sync is very, very bad. But in the
+ messaging scenario, the author boasts effectively that you can
+ keep  doing  transactions  on  database  A while database B is
+ down.  If  you're relying on consistency, this is unbelievably
+ bad  -  when database B comes back it will be horrendously out
+ of  date  with  database  A! This may not seem like a problem,
+ until  you  realize that data likely isn't just flowing from A
+ to  B,  but may be going from B to A as well. If the data flow
+ is   bi-directional,   then  the  inconsitencies  between  the
+ databases  will  eventually  cause  both  databases  to end up
+ inconsistent.
+ 
+ There  are  some real problems that the author does a good job
+ of  pointing  out  -  such as held database locks for in-doubt
+ transactions  in  the  case  of  a  failure,  and  performance
+ problems. But a resonsible author would advocate hardening the
+ hardware  for  the  in-doubt  case  (make sure you're friggin'
+ hardware  is  highly  available!),  and  offer suggestions the
+ performance  side (memory-caching disk arrays, the possibility
+ of  async  XA,  etc).  To  imply that you can drop a messaging
+ solution in in place of a 2PC solution is just simply wrong.
+ 
+ -Mike
+ 
+ ==============================================================
+ = 1 replies in this thread Mark as Noisy | Reply Combining 2PC
+ and  transactional  messaging Message #76516 Posted By: Stefan
+ Tai  on  March  13,  2003  @  09:04  PM in response to Message
+ #76483. \Mike\ Loss of isolation (the I in acid). I understand
+ D-Spheres  needs  to  pump  messages  around,  and therefore a
+ global  transaction  can't  really  be  isolated. As a result,
+ pieces  of  global  transaction  are  visible before its fully
+ commited.  This  can  be  problematic  for  some applications.
+ \Mike\
+ 
+ That's  true.  D-Spheres  may  not  be  appropriate  for  some
+ applications.  However,  there are many applications for which
+ the D-Spheres model and its "relaxed isolation" is applicable,
+ if   not  even  desirable.  Many  business  transactions,  for
+ example,   need  to  be  built  using  object  middleware  and
+ messaging middleware in combination (many legacy apps can only
+ be    accessed   using   messaging);   a   pure   synchronous,
+ tightly-coupled JTS transaction simply would not do. Also, the
+ isolation  provided  by the messaging ops in a D-Sphere is the
+ same as with conventional transactional messaging.
+ 
+ \Mike\  Atomicity.  There are repeated claims in the D-Spheres
+ papers   as  to  it  achieving  atomicity,  but  I  think  its
+ overtaxing  the  word.  The  overall result of transactions in
+ this  model appear to ultimately achieve consistency, but it's
+ stretching  things  to  claim  that each global transaction is
+ atomic in any meaningful way. \Mike\
+ 
+ I  do not agree. Atomicity is clearly achieved; a D-Sphere may
+ be  longer-running  than a simple JTS transaction, but that is
+ only  a  reflection of many business transaction scenarios and
+ needs.
+ 
+ \Mike\  Compensating  actions.  This is related to the above -
+ the  middleware  at  times needs to invoke application-defined
+ compensating  actions  in  the event of certain failures. This
+ really   doesn't  meet  any  useful  definition  of  the  term
+ "atomic".  On  top  of that nitpick, it puts a heavy burden on
+ application   developers.   Compared   to  relying  on  XA/2PC
+ automatic  rollback by the XA Resources, in this model the app
+ effectively has to direct a sort-of manual rollback operation.
+ \Mike\
+ 
+ D-Spheres combine rollback and compensation techniques; either
+ one   can  be  applied  where  applicable.  If  rollback  (and
+ corresponding  imaging  and  locks) are possible, fine; if not
+ (and  that  is also common practice), then compensation is the
+ choice.  D-Spheres  do  not  promote either one technique, but
+ support   both.   And   while  compensation  today  is  mostly
+ hand-coded  and  a  responsibility  of  the  app  developer, a
+ middleware like the D-Spheres system reduces the burden of the
+ app developer by supporting "guaranteed compensation".
+ 
+ \Mike\  Overall  I  think  there  are  some good ideas in this
+ research,  but  I'm  doubtful  of  this  or  anything  like it
+ becoming  a  widely-implemented  standard. Beyond my questions
+ above,  the  sheer  complexity  of  the  model  would mitigate
+ against it becoming a widely used model e.g. people think EJBs
+ are complex - what are they going to think about D-Spheres and
+ all of its subtle implications?. \Mike\
+ 
+ Thanks  very  much for your feedback and opinion; this is very
+ valuable and interesting.
+ 
+ Of  course,  as one of the authors of the D-Spheres technology
+ (as  you rightly point out), I am biased. I tend to think that
+ the  problem  that  D-Spheres is trying to solve is inherently
+ complex,  and  that  D-Spheres  makes solving the problem only
+ easier.  I  have  yet  to see an alternative solution that has
+ comparable features and that would be even easier to use.
+ 
+ Stefan
+ 
+ 
+ 
+ 
+ 
+ 
