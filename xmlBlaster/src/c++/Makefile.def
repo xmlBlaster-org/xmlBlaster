@@ -26,10 +26,10 @@ RMDIR      =rm -r
 RM         =rm -f
 SYMLINK    =ln -s
 CD         =cd
-CFLAGS     =-Wall -Wstrict-prototypes -Wimplicit-int -Werror-implicit-function-declaration
+CFLAGS     =-g -Wall -Wstrict-prototypes -Wimplicit-int -Werror-implicit-function-declaration
 CC         =g++ $(CFLAGS)
 CL         =g++ $(CFLAGS) -Wl,-rpath=$(LIB_DIR)
 SLIB_FLAGS =-fpic
-LD         =g++ -shared -Wall
+LD         =g++ -shared $(CFLAGS)
 SLIB_ATTR  =chmod a-w
 SHARED_LIB_NAME =lib$(SHARED_LIB).so
