@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.18 2002/06/19 12:36:12 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.19 2002/06/25 17:49:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -216,7 +216,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.ERASE);
 
          XmlKey xmlKey = new XmlKey(glob, msgUnit.xmlKey);
-         EraseQoS eraseQoS = new EraseQoS(msgUnit.qos);
+         EraseQoS eraseQoS = new EraseQoS(glob, msgUnit.qos);
          String [] retArr = requestBroker.erase(sessionInfo, xmlKey, eraseQoS);
 
          I_Session sec = sessionInfo.getSecuritySession();
