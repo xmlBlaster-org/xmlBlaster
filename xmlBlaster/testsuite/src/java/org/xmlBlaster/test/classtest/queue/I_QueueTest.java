@@ -308,14 +308,14 @@ public class I_QueueTest extends TestCase {
     */
    private void checkSizeAndEntries(String txt, I_QueueEntry[] queueEntries, I_Queue queue) {
       long sizeOfTransients = 0L;
-      long numOfDurables = 0;
+      long numOfPersistents = 0;
       long numOfTransients = 0;
-      long sizeOfDurables = 0L;
+      long sizeOfPersistents = 0L;
       for (int i=0; i < queueEntries.length; i++) {
          I_QueueEntry entry = queueEntries[i];
-         if (entry.isDurable()) {
-            sizeOfDurables += entry.getSizeInBytes();
-            numOfDurables++;
+         if (entry.isPersistent()) {
+            sizeOfPersistents += entry.getSizeInBytes();
+            numOfPersistents++;
          }
          else {
             sizeOfTransients += entry.getSizeInBytes();
@@ -323,17 +323,17 @@ public class I_QueueTest extends TestCase {
          }
       }
 
-      long queueNumOfDurables = queue.getNumOfDurableEntries();
-      long queueNumOfTransients = queue.getNumOfEntries() - queueNumOfDurables;
-      long queueSizeOfDurables = queue.getNumOfDurableBytes();
-      long queueSizeOfTransients = queue.getNumOfBytes() - queueSizeOfDurables;
+      long queueNumOfPersistents = queue.getNumOfPersistentEntries();
+      long queueNumOfTransients = queue.getNumOfEntries() - queueNumOfPersistents;
+      long queueSizeOfPersistents = queue.getNumOfPersistentBytes();
+      long queueSizeOfTransients = queue.getNumOfBytes() - queueSizeOfPersistents;
 
-      txt += " NumDurables=" + queueNumOfDurables + " NumOfTransients=" + queueNumOfTransients; 
-      txt += " SizeOfDurables=" + queueSizeOfDurables + " SizeOfTransients=" + queueSizeOfTransients;
+      txt += " NumPersistents=" + queueNumOfPersistents + " NumOfTransients=" + queueNumOfTransients; 
+      txt += " SizeOfPersistents=" + queueSizeOfPersistents + " SizeOfTransients=" + queueSizeOfTransients;
 
-      assertEquals(ME + ": " + txt + " wrong number of durables   ", numOfDurables, queueNumOfDurables);
+      assertEquals(ME + ": " + txt + " wrong number of persistents   ", numOfPersistents, queueNumOfPersistents);
       assertEquals(ME + ": " + txt + " wrong number of transients ", numOfTransients, queueNumOfTransients);
-      assertEquals(ME + ": " + txt + " wrong size of durables     ", sizeOfDurables, queueSizeOfDurables);
+      assertEquals(ME + ": " + txt + " wrong size of persistents     ", sizeOfPersistents, queueSizeOfPersistents);
       assertEquals(ME + ": " + txt + " wrong size of transients   ", sizeOfTransients, queueSizeOfTransients);
    }
 

@@ -48,13 +48,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    private boolean isConnected = false;
 
    private Object deleteDeliveredMonitor = new Object();
-   private Object storeNewDurableRecoveryMonitor = new Object();
+   private Object storeNewPersistentRecoveryMonitor = new Object();
    private Object swappingPutMonitor = new Object();
    /**
     * this boolean is set only under the time a recovery afer having reconnected
     * to the DB. It is used to limit the synchronization
     */
-   private boolean storeNewDurableRecovery = false;
+   private boolean storeNewPersistentRecovery = false;
    /** object used to control the swapping performance */
    private CacheControlParam controlParam;
 
@@ -88,13 +88,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
          }
 
          // add all new persistent entries to the persistent storage ...
-         this.storeNewDurableRecovery = true;
-         synchronized(this.storeNewDurableRecoveryMonitor) {
+         this.storeNewPersistentRecovery = true;
+         synchronized(this.storeNewPersistentRecoveryMonitor) {
             I_QueueEntry limitEntry = this.persistentQueue.peek();
             ArrayList list = this.transientQueue.peekWithLimitEntry(limitEntry);
             this.persistentQueue.put((I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]), false);
          }
-         this.storeNewDurableRecovery = false;
+         this.storeNewPersistentRecovery = false;
 
          this.isConnected = true;
       }
@@ -298,11 +298,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 
     
    /**
-    * All entries are stored into the transient queue. All durable messages are
+    * All entries are stored into the transient queue. All persistent messages are
     * stored also in the persistent queue. The exceeding size in the transient
     * queue is calculated. If it is positive it means we need to swap. The
     * overflowing messages are taken from the ram queue. The volatile between
-    * them are stored in the persistent storage (since the durable ones have
+    * them are stored in the persistent storage (since the persistent ones have
     * been previously stored).
     * 
     * @see I_Queue#put(I_QueueEntry[], boolean)
@@ -335,35 +335,35 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 
       synchronized(this.deleteDeliveredMonitor) {
 
-         // separate durable from transient messages and store the durables in persistence
+         // separate persistent from transient messages and store the persistents in persistence
          if (this.persistentQueue != null && this.isConnected) {
-            ArrayList durablesFromEntries = new ArrayList();
-            long sizeOfDurables = 0L;
+            ArrayList persistentsFromEntries = new ArrayList();
+            long sizeOfPersistents = 0L;
             for (int i=0; i < queueEntries.length; i++) {
-               if (queueEntries[i].isDurable()) {
-                  durablesFromEntries.add(queueEntries[i]);
-                  sizeOfDurables += ((I_QueueEntry)queueEntries[i]).getSizeInBytes();
+               if (queueEntries[i].isPersistent()) {
+                  persistentsFromEntries.add(queueEntries[i]);
+                  sizeOfPersistents += ((I_QueueEntry)queueEntries[i]).getSizeInBytes();
                }
                else sizeOfEntries += queueEntries[i].getSizeInBytes();
             }
-            sizeOfEntries += sizeOfDurables;
+            sizeOfEntries += sizeOfPersistents;
 
-            if (durablesFromEntries.size() > 0) {
+            if (persistentsFromEntries.size() > 0) {
                this.hasPersistentEntries = true;
 
                long spaceLeft = this.persistentQueue.getMaxNumOfBytes() - this.persistentQueue.getNumOfBytes();
-               if (spaceLeft < sizeOfDurables) {
-                  String reason = "Durable queue overflow, " + this.getNumOfBytes() +
+               if (spaceLeft < sizeOfPersistents) {
+                  String reason = "Persistent queue overflow, " + this.getNumOfBytes() +
                                   " bytes are in queue, try increasing '" + 
                                   this.property.getPropName("maxBytes") + "' on client login.";
                   this.log.warn(ME, reason + this.toXml(""));
                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
                }
                try {
-                  this.persistentQueue.put((I_QueueEntry[])durablesFromEntries.toArray(new I_QueueEntry[durablesFromEntries.size()]), ignorePutInterceptor);
+                  this.persistentQueue.put((I_QueueEntry[])persistentsFromEntries.toArray(new I_QueueEntry[persistentsFromEntries.size()]), ignorePutInterceptor);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + durablesFromEntries.size() + " durable entries will temporarly be handled as transient. Is the DB up and running ? " + ex.toString() + "state "  + this.toXml(""));
+                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.toString() + "state "  + this.toXml(""));
                   // should an exception be rethrown here ?
                }
             }
@@ -394,7 +394,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                   if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " state: " + toXml(""));
                   this.isSwapping = true;
                   if (this.persistentQueue == null)
-                     throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "put: no durable queue configured, needed for swapping");
+                     throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "put: no persistent queue configured, needed for swapping");
 
                   if (!this.isConnected)
                      throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "put: The DB is currently disconnected: swapped messages are lost");
@@ -405,7 +405,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                   long sizeOfTransients = 0L;
                   for (int i=0; i < swaps.size(); i++) {
                      I_QueueEntry entry = (I_QueueEntry)swaps.get(i);
-                     if (!entry.isDurable()) {
+                     if (!entry.isPersistent()) {
                         transients.add(entry);
                         sizeOfTransients += entry.getSizeInBytes();
                      }
@@ -413,7 +413,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                   this.hasPersistentEntries = true;
                   long spaceLeft = this.persistentQueue.getMaxNumOfBytes() - this.persistentQueue.getNumOfBytes();
                   if (spaceLeft < sizeOfTransients)
-                     throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: maximum size in bytes for the durable queue exceeded when swapping. State: " + toXml(""));
+                     throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: maximum size in bytes for the persistent queue exceeded when swapping. State: " + toXml(""));
                   try {
                      this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
                   }
@@ -630,8 +630,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 
       if (this.log.CALL) this.log.call(ME,"removeRandom(I_QueueEntry[])");
       if (queueEntries == null || queueEntries.length < 1) return 0L;
-      if (this.storeNewDurableRecovery) {
-         synchronized(this.storeNewDurableRecoveryMonitor) {
+      if (this.storeNewPersistentRecovery) {
+         synchronized(this.storeNewPersistentRecoveryMonitor) {
             return this.removeRandomUnsync(queueEntries);
          }
       }
@@ -647,17 +647,17 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       long ret = 0L;
       if ((this.persistentQueue != null) && (this.hasPersistentEntries)) {
          if (!this.isSwapping) { // cleanup all transient entries
-            ArrayList durables = new ArrayList();
+            ArrayList persistents = new ArrayList();
             for (int i=0; i < queueEntries.length; i++) {
-               if (queueEntries[i].isDurable()) durables.add(queueEntries[i]);
+               if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
             }
-            if (this.log.TRACE) this.log.trace(ME, "removeRandom (swapping mode): remove " + durables.size() + " durable entries from persistent storage");
+            if (this.log.TRACE) this.log.trace(ME, "removeRandom (swapping mode): remove " + persistents.size() + " persistent entries from persistent storage");
             if (this.persistentQueue != null && this.isConnected) {
                try {
-                  this.persistentQueue.removeRandom((I_Entry[])durables.toArray(new I_Entry[durables.size()]));
+                  this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "could not remove " + durables.size() + " entries from the persitent queue. Probably due to failed connection to the DB");
+                  this.log.error(ME, "could not remove " + persistents.size() + " entries from the persitent queue. Probably due to failed connection to the DB");
                }
             }
          }
@@ -766,7 +766,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       if (this.persistentQueue != null && this.isConnected) {
          ret = this.persistentQueue.getNumOfEntries();
          if (ret < 0L) return this.transientQueue.getNumOfEntries();
-         ret += this.transientQueue.getNumOfEntries() - this.transientQueue.getNumOfDurableEntries();
+         ret += this.transientQueue.getNumOfEntries() - this.transientQueue.getNumOfPersistentEntries();
          return ret;
       }
       return this.transientQueue.getNumOfEntries();
@@ -774,19 +774,19 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 
 
    /**
-    * It returns the size of durable entries in the queue. Note that this call will return the size
+    * It returns the size of persistent entries in the queue. Note that this call will return the size
     * stored in cache, i.e. it will NOT make a call to the underlying DB.
     *
-    * @see I_Queue#getNumOfDurableEntries()
+    * @see I_Queue#getNumOfPersistentEntries()
     */
-   public long getNumOfDurableEntries() {
+   public long getNumOfPersistentEntries() {
       long ret = 0L;
       if (this.persistentQueue != null && this.isConnected) {
-         ret = this.persistentQueue.getNumOfDurableEntries();
+         ret = this.persistentQueue.getNumOfPersistentEntries();
          if (ret < 0L) return this.transientQueue.getNumOfEntries();
-         return this.persistentQueue.getNumOfDurableEntries();
+         return this.persistentQueue.getNumOfPersistentEntries();
       }
-      return this.transientQueue.getNumOfDurableEntries();
+      return this.transientQueue.getNumOfPersistentEntries();
    }
 
    /**
@@ -807,22 +807,22 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       if (this.persistentQueue != null && this.isConnected) {
          ret = this.persistentQueue.getNumOfBytes();
          if (ret < 0L) return this.transientQueue.getNumOfBytes();
-         ret += this.transientQueue.getNumOfBytes() - this.transientQueue.getNumOfDurableBytes();
+         ret += this.transientQueue.getNumOfBytes() - this.transientQueue.getNumOfPersistentBytes();
       }
       return this.transientQueue.getNumOfBytes();
    }
 
    /**
-    * @see I_Queue#getNumOfDurableBytes()
+    * @see I_Queue#getNumOfPersistentBytes()
     */
-   public long getNumOfDurableBytes() {
+   public long getNumOfPersistentBytes() {
       long ret = 0L;
       if (this.persistentQueue != null && this.isConnected) {
-         ret = this.persistentQueue.getNumOfDurableBytes();
-         if (ret < 0L) return this.transientQueue.getNumOfDurableBytes();
-         return this.persistentQueue.getNumOfDurableBytes();
+         ret = this.persistentQueue.getNumOfPersistentBytes();
+         if (ret < 0L) return this.transientQueue.getNumOfPersistentBytes();
+         return this.persistentQueue.getNumOfPersistentBytes();
       }
-      return this.transientQueue.getNumOfDurableBytes();
+      return this.transientQueue.getNumOfPersistentBytes();
    }
 
 

@@ -8,8 +8,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool durable)
-   : MsgQueueEntry(global, connectQos, type, priority, durable)
+ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool persistent)
+   : MsgQueueEntry(global, connectQos, type, priority, persistent)
 {
    ME = "ConnectQueueEntry";
 }

@@ -2,8 +2,8 @@
 Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.7 2003/01/05 23:08:19 ruff Exp $
+Comment:   Testing persistent messages using dbXMLDriver Persistence
+Version:   $Id: TestPersistenceXMLDB.java,v 1.8 2003/01/13 23:38:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -26,7 +26,7 @@ import junit.framework.*;
 
 
 /**
- * This client tests the persistence driver, the $lt;isDurable> flag.
+ * This client tests the persistence driver, the $lt;persistent> flag.
  * <p>
  * Invoke examples:<br />
  * <pre>
@@ -42,7 +42,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
    private final String senderName = "Benedikt";
    private final String senderPasswd = "secret";
-   private String publishOid = "amIdurable";
+   private String publishOid = "amIpersistent";
    private String subscribeString = "subscribeMe";
    private XmlBlasterConnection senderConnection = null;
    private String senderContent = "Smoked < Ham"; // not well formed XML on purpose
@@ -149,17 +149,17 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
    /**
     * Sets up the fixture.
-    * Sends a durable message to be stored in persistence driver.
+    * Sends a persistent message to be stored in persistence driver.
     * <p />
     * Starts the server, creates a connection and does a login.<br />
-    * Sends a durable message and disconnects from server.<br />
+    * Sends a persistent message and disconnects from server.<br />
     * Shuts the server down.<br />
     */
    protected void setUp() {
       serverThread1 = startServer();
       senderConnection = connectClient(senderName, senderPasswd);
 
-      sendDurable(senderConnection);
+      sendPersistent(senderConnection);
 
       disconnectClient(senderConnection);
       stopServer(serverThread1);
@@ -175,19 +175,19 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    }
 
    /**
-    * Publish a durable message.
+    * Publish a persistent message.
     * @param sc A connection of a client to xmlBlaster.
     */
-   public void sendDurable(XmlBlasterConnection sc) {
-        if (log.CALL) log.call(ME, "sendDurable");
-      if (log.TRACE) log.trace(ME, "Testing a durable message ...");
+   public void sendPersistent(XmlBlasterConnection sc) {
+        if (log.CALL) log.call(ME, "sendPersistent");
+      if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                       "   <" + subscribeString + "/>\n" +
                       "</key>";
 
       String qos = "<qos>" +
-                   "   <isDurable />" +
+                   "   <persistent />" +
                    "</qos>";
 
       try {
@@ -199,7 +199,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
          log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
-   } // end of sendDurable
+   } // end of sendPersistent
 
 
    /**
@@ -225,10 +225,10 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * TEST: Subscribes to the message with the given key per XPATH.
     * <p />
     * Starts the server, creates a connection and does a login.<br />
-    * Subscribes to a durable message waits a while and disconnects from server.<br />
+    * Subscribes to a persistent message waits a while and disconnects from server.<br />
     * Shuts the server down.<br />
     */
-   public void testDurable() {
+   public void testPersistent() {
 
       serverThread2 = startServer();
       senderConnection = connectClient(senderName, senderPasswd);
@@ -241,7 +241,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
       serverThread2 = null;
       senderConnection = null;
-   } // end of testDurable
+   } // end of testPersistent
 
 
    /**
@@ -271,7 +271,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestPersistenceXMLDB(new Global(), "testDurable"));
+       suite.addTest(new TestPersistenceXMLDB(new Global(), "testPersistent"));
        return suite;
    }
 
@@ -290,6 +290,6 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
       TestPersistenceXMLDB testSub = new TestPersistenceXMLDB(glob, "TestPersistenceXMLDB");
       testSub.setUp();
-      testSub.testDurable();
+      testSub.testPersistent();
    }
 }

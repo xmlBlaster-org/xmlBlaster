@@ -147,8 +147,8 @@ public final class PublishQosServer
       return this.msgQosData.isVolatile();
    }
 
-   public boolean isDurable() {
-      return this.msgQosData.isDurable();
+   public boolean isPersistent() {
+      return this.msgQosData.isPersistent();
    }
 
    public boolean isForceUpdate() {

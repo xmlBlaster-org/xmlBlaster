@@ -51,7 +51,7 @@ MsgQosFactory::MsgQosFactory(Global& global)
    inExpiration_      = false;
    inRcvTimestamp_    = false;
    inIsVolatile_      = false;
-   inIsDurable_       = false;
+   inIsPersistent_    = false;
    inReadonly_        = false;
    inRoute_           = false;
    sendRemainingLife_ = true;
@@ -243,9 +243,9 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       inIsVolatile_ = true;
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "isDurable")) {
+   if (SaxHandlerBase::caseCompare(name, "persistent")) {
       if (!inQos_) return;
-      msgQosData_.setDurable(true);
+      msgQosData_.setPersistent(true);
       return;
    }
 
@@ -389,13 +389,13 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       return;
    }
 
-   if(SaxHandlerBase::caseCompare(name, "isDurable")) {
-      inIsDurable_ = false;
+   if(SaxHandlerBase::caseCompare(name, "persistent")) {
+      inIsPersistent_ = false;
       string tmp = stringTrim(character_);
       if (!tmp.empty())
-         if (tmp == "true") msgQosData_.setDurable(true);
-         else  msgQosData_.setDurable(false);
-      // if (log.TRACE) log.trace(ME, "Found isDurable = " + msgQosData.getIsDurable());
+         if (tmp == "true") msgQosData_.setPersistent(true);
+         else  msgQosData_.setPersistent(false);
+      // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
       character_.erase();
       return;
    }
@@ -496,7 +496,7 @@ int main(int args, char* argv[])
     </rcvTimestamp>
     <expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
     <queue index='0' of='1'/> <!-- If queued messages are flushed on login -->
-    <isDurable/>
+    <persistent/>
     <redeliver>4</redeliver>             <!-- Only for updates -->
     <route>
        <node id='heron'/>

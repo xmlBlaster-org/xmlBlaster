@@ -79,8 +79,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    //public transient final static boolean DEFAULT_isVolatile = false;
    //private boolean volatileFlag = DEFAULT_isVolatile;
 
-   public transient final static boolean DEFAULT_isDurable = false;
-   private PropBoolean durable = new PropBoolean(DEFAULT_isDurable);
+   public transient final static boolean DEFAULT_persistent = false;
+   private PropBoolean persistent = new PropBoolean(DEFAULT_persistent);
 
    /**
     * Send message to subscriber even the content is the same as the previous?
@@ -237,21 +237,21 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @param isDurable mark a message as persistent
+    * @param persistent mark a message as persistent
     */
-   public void setDurable(boolean durable) {
-      this.durable.setValue(durable);
+   public void setPersistent(boolean persistent) {
+      this.persistent.setValue(persistent);
    }
 
    /**
     * @return true/false
     */
-   public boolean isDurable() {
-      return this.durable.getValue();
+   public boolean isPersistent() {
+      return this.persistent.getValue();
    }
 
-   public PropBoolean getDurableProp() {
-      return this.durable;
+   public PropBoolean getPersistentProp() {
+      return this.persistent;
    }
 
    /**
@@ -684,7 +684,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
          newOne = (MsgQosData)super.clone();
          synchronized(this) {
             newOne.isSubscribeable = (PropBoolean)this.isSubscribeable.clone();
-            newOne.durable = (PropBoolean)this.durable.clone();
+            newOne.persistent = (PropBoolean)this.persistent.clone();
             newOne.forceUpdate = (PropBoolean)this.forceUpdate.clone();
             newOne.lifeTime = (PropLong)this.lifeTime.clone();
             newOne.administrative = (PropBoolean)this.administrative.clone();

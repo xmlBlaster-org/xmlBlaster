@@ -201,8 +201,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       return (MsgQosData)this.msgUnit.getQosData();
    }
 
-   public boolean isDurable() {
-      return getMsgQosData().isDurable();
+   public boolean isPersistent() {
+      return getMsgQosData().isPersistent();
    }
 
    public MsgKeyData getMsgKeyData() {
@@ -482,7 +482,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       String fileName = "MsgUnitWrapper.ser";
       try {
          PublishKey publishKey = new PublishKey(glob, "HA");
-         PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><isDurable/></qos>");
+         PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
          publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
          MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
          StorageId storageId = new StorageId("mystore", "someid");

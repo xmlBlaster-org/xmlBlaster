@@ -86,7 +86,7 @@ public class ServerEntryFactory implements I_EntryFactory
     * Parses back the raw data to a I_Entry (deserializing)
     * @param type see ENTRY_TYPE_MSG etc.
     */
-   public I_Entry createEntry(int priority, long timestamp, String type, boolean isDurable, byte[] blob, StorageId storageId)
+   public I_Entry createEntry(int priority, long timestamp, String type, boolean persistent, byte[] blob, StorageId storageId)
       throws XmlBlasterException {
 
       if (ENTRY_TYPE_UPDATE_REF.equals(type)) {
@@ -112,7 +112,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Timestamp updateEntryTimestamp = new Timestamp(uniqueId.longValue());
             return new MsgQueueUpdateEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
-                                           keyOid, msgUnitWrapperUniqueId.longValue(), isDurable, receiver,
+                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent, receiver,
                                            subscriptionId, state, redeliverCount.intValue());
          }
          catch (Exception ex) {
@@ -134,7 +134,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Timestamp updateEntryTimestamp = new Timestamp(uniqueId.longValue());
             return new MsgQueueHistoryEntry((org.xmlBlaster.engine.Global)this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
-                                           keyOid, msgUnitWrapperUniqueId.longValue(), isDurable);
+                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent);
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueHistoryEntry", ex);
@@ -231,7 +231,7 @@ public class ServerEntryFactory implements I_EntryFactory
 
 
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
-         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, isDurable);
+         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, persistent);
          //entry.setUniqueId(timestamp);
          return entry;
       }
@@ -289,7 +289,7 @@ public class ServerEntryFactory implements I_EntryFactory
          for(int ii=0; ii<numRuns; ii++) {
             for(int jj=0; jj<persistType.length; jj++) {
                PublishKey publishKey = new PublishKey(glob, "HA");
-               PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><isDurable/></qos>");
+               PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
                publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
                MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
                StorageId storageId = new StorageId("mystore", "someid");
@@ -300,7 +300,7 @@ public class ServerEntryFactory implements I_EntryFactory
                int priority = msgUnitWrapper.getPriority();
                long timestamp = msgUnitWrapper.getUniqueId();
                String type = msgUnitWrapper.getEmbeddedType();
-               boolean isDurable = msgUnitWrapper.isDurable();
+               boolean persistent = msgUnitWrapper.isPersistent();
 
                ME = persistType[jj];
 
@@ -317,7 +317,7 @@ public class ServerEntryFactory implements I_EntryFactory
                org.jutils.time.StopWatch stopWatchToObj = new org.jutils.time.StopWatch();
                for(int kk=0; kk<numTransform; kk++) {
                   newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
-                                              timestamp, type, isDurable, blob, storageId);
+                                              timestamp, type, persistent, blob, storageId);
                }
                elapsed = stopWatchToObj.elapsed();
                log.info(ME, "num toObj=" + numTransform + " elapsed=" + elapsed + stopWatchToObj.nice());

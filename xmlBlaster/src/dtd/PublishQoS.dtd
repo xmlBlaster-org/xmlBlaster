@@ -3,7 +3,7 @@
 <!ELEMENT qos (destination*,
                expires?,
                isVolatile?,
-               isDurable?,
+               persistent?,
                forceUpdate?,
                readonly?,
                defaultContent?,
@@ -24,7 +24,7 @@
 
 <!ELEMENT isVolatile (#PCDATA)>
 
-<!ELEMENT isDurable EMPTY>
+<!ELEMENT persistent EMPTY>
 
 <!ELEMENT forceUpdate EMPTY>
 

@@ -17,9 +17,9 @@ public interface I_Entry extends java.io.Serializable
    int getPriority();
 
    /**
-    * Returns true if the entry is durable (persistent), false otherwise.
+    * Returns true if the entry is persistent (persistent on HD), false otherwise.
     */
-   boolean isDurable();
+   boolean isPersistent();
 
    /**
     * This is the second order criteria in the queue

@@ -45,8 +45,8 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    private JdbcManager manager = null;
    private I_QueuePutListener putListener;
    private long numOfEntries = -1L;
-   private long numOfDurableEntries = -1L;
-   private long numOfDurableBytes = -1L;
+   private long numOfPersistentEntries = -1L;
+   private long numOfPersistentBytes = -1L;
    boolean isDown = true;
    private long numOfBytes = -1L;
 
@@ -76,8 +76,8 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
             this.numOfEntries = this.manager.getNumOfEntries(this.associatedTable);
             this.numOfBytes = this.manager.getNumOfBytes(this.associatedTable);
-            this.numOfDurableEntries = this.manager.getNumOfDurables(this.associatedTable);
-            this.numOfDurableBytes = this.manager.getSizeOfDurables(this.associatedTable);
+            this.numOfPersistentEntries = this.manager.getNumOfPersistents(this.associatedTable);
+            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(this.associatedTable);
 
             this.isDown = false;
             if (log.TRACE) log.trace(ME, "Successful initialized");
@@ -207,9 +207,9 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             if (this.manager.addEntry(this.associatedTable, entry)) {
                this.numOfEntries++;
                this.numOfBytes += entry.getSizeInBytes();
-               if (entry.isDurable()) {
-                  this.numOfDurableEntries++;
-                  this.numOfDurableBytes += entry.getSizeInBytes();
+               if (entry.isPersistent()) {
+                  this.numOfPersistentEntries++;
+                  this.numOfPersistentBytes += entry.getSizeInBytes();
                }
                return true;
             }
@@ -252,9 +252,9 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
                if (isProcessed) {
                   this.numOfEntries++;
                   this.numOfBytes += queueEntries[i].getSizeInBytes();
-                  if (queueEntries[i].isDurable()) {
-                     this.numOfDurableEntries++;
-                     this.numOfDurableBytes += queueEntries[i].getSizeInBytes();
+                  if (queueEntries[i].isPersistent()) {
+                     this.numOfPersistentEntries++;
+                     this.numOfPersistentBytes += queueEntries[i].getSizeInBytes();
                   }
                }
             }
@@ -317,10 +317,10 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
             this.numOfEntries -= this.manager.deleteEntries(this.associatedTable, ids);
 
-            this.numOfDurableBytes = -1L;
-            getNumOfDurableBytes_(true);
-            this.numOfDurableEntries = -1L;
-            getNumOfDurableEntries_(true);
+            this.numOfPersistentBytes = -1L;
+            getNumOfPersistentBytes_(true);
+            this.numOfPersistentEntries = -1L;
+            getNumOfPersistentEntries_(true);
 
             // since this method should never be called, we choose the easiest way to
             // find out the sizeInBytes, that is by invoking the dB.
@@ -359,11 +359,11 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.numOfBytes -= ret.countBytes;
             this.numOfEntries -= ret.countEntries;
 
-            this.numOfDurableBytes = -1L;
-            getNumOfDurableBytes_(true);
+            this.numOfPersistentBytes = -1L;
+            getNumOfPersistentBytes_(true);
 
-            this.numOfDurableEntries = -1L;
-            getNumOfDurableEntries_(true);
+            this.numOfPersistentEntries = -1L;
+            getNumOfPersistentEntries_(true);
             return ret.list;
          }
       }
@@ -460,10 +460,10 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
-            this.numOfDurableBytes = -1L;
-            getNumOfDurableBytes_(true);
-            this.numOfDurableEntries = -1L;
-            getNumOfDurableEntries_(true);
+            this.numOfPersistentBytes = -1L;
+            getNumOfPersistentBytes_(true);
+            this.numOfPersistentEntries = -1L;
+            getNumOfPersistentEntries_(true);
 
             return (int)ret.countEntries;
          }
@@ -489,10 +489,10 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
-            this.numOfDurableBytes = -1L;
-            getNumOfDurableBytes_(true);
-            this.numOfDurableEntries = -1L;
-            getNumOfDurableEntries_(true);
+            this.numOfPersistentBytes = -1L;
+            getNumOfPersistentBytes_(true);
+            this.numOfPersistentEntries = -1L;
+            getNumOfPersistentEntries_(true);
             return ret.countEntries;
          }
       }
@@ -551,14 +551,14 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
          long[] ids = new long[queueEntries.length];
 
          long currentAmount = 0L;
-         long currentDurableSize = 0L;
-         long currentDurableEntries = 0L;
+         long currentPersistentSize = 0L;
+         long currentPersistentEntries = 0L;
          for (int i=0; i < ids.length; i++) {
             ids[i] = queueEntries[i].getUniqueId();
             currentAmount += queueEntries[i].getSizeInBytes();
-            if (queueEntries[i].isDurable()) {
-               currentDurableSize += queueEntries[i].getSizeInBytes();
-               currentDurableEntries++;
+            if (queueEntries[i].isPersistent()) {
+               currentPersistentSize += queueEntries[i].getSizeInBytes();
+               currentPersistentEntries++;
             }
          }
 
@@ -568,17 +568,17 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.numOfEntries -= ret;
 
             if ((int)ret != queueEntries.length) { // then we need to retrieve the values
-               this.numOfDurableBytes = -1L;
-               getNumOfDurableEntries_(true);
-               this.numOfDurableEntries = -1L;
-               getNumOfDurableEntries_(true);
+               this.numOfPersistentBytes = -1L;
+               getNumOfPersistentEntries_(true);
+               this.numOfPersistentEntries = -1L;
+               getNumOfPersistentEntries_(true);
                this.numOfBytes = -1L;
                getNumOfBytes_();
             }
             else {
                this.numOfBytes -= currentAmount;
-               this.numOfDurableBytes -= currentDurableSize;
-               this.numOfDurableEntries -= currentDurableEntries;
+               this.numOfPersistentBytes -= currentPersistentSize;
+               this.numOfPersistentEntries -= currentPersistentEntries;
             }
             return ret;
          }
@@ -665,24 +665,24 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /**
-    * It returns the number of durable entries in the queue.
+    * It returns the number of persistent entries in the queue.
     * In case this value is -1L (which means a previous attempt to read from the
     * DB failed) it will synchronize against the DB by making a call to the DB.
     * If that fails it will return -1L.
     *
     * @param verbose If true we throw an exception on errors, if false we ignore the error silently
-    * @see I_Queue#getNumOfDurableEntries()
+    * @see I_Queue#getNumOfPersistentEntries()
     */
-   private long getNumOfDurableEntries_(boolean verbose) throws XmlBlasterException {
-      if (this.numOfDurableEntries > -1L) return this.numOfDurableEntries;
+   private long getNumOfPersistentEntries_(boolean verbose) throws XmlBlasterException {
+      if (this.numOfPersistentEntries > -1L) return this.numOfPersistentEntries;
       synchronized (this.modificationMonitor) {
          try {
-            this.numOfDurableEntries = this.manager.getNumOfDurables(this.associatedTable);
-            return this.numOfDurableEntries;
+            this.numOfPersistentEntries = this.manager.getNumOfPersistents(this.associatedTable);
+            return this.numOfPersistentEntries;
          }
          catch (SQLException ex) {
             if (verbose) { // If called from toXml() we need to suppress this exeption because we here call toXml() again
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfDurableEntries_() caught sql exception, status is" + toXml(""), ex);
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfPersistentEntries_() caught sql exception, status is" + toXml(""), ex);
             }
             return -1L;
          }
@@ -691,20 +691,20 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /**
-    * It returns the number of durable entries in the queue.
+    * It returns the number of persistent entries in the queue.
     * In case this value is -1L (which means a previous attempt to read from the
     * DB failed) it will synchronize against the DB by making a call to the DB.
     * If that fails it will return -1L.
     *
-    * @see I_Queue#getNumOfDurableEntries()
+    * @see I_Queue#getNumOfPersistentEntries()
     */
-   public long getNumOfDurableEntries() {
+   public long getNumOfPersistentEntries() {
       try {
-         return getNumOfDurableEntries_(true);
+         return getNumOfPersistentEntries_(true);
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "getNumOfEntries, exception: " + ex.getMessage());
-         return this.numOfDurableEntries;
+         return this.numOfPersistentEntries;
       }
    }
 
@@ -761,24 +761,24 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /**
-    * It returns the number of durable entries in the queue.
+    * It returns the number of persistent entries in the queue.
     * In case this value is -1L (which means a previous attempt to read from the
     * DB failed) it will synchronize against the DB by making a call to the DB.
     * If that fails it will return -1L.
     *
     * @param verbose If true we throw an exception on errors, if false we ignore the error silently
-    * @see I_Queue#getNumOfDurableBytes()
+    * @see I_Queue#getNumOfPersistentBytes()
     */
-   private long getNumOfDurableBytes_(boolean verbose) throws XmlBlasterException {
-      if (this.numOfDurableBytes > -1L) return this.numOfDurableBytes;
+   private long getNumOfPersistentBytes_(boolean verbose) throws XmlBlasterException {
+      if (this.numOfPersistentBytes > -1L) return this.numOfPersistentBytes;
       synchronized (this.modificationMonitor) {
          try {
-            this.numOfDurableBytes = this.manager.getSizeOfDurables(this.associatedTable);
-            return this.numOfDurableBytes;
+            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(this.associatedTable);
+            return this.numOfPersistentBytes;
          }
          catch (SQLException ex) {
             if (verbose) { // If called from toXml() we need to suppress this exeption because we here call toXml() again
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfDurableBytes_() caught sql exception, status is" + toXml(""), ex);
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfPersistentBytes_() caught sql exception, status is" + toXml(""), ex);
             }
             return -1L;
          }
@@ -787,20 +787,20 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /**
-    * It returns the number of durable entries in the queue.
+    * It returns the number of persistent entries in the queue.
     * In case this value is -1L (which means a previous attempt to read from the
     * DB failed) it will synchronize against the DB by making a call to the DB.
     * If that fails it will return -1L.
     *
-    * @see I_Queue#getNumOfDurableBytes()
+    * @see I_Queue#getNumOfPersistentBytes()
     */
-   public long getNumOfDurableBytes() {
+   public long getNumOfPersistentBytes() {
       try {
-         return getNumOfDurableBytes_(true);
+         return getNumOfPersistentBytes_(true);
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "getNumOfBytes, exception: " + ex.getMessage());
-         return this.numOfDurableBytes;
+         return this.numOfPersistentBytes;
       }
    }
 
@@ -837,8 +837,8 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
          ReturnDataHolder ret = this.manager.deleteFirstEntries(this.associatedTable, -1, -1L);
          this.numOfEntries = 0L;
          this.numOfBytes = 0L;
-         this.numOfDurableEntries = 0L;
-         this.numOfDurableBytes = 0L;
+         this.numOfPersistentEntries = 0L;
+         this.numOfPersistentBytes = 0L;
          return ret.countEntries;
       }
       catch (SQLException ex)
@@ -902,8 +902,8 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
       sb.append("'>");
       sb.append(property.toXml(extraOffset+Constants.INDENT));
       try {
-         sb.append(offset).append(" <numOfDurables>").append(getNumOfDurableEntries_(false)).append("</numOfDurables>");
-         sb.append(offset).append(" <sizeOfDurables>").append(getNumOfDurableBytes_(false)).append("</sizeOfDurables>");
+         sb.append(offset).append(" <numOfPersistents>").append(getNumOfPersistentEntries_(false)).append("</numOfPersistents>");
+         sb.append(offset).append(" <sizeOfPersistents>").append(getNumOfPersistentBytes_(false)).append("</sizeOfPersistents>");
       }
       catch (XmlBlasterException e) {
       }

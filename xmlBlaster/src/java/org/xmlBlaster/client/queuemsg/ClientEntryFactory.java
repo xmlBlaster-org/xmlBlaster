@@ -76,7 +76,7 @@ public class ClientEntryFactory implements I_EntryFactory
     * Parses back the raw data to a I_Entry (deserializing)
     * @param type see ENTRY_TYPE_MSG etc.
     */
-   public I_Entry createEntry(int priority, long timestamp, String type, boolean isDurable, byte[] blob, StorageId storageId)
+   public I_Entry createEntry(int priority, long timestamp, String type, boolean persistent, byte[] blob, StorageId storageId)
       throws XmlBlasterException {
 
       if (ENTRY_TYPE_PUBLISH.equals(type)) {
@@ -92,7 +92,7 @@ public class ClientEntryFactory implements I_EntryFactory
             String uniqueId = (String)obj[1];
             /*
             return new MsgQueuePublishEntry(this.glob,
-                                           PriorityEnum.toPriorityEnum(priority), storageId, isDurable);
+                                           PriorityEnum.toPriorityEnum(priority), storageId, persistent);
             */
          }
          catch (Exception ex) {
@@ -104,7 +104,7 @@ public class ClientEntryFactory implements I_EntryFactory
          //return msgUnitWrapper;
       }
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
-         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, isDurable);
+         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, persistent);
          //entry.setUniqueId(timestamp);
          return entry;
       }

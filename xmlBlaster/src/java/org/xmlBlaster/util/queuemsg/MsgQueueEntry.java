@@ -44,8 +44,8 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    /** The message priority, see Constants.java */
    protected final PriorityEnum priority;
 
-   /** the flag telling if a message is durable (opposite to transient) */
-   protected boolean durable;
+   /** the flag telling if a message is persistent (opposite to transient) */
+   protected boolean persistent;
 
    /** Which method we invoke, e.g. "update" or "publish" */
    protected final String entryType;
@@ -53,8 +53,8 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    /**
     * @param methodName use methodName as entryType
     */
-   public MsgQueueEntry(Global glob, MethodName methodName, PriorityEnum priority, StorageId storageId, boolean durable) {
-      this(glob, methodName.toString(), priority, (Timestamp)null, storageId, durable);
+   public MsgQueueEntry(Global glob, MethodName methodName, PriorityEnum priority, StorageId storageId, boolean persistent) {
+      this(glob, methodName.toString(), priority, (Timestamp)null, storageId, persistent);
    }
 
    /**
@@ -63,8 +63,8 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * @param storageId The queue i belong to
     * @see org.xmlBlaster.util.Timestamp
     */
-   public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, StorageId storageId, boolean durable) {
-      this(glob, entryType, priority, (Timestamp)null, storageId, durable);
+   public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, StorageId storageId, boolean persistent) {
+      this(glob, entryType, priority, (Timestamp)null, storageId, persistent);
    }
 
    /**
@@ -72,7 +72,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     *
     * @param timestamp The unique nano timestamp as from org.xmlBlaster.util.Timestamp or null to create one now
     */
-   public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean durable) {
+   public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean persistent) {
       this.uniqueIdTimestamp = (timestamp == null) ? new Timestamp() : timestamp;
 
       if (entryType == null || priority == null || glob == null || storageId ==null) {
@@ -86,7 +86,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       this.entryType = entryType;
       this.priority = priority;
       this.storageId = storageId;
-      this.durable = durable;
+      this.persistent = persistent;
    }
 
    public final void setGlobal(Global global) {
@@ -115,10 +115,10 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    }
 
    /**
-    * @return The isDurable flag of this message
+    * @return The persistent flag of this message
     */
-   public boolean isDurable() {
-      return this.durable;
+   public boolean isPersistent() {
+      return this.persistent;
    }
 
    /**

@@ -218,7 +218,7 @@ public class CacheQueueTest extends TestCase {
       long maxNumOfBytesCache[] = {700L, 10000L};
       long maxNumOfBytes[] = {700L, 50000L};
       int numOfTransientEntries[] = { 2, 50, 200};
-      int numOfDurableEntries[] =  { 0, 2, 50, 200};
+      int numOfPersistentEntries[] =  { 0, 2, 50, 200};
 //      int numPrio[] = { 1, 5, 9};
 
 //      int it=0, id=0, ic=0, is=0;
@@ -240,10 +240,10 @@ public class CacheQueueTest extends TestCase {
 
                for (int it=0; it < numOfTransientEntries.length; it++) {
                   // entry.setPrio(4+(it%3));
-                  for (int id=0; id < numOfDurableEntries.length; id++) {
+                  for (int id=0; id < numOfPersistentEntries.length; id++) {
 
                      log.info(ME, "**** SUB-TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is] +
-                                   " -> numOfTransientEntries["+it+"]=" + numOfTransientEntries[it] + " numOfDurableEntries["+id+"]=" + numOfDurableEntries[id]);
+                                   " -> numOfTransientEntries["+it+"]=" + numOfTransientEntries[it] + " numOfPersistentEntries["+id+"]=" + numOfPersistentEntries[id]);
                      if (!queue.isShutdown()) queue.shutdown(true);
                      queue.initialize(queueId, prop);
                      queue.clear();
@@ -251,12 +251,12 @@ public class CacheQueueTest extends TestCase {
                      long maxPersistentNumOfBytes = maxNumOfBytes[is];
                      long maxTransientNumOfBytes = maxNumOfBytesCache[ic];
                      long transientNumOfBytes  = 0L;
-                     long durableNumOfBytes  = 0L;
+                     long persistentNumOfBytes  = 0L;
 
                      assertEquals(ME + " the number of bytes of the queue should be zero ", 0L, queue.getNumOfBytes());
                      assertEquals(ME + " the number of entries in the queue should be zero ", 0L, queue.getNumOfEntries());
-                     assertEquals(ME + " the number of bytes of the durable entries in the queue should be zero ", 0L, queue.getNumOfDurableBytes());
-                     assertEquals(ME + " the number of durable entries in the queue should be zero ", 0L, queue.getNumOfDurableEntries());
+                     assertEquals(ME + " the number of bytes of the persistent entries in the queue should be zero ", 0L, queue.getNumOfPersistentBytes());
+                     assertEquals(ME + " the number of persistent entries in the queue should be zero ", 0L, queue.getNumOfPersistentEntries());
 
                      assertEquals(ME + " the maximum number of entries is wrong ", maxNumOfBytes[is], queue.getMaxNumOfBytes());
 
@@ -264,49 +264,49 @@ public class CacheQueueTest extends TestCase {
 
                         queue.clear();
                         transientNumOfBytes = 100 * numOfTransientEntries[it];
-                        durableNumOfBytes =100 * numOfDurableEntries[id];
+                        persistentNumOfBytes =100 * numOfPersistentEntries[id];
                         // prepare the inputs .
                         Hashtable[] inputTable = new Hashtable[3];
                         for (int i=0; i < 3; i++) inputTable[i] = new Hashtable();
 
                         DummyEntry[] transients = new DummyEntry[numOfTransientEntries[it]];
-                        DummyEntry[] durable    = new DummyEntry[numOfDurableEntries[id]];
+                        DummyEntry[] persistentEntries    = new DummyEntry[numOfPersistentEntries[id]];
 
-                        this.log.info(ME, "putPeekRemove " + queueId + " durable: " + durable.length + " transient: " + transients.length);
+                        this.log.info(ME, "putPeekRemove " + queueId + " persistent: " + persistentEntries.length + " transient: " + transients.length);
 
-                        boolean isDurable = false;
+                        boolean persistent = false;
                         for (int i=0; i < transients.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, queue.getStorageId(), 80, isDurable);
+                           DummyEntry entry = new DummyEntry(glob, enum, queue.getStorageId(), 80, persistent);
                            transients[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
-                        isDurable = true;
-                        for (int i=0; i < durable.length; i++) {
+                        persistent = true;
+                        for (int i=0; i < persistentEntries.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, queue.getStorageId(), 80, isDurable);
-                           durable[i] = entry;
+                           DummyEntry entry = new DummyEntry(glob, enum, queue.getStorageId(), 80, persistent);
+                           persistentEntries[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
 
                         // do the test here ....
-                        assertEquals(ME + " number of durable entries is wrong ", 0L, queue.getNumOfDurableEntries());
+                        assertEquals(ME + " number of persistent entries is wrong ", 0L, queue.getNumOfPersistentEntries());
                         assertEquals(ME + " number of entries is wrong ", 0L, queue.getNumOfEntries());
 //                        queue.put(transients, false);
                         for (int i=0; i < transients.length; i++)
                            queue.put(transients[i], false);
                         assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, queue.getNumOfEntries());
-//                        queue.put(durable, false);
-                        for (int i=0; i < durable.length; i++) {
-                           queue.put(durable[i], false);
+//                        queue.put(persistent, false);
+                        for (int i=0; i < persistentEntries.length; i++) {
+                           queue.put(persistentEntries[i], false);
                         }
-                        assertEquals(ME + " number of entries after putting transients is wrong ", durable.length + transients.length, queue.getNumOfEntries());
-                        long nDurables  = queue.getNumOfDurableEntries();
-                        long nTransient = queue.getNumOfEntries() - nDurables;
+                        assertEquals(ME + " number of entries after putting transients is wrong ", persistentEntries.length + transients.length, queue.getNumOfEntries());
+                        long nPersistents  = queue.getNumOfPersistentEntries();
+                        long nTransient = queue.getNumOfEntries() - nPersistents;
 
-                        assertEquals(ME + " number of durable entries is wrong ", durable.length, nDurables);
+                        assertEquals(ME + " number of persistent entries is wrong ", persistentEntries.length, nPersistents);
                         assertEquals(ME + " number of transient entries is wrong ", transients.length, nTransient);
 
                         ArrayList total = new ArrayList();
@@ -321,12 +321,12 @@ public class CacheQueueTest extends TestCase {
                         int mustEntries = inputTable[0].size() + inputTable[1].size() + inputTable[2].size();
 
 
-                        long totNumOfBytes = 100*(numOfDurableEntries[id]+numOfTransientEntries[it]);
+                        long totNumOfBytes = 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]);
                         this.log.trace(ME, "total number of bytes: " + totNumOfBytes + " maxNumOfBytes: " + maxNumOfBytes[is]);
                         this.log.trace(ME, "entries must be: " + mustEntries);
 
                         assertTrue("Overflow is not allowed " + queue.toXml("") + "total number of bytes " + totNumOfBytes + " max number of bytes: " + maxNumOfBytes[is], totNumOfBytes <= maxNumOfBytes[is]);
-//                        assertTrue(ME + " Overflow is not allowed " + queue.toXml("") , checkIfPossible(transientNumOfBytes, durableNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
+//                        assertTrue(ME + " Overflow is not allowed " + queue.toXml("") , checkIfPossible(transientNumOfBytes, persistentNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
                         assertEquals(ME + " number of returned values differe from input values " + queue.toXml(""), mustEntries, total.size());
                         log.info(ME, "SUCCESS: cacheSize=" + maxNumOfBytesCache[ic] + " maxBytes=" + maxNumOfBytes[is] + " .... looks OK");
 
@@ -344,8 +344,8 @@ public class CacheQueueTest extends TestCase {
                      }
                      catch(XmlBlasterException e) {
                         log.dump(ME, "Exception (might be ok): " + e.toString());
-                        assertTrue("Overflow is not allowed " + queue.toXml("") + "total number of bytes " + 100*(numOfDurableEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], 100*(numOfDurableEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
-//                        assertTrue(ME + " Overflow is not allowed" + queue.toXml(""), !checkIfPossible(transientNumOfBytes, durableNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
+                        assertTrue("Overflow is not allowed " + queue.toXml("") + "total number of bytes " + 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
+//                        assertTrue(ME + " Overflow is not allowed" + queue.toXml(""), !checkIfPossible(transientNumOfBytes, persistentNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
                         log.info(ME, "SUCCESS: Exception is OK: " + e.toString());
                      }
                   }

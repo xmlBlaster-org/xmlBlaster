@@ -6,7 +6,7 @@ that David posted.  Here's the scenario:
 
 -One publisher publishing messages.  
 -More than three consumers of messages (all listening on the same XPATH)
--The messages are all volatile, non-durable.
+-The messages are all volatile, non-persistent.
 -This all occurs on the same xmlblaster connection.
 
 Problem:
@@ -180,7 +180,7 @@ public class VolatileTest
                             "</key>";
             String content = message;
                         PublishQos pqos = new PublishQos(glob);       
-                        pqos.setDurable(false);
+                        pqos.setPersistent(false);
                         pqos.setVolatile(true);
             MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), pqos.toXml());
             log.info(ME, "Publishing ...");

@@ -2,8 +2,8 @@
 Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.6 2003/01/05 23:08:19 ruff Exp $
+Comment:   Testing persistent messages
+Version:   $Id: TestPersistence.java,v 1.7 2003/01/13 23:38:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -26,7 +26,7 @@ import junit.framework.*;
 
 
 /**
- * This client tests the persistence driver, the $lt;isDurable> flag.
+ * This client tests the persistence driver, the $lt;persistent/> flag.
  * <p>
  * Invoke examples:<br />
  * <pre>
@@ -42,9 +42,9 @@ public class TestPersistence extends TestCase implements I_Callback
    private LogChannel log = null;
 
    private final String senderName = "Gesa";
-   private String publishOid = "HelloDurable";
+   private String publishOid = "HelloPersistent";
    private XmlBlasterConnection senderConnection = null;
-   private String senderContent = "Some durable content";
+   private String senderContent = "Some persistent content";
 
    private int numReceived = 0;
 
@@ -106,18 +106,18 @@ public class TestPersistence extends TestCase implements I_Callback
 
 
    /**
-    * Publish a durable message.
+    * Publish a persistent message.
     * <p />
     */
-   public void sendDurable()
+   public void sendPersistent()
    {
-      if (log.TRACE) log.trace(ME, "Testing a durable message ...");
+      if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'>\n" +
                       "</key>";
 
       String qos = "<qos>" +
-                   "   <isDurable />" +
+                   "   <persistent />" +
                    "</qos>";
 
       try {
@@ -137,15 +137,15 @@ public class TestPersistence extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Publish a durable message.
+    * TEST: Publish a persistent message.
     * <p />
     */
-   public void testDurable()
+   public void testPersistent()
    {
-      sendDurable();
+      sendPersistent();
       checkContent(true);
       senderContent = senderContent + " again";
-      sendDurable();
+      sendPersistent();
       checkContent(true);
    }
 
@@ -236,7 +236,7 @@ public class TestPersistence extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestPersistence("testDurable"));
+       suite.addTest(new TestPersistence("testPersistent"));
        return suite;
    }
 
@@ -255,7 +255,7 @@ public class TestPersistence extends TestCase implements I_Callback
       }
       TestPersistence testSub = new TestPersistence("TestPersistence");
       testSub.setUp();
-      testSub.testDurable();
+      testSub.testPersistent();
       testSub.tearDown();
    }
 }

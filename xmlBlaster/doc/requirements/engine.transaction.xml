@@ -48,11 +48,11 @@
 
       <p />
       Maybe MOM will loosely couple together flat transactions from different
-      locations by providing the durable queue part 'D' of the 'ACID'.
+      locations by providing the persistent queue part 'D' of the 'ACID'.
    </description>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 05 02</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

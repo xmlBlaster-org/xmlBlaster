@@ -15,7 +15,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  *  &lt;qos>
  *     &lt;priority>5&lt;/priority>
  *     &lt;expiration lifeTime='60000'/>
- *     &lt;isDurable />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+ *     &lt;persistent />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
  *     &lt;forceUpdate>true&lt;/forceUpdate>
  *     &lt;readonly />
  *  &lt;/qos>
@@ -66,16 +66,16 @@ public:
    /**
     * Default constructor for transient PtP messages.
     * <p />
-    * To make the message persistent, use the durable() method
+    * To make the message persistent, use the isPersistent() method
     * @param destination The object containing the destination address.<br />
     *        To add more destinations, us the addDestination() method.
     */
    PublishQos(Global& global, const Destination& destination);
 
    /**
-    * @param isDurable true = store the message persistently
+    * @param persistent true = store the message persistently
     */
-   PublishQos(Global& global, bool durable);
+   PublishQos(Global& global, bool persistent);
 
    MsgQosData getData() const;
 
@@ -124,7 +124,7 @@ public:
    /**
     * Mark a message to be persistent.
     */
-   void setDurable(bool durable);
+   void setPersistent(bool persistent);
 
    /**
     * The message expires after given milliseconds (message is erased).<p />

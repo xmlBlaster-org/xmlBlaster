@@ -116,8 +116,8 @@ public final class TopicEntry implements I_MapEntry
       return (MsgQosData)this.msgUnit.getQosData();
    }
 
-   public boolean isDurable() {
-      return getMsgQosData().isDurable();
+   public boolean isPersistent() {
+      return getMsgQosData().isPersistent();
    }
 
    public MsgKeyData getMsgKeyData() {
@@ -264,7 +264,7 @@ public final class TopicEntry implements I_MapEntry
       String fileName = "TopicEntry.ser";
       try {
          org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "HA");
-         org.xmlBlaster.engine.qos.PublishQosServer publishQosServer = new org.xmlBlaster.engine.qos.PublishQosServer(glob, "<qos><isDurable/></qos>");
+         org.xmlBlaster.engine.qos.PublishQosServer publishQosServer = new org.xmlBlaster.engine.qos.PublishQosServer(glob, "<qos><persistent/></qos>");
          publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
          MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
          TopicEntry msgUnitWrapper = new TopicEntry(glob, msgUnit);

@@ -20,7 +20,7 @@ my $c=0;
 while ($c++ < 100) {
         $message = $server->call('xmlBlaster.publish', $sessionId,
 "<key oid='' contentMime='text/xml'><service>post</service><type>request</type><id>123</id></key>",
-"<tag>Hello World</tag>", "<qos><expiration lifeTime='0'/><isDurable>false</isDurable></qos>");
+"<tag>Hello World</tag>", "<qos><expiration lifeTime='0'/><persistent>false</persistent></qos>");
         print "published... $c\n";
         sleep(2);
 }

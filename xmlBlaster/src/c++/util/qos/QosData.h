@@ -45,7 +45,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 extern Dll_Export const bool DEFAULT_isSubscribeable;
 extern Dll_Export const bool DEFAULT_isVolatile;
-extern Dll_Export const bool DEFAULT_isDurable;
+extern Dll_Export const bool DEFAULT_persistent;
 extern Dll_Export const bool DEFAULT_forceUpdate;
 extern Dll_Export const bool DEFAULT_forceDestroy;
 

@@ -175,10 +175,10 @@ public final class UpdateQos
    }
 
    /**
-    * Is this a durable message?
+    * Is this a persistent message?
     */
-   public boolean isDurable() {
-      return this.msgQosData.isDurable();
+   public boolean isPersistent() {
+      return this.msgQosData.isPersistent();
    }
 
    /**
@@ -197,7 +197,7 @@ public final class UpdateQos
    }
 
    /**
-    * If durable messages where in queue, this is flushed on login. 
+    * If persistent messages where in queue, this is flushed on login. 
     * @return The number of queued messages
     */
    public long getQueueSize() {
@@ -205,7 +205,7 @@ public final class UpdateQos
    }
 
    /**
-    * If durable messages where in queue, this is flushed on login. 
+    * If persistent messages where in queue, this is flushed on login. 
     * @return The index of the message of the queue
     */
    public long getQueueIndex() {

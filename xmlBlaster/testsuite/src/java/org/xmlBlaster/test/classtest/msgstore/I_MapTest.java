@@ -86,10 +86,10 @@ public class I_MapTest extends TestCase {
 */
    }
 
-   private MsgUnit createMsgUnit(boolean isDurable) {
+   private MsgUnit createMsgUnit(boolean persistent) {
       try {
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
-         publishQosServer.getData().setDurable(isDurable);
+         publishQosServer.getData().setPersistent(persistent);
          return new MsgUnit(glob, "<key oid='Hi'/>", "content".getBytes(), publishQosServer.toXml());
       }
       catch (XmlBlasterException ex) {
@@ -290,10 +290,10 @@ public class I_MapTest extends TestCase {
                i_map.put(queueEntries[i]);
                log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
             }
-            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
 
             assertEquals("", 3, i_map.getNumOfEntries());
-            assertEquals("", 2, i_map.getNumOfDurableEntries());
+            assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
             for (int ii=0; ii<10; ii++) {
                I_MapEntry result = i_map.get(queueEntries[0].getUniqueId());
@@ -309,11 +309,11 @@ public class I_MapTest extends TestCase {
                assertEquals(ME+": Wrong result", queueEntries[2].getUniqueId(), result.getUniqueId());
             }
             assertEquals("", 3, i_map.getNumOfEntries());
-            assertEquals("", 2, i_map.getNumOfDurableEntries());
+            assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
-            log.info(ME, "storage before remove [0], bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+            log.info(ME, "storage before remove [0], bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
             i_map.remove(queueEntries[0]); // Remove one
-            log.info(ME, "storage after remove [0], bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+            log.info(ME, "storage after remove [0], bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
             ArrayList list = new ArrayList();
             list.add(queueEntries[1]);
             list.add(queueEntries[2]);
@@ -326,7 +326,7 @@ public class I_MapTest extends TestCase {
             }
             i_map.remove(queueEntries[1]); // Remove one
             assertEquals("", 1, i_map.getNumOfEntries());
-            assertEquals("", 1, i_map.getNumOfDurableEntries());
+            assertEquals("", 1, i_map.getNumOfPersistentEntries());
 
             for (int ii=0; ii<10; ii++) {
                I_MapEntry result = i_map.get(queueEntries[2].getUniqueId());
@@ -339,7 +339,7 @@ public class I_MapTest extends TestCase {
                assertTrue("Unexpected entry", result == null);
             }
             assertEquals("", 0, i_map.getNumOfEntries());
-            assertEquals("", 0, i_map.getNumOfDurableEntries());
+            assertEquals("", 0, i_map.getNumOfPersistentEntries());
             log.info(ME, "#1 Success, get()");
          }
 
@@ -396,10 +396,10 @@ public class I_MapTest extends TestCase {
                i_map.put(queueEntries[i]);
                log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
             }
-            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
 
             assertEquals("", 3, i_map.getNumOfEntries());
-            assertEquals("", 2, i_map.getNumOfDurableEntries());
+            assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
             for (int ii=0; ii<10; ii++) {
                I_MapEntry[] results = i_map.getAll();
@@ -409,7 +409,7 @@ public class I_MapTest extends TestCase {
                assertEquals(ME+": Wrong result", queueEntries[2].getUniqueId(), results[2].getUniqueId());
             }
             assertEquals("", 3, i_map.getNumOfEntries());
-            assertEquals("", 2, i_map.getNumOfDurableEntries());
+            assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
             i_map.clear();
             log.info(ME, "#1 Success, getAll()");
@@ -481,7 +481,7 @@ public class I_MapTest extends TestCase {
                i_map.put(queueEntries[i]);
                log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
             }
-            //log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with durable bytes=" + i_map.getNumOfDurableBytes());
+            //log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
             log.info(ME, "storage state=" + i_map.toXml(""));
 
             assertEquals("", queueEntries.length, i_map.getNumOfEntries());
@@ -498,7 +498,7 @@ public class I_MapTest extends TestCase {
                assertEquals(ME+": Wrong result", queueEntries[3].getUniqueId(), results[3].getUniqueId());
             }
             assertEquals("", 4, i_map.getNumOfEntries());
-            assertEquals("", 0, i_map.getNumOfDurableEntries());
+            assertEquals("", 0, i_map.getNumOfPersistentEntries());
             log.info(ME, "#1 Success, getAllSwapped()");
          }
 
@@ -599,14 +599,14 @@ public class I_MapTest extends TestCase {
     */
    private void checkSizeAndEntries(String txt, I_MapEntry[] queueEntries, I_Map i_map) {
       long sizeOfTransients = 0L;
-      long numOfDurables = 0;
+      long numOfPersistents = 0;
       long numOfTransients = 0;
-      long sizeOfDurables = 0L;
+      long sizeOfPersistents = 0L;
       for (int i=0; i < queueEntries.length; i++) {
          I_MapEntry entry = queueEntries[i];
-         if (entry.isDurable()) {
-            sizeOfDurables += entry.getSizeInBytes();
-            numOfDurables++;
+         if (entry.isPersistent()) {
+            sizeOfPersistents += entry.getSizeInBytes();
+            numOfPersistents++;
          }
          else {
             sizeOfTransients += entry.getSizeInBytes();
@@ -614,17 +614,17 @@ public class I_MapTest extends TestCase {
          }
       }
 
-      long queueNumOfDurables = i_map.getNumOfDurableEntries();
-      long queueNumOfTransients = i_map.getNumOfEntries() - queueNumOfDurables;
-      long queueSizeOfDurables = i_map.getNumOfDurableBytes();
-      long queueSizeOfTransients = i_map.getNumOfBytes() - queueSizeOfDurables;
+      long queueNumOfPersistents = i_map.getNumOfPersistentEntries();
+      long queueNumOfTransients = i_map.getNumOfEntries() - queueNumOfPersistents;
+      long queueSizeOfPersistents = i_map.getNumOfPersistentBytes();
+      long queueSizeOfTransients = i_map.getNumOfBytes() - queueSizeOfPersistents;
 
-      txt += " getNumOfDurableEntries=" + queueNumOfDurables + " NumOfTransients=" + queueNumOfTransients; 
-      txt += " getNumOfDurableBytes=" + queueSizeOfDurables + " SizeOfTransients=" + queueSizeOfTransients;
+      txt += " getNumOfPersistentEntries=" + queueNumOfPersistents + " NumOfTransients=" + queueNumOfTransients; 
+      txt += " getNumOfPersistentBytes=" + queueSizeOfPersistents + " SizeOfTransients=" + queueSizeOfTransients;
 
-      assertEquals(ME + ": " + txt + " wrong number of durables   ", numOfDurables, queueNumOfDurables);
+      assertEquals(ME + ": " + txt + " wrong number of persistents   ", numOfPersistents, queueNumOfPersistents);
       assertEquals(ME + ": " + txt + " wrong number of transients ", numOfTransients, queueNumOfTransients);
-      assertEquals(ME + ": " + txt + " wrong size of durables     ", sizeOfDurables, queueSizeOfDurables);
+      assertEquals(ME + ": " + txt + " wrong size of persistents     ", sizeOfPersistents, queueSizeOfPersistents);
       assertEquals(ME + ": " + txt + " wrong size of transients   ", sizeOfTransients, queueSizeOfTransients);
    }
 

@@ -39,7 +39,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     */
    public MsgQueuePublishEntry(Global glob, MsgUnit msgUnit, StorageId storageId)
          throws XmlBlasterException {
-      super(glob, MethodName.PUBLISH, ((MsgQosData)msgUnit.getQosData()).getPriority(), storageId, ((MsgQosData)msgUnit.getQosData()).isDurable());
+      super(glob, MethodName.PUBLISH, ((MsgQosData)msgUnit.getQosData()).getPriority(), storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
       if (msgUnit == null) {
          glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();

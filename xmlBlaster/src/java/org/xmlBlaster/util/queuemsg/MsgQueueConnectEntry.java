@@ -35,7 +35,7 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     */
    public MsgQueueConnectEntry(Global glob, StorageId storageId, ConnectQos connectQos)
          throws XmlBlasterException {
-      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, /*isDurable*/true);
+      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, /*persistent*/true);
       this.connectQos = connectQos;
    }
 

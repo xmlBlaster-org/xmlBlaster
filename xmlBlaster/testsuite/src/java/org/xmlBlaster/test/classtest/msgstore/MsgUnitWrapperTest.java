@@ -76,7 +76,7 @@ public class MsgUnitWrapperTest extends TestCase {
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
-            "   <isDurable/>\n" +
+            "   <persistent/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
@@ -103,16 +103,16 @@ public class MsgUnitWrapperTest extends TestCase {
          int priority = msgUnitWrapper.getPriority();
          long uniqueId = msgUnitWrapper.getUniqueId();
          String type = msgUnitWrapper.getEmbeddedType();
-         boolean isDurable = msgUnitWrapper.isDurable();
+         boolean persistent = msgUnitWrapper.isPersistent();
          byte[] blob = factory.toBlob(msgUnitWrapper);
 
          MsgUnitWrapper newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
-                                        uniqueId, type, isDurable, blob, storageId);
+                                        uniqueId, type, persistent, blob, storageId);
  
          assertEquals("", msgUnitWrapper.getPriority(), newWrapper.getPriority());
          assertEquals("", msgUnitWrapper.getReferenceCounter(), newWrapper.getReferenceCounter()); // A reference counter is reset to 0 when loaded from persistence
          assertEquals("", msgUnitWrapper.isExpired(), newWrapper.isExpired());
-         assertEquals("", msgUnitWrapper.isDurable(), newWrapper.isDurable());
+         assertEquals("", msgUnitWrapper.isPersistent(), newWrapper.isPersistent());
          assertEquals("", msgUnitWrapper.getMsgUnit().getContentStr(), newWrapper.getMsgUnit().getContentStr());
          assertEquals("", msgUnitWrapper.getKeyOid(), newWrapper.getKeyOid());
          assertEquals("", msgUnitWrapper.getContentMime(), newWrapper.getContentMime());
@@ -126,7 +126,7 @@ public class MsgUnitWrapperTest extends TestCase {
 
          MsgQosData qos = newWrapper.getMsgQosData();
          assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isDurable());
+         assertEquals("", true, qos.isPersistent());
          assertEquals("", true, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 

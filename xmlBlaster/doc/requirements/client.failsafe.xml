@@ -293,8 +293,8 @@
 
       </table>
       <p>
-      The Java client queuing framework supports durable messages and supports swapping for huge message amount.
-      On client crash the durable messages are recovered.
+      The Java client queuing framework supports persistent messages and supports swapping for huge message amount.
+      On client crash the persistent messages are recovered.
       </p>
       <p>
       The C++ queuing framework is memory based only.
@@ -445,7 +445,7 @@ catch (XmlBlasterException e) {
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -51,7 +51,7 @@ void MsgQosData::init()
    queueIndex_ = -1;
    queueSize_ = -1;
    fromPersistenceStore_ = false;
-   durable_ = DEFAULT_isDurable;
+   persistent_ = DEFAULT_persistent;
    forceUpdate_= DEFAULT_forceUpdate;
    lifeTime_ = -1;
    remainingLifeStatic_ = -1;
@@ -71,7 +71,7 @@ void MsgQosData::copy(const MsgQosData& data)
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
    fromPersistenceStore_ = data.fromPersistenceStore_;
-   durable_ = data.durable_;
+   persistent_ = data.persistent_;
    forceUpdate_= data.forceUpdate_;
    lifeTime_ = data.lifeTime_;
    remainingLifeStatic_ = data.remainingLifeStatic_;
@@ -191,19 +191,19 @@ string MsgQosData::getSubscriptionId() const
 }
 
 /**
- * @param isDurable mark a message as persistent
+ * @param persistent mark a message as persistent
  */
-void MsgQosData::setDurable(bool durable)
+void MsgQosData::setPersistent(bool persistent)
 {
-   durable_ = durable;
+   persistent_ = persistent;
 }
 
 /**
  * @return true/false
  */
-bool MsgQosData::isDurable() const
+bool MsgQosData::isPersistent() const
 {
-   return durable_;
+   return persistent_;
 }
 
 /**
@@ -499,8 +499,8 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += offset + " <queue index='" + lexical_cast<string>(getQueueIndex()) + "' size='" + lexical_cast<string>(getQueueSize()) + "'/>";
    if (getRedeliver() > 0)
       ret += offset + " <redeliver>" + lexical_cast<string>(getRedeliver()) + "</redeliver>";
-   if (isDurable())
-      ret += offset + " <isDurable/>";
+   if (isPersistent())
+      ret += offset + " <persistent/>";
    if (!isForceUpdateDefault())
       ret += offset + " <forceUpdate>" + Global::getBoolAsString(isForceUpdate()) + "</forceUpdate>";
    if (forceDestroy_.isModified())

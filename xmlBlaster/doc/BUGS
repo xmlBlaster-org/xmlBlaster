@@ -1,8 +1,4 @@
-o Changing the qos a the identical message from
-    isDurable to 'not is durable' has no affect.
-    The new qos is not written to the storage.
-
-o PtP isDurable redelivery on startup
+o PtP isPersistent redelivery on startup
 
 o C++ callbacks fail with xmlBlaster running under JDK 1.4.1
 

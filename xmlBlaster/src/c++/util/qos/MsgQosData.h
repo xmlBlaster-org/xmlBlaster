@@ -90,7 +90,7 @@ private:
    /** Internal use only, is this message sent from the persistence layer? */
    bool fromPersistenceStore_; // = false;
 
-   bool durable_; // = DEFAULT_isDurable;
+   bool persistent_; // = DEFAULT_persistent;
 
    /**
     * Send message to subscriber even the content is the same as the previous?
@@ -190,14 +190,14 @@ public:
    string getSubscriptionId() const;
 
    /**
-    * @param isDurable mark a message as persistent
+    * @param persistent mark a message as persistent
     */
-   void setDurable(bool durable);
+   void setPersistent(bool persistent);
 
    /**
     * @return true/false
     */
-   bool isDurable() const;
+   bool isPersistent() const;
 
    /**
     * @param forceUpdate Mark a PtP message to be queued if receiver is not available. 

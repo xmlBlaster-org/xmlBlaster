@@ -1,4 +1,4 @@
-$Id: README,v 1.11 2002/12/31 14:30:37 ruff Exp $
+$Id: README,v 1.12 2003/01/13 23:38:08 ruff Exp $
 
 Integration of Xindice (former dbXML) into xmlBlaster as persistence plugin
 ---------------------------------------------------------------------------
@@ -147,13 +147,13 @@ Prepare and start xmlBlaster:
 How to use it from the client:
 ==============================
 
-1. set the isDurable in qos
+1. set the persistent in qos
 
-   Publish some messages which are tagged 'isDurable', you can do this by using
+   Publish some messages which are tagged 'persistent', you can do this by using
    the qos-tag:
 
       String qos = "<qos>" +
-                   "   <isDurable />" +
+                   "   <persistent />" +
                    "</qos>";
 
 2. manual check
@@ -161,17 +161,17 @@ How to use it from the client:
    Check, if you want, by using for example
    $ xindice ld -c /db/xmlBlaster
 
-        amIdurable-XmlCon.xml
-        amIdurable-XmlKey.xml
-        amIdurable-XmlQos.xml
+        amIDurable-XmlCon.xml
+        amIDurable-XmlKey.xml
+        amIDurable-XmlQos.xml
 
    Total documents: 3
 
    and list a single content by using:
-   $ xindice rd -c /db/xmlBlaster -n amIdurable-XmlKey.xml
+   $ xindice rd -c /db/xmlBlaster -n amIDurable-XmlKey.xml
 
    <?xml version="1.0"?>
-   <key oid="amIdurable" contentMime="text/plain">
+   <key oid="amIDurable" contentMime="text/plain">
    </key>
 
 
@@ -179,7 +179,7 @@ How to use it from the client:
 
    Now you can subscribe to your messages and see if they arrive well.
 
-   After restarting xmlBlaster all messages tagged durable should be able to
+   After restarting xmlBlaster all messages tagged persistent should be able to
    subscribe to without being published now.
 
 

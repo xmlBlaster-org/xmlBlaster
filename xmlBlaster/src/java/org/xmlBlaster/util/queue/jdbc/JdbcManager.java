@@ -568,19 +568,19 @@ public class JdbcManager implements I_ConnectionListener {
             long dataId = rs.getLong(1); // preStatement.setLong(1, dataId);
             int prio = rs.getInt(2); // preStatement.setInt(2, prio);
             String typeName = rs.getString(3); // preStatement.setString(3, typeName);
-//            boolean durable = rs.getBoolean(4); // preStatement.setBoolean(4, durable);
+//            boolean persistent = rs.getBoolean(4); // preStatement.setBoolean(4, persistent);
             //this only to make ORACLE happy since it does not support BOOLEAN
-            String durableAsChar = rs.getString(4);
-            boolean durable = false;
-            if ("T".equalsIgnoreCase(durableAsChar)) durable = true;
+            String persistentAsChar = rs.getString(4);
+            boolean persistent = false;
+            if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
             byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
 
             if ( (numOfBytes < 0) || (sizeInBytes+amount < numOfBytes) || (count == 0)) {
                if (this.log.DUMP)
-                  this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " isDurable: " + durable);
-               entries.add(this.factory.createEntry(prio, dataId, typeName, durable, blob, storageId));
+                  this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
+               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, blob, storageId));
                amount += sizeInBytes;
             }
          }
@@ -595,18 +595,18 @@ public class JdbcManager implements I_ConnectionListener {
             long dataId = rs.getLong(1); // preStatement.setLong(1, dataId);
             int prio = rs.getInt(2); // preStatement.setInt(2, prio);
             String typeName = rs.getString(3); // preStatement.setString(3, typeName);
-//            boolean durable = rs.getBoolean(4); // preStatement.setBoolean(4, durable);
+//            boolean persistent = rs.getBoolean(4); // preStatement.setBoolean(4, persistent);
             //this only to make ORACLE happy since it does not support BOOLEAN
-            String durableAsChar = rs.getString(4);
-            boolean durable = false;
-            if ("T".equalsIgnoreCase(durableAsChar)) durable = true;
+            String persistentAsChar = rs.getString(4);
+            boolean persistent = false;
+            if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
             byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
 
             if (this.log.DUMP)
-               this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " isDurable: " + durable);
-            entries.add(this.factory.createEntry(prio, dataId, typeName, durable, blob, storageId));
+               this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
+            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, blob, storageId));
          }
          count++;
       }
@@ -727,8 +727,8 @@ public class JdbcManager implements I_ConnectionListener {
             return 0;
          }
 
-   //      String req = "delete from " + tableName + " where durable='false'";
-         String req = "delete from " + tableName + " where durable='F'";
+   //      String req = "delete from " + tableName + " where persistent='false'";
+         String req = "delete from " + tableName + " where persistent='F'";
          return update(req);
       }
       catch (SQLException ex) {
@@ -817,7 +817,7 @@ public class JdbcManager implements I_ConnectionListener {
       int prio = entry.getPriority();
       byte[] blob = this.factory.toBlob(entry);
       String typeName = entry.getEmbeddedType();
-      boolean durable = entry.isDurable();
+      boolean persistent = entry.isPersistent();
       long sizeInBytes = entry.getSizeInBytes();
 
       if (this.log.DUMP)
@@ -835,8 +835,8 @@ public class JdbcManager implements I_ConnectionListener {
          preStatement.setLong(1, dataId);
          preStatement.setInt(2, prio);
          preStatement.setString(3, typeName);
-//         preStatement.setBoolean(4, durable);
-         if (durable == true) preStatement.setString(4, "T");
+//         preStatement.setBoolean(4, persistent);
+         if (persistent == true) preStatement.setString(4, "T");
          else preStatement.setString(4, "F");
          preStatement.setLong(5, sizeInBytes);
          preStatement.setBytes(6, blob);
@@ -902,11 +902,11 @@ public class JdbcManager implements I_ConnectionListener {
             long dataId = rs.getLong(1); // preStatement.setLong(1, dataId);
             int prio = rs.getInt(2); // preStatement.setInt(2, prio);
             String typeName = rs.getString(3); // preStatement.setString(3, typeName);
-//            boolean durable = rs.getBoolean(4); // preStatement.setBoolean(4, durable);
+//            boolean persistent = rs.getBoolean(4); // preStatement.setBoolean(4, persistent);
             //this only to make ORACLE happy since it does not support BOOLEAN
-            String durableAsChar = rs.getString(4);
-            boolean durable = false;
-            if ("T".equalsIgnoreCase(durableAsChar)) durable = true;
+            String persistentAsChar = rs.getString(4);
+            boolean persistent = false;
+            if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
             byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
@@ -914,8 +914,8 @@ public class JdbcManager implements I_ConnectionListener {
             // check if allowed or already outside the range ...
             if (((numOfBytes<0)||(sizeInBytes+amount<numOfBytes)||(count==0)) &&
                ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) )) {
-               if (this.log.DUMP) this.log.dump(getLogId(tableName, storageId, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " isDurable: " + durable);
-               ret.list.add(this.factory.createEntry(prio, dataId, typeName, durable, blob, storageId));
+               if (this.log.DUMP) this.log.dump(getLogId(tableName, storageId, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
+               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, blob, storageId));
                amount += sizeInBytes;
                if (amount > numOfBytes) doContinue = false;
                if (numOfBytes < 0) doContinue = true;
@@ -1309,19 +1309,19 @@ public class JdbcManager implements I_ConnectionListener {
 
 
    /**
-    * gets the real number of durable entries, that is it really makes a call to the DB to find out
+    * gets the real number of persistent entries, that is it really makes a call to the DB to find out
     * how big the size is.
     */
-   public final long getNumOfDurables(String tableName)
+   public final long getNumOfPersistents(String tableName)
       throws SQLException, XmlBlasterException {
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfDurables"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfPersistents"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
-      String req = "select count(*) from " + tableName + " where durable='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfDurable"), "Request: '" + req + "'");
+      String req = "select count(*) from " + tableName + " where persistent='T'";
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfPersistent"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
@@ -1330,7 +1330,7 @@ public class JdbcManager implements I_ConnectionListener {
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfDurables"), ex);
+         handleSQLException(getLogId(tableName, null, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1340,20 +1340,20 @@ public class JdbcManager implements I_ConnectionListener {
 
 
    /**
-    * gets the real size of durable entries, that is it really makes a call to the DB to find out
+    * gets the real size of persistent entries, that is it really makes a call to the DB to find out
     * how big the size is.
     */
-   public final long getSizeOfDurables(String tableName)
+   public final long getSizeOfPersistents(String tableName)
       throws SQLException, XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(tableName, null, "getSizeOfDurable"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(tableName, null, "getSizeOfPersistent"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getSizeOfDurable"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getSizeOfPersistent"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
-      String req = "select sum(bytesize) from " + tableName + " where durable='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfDurables"), "Request: '" + req + "'");
+      String req = "select sum(bytesize) from " + tableName + " where persistent='T'";
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfPersistents"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
@@ -1362,7 +1362,7 @@ public class JdbcManager implements I_ConnectionListener {
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfDurables"), ex);
+         handleSQLException(getLogId(tableName, null, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1386,7 +1386,7 @@ public class JdbcManager implements I_ConnectionListener {
       }
 
       String req = "CREATE TABLE " + tableName + " (" + "dataId  " + longintTxt + " PRIMARY KEY, prio " + intTxt +
-          ", flag " + stringTxt + ", durable " + booleanTxt + ", byteSize " + longintTxt + ", blob " + blobTxt + ")";
+          ", flag " + stringTxt + ", persistent " + booleanTxt + ", byteSize " + longintTxt + ", blob " + blobTxt + ")";
 
       if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "createQueueTable"), "Request: '" + req + "'");
 

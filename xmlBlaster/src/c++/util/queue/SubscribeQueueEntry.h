@@ -32,7 +32,7 @@ public:
    /**
     * Constructor suited for operations like subscribe and unSubscribe
     */
-   SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type="subscribe", int priority=9, bool durable=false);
+   SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type="subscribe", int priority=9, bool persistent=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In

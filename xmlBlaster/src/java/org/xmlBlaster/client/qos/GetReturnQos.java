@@ -116,10 +116,10 @@ public final class GetReturnQos
    }
 
    /**
-    * Is this a durable message?
+    * Is this a persistent message?
     */
-   public boolean isDurable() {
-      return this.msgQosData.isDurable();
+   public boolean isPersistent() {
+      return this.msgQosData.isPersistent();
    }
 
    /**

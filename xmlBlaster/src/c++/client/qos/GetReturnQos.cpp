@@ -41,9 +41,9 @@ bool GetReturnQos::isVolatile() const
 /**
 * @return true/false
 */
-bool GetReturnQos::isDurable() const
+bool GetReturnQos::isPersistent() const
 {
-   return data_.isDurable();
+   return data_.isPersistent();
 }
 
 /**

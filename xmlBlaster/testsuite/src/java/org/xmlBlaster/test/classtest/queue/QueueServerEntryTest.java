@@ -185,14 +185,14 @@ public class QueueServerEntryTest extends TestCase {
 
          byte[] content = "this is the content".getBytes();
          PublishKey key = new PublishKey(glob, "someKey");
-         PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><isDurable/></qos>");
+         PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
          MsgQosData msgQosData = publishQosServer.getData();
          ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
          String state = Constants.STATE_EXPIRED;
          msgQosData.setState(state);
          msgQosData.setSubscriptionId("someId");
-         msgQosData.setDurable(true);
+         msgQosData.setPersistent(true);
          msgQosData.setForceUpdate(false);
          msgQosData.setReadonly(true);
 
@@ -232,7 +232,7 @@ public class QueueServerEntryTest extends TestCase {
          assertEquals("The state of the entry is different ", state, updateEntry.getState());
          assertEquals("The redeliverCounter of the entry is different ", redeliverCounter, updateEntry.getRedeliverCounter());
          assertEquals("The priority of the entry is different ", entry.getPriority(), updateEntry.getPriority());
-         assertEquals("The durable of the entry is different ", entry.isDurable(), updateEntry.isDurable());
+         assertEquals("The persistent of the entry is different ", entry.isPersistent(), updateEntry.isPersistent());
          assertEquals("The receiver of the entry is different ", entry.getReceiver().toString(), updateEntry.getReceiver().toString());
          assertEquals("The uniqueId of the entry is different ", entry.getUniqueId(), updateEntry.getUniqueId());
          assertEquals("The msgUnitWrapperUniqueId of the entry is different ", entry.getMsgUnitWrapperUniqueId(), updateEntry.getMsgUnitWrapperUniqueId());
@@ -256,13 +256,13 @@ public class QueueServerEntryTest extends TestCase {
          // check message unit:
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());
          assertEquals("The content of the message unit is different ", new String(retMsgUnit.getContent()), new String(content));
-         //assertEquals("The qos of the message unit is different ", retMsgUnit.getQosData().isDurable(), publishQosServer.isDurable());
+         //assertEquals("The qos of the message unit is different ", retMsgUnit.getQosData().isPersistent(), publishQosServer.isPersistent());
          String oldXml = publishQosServer.toXml().trim();
          String newXml = retMsgUnit.getQosData().toXml().trim();
          //assertEquals("The qos of the message unit is different OLD="+oldXml+" NEW="+newXml, oldXml, newXml);
 
          assertEquals("msgQosData check failure: getSubscriptionId      ", msgQosData.getSubscriptionId(), retMsgQosData.getSubscriptionId());
-//         assertEquals("msgQosData check failure: getDurable             ", msgQosData.getDurable(), retMsgQosData.getDurable());
+//         assertEquals("msgQosData check failure: getPersistent             ", msgQosData.getPersistent(), retMsgQosData.getPersistent());
 //         assertEquals("msgQosData check failure: getForceUpdate         ", msgQosData.getForceUpdate(), retMsgQosData.getForceUpdate());
 //         assertEquals("msgQosData check failure: getReadOnly            ", msgQosData.getReadOnly(), retMsgQosData.getReadOnly());
          assertEquals("msgQosData check failure: getSender              ", msgQosData.getSender().toString(), retMsgQosData.getSender().toString());
@@ -330,13 +330,13 @@ public class QueueServerEntryTest extends TestCase {
 
          byte[] content = "this is the content".getBytes();
          PublishKey key = new PublishKey(glob, "someKey");
-         PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><isDurable/></qos>");
+         PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
          MsgQosData msgQosData = publishQosServer.getData();
          ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
          msgQosData.setState("state");
          msgQosData.setSubscriptionId("someId");
-         msgQosData.setDurable(true);
+         msgQosData.setPersistent(true);
          msgQosData.setForceUpdate(false);
          msgQosData.setReadonly(true);
 
@@ -367,7 +367,7 @@ public class QueueServerEntryTest extends TestCase {
          MsgQueueHistoryEntry historyEntry = (MsgQueueHistoryEntry)returnEntry;
 
          assertEquals("The priority of the entry is different ", entry.getPriority(), historyEntry.getPriority());
-         assertEquals("The durable of the entry is different ", entry.isDurable(), historyEntry.isDurable());
+         assertEquals("The persistent of the entry is different ", entry.isPersistent(), historyEntry.isPersistent());
          // The history queue is s LIFO, we have inverted the unique key
          assertEquals("The uniqueId of the entry is different ", entry.getUniqueId(), historyEntry.getUniqueId());
          assertEquals("The msgUnitWrapperUniqueId of the entry is different ", entry.getMsgUnitWrapperUniqueId(), historyEntry.getMsgUnitWrapperUniqueId());

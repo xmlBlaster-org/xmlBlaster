@@ -30,8 +30,8 @@ public class PublishQosWrapper
       this.publishQos = new PublishQos(Global.instance(), destination);
    }
 
-   public PublishQosWrapper(boolean isDurable) {
-      this.publishQos = new PublishQos(Global.instance(), isDurable);
+   public PublishQosWrapper(boolean persistent) {
+      this.publishQos = new PublishQos(Global.instance(), persistent);
    }
 
    public PriorityEnum getPriority() {
@@ -58,8 +58,8 @@ public class PublishQosWrapper
       return this.publishQos.isVolatile();
    }
 
-   public void setDurable(boolean durable) {
-      this.publishQos.setDurable(durable);
+   public void setPersistent(boolean persistent) {
+      this.publishQos.setPersistent(persistent);
    }
 
    /**
@@ -90,7 +90,7 @@ public class PublishQosWrapper
          PublishQosWrapper qos =new PublishQosWrapper(new Destination(new SessionName(Global.instance(), "joe")));
          qos.addDestination(new Destination(new SessionName(Global.instance(), "Tim")));
          qos.setPriority(PriorityEnum.HIGH_PRIORITY);
-         qos.setDurable(true);
+         qos.setPersistent(true);
          qos.setForceUpdate(true);
          qos.setReadonly(true);
          qos.setRemainingLife(60000);

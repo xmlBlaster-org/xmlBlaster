@@ -49,7 +49,7 @@ public class ReferenceEntry extends MsgQueueEntry
    public ReferenceEntry(String ME, Global glob_, String entryType, MsgUnitWrapper msgUnitWrapper,
                          StorageId storageId, SessionName receiver) throws XmlBlasterException {
       super(glob_, entryType, msgUnitWrapper.getMsgQosData().getPriority(),
-            storageId, msgUnitWrapper.getMsgQosData().isDurable());
+            storageId, msgUnitWrapper.getMsgQosData().isPersistent());
       this.glob = glob_;
       this.ME = ME;
       setMsgUnitWrapper(msgUnitWrapper);
@@ -70,8 +70,8 @@ public class ReferenceEntry extends MsgQueueEntry
     * @param msgUnitWrapperUniqueId The unique timestamp of the MsgUnitWrapper instance (need to lookup MsgUnitWrapper)
     */
    public ReferenceEntry(String ME, Global glob, String entryType, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
-                        String keyOid, long msgUnitWrapperUniqueId, boolean isDurable, SessionName receiver) {
-      super(glob, entryType, priority, entryTimestamp, storageId, isDurable);
+                        String keyOid, long msgUnitWrapperUniqueId, boolean persistent, SessionName receiver) {
+      super(glob, entryType, priority, entryTimestamp, storageId, persistent);
       this.glob = glob;
       this.ME = ME;
       this.keyOid = keyOid;

@@ -596,7 +596,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
 
       if (num > 0)
-         log.info(ME,"Loaded " + num + " durable messages from persistence to Memory.");
+         log.info(ME,"Loaded " + num + " persistent messages from persistence to Memory.");
    }
 
 

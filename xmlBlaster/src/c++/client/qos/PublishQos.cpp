@@ -23,10 +23,10 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       addDestination(destination);
    }
 
-   PublishQos::PublishQos(Global& global, bool durable)
+   PublishQos::PublishQos(Global& global, bool persistent)
       : ME("PublishQos"), global_(global), msgQosData_(global, "")
    {
-      setDurable(durable);
+      setPersistent(persistent);
    }
 
    MsgQosData PublishQos::getData() const
@@ -93,9 +93,9 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    /**
     * Mark a message to be persistent.
     */
-   void PublishQos::setDurable(bool durable)
+   void PublishQos::setPersistent(bool persistent)
    {
-      msgQosData_.setDurable(durable);
+      msgQosData_.setPersistent(persistent);
    }
 
    /**
@@ -210,7 +210,7 @@ int main(int args, char* argv[])
       PublishQos qos(glob, Destination(glob, SessionQos(glob, "joe")));
       qos.addDestination(Destination(glob, SessionQos(glob, "Tim")));
       qos.setPriority(HIGH_PRIORITY);
-      qos.setDurable(true);
+      qos.setPersistent(true);
       qos.setForceUpdate(true);
       qos.setReadonly(true);
       qos.setLifeTime(60000);

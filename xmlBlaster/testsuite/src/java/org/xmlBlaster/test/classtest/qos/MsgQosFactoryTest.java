@@ -74,7 +74,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>MIN</priority>\n" +
             //"   <expiration lifeTime='2400' remainingLife='12000'/>\n" + // uncomment as it is in concurrence to isVolatile
             "   <administrative/>\n" +
-            "   <isDurable/>\n" +
+            "   <persistent/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
@@ -90,7 +90,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", "SOMETHING", qos.getStateInfo());
          assertEquals("", true, qos.isPtp());
          assertEquals("", true, qos.isAdministrative());
-         assertEquals("", true, qos.isDurable());
+         assertEquals("", true, qos.isPersistent());
          assertEquals("", false, qos.isForceUpdate());
          assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
@@ -157,7 +157,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   <expiration lifeTime='2400' remainingLife='12000' forceDestroy='true'/>\n" +
             "   <rcvTimestamp nanos='1234'/>\n" +
             "   <administrative/>\n" +
-            "   <isDurable/>\n" +
+            "   <persistent/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
@@ -182,7 +182,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isAdministrative());
-         assertEquals("", true, qos.isDurable());
+         assertEquals("", true, qos.isPersistent());
          assertEquals("", false, qos.isForceUpdate());
          assertEquals("", true, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
@@ -271,7 +271,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   </sender>\n" +
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
-            "   <isDurable/>\n" +
+            "   <persistent/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
@@ -285,7 +285,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", true, qos.isSubscribeable());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isDurable());
+         assertEquals("", true, qos.isPersistent());
          assertEquals("", false, qos.isForceUpdate());
          assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
@@ -343,7 +343,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
-            "   <isDurable/>\n" +
+            "   <persistent/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
@@ -355,7 +355,7 @@ public class MsgQosFactoryTest extends TestCase {
          GetReturnQos qos = new GetReturnQos(glob, xml);
 
          assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isDurable());
+         assertEquals("", true, qos.isPersistent());
          assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
@@ -407,7 +407,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
-            "   <isDurable/>\n" +
+            "   <persistent/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
             "      <node id='bilbo' stratum='2' timestamp='9408630500' dirtyRead='true'/>\n" +
@@ -422,7 +422,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", true, qos.isSubscribeable());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isDurable());
+         assertEquals("", true, qos.isPersistent());
          assertEquals("", true, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
@@ -512,7 +512,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", false, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
          assertEquals("", false, qos.isAdministrative());
-         assertEquals("", false, qos.isDurable());
+         assertEquals("", false, qos.isPersistent());
          assertEquals("", true, qos.isForceUpdate());
          assertEquals("", false, qos.isReadonly());
          assertEquals("", null, qos.getSender());

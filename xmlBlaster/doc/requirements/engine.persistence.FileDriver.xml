@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='engine.persistence.FileDriver' type='NEW' prio='MEDIUM' status="CLOSED">
-   <topic>XmlBlaster provides a simple file based persistence layer to store messages marked with &lt;isDurable/></topic>
+   <topic>XmlBlaster provides a simple file based persistence layer to store messages marked with &lt;persistent/></topic>
    <description>
       To store messages and to restore them again after a new
       startup of the xmlBlaster server there is a lightweight interface,
@@ -18,14 +18,14 @@
 
       Reiserfs is a file system using a plug-in based object oriented variant on classical balanced tree algorithms.
       See the <a href="http://www.reiserfs.org/">ReiserFS homepage</a>
-      Only messages which are marked as &lt;isDurable&gt; are stored using this persistent
+      Only messages which are marked as &lt;persistent/&gt; are stored using this persistent
       layer.
    </description>
-   <see type="REQ">engine.qos.publish.isDurable</see>
+   <see type="REQ">engine.qos.publish.persistent</see>
    <see>org.xmlBlaster.engine.persistence.filestore.FileDriver</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -7,7 +7,7 @@ Example feeding a gif image:
    java org.xmlBlaster.client.feeder.PublishFile \
        -c MyTest.gif \
        -xmlKey "<key oid='MyTest.gif' contentMime='image/gif'><TestTag/></key>" \
-       -xmlQos "<qos><isDurable/><ForceUpdate/></qos>"
+       -xmlQos "<qos><persistent/><forceUpdate/></qos>"
 
 
 Example feeding a text file (key and qos are also specified in a text file):

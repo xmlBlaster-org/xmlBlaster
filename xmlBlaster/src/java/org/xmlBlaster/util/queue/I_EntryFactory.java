@@ -29,7 +29,7 @@ public interface I_EntryFactory
    /**
     * Parses back the raw data to a I_Entry (deserializing)
     */
-   I_Entry createEntry(int priority, long timestamp, String type, boolean durable, byte[] obj, StorageId storageId)
+   I_Entry createEntry(int priority, long timestamp, String type, boolean persistent, byte[] obj, StorageId storageId)
       throws XmlBlasterException;
 
    /**

@@ -19,7 +19,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  *     &lt;/rcvTimestamp>
  *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
  *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
- *     &lt;isDurable/>
+ *     &lt;persistent/>
  *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
  *     &lt;route>
  *        &lt;node id='heron'/>
@@ -113,7 +113,7 @@ private:
    bool inExpiration_; // false;
    bool inRcvTimestamp_;//  false;
    bool inIsVolatile_; // false;
-   bool inIsDurable_; // false;
+   bool inIsPersistent_; // false;
    bool inReadonly_; // false;
    bool inRoute_; // false;
    bool sendRemainingLife_; //  true;

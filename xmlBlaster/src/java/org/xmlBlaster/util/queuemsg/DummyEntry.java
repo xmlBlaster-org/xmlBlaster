@@ -16,24 +16,24 @@ public class DummyEntry extends MsgQueueEntry {
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
     */
-   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean durable) {
-      super(glob, ENTRY_TYPE, priority, timestamp, storageId, durable);
+   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean persistent) {
+      super(glob, ENTRY_TYPE, priority, timestamp, storageId, persistent);
    }
 
-   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, boolean durable) {
-      super(glob, ENTRY_TYPE, priority, storageId, durable);
+   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, boolean persistent) {
+      super(glob, ENTRY_TYPE, priority, storageId, persistent);
       //log.error("DummyEntry", ""+getUniqueId());
    }
 
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
     */
-   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, int size, boolean durable) {
-      super(glob, ENTRY_TYPE, priority, timestamp, storageId, durable);
+   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, int size, boolean persistent) {
+      super(glob, ENTRY_TYPE, priority, timestamp, storageId, persistent);
    }
 
-   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, int size, boolean durable) {
-      super(glob, ENTRY_TYPE, priority, storageId, durable);
+   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, int size, boolean persistent) {
+      super(glob, ENTRY_TYPE, priority, storageId, persistent);
    }
 
    public Object getEmbeddedObject() {

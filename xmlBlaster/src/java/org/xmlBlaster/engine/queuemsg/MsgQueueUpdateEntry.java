@@ -41,10 +41,10 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * For persistence recovery
     */
    public MsgQueueUpdateEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
-                              String keyOid, long msgUnitWrapperUniqueId, boolean isDurable, SessionName receiver,
+                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent, SessionName receiver,
                               String subscriptionId, String state, int redeliverCount) {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
-            updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, isDurable, receiver);
+            updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, receiver);
       this.subscriptionId = subscriptionId;
       this.state = state;
       super.redeliverCounter = redeliverCount;
@@ -106,7 +106,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       sb.append(" msgUnitRcvTimestamp='").append(ts.toString()).append("'");
       sb.append(" sender='").append(getSender()).append("'");
       sb.append(" receiver='").append(getReceiver().getAbsoluteName()).append("'");
-      sb.append(" isDurable='").append(isDurable()).append("'");
+      sb.append(" persistent='").append(isPersistent()).append("'");
       sb.append(" subscriptionId='").append(getSubscriptionId()).append("'");
       sb.append(" redeliverCounter='").append(getRedeliverCounter()).append("'");
       sb.append(" isExpired='").append(isExpired()).append("'");

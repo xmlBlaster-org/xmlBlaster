@@ -29,7 +29,7 @@ my $publishKey="<key oid='' contentMime='text/xml'>".
 my $cdata="<event>testing</event>";
 my $publishQos="<qos>".
                "  <expiration lifeTime='0'/>".
-               "  <isDurable>false</isDurable>".
+               "  <persistent>false</persistent>".
                "  <topic destroyDelay='0' createDomEntry='true'/>".
                "</qos>";
 

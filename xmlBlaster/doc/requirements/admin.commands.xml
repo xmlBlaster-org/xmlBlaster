@@ -109,7 +109,7 @@
          <hello>
             <key oid='hello' contentMime='text/plain'/>
             <content>Hi world</content>
-            <qos><isDurable/></qos>
+            <qos><persistent/></qos>
          </hello>
 
          <radar.track>
@@ -534,7 +534,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.32 $</revision>
+   <revision>$Revision: 1.33 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -37,8 +37,8 @@ public final class MapPlugin implements I_Map, I_Plugin
    private LogChannel log;
    private boolean isShutdown = false;
    private long sizeInBytes;
-   private long durableSizeInBytes;
-   private long numOfDurableEntries;
+   private long persistentSizeInBytes;
+   private long numOfPersistentEntries;
 
    /**
     * Is called after the instance is created.
@@ -138,17 +138,17 @@ public final class MapPlugin implements I_Map, I_Plugin
             return 0;
             /*
             this.sizeInBytes -= old.getSizeInBytes();
-            if (old.isDurable()) {
-               this.numOfDurableEntries--;
-               this.durableSizeInBytes -= old.getSizeInBytes();
+            if (old.isPersistent()) {
+               this.numOfPersistentEntries--;
+               this.persistentSizeInBytes -= old.getSizeInBytes();
             }
             */
          }
          
          this.sizeInBytes += entry.getSizeInBytes();
-         if (entry.isDurable()) {
-            this.numOfDurableEntries++;
-            this.durableSizeInBytes += entry.getSizeInBytes();
+         if (entry.isPersistent()) {
+            this.numOfPersistentEntries++;
+            this.persistentSizeInBytes += entry.getSizeInBytes();
          }
          return (old != null) ? 0 : 1;
       }
@@ -160,9 +160,9 @@ public final class MapPlugin implements I_Map, I_Plugin
          if (entry == null)
             return 0;
 
-         if (entry.isDurable()) {
-            this.numOfDurableEntries--;
-            this.durableSizeInBytes -= entry.getSizeInBytes();
+         if (entry.isPersistent()) {
+            this.numOfPersistentEntries--;
+            this.persistentSizeInBytes -= entry.getSizeInBytes();
          }
          this.sizeInBytes -= entry.getSizeInBytes();
          return 1;
@@ -181,8 +181,8 @@ public final class MapPlugin implements I_Map, I_Plugin
          long ret = (long)this.storage.size();
          this.storage.clear();
          this.sizeInBytes = 0L;
-         this.durableSizeInBytes = 0L;
-         this.numOfDurableEntries = 0L;
+         this.persistentSizeInBytes = 0L;
+         this.numOfPersistentEntries = 0L;
          return ret;
       }
    }
@@ -201,10 +201,10 @@ public final class MapPlugin implements I_Map, I_Plugin
    }
 
    /**i
-    * @see I_Map#getNumOfDurableEntries()
+    * @see I_Map#getNumOfPersistentEntries()
     */
-   public long getNumOfDurableEntries() {
-      return this.numOfDurableEntries;
+   public long getNumOfPersistentEntries() {
+      return this.numOfPersistentEntries;
    }
 
    /**
@@ -215,10 +215,10 @@ public final class MapPlugin implements I_Map, I_Plugin
    }
 
    /**
-    * @see I_Map#getNumOfDurableBytes()
+    * @see I_Map#getNumOfPersistentBytes()
     */
-   public long getNumOfDurableBytes() {
-      return this.durableSizeInBytes;
+   public long getNumOfPersistentBytes() {
+      return this.persistentSizeInBytes;
    }
 
    /**

@@ -66,7 +66,7 @@ public:
    /**
     * @return true/false
     */
-   bool isDurable() const;
+   bool isPersistent() const;
 
    /**
     * @return true/false

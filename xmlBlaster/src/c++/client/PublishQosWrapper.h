@@ -31,7 +31,7 @@ namespace org { namespace xmlBlaster {
     *        &lt;destination queryType='EXACT'>
     *           Tim
     *        &lt;/destination>
-    *        &lt;isDurable />    
+    *        &lt;persistent />    
     *        &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
     *     &lt;/qos>
     * </pre>
@@ -49,14 +49,14 @@ namespace org { namespace xmlBlaster {
       }
       
       Vector destVec_; 
-      bool   isDurable_;
+      bool   persistent_;
       bool   forceUpdate_;
       bool   readonly_;
       long   expires_;
       long   erase_;
       
       void init() {
-         isDurable_   = false;
+         persistent_  = false;
          forceUpdate_ = false;
          readonly_    = false;
          expires_     = -99;
@@ -89,11 +89,11 @@ namespace org { namespace xmlBlaster {
       
       
       /**
-       * @param isDurable Store the message persistently
+       * @param persistent Store the message persistently
        */
-      PublishQosWrapper(bool isDurable) : QosWrapper(), destVec_() {
+      PublishQosWrapper(bool persistent) : QosWrapper(), destVec_() {
          init();
-         isDurable_ = isDurable;
+         persistent_ = persistent;
       }
       
       
@@ -121,8 +121,8 @@ namespace org { namespace xmlBlaster {
       /**
        * Mark a message to be persistent.
        */
-      void setDurable() {
-         isDurable_ = true;
+      void setPersistent() {
+         persistent_ = true;
       }
 
 
@@ -162,7 +162,7 @@ namespace org { namespace xmlBlaster {
             ret += "   <expires>\n      " + lexical_cast<string>(expires_) + "\n   </expires>\n";
          if (erase_ >= 0) 
             ret += "   <erase>\n      " + lexical_cast<string>(erase_) + "\n   </erase>\n";
-         if (isDurable_  ) ret += "   <isDurable />\n";
+         if (persistent_  )ret += "   <persistent />\n";
          if (forceUpdate_) ret += "   <forceUpdate />\n";
          if (readonly_   ) ret += "   <readonly />\n";
          ret += "</qos>"; 

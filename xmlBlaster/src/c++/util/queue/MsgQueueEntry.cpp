@@ -22,7 +22,7 @@ using org::xmlBlaster::util::MessageUnit;
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool durable)
+MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool persistent)
    : ReferenceCounterBase(), 
      ME("MsgQueueEntry"), 
      global_(global), 
@@ -38,11 +38,11 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    uniqueId_         = TimestampFactory::getInstance().getTimestamp();
    embeddedType_     = type;
    priority_         = priority; // should be normal priority
-   durable_          = durable; // currently no durables supported
+   persistent_       = persistent; // currently no persistents supported
    logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool durable)
+MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type, int priority, bool persistent)
    : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("queue"))
 {
    connectQos_       = new ConnectQos(connectQos);
@@ -55,12 +55,12 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
    uniqueId_         = TimestampFactory::getInstance().getTimestamp();
    embeddedType_     = type;
    priority_         = priority; // should be maximum priority
-   durable_          = durable; // currently no durables supported
+   persistent_       = persistent; // currently no persistents supported
    logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type, int priority, bool durable)
+MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type, int priority, bool persistent)
    : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("queue"))
 {
    connectQos_       = NULL;
@@ -73,7 +73,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, c
    uniqueId_         = TimestampFactory::getInstance().getTimestamp();
    embeddedType_     = type;
    priority_         = priority; // should be maximum priority
-   durable_          = durable; // currently no durables supported
+   persistent_          = persistent; // currently no persistents supported
    logId_            = embeddedType_ + string(":") + lexical_cast<string>(uniqueId_);
 }
 
@@ -115,9 +115,9 @@ int MsgQueueEntry::getPriority() const
    return priority_;
 }
 
-bool MsgQueueEntry::isDurable() const
+bool MsgQueueEntry::isPersistent() const
 {
-   return durable_;
+   return persistent_;
 }
 
 long MsgQueueEntry::getUniqueId() const

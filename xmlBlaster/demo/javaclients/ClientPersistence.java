@@ -21,8 +21,8 @@ import org.xmlBlaster.util.MsgUnit;
 
 
 /**
- * This client tests the persistence driver, the $lt;isDurable> flag.
- * Subscribes to a Message which is tagged $lt;isDurable> and will be set by the modultest of Xindice.
+ * This client tests the persistence driver, the $lt;persistent/> flag.
+ * Subscribes to a Message which is tagged $lt;persistent/> and will be set by the modultest of Xindice.
  * <p>
  * Invoke examples:<br />
  * <pre>
@@ -35,7 +35,7 @@ public class ClientPersistence implements I_Callback
    private final LogChannel log;
 
    private final String senderName = "Tanja";
-   private String publishOid = "amIdurable";
+   private String publishOid = "amIpersistent";
    private XmlBlasterConnection senderConnection = null;
 
    private static int numReceived = 0;

@@ -362,7 +362,7 @@ public final class TopicHandler implements I_Timeout
                msgQosData.setTopicProperty(this.topicProperty);
                msgQosData.setAdministrative(true);
                msgQosData.touchRcvTimestamp();
-               msgQosData.setDurable(true);
+               msgQosData.setPersistent(true);
                msgQosData.setSender(creatorSessionName);
                MsgUnit msgUnit = new MsgUnit(glob, this.msgKeyData, null, msgQosData);
                this.topicEntry = new TopicEntry(glob, msgUnit);

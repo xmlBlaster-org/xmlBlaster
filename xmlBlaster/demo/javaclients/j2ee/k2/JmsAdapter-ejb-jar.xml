@@ -7,8 +7,8 @@
 <ejb-jar>
     <enterprise-beans>
       <message-driven>
-	<ejb-name>JmsAdapter</ejb-name>
-	<ejb-class>javaclients.j2ee.k2.JmsAdapter</ejb-class>
+        <ejb-name>JmsAdapter</ejb-name>
+        <ejb-class>javaclients.j2ee.k2.JmsAdapter</ejb-class>
 
         <message-selector></message-selector>
 

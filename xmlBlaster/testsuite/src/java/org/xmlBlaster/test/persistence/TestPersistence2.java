@@ -2,7 +2,7 @@
 Name:      TestPersistence2.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing durable messages
+Comment:   Testing persistent messages
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -35,7 +35,7 @@ import junit.framework.*;
 
 
 /**
- * This client tests the persistence driver, the $lt;isDurable> flag.
+ * This client tests the persistence driver, the $lt;persistent> flag.
  * <p>
  * Invoke examples:<br />
  * <pre>
@@ -54,9 +54,9 @@ public class TestPersistence2 extends TestCase implements I_Callback
    private final String senderName = "Gesa";
    private final String senderPasswd = "secret";
 
-   private String publishOid = "HelloDurable";
+   private String publishOid = "HelloPersistent";
    private XmlBlasterConnection senderConnection = null;
-   private String senderContent = "Some durable content";
+   private String senderContent = "Some persistent content";
 
    private int numReceived = 0;
 
@@ -134,17 +134,17 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
 
    /**
-    * Publish a durable message.
+    * Publish a persistent message.
     * <p />
     */
-   public void sendDurable()
+   public void sendPersistent()
    {
-      if (log.TRACE) log.trace(ME, "Testing a durable message ...");
+      if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'/>";
 
       String qos = "<qos>" +
-                   "   <isDurable />" +
+                   "   <persistent />" +
                    "</qos>";
 
       try {
@@ -164,16 +164,16 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Publish a durable message.
+    * TEST: Publish a persistent message.
     * <p />
     */
-   public void testDurable()
+   public void testPersistent()
    {
-      sendDurable();
+      sendPersistent();
       checkContent(true);
       
       senderContent = senderContent + " again";
-      sendDurable();
+      sendPersistent();
       RestartTestServer();
 
       doLogin();
@@ -317,7 +317,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
    public static Test suite()
    {
       TestSuite suite= new TestSuite();
-      suite.addTest(new TestPersistence2(new Global(), "testDurable"));
+      suite.addTest(new TestPersistence2(new Global(), "testPersistent"));
       return suite;
    }
 
@@ -336,7 +336,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
       }
       TestPersistence2 testSub = new TestPersistence2(glob, "TestPersistence2");
       testSub.setUp();
-      testSub.testDurable();
+      testSub.testPersistent();
       testSub.tearDown();
    }
 }

@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.7 2002/12/18 13:16:21 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.8 2003/01/13 23:38:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -180,8 +180,8 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "   </LoadTestSub-AGENT>" +
                       "</key>";
       String qos = "";
-      //String qos = "<qos><isDurable>false</isDurable></qos>";
-      //String qos = "<qos><isDurable>true</isDurable></qos>";
+      //String qos = "<qos><persistent>false</persistent></qos>";
+      //String qos = "<qos><persistent>true</persistent></qos>";
 
       MsgUnit[] arr = new MsgUnit[burstModePublish];
       PublishReturnQos[] publishOids;

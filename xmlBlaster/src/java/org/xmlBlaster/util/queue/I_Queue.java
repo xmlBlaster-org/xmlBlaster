@@ -286,13 +286,13 @@ public interface I_Queue
    long getNumOfEntries();
 
    /**
-    * Returns the number of elements having the durable flag set in this queue.
+    * Returns the number of elements having the persistent flag set in this queue.
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
     * @return int the number of elements currently in the queue
     */
-   long getNumOfDurableEntries();
+   long getNumOfPersistentEntries();
 
    /**
     * returns the maximum number of elements for this queue
@@ -310,13 +310,13 @@ public interface I_Queue
    long getNumOfBytes();
 
    /**
-    * Returns the amount of bytes used by the durable entries in the queue
+    * Returns the amount of bytes used by the persistent entries in the queue
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
     * @return int the number of elements currently in the queue
     */
-   long getNumOfDurableBytes();
+   long getNumOfPersistentBytes();
 
    /**
     * returns the capacity (maximum bytes) for this queue
@@ -365,7 +365,7 @@ public interface I_Queue
    int removeRandom(I_Entry entry) throws XmlBlasterException;
 
    /**
-    * Removes all the transient entries (the ones which have the flag 'durable'
+    * Removes all the transient entries (the ones which have the flag 'persistent'
     * set to false.
     */
    int removeTransient() throws XmlBlasterException;

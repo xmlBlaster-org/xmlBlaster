@@ -288,7 +288,7 @@ function PublishKeyWrap(tags)
  * If you have own meta data, add it with the method wrap:
  *
  * Example:
- *  var key = new top.xmlBlasterWindow.QosWrapper("<isDurable />");
+ *  var key = new top.xmlBlasterWindow.QosWrapper("<persistent />");
  *
  * @param wrap:String Tags to embed into the <qos>...</qos> tags
  */

@@ -43,7 +43,7 @@ import org.xml.sax.helpers.*;
  *     &lt;/rcvTimestamp>
  *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
  *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
- *     &lt;isDurable/>
+ *     &lt;persistent/>
  *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
  *     &lt;route>
  *        &lt;node id='heron'/>
@@ -118,7 +118,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inRcvTimestamp = false;
    private boolean inIsVolatile = false;
    private boolean inAdministrative = false;
-   private boolean inIsDurable = false;
+   private boolean inIsPersistent = false;
    private boolean inForceUpdate = false;
    private boolean inReadonly = false;
    private boolean inRoute = false;
@@ -499,11 +499,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("isDurable")) {
+      if (name.equalsIgnoreCase("persistent")) {
          if (!inQos)
             return;
-         inIsDurable = true;
-         msgQosData.setDurable(true);
+         inIsPersistent = true;
+         msgQosData.setPersistent(true);
          return;
       }
 
@@ -642,12 +642,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("isDurable")) {
-         inIsDurable = false;
+      if(name.equalsIgnoreCase("persistent")) {
+         inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            msgQosData.setDurable(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found isDurable = " + msgQosData.getIsDurable());
+            msgQosData.setPersistent(new Boolean(tmp).booleanValue());
+         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
          character.setLength(0);
          return;
       }
@@ -783,11 +783,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             sb.append(offset).append(" <administrative>false</administrative>");
       }
 
-      if (msgQosData.getDurableProp().isModified()) {
-         if (msgQosData.isDurable())
-            sb.append(offset).append(" <isDurable/>");
+      if (msgQosData.getPersistentProp().isModified()) {
+         if (msgQosData.isPersistent())
+            sb.append(offset).append(" <persistent/>");
          else
-            sb.append(offset).append(" <isDurable>false</isDurable>");
+            sb.append(offset).append(" <persistent>false</persistent>");
       }
 
       if (msgQosData.getForceUpdateProp().isModified()) {

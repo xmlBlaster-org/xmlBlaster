@@ -47,7 +47,7 @@ protected:
    Global&       global_;
    Log&          log_;
    int           priority_;
-   bool          durable_;
+   bool          persistent_;
    Timestamp     uniqueId_;
    string        embeddedType_;
    string        logId_;
@@ -66,18 +66,18 @@ public:
     /**
      * Constructor suited for operations like publishes
      */
-    MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=5, bool durable=false);
+    MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=5, bool persistent=false);
 
     /**
      * Constructor suited for operations like connect
      */
-    MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type="connect", int priority=9, bool durable=false);
+    MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& type="connect", int priority=9, bool persistent=false);
 
 
     /**
      * Constructor suited for operations like subscribe and unSubscribe
      */
-    MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type="subscribe", int priority=9, bool durable=false);
+    MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& type="subscribe", int priority=9, bool persistent=false);
 
 
     virtual ~MsgQueueEntry();
@@ -134,7 +134,7 @@ public:
        uniqueId_     = entry.uniqueId_;
        embeddedType_ = entry.embeddedType_;
        priority_     = entry.priority_;
-       durable_      = entry.durable_;
+       persistent_      = entry.persistent_;
        logId_        = logId_;
     }
 
@@ -170,9 +170,9 @@ public:
    int getPriority() const;
 
    /**
-    * Returns true if the entry is durable (persistent), false otherwise.
+    * Returns true if the entry is persistent (persistent), false otherwise.
     */
-   bool isDurable() const;
+   bool isPersistent() const;
 
    /**
     * This is the second order criteria in the queue

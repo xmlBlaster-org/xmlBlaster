@@ -29,7 +29,7 @@ public:
     * pass a non-negative priority, it will be taken as the priority of this entry, in other words, the
     * priority of the message unit will be ignored.
     */
-   PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=-1, bool durable=false);
+   PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type="publish", int priority=-1, bool persistent=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In

@@ -175,7 +175,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    }
 
    /**
-    * If durable messages where in queue, this is flushed on login. 
+    * If persistent messages where in queue, this is flushed on login. 
     * @return The number of queued messages
     */
    public int getQueueSize()
@@ -184,7 +184,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    }
 
    /**
-    * If durable messages where in queue, this is flushed on login. 
+    * If persistent messages where in queue, this is flushed on login. 
     * @return The index of the message of the queue
     */
    public int getQueueIndex()

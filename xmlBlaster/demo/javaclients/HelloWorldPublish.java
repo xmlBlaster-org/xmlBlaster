@@ -69,7 +69,7 @@ public class HelloWorldPublish implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorldPublish", "text/xml", "1.0");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         pq.setDurable(glob.getProperty().get("persistent", true));
+         pq.setPersistent(glob.getProperty().get("persistent", true));
          MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
          PublishReturnQos prq = con.publish(msgUnit);
 

@@ -31,7 +31,7 @@ and XML Shemas (xmlBlaster.xsd) are not yet supported.
 
    <qos>
       <!-- Some quality of service tags, to control xmlBlaster -->
-      <isDurable />
+      <persistent />
    </qos>
 </xmlBlaster>
 

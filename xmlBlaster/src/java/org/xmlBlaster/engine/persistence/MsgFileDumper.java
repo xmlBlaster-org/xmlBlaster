@@ -235,7 +235,7 @@ public final class MsgFileDumper
          org.xmlBlaster.client.key.PublishKey key = 
                  new org.xmlBlaster.client.key.PublishKey(glob, "someKey");
          org.xmlBlaster.engine.qos.PublishQosServer publishQosServer = 
-                 new org.xmlBlaster.engine.qos.PublishQosServer(glob, "<qos><isDurable/></qos>");
+                 new org.xmlBlaster.engine.qos.PublishQosServer(glob, "<qos><persistent/></qos>");
          String content = "Some content";
          org.xmlBlaster.util.MsgUnit msgUnit  = 
                  new org.xmlBlaster.util.MsgUnit(key.toXml(), content, publishQosServer.toXml());

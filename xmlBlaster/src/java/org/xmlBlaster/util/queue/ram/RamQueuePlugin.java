@@ -54,8 +54,8 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    private MsgComparator comparator;
    private final int MAX_PRIO = 9; // see PriorityEnum.MAX_PRIORITY
    private long sizeInBytes = 0L;
-   private long durableSizeInBytes = 0L;
-   private long numOfDurableEntries = 0L;
+   private long persistentSizeInBytes = 0L;
+   private long numOfPersistentEntries = 0L;
 
    /**
     * Is called after the instance is created.
@@ -84,8 +84,8 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "initialize: The maximum number of messages is too big");
       this.comparator = new MsgComparator();
       this.storage = new TreeSet(this.comparator);
-      this.numOfDurableEntries = 0L;
-      this.durableSizeInBytes = 0L;
+      this.numOfPersistentEntries = 0L;
+      this.persistentSizeInBytes = 0L;
       this.isShutdown = false;
    }
 
@@ -214,8 +214,8 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
          }
          this.storage.clear();
          this.sizeInBytes = 0L;
-         this.durableSizeInBytes = 0L;
-         this.numOfDurableEntries = 0L;
+         this.persistentSizeInBytes = 0L;
+         this.numOfPersistentEntries = 0L;
          return ret;
       }
    }
@@ -239,12 +239,12 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
          ReturnDataHolder ret = this.genericPeek((int)numOfEntries, numOfBytes, 0, 9);
          ArrayList elementsToDelete = ret.list;
 
-         // count the durable entries (and the durable sizes)
+         // count the persistent entries (and the persistent sizes)
          for (int i=0; i < elementsToDelete.size(); i++) {
             I_QueueEntry entry = (I_QueueEntry)elementsToDelete.get(i);
-            if (entry.isDurable()) {
-               this.numOfDurableEntries--;
-               this.durableSizeInBytes -= entry.getSizeInBytes();
+            if (entry.isPersistent()) {
+               this.numOfPersistentEntries--;
+               this.persistentSizeInBytes -= entry.getSizeInBytes();
             }
             if (this.notifiedAboutAddOrRemove) {
                entry.removed(this.storageId);
@@ -377,10 +377,10 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    }
 
    /**i
-    * @see I_Queue#getNumOfDurableEntries()
+    * @see I_Queue#getNumOfPersistentEntries()
     */
-   public long getNumOfDurableEntries() {
-      return this.numOfDurableEntries;
+   public long getNumOfPersistentEntries() {
+      return this.numOfPersistentEntries;
    }
 
    /**
@@ -398,10 +398,10 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    }
 
    /**
-    * @see I_Queue#getNumOfDurableBytes()
+    * @see I_Queue#getNumOfPersistentBytes()
     */
-   public long getNumOfDurableBytes() {
-      return this.durableSizeInBytes;
+   public long getNumOfPersistentBytes() {
+      return this.persistentSizeInBytes;
    }
 
 
@@ -457,9 +457,9 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
             if (this.storage.remove(queueEntries[j])) {
                I_Entry entry = queueEntries[j];
                this.sizeInBytes -= entry.getSizeInBytes();
-               if (entry.isDurable()) {
-                  this.durableSizeInBytes -= entry.getSizeInBytes();
-                  this.numOfDurableEntries--;
+               if (entry.isPersistent()) {
+                  this.persistentSizeInBytes -= entry.getSizeInBytes();
+                  this.numOfPersistentEntries--;
                }
             }
          }
@@ -509,9 +509,9 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
             }
             if (this.storage.remove(entry)) {
                this.sizeInBytes -= entry.getSizeInBytes();
-               if (entry.isDurable()) {
-                  this.numOfDurableEntries--;
-                  this.durableSizeInBytes -= entry.getSizeInBytes();
+               if (entry.isPersistent()) {
+                  this.numOfPersistentEntries--;
+                  this.persistentSizeInBytes -= entry.getSizeInBytes();
                }
             }
          }
@@ -553,9 +553,9 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
             }
             if (this.storage.remove(entry)) {
                this.sizeInBytes -= entry.getSizeInBytes();
-               if (entry.isDurable()) {
-                  this.numOfDurableEntries--;
-                  this.durableSizeInBytes -= entry.getSizeInBytes();
+               if (entry.isPersistent()) {
+                  this.numOfPersistentEntries--;
+                  this.persistentSizeInBytes -= entry.getSizeInBytes();
                }
             }
          }
@@ -600,9 +600,9 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
          if (!this.storage.contains(entry)) {
             if (this.storage.add(entry)) {
                this.sizeInBytes += entry.getSizeInBytes();
-               if (entry.isDurable()) {
-                  this.numOfDurableEntries++;
-                  this.durableSizeInBytes += entry.getSizeInBytes();
+               if (entry.isPersistent()) {
+                  this.numOfPersistentEntries++;
+                  this.persistentSizeInBytes += entry.getSizeInBytes();
                }
                if (this.notifiedAboutAddOrRemove) {
                   entry.added(this.storageId);
@@ -657,9 +657,9 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
             if (!this.storage.contains(entry)) {
                if (this.storage.add(entry)) {
                   this.sizeInBytes += entry.getSizeInBytes();
-                  if (entry.isDurable()) {
-                     this.numOfDurableEntries++;
-                     this.durableSizeInBytes += entry.getSizeInBytes();
+                  if (entry.isPersistent()) {
+                     this.numOfPersistentEntries++;
+                     this.persistentSizeInBytes += entry.getSizeInBytes();
                   }
                   if (this.notifiedAboutAddOrRemove) {
                      entry.added(this.storageId);

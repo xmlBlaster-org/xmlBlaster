@@ -8,8 +8,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type, int priority, bool durable)
-   : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), type, priority, durable)
+SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type, int priority, bool persistent)
+   : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), type, priority, persistent)
 {
    ME = "SubscribeQueueEntry";
 }

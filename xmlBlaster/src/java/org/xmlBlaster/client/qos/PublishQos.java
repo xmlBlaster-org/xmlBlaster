@@ -26,7 +26,7 @@ import org.xmlBlaster.util.property.PropEntry;
  *  &lt;qos>
  *     &lt;priority>5&lt;/priority>
  *     &lt;expiration lifeTime='60000' forceDestroy='false'/>
- *     &lt;isDurable />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+ *     &lt;persistent />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
  *     &lt;forceUpdate>true&lt;/forceUpdate>
  *     &lt;readonly />
  *  &lt;/qos>
@@ -70,7 +70,7 @@ public final class PublishQos
    /**
     * Default constructor for transient PtP messages.
     * <p />
-    * To make the message persistent, use the durable() method
+    * To make the message persistent, use the setPersistent() method
     * @param destination The object containing the destination address.<br />
     *        To add more destinations, us the addDestination() method.
     */
@@ -80,11 +80,11 @@ public final class PublishQos
    }
 
    /**
-    * @param isDurable true = store the message persistently
+    * @param persistent true = store the message persistently
     */
-   public PublishQos(Global glob, boolean durable) {
+   public PublishQos(Global glob, boolean persistent) {
       this(glob);
-      setDurable(durable);
+      setPersistent(persistent);
    }
 
    public MsgQosData getData() {
@@ -159,8 +159,8 @@ public final class PublishQos
    /**
     * Mark a message to be persistent.
     */
-   public void setDurable(boolean durable) {
-      this.msgQosData.setDurable(durable);
+   public void setPersistent(boolean persistent) {
+      this.msgQosData.setPersistent(persistent);
    }
 
    /**
@@ -267,7 +267,7 @@ public final class PublishQos
          PublishQos qos =new PublishQos(new Global(args), new Destination(new SessionName(glob, "joe")));
          qos.addDestination(new Destination(new SessionName(glob, "Tim")));
          qos.setPriority(PriorityEnum.HIGH_PRIORITY);
-         qos.setDurable(true);
+         qos.setPersistent(true);
          qos.setForceUpdate(true);
          qos.setReadonly(true);
          qos.setLifeTime(60000);
