@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: GlobalUtil.java,v 1.1 2003/09/18 14:30:58 antman Exp $
+ * $Id: GlobalUtil.java,v 1.2 2003/09/24 14:29:07 antman Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@ import org.jutils.JUtilsException;
  * the engine.Global if accessed in the same VM as the engine.</p>
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class GlobalUtil implements java.io.Serializable {
@@ -138,7 +138,10 @@ public class GlobalUtil implements java.io.Serializable {
          if ( is == null) {
             // Use xmlBlaster way of searching
             FileInfo i = p.findPath(propFile);
-            is = i.getInputStream();
+            if ( i != null) {
+               is = i.getInputStream();
+            } // end of if ()
+
          } // end of if ()
          
          if ( is != null) {
