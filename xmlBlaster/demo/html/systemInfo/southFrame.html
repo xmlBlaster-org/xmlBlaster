@@ -22,6 +22,8 @@ COMMENT:
             alert("Please use a browser version higher than 4.x\n Let's try it nevertheless.");
          }
 
+         var isMac = (navigator.platform.indexOf("MacPPC") != -1);
+
          // appVersion=4.70 (Win16;I)
          // appName=Netscape
          isOpera = (navigator.appName.indexOf("Netscape") != -1) && (navigator.appVersion.indexOf("(Win16;") != -1);
