@@ -274,7 +274,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    /**
     * Publish a message. 
     * @param xmlKey The message topic
-    * @param content The payload
+    * @param contentStr The payload as a string
     * @param xmlQos Control the behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(MsgUnit)
@@ -282,6 +282,20 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public PublishReturnQos publish(String xmlKey, String contentStr, String xmlQos) throws XmlBlasterException {
       MsgUnit msgUnit = new MsgUnit(this.glob, xmlKey, contentStr, xmlQos);
+      return this.glob.getXmlBlasterAccess().publish(msgUnit);
+   }
+
+   /**
+    * Publish a message. 
+    * @param xmlKey The message topic
+    * @param content The payload as binary blob
+    * @param xmlQos Control the behavior
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(MsgUnit)
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    */
+   public PublishReturnQos publishBlob(String xmlKey, byte[] content, String xmlQos) throws XmlBlasterException {
+      MsgUnit msgUnit = new MsgUnit(this.glob, xmlKey, content, xmlQos);
       return this.glob.getXmlBlasterAccess().publish(msgUnit);
    }
 
