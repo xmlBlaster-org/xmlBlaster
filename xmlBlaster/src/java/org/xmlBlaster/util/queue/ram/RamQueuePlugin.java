@@ -887,7 +887,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    private final void invokeQueueSizeListener() {
       synchronized(this.queueSizeListenerSync) {
          if (this.queueSizeListener != null) {
-            this.queueSizeListener.changed(this.getNumOfEntries(), this.sizeInBytes);
+            this.queueSizeListener.changed(this, this.getNumOfEntries(), this.sizeInBytes);
          }
       }
    }

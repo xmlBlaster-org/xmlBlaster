@@ -454,21 +454,24 @@ public interface I_Queue extends I_StorageProblemNotifier
 
 
    /**
-    * adds a queue size listener to the queue. If one is already 
-    * registered it throws an IllegalArgumentException.
-    *  
-    * @param listener the listener to be added. If you pass null
-    *        an IllegalArgumentException is thrown.
+    * Adds a queue size listener to the queue. 
+    * Every time the number of queue entries changes we will fire a
+    * changed() event.
+    * <p />
+    * The changed() invocation is guaranteed to NOT be in any Queue specific synchronize
+    * <p />
+    * You can use this for example to add a threshold warning system.
+    * @param listener the listener to be added.
+    * @exception IllegalArgumentException If one is already registered or if you pass null
     */
    public void addQueueSizeListener(I_QueueSizeListener listener);
    
    /**
-    * removes the specified listener from the queue.
+    * Removes the specified listener from the queue.
     * 
     * @param listener the listener to be removed. Currently only one
-    *        listener is allowed. Passing null here will remove the 
-    *        only listener registered or none if none is registered.
-    *        If you pass null an IllegalArgumentException is throws.
+    *        listener is allowed.
+    * @exception IllegalArgumentException if you pass null
     */
    public void removeQueueSizeListener(I_QueueSizeListener listener);
    

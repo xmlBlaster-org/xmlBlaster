@@ -1337,7 +1337,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private final void invokeQueueSizeListener() {
       synchronized(this.queueSizeListenerSync) {
          if (this.queueSizeListener != null) {
-            this.queueSizeListener.changed(this.numOfEntries, this.numOfBytes);
+            this.queueSizeListener.changed(this, this.numOfEntries, this.numOfBytes);
          }
       }
    }

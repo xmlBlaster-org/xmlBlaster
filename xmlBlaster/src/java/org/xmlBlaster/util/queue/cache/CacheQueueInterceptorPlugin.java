@@ -1262,9 +1262,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    public void addQueueSizeListener(I_QueueSizeListener listener) {
       if (listener == null) 
          throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
-      if (this.queueSizeListener != null) 
-         throw new IllegalArgumentException(ME + ": addQueueSizeListener() not allowed now: there is already one registered. Remove it before assigning a new one");
       synchronized(this.queueSizeListenerSync) {
+         if (this.queueSizeListener != null) 
+            throw new IllegalArgumentException(ME + ": addQueueSizeListener() not allowed now: there is already one registered. Remove it before assigning a new one");
          this.queueSizeListener = listener;
       }
    }
@@ -1281,9 +1281,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
    
    private final void invokeQueueSizeListener() {
-      synchronized(this.queueSizeListenerSync) {
-         if (this.queueSizeListener != null) {
-            this.queueSizeListener.changed(this.getNumOfEntries(), this.getNumOfBytes());
+      if (this.queueSizeListener != null) {
+         try {
+            this.queueSizeListener.changed(this, this.getNumOfEntries(), this.getNumOfBytes());
+         }
+         catch (NullPointerException e) {
+            if (log.TRACE) log.trace(ME, "invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListener, this is OK to prevent a synchronize.");
          }
       }
    }
