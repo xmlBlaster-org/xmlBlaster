@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.8 2000/03/21 14:33:51 ruff Exp $
+Version:   $Id: Property.java,v 1.9 2000/04/26 11:18:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -39,6 +39,8 @@ public class Property
    public       static String currentPath = System.getProperty("user.dir");
    /** command line (servlets using jrun/jserv property file) */
    public       static String xmlBlasterPath = System.getProperty("XMLBLASTER_HOME", null);
+   /** The java home directory, e.g. /opt/jdk1.2.2/jre/lib */
+   public final static String javaHome = System.getProperty("java.home");
 
    private static Properties xmlBlasterProperties = null;
 
@@ -269,7 +271,9 @@ public class Property
     * 1) In $HOME
     * 2) In $XMLBLASTER_HOME
     * 3) Local directory
-    * 4) Fallback: \xmlBlaster oder /usr/local/xmlBlaster
+    * 4) In java.home directory, e.g. /opt/jdk1.2.2/jre/lib
+    *    You may use this path for Servlets, demons etc.
+    * 5) Fallback: \xmlBlaster oder /usr/local/xmlBlaster
     *
     * @param fileName e.g. "xmlBlaster.properties"
     * @return The path to file, e.g. "\xmlBlaster\"
@@ -308,6 +312,14 @@ public class Property
       }
       else
          Log.info(ME, "File '" + fileName + "' is not in directory " + currentPath);
+
+
+      f = new File(javaHome, fileName);
+      if (f.exists()) {
+         return javaHome;
+      }
+      else
+         Log.info(ME, "File '" + fileName + "' is not in directory " + javaHome);
 
 
       String guess;
