@@ -99,7 +99,7 @@ public class ReferenceEntry extends MsgQueueEntry
       if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
       if (msgUnitWrapper != null) {
-         msgUnitWrapper.incrementReferenceCounter(1);
+         msgUnitWrapper.incrementReferenceCounter(1, storageId);
       }
       else {
          log.error(ME, " Entry '" + getLogId() + "' added to queue but no meat found");
@@ -113,8 +113,21 @@ public class ReferenceEntry extends MsgQueueEntry
    public void removed(StorageId storageId) throws XmlBlasterException {
       if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+      /* I couldn't force garbage collect of messageUnitWrapper here, why?
+      {  // TEST ONLY
+         if (msgUnitWrapper != null) {
+            msgUnitWrapper = null;
+            System.gc();
+            System.gc();
+            System.gc();
+            System.gc();
+         }
+         msgUnitWrapper = getMsgUnitWrapper();
+         log.error(ME, "REMOVE WEAK REF TEST AGAIN msgUnitWrapper=" + msgUnitWrapper);
+      }
+      */
       if (msgUnitWrapper != null) {
-         msgUnitWrapper.incrementReferenceCounter(-1);
+         msgUnitWrapper.incrementReferenceCounter(-1, storageId);
       }
       else {
          log.error(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
