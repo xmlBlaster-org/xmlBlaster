@@ -1278,7 +1278,9 @@ TODO
       <echo message=" Setting ${corba.product} = true" />
       <property name="${corba.product},${os.family}" value="true" /> <!-- Setting e.g. "MICO,windows" or "TAO,unix" to be used in if="" clause below -->
       <echo message=" Setting ${corba.product},${os.family} = true" />
-      <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNIORB" to be used in if="" clause below -->
+
+      <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
+      <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNITHREAD" to be used in if="" clause below -->
       <echo message=" Setting ${thread.impl} = true" />
 
    </target>
