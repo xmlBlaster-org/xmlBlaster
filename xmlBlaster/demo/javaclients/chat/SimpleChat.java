@@ -371,22 +371,15 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
      * informing the client in an asynchronous mode if the connection was established.
      * @see I_ConnectionStateListener
      */
-   public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
    {
       subscription();
-      try {
-         if (connectionHandler.getQueue().getNumOfEntries() > 0) {
-            log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " +
-                         connectionHandler.getQueue().getNumOfEntries() + " messages ...");
-            connectionHandler.flushQueue();
-         }
-         else
-            log.info(ME, "We were lucky, reconnected to xmlBlaster, no backup messages to flush");
+      if (connectionHandler.getQueue().getNumOfEntries() > 0) {
+         log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " +
+                        connectionHandler.getQueue().getNumOfEntries() + " messages ...");
       }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Sorry, flushing of backup messages failed, they are lost: " + e.toString());
-      }
-      return false;
+      else
+         log.info(ME, "We were lucky, reconnected to xmlBlaster, no backup messages to flush");
    }
 
    /**

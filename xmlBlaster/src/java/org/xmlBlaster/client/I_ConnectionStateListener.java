@@ -19,16 +19,23 @@ public interface I_ConnectionStateListener
     * This is the callback method invoked from XmlBlasterAccess
     * notifying the client that a connection has been established and that its status is now ALIVE.
     *
+    * <p>
+    * Note that this method is invoked also when the connection has been 
+    * established the first time.
+    * </p>
+    *
+    * <p>
+    * You can erase all entries of the queue manually or add others before you return and in
+    * this way control the behavior.
+    * </p>
+    *
+    * <p>
+    * This method is invoked by the login polling thread from I_XmlBlasterAccess.
+    * </p>
     * @param oldState The previous state of the connection.
     * @param connectionHandler An interface which allows you to control the queue and the connection
-    *
-    * @return Inform the ConnectionHandler what to do with the entries in the queue. 
-    *         If you return 'true', then the queue is flushed (i.e. the contents of the queue are sent to 
-    *         xmlBlaster). If you return 'false', then the contents of the queue are left untouched. You can then 
-    *         erase all entries manually. Note that this method is invoked also when the connection has been 
-    *         established the first time.
     */
-   boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler);
+   void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler);
 
    /**
     * This is the callback method invoked from XmlBlasterAccess

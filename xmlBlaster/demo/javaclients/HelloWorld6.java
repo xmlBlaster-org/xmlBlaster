@@ -71,18 +71,11 @@ public class HelloWorld6
 
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
-               public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                   connected = true;
-                  conRetQos = con.getConnectReturnQos();
+                  conRetQos = connectionHandler.getConnectReturnQos();
                   log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
-                  //initClient();    // initialize subscription etc. again
-                  try {
-                     con.flushQueue();    // send all tailback messages
-                     // con.resetQueue(); // or discard them (it is our choice)
-                  } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
-                  }
-                  return false;
+                  // we can access the queue via connectionHandler and for example erase the entries ...
                }
                public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                   log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");

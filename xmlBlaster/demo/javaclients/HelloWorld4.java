@@ -52,18 +52,16 @@ public class HelloWorld4
 
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
-               public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                   connected = true;
                   conRetQos = connectionHandler.getConnectReturnQos();
                   log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
-                  try {
-                     connectionHandler.flushQueue();    // send all tailback messages
-                     // connectionHandler.getQueue().clear(); // or discard them (it is our choice)
-                  } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
-                  }
-                  return false;
+                  //try {
+                  //   connectionHandler.getQueue().clear(); // e.g. discard all msgs (it is our choice)
+                  //} catch (XmlBlasterException e) {
+                  //   log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
+                  //}
                }
 
                public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {

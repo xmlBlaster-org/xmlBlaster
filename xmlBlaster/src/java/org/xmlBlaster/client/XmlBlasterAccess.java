@@ -56,10 +56,10 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionHandler;
-import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 import java.util.HashMap;
 
@@ -882,9 +882,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          */
 
          xmlBlasterAccess.registerConnectionListener(new I_ConnectionStateListener() {
-            public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " with " + connectionHandler.getQueue().getNumOfEntries() + " queue entries pending");
-               return true;
             }
             public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);

@@ -344,7 +344,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
       available = true;
       try {
          if (xmlBlasterConnection.getQueue().getNumOfEntries() > 0) {
@@ -358,7 +358,6 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // !!!! TODO: producing dead letters
          log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
       }
-      return false;
    }
 
    /**
