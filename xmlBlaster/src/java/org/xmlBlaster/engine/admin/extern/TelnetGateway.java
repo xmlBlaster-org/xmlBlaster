@@ -127,18 +127,21 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    private synchronized void disconnect() {
-      if (connectRetQos != null) {
-         try {
-            glob.getAuthenticate().disconnect(connectRetQos.getSessionId(), null);
+      if (isLogin) {
+         if (connectRetQos != null) {
+            try {
+               glob.getAuthenticate().disconnect(connectRetQos.getSessionId(), null);
+            }
+            catch (org.xmlBlaster.util.XmlBlasterException e) {
+               log.warn(e.id, e.reason);
+            }
+            log.info(ME, "Logout of '" + loginName + "', telnet connection destroyed");
+            connectRetQos = null;
          }
-         catch (org.xmlBlaster.util.XmlBlasterException e) {
-            log.warn(e.id, e.reason);
-         }
-         log.info(ME, "Logout of '" + loginName + "', telnet connection destroyed");
-         connectRetQos = null;
+         else
+            log.info(ME, "Connection from not authorized telnet client destroyed");
       }
-      else
-         log.info(ME, "Connection from not authorized telnet client destroyed");
+      isLogin = false;
    }
 
    private boolean initListener() throws XmlBlasterException { 
@@ -194,6 +197,13 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             return getErrorText("Ignoring your empty command.");
          }
 
+         if (cmd.trim().equalsIgnoreCase("quit")) {
+            lastCommand = "";
+            stopTimer();
+            disconnect();
+            return null; // handled by internal Handler
+         }
+
          // Commands without login:
 
          if (cmd.trim().equalsIgnoreCase("time")) {
@@ -244,7 +254,8 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             log.info(ME, "Successful login for telnet client " + loginName + "', session timeout is " +
                      org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
             lastCommand = cmd;
-            return "Successful login for user " + loginName + CRLF;
+            return "Successful login for user " + loginName + ", session timeout is " +
+                     org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + CRLF;
          }
 
          if (!isLogin) {
@@ -273,14 +284,14 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             }
          }
 
-         lastCommand = "";
-
          if (cmd.trim().equalsIgnoreCase("no")) {
             if (lastCommand.trim().toUpperCase().startsWith("EXIT")) {
                lastCommand = "";
                return CRLF;
             }
          }
+
+         lastCommand = "";
 
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
