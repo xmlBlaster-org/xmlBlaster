@@ -19,5 +19,10 @@ public interface ExecutorBase
    public final boolean WAIT_ON_RESPONSE = true;
    /** Used for execute() */
    public final boolean ONEWAY = false;
+
+   /** Flag to use UDP */
+   public static final boolean SOCKET_UDP = true;
+   /** Flag to use TCP/IP */
+   public static final boolean SOCKET_TCP = false;
 }
 
