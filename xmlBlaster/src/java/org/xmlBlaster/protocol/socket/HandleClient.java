@@ -124,7 +124,7 @@ public class HandleClient extends Executor implements Runnable
     */
    public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId);
+      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId + " numSend=" + msgArr.length);
       if (!running)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are shutdown.");
 
