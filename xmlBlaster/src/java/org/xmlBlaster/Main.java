@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.94 2002/06/17 12:33:55 ruff Exp $
+Version:   $Id: Main.java,v 1.95 2002/06/17 15:17:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -229,13 +229,11 @@ public class Main implements I_RunlevelListener
                   if (line.length() > 1) fileName = line.substring(1).trim();
 
                   if (fileName == null) {
-                     log.plain(ME, getAuthenticate().toXml());
-                     log.plain(ME, getXmlBlaster().toXml());
+                     log.plain(ME, glob.getDump());
                      log.info(ME, "Dump done");
                   }
                   else {
-                     FileUtil.writeFile(fileName, getAuthenticate().toXml());
-                     FileUtil.appendToFile(fileName, getXmlBlaster().toXml());
+                     FileUtil.writeFile(fileName, glob.getDump());
                      log.info(ME, "Dumped internal state to '" + fileName + "'");
                   }
                }
