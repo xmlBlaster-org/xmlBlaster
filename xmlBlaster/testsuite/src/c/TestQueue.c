@@ -432,6 +432,7 @@ static const char * test_queue()
             char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
             freeEntryDump(dump);
+			   mu_assert("uniqueId fail", queueEntry->uniqueId == idArr[expectedIndex]);
             mu_assertEqualsString("uniqueId", int64ToStr(int64Str, idArr[expectedIndex]), int64ToStr(int64StrX, queueEntry->uniqueId));
             mu_assertEqualsInt("priority", 9, queueEntry->priority);
             mu_assertEqualsBool("persistent", true, queueEntry->isPersistent);
