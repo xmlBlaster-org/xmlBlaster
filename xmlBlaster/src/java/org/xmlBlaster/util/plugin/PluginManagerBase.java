@@ -37,7 +37,7 @@ public class PluginManagerBase implements I_PluginManager {
 
    private static String ME = "PluginManagerBase";
    private Hashtable pluginCache; // currently loaded plugins  (REMOVE???)
-   private final Global glob;
+   protected final Global glob;
    private final LogChannel log;
    public final static String NO_PLUGIN_TYPE = "undef";
 
