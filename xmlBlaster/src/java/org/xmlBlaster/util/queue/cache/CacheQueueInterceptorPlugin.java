@@ -289,6 +289,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
             loadFromPersistence();
 
+            // on restart the added() event is not triggered!
+
          } // persistentQueue!=null
          this.isDown = false;
          if (log.TRACE) log.trace(ME, "Successful initialized");
@@ -366,7 +368,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    /**
-    * returns the persitent queue (null if no one defined)
+    * returns the persistent queue (null if no one defined)
     */
    public I_Queue getPersistentQueue() {
       return this.persistentQueue;

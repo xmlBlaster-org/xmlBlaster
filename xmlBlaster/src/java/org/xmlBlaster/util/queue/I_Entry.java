@@ -55,12 +55,19 @@ public interface I_Entry extends java.io.Serializable
    long getSizeInBytes();
 
    /**
-    * Notification if this entry is added to storage
+    * Notification if this entry is added to storage. 
+    * <p>
+    * NOTE: This event is NOT triggered on startup if entries come from harddisk
+    * from the last run. It is NOT triggered during swapping.
+    *</p>
     */
    void added(StorageId storageId);
 
    /**
     * Notification if this entry is removed from storage
+    * <p>
+    * NOTE: This event is NOT triggered during swapping.
+    *</p>
     */
    void removed(StorageId storageId);
 
