@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.17 2000/05/09 16:42:20 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.18 2000/05/09 16:55:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -49,7 +49,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
       // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      Log.addLogLevel("TRACE");
+      // Log.addLogLevel("TRACE");
       // Log.addLogLevel("CALLS");
       Log.addLogLevel("TIME");
       // Log.addLogListener(this);
