@@ -5,14 +5,14 @@ copy config/speed.properties to your home directory (only with JDK 1.4 or better
 
 Compile it (make all) and start it like that:
 
-   java javaclients.chat.SimpleChat -loginName "Nickname"
+   java javaclients.chat.SimpleChat -session.name "Nickname"
 
 where "Nickname" should be different for each client you start.
 Don´t forget to start the server (java org.xmlBlaster.MainGUI) first.
 
 To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
-   java javaclients.chat.SimpleChat -loginName Ben -bootstrapHostname 62.132.140.7 -dispatch/callback/plugin/ior/hostname 198.197.24.129 
+   java javaclients.chat.SimpleChat -session.name Ben -bootstrapHostname 62.132.140.7 -dispatch/callback/plugin/ior/hostname 198.197.24.129 
 
    -bootstrapHostname is the xmlBlaster server,
    -dispatch/callback/plugin/ior/hostname is the IP address for our internal chat CORBA callback server.
@@ -23,12 +23,12 @@ To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
 To chat from you multi homed host the another server running xmlBlaster (XMLRPC):
 
-   java javaclients.chat.SimpleChat -loginName Tim -protocol XMLRPC -dispatch/callback/plugin/xmlrpc/hostname 198.197.24.129 -dispatch/connection/plugin/xmlrpc/hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -session.name Tim/1 -protocol XMLRPC -dispatch/callback/plugin/xmlrpc/hostname 198.197.24.129 -dispatch/connection/plugin/xmlrpc/hostname 62.132.140.7
 
 
 To chat from you multi homed host the another server running xmlBlaster (RMI):
 
-   java javaclients.chat.SimpleChat -loginName RMI -protocol RMI -dispatch/callback/plugin/rmi/hostname 198.197.24.129 -dispatch/clientside/plugin/rmi/hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -session.name RMI -protocol RMI -dispatch/callback/plugin/rmi/hostname 198.197.24.129 -dispatch/clientside/plugin/rmi/hostname 62.132.140.7
 
 
 Toget help:
