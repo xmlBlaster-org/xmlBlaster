@@ -2683,7 +2683,7 @@ TODO
             </switch>
             <switch value="${XMLBLASTER_ZLIB}">
                <case value="1">
-                  <copy file="${zlib.lib.dir}/${zlib.lib.name}.dll" tofile="${lib.dir}/${zlib.lib.name}.dll"/>
+                  <copy file="${zlib.lib.dir}/${zlib.lib.name}.dll" tofile="${lib.dir}/${zlib.lib.name}.dll" failonerror="false"/>
                </case>
                <default>
                </default>
