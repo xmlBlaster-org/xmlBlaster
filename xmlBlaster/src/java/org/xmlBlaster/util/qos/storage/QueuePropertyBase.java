@@ -12,6 +12,9 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.property.PropLong;
+import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.qos.address.AddressBase;
 
 
@@ -30,16 +33,16 @@ public abstract class QueuePropertyBase implements Cloneable
    private String propertyPrefix = "";
 
    /** The queue plugin type "CACHE" "RAM" "JDBC" or others */
-   public static String DEFAULT_type = "CACHE";
-   protected String type = DEFAULT_type;
+   public static final String DEFAULT_type = "CACHE";
+   protected PropString type = new PropString(DEFAULT_type);
 
    /** The queue plugin version "1.0" or similar */
-   public static String DEFAULT_version = "1.0";
-   protected String version = DEFAULT_version;
+   public static final String DEFAULT_version = "1.0";
+   protected PropString version = new PropString(DEFAULT_version);
 
-   /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
-   public static final long DEFAULT_maxMsgDefault = 1000L;
-   protected long maxMsgDefault = DEFAULT_maxMsgDefault;
+   ///** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
+   //public static final long DEFAULT_maxMsgDefault = 1000L;
+   //protected long maxMsgDefault = DEFAULT_maxMsgDefault;
 
    /** The max setting allowed for queue maxMsgCache is adjustable with property "queue.maxMsgCache=1000" (1000 messages is default) */
    public static final long DEFAULT_maxMsgCacheDefault = 1000L;
@@ -65,50 +68,40 @@ public abstract class QueuePropertyBase implements Cloneable
    /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
    public static final double DEFAULT_reloadSwapBytesRatio = 0.25;
 
-   /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
-   public static final long DEFAULT_minExpires = 1000L;
-   protected long minExpires;
-
-   /** The max span of life of a queue is currently forever (=0), changeable with property e.g. "queue.expires.max=3600000" milliseconds */
-   public static final long DEFAULT_maxExpires = 0L;
-   protected long maxExpires;
-
-   /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
-   public long DEFAULT_expires;
-
    /** The unique protocol relating, e.g. "IOR" */
    protected String relating = Constants.RELATING_SESSION;
-   /** Span of life of this queue in milliseconds */
-   protected long expires = DEFAULT_expires;
+
+   /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
+   public long DEFAULT_maxMsg = 1000L;
    /** The max. capacity of the queue in number of entries */
-   protected long maxMsg = maxMsgDefault;
+   protected PropLong maxMsg = new PropLong(DEFAULT_maxMsg);
    /** The max. capacity of the queue in Bytes */
-   protected long maxBytes = maxBytesDefault;
+   protected PropLong maxBytes = new PropLong(maxBytesDefault);
    /** The max. capacity of the cache of the queue in number of entries */
-   protected long maxMsgCache = maxMsgCacheDefault;
+   protected PropLong maxMsgCache = new PropLong(maxMsgCacheDefault);
+   /** The max. capacity of the queue in Bytes for the cache */
+   protected PropLong maxBytesCache = new PropLong(c);
 
    /** The settings for the storeSwapLevel */
-   protected long storeSwapLevel = (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache);
+   protected long storeSwapLevel = (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache.getValue());
 
    /** The settings for the storeSwapBytes */
-   protected long storeSwapBytes = (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache);
+   protected long storeSwapBytes = (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache.getValue());
 
    /** The settings for the reloadSwapLevel */
-   protected long reloadSwapLevel = (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache);
+   protected long reloadSwapLevel = (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache.getValue());
 
    /** The settings for the storeSwapBytes */
-   protected long reloadSwapBytes = (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache);
+   protected long reloadSwapBytes = (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache.getValue());
 
-   /** The max. capacity of the queue in Bytes for the cache */
-   protected long maxBytesCache = c;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
    public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
-   protected String onOverflow = DEFAULT_onOverflow;
+   protected PropString onOverflow = new PropString(DEFAULT_onOverflow);
 
    /** Error handling when callback failed (after all retries etc.): Constants.ONOVERFLOW_DEADMESSAGE */
    public static final String DEFAULT_onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
-   protected String onFailure = DEFAULT_onFailure;
+   protected PropString onFailure = new PropString(DEFAULT_onFailure);
 
    /** The corresponding callback address */
    protected AddressBase[] addressArr = new AddressBase[0];
@@ -149,7 +142,7 @@ public abstract class QueuePropertyBase implements Cloneable
    }  */
 
    /**
-    * @return The prefix for properties e.g. "history" -> "-history.queue.maxMsg"
+    * @return The prefix (relating='') for properties e.g. "history" -> "-history.queue.maxMsg"
     */
    public String getPropertyPrefix() {
       return this.propertyPrefix;
@@ -157,10 +150,12 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /**
     * The command line prefix to configure the queue or msgUnitStore
-    * @return e.g. "msgUnitStore." or "history.queue."
+    * @return e.g. "persistence/msgUnitStore/" or "queue/history/"
     */
    public String getPrefix() {
-      return (this.propertyPrefix.length() > 0) ? this.propertyPrefix+"."+getRootTagName()+"." : getRootTagName()+".";
+      //@return e.g. "msgUnitStore." or "history.queue."
+      //return (this.relating!=null&&this.relating.length() > 0) ? this.relating+"."+getRootTagName()+"." : getRootTagName()+".";
+      return getRootTagName() + PropEntry.SEP + ((this.relating!=null&&this.relating.length() > 0) ? (this.relating+PropEntry.SEP) : "");
    }
 
    /**
@@ -174,68 +169,49 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /**
     * Configure property settings, add your own defaults in the derived class
-    * @param propertyPrefix e.g. "history" or "cb"
+    * @param relating e.g. "history" or "cb", similar to <queue related='history'/> or
+    *                            <persistence related='msgUnitStore'/> etc.
     */
-   protected void initialize(String propertyPrefix) {
-      this.propertyPrefix = (propertyPrefix == null) ? "" : propertyPrefix;
+   protected void initialize(String relating) {
+      this.relating = (relating == null) ? "" : relating;
       String prefix = getPrefix();
 
-      // Do we need this range settings?
-      setMinExpires(glob.getProperty().get("queue.expires.min", DEFAULT_minExpires));
-      setMaxExpires(glob.getProperty().get("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
-      if (nodeId != null) {
-         setMinExpires(glob.getProperty().get("queue.expires.min["+nodeId+"]", getMinExpires()));
-         setMaxExpires(glob.getProperty().get("queue.expires.max["+nodeId+"]", getMaxExpires())); // Long.MAX_VALUE);
-      }
-
       try {
-         PluginInfo pluginInfo = new PluginInfo(glob, null, glob.getProperty().get("queue.defaultPlugin", DEFAULT_type));
-         DEFAULT_type = pluginInfo.getType();
-         DEFAULT_version = pluginInfo.getVersion();
+         String tv = glob.getProperty().get(getRootTagName()+".defaultPlugin", DEFAULT_type+","+DEFAULT_version);
+         PluginInfo pluginInfo = new PluginInfo(glob, null, tv);
+         this.type.setDefaultValue(pluginInfo.getType());
+         this.version.setDefaultValue(pluginInfo.getVersion());
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "initialize: could not set the default plugin to what indicated by queue.defaultPlugin");
+         this.log.error(ME, "initialize: could not set the default plugin to what indicated by "+getRootTagName()+".defaultPlugin");
       }
                                 
-      // prefix is e.g. "cb.queue." or "msgUnitStore"
+      // The newer way:
+      String context = null; // something like "/topic/HelloWorld"
+      this.maxMsg.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxMsg");
+      this.maxMsgCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxMsgCache");
+      this.maxBytes.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytes");
+      this.maxBytesCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytesCache");
+      this.type.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "type");
+      this.version.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "version");
+      this.onOverflow.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onOverflow");
+      this.onFailure.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onFailure");
 
-      setMaxMsgUnchecked(glob.getProperty().get(prefix+"maxMsg", DEFAULT_maxMsgDefault));
-      setMaxMsgCacheUnchecked(glob.getProperty().get(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
-      setMaxBytesUnchecked(glob.getProperty().get(prefix+"maxBytes", DEFAULT_bytesDefault));
-      setMaxBytesCacheUnchecked(glob.getProperty().get(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
-      setStoreSwapLevel(glob.getProperty().get(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache)));
-      setStoreSwapBytes(glob.getProperty().get(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache)));
-      setReloadSwapLevel(glob.getProperty().get(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache)));
-      setReloadSwapBytes(glob.getProperty().get(prefix+"reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache)));
-      setExpires(glob.getProperty().get(prefix+"expires", DEFAULT_maxExpires));
-      setOnOverflow(glob.getProperty().get(prefix+"onOverflow", DEFAULT_onOverflow));
-      setOnFailure(glob.getProperty().get(prefix+"onFailure", DEFAULT_onFailure));
-      setType(glob.getProperty().get(prefix+"type", DEFAULT_type));
-      setVersion(glob.getProperty().get(prefix+"version", DEFAULT_version));
+      // The old way:
+      // prefix is e.g. "cb.queue." or "msgUnitStore."
+      setStoreSwapLevel(glob.getProperty().get(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache.getValue())));
+      setStoreSwapBytes(glob.getProperty().get(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache.getValue())));
+      setReloadSwapLevel(glob.getProperty().get(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache.getValue())));
+      setReloadSwapBytes(glob.getProperty().get(prefix+"reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache.getValue())));
       if (nodeId != null) {
-         setMaxMsgUnchecked(glob.getProperty().get(prefix+"maxMsg["+nodeId+"]", getMaxMsg()));
-         setMaxMsgCacheUnchecked(glob.getProperty().get(prefix+"maxMsgCache["+nodeId+"]", getMaxMsgCache()));
-         setMaxBytesUnchecked(glob.getProperty().get(prefix+"maxBytes["+nodeId+"]", getMaxBytes()));
-         setMaxBytesCacheUnchecked(glob.getProperty().get(prefix+"maxBytesCache["+nodeId+"]", getMaxBytesCache()));
          setStoreSwapLevel(glob.getProperty().get(prefix+"storeSwapLevel["+nodeId+"]", getStoreSwapLevel()));
          setStoreSwapBytes(glob.getProperty().get(prefix+"storeSwapBytes["+nodeId+"]", getStoreSwapBytes()));
          setReloadSwapLevel(glob.getProperty().get(prefix+"reloadSwapLevel["+nodeId+"]", getReloadSwapLevel()));
          setReloadSwapBytes(glob.getProperty().get(prefix+"reloadSwapBytes["+nodeId+"]", getReloadSwapBytes()));
-         setExpires(glob.getProperty().get(prefix+"expires["+nodeId+"]", getExpires()));
-         setOnOverflow(glob.getProperty().get(prefix+"onOverflow["+nodeId+"]", getOnOverflow()));
-         setOnFailure(glob.getProperty().get(prefix+"onFailure["+nodeId+"]", getOnFailure()));
-         setType(glob.getProperty().get(prefix+"type["+nodeId+"]", getType()));
-         setVersion(glob.getProperty().get(prefix+"version["+nodeId+"]", getVersion()));
       }
       
       checkConsistency();
    }
-
-   protected void setMaxExpires(long maxExpires) { this.maxExpires = maxExpires; }
-   protected long getMaxExpires() { return this.maxExpires; }
-
-   protected void setMinExpires(long minExpires) { this.minExpires = minExpires; }
-   protected long getMinExpires() { return this.minExpires; }
 
    /**
     * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
@@ -249,44 +225,22 @@ public abstract class QueuePropertyBase implements Cloneable
          this.relating = Constants.RELATING_CLIENT;
       else if (Constants.RELATING_HISTORY.equalsIgnoreCase(relating))
          this.relating = Constants.RELATING_HISTORY;
-      else if (Constants.RELATING_TOPICCACHE.equalsIgnoreCase(relating))
-         this.relating = Constants.RELATING_TOPICCACHE;
+      else if (Constants.RELATING_MSGUNITSTORE.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_MSGUNITSTORE;
+      else if (Constants.RELATING_TOPICSTORE.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_TOPICSTORE;
       else {
-         log.warn(ME, "Ignoring relating=" + relating);
+         log.warn(ME, "Ignoring relating='" + relating + "'");
          Thread.currentThread().dumpStack();
       }
    }
 
    /**
-    * Returns the queue type.
+    * Returns the queue id.
     * @return relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
     */
    public final String getRelating() {
       return this.relating;
-   }
-
-   /**
-    * Span of life of this queue.
-    * @return Expiry time in milliseconds or 0L if forever
-    */
-   public final long getExpires() {
-      return expires;
-   }
-
-   /**
-    * Span of life of this queue.
-    * @param Expiry time in milliseconds
-    */
-   public final void setExpires(long expires) {
-      if (maxExpires <= 0L)
-         this.expires = expires;
-      else if (expires > 0L && maxExpires > 0L && expires > maxExpires)
-         this.expires = maxExpires;
-      else if (expires <= 0L && maxExpires > 0L)
-         this.expires = maxExpires;
-
-      if (expires > 0L && expires < minExpires)
-         this.expires = minExpires;
    }
 
    /**
@@ -295,7 +249,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return number of messages
     */
    public final long getMaxMsg() {
-      return this.maxMsg;
+      return this.maxMsg.getValue();
    }
 
    /**
@@ -308,7 +262,7 @@ public abstract class QueuePropertyBase implements Cloneable
       checkConsistency();
    }
    private final void setMaxMsgUnchecked(long maxMsg) {
-      this.maxMsg = maxMsg;
+      this.maxMsg.setValue(maxMsg);
    }
 
    /**
@@ -317,7 +271,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return e.g. "CACHE"
     */
    public final String getType() {
-      return this.type;
+      return this.type.getValue();
    }
 
    /**
@@ -326,7 +280,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @param type
     */
    public final void setType(String type) {
-      this.type = type;
+      this.type.setValue(type);
    }
 
    /**
@@ -335,7 +289,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return e.g. "1.0"
     */
    public final String getVersion() {
-      return this.version;
+      return this.version.getValue();
    }
 
    /**
@@ -344,7 +298,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @param version
     */
    public final void setVersion(String version) {
-      this.version = version;
+      this.version.setValue(version);
    }
 
    /**
@@ -353,20 +307,20 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return number of messages
     */
    public final long getMaxMsgCache() {
-      return this.maxMsgCache;
+      return this.maxMsgCache.getValue();
    }
 
    /**
     * Max number of messages for the cache of this queue.
     * <br />
-    * @param maxMsg
+    * @param maxMsgCache
     */
    public final void setMaxMsgCache(long maxMsgCache) {
-      this.maxMsgCache = maxMsgCache;
+      this.maxMsgCache.setValue(maxMsgCache);
       checkConsistency();
    }
    private final void setMaxMsgCacheUnchecked(long maxMsgCache) {
-      this.maxMsgCache = maxMsgCache;
+      this.maxMsgCache.setValue(maxMsgCache);
    }
 
    /**
@@ -375,7 +329,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return Get max. message queue size in Bytes
     */
    public final long getMaxBytes() {
-      return this.maxBytes;
+      return this.maxBytes.getValue();
    }
 
    /**
@@ -384,11 +338,11 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return Set max. message queue size in Bytes
     */
    public final void setMaxBytes(long maxBytes) {
-      this.maxBytes = maxBytes;
+      this.maxBytes.setValue(maxBytes);
       checkConsistency();
    }
    private final void setMaxBytesUnchecked(long maxBytes) {
-      this.maxBytes = maxBytes;
+      this.maxBytes.setValue(maxBytes);
    }
 
 
@@ -398,7 +352,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return Get max. message queue size in Bytes
     */
    public final long getMaxBytesCache() {
-      return this.maxBytesCache;
+      return this.maxBytesCache.getValue();
    }
 
 
@@ -480,11 +434,11 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return Set max. message queue size in Bytes
     */
    public final void setMaxBytesCache(long maxBytesCache) {
-      this.maxBytesCache = maxBytesCache;
+      this.maxBytesCache.setValue(maxBytesCache);
       checkConsistency();
    }
    private final void setMaxBytesCacheUnchecked(long maxBytesCache) {
-      this.maxBytesCache = maxBytesCache;
+      this.maxBytesCache.setValue(maxBytesCache);
    }
 
 
@@ -500,16 +454,16 @@ public abstract class QueuePropertyBase implements Cloneable
       }
       */
       if (Constants.ONOVERFLOW_DEADMESSAGE.equalsIgnoreCase(onOverflow)) {
-         this.onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
+         this.onOverflow.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
       }
       else if (Constants.ONOVERFLOW_DISCARDOLDEST.equalsIgnoreCase(onOverflow)) {
-         this.onOverflow = Constants.ONOVERFLOW_DISCARDOLDEST;
+         this.onOverflow.setValue(Constants.ONOVERFLOW_DISCARDOLDEST);
 
-         this.onOverflow = Constants.ONOVERFLOW_DEADMESSAGE; // TODO !!!
+         this.onOverflow.setValue(Constants.ONOVERFLOW_DEADMESSAGE); // TODO !!!
          log.error(ME, getRootTagName() + " onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
       }
       else {
-         this.onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
+         this.onOverflow.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
          log.warn(ME, "The " + getRootTagName() + " onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
       }
    }
@@ -519,7 +473,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
    public final String getOnOverflow() {
-      return onOverflow;
+      return onOverflow.getValue();
    }
 
    /*
@@ -539,10 +493,10 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void setOnFailure(String onFailure) {
       if (Constants.ONOVERFLOW_DEADMESSAGE.equalsIgnoreCase(onFailure))
-         this.onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
+         this.onFailure.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
       else {
          log.warn(ME, "The " + getRootTagName() + " onFailure attribute is invalid '" + onFailure + "', setting to 'deadMessage'");
-         this.onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
+         this.onFailure.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
       }
    }
 
@@ -551,7 +505,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
    public final String getOnFailure() {
-      return onFailure;
+      return onFailure.getValue();
    }
 
    /**
@@ -651,14 +605,6 @@ public abstract class QueuePropertyBase implements Cloneable
                   log.error(ME, "Wrong format of <" + getRootTagName() + " reloadSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("expires")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setExpires(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " expires='" + tmp + "'>, expected a long in milliseconds, using default.");
-               }
-            }
             else if (attrs.getQName(ii).equalsIgnoreCase("onOverflow")) {
                setOnOverflow(attrs.getValue(ii).trim());
             }
@@ -676,11 +622,11 @@ public abstract class QueuePropertyBase implements Cloneable
    }
 
    public String usage() {
-      return usage("Control the "+this.propertyPrefix+" queue properties:");
+      return usage("Control the "+getRootTagName()+"/"+this.relating+" storage properties:");
    }
 
    /**
-    * Defaults to queue for &lt;queue ...>
+    * Defaults to queue for &lt;queue .../>, other used tag name is &lt;persistence .../>
     */
    public String getRootTagName() {
       return "queue";
@@ -693,16 +639,14 @@ public abstract class QueuePropertyBase implements Cloneable
       String prefix = getPrefix();
       String text = "";
       text += headerline + "\n";
-      text += "   -"+prefix+"maxMsg       The maximum allowed number of messages [" + DEFAULT_maxMsgDefault + "].\n";
-      text += "   -"+prefix+"maxMsgCache  The maximum allowed number of messages in the cache [" + DEFAULT_maxMsgDefault + "].\n";
-      text += "   -"+prefix+"maxBytes      The maximum size in bytes of the storage [" + DEFAULT_bytesDefault + "].\n";
-      text += "   -"+prefix+"maxBytesCache The maximum size in bytes in the cache [" + DEFAULT_bytesCacheDefault + "].\n";
-    //text += "   -"+prefix+"expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-    //text += "   -"+prefix+"onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
-      text += "   -"+prefix+"onOverflow What happens if storage is full [" + DEFAULT_onOverflow + "]\n";
-      text += "   -"+prefix+"onFailure  Error handling when storage failed [" + DEFAULT_onFailure + "]\n";
-      text += "   -"+prefix+"type       The plugin type [" + DEFAULT_type + "]\n";
-      text += "   -"+prefix+"version    The plugin version [" + DEFAULT_version + "]\n";
+      text += "   -"+prefix+"maxMsg       The maximum allowed number of messages [" + this.maxMsg.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxMsgCache  The maximum allowed number of messages in the cache [" + this.maxMsgCache.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxBytes      The maximum size in bytes of the storage [" + this.maxBytes.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxBytesCache The maximum size in bytes in the cache [" + this.maxBytesCache.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"onOverflow What happens if storage is full [" + this.onOverflow.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"onFailure  Error handling when storage failed [" + this.onFailure.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"type       The plugin type [" + this.type.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"version    The plugin version [" + this.version.getDefaultValue() + "]\n";
       return text;
    }
 
@@ -710,24 +654,13 @@ public abstract class QueuePropertyBase implements Cloneable
     * Should be called after parsing
     */
    public final void checkConsistency() { // throws XmlBlasterException {
-      //if (getType() == null) {
-      //   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Type may not be null in " + toXml());
-      //}
-      /*
-      if (DEFAULT_maxMsgCacheDefault > DEFAULT_maxMsgDefault) {
-         log.warn(ME, "DEFAULT_maxMsgCacheDefault=" + DEFAULT_maxMsgCacheDefault + " is bigger than DEFAULT_maxMsgDefault=" + DEFAULT_maxMsgDefault + ", we reduce DEFAULT_maxMsgCacheDefault to DEFAULT_maxMsgDefault and continue.");
-      }
-      if (DEFAULT_bytesCacheDefault > DEFAULT_bytesDefault) {
-         log.warn(ME, "DEFAULT_bytesCacheDefault=" + DEFAULT_bytesCacheDefault + " is bigger than DEFAULT_bytesDefault=" + DEFAULT_bytesDefault + ", we reduce DEFAULT_bytesCacheDefault to DEFAULT_bytesDefault and continue.");
-      }
-      */
       if (getMaxMsgCache() > getMaxMsg()) {
          log.warn(ME, "maxMsgCache=" + getMaxMsgCache() + " is bigger than maxMsg=" + getMaxMsg() + ", we reduce maxMsgCache to maxMsg and continue.");
-         this.maxMsgCache = getMaxMsg();
+         this.maxMsgCache.setValue(getMaxMsg());
       }
       if (getMaxBytesCache() > getMaxBytes()) {
          log.warn(ME, "maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
-         this.maxBytesCache = getMaxBytes();
+         this.maxBytesCache.setValue(getMaxBytes());
       }
    }
 
@@ -752,32 +685,32 @@ public abstract class QueuePropertyBase implements Cloneable
       // open <queue ...
       sb.append(offset).append("<").append(getRootTagName());
       sb.append(" relating='").append(getRelating()).append("'");
-      if (!DEFAULT_type.equals(getType()))
+      if (this.type.isModified())
          sb.append(" type='").append(getType()).append("'");
-      if (!DEFAULT_version.equals(getVersion()))
+      if (this.version.isModified())
          sb.append(" version='").append(getVersion()).append("'");
-      if (DEFAULT_maxMsgDefault != getMaxMsg())
+      if (this.maxMsg.isModified())
          sb.append(" maxMsg='").append(getMaxMsg()).append("'");
-      if (DEFAULT_maxMsgCacheDefault != getMaxMsgCache())
+      if (this.maxMsgCache.isModified())
          sb.append(" maxMsgCache='").append(getMaxMsgCache()).append("'");
-      if (DEFAULT_bytesDefault != getMaxBytes())
+      if (this.maxBytes.isModified())
          sb.append(" maxBytes='").append(getMaxBytes()).append("'");
-      if (DEFAULT_bytesCacheDefault != getMaxBytesCache())
+      if (this.maxBytesCache.isModified())
          sb.append(" maxBytesCache='").append(getMaxBytesCache()).append("'");
 
-      if ((long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache) != getStoreSwapLevel())
+      /* Deactivated until implemented in queue framework
+      if ((long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache.getValue()) != getStoreSwapLevel())
          sb.append(" storeSwapLevel='").append(getStoreSwapLevel()).append("'");
-      if ((long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache) != getStoreSwapBytes())
+      if ((long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache.getValue()) != getStoreSwapBytes())
          sb.append(" storeSwapBytes='").append(getStoreSwapBytes()).append("'");
-      if ((long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache) != getReloadSwapLevel())
+      if ((long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache.getValue()) != getReloadSwapLevel())
          sb.append(" reloadSwapLevel='").append(getReloadSwapLevel()).append("'");
-      if ((long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache) != getReloadSwapBytes())
+      if ((long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache.getValue()) != getReloadSwapBytes())
          sb.append(" reloadSwapBytes='").append(getReloadSwapBytes()).append("'");
-      if (DEFAULT_expires != getExpires())
-         sb.append(" expires='").append(getExpires()).append("'");
-      if (DEFAULT_onOverflow != getOnOverflow())
+      */
+      if (this.onOverflow.isModified())
          sb.append(" onOverflow='").append(getOnOverflow()).append("'");
-      if (DEFAULT_onFailure != getOnFailure())
+      if (this.onFailure.isModified())
          sb.append(" onFailure='").append(getOnFailure()).append("'");
 
       if (addressArr.length > 0 && addressArr[0] != null) {
@@ -806,8 +739,20 @@ public abstract class QueuePropertyBase implements Cloneable
     * like boolean, String, int.
     */
    public Object clone() {
+      QueuePropertyBase newOne = null;
       try {
-         return super.clone();
+         newOne = (QueuePropertyBase)super.clone();
+         synchronized(this) {
+            newOne.maxMsg = (PropLong)this.maxMsg.clone();
+            newOne.maxMsgCache = (PropLong)this.maxMsgCache.clone();
+            newOne.maxBytes = (PropLong)this.maxBytes.clone();
+            newOne.maxBytesCache = (PropLong)this.maxBytesCache.clone();
+            newOne.type = (PropString)this.type.clone();
+            newOne.version = (PropString)this.version.clone();
+            newOne.onOverflow = (PropString)this.onOverflow.clone();
+            newOne.onFailure = (PropString)this.onFailure.clone();
+         }
+         return newOne;
       }
       catch (CloneNotSupportedException e) {
          return null;
