@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.34 2000/10/21 20:50:46 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.35 2001/01/30 14:04:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -386,7 +386,7 @@ public class Authenticate
       sb.append(offset + "<Authenticate>");
       while (iterator.hasNext()) {
          ClientInfo clientInfo = (ClientInfo)iterator.next();
-         sb.append(clientInfo.printOn(extraOffset + "   ").toString());
+         sb.append(clientInfo.toXml(extraOffset + "   "));
       }
       sb.append(offset + "</Authenticate>\n");
 
