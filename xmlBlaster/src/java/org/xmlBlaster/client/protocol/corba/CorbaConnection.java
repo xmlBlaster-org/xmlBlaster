@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.19 2001/08/31 15:30:48 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.20 2001/08/31 16:38:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -66,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -795,6 +795,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]\n";
       text += "   java -DOAIAddr=<ip> For JacORB only, allows to set the callback-server's IP address\n";
       text += "                       for multi-homed hosts\n";
+      text += "   java -DOAPort=<nr>  For JacORB only, allows to set the callback-server's port number\n";
       text += "\n";
       return text;
    }

@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.18 2001/08/31 15:30:48 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.19 2001/08/31 16:38:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -315,7 +315,7 @@ public class CorbaDriver implements I_Driver
       }
       catch (Exception e) {
          if (Log.TRACE) Log.trace(ME + ".NoNameService", e.toString());
-         throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://jacorb.inf.fu-berlin.de> if you want one.");
+         throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
    }
 
@@ -414,8 +414,11 @@ public class CorbaDriver implements I_Driver
       text += "                       Default is port "+DEFAULT_HTTP_PORT+", the port 0 switches this feature off.\n";
       text += "   -ns false           Don't publish the IOR to a naming service.\n";
       text += "                       Default is to publish the IOR to a naming service.\n";
-      text += "   java -DOAIAddr=<ip> For JacORB only, allows to set the corba server IP address\n";
+      text += " For JacORB only:\n";
+      text += "   java -DOAIAddr=<ip> Allows to set the corba server IP address\n";
       text += "                       for multi-homed hosts\n";
+      text += "   java -DOAPort=<nr>  Allows to set the corba server port number\n";
+      text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
       text += "\n";
       return text;
    }
