@@ -903,20 +903,20 @@ void CorbaConnection::copyFromCorba(util::MessageUnit &msgUnitUtil, serverIdl::M
 
 std::string CorbaConnection::usage() 
 {
-   std::string text = string("\n");
-   text += string("");
-   text += string("Client connection options:");
-   text += string("  -bootstrapHostname <host>");
-   text += string("                      The host where to find xmlBlaster [localhost]");
-   text += string("  -bootstrapPort     <port>");
-   text += string("                      The bootstrap port where xmlBlaster publishes its IOR [3412]");
-   text += string("  -dispatch/connection/plugin/ior/iorString <IOR:00...>");
-   text += string("                      The IOR string of the xmlBlaster-authentication server.");
-   text += string("  -dispatch/connection/plugin/ior/iorFile <file>");
-   text += string("                      A file with the xmlBlaster-authentication server IOR.");
-   text += string("  -dispatch/connection/plugin/ior/useNameService <true/false>");
-   text += string("                      Try to access xmlBlaster through a naming service [true]");
-   text += string("");
+   std::string text = string("");
+   //text += string("\n");
+   text += string("\nThe CORBA plugin configuration:");
+   text += string("\n   -bootstrapHostname <host>");
+   text += string("\n                       The host where to find xmlBlaster [localhost]");
+   text += string("\n   -bootstrapPort     <port>");
+   text += string("\n                       The bootstrap port where xmlBlaster publishes its IOR [3412]");
+   text += string("\n   -dispatch/connection/plugin/ior/iorString <IOR:00...>");
+   text += string("\n                       The IOR string of the xmlBlaster-authentication server.");
+   text += string("\n   -dispatch/connection/plugin/ior/iorFile <file>");
+   text += string("\n                       A file with the xmlBlaster-authentication server IOR.");
+   text += string("\n   -dispatch/connection/plugin/ior/useNameService <true/false>");
+   text += string("\n                       Try to access xmlBlaster through a naming service [true]");
+   text += string("\n");
    return text;
 }
 
