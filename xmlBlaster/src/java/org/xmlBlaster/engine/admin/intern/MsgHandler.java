@@ -43,7 +43,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
-      this.ME = this.ME + "-" + glob.getId();
+      this.ME = "MsgHandler" + this.glob.getLogPraefixDashed();
       this.commandManager.register("msg", this);
       log.info(ME, "Message administration plugin is initialized");
    }

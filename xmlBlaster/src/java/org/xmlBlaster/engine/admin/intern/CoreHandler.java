@@ -46,7 +46,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
-      this.ME = this.ME + "-" + glob.getId();
+      this.ME = "CoreHandler" + this.glob.getLogPraefixDashed();
       this.commandManager.register("DEFAULT", this);
       this.commandManager.register("client", this);
       log.info(ME, "Core administration plugin is initialized");

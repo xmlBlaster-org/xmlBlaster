@@ -3,7 +3,7 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.9 2002/05/26 21:23:46 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.10 2002/06/19 10:27:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -80,7 +80,7 @@ public class MsgQueueEntry
       this.msgUnitWrapper = msgUnitWrapper;
       initialize();
 
-      if (log.TRACE) log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
+      if (log.TRACE) log.trace(ME+"-/client/"+receiverSubjectInfo.getLoginName(), "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
    }
 
    /**
@@ -104,7 +104,8 @@ public class MsgQueueEntry
       this.msgUnitWrapper = msgUnitWrapper;
       initialize();
 
-      if (log.TRACE) log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
+      if (log.TRACE) log.trace(ME+"-/client/"+receiverSubjectInfo.getLoginName()+"/"+receiverSessionInfo.getPublicSessionId(),
+                               "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
    }
 
    /**
@@ -128,7 +129,8 @@ public class MsgQueueEntry
       this.msgUnitWrapper = msgUnitWrapper;
       initialize();
 
-      if (log.TRACE) log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
+      if (log.TRACE) log.trace(ME+"-/client/"+receiverSubjectInfo.getLoginName()+"/"+receiverSessionInfo.getPublicSessionId(),
+                              "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
    }
 
    private final void initialize() throws XmlBlasterException

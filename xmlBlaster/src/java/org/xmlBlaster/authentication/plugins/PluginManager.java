@@ -2,7 +2,7 @@ package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.PluginManagerBase;
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -19,7 +19,7 @@ import java.util.StringTokenizer;
  * @version 1.0
  */
 public class PluginManager extends PluginManagerBase {
-   private static final String                ME = "SecurityPluginManager";
+   private final String ME;
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.htpasswd.Manager"; //"org.xmlBlaster.authentication.plugins.simple.Manager";
    private              Authenticate        auth = null;
    private final Global glob;
@@ -29,6 +29,7 @@ public class PluginManager extends PluginManagerBase {
       super(glob);
       this.glob = glob;
       this.log = glob.getLog("auth");
+      this.ME =  "SecurityPluginManager" + this.glob.getLogPraefixDashed();
       if (glob.getProperty().get("Security.Server.allowSimpleDriver", false)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
          log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");

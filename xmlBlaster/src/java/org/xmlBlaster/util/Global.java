@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.33 2002/06/17 12:33:55 ruff Exp $
+Version:   $Id: Global.java,v 1.34 2002/06/19 10:27:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -53,7 +53,7 @@ public class Global implements Cloneable
    /** This will be replaced by build.xml with the compiling JDK version */
    private String buildJavaVersion = "@build.java.version@";
 
-   private String ME = "Global";
+   protected String ME = "Global";
    protected String ip_addr = null;
    protected String id = "";
 
@@ -173,7 +173,6 @@ public class Global implements Cloneable
       if (this.id == null && getBootstrapAddress().getPort() > 0) {
          this.id = getBootstrapAddress().getAddress();
       }
-      this.ME = "Global-" + this.id;
    }
 
    protected void shallowCopy(org.xmlBlaster.util.Global utilGlob)
@@ -477,6 +476,15 @@ public class Global implements Cloneable
    }
 
    /**
+    * Same as getId() but all slashes '/' are stripped
+    * so you can use it for cluster node id (see requirement admin.command). 
+    * @return ""
+    */
+   public String getAdminId() {
+      return org.jutils.text.StringHelper.replaceAll(getId(), "/", "");
+   }
+
+   /**
     * Same as getId() but all 'special characters' are stripped
     * so you can use it for file names.
     * @return ""
@@ -494,7 +502,20 @@ public class Global implements Cloneable
     */
    public void setId(String id) {
       this.id = id;
-      this.ME = "Global-" + this.id;
+   }
+
+   /**
+    * Is coded in derived engine.Global
+    */
+   public String getLogPraefixDashed() {
+      return "";
+   }
+
+   /**
+    * Is coded in derived engine.Global
+    */
+   public String getLogPraefix() {
+      return "";
    }
 
    /**

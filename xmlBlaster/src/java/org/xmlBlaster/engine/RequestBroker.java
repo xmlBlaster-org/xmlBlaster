@@ -174,8 +174,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       useCluster = glob.useCluster();
       if (useCluster) {
-         this.ME += "-" + glob.getId();
          glob.getClusterManager(this.unsecureSessionInfo); // Initialize ClusterManager
+         this.ME = "RequestBroker" + glob.getLogPraefixDashed();
       }
 
       accessPluginManager = new AccessPluginManager(glob);

@@ -98,7 +98,7 @@ public final class ClusterManager implements I_RunlevelListener
       this.glob = glob;
       this.sessionInfo = sessionInfo;
       this.log = this.glob.getLog("cluster");
-      this.ME = "ClusterManager-" + this.glob.getId();
+      this.ME = "ClusterManager" + this.glob.getLogPraefixDashed();
       glob.getRunlevelManager().addRunlevelListener(this);
    }
 

@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.15 2002/06/15 16:05:31 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.16 2002/06/19 10:27:40 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -31,7 +31,7 @@ import java.util.Iterator;
  */
 public class AccessPluginManager extends PluginManagerBase implements I_RunlevelListener {
 
-   private static final String ME = "AccessPluginManager";
+   private final String ME;
    public static final String pluginPropertyName = "MimeAccessPlugin";
 
    private final Global glob;
@@ -41,6 +41,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
    {
       super(glob);
       this.glob = glob;
+      this.ME = "AccessPluginManager" + this.glob.getLogPraefixDashed();
       this.log = this.glob.getLog("mime");
       glob.getRunlevelManager().addRunlevelListener(this);
    }

@@ -96,20 +96,22 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          instanceId = instanceCounter;
          instanceCounter++;
       }
+      this.ME = "SessionInfo" + glob.getLogPraefixDashed("client/") + subjectInfo.getLoginName() + "/" + getPublicSessionId();
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
       this.uptime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
                                           // securityCtx.getSessionId()
-      this.sessionQueue = new SessionMsgQueue("session:"+getInstanceId(), this, connectQos.getSessionCbQueueProperty(), glob);
+      this.sessionQueue = new SessionMsgQueue(glob.getLogPraefixDashed("client/") + subjectInfo.getLoginName() + "/" + getPublicSessionId(),
+                                              this, connectQos.getSessionCbQueueProperty(), glob);
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
          if (log.TRACE) log.trace(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
          timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else
-         log.info(ME, "Session for " + getLoginName() + " lasts forever, requested expiry timer was 0");
+         log.info(ME, "Session lasts forever, requested expiry timer was 0");
    }
 
    /**
@@ -146,7 +148,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
    public void shutdown()
    {
-      if (log.CALL) log.call(ME, "shutdown() of session " + getSessionId());
+      if (log.CALL) log.call(ME, "shutdown() of session");
       if (timerKey != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
@@ -214,7 +216,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Session of client [" + getLoginName() + "] queing message");
+      if (log.CALL) log.call(ME, "Queing message");
       if (entry == null) {
          log.error(ME+".Internal", "Can't queue null message");
          throw new XmlBlasterException(ME+".Internal", "Can't queue null message");

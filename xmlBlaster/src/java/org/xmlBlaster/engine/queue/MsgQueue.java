@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.18 2002/06/18 10:17:08 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.19 2002/06/19 10:27:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -468,7 +468,8 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          return;
       }
       else if (cbConnection != null) { // Unexpected dead addresses
-         log.error(ME, "Internal problem errorCounter=" + this.errorCounter + " addr=" + ((cbConnection==null)?"null":cbConnection.getCbAddress().getName()));
+         log.error(ME, "Internal problem errorCounter=" + this.errorCounter + " addr=" + ((cbConnection==null)?"null":cbConnection.getCbAddress().getName()) +
+                       " the callback connection is null, client is not reachable");
          Thread.currentThread().dumpStack();
       }
 

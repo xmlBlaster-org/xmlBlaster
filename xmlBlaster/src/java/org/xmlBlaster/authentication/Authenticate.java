@@ -77,7 +77,7 @@ final public class Authenticate implements I_Authenticate
    {
       this.glob = global;
       this.log = this.glob.getLog("auth");
-      this.ME = "Authenticate-" + glob.getId();
+      this.ME = "Authenticate" + glob.getLogPraefixDashed();
 
       if (log.CALL) log.call(ME, "Entering constructor");
       this.glob.setAuthenticate(this);

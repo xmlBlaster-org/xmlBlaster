@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.11 2002/06/15 16:05:31 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.12 2002/06/19 10:27:40 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -29,7 +29,7 @@ import java.util.Iterator;
  */
 public class PublishPluginManager extends PluginManagerBase implements I_RunlevelListener {
 
-   private static final String ME = "PublishPluginManager";
+   private final String ME;
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
    public static final String pluginPropertyName = "MimePublishPlugin";
 
@@ -48,6 +48,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
    public PublishPluginManager(Global glob) throws XmlBlasterException {
       super(glob);
       this.glob = glob;
+      this.ME = "PublishPluginManager" + this.glob.getLogPraefixDashed();
       this.log = this.glob.getLog("mime");
       this.maxMimeCacheSize = glob.getProperty().get("MimePublishPlugin.maxMimeCacheSize", 1000);
       glob.getRunlevelManager().addRunlevelListener(this);

@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.39 2002/06/15 16:01:58 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.40 2002/06/19 10:27:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -50,7 +50,7 @@ import org.omg.CosNaming.NameComponent;
  */
 public class CorbaDriver implements I_Driver
 {
-   private static final String ME = "CorbaDriver";
+   private String ME = "CorbaDriver";
    private static org.omg.CORBA.ORB orb = null;
    private Global glob = null;
    private LogChannel log;
@@ -102,6 +102,7 @@ public class CorbaDriver implements I_Driver
    public synchronized void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
+      this.ME = "CorbaDriver" + this.glob.getLogPraefixDashed();
       this.log = glob.getLog("corba");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
@@ -289,6 +290,7 @@ public class CorbaDriver implements I_Driver
    public static void initializeOrbEnv(Global glob, boolean forCB)
    {
       LogChannel log = glob.getLog("corba");
+      final String ME = "CorbaDriver";
 
       /*
       # orb.properties file for JacORB, copy to JAVA_HOME/lib
@@ -465,7 +467,7 @@ public class CorbaDriver implements I_Driver
    {
       if (orb != null)
          return orb;
-      Global.instance().getLog("corba").warn(ME, "orb was not initialized");
+      Global.instance().getLog("corba").warn("CorbaDriver", "orb was not initialized");
       return org.omg.CORBA.ORB.init(new String[0], null);
    }
 

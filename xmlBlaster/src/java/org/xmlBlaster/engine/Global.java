@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.18 2002/06/17 17:05:08 ruff Exp $
+Version:   $Id: Global.java,v 1.19 2002/06/19 10:27:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,8 +32,6 @@ import java.io.IOException;
  */
 public final class Global extends org.xmlBlaster.util.Global
 {
-   private static final String ME = "Global";
-
    private RunlevelManager runlevelManager;
 
    /** the authentication service */
@@ -176,6 +174,54 @@ public final class Global extends org.xmlBlaster.util.Global
    }
 
    /**
+    * Returns for no cluster an empty string, in
+    * cluster environment if more than one node is known
+    * it returns the node id like "/node/heron". 
+    * <p />
+    * Used for logging
+    */
+   public final String getLogPraefix() {
+      if (useCluster()) {
+         /*
+          Switch of too much logging if no other cluster is around does
+         if (this.clusterManager == null)
+            return "";
+         if (this.clusterManager.getNumNodes() == 1)
+            return "";
+         */
+         return "/node/" + getAdminId();
+      }
+      else
+         return "";
+   }
+
+   /**
+    * Returns for no cluster the given post string.
+    * In cluster environment if more than one node is known
+    * it returns the node id like "/node/heron/client" if post="client". 
+    * <p />
+    * Used for logging
+    * @param post the postfix string like "client"
+    */
+   public final String getLogPraefixDashed(String post) {
+      String prae = getLogPraefix();
+      return (prae.length() < 1) ? ("-" + post) : ("-/node/" + getAdminId() + "/" + post); // relativ or absolute addressed
+   }
+
+   /**
+    * Same as getLogPraefix() but if in cluster environment a "-" is praefixed
+    * like "-/node/heron/". 
+    * <p />
+    * Useful for logging information of classes like Authenticate.java
+    */
+   public final String getLogPraefixDashed() {
+      String prae = getLogPraefix();
+      if (prae.length() > 0)
+         return "-" + prae;
+      return "";
+   }
+
+   /**
     * Initialize the instance which manages myself in a cluster environment. 
     * Only the first call will set the sessionInfo
     * @param An internal sessionInfo instance, see RequestBroker.
@@ -186,8 +232,10 @@ public final class Global extends org.xmlBlaster.util.Global
          if (!useCluster())
             return null;
          synchronized(this) {
-            if (this.clusterManager == null)
+            if (this.clusterManager == null) {
                this.clusterManager = new ClusterManager(this, sessionInfo);
+               this.ME = "Global" + getLogPraefixDashed();
+            }
          }
       }
       return this.clusterManager;

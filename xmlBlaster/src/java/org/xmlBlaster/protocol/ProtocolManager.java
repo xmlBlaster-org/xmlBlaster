@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.3 2002/06/17 07:39:17 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.4 2002/06/19 10:27:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -43,7 +43,7 @@ public class ProtocolManager implements I_RunlevelListener
    public ProtocolManager(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("protocol");
-      this.ME = "ProtocolManager-" + this.glob.getId();
+      this.ME = "ProtocolManager" + this.glob.getLogPraefixDashed();
       if (log.CALL) log.call(ME, "Constructor ProtocolManager");
       glob.getRunlevelManager().addRunlevelListener(this);
    }

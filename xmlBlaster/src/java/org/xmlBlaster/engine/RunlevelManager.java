@@ -64,6 +64,7 @@ public final class RunlevelManager
       this.glob = glob;
       this.log = glob.getLog("core");
       instanceCounter++;
+      this.ME = "RunlevelManager"/* + instanceCounter*/ + this.glob.getLogPraefixDashed();
       if (log.CALL) log.call(ME, "Incarnated run level manager #" + instanceCounter);
    }
 
@@ -71,7 +72,7 @@ public final class RunlevelManager
     * Sets the cluster node ID as soon as it is known. 
     */
    public void setId(String id) {
-      this.ME = "RunlevelManager-" + id;
+      this.ME = "RunlevelManager" + this.glob.getLogPraefixDashed();
    }
 
    /**

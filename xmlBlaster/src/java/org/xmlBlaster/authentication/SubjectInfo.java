@@ -131,7 +131,7 @@ public class SubjectInfo implements I_AdminSubject
          instanceCounter++;
       }
       this.loginName = loginName;
-      this.ME = "SubjectInfo-"+instanceCounter+":"+loginName;
+      this.ME = "SubjectInfo"+instanceCounter+glob.getLogPraefixDashed("client/") + getLoginName();
       this.uptime = System.currentTimeMillis();
       this.securityCtx = securityCtx;
 
@@ -140,7 +140,7 @@ public class SubjectInfo implements I_AdminSubject
          this.maxSessions = glob.getProperty().get("session.maxSessions["+glob.getId()+"]", this.maxSessions);
 
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
-      this.subjectQueue = new SubjectMsgQueue(this, "subject:"+loginName, prop, glob);
+      this.subjectQueue = new SubjectMsgQueue(this, glob.getLogPraefixDashed("client/") + getLoginName(), prop, glob);
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo " + loginName);
    }
 

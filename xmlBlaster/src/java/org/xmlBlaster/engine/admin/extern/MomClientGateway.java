@@ -50,7 +50,7 @@ public final class MomClientGateway implements I_ExternGateway
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.instanceCounter++;
-      this.ME = "MomClientGateway-" + this.glob.getId() + "-" + this.instanceCounter;
+      this.ME = "MomClientGateway" + this.instanceCounter + this.glob.getLogPraefixDashed();
       this.commandManager = commandManager;
       return true;
    }

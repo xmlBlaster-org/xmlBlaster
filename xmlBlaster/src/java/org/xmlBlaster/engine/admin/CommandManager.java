@@ -31,7 +31,7 @@ import java.util.Iterator;
  */
 public final class CommandManager implements I_RunlevelListener
 {
-   private String ME;
+   private final String ME;
 
    // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
    private final Global glob;
@@ -54,7 +54,7 @@ public final class CommandManager implements I_RunlevelListener
    public CommandManager(Global glob, SessionInfo sessionInfo) {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
-      this.ME = "CommandManager-" + this.glob.getId();
+      this.ME = "CommandManager" + this.glob.getLogPraefixDashed();
       this.sessionInfo = sessionInfo;
       glob.getRunlevelManager().addRunlevelListener(this);
    }

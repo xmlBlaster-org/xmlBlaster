@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.9 2002/06/18 10:17:08 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.10 2002/06/19 10:27:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -29,7 +29,7 @@ public class CbWorker implements Runnable
 
    public CbWorker(Global glob, MsgQueue q)
    {
-      ME = "CbWorker:" + q.getName(); 
+      ME = "CbWorker-" + q.getName(); 
       this.glob = glob;
       this.log = glob.getLog("cb");
       this.msgQueue = q;

@@ -80,7 +80,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.instanceCounter++;
-      this.ME = "TelnetGateway-" + this.glob.getId() + "-" + this.instanceCounter;
+      this.ME = "TelnetGateway" + this.instanceCounter + this.glob.getLogPraefixDashed();
       this.commandManager = commandManager;
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
