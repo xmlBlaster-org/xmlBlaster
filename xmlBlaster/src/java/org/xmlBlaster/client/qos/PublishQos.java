@@ -93,11 +93,11 @@ public final class PublishQos
 
    /**
     * As a default setting you can subscribe on all messages (PtP or PubSub). 
-    * @param isPubSub true if Publish/Subscribe style is used<br />
+    * @param isSubscribeable true if Publish/Subscribe style is used<br />
     *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
     */
-   public void setIsPubSub(boolean isPubSub) {
-      this.msgQosData.setIsPubSub(isPubSub);
+   public void setIsSubscribeable(boolean isSubscribeable) {
+      this.msgQosData.setIsSubscribeable(isSubscribeable);
    }
 
    /**
