@@ -92,14 +92,28 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
     * Currently this precedence is supported:
     * <pre>
     *  maxEntries                                                   (weakest, not recommended)
+    *
+    *  /node/heron/plugin/socket/port                               (recommended)
+    *
+    *  persistence/msgUnitStore/maxEntries                          (recommended)
+    *
+    *  /node/heron/persistence/msgUnitStore/maxEntries              (recommended in cluster)
+    *
+    *  /node/heron/topic/hello/persistence/msgUnitStore/maxEntries  (strongest)
+    * </pre>
+    *
+    * <!-- 
+    *  maxEntries                                                   (weakest, not recommended)
+    *  /node/heron/maxEntries                                       (not recommended)
     *  persistence.maxEntries                                       (deprecated)
-    *  persistence/maxEntries                                       (recommended)
+    *  persistence/maxEntries                                       (not recommended)
     *  msgUnitStore.persistence.maxEntries                          (deprecated)
     *  persistence/msgUnitStore/maxEntries                          (recommended)
+    *  /node/heron/persistence/msgUnitStore/maxEntries              (recommended)
     *  msgUnitStore.persistence.maxEntries[heron]                   (deprecated)
     *  /node/heron/persistence/msgUnitStore/maxEntries
     *  /node/heron/topic/hello/persistence/msgUnitStore/maxEntries  (strongest)
-    * </pre>
+    * -->
     * @return the matching key
     */
    public final String setFromEnv(org.xmlBlaster.util.Global glob,
@@ -116,7 +130,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       StringBuffer name = new StringBuffer(100);
       String usedName = name.toString();
 
-      // check "maxEntries" variant
+      // check propName="maxEntries" or propName="plugin/socket/port" variant
       name.append(propName);
       //System.out.println("Checking prop=" + name.toString());
       if (props.propertyExists(name.toString())) {
@@ -124,6 +138,20 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          usedName = name.toString();
       }
 
+      // check "/node/heron/maxEntries" or "/node/heron/plugin/socket/port" variant
+      if (nodeId != null) {
+         name.setLength(0);
+         name.append("/node/").append(nodeId);
+         name.append(SEP).append(propName);
+         //System.out.println("Checking prop=" + name.toString());
+         if (props.propertyExists(name.toString())) {
+            //System.out.println("EXISTS prop=" + name.toString() + " value=" + props.get(name.toString(), "NULL"));
+            setValue(props.get(name.toString(), getValueString()), CREATED_BY_PROPFILE);
+            usedName = name.toString();
+         }
+      }
+
+      /*
       // check OLD STYLE "queue.maxEntries" (deprecated)
       if (nodeId != null) {
          name.setLength(0);
@@ -134,9 +162,11 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
             usedName = name.toString();
          }
       }
+      */
 
+      /*
       // check "queue/maxEntries" variant
-      if (className != null && instanceName != null) {
+      if (className != null) {
          name.setLength(0);
          name.append(className).append(SEP).append(propName);
          //System.out.println("Checking prop=" + name.toString());
@@ -145,7 +175,9 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
             usedName = name.toString();
          }
       }
+      */
 
+      /*
       // check OLD STYLE "history.queue.maxEntries" (deprecated)
       if (nodeId != null) {
          name.setLength(0);
@@ -156,6 +188,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
             usedName = name.toString();
          }
       }
+      */
 
       // check "queue/history/maxEntries" variant
       if (className != null && instanceName != null) {
@@ -168,6 +201,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          }
       }
 
+      /*
       // check OLD STYLE "history.queue.maxEntries[heron]" (deprecated)
       if (nodeId != null) {
          name.setLength(0);
@@ -178,6 +212,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
             usedName = name.toString();
          }
       }
+      */
 
       // check "/node/frodo/queue/history/maxEntries" variant
       if (nodeId != null && className != null && instanceName != null) {
