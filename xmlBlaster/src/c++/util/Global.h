@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.30 2004/02/19 21:53:50 ruff Exp $
+Version:   $Id: Global.h,v 1.31 2004/03/25 10:41:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -26,6 +26,22 @@ Version:   $Id: Global.h,v 1.30 2004/02/19 21:53:50 ruff Exp $
 #include <util/objman.h>
 
 namespace org { namespace xmlBlaster { namespace util {
+
+/**
+ * Data holder of Properties dumped to argc/argv command line arguments
+ * as passed to a main(). 
+ * Example:
+ * <pre>
+ * argv[0] = myProg (the executable name) 
+ * argv[1] = -name
+ * argv[2] = joe
+ * </pre>
+ */
+typedef struct ArgsStruct {
+   int argc;
+   char **argv;
+} ArgsStruct_T;
+
 
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -76,9 +92,44 @@ private:
 
 public:
 
+   /**
+    * Returns the length of getArgs()
+    */
    int getArgs();
 
+   /**
+    * Returns the original argv from main(). 
+    * NOTE: This contains NOT all other properties,
+    * you should in such a case use fillArgs(ArgsStruct_T)
+    */
    const char * const* getArgc();
+
+   /**
+    * Fill all properties into a argc/argv representation similar
+    * to those delivered by main(argc, argv). 
+    * Example:
+    * <pre>
+    *  ArgsStruct_T args;
+    *  glob.fillArgs(args);
+    *  // Do something ...
+    *  glob.freeArgs(args);
+    * </pre>
+    * <pre>
+    *  argv[0] = myProg (the executable name) 
+    *  argv[1] = -name
+    *  argv[2] = joe
+    * </pre>
+    * NOTE: You have to take care on the memory allocated into args and free
+    * it with a call to freeArgs()
+    * @param args A struct ArgsStruct instance which is filled with all properties
+    */
+   void fillArgs(ArgsStruct_T &args);
+
+   /**
+    * Free the allocated memory
+    * @see #fillArgs(ArgsStruct_T &args)
+    */
+   void freeArgs(ArgsStruct_T &args);
 
    /**
     * The method to call to get the singleton org::xmlBlaster::util::Timestamp object.

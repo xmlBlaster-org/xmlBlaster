@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $
+Version:   $Id: Global.cpp,v 1.62 2004/03/25 10:41:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.62 2004/03/25 10:41:54 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.61 2004/02/22 21:00:46 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.62 2004/03/25 10:41:54 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -149,6 +149,39 @@ Global& Global::initialize(const Property::MapType &propertyMap)
    property_->loadPropertyFile(); // load xmlBlaster.properties
    isInitialized_ = true;
    return *this;
+}
+
+void Global::fillArgs(ArgsStruct_T &args)
+{
+   if (property_ == 0) {
+      args.argc = 0;
+      args.argv = 0;
+      return;
+   }
+   const Property::MapType &prmap = property_->getPropertyMap();
+   args.argc = 2*prmap.size()+1;
+   args.argv = new char *[args.argc];
+
+   string execName = (argv_ != 0 && args_ > 0) ? argv_[0] : "xmlBlasterClient";
+   args.argv[0] = new char[execName.length()+1];
+   strcpy(args.argv[0],execName.c_str());
+   int i = 1;
+   Property::MapType::const_iterator ipm;
+   for (ipm = prmap.begin(); ipm != prmap.end(); ++ipm) {
+      args.argv[i] = new char[(*ipm).first.size()+2];
+      *(args.argv[i]) = '-';
+      strcpy(args.argv[i]+1, (*ipm).first.c_str()); i++;
+      args.argv[i] = new char[(*ipm).second.size()+1];
+      strcpy(args.argv[i], (*ipm).second.c_str()); i++;
+   }
+}
+
+void Global::freeArgs(ArgsStruct_T &args)
+{
+   for (int i=0; i<args.argc; i++)
+      delete [] args.argv[i];
+   delete [] args.argv;
+   args.argc = 0;
 }
 
 bool Global::wantsHelp()
