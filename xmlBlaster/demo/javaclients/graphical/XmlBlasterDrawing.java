@@ -97,6 +97,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.access = this.global.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(this.global);
          this.connectReturnQos = this.access.connect(qos, this);  // Login to xmlBlaster, register for updates
+
          SubscribeKey sk = new SubscribeKey(this.global, "/xmlBlaster/key[drawingName='" + this.drawingName + "']", Constants.XPATH);
          SubscribeQos sq = new SubscribeQos(this.global);
          sq.setWantLocal(false);
@@ -384,68 +385,85 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       this.log.info(ME, "update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
+      Hashtable tmpAdded = null;
+      Hashtable tmpChanged = null;
+      Hashtable tmpRemoved = null;
+      MessageContent msgContent = null;
       try {
-         MessageContent msgContent = MessageContent.fromBytes(content);
-
-         Hashtable tmpAdded = msgContent.getAdded();
-         Hashtable tmpChanged = msgContent.getChanged();
-         Hashtable tmpRemoved = msgContent.getRemoved();
-
-         this.log.info(ME, "update added " + tmpAdded.size() + " changed " + tmpChanged.size() + " removed " + tmpRemoved.size() + " figures");
-
-         if (updateQos.isErased()) {
-            log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
-            tmpRemoved.put(updateKey.getOid(), "");
-            return "";
+         if (!updateQos.isErased()) {
+            msgContent = MessageContent.fromBytes(content);
+            tmpAdded = msgContent.getAdded();
+            tmpChanged = msgContent.getChanged();
+            tmpRemoved = msgContent.getRemoved();
+            this.log.info(ME, "update added " + tmpAdded.size() + " changed " + tmpChanged.size() + " removed " + tmpRemoved.size() + " figures");
          }
 
          synchronized (this) {
-            lock();
-            this.doRecord = false;
-           
-            Enumeration enum = tmpAdded.keys();
-            while (enum.hasMoreElements()) {
-               String figureId = (String)enum.nextElement();
-               Figure fig = (Figure)tmpAdded.get(figureId);
-               add(figureId, fig);
-               super.add(fig);
-            }
-           
-            enum = tmpChanged.keys();
-            while (enum.hasMoreElements()) {
-               String figureId = (String)enum.nextElement();
-               Figure fig = (Figure)tmpChanged.get(figureId);
-               Figure oldFigure = (Figure)this.timestampFigureTable.get(figureId);
-               add(figureId, fig);
-               super.replace(oldFigure, fig);
-               if (oldFigure != null) {
-                  FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
-                  figureRequestUpdate(ev);
+            try {
+               lock();
+               this.doRecord = false;
+              
+               if (updateQos.isErased()) {
+                  log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
+                  String figureId = updateKey.getOid();
+                  Figure fig = (Figure)this.timestampFigureTable.get(figureId);
+                  remove(figureId, fig);
+                  if (fig != null) {
+                     super.orphan(fig);
+                     FigureChangeEvent ev = new FigureChangeEvent(fig);
+                     figureRequestUpdate(ev);
+                  }
+                  return "OK";
                }
-               FigureChangeEvent ev1 = new FigureChangeEvent(fig);
-               figureRequestUpdate(ev1);
-            }
-           
-            enum = tmpRemoved.keys();
-            while (enum.hasMoreElements()) {
-               String figureId = (String)enum.nextElement();
-               Figure fig = (Figure)this.timestampFigureTable.get(figureId);
-               remove(figureId, fig);
-               if (fig != null) {
-                  super.orphan(fig);
-                  FigureChangeEvent ev = new FigureChangeEvent(fig);
-                  figureRequestUpdate(ev);
+
+               Enumeration enum = tmpAdded.keys();
+               while (enum.hasMoreElements()) {
+                  String figureId = (String)enum.nextElement();
+                  Figure fig = (Figure)tmpAdded.get(figureId);
+                  add(figureId, fig);
+                  super.add(fig);
+               }
+              
+               enum = tmpChanged.keys();
+               while (enum.hasMoreElements()) {
+                  String figureId = (String)enum.nextElement();
+                  Figure fig = (Figure)tmpChanged.get(figureId);
+                  Figure oldFigure = (Figure)this.timestampFigureTable.get(figureId);
+                  add(figureId, fig);
+                  if (oldFigure == null) {
+                     super.add(fig);
+                  }
+                  else
+                     super.replace(oldFigure, fig);
+                  if (oldFigure != null) {
+                     FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
+                     figureRequestUpdate(ev);
+                  }
+                  FigureChangeEvent ev1 = new FigureChangeEvent(fig);
+                  figureRequestUpdate(ev1);
+               }
+              
+               enum = tmpRemoved.keys();
+               while (enum.hasMoreElements()) {
+                  String figureId = (String)enum.nextElement();
+                  Figure fig = (Figure)this.timestampFigureTable.get(figureId);
+                  remove(figureId, fig);
+                  if (fig != null) {
+                     super.orphan(fig);
+                     FigureChangeEvent ev = new FigureChangeEvent(fig);
+                     figureRequestUpdate(ev);
+                  }
                }
             }
-           
-            this.doRecord = true;
-            unlock();
-         }
+            finally {
+               this.doRecord = true;
+               unlock();
+            }
+         } // sync
       }
       catch (IOException ex) {
          this.log.error(ME, "update: an IOException occured when reconstructing the content: " + ex.getMessage());
       }
-
       return "OK";
    }
 
