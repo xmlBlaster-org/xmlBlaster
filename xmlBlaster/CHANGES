@@ -40,6 +40,9 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+
+  - Fixed isVolatile() memory leak reported by liuwen@onewaveinc.com
+
   - Removed CLASSPATH settings from build.sh/build.bat
     They are now in build.xml
 
