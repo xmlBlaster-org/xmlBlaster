@@ -92,6 +92,12 @@
    </todo>
    <see type="REQ">engine.runlevel</see>
    <see type="REQ">protocol.socket</see>
+   <see type="REQ">protocol.corba.JacORB</see>
+   <see type="REQ">protocol.corba.orbacus</see>
+   <see type="REQ">protocol.corba.NameService</see>
+   <see type="REQ">protocol.email</see>
+   <see type="REQ">protocol.soap</see>
+   <see type="REQ">protocol.jms</see>
    <see type="REQ">engine.qos.login.callback</see>
    <see type="API">org.xmlBlaster.protocol.I_XmlBlaster</see>
    <see type="API">org.xmlBlaster.protocol.I_Driver</see>
@@ -100,7 +106,7 @@
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>
