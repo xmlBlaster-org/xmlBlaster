@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.13 2003/03/22 12:28:02 laghi Exp $
+Version:   $Id: ProtocolManager.java,v 1.14 2003/04/17 17:45:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -129,13 +129,12 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
          }
       }
 
-      findUniqueNodeIdName();
+      //findUniqueNodeIdName();
    }
 
-   /**
+   /*
     * Try to extract a unique name for this xmlBlaster server instance,
     * if running in a cluster
-    */
    private void findUniqueNodeIdName() {
       String uniqueNodeIdName = null;
       for (int ii=0; ii<protocols.size(); ii++) {
@@ -153,6 +152,7 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
             glob.setUniqueNodeIdName(uniqueNodeIdName);
       }
    }
+   */
 
    /**
     * Return a specific plugin. 
