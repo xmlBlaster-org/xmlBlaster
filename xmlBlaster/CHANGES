@@ -1,5 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Fixed dead message loop if a dead message subscriber subribed
+   on other messages as well and than crashed.
+
+ o Fixed synchronization gap on client login,
+   SubjectInfo registered before it was fully initialized
+   Thanks to Dimitri Devriendt his detailed report.
+
  o Fixed mouse sensitive area in chessRhino.svg
 
 Changes for 0.85e (beta) [2003-10-31]
