@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.7 2002/05/11 08:08:44 ruff Exp $
+Version:   $Id: Global.java,v 1.8 2002/05/15 12:59:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -47,18 +47,27 @@ public final class Global extends org.xmlBlaster.util.Global
    /**
     * One instance of this represents one xmlBlaster server.
     */
-   public Global()
-   {
+   public Global() {
       super();
+      //Thread.currentThread().dumpStack();
    }
 
    /**
     * One instance of this represents one xmlBlaster server.
     * @param args Environment arguments (key/value pairs)
     */
-   public Global(String[] args)
-   {
+   public Global(String[] args) {
       init(args);
+      //Thread.currentThread().dumpStack();
+   }
+
+   /**
+    * If you have a util.Global and need a engine.Global. 
+    */
+   public Global(org.xmlBlaster.util.Global utilGlob) {
+      super(utilGlob);
+      initThis();
+      //Thread.currentThread().dumpStack();
    }
 
    /**
@@ -66,9 +75,13 @@ public final class Global extends org.xmlBlaster.util.Global
     * @return 1 Show usage, 0 OK, -1 error
     * @see org.xmlBlaster.Main#createNodeId()
     */
-   public int init(String[] args)
-   {
+   public int init(String[] args) {
       int ret = super.init(args);
+      initThis();
+      return ret;
+   }
+
+   private void initThis() {
       String id = getProperty().get("cluster.node.id", (String)null);
       if (id == null && getBootstrapAddress().getPort() > 0) {
          id = getBootstrapAddress().getAddress();
@@ -78,7 +91,6 @@ public final class Global extends org.xmlBlaster.util.Global
          super.setId(nodeId.toString());
          log.info(ME, "Setting xmlBlaster instance name (cluster node id) to '" + nodeId.toString() + "'");
       }
-      return ret;
    }
 
    /**
@@ -180,8 +192,7 @@ public final class Global extends org.xmlBlaster.util.Global
     * The new node ID is only set if my current instance is null!
     * @see org.xmlBlaster.Main#createNodeId()
     */
-   public void setUniqueNodeIdName(String uniqueNodeIdName)
-   {
+   public void setUniqueNodeIdName(String uniqueNodeIdName) {
       if (nodeId == null && uniqueNodeIdName != null) {
          nodeId = new NodeId(uniqueNodeIdName);
          log.info(ME, "Setting xmlBlaster instance name to '" + nodeId.toString() + "'");
@@ -192,8 +203,7 @@ public final class Global extends org.xmlBlaster.util.Global
     * Access the handle of the burst mode timer thread. 
     * @return The Timeout instance
     */
-   public final Timeout getBurstModeTimer()
-   {
+   public final Timeout getBurstModeTimer() {
       if (this.burstModeTimer == null) {
          synchronized(this) {
             if (this.burstModeTimer == null)
@@ -207,8 +217,7 @@ public final class Global extends org.xmlBlaster.util.Global
     * Access the handle of the user session timer thread. 
     * @return The Timeout instance
     */
-   public final Timeout getSessionTimer()
-   {
+   public final Timeout getSessionTimer() {
       if (this.sessionTimer == null) {
          synchronized(this) {
             if (this.sessionTimer == null)
@@ -222,8 +231,7 @@ public final class Global extends org.xmlBlaster.util.Global
     * Access the handle of the message expiry timer thread. 
     * @return The Timeout instance
     */
-   public final Timeout getMessageTimer()
-   {
+   public final Timeout getMessageTimer() {
       if (this.messageTimer == null) {
          synchronized(this) {
             if (this.messageTimer == null)
@@ -237,8 +245,7 @@ public final class Global extends org.xmlBlaster.util.Global
     * Access the handle of the callback thread pool. 
     * @return The CbWorkerPool instance
     */
-   public final CbWorkerPool getCbWorkerPool()
-   {
+   public final CbWorkerPool getCbWorkerPool() {
       if (this.cbWorkerPool == null) {
          synchronized(this) {
             if (this.cbWorkerPool == null)
@@ -248,23 +255,19 @@ public final class Global extends org.xmlBlaster.util.Global
       return this.cbWorkerPool;
    }
 
-   public void setAuthenticate(Authenticate auth)
-   {
+   public void setAuthenticate(Authenticate auth) {
       this.authenticate = auth;
    }
 
-   public Authenticate getAuthenticate()
-   {
+   public Authenticate getAuthenticate() {
       return this.authenticate;
    }
 
-   public void setRequestBroker(RequestBroker requestBroker)
-   {
+   public void setRequestBroker(RequestBroker requestBroker) {
       this.requestBroker = requestBroker;
    }
 
-   public RequestBroker getRequestBroker()
-   {
+   public RequestBroker getRequestBroker() {
       return this.requestBroker;
    }
 }
