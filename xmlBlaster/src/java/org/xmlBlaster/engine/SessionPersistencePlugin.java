@@ -161,8 +161,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       if (this.log.CALL) this.log.call(ME, "shutdown");
       synchronized (this.sync) {
          this.isOK = false;
-         this.global.getRequestBroker().getAuthenticate().addClientListener(this);
-         this.global.getRequestBroker().addSubscriptionListener(this);
+         this.global.getRequestBroker().getAuthenticate().removeClientListener(this);
+         this.global.getRequestBroker().removeSubscriptionListener(this);
          this.sessionStore.shutdown();
          this.subscribeStore.shutdown();
       }

@@ -120,6 +120,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private Address tmpAddr;
    protected String tmpSecurityPluginType;
    protected String tmpSecurityPluginVersion;
+   private boolean inIsPersistent = false;
 
    /**
     */
@@ -330,6 +331,15 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
+      if (name.equalsIgnoreCase("persistent")) {
+         if (!inQos)
+            return;
+         inIsPersistent = true;
+         character.setLength(0);
+         connectQosData.setPersistent(true);
+         return;
+      }
+
       if (inSecurityService) {
          //Collect everything in character buffer
          character.append("<").append(name);
@@ -441,6 +451,16 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
       }
 
+      if(name.equalsIgnoreCase("persistent")) {
+         inIsPersistent = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            connectQosData.setPersistent(new Boolean(tmp).booleanValue());
+         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("session")) {
          inSession = false;
       }
@@ -502,6 +522,13 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             sb.append(offset).append(" <reconnected/>");
          else
             sb.append(offset).append(" <reconnected>false</reconnected>");
+      }
+
+      if (data.getPersistentProp().isModified()) {
+         if (data.isPersistent())
+            sb.append(offset).append(" <persistent/>");
+         else
+            sb.append(offset).append(" <persistent>false</persistent>");
       }
 
       sb.append(data.getSessionQos().toXml(extraOffset+Constants.INDENT));

@@ -5,7 +5,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
-import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -187,6 +186,7 @@ public class QueryQosFactoryTest extends TestCase {
          subscribeQos.setSubscriptionId("MyOwnSentSubscribeId");
          subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
+         subscribeQos.setPersistent(true);
          System.out.println("SubscribeQos: " + subscribeQos.toXml());
 
          QueryQosData qos = factory.readObject(subscribeQos.toXml());
@@ -201,6 +201,7 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", "ContentLenFilter2", filterArr[1].getType());
          assertEquals("", "3.2", filterArr[1].getVersion());
          assertEquals("", "a<10", filterArr[1].getQuery().toString());
+         assertEquals("", true, qos.getPersistentProp().getValue());
       }
       catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());

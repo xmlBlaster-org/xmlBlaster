@@ -54,6 +54,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    private boolean inNotify = false;
    private boolean inFilter = false;
    private boolean inHistory = false;
+   private boolean inIsPersistent = false;
 
    private AccessFilterQos tmpFilter = null;
    private HistoryQos tmpHistory = null;
@@ -248,6 +249,16 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          queryQosData.setMethod(MethodName.UNSUBSCRIBE);
          return;
       }
+      
+      if (name.equalsIgnoreCase("persistent")) {
+         if (!inQos)
+            return;
+         inIsPersistent = true;
+         character.setLength(0);
+         queryQosData.setPersistent(true);
+         return;
+      }
+
    }
 
    /**
@@ -352,6 +363,16 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if(name.equalsIgnoreCase("persistent")) {
+         inIsPersistent = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            queryQosData.setPersistent(new Boolean(tmp).booleanValue());
+         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
+         character.setLength(0);
+         return;
+      }
+
       character.setLength(0); // reset data from unknown tags
    }
 
@@ -419,6 +440,14 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          else
             sb.append(offset).append(" <notify>false</notify>");
       }
+
+      if (queryQosData.getPersistentProp().isModified()) {
+         if (queryQosData.isPersistent())
+            sb.append(offset).append(" <persistent/>");
+         else
+            sb.append(offset).append(" <persistent>false</persistent>");
+      }
+
 
       AccessFilterQos[] list = queryQosData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {

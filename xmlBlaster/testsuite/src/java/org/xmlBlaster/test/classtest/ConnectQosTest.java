@@ -7,20 +7,13 @@ import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
-import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
-import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.enum.Constants;
 
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 import junit.framework.*;
 
@@ -105,10 +98,12 @@ public class ConnectQosTest extends TestCase {
          "   </serverRef>\n" +
          "   <clientProperty name='intKey' type='int'>123</clientProperty>\n" +
          "   <clientProperty name='StringKey' type='String' encoding='" + Constants.ENCODING_BASE64 + "'>QmxhQmxhQmxh</clientProperty>\n" +
+         "   <persistent>true</persistent>\n" +
          "</qos>\n";
 
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
          ConnectQosData qos = factory.readObject(xml); // parse
+         assertEquals("", true, qos.getPersistentProp().getValue());
          String newXml = qos.toXml();                  // dump
          qos = factory.readObject(newXml);             // parse again
 
@@ -127,6 +122,7 @@ public class ConnectQosTest extends TestCase {
          assertEquals("", false, qos.isPtpAllowed());
          assertEquals("", true, qos.isClusterNode());
          assertEquals("", false, qos.duplicateUpdates());
+         assertEquals("", true, qos.getPersistentProp().getValue());
 
          {
             ClientQueueProperty prop = qos.getClientQueueProperty();
