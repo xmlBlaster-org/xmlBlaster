@@ -151,7 +151,6 @@ public class TestJdbcAccess extends TestCase
     */
    private String invokeSyncQuery(XmlDbMessageWrapper wrap, int numResultRowsExpected, String token) {
       try {
-         log.info(ME, "Sending command string");
          if (log.TRACE) log.trace(ME, "Sending command string:\n" + wrap.toXml()); // Junit report does not like it
          GetKey key = new GetKey(glob, "__sys__jdbc");
          key.wrap(wrap.toXml());
