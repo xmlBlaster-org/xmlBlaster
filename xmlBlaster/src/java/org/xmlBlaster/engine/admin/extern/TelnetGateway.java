@@ -415,6 +415,9 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    public void shutdown() {
+      isLogin = false;
+      stopTimer();
+      disconnect();
       if (rs != null) {
          rs.disable();
          rs = null;
