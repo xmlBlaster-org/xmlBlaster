@@ -231,6 +231,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       // Note: The DeliveryManager is notified about connection problems directly by its DeliveryConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
       if (log.CALL) log.call(ME, "Async delivery failed connection state is " + deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (entryList == null) {
+         log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage());
+         return;
+      }
 
       if (throwable instanceof XmlBlasterException) {
          XmlBlasterException ex = (XmlBlasterException)throwable;
