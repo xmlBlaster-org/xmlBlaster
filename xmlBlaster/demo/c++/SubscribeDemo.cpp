@@ -228,8 +228,8 @@ public:
             sq.addAccessFilter(filter);
          }
 
-         log_.info(ME, "SubscribeKey=\n" + sk->toXml());
-         log_.info(ME, "SubscribeQos=\n" + sq.toXml());
+         log_.info(ME, "SubscribeKey=" + sk->toXml());
+         log_.info(ME, "SubscribeQos=" + sq.toXml());
 
          if (interactive) {
             log_.info(ME, "Hit a key to subscribe '" + qStr + "'");
@@ -262,8 +262,8 @@ public:
          //if (domain.length() > 0)  // cluster routing information TODO!!!
          //   uk.setDomain(domain);
          UnSubscribeQos uq(global_);
-         log_.info(ME, "UnSubscribeKey=\n" + uk.toXml());
-         log_.info(ME, "UnSubscribeQos=\n" + uq.toXml());
+         log_.info(ME, "UnSubscribeKey=" + uk.toXml());
+         log_.info(ME, "UnSubscribeQos=" + uq.toXml());
          vector<UnSubscribeReturnQos> urqArr = connection_.unSubscribe(uk, uq);
          log_.info(ME, "UnSubscribe on " + lexical_cast<string>(urqArr.size()) + " subscriptions done");
       }

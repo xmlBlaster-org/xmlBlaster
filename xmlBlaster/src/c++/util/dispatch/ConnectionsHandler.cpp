@@ -103,7 +103,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    global_.setSessionName(connectQos_->getSessionQos().getSessionName());
    global_.setImmutableId(connectQos_->getSessionQos().getRelativeName());
    global_.setId(connectQos_->getSessionQos().getAbsoluteName()); // temporary
-	//log_.info(ME, "BEFORE id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
+   //log_.info(ME, "BEFORE id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
 
    retries_ = connectQos_->getAddress().getRetries();
    long pingInterval = connectQos_->getAddress().getPingInterval();
@@ -124,15 +124,15 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    try {
       connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
-	   global_.setSessionName(connectReturnQos_->getSessionQos().getSessionName());
-		// For "joe/1" it remains immutable; For "joe" there is added the server side generated sessionId "joe/-33":
-	   global_.setImmutableId(connectReturnQos_->getSessionQos().getRelativeName());
+      global_.setSessionName(connectReturnQos_->getSessionQos().getSessionName());
+      // For "joe/1" it remains immutable; For "joe" there is added the server side generated sessionId "joe/-33":
+      global_.setImmutableId(connectReturnQos_->getSessionQos().getRelativeName());
       global_.setId(connectReturnQos_->getSessionQos().getAbsoluteName());
-		//log_.info(ME, "AFTER id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
+                //log_.info(ME, "AFTER id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
    }
    catch (XmlBlasterException &ex) {
-      if (log_.trace()) log_.trace(ME, "exception " + ex.getErrorCodeStr() + " occured when connecting, pingIsStarted=" + lexical_cast<std::string>(pingIsStarted_));
       if ((ex.isCommunication() || ex.getErrorCodeStr().find("user.configuration") == 0)) {
+         log_.warn(ME, "Got exception when connecting, polling now: " + ex.toString());
          if (!pingIsStarted_)
             startPinger();
          return queueConnect();
@@ -526,7 +526,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
       }
       if (log_.trace()) log_.trace(ME+":queuePublish", "creating a client queue ...");
       queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
-      log_.info(ME+":queuePublish", "created a client queue");
+      if (log_.trace()) log_.trace(ME+":queuePublish", "created a client queue");
    }
    if (log_.trace()) 
       log_.trace(ME, string("queuePublish: entry '") + msgUnit.getKey().getOid() + "' has been queued");
@@ -548,7 +548,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
    }
 
    if (!queue_) {
-      log_.info(ME, "::queueConnect: created a client queue");
+      if (log_.trace()) log_.info(ME, "::queueConnect: created a client queue");
       queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
    }
    if (log_.trace()) 
@@ -652,12 +652,12 @@ bool ConnectionsHandler::isFailsafe() const
 
 bool ConnectionsHandler::startPinger()
 {
-   log_.call(ME, "startPinger");
+   if (log_.call()) log_.call(ME, "startPinger");
    if (doStopPing_) return false;
 
-   log_.trace(ME, "startPinger (no request to stop the pinger is active for the moment)");
+   if (log_.trace()) log_.trace(ME, "startPinger (no request to stop the pinger is active for the moment)");
    if (pingIsStarted_) {
-      log_.warn(ME, "startPinger: the pinger is already running. I will return without starting a new thread");
+      if (log_.trace()) log_.trace(ME, "startPinger: the pinger is already running. I will return without starting a new thread");
       return false;  
    }
 

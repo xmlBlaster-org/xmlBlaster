@@ -210,7 +210,7 @@ void Timeout::run()
 
          TimeoutMap::iterator iter = timeoutMap_.begin();
          if (iter == timeoutMap_.end()) {
-            log_.info(ME, "No timer is registered, nothing to do");
+            if (log_.trace()) log_.trace(ME, "No timer is registered, nothing to do");
          }
          else {
             if (log_.trace()) log_.trace(ME, " The timeout is not empty");
