@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.28 2004/02/22 17:48:10 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.29 2004/06/21 20:28:04 laghi Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -28,10 +28,42 @@ using namespace org::xmlBlaster::authentication;
 
 namespace org { namespace xmlBlaster { namespace test {
 
+class SpecificCallback : public I_Callback {
+private:
+   int numReceived_;
+   string name_;
+   I_Log& log_;
+
+public:
+   SpecificCallback(I_Log& log, const string& name) : log_(log) {
+      name_ = name;
+
+   }
+
+   int getCount() {
+      return numReceived_;
+   }
+
+
+   string update(const string &sessionId,
+               UpdateKey &updateKey,
+               const unsigned char *content, long contentSize,
+               UpdateQos &updateQos) 
+   {
+      log_.info("update", string("Receiving update on callback '") + name_ + "' of message oid=" +
+                updateKey.getOid() + " state=" + updateQos.getState() +
+                " authentication sessionId=" + sessionId + " ...");
+      numReceived_ ++;
+      return "<qos><state id='OK'/></qos>";
+   }
+
+
+};
+
+
 class TestSub: public TestSuite, public virtual I_Callback 
 {
 private:
-
    bool   messageArrived_;      // = false;
    int    numReceived_;         //  = 0;         // error checking
    string subscribeOid_;
@@ -137,6 +169,79 @@ private:
          subscribeOid_ = connection_.subscribe(subKey, subQos).getSubscriptionId();
          log_.info(ME, string("Success: Subscribe subscription-id=") +
                    subscribeOid_ + " done");
+      }
+      catch(XmlBlasterException &e) {
+         log_.warn(ME, string("XmlBlasterException: ")
+                      + e.toXml());
+         cerr << "subscribe - XmlBlasterException: " << e.toXml() << endl;
+         assert(0);
+      }
+      if (subscribeOid_ == "") {
+         cerr << "returned null subscribeOid" << endl;
+         assert(0);
+      }
+      if (subscribeOid_.length() == 0) {
+         cerr << "returned subscribeOid is empty" << endl;
+         assert(0);
+      }
+   }
+
+   /**
+    * TEST: Subscribe to messages with specific callback<p />
+    */
+   void testSubscribeSpecificCallback() 
+   {
+      if (log_.trace()) log_.trace(ME, "Subscribing using a specific callback pro subscription ...");
+      string oid1("oid1");
+      string oid2("oid2");
+      string oid3("oid3");
+
+      SubscribeKey subKey1(global_, oid1);
+      SubscribeKey subKey2(global_, oid2);
+      SubscribeKey subKey3(global_, oid3);
+      SubscribeQos subQos(global_);
+      SpecificCallback cb1(log_, "callback1");
+      SpecificCallback cb2(log_, "callback2");
+      SpecificCallback cb3(log_, "callback3");
+
+      numReceived_ = 0;
+      subscribeOid_ = "";
+      try {
+         subscribeOid_ = connection_.subscribe(subKey1, subQos, &cb1).getSubscriptionId();
+         connection_.subscribe(subKey2, subQos, &cb2);
+         connection_.subscribe(subKey3, subQos, &cb3);
+
+         log_.info(ME, string("Success: Subscribe subscription-id=") + subscribeOid_ + " done");
+
+         {
+            PublishKey pubKey1(global_);
+            pubKey1.setOid(oid1);
+            PublishQos pubQos(global_);
+            MessageUnit msgUnit(pubKey1, senderContent_, pubQos);
+            connection_.publish(msgUnit);
+    	 }
+   
+         for (int i=0; i < 2; i++) {
+            PublishKey pubKey2(global_);
+            pubKey2.setOid(oid2);
+            PublishQos pubQos(global_);
+            MessageUnit msgUnit(pubKey2, senderContent_, pubQos);
+            connection_.publish(msgUnit);
+         }
+
+         for (int i=0; i < 3; i++) {
+            PublishKey pubKey3(global_);
+            pubKey3.setOid(oid3);
+            PublishQos pubQos(global_);
+            MessageUnit msgUnit(pubKey3, senderContent_, pubQos);
+            connection_.publish(msgUnit);
+         }
+
+         org::xmlBlaster::util::thread::Thread::sleep(2000L); 
+         assertEquals(log_, "specificCallback", 1, cb1.getCount(), string("callback 1"));
+         assertEquals(log_, "specificCallback", 2, cb2.getCount(), string("callback 2"));
+         assertEquals(log_, "specificCallback", 3, cb3.getCount(), string("callback 3"));
+
       }
       catch(XmlBlasterException &e) {
          log_.warn(ME, string("XmlBlasterException: ")
@@ -264,6 +369,18 @@ private:
          log_.error(ME, "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
+
+     testSubscribeSpecificCallback();
+
+      testSubscribeXPath();
+      waitOnUpdate(1000L);
+      // Wait some time for callback to arrive ...
+      if (numReceived_ != 0) {
+         log_.error(ME, "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
+         assert(0);
+      }
+
+
 /*
       testPublishCorbaMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
@@ -456,4 +573,5 @@ int main(int args, char *argc[])
    org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
+
 
