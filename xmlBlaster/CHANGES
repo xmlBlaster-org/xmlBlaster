@@ -4,6 +4,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Bugfix in JDBC service module to handle NULL db entries
+   Thanks to zzwzyz@hotmail.com
+
  o Added two new requirements:
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/security.ldap.html
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/security.htpasswd.html
