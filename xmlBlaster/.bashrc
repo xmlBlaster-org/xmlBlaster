@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.76 $
+# $Revision: 1.77 $
 #-----------------------------------------------------------
 
 
@@ -147,24 +147,24 @@ if [ ${JAVA_HOME:=""} != "" ] ; then
          JDK_1_1=true
          export JDK_1_1
          CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
-      else
-         # JDK 1.2
-         ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
-         if [ ! -f ${ORB_PROPS} ]; then
-            cp ${XMLBLASTER_HOME}/config/orb.properties ${ORB_PROPS}
-				RESULT=$?
-				if [ ${RESULT} = "0" ]; then
-               ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
-				else
-               ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
-				fi
-         fi
-         # If copy failed (missing permissions?)
-         # if [ $? -ne 0 ] ;  then
-         if [ ! -f ${ORB_PROPS} ]; then
-            CLASSPATH=${JAVA_HOME}/jre/lib/rt.jar:${CLASSPATH}
-            export CLASSPATH
-         fi
+      #else
+         ## JDK 1.2
+         #ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
+         #if [ ! -f ${ORB_PROPS} ]; then
+         #   cp ${XMLBLASTER_HOME}/config/orb.properties ${ORB_PROPS}
+			#	RESULT=$?
+			#	if [ ${RESULT} = "0" ]; then
+         #      ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
+			#	else
+         #      ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
+			#	fi
+         #fi
+         ## If copy failed (missing permissions?)
+         ## if [ $? -ne 0 ] ;  then
+         #if [ ! -f ${ORB_PROPS} ]; then
+         #   CLASSPATH=${JAVA_HOME}/jre/lib/rt.jar:${CLASSPATH}
+         #   export CLASSPATH
+         #fi
       fi
       PATH=${JAVA_HOME}/bin:${PATH}
       export PATH
