@@ -134,7 +134,7 @@ public class PtPTest extends TestCase {
          Destination destination = new Destination(sessionName);
          destination.forceQueuing(true);
          pq.addDestination(destination);
-         log.info(ME, "Sending PtP message from bilbo to '" + sessionName + "' :" + pq.toXml());
+         log.info(ME, "Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.toXml());
          MsgUnit msgUnit = new MsgUnit(glob, pk, contentStr.getBytes(), pq);
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message to destination='" + sessionName +
@@ -148,7 +148,7 @@ public class PtPTest extends TestCase {
       }
       catch (XmlBlasterException e) {
          e.printStackTrace();
-         fail("PublishToBilbo-Exception: " + e.toString());
+         fail("PublishToBilbo-Exception: " + e.getMessage());
       }
 
       System.err.println("***PtPTest: testPublishPtP [SUCCESS]");
