@@ -19,6 +19,20 @@ import java.util.Vector;
 /*
  * In xmlBlaster.properties add :<br>
  * Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
+ * <p />
+ * Changes: astelzl@avitech.de<br />
+ * There can be three cases for authentication:
+ * <ol> 
+ *   <li>in xmlBlaster.properties the property Security.Server.Plugin.htpasswd.allowPartialUsername is true ->
+ *       the user is authenticated with the right password and an username which begins with the specified username
+ *   </li>
+ *   <li>allowPartialUsername is false ->
+ *        the user is just authenticated if the username and password in the password file
+ *        exactly equals the specifications at connection to the xmlBlaster
+ *   </li>it is possible that the password file just contains a * instead
+ *        of (username,password) tuples -> any username and password combination is authenticated
+ *   </li>
+ *  </ol>
  *
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a> 16/11/01 09:06
  */
@@ -26,12 +40,6 @@ public class HtPasswd {
 
    private static final String ME = "HtAccess";
 
-   //Changes: astelzl@avitech.de
-   //There can be three cases for authentication:
-   //
-   //1: in xmlBlaster.properties the property Security.Server.Plugin.htpasswd.allowPartialUsername is true -> the user is authenticated with the right password and an username which begins with the specified username
-   //2: allowPartialUsername is false -> the user is just authenticated if the username and password in the password file exactly equals the specifications at connection to the xmlBlaster
-   //3: it is possible that the password file just contains a * instead of (username,password) tuples -> any username and password combination is authenticated
    protected int useFullUsername = 1;
    protected String htpasswdFilename = null ;
    protected Hashtable htpasswd = null ;
