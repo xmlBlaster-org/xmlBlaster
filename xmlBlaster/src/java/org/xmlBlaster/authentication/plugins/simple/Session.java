@@ -1,59 +1,41 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
-import org.xmlBlaster.authentication.plugins.I_SubjectSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.Log;
 
 /**
- *
- *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
- * Last Changes:
- *    ($Log: DefaultSessionSecurityContext.java,v $
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.1  2001/08/19 09:13:48  ruff
- *    (Changed locations for security stuff, added RMI support
- *    (
- *    (Revision 1.1.2.3  2001/08/13 12:19:50  kleinertz
- *    (wkl: minor fixes
- *    (
- *    (Revision 1.1.2.2  2001/05/21 07:37:28  kleinertz
- *    (wkl: some javadoc tags removed
- *    (
- *    (Revision 1.1.2.1  2001/05/17 13:54:30  kleinertz
- *    (wkl: the first version with security framework
- *    ()
+ *
+ * @author Wolfgang Kleinertz
  */
 
-public class DefaultSessionSecurityContext implements I_SessionSecurityContext {
-   private static final String ME = "DefaultSessionSecurityContext";
+public class Session implements I_Session {
+   private static final String ME = "Session";
 
-   private              DefaultSubjectSecurityContext  subject = null;
-   private              DefaultSecurityManager          secMgr = null;
+   private              Subject  subject = null;
+   private              Manager          secMgr = null;
    private              String                       sessionId = null;
    private              boolean                  authenticated = false;
 
-   private static       DefaultSubjectSecurityContext dummyUsr = null;
+   private static       Subject dummyUsr = null;
 
 
-   public DefaultSessionSecurityContext(DefaultSecurityManager sm, String sessionId) {
+   public Session(Manager sm, String sessionId) {
       secMgr = sm;
       this.sessionId = sessionId;
       // Up to now, we've a session, but no subject where it belongs to.
       // Thus, it gets a dummy, a subjet with nearly no rights.
-      if (dummyUsr == null) dummyUsr = new DefaultSubjectSecurityContext();
+      if (dummyUsr == null) dummyUsr = new Subject();
    }
 
 
    /**
-    * Initialize the SessionSecurityContext. (In this case, it's a login.)<br/>
-    * [I_SessionSecurityContext]
+    * Initialize the Session. (In this case, it's a login.)<br/>
+    * [I_Session]
     * <p/>
     * @param String A xml-String containing the loginname, password, etc.
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
@@ -61,7 +43,7 @@ public class DefaultSessionSecurityContext implements I_SessionSecurityContext {
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
       authenticated = false;
-      DefaultSecurityQoS xmlQoS = new DefaultSecurityQoS(xmlQoS_literal);
+      InitQos xmlQoS = new InitQos(xmlQoS_literal);
       subject = determineSubject(xmlQoS.getName(), xmlQoS.getPasswd()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 
@@ -82,14 +64,14 @@ public class DefaultSessionSecurityContext implements I_SessionSecurityContext {
 
    /**
     *
-    * [I_SessionSecurityContext]
+    * [I_Session]
     */
-   public I_SubjectSecurityContext getSubject() {
-      return (I_SubjectSecurityContext)subject;
+   public I_Subject getSubject() {
+      return (I_Subject)subject;
    }
 
 
-   public I_SecurityManager getSecurityManager() {
+   public I_Manager getManager() {
       return secMgr;
    }
 
@@ -102,9 +84,9 @@ public class DefaultSessionSecurityContext implements I_SessionSecurityContext {
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
     *                                exist or the passwd is incorrect.
     */
-   private DefaultSubjectSecurityContext determineSubject(String user, String passwd) throws XmlBlasterException
+   private Subject determineSubject(String user, String passwd) throws XmlBlasterException
    {
-      DefaultSubjectSecurityContext subj;
+      Subject subj;
 
       subj = secMgr.getSubject(user); // throws a XmlBlasterException if user is unknown
       subj.authenticate(passwd); // throws a XmlBlasterException, if the autentication fails

@@ -1,18 +1,18 @@
-package org.xmlBlaster.authentication.plugins.gui;
+package org.xmlBlaster.authentication.plugins.demo;
 
-import org.xmlBlaster.authentication.plugins.I_SubjectSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 
-public class DemoSubject implements I_SubjectSecurityContext {
+public class Subject implements I_Subject {
    private String       name = null;
-   private DemoPluginGUI gui;
+   private PluginGUI gui;
 
-   public DemoSubject(DemoPluginGUI gui) {
+   public Subject(PluginGUI gui) {
       this.gui=gui;
    }
 
 
-   public DemoSubject(DemoPluginGUI gui, String userId) {
+   public Subject(PluginGUI gui, String userId) {
       this.gui  = gui;
       this.name = userId;
    }

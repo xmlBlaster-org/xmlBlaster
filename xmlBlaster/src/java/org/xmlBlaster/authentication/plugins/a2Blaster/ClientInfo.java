@@ -12,9 +12,15 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  * Last Changes:
- *    ($Log: A2BlasterClientInfo.java,v $
+ *    ($Log: ClientInfo.java,v $
+ *    (Revision 1.2  2001/08/30 17:14:49  ruff
+ *    (Renamed security stuff
+ *    (
+ *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
+ *    (changed naming schema
+ *    (
  *    (Revision 1.2  2001/08/19 23:07:53  ruff
  *    (Merged the new security-plugin framework
  *    (
@@ -23,9 +29,9 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *    ()
  */
 
-public class A2BlasterClientInfo extends SaxHandlerBase {
+public class ClientInfo extends SaxHandlerBase {
 
-   private static                    String ME = "A2BlasterClientInfo";
+   private static                    String ME = "ClientInfo";
 
    // helper flags for SAX parsing
    private        boolean    inUserInfo = false;
@@ -34,7 +40,7 @@ public class A2BlasterClientInfo extends SaxHandlerBase {
    private        String          login = null;
 
 
-   public A2BlasterClientInfo(String xml_literal) throws XmlBlasterException {
+   public ClientInfo(String xml_literal) throws XmlBlasterException {
       init(xml_literal);
    }
 

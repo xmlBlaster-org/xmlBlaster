@@ -1,7 +1,7 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
@@ -11,32 +11,11 @@ import java.util.Hashtable;
  * and allows everything - everybody may login, and everybody
  * may do anything with the messages (publish, subscribe ...)
  *
- * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
- * Last Changes:
- *    ($Log: DefaultSecurityManager.java,v $
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.1  2001/08/19 09:13:48  ruff
- *    (Changed locations for security stuff, added RMI support
- *    (
- *    (Revision 1.1.2.4  2001/08/18 22:30:26  ruff
- *    (Compiles and runs - temporary saving
- *    (
- *    (Revision 1.1.2.3  2001/08/13 12:19:50  kleinertz
- *    (wkl: minor fixes
- *    (
- *    (Revision 1.1.2.2  2001/05/21 07:37:28  kleinertz
- *    (wkl: some javadoc tags removed
- *    (
- *    (Revision 1.1.2.1  2001/05/17 13:54:29  kleinertz
- *    (wkl: the first version with security framework
- *    ()
+ * @author Wolfgang Kleinertz
  */
 
-public class DefaultSecurityManager implements I_SecurityManager{
-   private static final String          ME = "DefaultSecurityManager";
+public class Manager implements I_Manager{
+   private static final String          ME = "Manager";
 
    private static final String        TYPE = "simple";
    private static final String     VERSION = "1.0";
@@ -46,7 +25,7 @@ public class DefaultSecurityManager implements I_SecurityManager{
    private              Hashtable sessions = new Hashtable();
 
 
-   public DefaultSecurityManager() {
+   public Manager() {
       Log.trace(ME+"."+ME+"()", "-------START--------\n");
       Log.trace(ME+"."+ME+"()", "-------END----------\n");
    }
@@ -68,18 +47,18 @@ public class DefaultSecurityManager implements I_SecurityManager{
    }
 
 
-   public I_SessionSecurityContext reserveSessionSecurityContext(String sessionId) {
-      Log.trace(ME+".reserveSessionSecurityContext(String sessionId="+sessionId+")", "-------START--------\n");
-      DefaultSessionSecurityContext session = new DefaultSessionSecurityContext(this, sessionId);
+   public I_Session reserveSession(String sessionId) {
+      Log.trace(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------\n");
+      Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
       }
-      Log.trace(ME+".reserveSessionSecurityContext(...))", "-------END--------\n");
+      Log.trace(ME+".reserveSession(...))", "-------END--------\n");
 
       return session;
    }
 
-   public void releaseSessionSecurityContext(String sessionId, String qos_literal){
+   public void releaseSession(String sessionId, String qos_literal){
       synchronized(sessions) {
          sessions.remove(sessionId);
       }
@@ -87,7 +66,7 @@ public class DefaultSecurityManager implements I_SecurityManager{
 
    void changeSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
       synchronized(sessions) {
-         DefaultSessionSecurityContext session = (DefaultSessionSecurityContext)sessions.get(oldSessionId);
+         Session session = (Session)sessions.get(oldSessionId);
          if (session == null) throw new XmlBlasterException(ME+".unknownSessionId", "Unknown sessionId!");
          if (sessions.get(newSessionId) != null) throw new XmlBlasterException(ME+".invalidSessionId", "This sessionId is already in use!");
          sessions.put(newSessionId, session);
@@ -96,21 +75,21 @@ public class DefaultSecurityManager implements I_SecurityManager{
    }
 
    /**
-    * Get the I_SessionSecurityContext which corresponds to the given sessionId
+    * Get the I_Session which corresponds to the given sessionId
     * <p/>
     * @param String The sessionId
-    * @return I_SessionSecurityContext
+    * @return I_Session
     */
-   public I_SessionSecurityContext getSessionById(String id) {
+   public I_Session getSessionById(String id) {
       synchronized(sessions) {
-         return (I_SessionSecurityContext)sessions.get(id);
+         return (I_Session)sessions.get(id);
       }
    }
 
 
-   DefaultSubjectSecurityContext getSubject(String name) throws XmlBlasterException {
+   Subject getSubject(String name) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".unknownSubject", "There is no user called " + name);
-      return new DefaultSubjectSecurityContext(name); // dummy implementation
+      return new Subject(name); // dummy implementation
    }
 
 }

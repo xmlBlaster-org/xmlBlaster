@@ -1,11 +1,12 @@
-package org.xmlBlaster.authentication.plugins.gui;
+package org.xmlBlaster.authentication.plugins.demo;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import org.xmlBlaster.engine.XmlBlasterImpl;
+import org.xmlBlaster.util.Log;
 
-public class DemoPluginGUI extends JFrame {
+public class PluginGUI extends JFrame {
    JPanel contentPane;
    GridLayout gridLayout1 = new GridLayout();
    JScrollPane jScrollPane1 = new JScrollPane();
@@ -45,7 +46,7 @@ public class DemoPluginGUI extends JFrame {
    private Thread sleeper;
 
    /**Construct the frame*/
-   public DemoPluginGUI() {
+   public PluginGUI() {
       enableEvents(AWTEvent.WINDOW_EVENT_MASK);
       try {
          jbInit();
@@ -81,7 +82,11 @@ public class DemoPluginGUI extends JFrame {
       outOutput.setEditable(false);
       //outOutput.setAutoscrolls(true);
       //serverImage.setIcon(new ImageIcon(new java.net.URL("file:////home/kleiner/jbproject/gfx_test/classes/gfx_test/aufmacher_ho_.gif")));
-      serverImage.setIcon(new ImageIcon(org.xmlBlaster.authentication.plugins.gui.DemoPluginGUI.class.getResource("aufmacher_ho_.gif")));
+      try {
+         serverImage.setIcon(new ImageIcon(org.xmlBlaster.authentication.plugins.demo.PluginGUI.class.getResource("aufmacher_ho_.gif")));
+      } catch (java.lang.Exception e) {
+         Log.warn("PluginGUI", "Can't find image 'aufmacher_ho_.gif'");
+      }
       jPanel1.setLayout(borderLayout1);
       actionOut.setText("- - -");
       actionLabel.setText("Action: ");
@@ -230,7 +235,7 @@ public class DemoPluginGUI extends JFrame {
    }
 
    public static void main(String [] args) {
-      DemoPluginGUI frame = new DemoPluginGUI();
+      PluginGUI frame = new PluginGUI();
       //Validate frames that have preset sizes
       //Pack frames that have useful preferred size info, e.g. from their layout
       frame.validate();

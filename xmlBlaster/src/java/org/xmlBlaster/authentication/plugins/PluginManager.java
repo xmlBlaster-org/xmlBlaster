@@ -1,10 +1,10 @@
-package org.xmlBlaster.util;
+package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.ClientInfo;
 import java.util.Hashtable;
@@ -12,20 +12,20 @@ import java.util.Vector;
 import java.util.StringTokenizer;
 
 /**
- * Title: PluginLoader
+ * Title: PluginManager
  * Description: Loads security plugin
  * @author W. Kleinertz (wkl)
  * @version 1.0
  */
 
-public class PluginLoader {
-   private static final String                ME = "PluginLoader";
-   private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.simple.DefaultSecurityManager";
-   private static       PluginLoader          me = null;
+public class PluginManager {
+   private static final String                ME = "PluginManager";
+   private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.simple.Manager";
+   private static       PluginManager          me = null;
    private              Authenticate        auth = null;
    private              Hashtable       managers = new Hashtable(); // currently loaded plugins
 
-   public PluginLoader() {
+   public PluginManager() {
       if (!XmlBlasterProperty.get("Security.Server.disableDefaults", false)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
          Log.warn(ME, "* * * Security risk * * * Default security manager is available!!!");
@@ -35,17 +35,17 @@ public class PluginLoader {
    /**
     * Return an instance of this singleton
     *
-    * @return PluginLoader
+    * @return PluginManager
     */
-   public static PluginLoader getInstance() {
+   public static PluginManager getInstance() {
       if (me!=null) return me;
 
-      me = new PluginLoader();
+      me = new PluginManager();
       return me;
    }
 
    /**
-    * Initialize the PluginLoader
+    * Initialize the PluginManager
     * <p/>
     */
    public void init(Authenticate auth) {
@@ -58,12 +58,12 @@ public class PluginLoader {
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
-    * @return I_SecurityManager The SecurityManger which is suitable to handel the request.
+    * @return I_Manager The security manager which is suitable to handle the request.
     * @exception XmlBlasterException Thrown if to suitable security manager has been found.
     */
-   public I_SecurityManager getSecurityManager(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getSecurityManager()", "Loading SecurityManager type=" + type + " version=" + version);
-      I_SecurityManager securityManager = null;
+   public I_Manager getManager(String type, String version) throws XmlBlasterException {
+      if (Log.CALL) Log.call(ME+".getManager()", "Loading SecurityManager type=" + type + " version=" + version);
+      I_Manager securityManager = null;
       String[] pluginNameAndParam = null;
 
       pluginNameAndParam = choosePlugin(type, version);
@@ -72,7 +72,7 @@ public class PluginLoader {
          (pluginNameAndParam[0]!=null) &&
          (!pluginNameAndParam.equals("")))
       {
-         securityManager = (I_SecurityManager)managers.get(pluginNameAndParam[0]);
+         securityManager = (I_Manager)managers.get(pluginNameAndParam[0]);
          if (securityManager!=null) return securityManager;
 
          securityManager = loadPlugin(pluginNameAndParam);
@@ -85,19 +85,19 @@ public class PluginLoader {
    }
 
    /**
-    * Returns the I_SecurityManager, responsible for given session.
+    * Returns the security manager, responsible for given session.
     * </p>
     * @param String sessionId
-    * @param I_SecurityManager
+    * @param I_Manager
     * @exception Thrown, if the session is unknown.
     */
-   public I_SecurityManager getSecurityManager(String sessionId) throws XmlBlasterException {
+   public I_Manager getManager(String sessionId) throws XmlBlasterException {
       ClientInfo clntInfo = auth.check(sessionId);
       if (clntInfo==null)
          throw new XmlBlasterException(ME+".NoAccess","Unknown session!");
-      I_SessionSecurityContext sessionSecCtx = clntInfo.getSessionSecurityContext();
+      I_Session sessionSecCtx = clntInfo.getSecuritySession();
 
-      return sessionSecCtx.getSecurityManager();
+      return sessionSecCtx.getManager();
    }
 
    /**
@@ -105,8 +105,8 @@ public class PluginLoader {
     * the old xmlBlaster behavior.
     *
     */
-   public I_SecurityManager getDummySecurityManager() {
-      I_SecurityManager securityManager = (I_SecurityManager)managers.get(defaultPluginName);
+   public I_Manager getDummyManager() {
+      I_Manager securityManager = (I_Manager)managers.get(defaultPluginName);
       if (securityManager!=null) return securityManager;
 
       try {
@@ -127,7 +127,7 @@ public class PluginLoader {
     */
    public boolean isSupported(String type, String version) {
       // currently just a dummy implementation
-      // thus, it's impossible the switch the DefaultSecurityManager off
+      // thus, it's impossible the switch the default security manager off
 
       return true;
    }
@@ -176,24 +176,24 @@ public class PluginLoader {
     * Loads a security manager.
     * <p/>
     * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.authentication.DefaultSecurityManager<br />
+    *                 e.g. org.xmlBlaster.authentication.plugins.Manager<br />
     *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_SecurityManager
+    * @return I_Manager
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   private I_SecurityManager loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
+   private I_Manager loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
       // separate parameter and plugin name
       String[] param= new String[pluginNameAndParam.length-1];
       String pluginName = pluginNameAndParam[0];
       System.arraycopy(pluginNameAndParam,1,param,0,pluginNameAndParam.length-1);
 
-      I_SecurityManager manager = null;
+      I_Manager manager = null;
       try {
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + pluginName + "') ...");
          Class cl = java.lang.Class.forName(pluginName);
-         manager = (I_SecurityManager)cl.newInstance();
-         Log.info(ME, "Found I_SecurityManager '" + pluginName + "'");
+         manager = (I_Manager)cl.newInstance();
+         Log.info(ME, "Found I_Manager '" + pluginName + "'");
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");

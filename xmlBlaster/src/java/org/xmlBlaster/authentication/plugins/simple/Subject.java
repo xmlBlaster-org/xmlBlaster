@@ -1,15 +1,21 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
-import org.xmlBlaster.authentication.plugins.I_SubjectSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  * Last Changes:
- *    ($Log: DefaultSubjectSecurityContext.java,v $
+ *    ($Log: Subject.java,v $
+ *    (Revision 1.2  2001/08/30 17:14:49  ruff
+ *    (Renamed security stuff
+ *    (
+ *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
+ *    (changed naming schema
+ *    (
  *    (Revision 1.2  2001/08/19 23:07:53  ruff
  *    (Merged the new security-plugin framework
  *    (
@@ -21,15 +27,15 @@ import org.xmlBlaster.util.XmlBlasterException;
  *    ()
  */
 
-public class DefaultSubjectSecurityContext implements I_SubjectSecurityContext {
+public class Subject implements I_Subject {
    private String           name = null;
 
 
-   public DefaultSubjectSecurityContext() {
+   public Subject() {
    }
 
 
-   public DefaultSubjectSecurityContext(String userId) {
+   public Subject(String userId) {
       this.name = userId;
    }
 

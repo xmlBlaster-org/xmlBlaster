@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/authentication/plugins
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = simple gui a2Blaster
+SUB_DIRS = simple demo a2Blaster
 LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 

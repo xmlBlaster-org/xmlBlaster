@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.13 2001/08/19 23:07:53 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.14 2001/08/30 17:14:49 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -378,11 +378,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          sb.append(offset +"   <sessionId>" + getSessionId() + "</sessionId>");
       }
       if(securityPluginType!=null) {
-         sb.append(offset + "   <securityService type=\""
-                          + getSecurityPluginType() + "\" version=\""
-                          + getSecurityPluginVersion() + "\">");
-         sb.append(offset + "      " + getSecurityPluginData());
-         sb.append(offset + "   </securityService>");
+         sb.append(offset + getSecurityPluginData());
       }
       sb.append(offset + "</qos>");
 

@@ -12,9 +12,15 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  * Last Changes:
- *    ($Log: A2BlasterSecQoS.java,v $
+ *    ($Log: InitQos.java,v $
+ *    (Revision 1.2  2001/08/30 17:14:49  ruff
+ *    (Renamed security stuff
+ *    (
+ *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
+ *    (changed naming schema
+ *    (
  *    (Revision 1.2  2001/08/19 23:07:53  ruff
  *    (Merged the new security-plugin framework
  *    (
@@ -26,9 +32,9 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *    ()
  */
 
-public class A2BlasterSecQoS extends SaxHandlerBase {
+public class InitQos extends SaxHandlerBase {
 
-   private static                    String ME = "A2BlasterSecQoS";
+   private static                    String ME = "InitQos";
 
    // helper flags for SAX parsing
    private        boolean    inSecurityService = false;
@@ -43,7 +49,7 @@ public class A2BlasterSecQoS extends SaxHandlerBase {
    private        String    a2BlasterSessionId = null;
 
 
-   public A2BlasterSecQoS(String xmlQoS_literal) throws XmlBlasterException {
+   public InitQos(String xmlQoS_literal) throws XmlBlasterException {
       if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
@@ -205,7 +211,7 @@ public class A2BlasterSecQoS extends SaxHandlerBase {
             "   <user>secrete</user>\n" +
             "</securityService>";
 
-         A2BlasterSecQoS qos = new A2BlasterSecQoS(xml);
+         InitQos qos = new InitQos(xml);
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

@@ -1,7 +1,7 @@
-package org.xmlBlaster.authentication.plugins.gui;
+package org.xmlBlaster.authentication.plugins.demo;
 
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
@@ -11,8 +11,8 @@ import java.awt.*;
  * This example pops up a GUI, and a user has to confirm
  * all logins and authorize messages manually.
  */
-public class DemoSecurityManager implements I_SecurityManager{
-   private static final String          ME = "DemoSecurityManager";
+public class Manager implements I_Manager{
+   private static final String          ME = "Manager";
 
    private static final String        TYPE = "gui";
    private static final String     VERSION = "1.0";
@@ -22,12 +22,12 @@ public class DemoSecurityManager implements I_SecurityManager{
    private              Hashtable sessions = new Hashtable();
 
    private boolean packFrame = false;
-   private DemoPluginGUI frame;
+   private PluginGUI frame;
 
-   public DemoSecurityManager() {
+   public Manager() {
       Log.call(ME+"."+ME+"()", "-------START--------\n");
       Log.info(ME+"."+ME+"()", "Starting GUI ...");
-      frame = new DemoPluginGUI();
+      frame = new PluginGUI();
       //Validate frames that have preset sizes
       //Pack frames that have useful preferred size info, e.g. from their layout
       if (packFrame) {
@@ -68,9 +68,9 @@ public class DemoSecurityManager implements I_SecurityManager{
    }
 
 
-   public I_SessionSecurityContext reserveSessionSecurityContext(String sessionId) {
+   public I_Session reserveSession(String sessionId) {
       Log.trace(ME+".reserveSessionSecurityContext(String sessionId="+sessionId+")", "-------START--------\n");
-      DemoSession session = new DemoSession(this, sessionId);
+      Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
       }
@@ -79,7 +79,7 @@ public class DemoSecurityManager implements I_SecurityManager{
       return session;
    }
 
-   public void releaseSessionSecurityContext(String sessionId, String qos_literal){
+   public void releaseSession(String sessionId, String qos_literal){
       synchronized(sessions) {
          sessions.remove(sessionId);
       }
@@ -87,7 +87,7 @@ public class DemoSecurityManager implements I_SecurityManager{
 
    void changeSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
       synchronized(sessions) {
-         DemoSession session = (DemoSession)sessions.get(oldSessionId);
+         Session session = (Session)sessions.get(oldSessionId);
          if (session == null) throw new XmlBlasterException(ME+".unknownSessionId", "Unknown sessionId!");
          if (sessions.get(newSessionId) != null) throw new XmlBlasterException(ME+".invalidSessionId", "This sessionId is already in use!");
          sessions.put(session, newSessionId);
@@ -96,24 +96,24 @@ public class DemoSecurityManager implements I_SecurityManager{
    }
 
    /**
-    * Get the I_SessionSecurityContext which corresponds to the given sessionId
+    * Get the I_Session which corresponds to the given sessionId
     * <p/>
     * @param String The sessionId
-    * @return I_SessionSecurityContext
+    * @return I_Session
     */
-   public I_SessionSecurityContext getSessionById(String id) {
+   public I_Session getSessionById(String id) {
       synchronized(sessions) {
-         return (I_SessionSecurityContext)sessions.get(id);
+         return (I_Session)sessions.get(id);
       }
    }
 
 
-   DemoSubject getSubject(String name) throws XmlBlasterException {
+   Subject getSubject(String name) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".unknownSubject", "There is no user called " + name);
-      return new DemoSubject(frame, name); // dummy implementation
+      return new Subject(frame, name); // dummy implementation
    }
 
-   DemoPluginGUI getGUI() {
+   PluginGUI getGUI() {
       return frame;
    }
 }

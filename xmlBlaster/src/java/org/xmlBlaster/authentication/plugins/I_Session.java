@@ -7,27 +7,10 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * @author  W. Kleinertz
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
- * Last Changes:
- *    ($Log: I_SessionSecurityContext.java,v $
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.1  2001/08/19 09:13:47  ruff
- *    (Changed locations for security stuff, added RMI support
- *    (
- *    (Revision 1.1.2.3  2001/08/13 12:19:50  kleinertz
- *    (wkl: minor fixes
- *    (
- *    (Revision 1.1.2.2  2001/05/21 07:37:28  kleinertz
- *    (wkl: some javadoc tags removed
- *    (
- *    (Revision 1.1.2.1  2001/05/17 13:54:30  kleinertz
- *    (wkl: the first version with security framework
- *    ()
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  */
 
-public interface I_SessionSecurityContext {
+public interface I_Session {
 
    /**
     * Initialize a new session.<br\>
@@ -42,16 +25,16 @@ public interface I_SessionSecurityContext {
    /**
     * Get the owner of this session.
     * <p/>
-    * @param I_SubjectSecurityContext The owner.
+    * @param I_Subject The owner.
     */
-   public I_SubjectSecurityContext getSubject();
+   public I_Subject getSubject();
 
    /**
     * How controls this session?
     * <p/>
-    * @return I_SecurityManager
+    * @return I_Manager
     */
-   public I_SecurityManager getSecurityManager();
+   public I_Manager getManager();
 
    /**
     * The current implementation of the user session handling (especially

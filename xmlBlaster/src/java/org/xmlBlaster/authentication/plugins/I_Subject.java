@@ -6,21 +6,10 @@ import org.xmlBlaster.util.XmlBlasterException;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
- * Last Changes:
- *    ($Log: I_SubjectSecurityContext.java,v $
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.1  2001/08/19 09:13:47  ruff
- *    (Changed locations for security stuff, added RMI support
- *    (
- *    (Revision 1.1.2.1  2001/05/17 13:54:31  kleinertz
- *    (wkl: the first version with security framework
- *    ()
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  */
 
-public interface I_SubjectSecurityContext {
+public interface I_Subject {
 
    /**
     * Check if this subject is permitted to do something

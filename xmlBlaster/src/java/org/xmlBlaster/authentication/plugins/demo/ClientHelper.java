@@ -1,10 +1,10 @@
-package org.xmlBlaster.authentication.plugins.gui;
+package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
-import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
+import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_InitQos;
 //import org.jutils.JUtilsException;
 
 /**
@@ -16,17 +16,17 @@ import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
  * @version 1.0
  */
 
-public class ClientSecurityHelper implements I_SecurityClientHelper {
-   public static final String ME = "ClientSecurityHelper";
+public class ClientHelper implements I_ClientHelper {
+   public static final String ME = "ClientHelper";
    private             byte aDemoCryptoKey = 10;
 
-   private DefaultClientInitQoSWrapper  initQoSWrapper = new DefaultClientInitQoSWrapper("gui","1.0");
+   private InitQos  initQoSWrapper = new InitQos("gui","1.0");
 
-   public ClientSecurityHelper() {
+   public ClientHelper() {
    }
 
    /**
-    * Called by the PluginManager.
+    * Called by the PluginLoader.
     * <p/>
     * @param String[] Arguments from xmlBlaster.properties:
     *                 There must be either 0 arguments or 2 arguments.
@@ -56,10 +56,10 @@ public class ClientSecurityHelper implements I_SecurityClientHelper {
    }
 
    /**
-    * The client application can use this method to get I_SecurityInitQoSWrapper,
+    * The client application can use this method to get I_InitQos,
     * and use it to set userId/password etc.
     */
-   public I_SecurityInitQoSWrapper getSecurityInitQoSWrapper()
+   public I_InitQos getInitQoSWrapper()
    {
       return initQoSWrapper;
    }

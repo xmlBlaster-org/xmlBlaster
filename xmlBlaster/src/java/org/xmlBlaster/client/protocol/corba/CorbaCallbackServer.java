@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.7 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.8 2001/08/30 17:14:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -19,8 +19,8 @@ import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
-import org.xmlBlaster.client.PluginManager;
-import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
+import org.xmlBlaster.client.PluginLoader;
+import org.xmlBlaster.authentication.plugins.I_ClientHelper;
 
 
 /**
@@ -41,8 +41,8 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    private final I_CallbackExtended boss;
    private final String loginName;
 
-   private PluginManager  secPlgnMgr = null;
-   private I_SecurityClientHelper secPlgn = null;
+   private PluginLoader  secPlgnMgr = null;
+   private I_ClientHelper secPlgn = null;
 
    /**
     * Construct a CORBA callback server for xmlBlaster, used by java/corba clients.
@@ -57,7 +57,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.boss = boss;
       this.loginName = name;
       this.orb = orb;
-      secPlgnMgr = PluginManager.getInstance();
+      secPlgnMgr = PluginLoader.getInstance();
       try {
          secPlgn = secPlgnMgr.getCurrentClientPlugin();
       }

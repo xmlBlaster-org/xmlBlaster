@@ -9,10 +9,10 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * The reason is for clients to access xmlBlaster
  * transparently from the authentication method
  */
-public interface I_SecurityClientHelper {
+public interface I_ClientHelper {
    public void init(String[] param) throws XmlBlasterException;
 
-   public I_SecurityInitQoSWrapper getSecurityInitQoSWrapper();
+   public I_InitQos getInitQoSWrapper();
    public void setSessionData(String sessionData);
 
    // --- message handling ----------------------------------------------------

@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.17 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.18 2001/08/30 17:14:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -12,7 +12,7 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.authentication.plugins.InitResultQoSWrapper;
+import org.xmlBlaster.authentication.plugins.InitResultQos;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
@@ -66,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -175,7 +175,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       xmlBlaster        = null;
       this.secMechanism = secMechanism;
       this.secVersion   = secVersion;
-      secPlgnMgr = PluginManager.getInstance();
+      secPlgnMgr = PluginLoader.getInstance();
       try {
          secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
       }
@@ -507,8 +507,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
             xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml(LoginQosWrapper.EXCLUDE_SECURITY));
          }
          else {
-            String retQoS = authServer.init(loginQos.toXml());
-            InitResultQoSWrapper wrapper = new InitResultQoSWrapper(retQoS);
+            String retQos = authServer.init(loginQos.toXml());
+            InitResultQos wrapper = new InitResultQos(retQos);
             sessionId = wrapper.getSessionId();
             String xmlBlasterIOR = wrapper.getXmlBlasterIOR();
 

@@ -1,6 +1,6 @@
 package org.xmlBlaster.authentication.plugins;
 
-import org.xmlBlaster.client.PluginManager;
+import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.Log;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -13,8 +13,8 @@ import org.xmlBlaster.util.XmlBlasterException;
  * (Only used by the CORBA driver!)
  */
 
-public class InitResultQoSWrapper extends SaxHandlerBase {
-   public static final String ME = "InitResultQoSWrapper";
+public class InitResultQos extends SaxHandlerBase {
+   public static final String ME = "InitResultQos";
 
    private boolean      inSecurityService = false;
    private boolean            inSessionId = false;
@@ -23,12 +23,12 @@ public class InitResultQoSWrapper extends SaxHandlerBase {
    private String               sessionId = null;
    private String           xmlBlasterIOR = null;
 
-   private PluginManager       secPlgnMgr = null;
-   private I_SecurityClientHelper secPlgn = null;
+   private PluginLoader       secPlgnMgr = null;
+   private I_ClientHelper secPlgn = null;
    private String                    type = null;
    private String                 version = null;
 
-   public InitResultQoSWrapper(String xmlQos_literal) throws XmlBlasterException
+   public InitResultQos(String xmlQos_literal) throws XmlBlasterException
    {
       Log.trace(ME+"."+ME+"()", "-------START--------\n");
       init(xmlQos_literal);
@@ -118,7 +118,7 @@ public class InitResultQoSWrapper extends SaxHandlerBase {
 
       if (name.equalsIgnoreCase("securityService")) {
          inSecurityService = false;
-         secPlgnMgr = PluginManager.getInstance();
+         secPlgnMgr = PluginLoader.getInstance();
          try {
             secPlgn = secPlgnMgr.getClientPlugin(type, version);
          }

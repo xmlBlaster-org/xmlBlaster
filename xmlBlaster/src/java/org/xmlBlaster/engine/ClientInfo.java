@@ -14,12 +14,12 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.callback.CbInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.AuthenticationInfo;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.util.PluginLoader;
+import org.xmlBlaster.authentication.plugins.PluginManager;
 
 import java.util.*;
 
@@ -44,7 +44,7 @@ public class ClientInfo
    private        String                   ME = "ClientInfo";
    private        String            loginName = null; // the unique client identifier
    private        AuthenticationInfo authInfo = null; // all client informations
-   private        I_SessionSecurityContext sessionSecurityCtx = null;
+   private        I_Session sessionSecurityCtx = null;
    /** Holding the callback connections */
    private        CbInfo        cbInfo = new CbInfo();
    private static long instanceCounter = 0L;
@@ -64,11 +64,11 @@ public class ClientInfo
     * <p />
     * @param authInfo the AuthenticationInfo with the login informations for this client
     */
-   public ClientInfo(AuthenticationInfo authInfo, I_SessionSecurityContext sessionSecurityCtx)
+   public ClientInfo(AuthenticationInfo authInfo, I_Session sessionSecurityCtx)
           throws XmlBlasterException
    {
       if (sessionSecurityCtx==null) {
-Log.error(ME+".illegalArgument",
+         Log.error(ME+".illegalArgument",
           "ClientInfo(sessionSecurityCtx==null);" +
           " // a correct security manager must be set!!!");
          throw new XmlBlasterException(ME+".illegalArgument",
@@ -91,8 +91,8 @@ Log.error(ME+".illegalArgument",
    public ClientInfo(String loginName)
    {
       instanceId = instanceCounter++;
-      PluginLoader pLdr = PluginLoader.getInstance();
-      this.sessionSecurityCtx = pLdr.getDummySecurityManager().reserveSessionSecurityContext(loginName);
+      PluginManager pLdr = PluginManager.getInstance();
+      this.sessionSecurityCtx = pLdr.getDummyManager().reserveSession(loginName);
       if (Log.CALL) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
       this.loginName = loginName;
    }
@@ -266,7 +266,7 @@ Log.error(ME+".illegalArgument",
       }
 
 // wkl to be implemented
-// append information of the server userSessionSecurityContext etc.
+// append information of the server userSession etc.
       buf.append("</qos>");
       return buf.toString();
    }
@@ -341,11 +341,11 @@ Log.error(ME+".illegalArgument",
    }
 
 
-   public I_SessionSecurityContext getSessionSecurityContext() {
+   public I_Session getSecuritySession() {
       return sessionSecurityCtx;
    }
 
-   public void setSessionSecurityContext(I_SessionSecurityContext ctx) {
+   public void setSecuritySession(I_Session ctx) {
       this.sessionSecurityCtx = ctx;
    }
 

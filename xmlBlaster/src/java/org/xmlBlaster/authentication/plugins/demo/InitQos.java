@@ -1,18 +1,18 @@
-package org.xmlBlaster.authentication.plugins.gui;
+package org.xmlBlaster.authentication.plugins.demo;
 
-import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
+import org.xmlBlaster.authentication.plugins.I_InitQos;
 
-public class DefaultClientInitQoSWrapper implements I_SecurityInitQoSWrapper {
+public class InitQos implements I_InitQos {
    private String mechanism = "gui";
    private String version = "1.0";
    private String name = "";
    private String passwd = "";
 
-   public DefaultClientInitQoSWrapper()
+   public InitQos()
    {
    }
 
-   public DefaultClientInitQoSWrapper(String mechanism, String version)
+   public InitQos(String mechanism, String version)
    {
       this.mechanism = mechanism;
       this.version = version;
@@ -28,12 +28,12 @@ public class DefaultClientInitQoSWrapper implements I_SecurityInitQoSWrapper {
       return name;
    }
 
-   public String getSecurityPluginType()
+   public String getPluginType()
    {
       return mechanism;
    }
 
-   public String getSecurityPluginVersion()
+   public String getPluginVersion()
    {
       return version;
    }
@@ -60,10 +60,10 @@ public class DefaultClientInitQoSWrapper implements I_SecurityInitQoSWrapper {
 
       sb.append(offset+"<securityService type=\""+mechanism+"\" version=\""+version+"\">");
       // The XmlRpc driver does not like it.
-      //sb.append(offset+"   <![CDATA[");
+      sb.append(offset+"   <![CDATA[");
       sb.append(offset+"      <user>"+name+"</user>");
       sb.append(offset+"      <passwd>"+passwd+"</passwd>");
-      //sb.append(offset+"   ]]>");
+      sb.append(offset+"   ]]>");
       sb.append(offset+"</securityService>");
       return sb.toString();
    }

@@ -3,18 +3,27 @@ package org.xmlBlaster.authentication.plugins.a2Blaster;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.authentication.plugins.I_SubjectSecurityContext;
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.a2Blaster.engine.A2BlasterException;
 import org.a2Blaster.client.api.CorbaConnection;
 
 /**
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  * Last Changes:
- *    ($Log: A2BlasterSessionSecCtx.java,v $
+ *    ($Log: Session.java,v $
+ *    (Revision 1.2  2001/08/30 17:14:49  ruff
+ *    (Renamed security stuff
+ *    (
+ *    (Revision 1.1.2.2  2001/08/22 11:35:42  ruff
+ *    (Changed names
+ *    (
+ *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
+ *    (changed naming schema
+ *    (
  *    (Revision 1.2  2001/08/19 23:07:53  ruff
  *    (Merged the new security-plugin framework
  *    (
@@ -23,10 +32,10 @@ import org.a2Blaster.client.api.CorbaConnection;
  *    ()
  */
 
-public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_SubjectSecurityContext {
-   private static final String                    ME = "A2BlasterSessionSecCtx";
+public class Session implements I_Session, I_Subject {
+   private static final String                    ME = "Session";
    private static final String               baseKey = "/org/xmlBlaster/";
-   private              A2BlasterSecMgr       secMgr = null;
+   private              Manager       secMgr = null;
    private              boolean        authenticated = false;
    private              String             sessionId = null;
    private              String                  name = null;   // login name
@@ -34,15 +43,15 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
    private              boolean  a2BlasterSessionCtl = false;  // who has initiated the a2Blaster login, we?
 
 
-   public A2BlasterSessionSecCtx(A2BlasterSecMgr sm, String sessionId) {
-      if (Log.CALL) Log.call(ME+"."+ME+"(A2BlasterSecMgr sm=..., String sessionId="+sessionId+")=...", "-------START-----\n");
+   public Session(Manager sm, String sessionId) {
+      if (Log.CALL) Log.call(ME+"."+ME+"(Manager sm=..., String sessionId="+sessionId+")=...", "-------START-----\n");
       secMgr = sm;
       this.sessionId = sessionId;
       if (Log.CALL) Log.call(ME+"."+ME+"(...)=...", "-------END-------\n");
    }
 
    /**
-    * Initialize the SessionSecurityContext.
+    * Initialize the Session.
     * In this case, the plugin supports two kinds of authentications:<br>
     * 1. The xmlBlaster handles the whole process and hides the a2Blaster. Example:
     *    <pre>
@@ -96,13 +105,13 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
     * @param String A xml-String containing the loginname, password, credentials etc.
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
     *                                exist, the passwd or the sessionId is incorrect.
-    * implements: I_SessionSecurityContext.init();<br>
+    * implements: I_Session.init();<br>
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
       if (Log.CALL) Log.call(ME+".init(String qos=...)=...", "-------START-----\n");
       String result = null;
       authenticated = false;
-      A2BlasterSecQoS xmlQoS = new A2BlasterSecQoS(xmlQoS_literal);
+      InitQos xmlQoS = new InitQos(xmlQoS_literal);
       name = xmlQoS.getName();
 
       // Ok, we have to decide, if we have to log on the a2Blaster, or if the
@@ -112,8 +121,8 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
          a2BlasterSessionId = authenticate(xmlQoS.getPasswd()); // throws XmlBlasterException if authentication fails
       }
 
-      result ="   <securityPlugin type=\""+A2BlasterSecMgr.TYPE+"\" version=\""+A2BlasterSecMgr.VERSION+"\">\n"+
-              "      <sessionId type=\""+A2BlasterSecMgr.TYPE+"\">"+a2BlasterSessionId+"</sessionId>\n"+
+      result ="   <securityPlugin type=\""+Manager.TYPE+"\" version=\""+Manager.VERSION+"\">\n"+
+              "      <sessionId type=\""+Manager.TYPE+"\">"+a2BlasterSessionId+"</sessionId>\n"+
               "   </securityPlugin>\n";
 
       if (Log.CALL) Log.call(ME+".init(...)=...", "-------END-------\n");
@@ -124,18 +133,18 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
    /**
     * Get owner of this session
     * <p/>
-    * @return I_SubjectSecurityContext The owner of this session.
-    * implements: I_SessionSecurityContext.getSubject();<br>
+    * @return I_Subject The owner of this session.
+    * implements: I_Session.getSubject();<br>
     */
-   public I_SubjectSecurityContext getSubject() {
-      return (I_SubjectSecurityContext)this;
+   public I_Subject getSubject() {
+      return (I_Subject)this;
    }
 
    /**
     *
-    * implements: I_SessionSecurityContext.getSecurityManager();<br>
+    * implements: I_Session.getSecurityManager();<br>
     */
-   public I_SecurityManager getSecurityManager() {
+   public I_Manager getManager() {
       return secMgr;
    }
 
@@ -183,7 +192,7 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
     * @return MessageUnit The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     * @see #importMessage(MessageUnit)
-    * implements: I_SessionSecurityContext.importMessage(MessageUnit);<br>
+    * implements: I_Session.importMessage(MessageUnit);<br>
     */
    public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
@@ -211,7 +220,7 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
     * @return MessageUnit
     * @exception XmlBlasterException Thrown if the message cannot be processed
     * @see #importMessage(MessageUnit)
-    * implements: I_SessionSecurityContext.exportMessage(MessageUnit);<br>
+    * implements: I_Session.exportMessage(MessageUnit);<br>
     */
    public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
@@ -233,7 +242,7 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
 
    /**
     * Check if the user is permited (authorized) to do something
-    * implements: I_SubjectSecurityContext.isAuthorized(String, String)<br>
+    * implements: I_Subject.isAuthorized(String, String)<br>
     */
    public boolean isAuthorized(String actionKey, String key) {
       CorbaConnection con = null;
@@ -277,7 +286,7 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
 
    /**
     * Return the subjects name.
-    * (Implementation of: I_SubjectSecurityContext.getName)<br>
+    * (Implementation of: I_Subject.getName)<br>
     * <p>
     * @return String login name
     */
@@ -288,10 +297,10 @@ public class A2BlasterSessionSecCtx implements I_SessionSecurityContext, I_Subje
          // ask the a2Blaster
          try {
             CorbaConnection con = null;
-            A2BlasterClientInfo userInfo = null;
+            ClientInfo userInfo = null;
 
             con = secMgr.getA2Blaster();
-            userInfo = new A2BlasterClientInfo(con.getUserInfoAsXml(a2BlasterSessionId));
+            userInfo = new ClientInfo(con.getUserInfoAsXml(a2BlasterSessionId));
             name = userInfo.getName();
          }
          catch (XmlBlasterException xe) {

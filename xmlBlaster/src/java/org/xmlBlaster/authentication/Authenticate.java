@@ -3,15 +3,15 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.36 2001/08/19 23:07:53 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.37 2001/08/30 17:14:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
-import org.xmlBlaster.authentication.plugins.I_SubjectSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.PluginLoader;
+import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ClientInfo;
 import org.jutils.time.StopWatch;
@@ -32,7 +32,7 @@ public class Authenticate
    public static final String DEFAULT_SECURITYPLUGIN_TYPE = "simple";
    public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
 
-   private PluginLoader plgnLdr = null;
+   private PluginManager plgnLdr = null;
 
 //   private Hashtable sessions = new Hashtable();
 
@@ -67,7 +67,7 @@ public class Authenticate
    public Authenticate()
    {
       if (Log.CALL) Log.call(ME, "Entering constructor");
-      plgnLdr = PluginLoader.getInstance();
+      plgnLdr = PluginManager.getInstance();
       plgnLdr.init(this);
    }
 
@@ -99,9 +99,9 @@ public class Authenticate
                        String xmlQoS_literal, String sessionId)
                           throws XmlBlasterException
    {
-      I_SubjectSecurityContext subjectSecurityCtx = null;
-      I_SessionSecurityContext sessionSecurityCtx = null;
-      I_SecurityManager               securityMgr = null;
+      I_Subject subjectSecurityCtx = null;
+      I_Session sessionSecurityCtx = null;
+      I_Manager               securityMgr = null;
       String             returnQoS = null;
       String clientSecurityCtxInfo = null;
       ClientQoS             xmlQoS = new ClientQoS(xmlQoS_literal);
@@ -112,8 +112,8 @@ public class Authenticate
       if (Log.DUMP) Log.dump(ME, xmlQoS_literal);
 
       // --- try to get a suitable SecurityManager ----------------------------
-      securityMgr = plgnLdr.getSecurityManager(xmlQoS.getSecurityPluginType(),
-                                               xmlQoS.getSecurityPluginVersion()); // throws XmlBlasterExceptions
+      securityMgr = plgnLdr.getManager(xmlQoS.getSecurityPluginType(),
+                       xmlQoS.getSecurityPluginVersion()); // throws XmlBlasterExceptions
 
       clientInfo = getClientInfoByName(loginName);
 
@@ -135,7 +135,7 @@ public class Authenticate
          sessionId = createSessionId(loginName);
       }
 
-      sessionSecurityCtx = securityMgr.reserveSessionSecurityContext(sessionId);
+      sessionSecurityCtx = securityMgr.reserveSession(sessionId);
       String securityQoS = "<securityPlugin type=\"" + DEFAULT_SECURITYPLUGIN_TYPE +
                            "\" version=\"" + DEFAULT_SECURITYPLUGIN_VERSION + "\">\n" +
                            "   <user>" + loginName + "</user>\n" +
@@ -195,9 +195,9 @@ public class Authenticate
     * @param sessionId      The caller (here CORBA-POA protocol driver) may insist to you its own sessionId
     */
    public final LoginReturnQoS init(String xmlQoS_literal, String sessionId) throws XmlBlasterException {
-      I_SubjectSecurityContext subjectSecurityCtx = null;
-      I_SessionSecurityContext sessionSecurityCtx = null;
-      I_SecurityManager               securityMgr = null;
+      I_Subject subjectSecurityCtx = null;
+      I_Session sessionSecurityCtx = null;
+      I_Manager               securityMgr = null;
       String clientSecurityCtxInfo = null;
       ClientQoS             xmlQoS = new ClientQoS(xmlQoS_literal);
       ClientInfo        clientInfo = null;
@@ -212,17 +212,17 @@ public class Authenticate
       // we don't overwrite the given qos-sessionId with the given sessionId-parameter
 
       // --- try to get a suitable SecurityManager ----------------------------
-      securityMgr = plgnLdr.getSecurityManager(xmlQoS.getSecurityPluginType(),
+      securityMgr = plgnLdr.getManager(xmlQoS.getSecurityPluginType(),
                                                xmlQoS.getSecurityPluginVersion()); // throws XmlBlasterExceptions
 
-      sessionSecurityCtx = securityMgr.reserveSessionSecurityContext(sessionId);
+      sessionSecurityCtx = securityMgr.reserveSession(sessionId);
       clientSecurityCtxInfo = sessionSecurityCtx.init(xmlQoS.getSecurityPluginData()); // throws XmlBlasterExceptions
       subjectSecurityCtx = sessionSecurityCtx.getSubject();
 
       clientInfo = getClientInfoByName(subjectSecurityCtx.getName());
       if(clientInfo!=null) {
-         I_SessionSecurityContext oldSessionSecCtx = clientInfo.getSessionSecurityContext();
-         oldSessionSecCtx.getSecurityManager().releaseSessionSecurityContext(oldSessionSecCtx.getSessionId(), null);
+         I_Session oldSessionSecCtx = clientInfo.getSecuritySession();
+         oldSessionSecCtx.getManager().releaseSession(oldSessionSecCtx.getSessionId(), null);
       }
 
       if (clientInfo != null && clientInfo.isLoggedIn()) {
@@ -254,7 +254,7 @@ public class Authenticate
       }
 
       if (clientInfo != null) {
-         clientInfo.setSessionSecurityContext(sessionSecurityCtx);
+         clientInfo.setSecuritySession(sessionSecurityCtx);
          clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
       }
       else {                               // login of yet unknown client
@@ -284,9 +284,9 @@ public class Authenticate
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException{
       if (Log.CALL) Log.call(ME, "-------START-disconnect()---------\n" + toXml().toString());
 
-      I_SecurityManager securityMgr = plgnLdr.getSecurityManager(sessionId);
-      I_SessionSecurityContext sessionSecCtx = securityMgr.getSessionById(sessionId);
-      securityMgr.releaseSessionSecurityContext(sessionId, sessionSecCtx.importMessage(qos_literal));
+      I_Manager securityMgr = plgnLdr.getManager(sessionId);
+      I_Session sessionSecCtx = securityMgr.getSessionById(sessionId);
+      securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
 
       ClientInfo clientInfo = resetClientInfo(sessionId, true);
       String loginName = clientInfo.getLoginName();
@@ -346,11 +346,11 @@ public class Authenticate
    public void logout(String sessionId) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "-------START-logout()---------\n" + toXml().toString());
-      I_SecurityManager securityMgr = plgnLdr.getSecurityManager(sessionId);
+      I_Manager securityMgr = plgnLdr.getManager(sessionId);
       ClientInfo clientInfo = resetClientInfo(sessionId, true);
       String loginName = clientInfo.getLoginName();
 
-      securityMgr.releaseSessionSecurityContext(sessionId, null);
+      securityMgr.releaseSession(sessionId, null);
 
       synchronized(loginNameClientInfoMap) {
          loginNameClientInfoMap.remove(loginName);

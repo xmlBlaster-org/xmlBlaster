@@ -5,12 +5,12 @@ import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
+import org.xmlBlaster.authentication.plugins.I_ClientHelper;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
 /**
- * <code>PluginManager</code> is a singleton, which is responsible for loading
+ * <code>PluginLoader</code> is a singleton, which is responsible for loading
  * and initialization of client secuirty plugins.
  *
  * Either the client application chooses an appropriate plugin, or the
@@ -32,25 +32,25 @@ import java.util.StringTokenizer;
  * If neither the application, nor the config enforce a specific plugin, the Dummy-Plugin
  * is used (old xmlBlaster behavior).
  */
-public class PluginManager {
-   private  static final String  ME = "SecurityPluginManager";
+public class PluginLoader {
+   private  static final String  ME = "SecurityPluginLoader";
    private  String pluginMechanism = null;
    private  String pluginVersion = null;
-   private  I_SecurityClientHelper plugin = null;
-   private  static PluginManager instance = null;
+   private  I_ClientHelper plugin = null;
+   private  static PluginLoader instance = null;
 
-   private PluginManager()
+   private PluginLoader()
    {
    }
 
    /**
-    * Get the instance of the PluginManager
+    * Get the instance of the PluginLoader
     *
-    * @return PluginManager
+    * @return PluginLoader
     */
-   public static PluginManager getInstance()
+   public static PluginLoader getInstance()
    {
-      if(instance==null) instance = new PluginManager();
+      if(instance==null) instance = new PluginLoader();
 
       return instance;
    }
@@ -79,9 +79,9 @@ public class PluginManager {
    /**
     * Get the currently used plugin
     *
-    * @return I_SecurityClientHelper
+    * @return I_ClientHelper
     */
-   public I_SecurityClientHelper getCurrentClientPlugin() throws Exception
+   public I_ClientHelper getCurrentClientPlugin() throws Exception
    {
       if(plugin!=null) return plugin;
 
@@ -93,10 +93,10 @@ public class PluginManager {
     * <p/>
     * @param String The type of the plugin
     * @param String The version of the plugin
-    * @return I_SecurityClientHelper
+    * @return I_ClientHelper
     * @exception Exception Thrown if the plugin wasn't loadable or initializable
     */
-   public synchronized I_SecurityClientHelper getClientPlugin(String mechanism, String version) throws Exception
+   public synchronized I_ClientHelper getClientPlugin(String mechanism, String version) throws Exception
    {
       if((pluginMechanism!=null) && (pluginMechanism.equals(mechanism))) {
         if (((pluginVersion==null) && (version==null)) ||
@@ -116,22 +116,22 @@ public class PluginManager {
     * <p/>
     * @param String[] The first element of this array contains the class name. Following
     *                 elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_SecurityManager
+    * @return I_Manager
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   private synchronized I_SecurityClientHelper loadPlugin(String[] param) throws Exception
+   private synchronized I_ClientHelper loadPlugin(String[] param) throws Exception
    {
       if(param==null) return null;
       if(param[0]==null) return null;
 
       String[] p = new String[param.length-1];
-      I_SecurityClientHelper clntPlugin = null;
+      I_ClientHelper clntPlugin = null;
 
       try {
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('"+param[0]+"') ...");
          Class cl = java.lang.Class.forName(param[0]);
-         clntPlugin = (I_SecurityClientHelper)cl.newInstance();
-         Log.info(ME, "Found I_SecurityClientHelper '"+param[0]+"'");
+         clntPlugin = (I_ClientHelper)cl.newInstance();
+         Log.info(ME, "Found I_ClientHelper '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
@@ -163,7 +163,7 @@ public class PluginManager {
 
 
    /**
-    * Resolve a class name of a plugin, specified by its type (mechanism) and version. 
+    * Resolve a class name of a plugin, specified by its type (mechanism) and version.
     * <p />
     * The plugin is read from xmlBlaster.properties if mechanism==version==null<br />
     * If non is specified there, we return null

@@ -7,8 +7,8 @@
 
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
-CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/authentication/plugins/gui
-SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/authentication/plugins/gui
+CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/authentication/plugins/demo
+SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/authentication/plugins/demo
 #------------------------------------------------------------------------------
 
 

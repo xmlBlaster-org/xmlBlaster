@@ -18,9 +18,9 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *  &lt;/securityService>
  * </pre>
  */
-public class DefaultSecurityQoS extends SaxHandlerBase {
+public class InitQos extends SaxHandlerBase {
 
-   private static String ME = "DefaultSecurityQoS";
+   private static String ME = "InitQos";
 
    // helper flags for SAX parsing
    private boolean inSecurityService = false;
@@ -33,7 +33,7 @@ public class DefaultSecurityQoS extends SaxHandlerBase {
    private String passwd = null;
 
 
-   public DefaultSecurityQoS(String xmlQoS_literal) throws XmlBlasterException {
+   public InitQos(String xmlQoS_literal) throws XmlBlasterException {
       if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
@@ -159,7 +159,7 @@ public class DefaultSecurityQoS extends SaxHandlerBase {
             "   <user>aUser</user>\n" +
             "</securityService>";
 
-         DefaultSecurityQoS qos = new DefaultSecurityQoS(xml);
+         InitQos qos = new InitQos(xml);
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

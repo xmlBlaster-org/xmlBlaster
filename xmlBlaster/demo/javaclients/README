@@ -51,7 +51,7 @@ Running a client with XML-RPC protocol:
 
 Running a client which forces the GUI based authentication/authorization plugin:
 
-      java javaclients.ClientSub -Security.Client.ForcePlugin gui,1.0 -Security.Client.ForcePlugin gui,1.0 -Security.Client.Plugin[gui][1.0] org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
+      java javaclients.ClientSub -Security.Client.ForcePlugin gui,1.0 -Security.Client.ForcePlugin gui,1.0 -Security.Client.Plugin[gui][1.0] org.xmlBlaster.authentication.plugins.demo.ClientHelper
 
 NOTE: To run these other protocols, the xmlBlaster server must
       have switched on the supporting driver (see xmlBlaster.properties)

@@ -18,16 +18,16 @@
 #------------------------------------------------------------------------------
 # Authentication and Authorization
 Security.Server.allowSimpleDriver=true
-Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.DefaultSecurityManager
-Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.DemoSecurityManager
-Security.Server.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.A2BlasterSecMgr
+Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.Manager
+Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
+Security.Server.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.Manager
 
 # Force on client side a specified plugin (as default)
 # Only if you access xmlBlaster with java clients and
 # use our helper class XmlBlasterConnection.java
 # With "gui,1.0" will the server popup a GUI panel
 #Security.Client.ForcePlugin=gui,1.0
-#Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
+#Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientHelper
 #------------------------------------------------------------------------------
 
 

@@ -15,7 +15,7 @@ import org.xmlBlaster.client.protocol.rmi.RmiConnection;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection;
 
 import org.xmlBlaster.client.BlasterCache;
-import org.xmlBlaster.client.PluginManager;
+import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
@@ -28,8 +28,8 @@ import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
-import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
+import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_InitQos;
 
 import java.applet.Applet;
 
@@ -75,10 +75,10 @@ import java.applet.Applet;
  * If a client side security plugin is specified in xmlBlaster.properties
  * or on command line, this will be loaded and used here. All xmlBlaster invocations
  * will be intercepted with your supplied plugin.<br />
- * Your plugin must implement the interfaces I_SecurityClientHelper and I_SecurityInitQoSWrapper
+ * Your plugin must implement the interfaces I_ClientHelper and I_InitQos
  *
- * @see org.xmlBlaster.authentication.plugins.I_SecurityClientHelper
- * @see org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper
+ * @see org.xmlBlaster.authentication.plugins.I_ClientHelper
+ * @see org.xmlBlaster.authentication.plugins.I_InitQos
  * @see testsuite.org.xmlBlaster.TestFailSave
  *
  * @author $Author: ruff $
@@ -134,8 +134,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /** Client side helper classes to load the authentication xml string */
    private String            secMechanism = null;
    private String              secVersion = null;
-   private PluginManager       secPlgnMgr = null;
-   private I_SecurityClientHelper secPlgn = null;
+   private PluginLoader       secPlgnMgr = null;
+   private I_ClientHelper secPlgn = null;
 
    /**
     * Client access to xmlBlaster for client applications.
@@ -246,7 +246,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void initSecuritySettings()
    {
-      secPlgnMgr = PluginManager.getInstance();
+      secPlgnMgr = PluginLoader.getInstance();
       try {
          secPlgn      = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
          secMechanism = secPlgnMgr.getType();
@@ -469,7 +469,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          qos = new LoginQosWrapper();
 
       if(secPlgn!=null) {
-         I_SecurityInitQoSWrapper qosWrapper = qos.getSecurityInitQoSWrapper();
+         I_InitQos qosWrapper = qos.getSecurityInitQoSWrapper();
          if(qosWrapper!=null) {
             // We switch to init() variant ....
             qosWrapper.setUserId(loginName);

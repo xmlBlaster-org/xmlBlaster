@@ -3,16 +3,16 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.8 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.9 2001/08/30 17:14:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.PluginManager;
-import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
-import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
+import org.xmlBlaster.client.PluginLoader;
+import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_InitQos;
 import java.util.Vector;
 
 
@@ -62,8 +62,8 @@ public class LoginQosWrapper extends QosWrapper
    /** PtP messages wanted? */
    protected boolean noPtP = false; // <noPtP />    <!-- Don't send me any PtP messages (prevents spamming) -->
 
-   private PluginManager pMgr;
-   private I_SecurityClientHelper plugin;
+   private PluginLoader pMgr;
+   private I_ClientHelper plugin;
 
    /**
     * Default constructor for clients without asynchronous callbacks.
@@ -72,10 +72,10 @@ public class LoginQosWrapper extends QosWrapper
    {
    }
 
-   private I_SecurityClientHelper getPlugin()
+   private I_ClientHelper getPlugin()
    {
       if (plugin==null) {
-         if (pMgr==null) pMgr=PluginManager.getInstance();
+         if (pMgr==null) pMgr=PluginLoader.getInstance();
          try {
             plugin=pMgr.getCurrentClientPlugin();
          }
@@ -141,30 +141,30 @@ public class LoginQosWrapper extends QosWrapper
       addressVec.addElement(callback);
    }
 
-   public I_SecurityInitQoSWrapper getSecurityInitQoSWrapper()
+   public I_InitQos getSecurityInitQoSWrapper()
    {
-      return getPlugin().getSecurityInitQoSWrapper();
+      return getPlugin().getInitQoSWrapper();
    }
 
    public String getSecurityPluginType()
    {
-      I_SecurityInitQoSWrapper i = getSecurityInitQoSWrapper();
-      if (i != null)
-         return i.getSecurityPluginType();
+      I_InitQos securityInitQos = getSecurityInitQoSWrapper();
+      if (securityInitQos != null)
+         return securityInitQos.getPluginType();
       return null;
    }
 
    public String getSecurityPluginVersion()
    {
-      I_SecurityInitQoSWrapper i = getSecurityInitQoSWrapper();
-      if (i != null)
-         return i.getSecurityPluginVersion();
+      I_InitQos securityInitQos = getSecurityInitQoSWrapper();
+      if (securityInitQos != null)
+         return securityInitQos.getPluginVersion();
       return null;
    }
 
    public String getUserId()
    {
-      I_SecurityInitQoSWrapper i=getSecurityInitQoSWrapper();
+      I_InitQos i=getSecurityInitQoSWrapper();
       if (i==null)
          return "NoLoginName";
       else
@@ -210,10 +210,10 @@ public class LoginQosWrapper extends QosWrapper
     */
    public final String toXml(String extraOffset, int opt)
    {
-      I_SecurityInitQoSWrapper secInitQoSWrapper = null;
+      I_InitQos secInitQoSWrapper = null;
 
       if(plugin!=null) {
-         secInitQoSWrapper = getPlugin().getSecurityInitQoSWrapper();
+         secInitQoSWrapper = getPlugin().getInitQoSWrapper();
       }
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";

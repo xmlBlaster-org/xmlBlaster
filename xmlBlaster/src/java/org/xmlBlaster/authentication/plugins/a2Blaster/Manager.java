@@ -3,8 +3,8 @@ package org.xmlBlaster.authentication.plugins.a2Blaster;
 import java.util.Hashtable;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.a2Blaster.client.api.CorbaConnection;
 import org.a2Blaster.engine.A2BlasterException;
 import org.a2Blaster.Environment;
@@ -13,9 +13,18 @@ import org.a2Blaster.Environment;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/19 23:07:53 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
  * Last Changes:
- *    ($Log: A2BlasterSecMgr.java,v $
+ *    ($Log: Manager.java,v $
+ *    (Revision 1.2  2001/08/30 17:14:49  ruff
+ *    (Renamed security stuff
+ *    (
+ *    (Revision 1.1.2.2  2001/08/22 11:35:42  ruff
+ *    (Changed names
+ *    (
+ *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
+ *    (changed naming schema
+ *    (
  *    (Revision 1.2  2001/08/19 23:07:53  ruff
  *    (Merged the new security-plugin framework
  *    (
@@ -24,8 +33,8 @@ import org.a2Blaster.Environment;
  *    ()
  */
 
-public class A2BlasterSecMgr implements I_SecurityManager{
-   private static final String          ME = "A2BlasterSecMgr";
+public class Manager implements I_Manager{
+   private static final String          ME = "Manager";
 
    public  static final String        TYPE = "a2Blaster";
    public  static final String     VERSION = "1.0";
@@ -38,7 +47,7 @@ public class A2BlasterSecMgr implements I_SecurityManager{
    private              Environment           env = new Environment();
    private              String                LCN = "xmlBlaster";
 
-   public A2BlasterSecMgr() {
+   public Manager() {
       if (Log.CALL) Log.call(ME+"."+ME+"()", "-------START--------\n");
       if (Log.CALL) Log.call(ME+"."+ME+"()", "-------END----------\n");
    }
@@ -80,13 +89,13 @@ public class A2BlasterSecMgr implements I_SecurityManager{
     * Create a new user session.
     * <p/>
     * @param String The session id.
-    * @return I_SessionSecurityContext
+    * @return I_Session
     */
-   public I_SessionSecurityContext reserveSessionSecurityContext(String sessionId){
-      if (Log.CALL) Log.call(ME+".reserveSessionSecurityContext(String sessionId="+sessionId+")", "-------START--------\n");
-      A2BlasterSessionSecCtx session = new A2BlasterSessionSecCtx(this, sessionId);
+   public I_Session reserveSession(String sessionId){
+      if (Log.CALL) Log.call(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------\n");
+      Session session = new Session(this, sessionId);
       sessions.put(sessionId, session);
-      if (Log.CALL) Log.call(ME+".reserveSessionSecurityContext(String sessionId="+sessionId+")", "-------END----------\n");
+      if (Log.CALL) Log.call(ME+".reserveSession(String sessionId="+sessionId+")", "-------END----------\n");
 
       return session;
    }
@@ -97,25 +106,25 @@ public class A2BlasterSecMgr implements I_SecurityManager{
     * @author W. Kleinertz
     * @param String Specifies the session. (sessionId)
     */
-   public void releaseSessionSecurityContext(String sessionId, String qos_literal){
-      if (Log.CALL) Log.call(ME+".releaseSessionSecurityContext(String sessionId="
+   public void releaseSession(String sessionId, String qos_literal){
+      if (Log.CALL) Log.call(ME+".releaseSession(String sessionId="
                             +sessionId+", String qos_literal="+qos_literal+")",
                             "-------START--------\n");
-      I_SessionSecurityContext sessionSecCtx = getSessionById(sessionId);
+      I_Session sessionSecCtx = getSessionById(sessionId);
       sessions.remove(sessionId);
-      ((A2BlasterSessionSecCtx)sessionSecCtx).destroy(qos_literal);
-      if (Log.CALL) Log.call(ME+".releaseSessionSecurityContext(...)", "-------END---------\n");
+      ((Session)sessionSecCtx).destroy(qos_literal);
+      if (Log.CALL) Log.call(ME+".releaseSession(...)", "-------END---------\n");
    }
 
    /**
-    * Get the I_SessionSecurityContext which corresponds to the given sessionId
+    * Get the I_Session which corresponds to the given sessionId
     * <p/>
     * @param String The sessionId
-    * @return I_SessionSecurityContext
+    * @return I_Session
     */
-   public I_SessionSecurityContext getSessionById(String id) {
+   public I_Session getSessionById(String id) {
       if (Log.CALL) Log.call(ME+".getSessionById(String id="+id+")", "-------CALLED-------\n");
-      return (I_SessionSecurityContext)sessions.get(id);
+      return (I_Session)sessions.get(id);
    }
 
    CorbaConnection getA2Blaster() throws XmlBlasterException{
@@ -140,7 +149,7 @@ public class A2BlasterSecMgr implements I_SecurityManager{
       if (Log.CALL) Log.call(ME + ".changeSessionId(String oldSessionId=" + oldSessionId +
                              ", String newSessionID=" +newSessionId+")", "-------START------\n");
       synchronized(sessions) {
-         A2BlasterSessionSecCtx session = (A2BlasterSessionSecCtx)sessions.get(oldSessionId);
+         Session session = (Session)sessions.get(oldSessionId);
          if (session == null) throw new XmlBlasterException(ME+".unknownSessionId", "Unknown sessionId!");
          if (sessions.get(newSessionId) != null) throw new XmlBlasterException(ME+".invalidSessionId", "This sessionId is already in use!");
          sessions.put(newSessionId, session);

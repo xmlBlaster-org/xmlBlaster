@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.6 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.7 2001/08/30 17:14:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -12,12 +12,12 @@ import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.PluginLoader;
+import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.plugins.I_SecurityManager;
-import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
-import org.xmlBlaster.authentication.plugins.I_SubjectSecurityContext;
+import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.authentication.plugins.I_Subject;
 
 /**
  * This is the native implementation of the xmlBlaster interface.
@@ -38,7 +38,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private RequestBroker requestBroker;
    private Authenticate authenticate;
 
-   private PluginLoader plgnLdr = null;
+   private PluginManager plgnLdr = null;
 
    // action key --- used to ckeck access rights
    public static final String         GET = "GET";
@@ -55,7 +55,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       this.authenticate = authenticate;
       this.requestBroker = new RequestBroker(authenticate);
-      plgnLdr = PluginLoader.getInstance();
+      plgnLdr = PluginManager.getInstance();
    }
 
    /**
@@ -300,13 +300,13 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     *                                or the message format has errors.
     */
    private MessageUnit checkMessage(String sessionId, MessageUnit msgUnit, String action) throws XmlBlasterException{
-      I_SecurityManager secMgr = plgnLdr.getSecurityManager(sessionId);
-      I_SessionSecurityContext sessionSecCtx = secMgr.getSessionById(sessionId);
+      I_Manager secMgr = plgnLdr.getManager(sessionId);
+      I_Session sessionSecCtx = secMgr.getSessionById(sessionId);
       if (sessionSecCtx==null) {
          throw new XmlBlasterException(ME+".accessDenied", "unknown session.");
       }
 
-      I_SubjectSecurityContext subjSecCtx = sessionSecCtx.getSubject();
+      I_Subject subjSecCtx = sessionSecCtx.getSubject();
       // check the message 'publish', if it was treated with confidentiality and integrity
       msgUnit = sessionSecCtx.importMessage(msgUnit);
       // check if ths user is permitted to publish such a message
@@ -321,8 +321,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private MessageUnit exportMessage(String sessionId, MessageUnit msgUnit) throws XmlBlasterException
    {
-      I_SecurityManager secMgr = plgnLdr.getSecurityManager(sessionId);
-      I_SessionSecurityContext sessionSecCtx = secMgr.getSessionById(sessionId);
+      I_Manager secMgr = plgnLdr.getManager(sessionId);
+      I_Session sessionSecCtx = secMgr.getSessionById(sessionId);
       if (sessionSecCtx==null) {
          throw new XmlBlasterException(ME+".accessDenied", "Unknown session!");
       }
@@ -332,8 +332,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private MessageUnit[] exportMessage(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
-      I_SecurityManager secMgr = plgnLdr.getSecurityManager(sessionId);
-      I_SessionSecurityContext sessionSecCtx = secMgr.getSessionById(sessionId);
+      I_Manager secMgr = plgnLdr.getManager(sessionId);
+      I_Session sessionSecCtx = secMgr.getSessionById(sessionId);
       if (sessionSecCtx==null) {
          throw new XmlBlasterException(ME+".accessDenied", "Unknown session!");
       }
@@ -347,8 +347,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private String exportMessage(String sessionId, String msg) throws XmlBlasterException
    {
-      I_SecurityManager secMgr = plgnLdr.getSecurityManager(sessionId);
-      I_SessionSecurityContext sessionSecCtx = secMgr.getSessionById(sessionId);
+      I_Manager secMgr = plgnLdr.getManager(sessionId);
+      I_Session sessionSecCtx = secMgr.getSessionById(sessionId);
       if (sessionSecCtx==null) {
          throw new XmlBlasterException(ME+".accessDenied", "Unknown session!");
       }
@@ -358,8 +358,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private String[] exportMessage(String sessionId, String[] msgArr) throws XmlBlasterException
    {
-      I_SecurityManager secMgr = plgnLdr.getSecurityManager(sessionId);
-      I_SessionSecurityContext sessionSecCtx = secMgr.getSessionById(sessionId);
+      I_Manager secMgr = plgnLdr.getManager(sessionId);
+      I_Session sessionSecCtx = secMgr.getSessionById(sessionId);
       if (sessionSecCtx==null) {
          throw new XmlBlasterException(ME+".accessDenied", "Unknown session!");
       }
