@@ -12,6 +12,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <ctype.h>
 #include "msgUtil.h"
 
+#include <netdb.h>  /* gethostbyname_re() */
+#include <errno.h>  /* gethostbyname_re() */
+
 /**
  * Frees everything inside MsgUnitArr and the struct MsgUnitArr itself
  */
@@ -260,3 +263,80 @@ void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
    *xmlBlasterException->message = 0;
 }
 
+
+#ifdef __sun
+#define HAVE_FUNC_GETHOSTBYNAME_R_5 /* SUN */
+#else
+#define HAVE_FUNC_GETHOSTBYNAME_R_6 /* Linux */
+#endif
+
+/**
+ * Thread safe host lookup. 
+ * @author Caolan McNamara (2000) <caolan@skynet.ie>
+ */
+struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
+{
+#ifdef HAVE_FUNC_GETHOSTBYNAME_R_6
+   struct hostent *hp;
+   int herr,res;
+
+   if (*hstbuflen == 0)
+   {
+      *hstbuflen = 1024; 
+      *tmphstbuf = (char *)malloc (*hstbuflen);
+   }
+
+   while (( res = 
+      gethostbyname_r(host,hostbuf,*tmphstbuf,*hstbuflen,&hp,&herr))
+      && (errno == ERANGE))
+   {
+      /* Enlarge the buffer. */
+      *hstbuflen *= 2;
+      *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
+   }
+   if (res)
+      return NULL;
+   return hp;
+#else
+#  ifdef HAVE_FUNC_GETHOSTBYNAME_R_5
+      struct hostent *hp;
+      int herr;
+
+      if (*hstbuflen == 0)
+      {
+         *hstbuflen = 1024;
+         *tmphstbuf = (char *)malloc (*hstbuflen);
+      }
+
+      while ((NULL == ( hp = 
+         gethostbyname_r(host,hostbuf,*tmphstbuf,*hstbuflen,&herr)))
+         && (errno == ERANGE))
+      {
+         /* Enlarge the buffer. */
+         *hstbuflen *= 2;
+         *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
+      }
+      return hp;
+#  else
+#     ifdef HAVE_FUNC_GETHOSTBYNAME_R_3
+         if (*hstbuflen == 0)
+         {
+            *hstbuflen = sizeof(struct hostent_data);
+            *tmphstbuf = (char *)malloc (*hstbuflen);
+         }
+         else if (*hstbuflen < sizeof(struct hostent_data))
+         {
+            *hstbuflen = sizeof(struct hostent_data);
+            *tmphstbuf = (char *)realloc(*tmphstbuf, *hstbuflen);
+         }
+         memset((void *)(*tmphstbuf),0,*hstbuflen);
+
+         if (0 != gethostbyname_r(host,hostbuf,(struct hostent_data *)*tmphstbuf))
+            return NULL;
+         return hostbuf;
+#     else
+         return gethostbyname(host); /* Not thread safe */
+#     endif
+#  endif
+#endif
+}

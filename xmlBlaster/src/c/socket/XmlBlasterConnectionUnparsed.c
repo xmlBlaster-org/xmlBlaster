@@ -78,8 +78,11 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
    char *servTcpPort = "7607";
 
    struct sockaddr_in xmlBlasterAddr;
-   struct hostent *hostP = 0;
+   struct hostent hostbuf, *hostP = 0;
    struct servent *portP = 0;
+
+   char *tmphstbuf=NULL;
+   size_t hstbuflen=0;
 
    char serverHostName[256];
 
@@ -106,11 +109,11 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
    }
 
    strcpy(serverHostName, "localhost");
-   gethostname(serverHostName, 125);
+   gethostname(serverHostName, 250);
 
    for (iarg=0; iarg < xb->argc-1; iarg++) {
       if (strcmp(xb->argv[iarg], "-dispatch/connection/plugin/socket/hostname") == 0)
-         strcpy(serverHostName, xb->argv[++iarg]);
+         strncpy0(serverHostName, xb->argv[++iarg], 250);
       else if (strcmp(xb->argv[iarg], "-dispatch/connection/plugin/socket/port") == 0)
          servTcpPort = xb->argv[++iarg];
       else if (strcmp(xb->argv[iarg], "-debug") == 0)
@@ -133,10 +136,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
 
    void freeaddrinfo(*res);
 # endif
-   hostP = gethostbyname(serverHostName);
-#  ifdef TODO_
-   hostP = gethostbyname_r(serverHostName, ....);
-#  endif
+   hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen);
    /* printf("gethostbyname error=%d\n", WSAGetLastError()); */
    portP = getservbyname(servTcpPort, "tcp");
    if (hostP != 0) {

@@ -82,6 +82,7 @@ extern char *strncpy0(char * const to, const char * const from, const size_t max
 extern void trim(char *s);
 extern char *blobDump(XmlBlasterBlob *blob);
 extern char *toReadableDump(char *data, size_t len);
+extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
 
 
 #endif /* XMLBLASTER_MSGUTIL_H */

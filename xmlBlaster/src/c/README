@@ -138,8 +138,6 @@ Executable sizes on Linux gcc 3.3
 Open issues:
 ============
 
-o Change gethostname() to gethostname_r()
-
 o Throwing an XmlBlasterException from CallbackServer
   back to xmlBlaster: The exception is buggy encoded
 

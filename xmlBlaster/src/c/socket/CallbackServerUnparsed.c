@@ -158,9 +158,11 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
 {
    socklen_t cli_len;
    char *rawData = NULL;
-   struct hostent *hostP = NULL;
+   struct hostent hostbuf, *hostP = NULL;
    struct sockaddr_in serv_addr, cli_addr;
-
+   char *tmphstbuf=NULL;
+   size_t hstbuflen=0;
+ 
    if (cb->listenSocket == -1) {
       char serverHostName[256];
       if (cb->hostCB == NULL) {
@@ -184,10 +186,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
        * Create the address we will be binding to.
        */
       serv_addr.sin_family = AF_INET;
-      hostP = gethostbyname(cb->hostCB);
-# ifdef TODO_
-      int ret = gethostbyname_r(cb->hostCB, ...);
-# endif
+      hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen);
       if (hostP != NULL)
          serv_addr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /*inet_addr("192.168.1.2"); */
       else
