@@ -6,6 +6,7 @@ Comment:   Test C client library
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build.sh c
 Invoke:    Start 'java org.xmlBlaster.Main' and then 'TestMethods'
+See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/c.client.socket.html
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -20,15 +21,18 @@ char** argv = 0;
 #define  ERRORSTR_LEN 4096
 char errorString[ERRORSTR_LEN+1];
 char *updateContent = 0;
+void *updateUserData;
 const char *CONTENT = "Some message payload";
 
 /**
  * Here we receive the callback messages from xmlBlaster
  * mu_assert() does not help here as it is another thread
  */
-static bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
+   updateUserData = xa;
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit *msg = &msgUnitArr->msgUnitArr[i];
       printf("[client] CALLBACK update(): Asynchronous message update arrived\n");
@@ -41,7 +45,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterExce
 /**
  * Invoke: TestMethods -logLevel TRACE
  */
-static char * test_methods()
+static const char * test_methods()
 {
    int iarg;
    char *response = (char *)0;
@@ -73,7 +77,7 @@ static char * test_methods()
    }
 
    xa = getXmlBlasterAccessUnparsed(argc, argv);
-   if (xa->initialize(xa, myUpdate) == false) {
+   if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       freeXmlBlasterAccessUnparsed(xa);
       mu_assert("[TEST FAIL] Connection to xmlBlaster failed, please start the server or check your configuration",
                 false);
@@ -157,6 +161,9 @@ static char * test_methods()
    mu_assert("[TEST FAIL] No update arrived", updateContent != 0);
    mu_assert("[TEST FAIL] Received wrong message in update()", strcmp(CONTENT, updateContent) == 0);
    free(updateContent);
+   updateContent = 0;
+
+   mu_assert("[TEST FAIL] UserData from update() is invalid", updateUserData == xa);
 
 
    {  /* unSubscribe ... */
@@ -229,13 +236,18 @@ static char * test_methods()
    }
    mu_assert("[TEST FAIL] disconnect() returned false", retBool == true);
 
+   if (updateContent != 0) { /* The erase event is sent as update as well */
+      free(updateContent);
+      updateContent = 0;
+   }
+
    freeXmlBlasterAccessUnparsed(xa);
    printf("[client] Good bye.\n");
    return 0;
 }
 
 
-static char *all_tests()
+static const char *all_tests()
 {
    mu_run_test(test_methods);
    return 0;
@@ -243,9 +255,11 @@ static char *all_tests()
 
 int main(int argc_, char **argv_)
 {
-   char *result = all_tests();
+   const char *result;
    argc = argc_;
    argv = argv_;
+
+   result = all_tests();
 
    if (result != 0) {
       printf("%s\n", result);
