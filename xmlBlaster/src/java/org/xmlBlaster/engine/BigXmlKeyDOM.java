@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.20 2000/12/26 14:56:40 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.21 2001/02/14 21:02:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -57,7 +57,7 @@ public class BigXmlKeyDOM extends XmlKeyDom implements I_ClientListener, Message
     */
    public org.w3c.dom.Node removeKeyNode(org.w3c.dom.Node node)
    {
-      return xmlKeyRootNode.removeChild(node);
+      return xmlKeyDoc.getDocumentElement().removeChild(node);
    }
 
 
