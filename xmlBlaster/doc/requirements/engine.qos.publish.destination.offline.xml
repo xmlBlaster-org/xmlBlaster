@@ -10,6 +10,57 @@
       and the <i>forceQueuing</i> qos attribute is not set in this message, you get an
       XmlBlasterException.
       </p>
+      <p>
+      Having <i>forceQueuing=true</i> the behavior is as follows:
+      </p>
+      <table>
+      <tr>
+      <th>QoS Setting</th>
+      <th>Destination client</th>
+      <th>Behavior</th>
+      </tr>
+
+      <tr>
+      <td>Destination without pubSessionId (e.g. 'client/joe')</td>
+      <td>Connected (callback is ALIVE or POLLING)</td>
+      <td>If the destination client is connected one or multiple times all
+          connected sessions receive the message.<br />
+          If the destination client disappears before the message is delivered
+          (the session is destroyed) it
+          is put back to the subject queue of <i>joe</i></td>
+      </tr>
+
+      <tr>
+      <td>Destination without pubSessionId (e.g. 'client/joe')</td>
+      <td>Not connected</td>
+      <td>If the destination client is <b>not</b> connected the
+          message is queued in the subject queue of <i>joe</i>.
+          If <i>joe</i> connects, the queued message is delivered
+          automatically to its callback address.</td>
+      </tr>
+
+      <tr>
+      <td>Destination with pubSessionId (e.g. 'client/joe/2')</td>
+      <td>joe/2 is online (callback is ALIVE or POLLING)</td>
+      <td>The message is delivered directly (ALIVE) or queued in the callback
+      queue of <i>joe</i>'s session number <i>2</i> (POLLING).<br />
+      If the callback goes to DEAD or the session times out before the
+      message was delivered the message will be published as DEAD MESSAGE.</td>
+      </tr>
+
+      <tr>
+      <td>Destination with pubSessionId (e.g. 'client/joe/2')</td>
+      <td>Not connected</td>
+      <td>The publisher gets an exception, the message is not delivered.</td>
+      </tr>
+      </table>
+
+      <p>
+      In a future version of xmlBlaster we should provide a plugin framework
+      to control the delivery behavior of PtP messages in any way. A default
+      plugin should support a load balancing delivery of PtP messages to
+      exactly one receiver.
+      </p>
    </description>
    <example lang="Java">
       <pre>
@@ -17,8 +68,8 @@
 String xmlKey = "&lt;key oid='' contentMime='text/plain'/>";
 
 String qos = "&lt;qos>" +
-             "   &lt;destination queryType='EXACT'>" +
-             "      Michelle" +
+             "   &lt;destination forceQueuing='false'>" +
+             "      client/Michelle/2" +
              "   &lt;/destination>" +
              "&lt;/qos>";
 
@@ -39,7 +90,7 @@ try {
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 03 17</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
