@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.1 1999/12/12 13:27:49 ruff Exp $
+Version:   $Id: TestSub.java,v 1.2 1999/12/12 14:59:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -54,17 +54,13 @@ public class TestSub extends TestCase
 
 
    /**
-    * Sets up the fixture. Override to set up additional fixture state. 
+    * Sets up the fixture. 
     * <p />
     * Connect to xmlBlaster and login
     */
    protected void setUp()
    {
       try {
-         Log.info(ME, "args.length=" + args.length);
-         for (int ii=0; ii<args.length; ii++)
-            Log.info(ME, "args[" + ii + "]=" + args[ii]);
-
          senderConnection = new CorbaConnection(args); // Find orb
 
          // Building a Callback server
@@ -81,7 +77,7 @@ public class TestSub extends TestCase
 
 
    /**
-    * Tears down the fixture. Override to tear down the additional fixture state. 
+    * Tears down the fixture. 
     * <p />
     * cleaning up .... erase() the previous message OID
     */
@@ -102,7 +98,7 @@ public class TestSub extends TestCase
 
 
    /**
-    * TEST: Subscribe to messages with XPATH. 
+    * TEST: Subscribe to messages with XPATH.
     * <p />
     * The returned subscribeOid is checked
     */
@@ -130,7 +126,7 @@ public class TestSub extends TestCase
 
 
    /**
-    * TEST: Construct a message and publish it. 
+    * TEST: Construct a message and publish it.
     * <p />
     * The returned publishOid is checked
     */
@@ -163,7 +159,7 @@ public class TestSub extends TestCase
 
    /**
     * TEST: Construct a message and publish it,<br />
-    * the previous XPath subscription should match and send an update. 
+    * the previous XPath subscription should match and send an update.
     */
    public void testPublishAfterSubscribeXPath()
    {
@@ -182,12 +178,12 @@ public class TestSub extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       
+
        String[] args = new String[0];  // !!! dummy?
        String loginName = "Tim";
 
        suite.addTest(new TestSub("testPublishAfterSubscribeXPath", loginName, args));
-       
+
        return suite;
    }
 
