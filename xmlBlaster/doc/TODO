@@ -62,6 +62,34 @@ o JMX integration
 o Client should be able to query which subscriptions he has
 
 
+JDBC persistence
+----------------
+
+o I_Entry.isStored() should be removed
+  Used by CacheQueueInterceptorPlugin.java only.
+
+o peek() only reads RAM queue, but with history queue we like
+  to browse swapped messages as well
+
+o If reference queues are RAM based and MsgUnitStore is
+  JDBC based and persistent message are processed:
+  After a server crash the reference counter is outdated
+
+o unsecure login -> verify if no security whole is possible
+
+o CacheQueueInterceptorPlugin.java:469
+  - transient.put is not necessary for transient size == 0
+  - take() with exceeding (if condition) is wrong
+
+o XMlBlasterAccess.leaveServer() should do a
+  dispatchManager.shutdown
+
+o queue/history/maxEntriesCache=1 can't be recofnigured.
+  It must be deleted and new created to chanege
+
+o Add I_Map change() to testsuite
+
+
 PERFORMANCE
 -----------
 
