@@ -84,7 +84,6 @@ int xmlBlaster_initZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) {
  */
 ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, const size_t nbytes)
 {
-   int ret;
    size_t written = 0; /* The written bytes of the compressed stream */
    if (!zlibWriteBufP) {
       fprintf(stderr, "[%s:%d] Internal error: XmlBlasterZlibWriteBuffers is NULL\n", __FILE__, __LINE__);
