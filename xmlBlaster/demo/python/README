@@ -53,4 +53,6 @@ server.authenticate.logout( sessionId );
 print "\nLogout done, bye.\n";
 -------------------------------------------------------------------
 
-
+See 
+   xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
+with all allowed server-methods you can invoke.
