@@ -718,47 +718,65 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    public int wipeOutDB() throws XmlBlasterException {
       // retrieve all tables to delete
-      String req = "SELECT " + this.tableNameTxt + " FROM " + this.tablesTxt + "";
-      if (this.log.TRACE) this.log.trace(getLogId(null, null, "cleanUp"), "Request: '" + req + "'");
       PreparedQuery query = null;
-
       int count = 0;
-      java.util.Vector vec = new java.util.Vector();
+      Connection conn = null;
       try {
-         query = new PreparedQuery(this.pool, req, this.log, -1);
-         while (query.rs.next()) {
-            String nameOfThisQueue = query.rs.getString(1).trim();
-            if (nameOfThisQueue.toUpperCase().startsWith(this.tableNamePrefix)) vec.add(nameOfThisQueue);
+      	try {
+       	   String req = "DROP TABLE " + this.entriesTableName;
+            conn = this.pool.getConnection();
+            conn.setAutoCommit(false);
+            this.update(req, conn);
+            count++;
+         }
+         catch (SQLException ex) {
+            if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
+            else {
+               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped");
+            }
          }
 
-         for (int i=0; i < vec.size(); i++) {
-            String name = (String)vec.elementAt(i);
-            req = "DROP TABLE " + name + "";
-            if (this.log.TRACE) this.log.trace(getLogId(null, null, "wipeOutDB"), "Request: '" + req + "'");
-            try {
-               this.update(req, query.conn);
-               count++;
+      	try {
+            String req = "DROP TABLE " + this.queuesTableName;
+            this.update(req, conn);
+            count++;
+         }
+         catch (SQLException ex) {
+            if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
+            else {
+               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.queuesTableName + "', it probably is already dropped");
             }
-            catch (Exception ex) {
-               if (ex instanceof SQLException) {
-                  if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
-                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when retrieving the list of tables", ex);
-               }
-               this.log.error(getLogId(null, null, "wipeOutDB"), "Could not delete queue '" + name + "'");
+         }
+
+         try {
+       	   String req = "DROP TABLE " + this.nodesTableName;
+            this.update(req, conn);
+            count++;
+         }
+         catch (SQLException ex) {
+            if (handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
+            else {
+               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped");
             }
          }
          return count;
       }
-      catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(null, null, "wipeOutDB"), ex);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "SQLException when retrieving the list of tables", ex);
+      catch (Exception ex) {
+         if (ex instanceof XmlBlasterException) throw (XmlBlasterException)ex;
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception ", ex);
       }
       finally {
          try {
-            if (query != null) query.close();
+            if (conn != null) {
+               conn.setAutoCommit(true);
+               this.pool.releaseConnection(conn);
+            }
          }
          catch (Exception ex) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "cleanUp"), "cleanUp: exception when closing the query", ex);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
          }
       }
    }

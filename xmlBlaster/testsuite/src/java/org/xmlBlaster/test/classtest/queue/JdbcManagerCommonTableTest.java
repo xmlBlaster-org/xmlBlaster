@@ -242,14 +242,12 @@ public class JdbcManagerCommonTableTest extends TestCase {
 
    public void tearDown() {
       String me = ME + ".tearDown";
-/*
       try {
          this.manager.wipeOutDB();
       }
       catch (Exception ex) {
          this.log.error(me, "exception occured " + ex.toString());
       }
-*/
    }
 
 
