@@ -511,7 +511,8 @@ cluster.node[heron]=\
    &lt;/clusternode>
          </pre></td>
          <td>Messages without a domain specified are normally treated
-         by its local xmlBlaster node. Here this is switched off</td>
+         by its local xmlBlaster node. Here this is switched off.
+	 This cluster nodes is the master for all Pub/Sub messages because of the wildcard '*' setting</td>
          </tr>
 
          <tr><td>2c) key</td><td><pre>
@@ -852,7 +853,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>laghi@swissinfo.org</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.45 $</revision>
+   <revision>$Revision: 1.46 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
