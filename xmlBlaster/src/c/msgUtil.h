@@ -11,6 +11,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define true 1
 #define false 0
 
+#ifndef u_short
+#define u_short unsigned short
+#endif
+
 #define MAX_ERRNO_LEN 256
 #define XMLBLASTER_MAX_USAGE_LEN 2048 /* Change XmlBlasterAccessUnparsed.c accordingly */
 #define MAX_REQUESTID_LEN 256
