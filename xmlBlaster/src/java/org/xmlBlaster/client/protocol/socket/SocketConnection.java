@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: SocketConnection.java,v 1.2 2002/02/15 12:56:34 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.3 2002/02/15 13:17:25 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -80,7 +80,6 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos returnQos = null;
    private long responseWaitTime = 0;
-   private boolean notifying = false;
 
    /**
     * Connect to xmlBlaster using plain socket with native message format.
@@ -182,62 +181,26 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
       this.shutdown();
    }
 
-   /**
-    * Enforced by I_CallbackEvent
-    */
-/*
-   public void responseEvent(String requestId, String qos) {
-      Log.info(ME, "RequestId=" + requestId + ": Return QoS value arrived ...");
-      synchronized(this) {
-         responseQos = qos;
-         notifying = true;
-         this.notify();
-      }
-   }
-*/
-   /**
-    * Enforced by I_CallbackEvent
-    */
-/*
-   public void responseEvent(String requestId, MessageUnit[] msgArr) {
-      Log.info(ME, "RequestId=" + requestId + ": Return messages arrived ...");
-      synchronized(this) {
-         responseMsgArr = msgArr;
-         notifying = true;
-         this.notify();
-      }
-   }
-*/
-   /**
-    * Enforced by I_CallbackEvent
-    */
-/*
-   public void responseEvent(String requestId, XmlBlasterException e) {
-      Log.info(ME, "RequestId=" + requestId + ": XmlBlaster Exception arrived ...");
-      synchronized(this) {
-         responseException = e;
-         notifying = true;
-         this.notify();
-      }
-   }
-*/
 
    /**
-    * Send a message and block until the response arrives
+    * Send a message and block until the response arrives. 
+    * <p/>
+    * We simulate RPC (remote procedure call) here.
     * @return the response object of the request, of type String(QoS), MessageUnit[] or XmlBlasterException
     */
    private Object execute(Parser parser, OutputStream oStream, String praefix, String sessionId) throws XmlBlasterException, IOException {
       
       String requestId = parser.createRequestId(loginName);
-      final Object response = null;
+      final Object[] response = new Object[2];  // As only final variables are accessable from the inner class, we put changeable variables in this array
+      response[0] = response[1] = null;
       final Object monitor = new Object();
 
       cbReceiver.addResponseListener(requestId, new I_ResponseListener() {
          public void responseEvent(String reqId, Object responseObj) {
             if (Log.TRACE) Log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
             synchronized(monitor) {
-               response = responseObj;
-               notifying = true;
+               response[0] = responseObj;
+               response[1] = ""; // marker that notify() is called
                monitor.notify();
             }
          }
@@ -254,11 +217,10 @@ public class SocketConnection implements I_XmlBlasterConnection//, I_ResponseLis
          synchronized(monitor) {
             // If response is faster, we will go into wait() after notify() TODO!!!
             monitor.wait(responseWaitTime);
-            if (notifying) {
-               notifying = false;
+            if (response[1] != null) {
                if (Log.TRACE) Log.trace(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response)");
-               if (Log.DUMP) Log.dump(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + response);
-               return response;
+               if (Log.DUMP) Log.dump(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + response[0]);
+               return response[0];
             }
             else {
                String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
