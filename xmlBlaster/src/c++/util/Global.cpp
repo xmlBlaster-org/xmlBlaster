@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $
+Version:   $Id: Global.cpp,v 1.50 2004/01/14 14:59:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -12,12 +12,25 @@ Version:   $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $
 #include <util/lexical_cast.h>
 #include <util/Global.h>
 
+// For usage():
+#include <util/qos/address/Address.h>
+#include <util/qos/address/CallbackAddress.h>
+#include <util/qos/storage/MsgUnitStoreProperty.h>
+#include <util/qos/storage/ClientQueueProperty.h>
+#include <util/qos/storage/CbQueueProperty.h>
+#ifdef COMPILE_SOCKET_PLUGIN
+#  include <client/protocol/socket/SocketDriver.h>
+#endif
+#ifdef COMPILE_CORBA_PLUGIN
+#  include <client/protocol/corba/CorbaDriver.h>
+#endif
+
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.50 2004/01/14 14:59:25 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.49 2003/10/19 15:14:12 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.50 2004/01/14 14:59:25 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -43,7 +56,7 @@ Global::Global() : ME("Global"), logMap_(), pingerMutex_()
 Global::Global(const Global& global) : ME("Global"), logMap_(global.logMap_)
 {
    args_ = global.args_;
-   argc_ = global.argc_;
+   argv_ = global.argv_;
 }
 */
 Global& Global::operator =(const Global &)
@@ -82,24 +95,32 @@ Global& Global::getInstance(const string&)
 {
    if(global_ == NULL) {
      global_ = new Global();
-     Object_Lifetime_Manager::instance()->manage_object(global_);  // if not pre-allocated.
+     Object_Lifetime_Manager::instance()->manage_object(Constants::XB_GLOBAL_KEY, global_);  // if not pre-allocated.
    }
    return *global_;
 }
 
-Global& Global::initialize(int args, const char * const argc[])
+Global& Global::initialize(int args, const char * const argv[])
 {
    if (isInitialized_) {
       getLog("core").warn(ME, "::initialize: the global is already initialized. Ignoring this initialization");
       return *this;
    }
    args_     = args;
-   argc_     = argc;
+   argv_     = argv;
    if (property_ != NULL) delete property_;
    property_ = NULL;
-   property_ = new Property(args, argc);
+   property_ = new Property(args, argv);
    isInitialized_ = true;
    return *this;
+}
+
+bool Global::wantsHelp()
+{
+   return property_->getBoolProperty("help", false, false) ||
+          property_->getBoolProperty("-help", false, false) ||
+          property_->getBoolProperty("h", false, false) ||
+          property_->getBoolProperty("?", false, false); 
 }
 
 string &Global::getVersion()
@@ -114,6 +135,25 @@ string &Global::getBuildTimestamp()
    return timestamp;
 }
 
+string& Global::getCompiler()
+{
+   static string cppCompiler = "@cpp.compiler@"; // is replaced by ant / build.xml to e.g. "g++";
+   return cppCompiler;
+}
+
+
+string& Global::getDefaultProtocol()
+{
+#  if COMPILE_CORBA_PLUGIN
+   static string defaultProtocol = Constants::IOR;
+#  elif COMPILE_SOCKET_PLUGIN
+   static string defaultProtocol = Constants::SOCKET;
+#  else
+   log_.error(ME, "Missing protocol in getDefaultProtocol(), please set COMPILE_CORBA_PLUGIN or COMPILE_SOCKET_PLUGIN on compilation");
+#  endif
+   return defaultProtocol;
+}
+
 Property& Global::getProperty() const
 {
    if (property_ == NULL)
@@ -123,13 +163,56 @@ Property& Global::getProperty() const
    return *property_;
 }
 
+string Global::usage()
+{
+   string sb;
+   sb += "\n";
+   sb += "\nXmlBlaster C++ client " + Global::getVersion() + " compiled at " + Global::getBuildTimestamp() + " with " + Global::getCompiler();
+   sb += "\n";
+//#  if COMPILE_SOCKET_PLUGIN && COMPILE_CORBA_PLUGIN
+   sb += "\n   -protocol SOCKET | IOR";
+   sb += "\n                       IOR for CORBA, SOCKET for our native protocol.";
+   sb += "\n";
+//#  endif
+#  ifdef COMPILE_SOCKET_PLUGIN
+      sb += org::xmlBlaster::client::protocol::socket::SocketDriver::usage();
+      sb += "   -logLevel           ERROR | WARN | INFO | TRACE | DUMP [WARN]\n";
+      sb += "\n";
+#  endif
+#  ifdef COMPILE_CORBA_PLUGIN
+      sb += org::xmlBlaster::client::protocol::corba::CorbaDriver::usage();
+      sb += "\n";
+#  endif
+   sb += org::xmlBlaster::util::qos::SessionQos::usage();
+   sb += "\n";
+   sb += org::xmlBlaster::util::qos::address::Address(Global::getInstance()).usage();
+   sb += "\n";
+   sb += org::xmlBlaster::util::qos::storage::ClientQueueProperty::usage();
+   sb += "\n";
+   //sb += org::xmlBlaster::util::qos::storage::MsgUnitStoreProperty::usage();
+   //sb += "\n";
+   sb += org::xmlBlaster::util::qos::address::CallbackAddress(Global::getInstance()).usage();
+   sb += "\n";
+   sb += org::xmlBlaster::util::qos::storage::CbQueueProperty::usage();
+   sb += "\n";
+   sb += org::xmlBlaster::util::Log::usage();
+   return sb;
+   /*
+      StringBuffer sb = new StringBuffer(4028);
+      sb.append(org.xmlBlaster.client.XmlBlasterAccess.usage(this));
+      sb.append(logUsage());
+      return sb.toString();
+   */
+}
+
+
 
 Log& Global::getLog(const string &logName)
 {
    LogMap::iterator pos = logMap_.find(logName);
    if (pos != logMap_.end()) return (*pos).second;
 
-   Log help(getProperty(), args_, argc_, logName);
+   Log help(getProperty(), args_, argv_, logName);
    help.initialize();
    logMap_.insert(LogMap::value_type(logName, help));
    pos = logMap_.find(logName);
@@ -149,7 +232,7 @@ int Global::getArgs()
 
 const char * const* Global::getArgc()
 {
-   return argc_;
+   return argv_;
 }
 
 string Global::getLocalIP() const

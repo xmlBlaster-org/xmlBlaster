@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.25 2003/12/15 15:39:34 ruff Exp $
+Version:   $Id: Global.h,v 1.26 2004/01/14 14:59:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -44,7 +44,7 @@ private:
    LogMap                 logMap_;
    Property*              property_;
    int                    args_;
-   const char * const*    argc_;
+   const char * const*    argv_;
    bool                   isInitialized_;
    org::xmlBlaster::client::protocol::CbServerPluginManager* cbServerPluginManager_;
    org::xmlBlaster::util::dispatch::DispatchManager* dispatchManager_;
@@ -68,7 +68,7 @@ private:
    void copy()
    {
       args_        = 0 ;
-      argc_        = NULL;
+      argv_        = NULL;
       property_    = NULL;
       pingTimer_   = NULL;
       id_          = "";
@@ -87,6 +87,12 @@ public:
    static Global& getInstance(const std::string &instanceName="default");
 
    /**
+    * Allows you to query if user wants help.
+    * @return true If '-help' or '-?' was passed to us
+    */
+   bool wantsHelp();
+
+   /**
     * The version field is automatically set by ant on compilation (see filter token in build.xml)
     * @return The version std::string e.g. "0.842"
     *         or "@version@" if not set
@@ -99,13 +105,30 @@ public:
     *         or "@build.timestamp@" if not set
     */
    static std::string& getBuildTimestamp();
+
+   /**
+    * The C++ compiler used. 
+    * @return For example something like "Intel icc" for Intels C++ compiler
+    */
+   static std::string& getCompiler();
+
+   /**
+    * @return The protocol to use if not otherwise configured, currently "IOR" for CORBA
+    *         and "SOCKET" for our native socket protocol are supported
+    */
+   static std::string& getDefaultProtocol();
  
+    /**
+    * Command line usage.
+    */
+   static std::string usage();
+
    /**
     * Constructs a current timestamp which is guaranteed to be unique in time for this JVM
     * @param delay the time in milliseconds from now the return value has to point to.
     * @exception RuntimeException on overflow (never happens :-=)
     */
-   Global& initialize(int args=0, const char * const argc[]=0);
+   Global& initialize(int args=0, const char * const argv[]=0);
 
    /**
     * If no log is found with that name, one is created and added to the
@@ -173,7 +196,7 @@ public:
      */
     bool isUsingXerces() const { return usingXerces_; };
     
-    void setUsingXerces() { usingXerces_ = true; };
+    void setUsingXerces(bool val=true) { usingXerces_ = val; };
     
 };
 
