@@ -59,6 +59,18 @@
               is made persistent. If the storage for the persistent sessions is overflown, an
               exception is thrown back to the client.
           </li>
+          <li>When using a negative, generated public session id, for example <code>user/-1</code>
+           you may encounter a resource leak on hard disk. If the server restarts and the client
+           restarts it will connect with a new generated, negative public session id and won't
+           find its old session anymore. With SOCKET or XMLRPC protocol a client could dump
+           the secret session ID and reuse it on client startup - in this case it would work out fine (no resource leak).
+           <br />
+          Our CORBA protocol plugin can't handle persistent sessions with a generated, negative public session id,
+          as the CORBA layer is the creator of the secret session id and is creating a new one on each startup.
+           <br />
+           See <a hef="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.failsafe.html#naming">client.failsafe</a> about
+           the term '<code>public session id</code>'.
+          </li>
         </ul>
       </p>
    </description>
