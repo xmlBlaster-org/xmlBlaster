@@ -209,6 +209,7 @@ TODO
 
    <compiler id="gcc" name="g++" if="use-gcc">
       <compilerarg value="-Wall" />
+      <!-- compilerarg value="-pedantic" /-->  <!-- warning: ISO C++ does not support `long long' -->
       <compilerarg value="-Wstrict-prototypes" />
       <compilerarg value="-Wimplicit-int" />
       <compilerarg value="-Werror-implicit-function-declaration" />
@@ -1403,8 +1404,6 @@ TODO
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
            <define name="DLL_BUILD" value="1" if="windows" />
-           <define name="pedantic" if="unix" />
-           <define name="Wall" if="unix" />
            <!-- undefine name="UNWANTEDDEF" / -->
          </defineset>
 
@@ -1493,8 +1492,6 @@ TODO
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
            <define name="DLL_BUILD" value="1" if="windows" />
-           <define name="pedantic" if="unix" />
-           <define name="Wall" if="unix" />
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
