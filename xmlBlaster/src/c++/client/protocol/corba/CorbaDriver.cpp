@@ -89,13 +89,7 @@ CorbaDriver::CorbaDriver(const CorbaDriver& corbaDriver)
      log_(corbaDriver.log_),
      statusQosFactory_(corbaDriver.global_), 
      msgQosFactory_(corbaDriver.global_),
-#    if MICO
-     orbIsThreadSafe_(false)
-#    elif TAO
-     orbIsThreadSafe_(true)
-#    else
-     orbIsThreadSafe_(true)
-#    endif
+     orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {
    // no instantiation of these since this should never be invoked (just to make it private)
    connection_      = NULL;
@@ -116,13 +110,7 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, const string instanceName
      log_(global.getLog("corba")),
      statusQosFactory_(global), 
      msgQosFactory_(global),
-#    if MICO
-     orbIsThreadSafe_(false)
-#    elif TAO
-     orbIsThreadSafe_(true)
-#    else
-     orbIsThreadSafe_(true)
-#    endif
+     orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {
    connection_      = NULL;
    defaultCallback_ = NULL;

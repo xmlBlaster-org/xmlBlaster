@@ -3,7 +3,7 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.6 2003/02/25 13:42:45 johnson Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.7 2003/02/25 15:22:55 ruff Exp $
 Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 #ifdef _WINDOWS
@@ -24,39 +24,44 @@ using namespace std;
 /******************************************************************
  *                      ORBACUS (OB-4.03)
  ******************************************************************/
-#ifdef  ORBACUS
+#ifdef  XMLBLASTER_ORBACUS
 
-const char* to_string(const CORBA::Exception &ex) {
-   return ex._rep_id();
+string to_string(const CORBA::Exception &ex) {
+   string name(ex._name());
+   string repId(ex._rep_id());
+
+   string ret = "CORBA::Exception name=" + name
+          + " repId=" + repId;
+   return ret;
 }
 
-#endif  // ORBACUS
+#endif  // XMLBLASTER_ORBACUS
 
 /*****************************************************************
  *                     MICO (ver. 2.3.1)
  *****************************************************************/
-#ifdef  MICO
+#ifdef  XMLBLASTER_MICO
 
-const char* to_string(const CORBA::Exception &ex) {
+string to_string(const CORBA::Exception &ex) {
    return ex._repoid();
 }
 
-#endif  // MICO
+#endif  // XMLBLASTER_MICO
 
 /*****************************************************************
  *                    ORBIX 2000 (ver 2.0) 
  *****************************************************************/
-#ifdef ORBIX
+#ifdef XMLBLASTER_ORBIX
 
-const char* to_string(const CORBA::Exception &ex ) {
+string to_string(const CORBA::Exception &ex ) {
   return ex._rep_id();
 }
 
-#endif //ORBIX
+#endif //XMLBLASTER_ORBIX
 
-#ifdef  USE_TAO
+#ifdef  XMLBLASTER_TAO
 
-const char* to_string(const CORBA::Exception &ex) {
+string to_string(const CORBA::Exception &ex) {
    string name(ex._name());
    string repId(ex._rep_id());
    //string typeCode(ex._type());
@@ -70,5 +75,5 @@ const char* to_string(const CORBA::Exception &ex) {
    return ret.c_str();
 }
 
-#endif  // TAO
+#endif  // XMLBLASTER_TAO
 

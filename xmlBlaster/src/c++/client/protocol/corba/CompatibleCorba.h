@@ -19,7 +19,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 /******************************************************************
  *                      OMNIORB (Nils.Nilson@in-gmbh.de)
  ******************************************************************/
-#ifdef  OMNIORB
+#ifdef  XMLBLASTER_OMNIORB
 #define ORB_IS_THREAD_SAFE        true
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlaster.h>
@@ -46,12 +46,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTYPEDEVENT             <not_implemented.h>
 #define UPDATE_THROW_SPECIFIER    
 #define PING_THROW_SPECIFIER      
-#endif  // OMNIORB
+#endif  // XMLBLASTER_OMNIORB
 
 /******************************************************************
  *                      ORBACUS (OB-4.03)
  ******************************************************************/
-#ifdef  ORBACUS
+#ifdef  XMLBLASTER_ORBACUS
 #define ORB_IS_THREAD_SAFE        true
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlaster_skel.h>
@@ -76,12 +76,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTYPEDEVENT             <OB/CosTypedEventComm.h>
 #define UPDATE_THROW_SPECIFIER    
 #define PING_THROW_SPECIFIER      
-#endif  // ORBACUS
+#endif  // XMLBLASTER_ORBACUS
 
 /*****************************************************************
  *                     MICO (ver. 2.3.1)
  *****************************************************************/
-#ifdef  MICO
+#ifdef  XMLBLASTER_MICO
 #define ORB_IS_THREAD_SAFE        false
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlaster.h>
@@ -106,12 +106,12 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTYPEDEVENT             <not_implemented.h>
 #define UPDATE_THROW_SPECIFIER    
 #define PING_THROW_SPECIFIER      
-#endif  // MICO
+#endif  // XMLBLASTER_MICO
 
 /*****************************************************************
  *                     TAO (ver. 2.3.1)
  *****************************************************************/
-#ifdef  USE_TAO
+#ifdef  XMLBLASTER_TAO
 #define ORB_IS_THREAD_SAFE        true
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlasterS.h>
@@ -136,13 +136,13 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTYPEDEVENT             <not_implemented.h>
 #define UPDATE_THROW_SPECIFIER    ACE_THROW_SPEC (( CORBA::SystemException, serverIdl::XmlBlasterException ))
 #define PING_THROW_SPECIFIER      ACE_THROW_SPEC (( CORBA::SystemException ))
-#endif  // TAO
+#endif  // XMLBLASTER_TAO
 
 
 /*****************************************************************
  *                     ORBIX 2000 (ver. 2.0 )
  *****************************************************************/
-#ifdef ORBIX
+#ifdef XMLBLASTER_ORBIX
 #define ORB_IS_THREAD_SAFE        true
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlasterS.h>
@@ -168,7 +168,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTYPEDEVENT             <omg/CosTypedEventComm.hh>
 #define UPDATE_THROW_SPECIFIER    IT_THROW_DECL ((CORBA::SystemException))
 #define PING_THROW_SPECIFIER      IT_THROW_DECL ((CORBA::SystemException))
-#endif //ORBIX
+#endif //XMLBLASTER_ORBIX
 
 /**************************************************************
  *         GENERAL STUFF COMMON TO ALL IMPLEMENTORS 
@@ -178,4 +178,4 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 
 #endif // _COMPATIBLECORBA_H
 
-const char* to_string(const CORBA::Exception &ex);
+std::string to_string(const CORBA::Exception &ex);
