@@ -99,8 +99,14 @@ public final class CbDeliveryConnection extends DeliveryConnection
          // TODO: REQ engine.qos.update.queue states that the queue size is passed and not the curr msgArr.length
          MsgUnit mu = entry.getMsgUnit();
          MsgQosData msgQosData = (MsgQosData)entry.getMsgQosData().clone();
+         msgQosData.setTopicProperty(null);
+         msgQosData.setState(entry.getState());
+         msgQosData.setSubscriptionId(entry.getSubscriptionId());
          msgQosData.setQueueIndex(i);
          msgQosData.setQueueSize(msgUnitRawArr.length);
+         if (msgQosData.getNumRouteNodes() == 1) {
+            msgQosData.clearRoutes();
+         }
          mu = new MsgUnit(mu, null, null, msgQosData);
          msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
       }
