@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.j2me' type='NEW' prio='LOW' status='INWORK'>
+   <topic>
+      XmlBlaster provides a tiny java client library for j2me MIDgets
+   </topic>
+   <description>
+     <p>
+     If you develop j2me applications you can connect with our tiny client java library which
+     is specific to applets and j2me applications.
+     
+     </p>
+     <h2>Features</h2>
+     <ul>
+        <li> Supports complete xmlBlaster access including <i>real time</i> asynchronous
+             callbacks.</li>
+
+        <li> The communication protocol is based on a persistent http connection which is used
+             to push back callback messages</li>
+
+        <li> Reports exceptions nicely back to the client</li>
+    </ul>
+
+     <h2>Overview</h2>
+     <p>
+     The following illustration shows a typical use case, a MIDget running for example in a
+     cellular phone or in a PAD contacts the Web Server, for example 
+     <a href="http://www.apache.org/" target="others">Apache</a>,
+     which directs the call to a servlet engine with xmlBlasters communication servlet.
+     The servlet looks at the applet request and opens a connection to xmlBlaster to
+     delegate the request.
+     <p>
+     Supported MIDget methods are
+     </p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
+     </ul>
+     </p>
+   </description>
+
+   <example type="HTML">
+   <p>There is a little demo showing the way this works. The demo SystemInfo has the same 
+   functionality as the SystemInfoApplet. In order to be run it needs a running xmlBlaster (with
+   the xmlrpc port redirected or disactivated), a SystemInfoPubliser which publishes on the 
+   given xmlBlaster and a servlet engine running (for example apache's tomcat). If you don't
+   want to bother about configuring and starting these, you can use the ones which constantly run
+   on the <a href="http://www.xmlBlaster.org:8080/xmlBlaster/AppletServlet">xmlBlaster server</a>.
+   </p>
+   <p>
+   If you have access to an embedded device which supports j2me (and more precisely CLDC-1.1 and
+   MIDP-2.0) you can download the precompiled demo application:<br/>
+   <ul>
+     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jad"></a>SystemInfo.jad</li>
+     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jar"></a>SystemInfo.jar</li>
+   </ul>
+   </p>
+   And you can then run the application.
+   <p>
+   If you are not that lucky of having such a device you still can try this demo out by using an
+   emulator. You can download sun's j2me development kit which allows you to compile the 
+   applications yourself. You can find it at 
+   <a href="http://java.sun.com/products/j2mewtoolkit/download-2_1.html">Sun's j2me pages</a>.
+   Once you have downloaded it install it in a directory of your choice. Lets say you 
+   install it on ${J2ME_HOME}.<br/>
+   To compile the application you then invoke:<br/>
+   <pre>
+   build -DJ2ME_HOME=${J2ME_HOME} j2me
+   </pre>
+   to run the application run:
+   <pre>
+   ${J2ME_HOME}/bin/emulator -Xdescriptor ${XMLBLASTER_HOME}/demo/j2me/SystemInfo.jad
+   </pre>
+   and an application similar to this should appear:<br/>
+   <center><img src="j2meDemo.jpg" name="j2meDemo" align="center" border="1"/></center>
+   </p>   
+   </example>
+
+   <example type="HTML">
+   <h3>Quick start installation of the server side stuff (if you want the server to be run locally)</h3>
+   <p>
+   You can try it with tomcat locally (no apache is necessary,
+   i had tomcat 3.2.4, 4.1.29 and 5.0.14 to test it, others should work as well):
+   </p>
+   <h3>
+   1. Create a war file:
+   </h3>
+<pre>
+  cd xmlBlaster
+
+  build  -DTOMCAT_HOME=/opt/jakarta_tomcat   deploy_war
+</pre>
+   <p>
+   Set TOMCAT_HOME to point to your installation and the <code>xmlBlaster.war</code>
+   will be automatically deployed to <code>$TOMCAT_HOME/webapps/xmlBlaster.war</code>
+   </p>
+   <h3>
+   2. Start it (keep port 8080 free for tomcat)
+   </h3>
+   <pre>
+  java org.xmlBlaster.Main -plugin/xmlrpc/port 8081   
+  
+  java  http.dhtml.systemInfo.SystemInfoPublisher
+
+ cd $TOMCAT_HOME
+ startup.sh
+   </pre>
+
+   <h3>Edit your SystemInfo.jad file and change the property 'servletUrl' to:</h3>
+   <pre>
+http://localhost:8080/xmlBlaster/AppletServlet
+   </pre>
+   </example>
+
+   <see type="API">org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRawBase</see>
+   <see type="REQ">interface</see>
+   <see type="REQ">client.browser</see>
+   <see type="REQ">client.java.applet</see>
+   <see type="INTERNET">http://jakarta.apache.org/tomcat/</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/index.html</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/HelloWorld3.html</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/SystemInfoApplet.html</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2004 04 01</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+   </testcase>
+</requirement>
+
