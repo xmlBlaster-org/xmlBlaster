@@ -4,7 +4,10 @@
 #Comment:   Makefile for sub directories
 #------------------------------------------------------------------------------
 
+include $(XMLBLASTER_HOME)/Makefile.Include
+
 SUB_DIRS = src
 
-include $(XMLBLASTER_HOME)/make/make.h
-include $(XMLBLASTER_HOME)/make/makeSubDirs.h
+all: all_SUB_DIRS
+
+clean: clean_SUB_DIRS
