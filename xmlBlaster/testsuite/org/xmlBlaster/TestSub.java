@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.5 1999/12/12 17:39:10 ruff Exp $
+Version:   $Id: TestSub.java,v 1.6 1999/12/12 18:21:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,7 +19,7 @@ import test.framework.*;
 
 
 /**
- * This client tests the method subscribe() with a later publish() with XPath query. 
+ * This client tests the method subscribe() with a later publish() with XPath query.
  * <br />
  * The subscribe() should be recognized for this later arriving publish()
  * <p>
@@ -180,7 +180,7 @@ public class TestSub extends TestCase
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
    }
 
-   
+
    /**
     * Method is used by TestRunner to load these tests
     */
@@ -198,7 +198,9 @@ public class TestSub extends TestCase
 
 
    /**
-    * The TestSubCallback.update calls this method, to allow some error checking
+    * The TestSubCallback.update calls this method, to allow some error checking. 
+    * @param messageUnitArr   Contains a sequence of 0 - n MessageUnit structs
+    * @param qos_literal_Arr  Quality of Service for each MessageUnit
     */
    public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
    {
@@ -214,9 +216,11 @@ public class TestSub extends TestCase
          MessageUnit messageUnit = messageUnitArr[ii];
          UpdateKey updateKey = null;
          UpdateQoS updateQoS = null;
+         String keyOid = null;
          byte[] content = messageUnit.content;
          try {
             updateKey = new UpdateKey(messageUnit.xmlKey);
+            keyOid = updateKey.getUniqueKey();
             updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
@@ -226,7 +230,7 @@ public class TestSub extends TestCase
          Log.plain("UpdateKey", updateKey.printOn().toString());
          Log.plain("content", (new String(content)).toString());
          Log.plain("UpdateQoS", updateQoS.printOn().toString());
-         Log.info(ME, "Received message from publisher " + updateQoS.getSender());
+         Log.info(ME, "Received message [" + keyOid + "] from publisher " + updateQoS.getSender());
       }
 
       messageArrived = true;
@@ -235,7 +239,7 @@ public class TestSub extends TestCase
 
    /**
     * Little helper, waits until the variable 'messageArrive' is set
-    * to true, or returns when the given timeout occurs. 
+    * to true, or returns when the given timeout occurs.
     * @param timeout in milliseconds
     */
    private void waitOnUpdate(final long timeout)
@@ -243,7 +247,7 @@ public class TestSub extends TestCase
       long pollingInterval = 50L;  // check every 0.05 seconds
       if (timeout < 50)  pollingInterval = timeout / 10L;
       long sum = 0L;
-      while (!messageArrived) { 
+      while (!messageArrived) {
          try {
             Thread.currentThread().sleep(pollingInterval);
          }
@@ -303,6 +307,8 @@ class TestSubCallback implements BlasterCallbackOperations
    /**
     * This is the callback method invoked from the server
     * informing the client in an asynchronous mode about new messages
+    * @param messageUnitArr   Contains a sequence of 0 - n MessageUnit structs
+    * @param qos_literal_Arr  Quality of Service for each MessageUnit
     */
    public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
    {
