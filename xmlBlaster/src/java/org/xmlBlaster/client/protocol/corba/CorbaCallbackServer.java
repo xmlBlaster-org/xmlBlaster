@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.26 2002/08/04 17:13:19 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.27 2002/09/09 13:36:55 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -109,8 +109,8 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       }
 
       try {
-         this.callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          rootPOA.the_POAManager().activate();
+         this.callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          // necessary for orbacus
          if (orb.work_pending()) orb.perform_work();
       } catch (Exception e) {
