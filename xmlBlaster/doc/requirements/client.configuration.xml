@@ -4,9 +4,203 @@
 <requirement id='client.configuration' type='NEW' prio='MEDIUM' status="INWORK">
    <topic>Description of the available client side configuration</topic>
    <description>
+
+     <p>If you want to use the default behavior of xmlBlaster clients  you don't need to bother about 
+        configuration parameters. For many usages however it is necessary to modify some of the
+	parameters. These can be specified in the following ways:
+	<ul>
+          <li>a configuration file (normally xmlBlaster.properties)</li>
+	  <li>on the command line</li>
+	  <li>via setter methods in the code</li>
+        </ul>
+     </p>
+
+     <p>The configuration file is the weakest, followed by the command line. The setter methods are the
+        strongest and will overwrite defaults. The configuration file can reside in different directories.
+     </p>
+
+     <p><b>Configuration File</b><br/>
+	The search path and sequence is described in the <a href='./util.property.html'>util.property 
+        requirement</a>. For tips and syntax inside the configuration file have a look at the requirement
+	<a href='./util.property.env.html'>util.property.env</a>
+     </p>
+
+     <p><b>Command Line</b><br/> 
+        on the command line you can assign values to configuration parameters by prepending a - sign to
+	the name of the parameter, then a space and then the value to be assigned. For example the 
+	following is correct syntax:
+	<pre>
+java HelloWorld2 -dispatch/clientSide/pingInterval 1000
+	</pre>					  
+	<b>For a list of all available command line parameters invoke -help on the command line:</b>
+       <pre>
+java HelloWorld2 -help
+       </pre>
+     </p>
+
+     <p><b>Setter Methods</b><br/>
+        A further alternative (and the strongest one) to assign values to the configuration parameters,
+	is to explicitly set them in the client code you write yourself. Here follows a simple example:
+        <pre>
+      ...
+   ConnectQos qos = new ConnectQos(glob);
+   Address address = new Address(glob);
+   address.setDelay(4000L);      // retry connecting every 4 sec
+   address.setRetries(-1);       // -1 == forever
+   address.setPingInterval(0L);  // switched off
+      ...
+	</pre>
+        For the complete listing have a look at the code for 
+	<a href='http://www.xmlblaster.org/xmlBlaster/demo/javaclients/HelloWorld6.java.html'>HelloWorld6</a>.
+     </p>
+     <p>The following is a list of groups of properties used to configure xmlBlaster clients. Some of the
+      groups must still be given according to the original "dot and bracket" syntax (they are denoted
+      with a red icon on the right column).
+      <center>
+      <table border="1">
+         <tr><th>Groups of parameters</th><th>new "slash" syntax</th></tr>
+         <tr><td>Choice of connection protocol</td><td>&nbsp;</td></tr>
+         <tr><td>Security Features</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Security Plugin specific properties</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Session Settings</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td><b>failsafe connection to xmlBlaster server</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td><b>Server side callback (in case we install a local callback server)</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td><b>queue/clientSide storage properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td><b>queue/callback storage properties</b></td><td><img src="ok.gif" border="0" alt="yes"/></td></tr>
+         <tr><td>specific communication protocol options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Logging options</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+         <tr><td>Properties framework</td><td><img src="no.gif" border="0" alt="no"/></td></tr>
+      </table>
+      </center>
+     </p>
+
+     <p><b>failsafe connection to xmlBlaster server</b><br/>
+
+     The following parameters control the client side dispatch configuration
+     <center>
+     <table border="1">
+       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr>
+         <td>-dispatch/clientSide/burstMode/collectTimeOneway</td>
+         <td>Number of milliseconds we shall collect oneway publish messages [0].
+             This allows performance tuning, try set it to 200.</td>
+       </tr>
+       <tr>
+         <td>-dispatch/clientSide/pingInterval</td>
+	 <td>Pinging every given milliseconds [10000]</td>
+       </tr>
+       <tr>
+         <td>-dispatch/clientSide/retries</td>
+	 <td>How often to retry if connection fails (-1 is forever) [-1]</td>
+       </tr>
+       <tr>
+         <td>-dispatch/clientSide/delay</td>
+	 <td>Delay between connection retries in milliseconds [5000] A delay value > 0 
+	    switches fails save mode on, 0 switches it off</td>
+      </tr>
+    </table>
+    </center>
+    </p>
+
+
+     <p><b>Server side callback (in case we install a local callback server)</b><br/>
+     The following parameters control the callback (server side) dispatch configuration. It only makes
+     sense to configure these if you have assigned a callback to this session.
+    <center>
+     <table border="1">
+       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr>
+         <td>-dispatch/callback/sessionId</td>
+         <td>The session ID which is passed to our callback server update() method.</td>
+       </tr>
+       <tr>
+         <td>-dispatch/callback/burstMode/collectTime</td>
+	 <td>Number of milliseconds xmlBlaster shall collect callback messages [0].
+	    The burst mode allows performance tuning, try set it to 200.
+	 </td>
+       </tr>
+       <tr>
+         <td>-dispatch/callback/oneway</td>
+	 <td>Shall the update() messages be send oneway (no application level ACK) [false]</td>
+       </tr>
+       <tr>
+         <td>-dispatch/callback/pingInterval</td>
+	 <td>Pinging every given milliseconds [10000]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/retries</td>
+	 <td>How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [-1]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/delay</td>
+	 <td>Delay between callback retries in milliseconds [5000]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/compress/type</td>
+	 <td>With which format message be compressed on callback []</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/compress/minSize</td>
+	 <td>Messages bigger this size in bytes are compressed [0]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/ptpAllowed</td>
+	 <td>PtP messages wanted? false prevents spamming [true]</td>
+      </tr>
+       <tr>
+         <td>-dispatch/callback/protocol</td>
+	 <td>You can choose another protocol for the callback server [defaults to -client.protocol]</td>
+      </tr>
+    </table>
+    </center>
+     </p>
+
+     <p><b>queue/clientSide storage properties</b><br/>
+     <center>
+     <table border="1">
+       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr><td>-queue/clientSide/maxEntries</td><td>The maximum allowed number of messages [1000].</td></tr>
+       <tr><td>-queue/clientSide/maxEntriesCache</td><td>The maximum allowed number of messages in the cache [1000].</td></tr>
+       <tr><td>-queue/clientSide/maxBytes</td><td>The maximum size in bytes of the storage [10485760].</td></tr>
+       <tr><td>-queue/clientSide/maxBytesCache</td><td>The maximum size in bytes in the cache [2097152].</td></tr>
+       <tr><td>-queue/clientSide/onOverflow</td><td>What happens if storage is full [deadMessage]</td></tr>
+       <tr><td>-queue/clientSide/onFailure</td><td>Error handling when storage failed [deadMessage]</td></tr>
+       <tr><td>-queue/clientSide/type</td><td>The plugin type [RAM]</td></tr>
+       <tr><td>-queue/clientSide/version</td><td>The plugin version [1.0]</td></tr>
+       <tr><td>-queue/clientSide/defaultPlugin</td><td>The plugin type,version (short form) [RAM,1.0]</td></tr>
+     </table>
+     </center>
+     </p>
+     
+
+
+     <p><b>queue/callback storage properties</b><br/>
+     <center>
+     <table border="1">
+       <tr><th>Command line</th><th>comment and [default]</th></tr>
+
+       <tr><td>-queue/callback/maxEntries</td><td>The maximum allowed number of messages [1000].</td></tr>
+       <tr><td>-queue/callback/maxEntriesCache</td><td>The maximum allowed number of messages in the cache [1000].</td></tr>
+       <tr><td>-queue/callback/maxBytes</td><td>The maximum size in bytes of the storage [10485760].</td></tr>
+       <tr><td>-queue/callback/maxBytesCache</td><td>The maximum size in bytes in the cache [2097152].</td></tr>
+       <tr><td>-queue/callback/onOverflow</td><td>What happens if storage is full [deadMessage]</td></tr>
+       <tr><td>-queue/callback/onFailure</td><td>Error handling when storage failed [deadMessage]</td></tr>
+       <tr><td>-queue/callback/type</td><td>The plugin type [RAM]</td></tr>
+       <tr><td>-queue/callback/version</td><td>The plugin version [1.0]</td></tr>
+       <tr><td>-queue/callback/defaultPlugin</td><td>The plugin type,version (short form) [RAM,1.0]</td></tr>
+     </table>
+     </center>
+     </p>
+     <b>Note that if you omit the prefix, i.e. if you write on the command line</b>
+     <pre>
+-maxBytes 10000
+     </pre>
+     <b>then you will assign this both to the clientSide queue and to the callback queue.</b>
      <p>
      To understand the command syntax imagine a simple xml representation of an xmlBlaster client.
      </p>
+
+     <center>
      <table border="1"><tr><td><pre>
      <!-- pre class="BORDER" netscape does not like this -->
      <![CDATA[
@@ -22,7 +216,7 @@
       <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
          <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
          <attribute id='user'>joe</attribute>
-         <attribute id='password'>secret</attribute>
+	 <attribute id='password'>secret</attribute>
          <attribute id='connectionBusyTimeout'>90000</attribute>
          <attribute id='maxWaitingThreads'>300</attribute>
       </plugin>
@@ -128,7 +322,7 @@ Old style:
 </xmlBlaster>
      ]]>
      </pre></td></tr></table>
-
+     </center>
    </description>
 
 
@@ -162,6 +356,7 @@ Old style:
          </tr>
 
       </table>
+     
    </configuration>
 
    <todo type="HTML">
@@ -189,7 +384,7 @@ Old style:
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
