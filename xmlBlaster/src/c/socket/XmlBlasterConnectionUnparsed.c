@@ -95,6 +95,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
 void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0) {
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterConnectionUnparsed 0X%x", xb);
       freeProperties(xb->props);
       if (xb->zlibWriteBuf) {
          xmlBlaster_endZlibWriter(xb->zlibWriteBuf);

@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o  C client library:
+   - #12777 Memory leak fix for Udp return
+   - #12778 Memory leak fix for calling connect() multiple times
+
  o #12772-#12774 Added workaround for ActiveX bridge to transfer byte[]
    See: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4887461
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.activex.html

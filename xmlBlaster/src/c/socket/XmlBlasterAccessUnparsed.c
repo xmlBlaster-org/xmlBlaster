@@ -131,7 +131,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 
    freeProperties(xa->props);
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed()");
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=%x cbP=%x", xa->connectionP, xa->callbackP);
    if (xa->connectionP != 0) {
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       xa->connectionP = 0;
@@ -199,6 +199,9 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       xa->clientsUpdateFp = clientUpdateFp;
    }
 
+   if (xa->connectionP) {
+      freeXmlBlasterConnectionUnparsed(xa->connectionP);
+   }
    xa->connectionP = getXmlBlasterConnectionUnparsed(xa->argc, xa->argv);
    if (xa->connectionP == 0) {
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -209,6 +212,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    }
    xa->connectionP->log = xa->log;
    xa->connectionP->logUserP = xa->logUserP;
+   xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Created XmlBlasterConnectionUnparsed");
 
 
    /* Switch on compression? */
@@ -235,6 +239,9 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       return false;
 
    /* the fourth arg 'xa' is returned as 'void *userData' in update() method */
+   if (xa->callbackP != 0) {
+      freeCallbackServerUnparsed(xa->callbackP);
+   }
    xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, interceptUpdate, xa);
    if (xa->callbackP == 0) {
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -880,12 +887,12 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
          return;
       }
 
-		/* Is done already with above PTHREAD_CREATE_DETACHED 
-      threadRet = pthread_detach(tid);
-      if (threadRet != 0) {
-         xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching thread failed with error number %d", __LINE__, threadRet);
-      }
-		*/
+      /* Is done already with above PTHREAD_CREATE_DETACHED 
+         threadRet = pthread_detach(tid);
+         if (threadRet != 0) {
+            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching thread failed with error number %d", __LINE__, threadRet);
+         }
+      */
 
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
