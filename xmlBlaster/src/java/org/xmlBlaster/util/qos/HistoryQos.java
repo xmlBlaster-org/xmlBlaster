@@ -113,7 +113,7 @@ public final class HistoryQos
                   String entryStr = attrs.getValue(i).trim();
                   try { setNumEntries(Integer.parseInt(entryStr)); } catch(NumberFormatException e) { log.error(ME, "Invalid history - numEntries =" + entryStr); };
                }
-               if (attrs.getQName(i).equalsIgnoreCase("newestFirst") ) {
+               else if (attrs.getQName(i).equalsIgnoreCase("newestFirst") ) {
                   setNewestFirst((new Boolean(attrs.getValue(i).trim())).booleanValue());
                }
                else {
