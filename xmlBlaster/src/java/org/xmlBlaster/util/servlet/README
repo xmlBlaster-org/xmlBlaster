@@ -15,7 +15,7 @@ please put the following lines in your zone.properties(Apache) (servlet.properti
 restart your servlet engine.
 
 
-call this servlet as URL in your brwoser:
+call this servlet as URL in your browser:
 
 	http://localhost/servlet/ReqListServlet?dir=/home/kkrafft/xmlBlaster/doc/requirements&xsl=overview
 
