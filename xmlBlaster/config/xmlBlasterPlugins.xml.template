@@ -10,22 +10,21 @@
 
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver  -->
    <plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='2'/> 
+      <action do='LOAD' onStartupRunlevel='3' sequence='2'
+              onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
    </plugin>
 
    <!-- ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
 <!--
    <plugin id='protocol:XML-RPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='3' 
-              onFail='resource.configuration.pluginFailed'/>
+      <action do='LOAD' onStartupRunlevel='3' sequence='3'/> 
       <action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
    </plugin>
 -->
    <!-- ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver -->
    <plugin id='protocol:RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='4' 
-              onFail='resource.configuration.pluginFailed'/>
+      <action do='LOAD' onStartupRunlevel='3' sequence='4'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
    </plugin>
 
@@ -131,9 +130,9 @@
          <attribute id='password'>secret</attribute>
          <attribute id='connectionBusyTimeout'>90000</attribute>
          <attribute id='maxWaitingThreads'>300</attribute>
-	 <attribute id='tableNamePrefix'>AVALON_</attribute>
+         <attribute id='tableNamePrefix'>AVALON_</attribute>
       </plugin>
-      ...
-    </node>
+
+    </node>
 </xmlBlaster>
 
