@@ -49,6 +49,7 @@ MsgQosFactory::MsgQosFactory(Global& global)
    inDestination_     = false;
    inSender_          = false;
    inPriority_        = false;
+   inClientProperty_  = false;
    inExpiration_      = false;
    inRcvTimestamp_    = false;
    inIsVolatile_      = false;
@@ -238,6 +239,7 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
    
    if (name.compare("clientProperty") == 0) {
       if (!inQos_) return;
+      inClientProperty_ = true;
       character_.erase();
       string name;
       AttributeMap::const_iterator iter = attrs.find("name");
@@ -403,6 +405,7 @@ void MsgQosFactory::endElement(const string &name)
    }
 
    if (name.compare("clientProperty") == 0) {
+      inClientProperty_ = false;
       clientProperty_->setValueRaw(character_);
       msgQosDataP_->addClientProperty(*clientProperty_);
       delete clientProperty_;
