@@ -335,8 +335,8 @@ JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),
 JdbcDriver.mapping[ldbc]=string=varchar(128),"longint=decimal(19,0)",int=int,boolean=char(1),blob=blob,blobVarName=ablob,keyAttr=not null
 
 #------------------------------------------------------------------------------
-# Add here your MIME based plugins which allow to filter update messages
-# you subscribed with your own supplied rules.
+# Add here your MIME based plugins which allow to filter messages you
+# subscribed with subscribe() or access with get() with your own supplied rules.
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html
 MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
 MimeAccessPlugin[GnuRegexFilter][1.0]=org.xmlBlaster.engine.mime.regex.GnuRegexFilter
