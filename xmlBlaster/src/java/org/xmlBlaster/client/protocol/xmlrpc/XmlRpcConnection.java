@@ -183,7 +183,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          throw XmlBlasterException.convert(glob, ME, "return value not a valid String, Class Cast Exception", e);
       }
       catch (IOException e) {
-         log.warn(ME+".login", "Login to xmlBlaster failed: " + e.toString());
+         if (log.TRACE) log.trace(ME+".login", "Login to xmlBlaster failed: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Login failed", e);
       }
       catch (XmlRpcException e) {
@@ -546,7 +546,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * xml-rpc exception: org.apache.xmlrpc.XmlRpcException: java.lang.Exception: errorCode=resource.unavailable message=The key 'NotExistingMessage' is not available.
     */
    public static XmlBlasterException extractXmlBlasterException(Global glob, XmlRpcException e) {
-      return XmlBlasterException.parseToString(glob, e.toString());
+      XmlBlasterException ex = XmlBlasterException.parseToString(glob, e.toString());
+      ex.isServerSide(true);
+      return ex;
    }
 
 
@@ -560,8 +562,17 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Vector args = new Vector();
          args.addElement("");
          return (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
-      } catch(Exception e) {
+      }
+      catch (ClassCastException e) {
+         log.error(ME+".ping", e.toString());
+         e.printStackTrace();
+         throw XmlBlasterException.convert(glob, ME, "ping Class Cast Exception", e);
+      }
+      catch (IOException e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", e);
+      }
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(glob, e);
       }
    }
 

@@ -18,6 +18,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.Constants;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
@@ -258,7 +259,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public String connect(String connectQos) throws XmlBlasterException {
       if (connectQos == null)
-         throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME+".connect()", "Please specify a valid QoS");
       if (log.CALL) log.call(ME, "Entering connect");
       if (isConnected() && isLoggedIn()) {
          log.warn(ME, "You are already logged in, no relogin possible.");
@@ -412,7 +413,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".subscribe", "IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "subscribe", e1);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.SUBSCRIBE.toString(), e1);
       }
    }
 
@@ -435,7 +436,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".unSubscribe", "IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "unSubscribe", e1);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.UNSUBSCRIBE.toString(), e1);
       }
    }
 
@@ -456,7 +457,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".publish", "IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish", e1);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PUBLISH.toString(), e1);
       }
    }
 
@@ -470,7 +471,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       if (msgUnitArr == null) {
          if (log.TRACE) log.trace(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
-         throw new XmlBlasterException(ME + ".InvalidArguments",
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".InvalidArguments",
                                        "The argument of method publishArr() are invalid");
       }
       try {
@@ -505,7 +506,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishOneway", e);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PUBLISH_ONEWAY.toString(), e);
       }
    }
 
@@ -544,7 +545,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".erase", "IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e1);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.ERASE.toString(), e1);
       }
    }
 
@@ -579,7 +580,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".get", "IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e1);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.GET.toString(), e1);
       }
    }
 
@@ -590,7 +591,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    public String ping(String qos) throws XmlBlasterException
    {
       if (getCbReceiver() == null) {
-         return ""; // fake a return for ping on startup
+         return Constants.RET_OK; // fake a return for ping on startup
          /*
          // SocketCallbackImpl.java must be instantiated first
          //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
@@ -610,7 +611,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".ping", "IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", e1);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PING.toString(), e1);
       }
    }
 

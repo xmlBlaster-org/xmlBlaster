@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
@@ -143,13 +144,11 @@ public class LocalCallbackImpl implements I_CallbackServer, I_LocalCallback
    
    /**
     * Ping to check if the xmlBlaster server is alive. 
-    * This ping checks the availability on the application level.
-    * @param qos Currently an empty string ""
-    * @return    Currently an empty string ""
+    * @see org.xmlBlaster.protocol.I_CallbackDriver#ping(String)
     */
    public String ping(String str)
    {
-      return "";
+      return Constants.RET_OK;
    }
 } // class LocalCallbackImpl
 

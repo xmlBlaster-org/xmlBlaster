@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.40 2004/02/22 17:27:48 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.41 2004/05/09 17:54:38 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -15,6 +15,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.OrbInstanceFactory;
@@ -265,13 +266,12 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
 
    /**
     * Ping to check if the callback server is alive.
-    * @param qos ""
-    * @return ""
+    * @see org.xmlBlaster.protocol.I_CallbackDriver#ping(String)
     */
    public String ping(String qos)
    {
-      if (log.CALL) log.call(ME, "Entering ping() ...");
-      return "";
+      if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
+      return Constants.RET_OK;
    }
 } // class CorbaCallbackServer
 

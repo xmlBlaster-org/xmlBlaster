@@ -12,7 +12,6 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.Address;
@@ -25,7 +24,6 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -36,7 +34,6 @@ import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.CosNaming.BindingHolder;
 import org.omg.CosNaming.BindingListHolder;
 import org.omg.CosNaming.BindingIteratorHolder;
@@ -217,8 +214,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
       if (orb == null) {
          log.error(ME, "orb==null, internal problem");
-         Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "orb==null, internal problem");
+         Thread.dumpStack();
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "orb==null, internal problem");
       }
 
       // Get a reference to the Name Service, CORBA compliant:
@@ -233,7 +230,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                        " - or contact the server administrator to start a naming service";
          if (this.verbose)
             log.warn(ME + ".NoNameService", text);
-         throw new XmlBlasterException("NoNameService", text);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", text);
       }
       if (nameServiceObj == null) {
          throw new XmlBlasterException("NoNameService", "Can't access naming service (null), is there any running?");
@@ -244,7 +241,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
          if (nameService == null) {
             log.error(ME + ".NoNameService", "Can't access naming service (narrow problem)");
-            throw new XmlBlasterException("NoNameService", "Can't access naming service (narrow problem)");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", "Can't access naming service (narrow problem)");
          }
          if (log.TRACE) log.trace(ME, "Successfully narrowed handle for naming service");
          return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
@@ -252,7 +249,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       }
       catch (Throwable e) {
          if (this.verbose) log.warn(ME + ".NoNameService", "Can't access naming service");
-         throw new XmlBlasterException("NoNameService", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", e.toString());
       }
    }
 
@@ -307,7 +304,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             try {
                authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
             } catch (JUtilsException e) {
-               throw new XmlBlasterException(e);
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "dispatch/connection/plugin/ior/iorFile", e);
             }
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
             log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);

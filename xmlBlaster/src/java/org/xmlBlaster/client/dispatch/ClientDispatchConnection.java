@@ -424,18 +424,18 @@ public final class ClientDispatchConnection extends DispatchConnection
    }
 
    /**
-    * Ping the callback server of the client. 
-    * @param data never null
+    * @see org.xmlBlaster.util.dispatch.DispatchConnection#doPing(String)
     */
    public final String doPing(String data) throws XmlBlasterException {
-      return driver.ping(data);
+      String ret = driver.ping(data);
+      return (ret==null) ? "" : ret;
    }
 
    /**
     * Nothing to do here
     */
    public final void resetConnection() {
-      if (log.TRACE) log.trace(ME, "Initializing driver for polling");
+      if (log.TRACE) log.trace(ME, "resetConnection(): Initializing driver for polling");
       this.driver.resetConnection();
    }
 
@@ -443,8 +443,8 @@ public final class ClientDispatchConnection extends DispatchConnection
     * On reconnect polling try to establish the connection. 
     */
    protected final void reconnect() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering reconnect(" + this.driver.getProtocol() + ")");
       if (this.driver == null) return;
+      if (log.CALL) log.call(ME, "Entering reconnect(" + this.driver.getProtocol() + ")");
 
       if (this.encryptedConnectQos == null) {
          // We never had connected on application layer, so try low level layer only
