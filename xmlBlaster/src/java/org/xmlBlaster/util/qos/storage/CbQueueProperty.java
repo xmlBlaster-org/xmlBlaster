@@ -25,7 +25,7 @@ public class CbQueueProperty extends QueuePropertyBase
 
    /**
     * @param relating  To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
-    * @see QueuePropertyBase#(Global, String)
+    * @see QueuePropertyBase#QueuePropertyBase(Global, String)
     */
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);

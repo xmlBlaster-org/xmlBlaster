@@ -23,7 +23,7 @@ public class TopicStoreProperty extends QueuePropertyBase
 {
    /**
     * Enforces a high default setting for maxMsg and maxBytes
-    * @see QueuePropertyBase#(Global, String)
+    * @see QueuePropertyBase#QueuePropertyBase(Global, String)
     */
    public TopicStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);

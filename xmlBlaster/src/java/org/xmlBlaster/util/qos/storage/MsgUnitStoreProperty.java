@@ -22,7 +22,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
    private final LogChannel log;
 
    /**
-    * @see QueuePropertyBase#(Global, String)
+    * @see QueuePropertyBase#QueuePropertyBase(Global, String)
     */
    public MsgUnitStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);

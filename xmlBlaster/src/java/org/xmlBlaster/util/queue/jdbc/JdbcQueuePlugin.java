@@ -968,7 +968,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    }
 
    /**
-    * @see I_Map[]#getAll()
+    * @see I_Map#getAll()
     */
    public I_MapEntry[] getAll() throws XmlBlasterException {
       ArrayList list = peek(-1, -1);
