@@ -187,17 +187,20 @@ template <typename T_VALUE> ClientProperty::ClientProperty(
    }
 
    // Convert the given value type to a std::string value_
-   std::stringstream interpreter;
    
-   int origPrecision = interpreter.precision(); // 6 digits
-   if (type_ == org::xmlBlaster::util::Constants::TYPE_DOUBLE)
-      interpreter.precision(15); // Otherwise it will be rounded to 6 digits
-                                 // Note that 'long double' has a typical size of 18
-
-   if(!(interpreter << value) || !(interpreter >> value_) || !(interpreter >> std::ws).eof())
-      throw bad_clientProperty_cast();
-
-   interpreter.precision(origPrecision);
+   if (type_ == "") { // is string type
+      value_ = value;
+   }
+   else {
+      std::stringstream interpreter;
+      int origPrecision = interpreter.precision(); // 6 digits
+      if (type_ == org::xmlBlaster::util::Constants::TYPE_DOUBLE)
+         interpreter.precision(15); // Otherwise it will be rounded to 6 digits
+                                    // Note that 'long double' has a typical size of 18
+      if(!(interpreter << value) || !(interpreter >> value_) || !(interpreter >> std::ws).eof())
+         throw bad_clientProperty_cast();
+      interpreter.precision(origPrecision);
+   }
 
    if (needsEncoding()) {
       std::vector<unsigned char> vec;
