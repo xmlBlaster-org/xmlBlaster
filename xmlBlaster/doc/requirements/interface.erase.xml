@@ -60,7 +60,7 @@
    </pre>
    </td></tr></table>
       <p>
-      Note that erasing a message
+      Note that erasing a topic
       sends to all subscribers an update
       with the update QoS state id set to ERASED, see HelloWorld4.java as an example.<br />
       Constants.java defines the ERASED state and other states. This setting
@@ -135,7 +135,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
