@@ -322,9 +322,11 @@ public class SessionInfo implements I_Timeout
    }
 
    public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
+      //this.securityCtx = newConnectQos.getSecurityCtx();
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
+      this.sessionQueue.setProperties(cbQueueProperty);
       if (hasCallback()) {
-         this.dispatchManager.updateProperty(cbQueueProperty);
+         this.dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
          this.dispatchManager.notifyAboutNewEntry();
       }
@@ -336,6 +338,7 @@ public class SessionInfo implements I_Timeout
                                 newConnectQos.getSessionCbQueueProperty().getCallbackAddresses());
          }
       }
+      this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
    }
 
    /**
@@ -427,7 +430,9 @@ public class SessionInfo implements I_Timeout
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<SessionInfo id='").append(getId()).append("' timeout='").append("'>");
+      sb.append(offset).append("<SessionInfo id='").append(getId());
+      long timeToLife = this.expiryTimer.spanToTimeout(timerKey);
+      sb.append("' timeout='").append(timeToLife).append("'>");
       if (hasCallback()) {
          sb.append(this.dispatchManager.toXml(extraOffset+Constants.INDENT));
       }
