@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.4 2002/05/01 21:40:08 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.5 2002/05/06 14:41:07 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -79,7 +79,7 @@ public class PublishPluginManager extends PluginManagerBase {
    /**
     * @return please return your default plugin classname or null if not specified
     */
-   public String getDefaultPluginName() {
+   public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
    }
 

@@ -61,9 +61,11 @@ abstract public class PluginManagerBase {
    }
 
    /**
+    * @param type can be null
+    * @param version can be null
     * @return please return your default plugin classname or null if not specified
     */
-   abstract public String getDefaultPluginName();
+   abstract public String getDefaultPluginName(String type, String version);
 
 
    /**
@@ -72,7 +74,7 @@ abstract public class PluginManagerBase {
     */
    public I_Plugin getDummyPlugin() {
 
-      String name = getDefaultPluginName();
+      String name = getDefaultPluginName(null, null);
       if (name == null)
          return null;
 
@@ -133,7 +135,7 @@ abstract public class PluginManagerBase {
       if (isSupported(type, version)) {
          rawString = XmlBlasterProperty.get(getPluginPropertyName(type, version), (String)null);
          if (rawString==null) {
-            rawString = getDefaultPluginName();
+            rawString = getDefaultPluginName(type, version);
          }
          if(rawString!=null) {
             Vector tmp = new Vector();

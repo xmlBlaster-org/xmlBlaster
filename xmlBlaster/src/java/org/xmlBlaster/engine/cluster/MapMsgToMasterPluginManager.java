@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.6 2002/05/01 21:40:05 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.7 2002/05/06 14:43:01 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -88,7 +88,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    /**
     * @return please return your default plugin classname or null if not specified
     */
-   public final String getDefaultPluginName() {
+   public final String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
    }
 
@@ -159,7 +159,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
       key.append(type).append(version);
       Object obj = mapMsgToMasterIdMap.get(key.toString());
       if (obj != null) {
-         log.info(ME, "Plugin '" + key.toString() + "' is loaded already");
+         if (log.TRACE) log.trace(ME, "Plugin '" + key.toString() + "' is loaded already");
          return (I_MapMsgToMasterId)obj;
       }
 

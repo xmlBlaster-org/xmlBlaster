@@ -3,7 +3,7 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.4 2002/04/19 11:00:54 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.5 2002/05/06 14:41:59 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -106,7 +106,7 @@ public class PersistencePluginManager extends PluginManagerBase
    /**
     * @return please return your default plugin classname or null if not specified
     */
-   public String getDefaultPluginName() {
+   public String getDefaultPluginName(String type, String version) {
       return defaultPluginName;
    }
 
