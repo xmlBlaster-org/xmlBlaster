@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.25 2002/07/09 20:18:59 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.26 2002/08/10 18:31:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -806,7 +806,7 @@ public final class XmlKey
             log.error(ME, "Your query is of type DOMAIN but you have not specified a domain: " + queryKey.literal());
             throw new XmlBlasterException(ME, "Your query is of type DOMAIN but you have not specified a domain: " + queryKey.literal());
          }
-         if (queryKey.getDomain().equals(getDomain())) {
+         if (queryKey.getDomain().equals("*") || queryKey.getDomain().equals(getDomain())) {
             if (log.TRACE) log.trace(ME, "Message oid='" + getUniqueKey() + "' matched for domain='" + getDomain() + "'.");
             return true;
          }
