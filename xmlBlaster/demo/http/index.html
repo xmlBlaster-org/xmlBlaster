@@ -1,0 +1,58 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Description" content="XmlBlaster persistent HTTP demo">
+   <meta name="Author" content="Marcel Ruff">
+   <title>XmlBlaster persistent HTTP demo</title>
+</head>
+<body>
+   <h1>Real time browser update with persistent HTTP connection to xmlBlaster</h1>
+   <p>
+   There are currently two demos online.<br />
+   Both show how a persistent HTTP connection between
+   the server (<a href="www.xmlBlaster.org">xmlBlaster.org</a>) and your browser is established.
+   </p>
+   <p>
+   Messages are pushed in 'real time' back to your browser
+   and displayed there in a simple chart.
+   </p>
+
+   <h3>Displaying messages with dynamic HTML (DHTML)</h3>
+   Try the 
+     <a href="/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=dhtmlDemo&amp;xmlBlaster.passwd=secret">
+     DHTML</a> demo first, as this runs on most browsers without a plugin:
+     <p>
+     <image src="images/dhtml.png"/>
+     </p>
+
+   <h3>Displaying messages with scalable vector grafics (<a href="http://www.svgfaq.com/">SVG</a>)</h3>
+   Try the 
+     <a href="/xmlBlaster/svg/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=svgDemo&amp;xmlBlaster.passwd=secret">
+     SVG</a> demo:
+     <p>
+     <image src="images/svg.png"/>
+     </p>
+   <p>
+   Note: You need to have SVG support or an SVG plugin in your browser.
+   <br />
+   Adobe provides such a plugin.
+   For Linux/mozilla, the <a href="http://www.adobe.com/svg/viewer/install/old.html">Adobe plugin</a>
+   only runs with mozilla 0.91, all other versions are buggy.
+   <br /><br />
+   This combination (mozilla 0.91/Adobe plugin) is currently the only tested for our demo!
+   </p>
+   <p>
+   Please mail bugs, bugfixes or positive reports with other browsers
+   to our mailing list.
+   </p>
+   <p>
+   Native SVG support in mozilla is since December, 12th 2001 in the
+   mozilla main cvs branch, but must be compiled yourself (the
+   compile failed on my Linux box).
+   </p>
+   <p>
+   Please read the <a href="README">xmlBlaster/demo/http/README</a>
+   how to setup the persistent http connection yourself.
+</body>
+</html>
