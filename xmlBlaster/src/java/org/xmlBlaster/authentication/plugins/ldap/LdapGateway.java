@@ -483,14 +483,14 @@ public class LdapGateway
 
       // ldap://localhost:389/o=xmlBlaster,c=ORG??sub
       try {
-         XmlBlasterProperty.init(args);
+         org.xmlBlaster.util.Global glob = new org.xmlBlaster.util.Global(args);
 
-         final String serverUrl = XmlBlasterProperty.get("serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
-         final String rootDN = XmlBlasterProperty.get("rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
-         final String rootPwd =  XmlBlasterProperty.get("rootPwd", "secret");
-         final String loginName = XmlBlasterProperty.get("loginName", "tim");
-         final String userPassword = XmlBlasterProperty.get("userPassword", "tim");
-         final String loginFieldName = XmlBlasterProperty.get("loginFieldName", "cn");
+         final String serverUrl = glob.getProperty().get("serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
+         final String rootDN = glob.getProperty().get("rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
+         final String rootPwd =  glob.getProperty().get("rootPwd", "secret");
+         final String loginName = glob.getProperty().get("loginName", "tim");
+         final String userPassword = glob.getProperty().get("userPassword", "tim");
+         final String loginFieldName = glob.getProperty().get("loginFieldName", "cn");
 
          LdapGateway ldap = new LdapGateway(serverUrl, rootDN, rootPwd, loginFieldName);
 

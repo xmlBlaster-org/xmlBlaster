@@ -3,13 +3,13 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.13 2002/03/18 00:29:35 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.14 2002/05/11 08:08:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -55,7 +55,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
     * Get callback reference here.
     * @param  callbackAddress Contains the rmi registry name of the client callback server
     */
-   public void init(CallbackAddress callbackAddress) throws XmlBlasterException
+   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       // Create and install a security manager
       if (System.getSecurityManager() == null) {

@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.17 2002/05/03 13:46:10 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.18 2002/05/11 08:08:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -47,13 +47,13 @@ public class HandleClient extends Executor implements Runnable
    /**
     * Creates an instance which serves exactly one client. 
     */
-   public HandleClient(SocketDriver driver, Socket sock) throws IOException {
-      super(sock, driver.getXmlBlaster());
+   public HandleClient(Global glob, SocketDriver driver, Socket sock) throws IOException {
+      super(glob, sock, driver.getXmlBlaster());
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
       this.SOCKET_DEBUG = driver.SOCKET_DEBUG;
       Thread t = new Thread(this, "XmlBlaster.SOCKET.HandleClient");
-      t.setPriority(XmlBlasterProperty.get("socket.threadPrio", Thread.NORM_PRIORITY));
+      t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
       t.start();
    }
 

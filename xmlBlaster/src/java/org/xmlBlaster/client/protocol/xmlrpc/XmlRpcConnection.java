@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.23 2002/05/01 21:40:03 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.24 2002/05/11 08:08:44 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -92,13 +92,13 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             Log.warn(ME, "Can't determin your hostname");
             hostname = "localhost";
          }
-         hostname = XmlBlasterProperty.get("xmlrpc.hostname", hostname);
+         hostname = glob.getProperty().get("xmlrpc.hostname", hostname);
 
          // default xmlBlaster XML-RPC publishing port is 8080
-         int port = XmlBlasterProperty.get("xmlrpc.port", DEFAULT_SERVER_PORT);
+         int port = glob.getProperty().get("xmlrpc.port", DEFAULT_SERVER_PORT);
          this.url = "http://" + hostname + ":" + port + "/";
 
-         if (XmlBlasterProperty.get("xmlrpc.debug", false) == true)
+         if (glob.getProperty().get("xmlrpc.debug", false) == true)
             XmlRpc.setDebug(true);
 
          this.xmlRpcClient = new XmlRpcClient(url);

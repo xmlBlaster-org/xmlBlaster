@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.23 2002/05/02 12:36:39 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.24 2002/05/11 08:08:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -44,6 +44,7 @@ import java.util.StringTokenizer;
 public class JdbcDriver implements I_Driver, I_Publish
 {
    private static final String ME = "JdbcDriver";
+   private Global glob = null;
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -52,8 +53,6 @@ public class JdbcDriver implements I_Driver, I_Publish
    private String sessionId = null;
    /** JDBC connection pooling, a pool for every user */
    private static NamedConnectionPool namedPool = null;
-   /** This is the handle on this singleton */
-   static JdbcDriver instance = null;
 
 
    /** Get a human readable name of this driver.
@@ -85,17 +84,6 @@ public class JdbcDriver implements I_Driver, I_Publish
    }
 
    /**
-    * Hack for synchronous get() access.
-    */
-   public static NamedConnectionPool getNamedPool()
-   {
-      if (namedPool == null)
-         namedPool = new NamedConnectionPool();
-      return namedPool;
-   }
-
-
-   /**
     * Start xmlBlaster jdbc access.
     * <p />
     * Enforced by interface I_Driver.
@@ -103,17 +91,22 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
-      JdbcDriver.instance = this;
+      this.glob = glob;
+      this.glob.addObjectEntry("JdbcDriver-"+glob.getId(), this);
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
+      this.namedPool = (NamedConnectionPool)this.glob.getObjectEntry("NamedConnectionPool-"+glob.getId());
+      if (this.namedPool == null) {
+         this.namedPool = new NamedConnectionPool(this.glob);
+         this.glob.addObjectEntry("NamedConnectionPool-"+glob.getId(), this.namedPool);
+      }
 
       initDrivers();
-      namedPool = new NamedConnectionPool();
 
       // ------------------------------
       // login and get a session id ...
-      String loginName = XmlBlasterProperty.get("JdbcDriver.loginName", "__sys__jdbc");
-      String passwd = XmlBlasterProperty.get("JdbcDriver.password", "secret");
+      String loginName = glob.getProperty().get("JdbcDriver.loginName", "__sys__jdbc");
+      String passwd = glob.getProperty().get("JdbcDriver.password", "secret");
 
       if (loginName==null || passwd==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for connect()");
@@ -191,7 +184,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     * Default is JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
     */
    private void initDrivers() {
-      String            drivers = XmlBlasterProperty.get("JdbcDriver.drivers", "sun.jdbc.odbc.JdbcOdbcDriver");
+      String            drivers = glob.getProperty().get("JdbcDriver.drivers", "sun.jdbc.odbc.JdbcOdbcDriver");
       StringTokenizer   st = new StringTokenizer(drivers, ",");
       int               numDrivers = st.countTokens();
       String            driver = "";

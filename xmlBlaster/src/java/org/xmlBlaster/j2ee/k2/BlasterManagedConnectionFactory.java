@@ -26,7 +26,7 @@ import javax.security.auth.Subject;
 
 import javax.resource.ResourceException;
 
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ManagedConnection;
@@ -45,6 +45,7 @@ import javax.resource.spi.security.PasswordCredential;
    This is because a user will get mapped to so called "pseudouser" to
    be able to hande more that one active physical connection to the
    xmlBlaster server for every logical user.
+   TODO: Change this to use session logins
  *
  *
  * Created: Fri Jan 26 14:57:16 2001
@@ -58,6 +59,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     // Check if we have any special thing we need to set in xmlBlaster
     // that make different instance not look like each other
     public String myName ="Blaster";
+    private final Global glob;
 
     private PrintWriter logWriter = null;
 
@@ -66,8 +68,10 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     private BlasterLogger logger;
     
     public BlasterManagedConnectionFactory() throws ResourceException{
+        this.glob = Global.instance(); // TODO: Pass arguments or glob handle from outside
+        this.myName = this.myName + "[" + glob.getId() + "]";
         // Start logger, will be turned of by default
-        logger = new BlasterLogger();
+        logger = new BlasterLogger(glob);
     }
     
     /**
@@ -188,7 +192,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setClientProtocol(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("client.protocol", arg);
+            glob.getProperty().set("client.protocol", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -200,7 +204,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getClientProtocol() {
-        return XmlBlasterProperty.get("client.protocol", (String)null);
+        return glob.getProperty().get("client.protocol", (String)null);
     }
 
     /**
@@ -208,7 +212,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setRmiHostname(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("rmi.hostname", arg);
+            glob.getProperty().set("rmi.hostname", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -220,7 +224,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getRmiHostname() {
-        return XmlBlasterProperty.get("rmi.hostname", (String)null);
+        return glob.getProperty().get("rmi.hostname", (String)null);
     }
 
     /**
@@ -228,7 +232,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setRmiRegistryPort(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("rmi.registryPort", arg);
+            glob.getProperty().set("rmi.registryPort", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -240,7 +244,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getRmiRegistryPort() {
-        return XmlBlasterProperty.get("rmi.registryPort", (String)null);
+        return glob.getProperty().get("rmi.registryPort", (String)null);
     }
 
 
@@ -249,7 +253,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setRmiAuthserverUrl(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("rmi.AuthServer.url", arg);
+            glob.getProperty().set("rmi.AuthServer.url", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -261,7 +265,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getRmiAuthserverUrl() {
-        return XmlBlasterProperty.get("rmi.AuthServer.url", (String)null);
+        return glob.getProperty().get("rmi.AuthServer.url", (String)null);
     }
 
     /**
@@ -269,7 +273,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setIor(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("ior", arg);
+            glob.getProperty().set("ior", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -281,7 +285,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getIor() {
-        return XmlBlasterProperty.get("ior", (String)null);
+        return glob.getProperty().get("ior", (String)null);
     }
 
      /**
@@ -289,7 +293,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setIorFile(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("ior.file", arg);
+            glob.getProperty().set("ior.file", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -302,7 +306,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setIorHost(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("hostname", arg);
+            glob.getProperty().set("hostname", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -314,7 +318,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getIorHost() {
-        return XmlBlasterProperty.get("hostname", (String)null);
+        return glob.getProperty().get("hostname", (String)null);
     }
 
     /**
@@ -322,7 +326,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      */
     public void setIorPort(String arg) throws IllegalStateException {
         try {
-            XmlBlasterProperty.set("port", arg);
+            glob.getProperty().set("port", arg);
         }catch(org.jutils.JUtilsException ex) {
             IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
             x.setLinkedException(ex);
@@ -334,14 +338,14 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      * Null if not
      */
     public String getIorPort() {
-        return XmlBlasterProperty.get("port", (String)null);
+        return glob.getProperty().get("port", (String)null);
     }
     
     /**
      * Null if not
      */
     public String getIorFile() {
-        return XmlBlasterProperty.get("ior.file", (String)null);
+        return glob.getProperty().get("ior.file", (String)null);
     }
     
     /**

@@ -3,12 +3,13 @@ Name:      XindiceProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a Xindice Proxy
-Version:   $Id: XindiceProxy.java,v 1.2 2002/02/08 00:48:18 goetzger Exp $
+Version:   $Id: XindiceProxy.java,v 1.3 2002/05/11 08:08:52 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb.xindice;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
@@ -28,11 +29,12 @@ import org.apache.xindice.server.Kernel;
  * This class provides the connection to Xindice (former dbXML) which is a XML:DB-database.
  * <p />
  *
- * @author $Author: goetzger $
+ * @author $Author: ruff $
  */
 public class XindiceProxy {
 
    private static final String ME = "XindiceProxy";
+   private final Global glob;
 
    // private static Xindice Xdb = null; // instance of Xindice Database
 
@@ -52,12 +54,13 @@ public class XindiceProxy {
     * CAUTION: This Proxy is under development, it may not be used for production environment!
     * <br />
     */
-   public XindiceProxy()
+   public XindiceProxy(Global glob)
    {
+      this.glob = glob;
       if (Log.CALL) Log.call(ME, "Constructor for XindiceProxy");
 
-      xindiceDriver = XmlBlasterProperty.get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
-      xindiceFilterClass = XmlBlasterProperty.get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
+      xindiceDriver = glob.getProperty().get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
+      xindiceFilterClass = glob.getProperty().get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
 
       // start the db here, if it's not running already
       // this.startXindice();
@@ -75,12 +78,13 @@ public class XindiceProxy {
     * <br />
     * @param path The Path of the collection i.e. xmldb:xindice:///db/xmlBlaster
     */
-   public XindiceProxy(String path)  throws XmlBlasterException
+   public XindiceProxy(Global glob, String path)  throws XmlBlasterException
    {
+      this.glob = glob;
       if (Log.CALL) Log.call(ME, "Constructor for XindiceProxy, using path: " + path);
 
-      xindiceDriver = XmlBlasterProperty.get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
-      xindiceFilterClass = XmlBlasterProperty.get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
+      xindiceDriver = glob.getProperty().get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
+      xindiceFilterClass = glob.getProperty().get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
 
       // start the db her, if it's not running already
       // this.startXindice();

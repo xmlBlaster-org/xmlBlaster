@@ -3,7 +3,7 @@ Name:      LoadBalancerPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for load balancing
-Version:   $Id: LoadBalancerPluginManager.java,v 1.6 2002/05/06 14:43:20 ruff Exp $
+Version:   $Id: LoadBalancerPluginManager.java,v 1.7 2002/05/11 08:08:48 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -94,7 +94,7 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    protected String[] choosePlugin(String type, String version) throws XmlBlasterException
    {
       /*if (type == null || type.equals("simple")) {
-         if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true) == false){
+         if (glob.getProperty().get("Security.Server.allowSimpleDriver", true) == false){
             throw new XmlBlasterException(ME+".NoLoadBalancer","It's not allowed to use the standard security manager!");
          }
       }*/

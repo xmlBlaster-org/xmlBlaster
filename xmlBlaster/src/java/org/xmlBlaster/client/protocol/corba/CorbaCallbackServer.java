@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.15 2002/03/18 00:29:29 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.16 2002/05/11 08:08:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -46,9 +46,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    private I_CallbackExtended boss;
    private String loginName;
 
-   private PluginLoader  secPlgnMgr = null;
-   private I_ClientPlugin secPlgn = null;
-
    public CorbaCallbackServer() {}
 
    /**
@@ -85,13 +82,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.boss = boss;
       this.loginName = name;
       this.orb = orb;
-      secPlgnMgr = PluginLoader.getInstance();
-      try {
-         secPlgn = secPlgnMgr.getCurrentClientPlugin();
-      }
-      catch (Exception e) {
-         Log.error(ME+".init(String, String)", "Security plugin initialization failed. Reason: "+e.toString());
-      }
       createCallbackServer();
       Log.info(ME, "Success, created CORBA callback server for " + loginName);
    }

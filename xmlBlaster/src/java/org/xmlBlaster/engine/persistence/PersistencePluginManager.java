@@ -3,7 +3,7 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.5 2002/05/06 14:41:59 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.6 2002/05/11 08:08:50 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -37,11 +37,11 @@ public class PersistencePluginManager extends PluginManagerBase
       try {
          // super.choosePlugin reads pluginName and parameters from porperties
          // so read property file, if it's not there, write it to the properties
-         XmlBlasterProperty.set(pluginPropertyName + "[filestore][1.0]",
-            XmlBlasterProperty.get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
+         glob.getProperty().set(pluginPropertyName + "[filestore][1.0]",
+            glob.getProperty().get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
 
-         XmlBlasterProperty.set(pluginPropertyName + "[xmldb][xindice]",
-            XmlBlasterProperty.get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin, xindice") );
+         glob.getProperty().set(pluginPropertyName + "[xmldb][xindice]",
+            glob.getProperty().get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin, xindice") );
       } catch (org.jutils.JUtilsException e) {
          throw new XmlBlasterException( e.id, e.reason );
       }
@@ -121,7 +121,7 @@ public class PersistencePluginManager extends PluginManagerBase
    protected String[] choosePlugin(String type, String version) throws XmlBlasterException
    {
       /*if (type == null || type.equals("simple")) {
-         if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true) == false){
+         if (glob.getProperty().get("Security.Server.allowSimpleDriver", true) == false){
             throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
          }
       }*/

@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.22 2002/04/30 16:41:37 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.23 2002/05/11 08:08:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -120,6 +120,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          throw new ConnectionException(ME+".init", "No plain socket connection available.");
       }
       return this.sock;
+   }
+
+   final Global getGlobal() {
+      return this.glob;
    }
 
    /**

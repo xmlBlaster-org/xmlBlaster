@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.63 2002/04/29 09:43:31 ruff Exp $
+Version:   $Id: Log.java,v 1.64 2002/05/11 08:09:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -84,15 +84,17 @@ public class Log
       }
    */
       setLogLevel(property);
+
+      Global glob = Global.instance(); // TODO: don't use singleton
         
       lc = new LogChannel(XmlBlasterProperty.getProperty());
-      boolean bVal = XmlBlasterProperty.get("logConsole", true);
+      boolean bVal = glob.getProperty().get("logConsole", true);
       if (bVal == true) {
          LogDeviceConsole ldc = new LogDeviceConsole(lc);
          lc.addLogDevice(ldc);
       }
 
-      String strFilename = XmlBlasterProperty.get("logFile", (String)null);
+      String strFilename = glob.getProperty().get("logFile", (String)null);
       if (strFilename != null) {
          LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
          lc.addLogDevice(ldf);

@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.12 2002/03/18 00:29:29 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.13 2002/05/11 08:08:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -58,6 +58,7 @@ import java.rmi.AlreadyBoundException;
 public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback, I_CallbackServer
 {
    private String ME;
+   private Global glob;
    private I_CallbackExtended client;
    private String loginName;
    /** The name for the RMI registry */
@@ -76,6 +77,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException
    {
       this.ME = "RmiCallbackServer-" + name;
+      this.glob = glob;
       this.client = client;
       this.loginName = name;
       createCallbackServer(this);
@@ -106,10 +108,10 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
       if (Log.CALL) Log.call(ME, "bindToRegistry() ...");
 
       // Use the xmlBlaster-server rmiRegistry as a fallback:
-      int registryPort = XmlBlasterProperty.get("rmi.registryPort",
+      int registryPort = glob.getProperty().get("rmi.registryPort",
                                                 DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
       // Use the given callback port if specified :
-      registryPort = XmlBlasterProperty.get("rmi.registryPortCB", registryPort);
+      registryPort = glob.getProperty().get("rmi.registryPortCB", registryPort);
 
       String hostname;
       try  {
@@ -118,10 +120,10 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
       } catch (Exception e) {
          Log.info(ME, "Can't determin your hostname");
          // Use the xmlBlaster-server rmiRegistry as a fallback:
-         hostname = XmlBlasterProperty.get("rmi.hostname", "localhost");
+         hostname = glob.getProperty().get("rmi.hostname", "localhost");
       }
       // Use the given callback hostname if specified :
-      hostname = XmlBlasterProperty.get("rmi.hostnameCB", hostname);
+      hostname = glob.getProperty().get("rmi.hostnameCB", hostname);
 
       try {
          if (registryPort > 0) {

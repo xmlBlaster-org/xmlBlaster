@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.82 2002/05/09 15:13:32 ruff Exp $
+Version:   $Id: Main.java,v 1.83 2002/05/11 08:08:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -154,7 +154,7 @@ public class Main
 
       if (Log.DUMP) { ThreadLister.listAllThreads(System.out); }
 
-      boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
+      boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
       if (!useKeyboard) {
          while (true) {
             try { Thread.currentThread().sleep(100000000L);
@@ -168,7 +168,7 @@ public class Main
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
-      boolean doBlocking = XmlBlasterProperty.get("doBlocking", true);
+      boolean doBlocking = glob.getProperty().get("doBlocking", true);
 
       if (doBlocking) {
          checkForKeyboardInput();
@@ -194,7 +194,7 @@ public class Main
                  "RMI:org.xmlBlaster.protocol.rmi.RmiDriver," +
                  "XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver," +
                  "JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver";
-      String drivers = XmlBlasterProperty.get("Protocol.Drivers", defaultDrivers);
+      String drivers = glob.getProperty().get("Protocol.Drivers", defaultDrivers);
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {

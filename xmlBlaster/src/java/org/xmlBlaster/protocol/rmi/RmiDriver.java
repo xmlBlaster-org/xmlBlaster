@@ -3,12 +3,11 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.20 2002/04/26 21:31:57 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.21 2002/05/11 08:08:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.Log;
-
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -86,6 +85,7 @@ import java.rmi.AlreadyBoundException;
 public class RmiDriver implements I_Driver
 {
    private static final String ME = "RmiDriver";
+   private Global glob = null;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    /** The singleton handle for this xmlBlaster server */
@@ -132,10 +132,11 @@ public class RmiDriver implements I_Driver
     */
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
+      this.glob = glob;
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      XmlBlasterSecurityManager.createSecurityManager();
+      XmlBlasterSecurityManager.createSecurityManager(glob);
 
       try {
          authRmiServer = new AuthServerImpl(glob, authenticate, xmlBlasterImpl);
@@ -192,7 +193,7 @@ public class RmiDriver implements I_Driver
    private void bindToRegistry() throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "bindToRegistry() ...");
-      int registryPort = XmlBlasterProperty.get("rmi.registryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
+      int registryPort = glob.getProperty().get("rmi.registryPort", DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
 
       String hostname;
       try  {
@@ -202,7 +203,7 @@ public class RmiDriver implements I_Driver
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
+      hostname = glob.getProperty().get("rmi.hostname", hostname);
 
       try {
          if (registryPort > 0) {

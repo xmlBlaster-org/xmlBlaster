@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.35 2002/04/26 21:31:48 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.36 2002/05/11 08:08:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -62,7 +62,8 @@ public class MessageUnitWrapper implements I_Timeout
    private Timestamp timerKey = null;
    private boolean isExpired = false;
 
-   private static final boolean recieveTimestampHumanReadable = XmlBlasterProperty.get("cb.recieveTimestampHumanReadable", false);
+   // TODO: Pass with client QoS!!!
+   private static final boolean recieveTimestampHumanReadable = Global.instance().getProperty().get("cb.recieveTimestampHumanReadable", false);
 
    /**
     * Count how often this messages is put into a queue

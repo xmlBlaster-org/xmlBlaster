@@ -3,12 +3,12 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.17 2002/04/30 16:41:40 ruff Exp $
+Version:   $Id: Executor.java,v 1.18 2002/05/11 08:08:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -41,6 +41,7 @@ import java.util.Collections;
 public abstract class Executor implements ExecutorBase
 {
    private String ME = "SocketExecutor";
+   private final Global glob;
    /** The socket connection to/from one client */
    protected Socket sock;
    /** Reading from socket */
@@ -84,12 +85,13 @@ public abstract class Executor implements ExecutorBase
     * @param sock The open socket to/from a specific client
     * @param xmlBlasterImpl Handle for the server implementation
     */
-   protected Executor(Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
+   protected Executor(Global glob, Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
+      this.glob = glob;
       this.sock = sock;
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
-      this.responseWaitTime = XmlBlasterProperty.get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS);
+      this.responseWaitTime = glob.getProperty().get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS);
    }
 
    public final void setCbClient(I_CallbackExtended cbClient)

@@ -3,13 +3,13 @@ Name:      CallbackNativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using native interface.
-Version:   $Id: CallbackNativeDriver.java,v 1.6 2002/04/30 16:41:39 ruff Exp $
+Version:   $Id: CallbackNativeDriver.java,v 1.7 2002/05/11 08:08:57 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -29,6 +29,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 public class CallbackNativeDriver implements I_CallbackDriver
 {
    private String ME = "CallbackNativeDriver";
+   private Global glob = null;
    private CallbackAddress callbackAddress = null;
 
 
@@ -47,8 +48,9 @@ public class CallbackNativeDriver implements I_CallbackDriver
     * the address to callback.
     * @param  callbackAddress Contains the stringified native callback handle of the client
     */
-   public void init(CallbackAddress callbackAddress) throws XmlBlasterException
+   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
+      this.glob = glob;
       this.callbackAddress = callbackAddress;
    }
 

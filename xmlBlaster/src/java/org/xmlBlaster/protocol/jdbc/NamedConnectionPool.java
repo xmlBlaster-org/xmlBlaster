@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.11 2002/03/21 22:45:50 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.12 2002/05/11 08:08:56 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.I_Timeout;
 import org.jutils.time.Timeout;
@@ -79,9 +80,15 @@ import java.sql.DriverManager;
 public class NamedConnectionPool
 {
    private static final String ME = "NamedConnectionPool";
+   private Global glob;
    private Hashtable namedPools = new Hashtable();
 
    private final Object meetingPoint = new Object();
+
+   NamedConnectionPool(Global glob)
+   {
+      this.glob = glob;
+   }
 
 
    /**
@@ -275,16 +282,16 @@ public class NamedConnectionPool
          this.eraseUnusedPoolTimeout = eraseUnusedPoolTimeout;
 
          if (eraseUnusedPoolTimeout == -1)
-            eraseUnusedPoolTimeout = XmlBlasterProperty.get("JdbcPool.eraseUnusedPoolTimeout", 60*60*1000L); // If a user disapears for one hour, delete his pool
+            eraseUnusedPoolTimeout = glob.getProperty().get("JdbcPool.eraseUnusedPoolTimeout", 60*60*1000L); // If a user disapears for one hour, delete his pool
          if (maxInstances == -1)
-            maxInstances = XmlBlasterProperty.get("JdbcPool.maxInstances", 20); // Max. number of connections
+            maxInstances = glob.getProperty().get("JdbcPool.maxInstances", 20); // Max. number of connections
          if (busyToIdle == -1)
-            busyToIdle = XmlBlasterProperty.get("JdbcPool.busyToIdleTimeout", 0); // How long may a query last
+            busyToIdle = glob.getProperty().get("JdbcPool.busyToIdleTimeout", 0); // How long may a query last
          if (idleToErase == -1)
-            idleToErase = XmlBlasterProperty.get("JdbcPool.idleToEraseTimeout", 10*60*1000L); // How long does an unused connection survive (10 min)
+            idleToErase = glob.getProperty().get("JdbcPool.idleToEraseTimeout", 10*60*1000L); // How long does an unused connection survive (10 min)
 
-         maxResourceExhaustRetries = XmlBlasterProperty.get("JdbcPool.maxResourceExhaustRetries", 5);
-         resourceExhaustSleepGap = XmlBlasterProperty.get("JdbcPool.resourceExhaustSleepGap", 1000);   // milli
+         maxResourceExhaustRetries = glob.getProperty().get("JdbcPool.maxResourceExhaustRetries", 5);
+         resourceExhaustSleepGap = glob.getProperty().get("JdbcPool.resourceExhaustSleepGap", 1000);   // milli
 
          poolManager = new PoolManager(ME, this, maxInstances, busyToIdle, idleToErase);
          if (eraseUnusedPoolTimeout > 10L)

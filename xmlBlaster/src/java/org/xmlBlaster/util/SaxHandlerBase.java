@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.14 2002/05/09 11:47:49 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.15 2002/05/11 08:09:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -80,7 +80,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    {
       try {
          SAXParserFactory spf = SAXParserFactory.newInstance();
-         boolean validate = XmlBlasterProperty.get("javax.xml.parsers.validation", false);
+         // TODO: use glob and not Global
+         boolean validate = Global.instance().getProperty().get("javax.xml.parsers.validation", false);
          spf.setValidating(validate);
          //if (Log.TRACE) Log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
 

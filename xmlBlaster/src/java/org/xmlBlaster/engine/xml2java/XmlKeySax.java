@@ -170,6 +170,8 @@ public class XmlKeySax extends SaxHandlerBase
             for (int ii=0; ii<qosArr.length; ii++) {
                System.out.println(qosArr[ii].toXml());
             }
+            if (!xmlKey.getQueryString().equals("//STOCK"))
+               Log.error("TestFailed", "Missing XPath string");
          }
       }
       catch(Throwable e) {

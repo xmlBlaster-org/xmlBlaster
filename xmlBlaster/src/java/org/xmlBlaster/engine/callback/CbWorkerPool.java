@@ -3,12 +3,13 @@ Name:      CbWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: CbWorkerPool.java,v 1.3 2002/03/13 16:41:13 ruff Exp $
+Version:   $Id: CbWorkerPool.java,v 1.4 2002/05/11 08:08:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.queue.MsgQueue;
@@ -23,6 +24,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 public class CbWorkerPool
 {
    public final String ME = "CbWorkerPool";
+   private final Global glob;
    private final PooledExecutor pool;
    private int maximumPoolSize;
    private int minimumPoolSize;
@@ -31,13 +33,14 @@ public class CbWorkerPool
    /**
     * @param maxWorkers Maximum allowed callback threads
     */
-   public CbWorkerPool()
+   public CbWorkerPool(Global glob)
    {
+      this.glob = glob;
       this.pool = new PooledExecutor(new LinkedQueue());
 
-      maximumPoolSize = XmlBlasterProperty.get("cb.maximumPoolSize", 200);
-      minimumPoolSize = XmlBlasterProperty.get("cb.minimumPoolSize", 10);
-      createThreads = XmlBlasterProperty.get("cb.createThreads", minimumPoolSize);
+      maximumPoolSize = glob.getProperty().get("cb.maximumPoolSize", 200);
+      minimumPoolSize = glob.getProperty().get("cb.minimumPoolSize", 10);
+      createThreads = glob.getProperty().get("cb.createThreads", minimumPoolSize);
 
       pool.setMaximumPoolSize(maximumPoolSize);
       pool.setMinimumPoolSize(minimumPoolSize);

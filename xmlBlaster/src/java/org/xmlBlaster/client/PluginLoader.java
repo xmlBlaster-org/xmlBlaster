@@ -1,6 +1,7 @@
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -10,7 +11,7 @@ import java.util.Vector;
 import java.util.StringTokenizer;
 
 /**
- * <code>PluginLoader</code> is a singleton, which is responsible for loading
+ * <code>PluginLoader</code> is responsible for loading
  * and initialization of client secuirty plugins.
  *
  * Either the client application chooses an appropriate plugin, or the
@@ -34,25 +35,15 @@ import java.util.StringTokenizer;
  */
 public class PluginLoader {
    private  static final String  ME = "SecurityPluginLoader";
+   private final Global glob;
    private  String pluginMechanism = null;
    private  String pluginVersion = null;
    private  I_ClientPlugin plugin = null;
-   private  static final PluginLoader instance = new PluginLoader();
 
-   private PluginLoader()
+   public PluginLoader(Global glob)
    {
+      this.glob = glob;
    }
-
-   /**
-    * Get the instance of the PluginLoader
-    *
-    * @return PluginLoader
-    */
-   public static PluginLoader getInstance()
-   {
-      return instance;
-   }
-
 
    /**
     * Get the type of the currently used plugin
@@ -180,7 +171,7 @@ public class PluginLoader {
       Vector v   = new Vector();
 
       if((mechanism==null) || (mechanism.equals(""))) { // if the client application doesn't select the mechanism and version, we must check the configuartion
-         tmp = XmlBlasterProperty.get("Security.Client.DefaultPlugin", "simple,1.0");//(String)null);
+         tmp = glob.getProperty().get("Security.Client.DefaultPlugin", "simple,1.0");//(String)null);
          if (tmp!=null) {
             int i = tmp.indexOf(',');
             if (i==-1) {  // version is optional
@@ -197,7 +188,7 @@ public class PluginLoader {
       }
       if(version==null) version="";
 
-      String s = XmlBlasterProperty.get("Security.Client.Plugin["+mechanism+"]["+version+"]", (String)null);
+      String s = glob.getProperty().get("Security.Client.Plugin["+mechanism+"]["+version+"]", (String)null);
       if(s==null) {
          if (mechanism.equals("simple")) // xmlBlaster should run without xmlBlaster.properties
             s = "org.xmlBlaster.authentication.plugins.simple.ClientPlugin";

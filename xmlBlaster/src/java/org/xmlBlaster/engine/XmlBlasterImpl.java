@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.15 2002/05/06 07:32:00 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.16 2002/05/11 08:08:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -130,7 +130,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          msgUnit = checkMessage(sessionInfo, msgUnit, Constants.PUBLISH);
 
          XmlKey xmlKey = new XmlKey(glob, msgUnit.xmlKey, true);
-         PublishQos publishQos = new PublishQos(msgUnit.qos);
+         PublishQos publishQos = new PublishQos(glob, msgUnit.qos);
 
          String ret = requestBroker.publish(sessionInfo, xmlKey, msgUnit, publishQos);
 
@@ -165,7 +165,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          for (int ii=0; ii<msgUnitArr.length; ii++) {
             MessageUnit msgUnit = checkMessage(sessionInfo, msgUnitArr[ii], Constants.PUBLISH);
             XmlKey xmlKey = new XmlKey(glob, msgUnit.getXmlKey(), true);
-            PublishQos publishQos = new PublishQos(msgUnit.getQos());
+            PublishQos publishQos = new PublishQos(glob, msgUnit.getQos());
             String ret = requestBroker.publish(sessionInfo, xmlKey, msgUnit, publishQos);
             returnArr[ii] = sec.exportMessage(ret);
          }

@@ -8,6 +8,7 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Log;
 
 import java.io.* ;
@@ -35,9 +36,9 @@ public class HtPasswd {
     * @return true The password is valid
     */
 
-   public HtPasswd() throws XmlBlasterException {
+   public HtPasswd(Global glob) throws XmlBlasterException {
 
-      htpasswdFilename = XmlBlasterProperty.get("Security.Server.Plugin.htpasswd.secretfile", (String) null );
+      htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", (String) null );
 
       Log.trace( ME, "contructor()" );
 

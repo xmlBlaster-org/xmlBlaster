@@ -85,7 +85,7 @@ public final class ClusterManager
       this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob, this);
 
       if (this.glob.getNodeId() == null)
-         this.log.error(ME, "Node ID is still unknown");
+         this.log.error(ME, "Node ID is still unknown, please set '-cluster.node.id' to a unique name.");
       else
          initClusterNode();
 
@@ -125,7 +125,7 @@ public final class ClusterManager
       msgUnit.setKey(buf.toString());
       msgUnit.setQos(pubQos.toXml());
       XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
-      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQos(msgUnit.getQos()));
+      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQos(glob, msgUnit.getQos()));
    */
    }
 

@@ -16,9 +16,7 @@ import org.xmlBlaster.util.Log;
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a>.
  * @see org.xmlBlaster.authentication.plugins.htpasswd.HtPasswd
  */
-public class Session
-        implements      I_Session,
-                                I_Subject {
+public class Session implements I_Session, I_Subject {
 
    private static final String ME = "Session";
 
@@ -46,13 +44,13 @@ public class Session
       // Thus, it gets a dummy, a subjet with nearly no rights.
       if (dummyUsr == null) dummyUsr = new Subject();
 
-                htpasswd = new HtPasswd();
+      htpasswd = new HtPasswd(sm.getGlobal());
 
       /*
-      final String serverUrl = XmlBlasterProperty.get("htpasswd.serverUrl", "htpasswd://localhost:389/o=xmlBlaster,c=ORG");
-      final String rootDN = XmlBlasterProperty.get("htpasswd.rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
-      final String rootPwd =  XmlBlasterProperty.get("htpasswd.rootPwd", "secret");
-      final String loginFieldName = XmlBlasterProperty.get("htpasswd.loginFieldName", "cn");
+      final String serverUrl = glob.getProperty().get("htpasswd.serverUrl", "htpasswd://localhost:389/o=xmlBlaster,c=ORG");
+      final String rootDN = glob.getProperty().get("htpasswd.rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
+      final String rootPwd =  glob.getProperty().get("htpasswd.rootPwd", "secret");
+      final String loginFieldName = glob.getProperty().get("htpasswd.loginFieldName", "cn");
 
       Log.info(ME, "Initializing LDAP access on htpasswd.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in htpasswd should be '" + loginFieldName + "'.");
       htpasswd = new LdapGateway(serverUrl, rootDN, rootPwd, loginFieldName);

@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.17 2002/05/06 14:39:47 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.18 2002/05/11 08:09:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -62,7 +62,7 @@ import java.io.Serializable;
 public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
    private String ME = "ConnectQos";
-   private Global glob = null;
+   private transient Global glob = null;
 
    /** PtP messages wanted?
     * <p />
@@ -315,7 +315,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final void setSecurityPluginData(String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {
-      org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
+      org.xmlBlaster.client.PluginLoader loader = glob.getClientSecurityPluginLoader();
       I_ClientPlugin plugin = loader.getClientPlugin(mechanism, version);
       securityQos = plugin.getSecurityQos();
       securityQos.setUserId(loginName);
@@ -329,7 +329,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final void setUserId(String loginName) throws XmlBlasterException
    {
-      org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
+      org.xmlBlaster.client.PluginLoader loader = glob.getClientSecurityPluginLoader();
       I_ClientPlugin plugin = loader.getClientPlugin(null, null);
       securityQos = plugin.getSecurityQos();
       securityQos.setUserId(loginName);
@@ -342,7 +342,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       // Performance TODO: for 'null' mechanism every time a new plugin is incarnated
       if (plugin==null || !plugin.getType().equals(mechanism) || !plugin.getVersion().equals(version)) {
-         if (pMgr==null) pMgr=PluginLoader.getInstance();
+         if (pMgr==null) pMgr=glob.getClientSecurityPluginLoader();
          try {
             if (mechanism != null)
                plugin=pMgr.getClientPlugin(mechanism, version);

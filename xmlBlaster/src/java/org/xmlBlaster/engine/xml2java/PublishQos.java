@@ -3,12 +3,13 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.6 2002/05/02 14:52:22 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.7 2002/05/11 08:08:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 
@@ -73,6 +74,7 @@ import java.io.*;
 public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
    private String ME = "PublishQos";
+   private final Global glob;
 
    /**
     * A message lease lasts forever if not otherwise specified. <p />
@@ -80,9 +82,8 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <code>message.lease.maxRemainingLife=3600000 # One hour lease</code><br />
     * Every message can set the remainingLife value between 1 and maxRemainingLife, 
     * 0 sets the life cycle on forever.
-    */
-   private static final long maxRemainingLife = XmlBlasterProperty.get("message.maxRemainingLife", 0L);
-   //private static final long maxRemainingLife = XmlBlasterProperty.get("message.maxRemainingLife", 36L*60*60*1000);
+    */ // TODO: Change to use glob instead of Global singleton! What about performance? Put variable into Global?
+   private static final long maxRemainingLife = Global.instance().getProperty().get("message.maxRemainingLife", 0L);
 
    // helper flags for SAX parsing
    private boolean inDestination = false; // parsing inside <destination> ?
@@ -158,9 +159,10 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Constructs the specialized quality of service object for a publish() call.
     * @param the XML based ASCII string
     */
-   public PublishQos(String xmlQoS_literal) throws XmlBlasterException
+   public PublishQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
       // if (Log.TRACE) Log.trace(ME, "\n"+xmlQoS_literal);
+      this.glob = glob;
       touchRcvTimestamp();
       setRemainingLife(getMaxRemainingLife());
       parseQos(xmlQoS_literal);
@@ -174,8 +176,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param the XML based ASCII string
     * @param true
     */
-   public PublishQos(String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
+   public PublishQos(Global glob, String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
    {
+      this.glob = glob;
       if (!fromPersistenceStore) {
          touchRcvTimestamp();
          setRemainingLife(getMaxRemainingLife());
@@ -856,7 +859,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public static void main(String[] args)
    {
       try {
-         XmlBlasterProperty.init(args);
+         Global glob = new Global(args);
          String xml =
             "<qos>\n" +
             "   <destination queryType='EXACT' forceQueuing='true'>\n" +
@@ -895,21 +898,21 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
          {
             System.out.println("\nFull Message from client ...");
-            PublishQos qos = new PublishQos(xml);
+            PublishQos qos = new PublishQos(glob, xml);
             qos.addRouteInfo(new RouteInfo(new NodeId("master"), 0, new Timestamp(9408630587L)));
             System.out.println(qos.toXml());
          }
  
          {
             System.out.println("\nFrom persistent store ...");
-            PublishQos qos = new PublishQos(xml, true);
+            PublishQos qos = new PublishQos(glob, xml, true);
             System.out.println(qos.toXml());
          }
          
          xml = "<qos></qos>";
          {
             System.out.println("\nEmpty message from client ...");
-            PublishQos qos = new PublishQos(xml);
+            PublishQos qos = new PublishQos(glob, xml);
             System.out.println(qos.toXml());
          }
       }

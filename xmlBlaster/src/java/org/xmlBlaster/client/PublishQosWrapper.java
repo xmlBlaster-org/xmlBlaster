@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.19 2002/05/09 11:53:07 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.20 2002/05/11 08:08:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -65,8 +65,7 @@ public class PublishQosWrapper extends QosWrapper
    public static boolean DEFAULT_readonly = false;
    private boolean readonly = DEFAULT_readonly;
 
-   private long remainingLife = XmlBlasterProperty.get("message.remainingLife", 0L);
-
+   private long remainingLife = org.xmlBlaster.util.Global.instance().getProperty().get("message.remainingLife", 0L); // TODO: use local glob
 
 
    /**

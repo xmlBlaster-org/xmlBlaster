@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.6 2002/04/22 07:03:24 ruff Exp $
+Version:   $Id: Global.java,v 1.7 2002/05/11 08:08:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -70,8 +70,12 @@ public final class Global extends org.xmlBlaster.util.Global
    {
       int ret = super.init(args);
       String id = getProperty().get("cluster.node.id", (String)null);
+      if (id == null && getBootstrapAddress().getPort() > 0) {
+         id = getBootstrapAddress().getAddress();
+      }
       if (id != null) {
          nodeId = new NodeId(id);
+         super.setId(nodeId.toString());
          log.info(ME, "Setting xmlBlaster instance name (cluster node id) to '" + nodeId.toString() + "'");
       }
       return ret;
@@ -238,7 +242,7 @@ public final class Global extends org.xmlBlaster.util.Global
       if (this.cbWorkerPool == null) {
          synchronized(this) {
             if (this.cbWorkerPool == null)
-               this.cbWorkerPool = new CbWorkerPool();
+               this.cbWorkerPool = new CbWorkerPool(this);
          }
       }
       return this.cbWorkerPool;

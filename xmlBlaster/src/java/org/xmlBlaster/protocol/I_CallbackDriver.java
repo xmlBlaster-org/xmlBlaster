@@ -7,8 +7,9 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 
 
@@ -27,7 +28,7 @@ public interface I_CallbackDriver
     * @param  callbackAddress Contains the callback address,
     *         e.g. the stringified CORBA callback handle of the client or his email address.
     */
-   public void init(CallbackAddress callbackAddress) throws XmlBlasterException;
+   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException;
 
    /**
     * Send the message update to the client.

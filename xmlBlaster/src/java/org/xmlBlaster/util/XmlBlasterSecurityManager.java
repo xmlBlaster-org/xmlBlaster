@@ -3,11 +3,12 @@ Name:      XmlBlasterSecurityManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlBlasterSecurityManager class to invoke the xmlBlaster server using RMI.
-Version:   $Id: XmlBlasterSecurityManager.java,v 1.4 2002/02/07 13:12:21 ruff Exp $
+Version:   $Id: XmlBlasterSecurityManager.java,v 1.5 2002/05/11 08:09:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.JdkCompatible;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -22,7 +23,7 @@ import java.rmi.AlreadyBoundException;
 
 
 /**
- * XmlBlasterSecurityManager class to create a SecurityManager with the config/xmlBlaster.policy file.
+ * XmlBlasterSecurityManager class to create a RMI SecurityManager with the config/xmlBlaster.policy file.
  * <p />
  */
 public class XmlBlasterSecurityManager
@@ -42,15 +43,15 @@ public class XmlBlasterSecurityManager
     *   <li>If found in a jar file, it is read and written to the local directory for the SecurityManager to access</li>
     * </ol>
     */
-   public static void createSecurityManager() throws XmlBlasterException
+   public static void createSecurityManager(Global glob) throws XmlBlasterException
    {
       if (System.getSecurityManager() == null) {
          if (System.getProperty("java.security.policy") != null) {
             // use the given policy file (java -Djava.security.policy=...)
             Log.info(ME, "Setting security policy from file " + System.getProperty("java.security.policy"));
          }
-         else if (XmlBlasterProperty.get("java.security.policy", (String)null) != null) {
-            String file = XmlBlasterProperty.get("java.security.policy", (String)null);
+         else if (glob.getProperty().get("java.security.policy", (String)null) != null) {
+            String file = glob.getProperty().get("java.security.policy", (String)null);
             Log.info(ME, "Setting security policy from file " + file);
             JdkCompatible.setSystemProperty("java.security.policy", file);
          }

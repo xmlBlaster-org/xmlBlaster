@@ -3,12 +3,12 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.17 2002/04/30 16:41:39 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.18 2002/05/11 08:08:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -40,6 +40,7 @@ import javax.mail.internet.*;
 public class CallbackEmailDriver implements I_CallbackDriver
 {
    private String ME = "CallbackEmailDriver";
+   private Global glob = null;
    private CallbackAddress callbackAddress = null;
 
    /** Get a human readable name of this driver */
@@ -52,8 +53,9 @@ public class CallbackEmailDriver implements I_CallbackDriver
    /**
     * @param  callbackAddress Contains the email TO: address
     */
-   public void init(CallbackAddress callbackAddress)
+   public void init(Global glob, CallbackAddress callbackAddress)
    {
+      this.glob = glob;
       this.callbackAddress = callbackAddress;
    }
 
@@ -66,8 +68,8 @@ public class CallbackEmailDriver implements I_CallbackDriver
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSessionId());
       try {
-         String smtpHost = XmlBlasterProperty.get("EmailDriver.smtpHost", "localhost");
-         String from = XmlBlasterProperty.get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();
+         String smtpHost = glob.getProperty().get("EmailDriver.smtpHost", "localhost");
+         String from = glob.getProperty().get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();
          String to = callbackAddress.getAddress();
 
          // Get system properties

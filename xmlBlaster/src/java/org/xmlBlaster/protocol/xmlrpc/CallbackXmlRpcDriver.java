@@ -3,18 +3,18 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.14 2002/04/30 16:41:42 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.15 2002/05/11 08:09:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
 
 import org.apache.xmlrpc.XmlRpcClient;
@@ -35,6 +35,7 @@ import java.util.Vector;
 public class CallbackXmlRpcDriver implements I_CallbackDriver
 {
    private String ME = "CallbackXmlRpcDriver";
+   private Global glob = null;
    private CallbackAddress callbackAddress = null;
    private XmlRpcClient xmlRpcClient = null;
 
@@ -54,8 +55,9 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @param  callbackAddress Contains the stringified XML-RPC callback handle of
     *                      the client
     */
-   public void init(CallbackAddress callbackAddress) throws XmlBlasterException
+   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
+      this.glob = glob;
       this.callbackAddress = callbackAddress;
       try {
          xmlRpcClient = new XmlRpcClient(callbackAddress.getAddress());

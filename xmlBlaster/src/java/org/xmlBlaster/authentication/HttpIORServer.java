@@ -3,11 +3,12 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.13 2002/05/01 21:40:00 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.14 2002/05/11 08:08:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import java.util.*;
@@ -28,12 +29,13 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
 {
    private String ME = "HttpIORServer";
+   private Global glob;
    private String ip_addr = null;
    private final int HTTP_PORT;
    private String ior = null;
@@ -48,8 +50,9 @@ public class HttpIORServer extends Thread
     * @param port    The port where we publish the IOR
     * @param iorStr  The IOR string of the ProxyService
     */
-   public HttpIORServer(String ip_addr, int port, String ior)
+   public HttpIORServer(Global glob, String ip_addr, int port, String ior)
    {
+      this.glob = glob;
       this.ip_addr = ip_addr;
       this.ior = ior;
       this.HTTP_PORT = port;
@@ -63,7 +66,7 @@ public class HttpIORServer extends Thread
    public void run()
    {
       try {
-         int backlog = XmlBlasterProperty.get("iorBacklog", 50); // queue for max 50 incoming connection request
+         int backlog = glob.getProperty().get("iorBacklog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
             Socket accept = listen.accept();

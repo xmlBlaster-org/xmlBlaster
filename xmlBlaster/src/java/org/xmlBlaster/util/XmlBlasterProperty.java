@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.16 2002/04/26 21:32:00 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.17 2002/05/11 08:09:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -265,18 +265,19 @@ public class XmlBlasterProperty
       String ME = "XmlBlasterProperty";
 
       try {
-         boolean showUsage = XmlBlasterProperty.init(args);  // initialize
+         Global glob = new Global();
+         boolean showUsage = glob.init(args) != 0;  // initialize
          if (showUsage) Log.plain("Usage: java org.xmlBlaster.util.XmlBlasterProperty -isNice true -Persistence.Driver myDriver -isCool yes");
 
-         System.out.println("Persistence=" + XmlBlasterProperty.get("Persistence", false));
-         System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", false));
-         System.out.println("Persistence.Driver=" + XmlBlasterProperty.get("Persistence.Driver", "NONE"));
-         System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", "NONE"));
+         System.out.println("Persistence=" + glob.getProperty().get("Persistence", false));
+         System.out.println("Persistence.Dummy=" + glob.getProperty().get("Persistence.Dummy", false));
+         System.out.println("Persistence.Driver=" + glob.getProperty().get("Persistence.Driver", "NONE"));
+         System.out.println("Persistence.Dummy=" + glob.getProperty().get("Persistence.Dummy", "NONE"));
 
          // Testing arrays
-         XmlBlasterProperty.set("A[0]", "23");
-         XmlBlasterProperty.set("A[1]", "27");
-         XmlBlasterProperty.set("C[a][b]", "ok");
+         glob.getProperty().set("A[0]", "23");
+         glob.getProperty().set("A[1]", "27");
+         glob.getProperty().set("C[a][b]", "ok");
          
          System.out.println("All properties as XML:\n" + XmlBlasterProperty.toXml());
       } catch (JUtilsException e) {

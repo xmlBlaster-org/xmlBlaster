@@ -3,16 +3,17 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.21 2002/03/22 08:31:18 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.22 2002/05/11 08:08:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
-import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 
@@ -22,12 +23,13 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
 {
    private String ME = "CallbackCorbaDriver";
+   private Global glob = null;
    private BlasterCallback cb = null;
    private CallbackAddress callbackAddress = null;
 
@@ -43,8 +45,9 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * Get callback reference here.
     * @param  callbackAddress Contains the stringified CORBA callback handle of the client
     */
-   public void init(CallbackAddress callbackAddress) throws XmlBlasterException
+   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
+      this.glob = glob;
       this.callbackAddress = callbackAddress;
       String callbackIOR = callbackAddress.getAddress();
       try {

@@ -25,6 +25,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.log.LogDeviceConsole;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
 /**
@@ -41,32 +42,34 @@ public class BlasterLogger  implements org.jutils.log.LogableDevice {
     private PrintWriter logWriter = null;
     private LogChannel channel;
     private LogDeviceConsole console = null;
+    private final Global glob;
     
-    public BlasterLogger() throws ResourceException {
-	try {
-	    XmlBlasterProperty.set("logConsole", "false");
-	    channel = Log.getLogChannel();
-	    channel.removeAllDevices();
-	}catch(org.jutils.JUtilsException ex) {
-	    ResourceException re = new ResourceException("Could not instantiate logger: " + ex);
-	    re.setLinkedException(ex);
-	    throw re;
+    public BlasterLogger(Global glob) throws ResourceException {
+        this.glob = glob;
+        try {
+            glob.getProperty().set("logConsole", "false");
+            channel = Log.getLogChannel();
+            channel.removeAllDevices();
+        }catch(org.jutils.JUtilsException ex) {
+            ResourceException re = new ResourceException("Could not instantiate logger: " + ex);
+            re.setLinkedException(ex);
+            throw re;
 
-	}
+        }
     }
     
     public void setLogWriter(PrintWriter out)
         throws ResourceException {
-	this.logWriter = out;
-	Log.info("BlasterLogger","Setting LogWriter: " + out);
+        this.logWriter = out;
+        Log.info("BlasterLogger","Setting LogWriter: " + out);
     }
 
     public void setLogging(boolean log) {
-	// If true, set this as a logchannel
-	if (log)
-	    channel.addLogDevice(this);
-	else
-	    channel.removeAllDevices();
+        // If true, set this as a logchannel
+        if (log)
+            channel.addLogDevice(this);
+        else
+            channel.removeAllDevices();
     }
 
     /**
@@ -75,44 +78,44 @@ public class BlasterLogger  implements org.jutils.log.LogableDevice {
      * order number of levels. This does currently not work
      */
     public void setLogLevel(String level) {
-	
+        
     }
     
     private String convertLevelToString(int level) {
       if ((level & LogChannel.LOG_ERROR) > 0) {
-	  return "ERROR";
+          return "ERROR";
       }
       if ((level &  LogChannel.LOG_WARN) > 0) {
-	  return "WARN";
+          return "WARN";
       }
       if ((level &  LogChannel.LOG_INFO) > 0) {
-	  return "INFO";
+          return "INFO";
       }
       if ((level &  LogChannel.LOG_CALL) > 0) {
-	  return "CALL";
+          return "CALL";
       }
       if ((level &  LogChannel.LOG_TIME) > 0) {
-	  return "TIME";
+          return "TIME";
       }
       if ((level &  LogChannel.LOG_TRACE) > 0) {
-	  return "TRACE";
+          return "TRACE";
       }
       if ((level &  LogChannel.LOG_DUMP) > 0) {
-	  return "DUMP";
+          return "DUMP";
       }
       return "UNKNOWN LEVEL" + level;
    }
     //--- LogableDevice ---
     public void log(int level, String source, String text) {
-	if (logWriter != null) {
-	    String levelString = convertLevelToString(level);
-	    String logEntry = channel.formatLogData(levelString, level, source, text);
+        if (logWriter != null) {
+            String levelString = convertLevelToString(level);
+            String logEntry = channel.formatLogData(levelString, level, source, text);
 
-	    logWriter.println(logEntry + "\n");
-	} else {
-	    //Log to console
-	    console.log(level,source,text);
-	}
+            logWriter.println(logEntry + "\n");
+        } else {
+            //Log to console
+            console.log(level,source,text);
+        }
     }
     
     

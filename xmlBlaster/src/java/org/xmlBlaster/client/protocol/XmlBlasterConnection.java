@@ -283,15 +283,15 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void initSecuritySettings(String secMechanism, String secVersion)
    {
-      PluginLoader secPlgnMgr = PluginLoader.getInstance();
+      PluginLoader secPlgnMgr = glob.getClientSecurityPluginLoader();
       try {
-         secPlgn      = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
+         secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
          if (secMechanism != null)  // to avoid double logging for login()
             Log.info(ME, "Loaded security plugin=" + secMechanism + " version=" + secVersion);
       }
       catch (Exception e) {
          Log.error(ME, "Security plugin initialization failed. Reason: "+e.toString());
-         secPlgn=null;
+         secPlgn = null;
       }
    }
 
@@ -1751,7 +1751,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       String text = "\n";
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
-      text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
+      text += "                       Current setting is '" + Global.instance().getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";

@@ -133,7 +133,7 @@ abstract public class PluginManagerBase {
       String rawString;
 
       if (isSupported(type, version)) {
-         rawString = XmlBlasterProperty.get(getPluginPropertyName(type, version), (String)null);
+         rawString = glob.getProperty().get(getPluginPropertyName(type, version), (String)null);
          if (rawString==null) {
             rawString = getDefaultPluginName(type, version);
          }

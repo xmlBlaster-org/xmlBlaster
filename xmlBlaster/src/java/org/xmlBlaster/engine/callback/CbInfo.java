@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.12 2002/04/24 06:51:08 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.13 2002/05/11 08:08:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -72,7 +72,7 @@ public class CbInfo
             I_CallbackDriver cbDriverNative = glob.getNativeCallbackDriver(cbArr[ii].getType() + cbArr[ii].getAddress());
             if (cbDriverNative != null)  { // && obj.toString().indexOf("org.xmlBlaster.protocol.socket.CallbackSocketDriver") >= 0) {
                callbackDrivers[ii] = cbDriverNative;
-               callbackDrivers[ii].init(cbArr[ii]);
+               callbackDrivers[ii].init(glob, cbArr[ii]);
                if (Log.TRACE) Log.trace(ME, "Created native callback driver for protocol '" + cbArr[ii].getType() + "'");
                continue;
             }
@@ -88,7 +88,7 @@ public class CbInfo
 
             try {
                callbackDrivers[ii] = (I_CallbackDriver)cl.newInstance();
-               callbackDrivers[ii].init(cbArr[ii]);
+               callbackDrivers[ii].init(glob, cbArr[ii]);
                if (Log.TRACE) Log.trace(ME, "Created callback driver for protocol '" + cbArr[ii].getType() + "'");
             }
             catch (IllegalAccessException e) {
@@ -177,7 +177,7 @@ public class CbInfo
                "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
                "JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver";
 
-      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", defaultDrivers);
+      String drivers = glob.getProperty().get("Protocol.CallbackDrivers", defaultDrivers);
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {

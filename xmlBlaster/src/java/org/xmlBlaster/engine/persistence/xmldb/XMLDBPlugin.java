@@ -3,12 +3,13 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.5 2002/04/19 11:00:55 ruff Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.6 2002/05/11 08:08:51 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
@@ -46,6 +47,7 @@ import java.util.Vector;
 public class XMLDBPlugin implements I_PersistenceDriver
 {
    private static final String ME = "XMLDBPlugin";
+   private Global glob = null;
    private String driverPath = null;  // path where persistent messages will be stored
    private String colName = null;     // name of storage instance
    private XindiceProxy db = null;    // instance of db proxy Xindice, dbXML, eXist, ...
@@ -61,13 +63,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * Constructs and opens the XMLDBPlugin object (reflection constructor).
     */
    public XMLDBPlugin() throws XmlBlasterException {
-
       if (Log.CALL) Log.call(ME, "XMLDBPlugin (reflection constructor)");
-
-      driverPath = XmlBlasterProperty.get("Persistence.Path", "xmldb:xindice:///db");
-      colName = XmlBlasterProperty.get("Persistence.Collection", "xmlBlaster");
-
-      Log.info(ME, "using collectionPath '" + driverPath + "/" + colName + "'");
    }
 
      /**
@@ -77,11 +73,16 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * @param param  Aditional parameter for the persistence plugin
     */
    public void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
-
+      this.glob = glob;
       if (Log.CALL) Log.call(ME, "init " + param);
 
+      driverPath = glob.getProperty().get("Persistence.Path", "xmldb:xindice:///db");
+      colName = glob.getProperty().get("Persistence.Collection", "xmlBlaster");
+
+      Log.info(ME, "using collectionPath '" + driverPath + "/" + colName + "'");
+
       // fixed to xindice right now, needs to be opend to eXist or Tamino or ... as well. TODO!!!
-      db = new XindiceProxy(driverPath + "/" + colName);
+      db = new XindiceProxy(glob, driverPath + "/" + colName);
 
       // Create Collection manually by using shell-commands
       // xindiceadmin ac -c /db -n xmlBlaster
@@ -303,14 +304,15 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
       String test_index = "7042001";
 
+      Global glob = new Global();
       // String colPath = "xmldb:xindice:///db";
       // String colName = "xmlBlaster_test";
-      String colPath = XmlBlasterProperty.get("Persistence.Path", "xmldb:xindice:///db");
-      String colName = XmlBlasterProperty.get("Persistence.Collection", "xmlBlaster_test");
+      String colPath = glob.getProperty().get("Persistence.Path", "xmldb:xindice:///db");
+      String colName = glob.getProperty().get("Persistence.Collection", "xmlBlaster_test");
 
       try {
          if (Log.CALL) Log.call(ME, "in try");
-         XindiceProxy db = new XindiceProxy(colPath);
+         XindiceProxy db = new XindiceProxy(glob, colPath);
          // Log.info(ME, "colPath: " + colPath);
          // Log.info(ME, "colName: " + colName);
 

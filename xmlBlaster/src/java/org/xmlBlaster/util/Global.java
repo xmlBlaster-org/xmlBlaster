@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.8 2002/05/03 16:38:54 ruff Exp $
+Version:   $Id: Global.java,v 1.9 2002/05/11 08:09:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.client.PluginLoader;
 
 import java.util.Properties;
 
@@ -28,10 +29,13 @@ import java.io.IOException;
 /**
  * Global variables to avoid singleton. 
  */
-public class Global
+public class Global implements Cloneable
 {
+   private static Global firstInstance = null;
+
    private final static String ME = "Global";
    private String ip_addr = null;
+   private String id = "";
 
    /**
     * The IANA registered xmlBlaster port,
@@ -46,20 +50,140 @@ public class Global
    public static final int XMLBLASTER_PORT = 3412;
 
    private String[] args;
-   protected XmlBlasterProperty property = new XmlBlasterProperty();
-   protected Log log = new Log();
+   protected final XmlBlasterProperty property;
+   protected final Log log;
+   private final Map nativeCallbackDriverMap;
+   /** Store objecte in the scope of one client connection or server instance */
+   private final Map objectMap;
    private Address bootstrapAddress = null;
-   private Map nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
-
+   private PluginLoader clientSecurityLoader = null;
 
    public Global()
    {
+      synchronized (Global.class) {
+         if (this.firstInstance == null)
+            this.firstInstance = this;
+      }
       this.args = new String[0];
+      property = new XmlBlasterProperty();
+      log = new Log();
+      nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
+      objectMap = Collections.synchronizedMap(new HashMap());
    }
 
    public Global(String[] args)
    {
+      synchronized (Global.class) {
+         if (this.firstInstance == null)
+            this.firstInstance = this;
+      }
+      property = new XmlBlasterProperty();
+      log = new Log();
+      nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
+      objectMap = Collections.synchronizedMap(new HashMap());
       init(args);
+   }
+
+   /** Needed for getClone() only */
+   /*
+   private Global(XmlBlasterProperty prop, Log log, String[] args)
+   {
+      synchronized (Global.class) {
+         if (this.firstInstance == null)
+            this.firstInstance = this;
+      }
+      property = prop.clone();
+      log = log.clone();
+      nativeCallbackDriverMap = nativeCallbackDriverMap.clone();
+      init(args);
+   }
+   */
+
+   /**
+    * @return 1 Show usage, 0 OK, -1 error
+    */
+   public int init(String[] args)
+   {
+      this.args = args;
+      if (this.args == null)
+         this.args = new String[0];
+      try {
+         // XmlBlasterProperty.addArgs2Props(this.args); // enforce that the args are added to the xmlBlaster.properties hash table
+         boolean showUsage = property.init(this.args);  // initialize
+         if (showUsage) return 1;
+         return 0;
+      } catch (JUtilsException e) {
+         System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
+         return -1;
+      }
+   }
+
+   /**
+    * Access the id (as a String) currently used on server side. 
+    * @return ""
+    */
+   public String getId() {
+      return id;
+   }
+
+   /**
+    * Currently set by enging.Global, used server side only. 
+    * @param a unique id
+    */
+   public void setId(String id) {
+      this.id = id;
+   }
+
+   /**
+    * Global access to the default 'global' instance. 
+    * If you have parameters (e.g. from the main() mehtod) you should
+    * initialize Global first before using instance():
+    * <pre>
+    *    public static void main(String[] args) {
+    *       new Global(args);
+    *       ...
+    *    }
+    *
+    *    //later you can get this initialized instance with:
+    *    Global glob = Global.instance();   
+    *    ...
+    * </pre>
+    */
+   public static Global instance()
+   {
+      if (firstInstance == null) {
+         synchronized (Global.class) {
+            if (firstInstance == null)
+               new Global();
+         }
+      }
+      return firstInstance;
+   }
+
+   /**
+    * Get a cloned instance. 
+    * Note that instance() will return the original instance
+    * even if called on the cloned object (it's a static variable).
+    */
+   public final Global getClone(String[] args)
+   {
+      try {
+         Global g = (Global)this.clone(); // new Global(this.property, this.log, args);
+         /*
+         g.property = new XmlBlasterProperty();
+         g.log = new Log();
+         g.nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
+         */
+         /*
+         g.init(this.args);
+         */
+         g.init(args);
+         return g;
+      }
+      catch (CloneNotSupportedException e) {
+         Log.error(ME, "Global clone failed: " + e.toString());
+         return null;
+      }
    }
 
    public final XmlBlasterProperty getProperty()
@@ -79,25 +203,6 @@ public class Global
    public final String[] getArgs()
    {
       return this.args;
-   }
-
-   /**
-    * @return 1 Show usage, 0 OK, -1 error
-    */
-   public int init(String[] args)
-   {
-      this.args = args;
-      if (this.args == null)
-         this.args = new String[0];
-      try {
-         // XmlBlasterProperty.addArgs2Props(this.args); // enforce that the args are added to the xmlBlaster.properties hash table
-         boolean showUsage = XmlBlasterProperty.init(this.args);  // initialize
-         if (showUsage) return 1;
-         return 0;
-      } catch (JUtilsException e) {
-         System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
-         return -1;
-      }
    }
 
    /**
@@ -131,6 +236,47 @@ public class Global
    public final void removeNativeCallbackDriver(String key)
    {
       nativeCallbackDriverMap.remove(key);
+   }
+
+   /**
+    * Get an object in the scope of an XmlBlasterConnection or of one cluster node. 
+    * <p />
+    * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
+    * running in the same JVM
+    *
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @return The instance of this object
+    */
+   public final Object getObjectEntry(String key)
+   {
+      return objectMap.get(key);
+   }
+
+   /**
+    * Add an object in the scope of an XmlBlasterConnection or of one cluster node. 
+    * <p />
+    * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
+    * running in the same JVM
+    *
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param The instance of the protocol callback driver
+    */
+   public final void addObjectEntry(String key, Object driver)
+   {
+      objectMap.put(key, driver);
+   }
+
+   /**
+    * Remove an object from the scope of an XmlBlasterConnection or of one cluster node. 
+    * <p />
+    * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
+    * running in the same JVM
+    *
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    */
+   public final void removeObjectEntry(String key)
+   {
+      objectMap.remove(key);
    }
 
    /**
@@ -242,6 +388,18 @@ public class Global
          }
       }
       return ip_addr;
+   }
+
+   /**
+    * Needed by java client helper classes to load
+    * the security plugin
+    */
+   public PluginLoader getClientSecurityPluginLoader() {
+      synchronized (PluginLoader.class) {
+         if (clientSecurityLoader == null)
+            clientSecurityLoader = new PluginLoader(this);
+      }
+      return clientSecurityLoader;
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.5 2000/11/19 20:37:46 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.6 2002/05/11 08:09:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -36,7 +36,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    
    static {
-      logException = XmlBlasterProperty.get("Log.exception", false);
+      logException = Global.instance().getProperty().get("Log.exception", false);
       String jvm = System.getProperty("java.vm.info");
       numIgnore = 3;
       if (jvm != null) {

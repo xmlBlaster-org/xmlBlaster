@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.15 2002/04/19 10:59:25 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.16 2002/05/11 08:08:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -88,7 +88,6 @@ public class SocketDriver extends Thread implements I_Driver
    public SocketDriver()
    {
       super(ME);
-      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
    }
 
    /**
@@ -140,14 +139,16 @@ public class SocketDriver extends Thread implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      socketPort = XmlBlasterProperty.get("socket.port", 7607);
+      SOCKET_DEBUG = glob.getProperty().get("socket.debug", 0);
+
+      socketPort = glob.getProperty().get("socket.port", 7607);
 
       if (socketPort < 1) {
          Log.info(ME, "Option socket.port set to " + socketPort + ", socket server not started");
          return;
       }
 
-      hostname = XmlBlasterProperty.get("socket.hostname", (String)null);
+      hostname = glob.getProperty().get("socket.hostname", (String)null);
       if (hostname == null) {
          try  {
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -181,7 +182,7 @@ public class SocketDriver extends Thread implements I_Driver
    public void run()
    {
       try {
-         int backlog = XmlBlasterProperty.get("socket.backlog", 50); // queue for max 50 incoming connection request
+         int backlog = glob.getProperty().get("socket.backlog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(socketPort, backlog, inetAddr);
          Log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
          serverUrl = hostname + ":" + socketPort;
@@ -193,7 +194,7 @@ public class SocketDriver extends Thread implements I_Driver
                Log.info(ME, "Closing server " + hostname + " on port " + socketPort + ".");
                break;
             }
-            HandleClient hh = new HandleClient(this, accept);
+            HandleClient hh = new HandleClient(glob, this, accept);
          }
       }
       catch (java.net.UnknownHostException e) {

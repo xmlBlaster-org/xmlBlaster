@@ -30,10 +30,10 @@ public class Session implements I_Session, I_Subject {
    public Session(Manager sm, String sessionId) throws XmlBlasterException {
       secMgr = sm;
       this.sessionId = sessionId;
-      final String serverUrl = XmlBlasterProperty.get("ldap.serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
-      final String rootDN = XmlBlasterProperty.get("ldap.rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
-      final String rootPwd =  XmlBlasterProperty.get("ldap.rootPwd", "secret");
-      final String loginFieldName = XmlBlasterProperty.get("ldap.loginFieldName", "cn");
+      final String serverUrl = sm.getGlobal().getProperty().get("ldap.serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
+      final String rootDN = sm.getGlobal().getProperty().get("ldap.rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
+      final String rootPwd =  sm.getGlobal().getProperty().get("ldap.rootPwd", "secret");
+      final String loginFieldName = sm.getGlobal().getProperty().get("ldap.loginFieldName", "cn");
 
       Log.info(ME, "Initializing LDAP access on ldap.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in ldap should be '" + loginFieldName + "'.");
       ldap = new LdapGateway(serverUrl, rootDN, rootPwd, loginFieldName);

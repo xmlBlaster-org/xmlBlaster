@@ -3,12 +3,12 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.6 2002/03/18 00:29:37 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.7 2002/05/11 08:08:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -27,6 +27,7 @@ import org.xmlBlaster.client.protocol.ConnectionException;
 public class CallbackSocketDriver implements I_CallbackDriver
 {
    private final String ME = "CallbackSocketDriver";
+   private Global glob = null;
    private String loginName;
    private HandleClient handler;
    private CallbackAddress callbackAddress;
@@ -48,7 +49,8 @@ public class CallbackSocketDriver implements I_CallbackDriver
       return this.loginName;
    }
 
-   public void init(CallbackAddress callbackAddress) {
+   public void init(Global glob, CallbackAddress callbackAddress) {
+      this.glob = glob;
       this.callbackAddress = callbackAddress;
    }
 

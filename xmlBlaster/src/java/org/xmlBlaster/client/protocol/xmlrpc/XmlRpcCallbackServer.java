@@ -51,6 +51,7 @@ import org.apache.xmlrpc.WebServer;
 public class XmlRpcCallbackServer implements I_CallbackServer
 {
    private String ME = "XmlRpcCallbackServer";
+   private Global glob = null;
    private I_CallbackExtended client;
    private String loginName;
    /** The name for the XML-RPC registry */
@@ -88,10 +89,10 @@ public class XmlRpcCallbackServer implements I_CallbackServer
       if (Log.CALL) Log.call(ME, "createCallbackServer() ...");
 
       // Use the xmlBlaster-server xmlrpcRegistry as a fallback:
-      int callbackPort = XmlBlasterProperty.get("xmlrpc.port",
+      int callbackPort = glob.getProperty().get("xmlrpc.port",
                                                 DEFAULT_CALLBACK_PORT); // default xmlBlaster XML-RPC publishing port is 8081
       // Use the given callback port if specified :
-      callbackPort = XmlBlasterProperty.get("xmlrpc.portCB", callbackPort);
+      callbackPort = glob.getProperty().get("xmlrpc.portCB", callbackPort);
 
       String hostname;
       try  {
@@ -100,10 +101,10 @@ public class XmlRpcCallbackServer implements I_CallbackServer
       } catch (Exception e) {
          Log.info(ME, "Can't determine your hostname");
          // Use the xmlBlaster-server xmlrpcRegistry as a fallback:
-         hostname = XmlBlasterProperty.get("xmlrpc.hostname", "localhost");
+         hostname = glob.getProperty().get("xmlrpc.hostname", "localhost");
       }
       // Use the given callback hostname if specified :
-      hostname = XmlBlasterProperty.get("xmlrpc.hostnameCB", hostname);
+      hostname = glob.getProperty().get("xmlrpc.hostnameCB", hostname);
       java.net.InetAddress inetAddr = null;
       try {
          inetAddr = java.net.InetAddress.getByName(hostname);

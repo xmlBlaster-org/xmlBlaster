@@ -8,6 +8,7 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.engine.persistence.filestore;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
@@ -55,6 +56,7 @@ import java.util.Vector;
 public class FileDriver implements I_PersistenceDriver
 {
    private static final String ME = "FileDriver";
+   private Global glob = null;
    private String path = null;
    private final String XMLKEY_TOKEN = "-XmlKey.xml";
    private final String XMLQOS_TOKEN = "-XmlQos.xml";
@@ -65,8 +67,22 @@ public class FileDriver implements I_PersistenceDriver
     */
    public FileDriver() throws XmlBlasterException
    {
+   }
+
+
+     /**
+    * initialises an instance of the filedriver plugin
+    * <p />
+    * @param Global Global object holding logging and property informations
+    * @param param  aditional parameter for the filedriver plugin
+    */
+   public final void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
+      if (Log.CALL) Log.call(ME, "Entering init()");
+
+      this.glob = glob;
+      
       String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
-      path = XmlBlasterProperty.get("Persistence.Path", defaultPath);
+      path = glob.getProperty().get("Persistence.Path", defaultPath);
       if (path == null) {
          throw new XmlBlasterException(ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
       }
@@ -83,19 +99,6 @@ public class FileDriver implements I_PersistenceDriver
          Log.error(ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
          throw new XmlBlasterException(ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
-
-   }
-
-
-     /**
-    * initialises an instance of the filedriver plugin
-    * <p />
-    * @param Global Global object holding logging and property informations
-    * @param param  aditional parameter for the filedriver plugin
-    */
-   public final void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
-      if (Log.TRACE) Log.trace(ME, "Not neccessary!");
-
    }
 
 

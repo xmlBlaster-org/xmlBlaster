@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.20 2002/04/26 21:31:47 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.21 2002/05/11 08:08:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -78,7 +78,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    public RmiConnection(Global glob) throws XmlBlasterException
    {
       this.glob = glob;
-      XmlBlasterSecurityManager.createSecurityManager();
+      XmlBlasterSecurityManager.createSecurityManager(glob);
    }
 
 
@@ -90,7 +90,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    public RmiConnection(Global glob, Applet ap) throws XmlBlasterException
    {
       this.glob = glob;
-      XmlBlasterSecurityManager.createSecurityManager();
+      XmlBlasterSecurityManager.createSecurityManager(glob);
    }
 
 
@@ -107,15 +107,15 @@ public class RmiConnection implements I_XmlBlasterConnection
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
+      hostname = glob.getProperty().get("rmi.hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = XmlBlasterProperty.get("rmi.registryPort", DEFAULT_REGISTRY_PORT);
+      int registryPort = glob.getProperty().get("rmi.registryPort", DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 
 
       String authServerUrl = prefix + "I_AuthServer";
-      String addr = XmlBlasterProperty.get("rmi.AuthServer.url", authServerUrl);
+      String addr = glob.getProperty().get("rmi.AuthServer.url", authServerUrl);
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          authServer = (I_AuthServer)rem;
@@ -127,7 +127,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
       String xmlBlasterUrl = prefix + "I_XmlBlaster";
-      addr = XmlBlasterProperty.get("rmi.XmlBlaster.url", xmlBlasterUrl);
+      addr = glob.getProperty().get("rmi.XmlBlaster.url", xmlBlasterUrl);
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          blasterServer = (I_XmlBlaster)rem;

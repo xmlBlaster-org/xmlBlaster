@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.16 2002/05/02 12:36:39 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.17 2002/05/11 08:08:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -49,7 +49,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    SocketCallbackImpl(SocketConnection sockCon) throws XmlBlasterException, IOException
    {
-      super(sockCon.getSocket(), null);
+      super(sockCon.getGlobal(), sockCon.getSocket(), null);
       setLoginName(sockCon.getLoginName());
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
@@ -57,7 +57,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       this.SOCKET_DEBUG = sockCon.SOCKET_DEBUG;
 
       Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+sockCon.getLoginName());
-      t.setPriority(XmlBlasterProperty.get("socket.threadPrio", Thread.NORM_PRIORITY));
+      t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
       t.start();
    }
 

@@ -36,7 +36,7 @@ public class MessageUnitHandler
    private final RequestBroker requestBroker;
 
    // Default is that a single client can subscribe the same message multiple times
-   // private boolean allowMultiSubscriptionPerClient = XmlBlasterProperty.get("Engine.allowMultiSubscriptionPerClient", true);
+   // private boolean allowMultiSubscriptionPerClient = glob.getProperty().get("Engine.allowMultiSubscriptionPerClient", true);
 
    /**
     * This map knows all clients which have subscribed on this message content
