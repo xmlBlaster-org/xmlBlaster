@@ -6,6 +6,7 @@
 
 Authors:
  James Birchfield <jmbirchfield@proteustechnologies.com>
+ Marcel Ruff <ruff@swand.lake.de>
 
 ToDo:
  Figure out how not to convert idl to java everytime.
@@ -109,6 +110,7 @@ Else add it manually.
     <echo message="   javadocs    --> generates the javadoc documentation"/>
     <echo message="   dist        --> generates the xmlBlaster distribution"/>
     <echo message="   clean       --> cleans up the directory"/>
+    <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat)"/>
     <echo message=""/>
     <echo message=" See the comments inside the build.xml file for more details."/>
     <echo message="-------------------------------------------------------------"/>
@@ -140,43 +142,55 @@ Else add it manually.
 
     <!-- convert idl -->
     <echo message="Converting idl..."/>
-    <java
-                classname="${idl.class}"
-                args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
+    <java classname="${idl.class}"
+          args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
-    <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java, **/OracleSqlFactory.java"/>
-    <copyfile src="${classes.dir}/manifest.xmlBlaster" dest="${build.dest}/manifest.xmlBlaster"/>
-    <copyfile src="./config/xmlBlaster.policy" dest="${build.dest}/xmlBlaster.policy"/>
+    <copy todir="${build.src}/xmlBlaster">
+       <fileset dir="${src.dir}">
+          <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+          <exclude name="Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+          <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+          <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+          <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
+          <exclude name="**/OracleSqlFactory.java"/>
+       </fileset>
+    </copy>
 
-    <javac
-                srcdir="${build.src}/xmlBlaster"
-                destdir="${build.dest}"
-                classpath="${classpath}"
-                debug="${debug}"/>
+    <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
+    <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy"/>
+    <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
+
+    <javac srcdir="${build.src}/xmlBlaster"
+           destdir="${build.dest}"
+           classpath="${classpath}"
+           debug="${debug}"/>
 
     <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
     <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
     <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
 
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
 
-    <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
+    <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Compiles the xmlBlaster demo source directory                       -->
   <!-- =================================================================== -->
   <target name="demo" depends="xmlBlaster">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
-    <copydir src="${demo.dir}" dest="${build.src}/demo" excludes="README, Makefile, **/XmlRpcHttpClient.java"/>
-    <javac
-                srcdir="${build.src}/demo"
-                destdir="${build.dest}"
-                classpath="${classpath}:${lib.dir}/${name}.jar"
-                debug="${debug}"/>
-
+    <copy todir="${build.src}/demo">
+      <fileset dir="${demo.dir}">
+        <exclude name="README"/>
+        <exclude name="Makefile"/>
+        <exclude name="**/XmlRpcHttpClient.java"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${build.src}/demo"
+           destdir="${build.dest}"
+           classpath="${classpath}:${lib.dir}/${name}.jar"
+           debug="${debug}"/>
     <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class"/>
-
-    <copyfile src="${build.dir}/demo.jar" dest="${lib.dir}/demo.jar"/>
+    <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
   </target>
 
   <!-- =================================================================== -->
@@ -187,22 +201,26 @@ Else add it manually.
     <delete file="${lib.dir}/demo.jar"/>
     <delete file="${lib.dir}/testsuite.jar"/>
     <delete file="${build.dir}/${name}.jar"/>
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy"/>
-    <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif"/>
+    <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Compiles the xmlBlaster testsuite source directory                  -->
   <!-- =================================================================== -->
   <target name="testsuite" depends="xmlBlaster">
-    <copydir src="${testsuite.dir}/org" dest="${build.src}/testsuite/org" excludes="README, Makefile"/>
-    <javac
-                srcdir="${build.src}/testsuite"
-                destdir="${build.dest}"
-                classpath="${classpath}:${lib.dir}/${name}.jar"
-                debug="${debug}"/>
+    <copy todir="${build.src}/testsuite/org">
+      <fileset dir="${testsuite.dir}/org">
+        <exclude name="README, Makefile"/>
+        <exclude name="Makefile"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${build.src}/testsuite"
+           destdir="${build.dest}"
+           classpath="${classpath}:${lib.dir}/${name}.jar"
+           debug="${debug}"/>
     <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
-    <copyfile src="${build.dir}/testsuite.jar" dest="${lib.dir}/testsuite.jar"/>
+    <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
   </target>
 
   <!-- =================================================================== -->
@@ -211,24 +229,39 @@ Else add it manually.
   <target name="deploy_war">
      <!-- COPY THE SERVLETS IN THE WEB-INF/classes FOLDER -->
      <mkdir dir="${WEB-INF.classes}/html/systemInfo"/>
-     <copydir src="${build.dest}/html/systemInfo" dest="${WEB-INF.classes}/html/systemInfo"/>
+     <copy todir="${WEB-INF.classes}/html/systemInfo">
+       <fileset dir="${build.dest}/html/systemInfo"/>
+     </copy>
      <mkdir dir="${WEB-INF.classes}/org/xmlBlaster/protocol/http"/>
-     <copydir src="${build.dest}/org/xmlBlaster/protocol/http" dest="${WEB-INF.classes}/org/xmlBlaster/protocol/http"/>
-     <deltree dir="${www.dir}/javascript"/>
-     <copydir src="${src.dir}/org/xmlBlaster/protocol/http/javascript" dest="${www.dir}/javascript"/>
-     <deltree dir="${www.dir}/persistentWindow"/>
-     <copydir src="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow" dest="${www.dir}/persistentWindow"/>
-     <deltree dir="${www.dir}/xmlBlaster.css"/>
-     <copyfile src="${doc.dir}/howto/xmlBlaster.css" dest="${www.dir}/xmlBlaster.css"/>
+     <copy todir="${WEB-INF.classes}/org/xmlBlaster/protocol/http">
+       <fileset dir="${build.dest}/org/xmlBlaster/protocol/http"/>
+     </copy>
+ 
+     <delete>
+       <fileset dir="${www.dir}/javascript"/>
+     </delete>
+     <copy todir="${www.dir}/javascript">
+       <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/javascript"/>
+     </copy>
+     <delete>
+       <fileset dir="${www.dir}/persistentWindow"/>
+     </delete>
+     <copy todir="${www.dir}/persistentWindow">
+       <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
+     </copy>
+     <delete file="${www.dir}/xmlBlaster.css"/>
+     <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${www.dir}/xmlBlaster.css"/>
 
      <jar jarfile="${build.dir}/xmlBlaster.war"
           basedir="${www.dir}/"
           includes="*.*,systemInfo/*.html,systemInfo/colors/*.*,javascript/**,persistentWindow/**,WEB-INF/**/*.*"/>
 
-     <copyfile src="${lib.dir}/${name}.jar" dest="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
-     <deltree dir="${WWW_ROOT}/xmlBlaster"/>
+     <copy file="${lib.dir}/${name}.jar" tofile="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
+     <!-- delete>
+       <fileset dir="${WWW_ROOT}/xmlBlaster"/>
+     </delete -->
      <delete file="${WWW_ROOT}/xmlBlaster.war"/>
-     <copyfile src="${build.dir}/xmlBlaster.war" dest="${WWW_ROOT}/xmlBlaster.war"/>
+     <copy file="${build.dir}/xmlBlaster.war" tofile="${WWW_ROOT}/xmlBlaster.war"/>
      <!-- unjar src="${WWW_ROOT}/xmlBlaster.war" dest="${WWW_ROOT}" /-->
   </target>
 
@@ -261,41 +294,53 @@ Else add it manually.
     <mkdir dir="${dist.dir}/testsuite"/>
     <mkdir dir="${dist.dir}/lib"/>
 
-    <copydir src="${src.dir}" dest="${dist.dir}/src/java" />
-    <copydir src="${dtd.dir}" dest="${dist.dir}/src/dtd" />
-    <copydir src="${idl.dir}" dest="${dist.dir}/src/idl" />
+    <copy todir="${dist.dir}/src/java">
+      <fileset dir="${src.dir}"/>
+    </copy>
+    <copy todir="${dist.dir}/src/dtd"> 
+      <fileset dir="${dtd.dir}"/>
+    </copy>
+    <copy todir="${dist.dir}/src/idl">
+      <fileset dir="${idl.dir}"/>
+    </copy>
 
-    <copydir src="${doc.dir}" dest="${dist.dir}/doc"/>
-    <copydir src="${demo.dir}" dest="${dist.dir}/demo"/>
-    <copydir src="${lib.dir}" dest="${dist.dir}/lib" />
-    <copydir src="${bin.dir}" dest="${dist.dir}/bin"/>
+    <copy todir="${dist.dir}/doc">
+      <fileset dir="${doc.dir}"/>
+    </copy>
+    <copy todir="${dist.dir}/demo">
+      <fileset dir="${demo.dir}"/>
+    </copy>
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="${lib.dir}"/>
+    </copy>
+    <copy todir="${dist.dir}/bin">
+      <fileset dir="${bin.dir}"/>
+    </copy>
 
-    <copyfile src="README" dest="${dist.dir}/README"/>
-    <copyfile src="INSTALL" dest="${dist.dir}/INSTALL"/>
-    <copyfile src="LICENSE" dest="${dist.dir}/LICENSE"/>
-    <copyfile src="config/xmlBlaster.properties.template" dest="${dist.dir}/config/xmlBlaster.properties.template"/>
-    <copyfile src="config/jacorb.properties.template" dest="${dist.dir}/config/jacorb.properties.template"/>
-    <copyfile src="config/xmlBlaster.policy" dest="${dist.dir}/config/xmlBlaster.policy"/>
-    <copyfile src=".bashrc" dest="${dist.dir}/.bashrc"/>
-    <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
-        <echo message="Creating jar file"/>
+    <copy file="README" tofile="${dist.dir}/README"/>
+    <copy file="INSTALL" tofile="${dist.dir}/INSTALL"/>
+    <copy file="LICENSE" tofile="${dist.dir}/LICENSE"/>
+    <copy file="config/xmlBlaster.properties.template" tofile="${dist.dir}/config/xmlBlaster.properties.template"/>
+    <copy file="config/jacorb.properties.template" tofile="${dist.dir}/config/jacorb.properties.template"/>
+    <copy file="config/xmlBlaster.policy" tofile="${dist.dir}/config/xmlBlaster.policy"/>
+    <copy file=".bashrc" tofile="${dist.dir}/.bashrc"/>
+    <copy file="build.xml" tofile="${dist.dir}/build.xml"/>
     <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}"/>
-        <echo message="Created jar file"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
-  <target name="clean">
-    <deltree dir="${build.dir}"/>
-    <deltree dir="${dist.dir}"/>
-    <deltree dir="${lib.dir}/${name}.jar"/>
-    <deltree dir="${lib.dir}/demo.jar"/>
-    <deltree dir="${lib.dir}/testsuite.jar"/>
-    <deltree dir="${name}-${version}.jar"/>
-  </target>
+   <target name="clean">
+      <delete>
+         <fileset dir="${build.dir}"/>
+         <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar"/>
+      </delete>
+   </target>
 
+   <target name="delete" depends="clean">
+      <delete>
+         <fileset dir="${dist.dir}" includes="**"/>
+      </delete>
+   </target>
 </project>
-
-
-<!-- End of file -->
