@@ -141,13 +141,7 @@ void ClientProperty::setValueRaw(const string& value) {
    value_ = value;
 }
 
-/**
- * Dump state of this object into a XML ASCII string.
- * <br>
- * @param extraOffset indenting of tags for nice output
- * @return internal state of the ClientProperty as a XML ASCII string
- */
-std::string ClientProperty::toXml(std::string extraOffset) const {
+std::string ClientProperty::toXml(std::string extraOffset, bool clearText) const {
    std::string sb = std::string();
    sb.reserve(256);
    std::string offset = Constants::OFFSET + extraOffset;
@@ -175,7 +169,7 @@ std::string ClientProperty::toXml(std::string extraOffset) const {
       //    )
       //   sb += "><![CDATA [" + val + "]]></clientProperty>";
       //else
-      sb += ">" + val + "</clientProperty>";
+      sb += ">" + (clearText?getStringValue():val) + "</clientProperty>";
    }
 
    return sb;

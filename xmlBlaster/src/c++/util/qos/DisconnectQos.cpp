@@ -3,7 +3,7 @@ Name:      DisconnectQos.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.cpp,v 1.5 2004/06/18 20:08:07 laghi Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/DisconnectQos.h>
@@ -64,9 +64,10 @@ void DisconnectQos::setClearSessions(bool del)
    clearSessions_ = del;
 }
 
-void DisconnectQos::addClientProperty(const std::string& key, const std::string& value)
+void DisconnectQos::addClientProperty(const std::string& key, const std::string& value,
+            const std::string& type, const std::string& encoding)
 {
-   clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
+   clientProperties_.insert(ClientPropertyMap::value_type(key, value)); // TODO: Port to ClientProperty, type, encoding
 }
         
 const DisconnectQos::ClientPropertyMap& DisconnectQos::getClientProperties() const

@@ -172,9 +172,10 @@ public:
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
+    * @param clearText if true the base64 for properties are dumped decoded in plain text
     * @return internal state of the ClientProperty as a XML ASCII string
     */
-   std::string toXml(std::string extraOffset) const;
+   std::string toXml(std::string extraOffset="", bool clearText=false) const;
 };
 
 

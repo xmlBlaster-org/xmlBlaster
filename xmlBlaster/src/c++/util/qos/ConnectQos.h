@@ -183,7 +183,7 @@ public:
     */
    org::xmlBlaster::util::qos::storage::CbQueueProperty& getSessionCbQueueProperty();
 
-   std::string dumpClientProperties(const std::string& extraOffset) const;
+   std::string dumpClientProperties(const std::string& extraOffset, bool clearText=false) const;
 
    /**
     * Add a client property key and value
@@ -193,7 +193,9 @@ public:
     */
    template <typename T_VALUE> void addClientProperty(
             const std::string& name,
-            const T_VALUE& value);
+            const T_VALUE& value,
+            const std::string& type="",
+            const std::string& encoding="");
 
    /**
     * Access the value for the given name, if not found returns the defaultValue. 
@@ -207,9 +209,10 @@ public:
 };
 
 template <typename T_VALUE> void ConnectQosData::addClientProperty(
-               const std::string& name, const T_VALUE& value)
+               const std::string& name, const T_VALUE& value,
+					const std::string& type, const std::string& encoding)
 {
-   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value);
+   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value, type, encoding);
    clientProperties_.insert(ClientPropertyMap::value_type(name, clientProperty));   
 }
 

@@ -353,10 +353,15 @@ public:
    /**
     * Dump state of this object into a XML ASCII std::string.
     * <br>
+	 * @param clearText Dump base64 clientProperties encoded as plain text
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII std::string
     */
-   std::string toXml(const std::string& extraOffset="") const;
+   std::string toXml(bool clearText, const std::string& extraOffset="") const;
+
+   std::string toXml(const std::string& extraOffset="") const {
+		return toXml(false, extraOffset);
+	}
 
    void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& prop);
 

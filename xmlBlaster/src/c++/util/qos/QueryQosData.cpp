@@ -287,7 +287,8 @@ string QueryQosData::toXml(const string& extraOffset) const
       iter++;
    }
    ret += historyQos_.toXml(extraOffset + Constants::INDENT);
-   ret += dumpClientProperties(extraOffset + Constants::INDENT);
+	bool clearText = false;
+   ret += dumpClientProperties(extraOffset + Constants::INDENT, clearText);
    ret += offset + "</qos>";
 
    if (ret.length() < 16)

@@ -247,13 +247,13 @@ bool QosData::isPersistent() const
    return persistent_;
 }
 
-string QosData::dumpClientProperties(const string& extraOffset) const
+string QosData::dumpClientProperties(const string& extraOffset, bool clearText) const
 {
    string ret = "";
    QosData::ClientPropertyMap::const_iterator iter = clientProperties_.begin();
    while (iter != clientProperties_.end()) {
       const ClientProperty& cp = (*iter).second;
-      ret += cp.toXml(extraOffset);
+      ret += cp.toXml(extraOffset, clearText);
       iter++;
    }
    return ret;

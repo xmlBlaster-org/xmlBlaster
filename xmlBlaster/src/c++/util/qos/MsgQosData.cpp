@@ -421,13 +421,7 @@ void MsgQosData::addDestination(const Destination& destination)
    destinationList_.insert(destinationList_.end(), destination);
 }
 
-/**
- * Dump state of this object into a XML ASCII string.
- * <br>
- * @param extraOffset indenting of tags for nice output
- * @return internal state of the message QoS as a XML ASCII string
- */
-string MsgQosData::toXml(const string& extraOffset) const
+string MsgQosData::toXml(bool clearText, const string& extraOffset) const
 {
    string ret;
 
@@ -498,7 +492,7 @@ string MsgQosData::toXml(const string& extraOffset) const
       routeIter++;
    }
    ret += offset + " </route>";
-   ret += dumpClientProperties(extraOffset + Constants::INDENT);
+   ret += dumpClientProperties(extraOffset + Constants::INDENT, clearText);
    ret += offset + "</qos>";
 
    if (ret.length() < 16) return "";

@@ -89,7 +89,7 @@ protected:
 
    void copy(const QosData& data);
 
-   std::string dumpClientProperties(const std::string& extraOffset) const;
+   std::string dumpClientProperties(const std::string& extraOffset, bool clearText) const;
 
 public:
    /**
