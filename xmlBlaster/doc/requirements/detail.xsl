@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.30 2003/10/07 20:12:52 ruff Exp $
+Version:   $Id: detail.xsl,v 1.31 2004/02/24 14:04:40 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -33,10 +33,20 @@ Author:    xmlBlaster@marcelruff.info
   <xsl:param name="postfix"/>
   <xsl:param name="withNamespace"/>
   <xsl:choose>
+    <!-- Doxygen makes from 'org::xmlBlaster::util::I_LogFactory' -> 'classorg_1_1xmlBlaster_1_1util_1_1I__LogFactory.html' -->
     <xsl:when test="contains($pat,'::')">
       <xsl:call-template name="tokenize">
         <xsl:with-param name="pat" select="substring-after($pat,'::')"/>
         <xsl:with-param name="myUrl" select="concat($myUrl,substring-before($pat,'::'),'_1_1')"/>
+        <xsl:with-param name="prefix" select="$prefix"/>
+        <xsl:with-param name="postfix" select="$postfix"/>
+        <xsl:with-param name="withNamespace" select="$withNamespace"/>
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:when test="contains($pat,'I_')">
+      <xsl:call-template name="tokenize">
+        <xsl:with-param name="pat" select="substring-after($pat,'I_')"/>
+        <xsl:with-param name="myUrl" select="concat($myUrl,substring-before($pat,'I_'),'I__')"/>
         <xsl:with-param name="prefix" select="$prefix"/>
         <xsl:with-param name="postfix" select="$postfix"/>
         <xsl:with-param name="withNamespace" select="$withNamespace"/>
@@ -82,7 +92,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2003/10/07 20:12:52 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2004/02/24 14:04:40 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
