@@ -16,9 +16,21 @@ Comment:   Allows you be called back after a given delay.
 #include <util/Constants.h>
 #include <util/Global.h>
 
-using boost::lexical_cast;
+using namespace boost;
+
+#if defined(_WINDOWS)   
+   ostream& operator <<(ostream& target, const __int64& x)
+   {
+     
+     target << x;
+     return target;
+
+   }
+#endif
 
 namespace org { namespace xmlBlaster { namespace util {
+
+
 
 Timeout::Timeout(Global& global)
    : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),

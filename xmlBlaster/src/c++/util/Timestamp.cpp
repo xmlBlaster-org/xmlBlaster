@@ -3,7 +3,7 @@ Name:      Timestamp.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.cpp,v 1.9 2002/12/31 16:03:44 laghi Exp $
+Version:   $Id: Timestamp.cpp,v 1.10 2003/01/14 13:28:01 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/Timestamp.h>
@@ -61,7 +61,7 @@ string TimestampFactory::toXml(Timestamp timestamp, const string& extraOffset, b
    offset += extraOffset;
    if (literal) {
       // implement it here ....
-      ret += offset + "<timestamp nanos='" + lexical_cast<string>(timestamp) + "'>";
+      ret += offset + "<timestamp nanos='" + (string)lexical_cast<string>(timestamp) + "'>";
       ret += offset + " " + getTimeAsString(timestamp);
       ret += offset + "</timestamp>";
    }

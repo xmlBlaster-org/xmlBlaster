@@ -17,12 +17,15 @@ Comment:   Allows you be called back after a given delay.
 #include <map>
 #include <util/thread/Thread.h>
 
+
+
 using namespace org::xmlBlaster::util::thread;
 
 namespace org { namespace xmlBlaster { namespace util {
 
    typedef pair<I_Timeout*, void*> Container;
    typedef map<Timestamp, Container> TimeoutMap;
+
 
 /**
  * Allows you be called back after a given delay.
