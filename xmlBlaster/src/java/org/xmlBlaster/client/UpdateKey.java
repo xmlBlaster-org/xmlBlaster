@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.27 2002/09/13 23:17:54 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.28 2002/10/29 08:54:04 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -88,7 +88,7 @@ public class UpdateKey extends SaxHandlerBase
    }
 
    /**
-    * Access the $lt;key oid="...">.
+    * Access the &lt;key oid="...">.
     * @return The unique key oid
     */
    public String getOid()
@@ -98,7 +98,7 @@ public class UpdateKey extends SaxHandlerBase
 
 
    /**
-    * Access the $lt;key oid="...">.
+    * Access the &lt;key oid="...">.
     * @return The unique key oid
     * @see #getOid()
     */
@@ -109,7 +109,7 @@ public class UpdateKey extends SaxHandlerBase
 
 
    /**
-    * Test if oid is '__sys__deadLetter'. 
+    * Test if oid is '__sys__deadLetter'.
     * <p />
     * Dead letters are unrecoverable lost messages, usually an administrator
     * should subscribe to those messages.
@@ -154,7 +154,7 @@ public class UpdateKey extends SaxHandlerBase
 
 
    /**
-    * The cluster domain. 
+    * The cluster domain.
     */
    public String getDomain()
    {
