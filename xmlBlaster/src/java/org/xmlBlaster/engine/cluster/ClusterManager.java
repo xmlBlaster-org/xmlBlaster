@@ -119,8 +119,9 @@ public final class ClusterManager
                   log.info(ME, "Ignoring envrionment setting -" + env[ii]);
                   continue;
                }
-               log.info(ME, "Parsing envrionment -" + env[ii] + " for node '" + nodeIdName + "' ...");
+               if (log.TRACE) log.trace(ME, "Parsing envrionment -" + env[ii] + " for node '" + nodeIdName + "' ...");
                NodeParser nodeParser = new NodeParser(glob, this, xml, sessionInfo); // fills the info to ClusterManager
+               log.info(ME, "Envrionment for node '" + nodeIdName + "' parsed.");
             }
          }
       }
@@ -164,8 +165,9 @@ public final class ClusterManager
          this.myClusterNode.getNodeInfo().addAddress(addr);
       }
 
-      if (drivers.length > 0)
-         log.info(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
+      if (drivers.length > 0) {
+         if (log.TRACE) log.trace(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
+      }
       else
          log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster (node=" + getId() + ") address available");
    }

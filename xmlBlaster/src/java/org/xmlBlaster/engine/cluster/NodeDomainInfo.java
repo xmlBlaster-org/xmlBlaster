@@ -330,14 +330,14 @@ public final class NodeDomainInfo implements Comparable
 
       if (inMaster == 1 && name.equalsIgnoreCase("key")) {
          inKey = false;
-         log.info(ME, "Parsing filter xmlKey=" + character.toString());
+         if (log.TRACE) log.trace(ME, "Parsing filter xmlKey=" + character.toString());
          try {
             tmpKey = new XmlKey(glob, character.toString()); // Do a DOM parse on the collected tags
             if (keyVec == null) keyVec = new Vector();
             keyVec.addElement(tmpKey);
          }
          catch (XmlBlasterException e) {
-            log.info(ME, "Parsing <master>" + character.toString() + " failed, ignoring this rule: " + e.toString());
+            log.warn(ME, "Parsing <master>" + character.toString() + " failed, ignoring this rule: " + e.toString());
          }
          character.setLength(0);
          return;
