@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.10 2002/03/17 07:29:03 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.11 2002/03/17 13:38:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -214,7 +214,9 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
       if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
-      client.update(loginName, msgUnitArr); // !!! TODO: add String as return type
+      if (Log.CALL) Log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+
+      client.update(cbSessionId, msgUnitArr); // !!! TODO: add String as return type
       String[] ret = new String[msgUnitArr.length];
       for (int ii=0; ii<ret.length; ii++)
          ret[ii] = "<qos><state>OK</state></qos>";
