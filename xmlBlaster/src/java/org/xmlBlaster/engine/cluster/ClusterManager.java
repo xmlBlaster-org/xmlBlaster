@@ -238,7 +238,8 @@ public final class ClusterManager implements I_RunlevelListener
          if (log.TRACE) log.trace(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
       }
 */
-      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfType("protocol");
+      //java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfGroup("protocol");
+      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfInterfaceI_Driver();
       for (int i=0; i < drivers.size(); i++) {
          I_Driver driver = (I_Driver)drivers.get(i);
          String rawAddr = driver.getRawAddress();
@@ -252,8 +253,8 @@ public final class ClusterManager implements I_RunlevelListener
          if (log.TRACE) log.trace(ME, "Setting " + drivers.size() + " addresses for cluster node '" + getId() + "'");
       }
       else {
+         log.error(ME, "ClusterNode is not properly initialized, no protocol pluging - no local xmlBlaster (node=" + getId() + ") address available");
          Thread.currentThread().dumpStack();
-         log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster (node=" + getId() + ") address available");
       }
    }
 
