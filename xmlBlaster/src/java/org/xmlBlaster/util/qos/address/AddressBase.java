@@ -216,6 +216,12 @@ public abstract class AddressBase
    public void setPluginProperty(String key, String value) {
       if (this.pluginAttributes == null) this.pluginAttributes = new Hashtable();
       this.pluginAttributes.put(key, value);
+      // refresh compressType or minSize: Those attributes are double used:
+      // Once SOCKET specific and again as a common setting in <address ...>
+      // TODO: clean up this mess: no SOCKET specific code in here!
+      if ("compress/type".equals(key) || "compress/minSize".equals(key)) {
+         initialize();
+      }
    }
 
    /**
