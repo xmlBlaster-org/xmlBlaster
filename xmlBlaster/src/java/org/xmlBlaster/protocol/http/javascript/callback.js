@@ -3,7 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.3 2000/03/08 13:36:07 ruff Exp $
+Version:   $Id: callback.js,v 1.4 2000/03/17 16:05:18 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -40,12 +40,12 @@ function publish(message)
    Log.error("Publish implementation to xmlBlaster is missing");
 }
 
-function get(xmlKey, qos)
+function get(key, qos)
 {
    Log.error("Get implementation to xmlBlaster is missing");
 }
 
-function erase(xmlKey, qos)
+function erase(key, qos)
 {
    Log.error("Erase implementation to xmlBlaster is missing");
 }
@@ -113,7 +113,7 @@ function PublishKeyWrapperWrap(tags)
  * Note that the AGENT and DRIVER tags are application know how, which you have to supply.<br />
  * A well designed xml hierarchy of your problem domain is essential for a proper working xmlBlaster
  * This is exactly the key how it was published from the data source.
- * Call updateKey.init(xmlKey_literal); to start parsing the received key
+ * Call updateKey.init(key_literal); to start parsing the received key
  */
 function UpdateKey(xml)
 {
@@ -144,9 +144,15 @@ function UpdateQos(xml)
    this.sender= null;               // Who sent the message (his login name)?
 
    this.root = top.Xparse(xml);     // The Javascript DOM tree
-   var qosNode = this.root.contents[0];
+
+   var qosNode;
+   for( var i = 0; i < this.root.contents.length; i++ ) {
+      qosNode = this.root.contents[i];
+      if(qosNode.name == "qos")
+         break;
+   }
    if (qosNode.name != "qos") {
-      Log.warning('Qos tag is missing in new arrvied message, received an unknown tag &lt;' + qosNode.name + '>');
+      Log.warning('Qos tag is missing in new arrvied message, received only unknown tags.');
       return;
    }
 
@@ -167,59 +173,42 @@ function UpdateQos(xml)
 /**
  * Create a message object, which contains the xmlBlaster message as string literals
  *
- * @param xmlKey:String  The meta data
+ * example: 
+      var key = new PublishKeyWrapper();
+      var messageWrapperLiteral = new MessageWrapperLiteral(key.toXml(), "Hello World..", "<qos></qos>"); 
+
+ * @param key:String  The meta data
  * @param content:String The message itself (binary/octet????!!!)
  * @param qos:String     Some quality of service infos of this xmlBlaster update
 */
-function MessageWrapper(xmlKey, content, qos)
+function MessageWrapperLiteral(key, content, qos)
 {
-   if (xmlKey != null) {
-      this.xmlKey = xmlKey;
-   }
-   else {
-      var key = new PublishKeyWrapper();
-      this.xmlKey = key.toXml();
-   }
-
+   this.key = key;
    this.content = content;
-
-   if (qos != null) {
-      this.qos = qos;
-   }
-   else {
-      this.qos = "<qos></qos>";
-   }
-}
-
-//----------------------------------------------------------------------------------------------
-// Create a message object, which contains the new received xmlBlaster message
-// @param xmlKey:UpdateKey  The meta data
-// @param content:String    The message itself (blob/binary/octet???!!!)
-// @param qos:UpdateQos     Some quality of service infos of this xmlBlaster update
-//----------------------------------------------------------------------------------------------
-function UpdateMessageWrapper(xmlKey, content, qos)
-{
-   if (xmlKey == null) {
-      Log.error("Please specify an UpdateKey object");
-      return;
-   }
-   this.xmlKey = xmlKey;
-
-   this.content = content;
-
-   if (qos == null) {
-      Log.error("Please specify an UpdateQos object");
-      return;
-   }
    this.qos = qos;
 }
 
+/**
+ * Create a message object, which contains the xmlBlaster message as DOM
+ *
+ * @param key:Dom  The meta data
+ * @param content:String The message itself (binary/octet????!!!)
+ * @param qos:Dom     Some quality of service infos of this xmlBlaster update
+*/
+function MessageWrapperDom(key, content, qos)
+{
+   this.key		 	= key;
+   this.content 	= content;
+   this.qos 		= qos;
+}
+
+
+
 //----------------------------------------------------------------------------------------------
-// add/remove Callback Listener
-// every frame can register itself to receive the callbacks
+// add Callback Listener
+// every frame/window can register itself to receive the callbacks
 //----------------------------------------------------------------------------------------------
 var listenerList = new Array();
-
 function addUpdateListener(listenerFrame)
 {
    if (listenerFrame.update == null) {
@@ -227,48 +216,103 @@ function addUpdateListener(listenerFrame)
       return;
    }
    listenerList[listenerList.length] = listenerFrame;
-   Log.info("Added listener frame");
    return;
 }
 
+//----------------------------------------------------------------------------------------------
+// remove Callback Listener
+// every frame/window can register itself to receive the callbacks
+//----------------------------------------------------------------------------------------------
 function removeUpdateListener(listenerFrame)
 {
-   if (listenerList == null) {
-      Log.error("listenerList is empty");
+   var i;
+   var found = false;
+   for(i=0;i<listenerList.length;i++){
+      if(listenerList[i].name==listenerFrame.name) {
+         break;
+         found=true;
+      }
+   }
+
+   if(!found)
       return;
-   }
-   var tmpArr = new Array(listenerList.length);
-   for (var ii=0; ii < listenerList.length; ++ii) {
-      if (listenerList[ii] == listenerFrame)
-         continue;
-      tmpArr[ii] = listenerList[ii];
-   }
-   Log.info("Removed listener frame");
+
+   removeUpdateListenerAtPos( i );
+
    return;
 }
 
+//---------------------------------------------------------------------------------------------
+// This is 
+//
+//---------------------------------------------------------------------------------------------
+function removeUpdateListenerAtPos(index)
+{
+   if(index >= listenerList.length)
+      return;
+
+   if(listenerList.length==1 && index == 0) {
+      listenerList.length=0;
+      return;
+   }
+
+   for(var j = index; j < listenerList.length-1; j++) {
+      listenerList[j] = listenerList[j+1];
+   }
+
+   return;
+}
+
+
+
+//---------------------------------------------------------------------------------------------
+// This is 
+//
+//---------------------------------------------------------------------------------------------
 function fireMessageUpdateEvent(message)
 {
-   for (var ii=0; ii < listenerList.length; ++ii) {
+   for (var ii=0; ii < listenerList.length; ii++) {
+      if(listenerList[ii] == null ||
+         listenerList[ii].update == null) {
+         removeUpdateListenerAtPos( ii );
+         continue;
+      }
+       
       listenerList[ii].update(message);
    }
 }
 
-//----------------------------------------------------------------------------------------------
-// This is called by the updateFrame, delivering an object containing
-// the xmlKey, content, qos
-//----------------------------------------------------------------------------------------------
-function update(message)
+
+//---------------------------------------------------------------------------------------------
+// This is 
+//
+//---------------------------------------------------------------------------------------------
+function update( updateKey, content, updateQoS)
 {
-   var key = new UpdateKey(xml);
-   // var qos = new UpdateKey(xml);
+    var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );	
+    var content_d = unescape( content.replace(/\+/g, " ") );	
+    var updateQoS_d = unescape( updateQoS.replace(/\+/g, " ") );
 
-   Log.info("Received update message, dispatching it to " + listenerList.length + " frames");
-   for (var ii=0; ii < listenerList.length; ++ii) {
-      listenerList[ii].update(message);
-   }
-   return 0;
+
+   //alert( "********UPDATE********\n"+updateKey_d+"\n"+content_d+"\n"+updateQoS_d );
+   var key = new UpdateKey(updateKey_d);
+   var qos = new UpdateQos(updateQoS_d);
+
+   var message = new MessageWrapperDom( key, content, qos );
+   fireMessageUpdateEvent(message);
+
 }
 
 
+
+function message(msg)
+{
+   var decoded = unescape( msg.replace(/\+/g, " ") );	
+   alert( decoded );
+}
+function error(msg)
+{
+   var decoded = unescape( msg.replace(/\+/g, " ") );	
+   alert( "Fehler!\n\n"+decoded );
+}
 
