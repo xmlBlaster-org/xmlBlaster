@@ -16,6 +16,10 @@ Changes for 0.79 [?, ? 2000]
 		java -jar lib/xmlBlaster.jar
 	 See INSTALL file.
 
+  - RMI driver looks for xmlBlaster.polcy now in CLASSPATH as well, e.g.
+       export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
+	 whith $XMLBLASTER_HOME/config/xmlBlaster.policy
+
   - Migrated to Ant 1.1
 
   - Migrated to JacORB 1.2.1
