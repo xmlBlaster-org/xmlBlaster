@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.cpp.mico' type='NEW' prio='LOW' status="CLOSED">
+   <topic>C++ clients can access xmlBlaster with the MICO Corba library</topic>
+
+   <description>
+     <p>
+     There is support for MICO to access xmlBlaster from CORBA clients.
+     </p>
+     <p>
+     Support was developed against MICO 2.3.7 and 2.3.8. Other MICO versions
+     should work as well. Make sure to follow the MICO installation instructions.
+     </p>
+   </description>
+
+   <example type="HTML">
+      <p><a NAME="example"></a></p>
+      <p>Here is an example using xmlBlaster which runs with JacORB,
+      starting a NameService from ORBIX and connect with a C++ client
+      using MICO.
+      </p>
+   <pre><![CDATA[
+# Start ORBIX name service, configured to dump the NameService IOR to /tmp/ns.ior.
+# You can check the name service with the itadmin tool
+. /opt/orbix/etc/bin/XX_env
+/opt/orbix/etc/bin/start_XX_services
+
+# Start the server
+java -DORBInitRef.NameService=file:///tmp/ns.ior \
+     org.xmlBlaster.Main \
+     -trace[corba] true \
+     -port 0 \
+     -cluster.node.id heron
+
+# Start a C++ client
+cd xmlBlaster/testsuite/src/c++/bin
+TestGet -ORBInitRef NameService=`cat /tmp/ns.ior` inet:myHost.org:7608 -trace true -call true
+]]>
+   </pre>
+   </example>
+
+   <configuration where="client">
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+      <p>
+         To compile you can use the xmlBlaster/build.xml file.
+      </p>
+      <p>
+         Please take a copy from xmlBlaster/build.properties into
+         your home directory (it has precedence there) and adjust
+         the path settings to find CORBA and the XML parser. Example:
+      </p>
+      <pre>
+#------------------------------------------------------------------------------
+# C++ Unix/Linux example with mico 2.3.7 and xerces 2.2
+XMLCPP_HOME   = /usr/local/xerces-c
+XMLCPP_VER    = 
+CORBACPP_HOME = /usr/local/mico
+corba.product = MICO
+CORBACPP_VER  = 2.3.7
+#------------------------------------------------------------------------------
+      </pre>
+      <p>
+         Compile it with ant:
+      </p>
+      <pre>
+cd xmlBlaster
+build.sh -verbose cpp
+
+This creates:
+   xmlBlaster/lib/libmlBlasterClient.so
+and some test clients in
+   xmlBlaster/demo/c++/bin
+   xmlBlaster/testsuite/src/c++/bin
+      </pre>
+     <p>
+     On Windows you should add all directories containing dll libraries to your path setting.
+     </p>
+     <p>
+     On Solaris and Linux the shared library path is burned into the executable
+     so you need to set LD_LIBRARY_PATH only when you move libraries to
+     other locations (try <i>ldd TestGet</i>).
+     </p>
+   </configuration>
+
+   <todo type='HTML'>
+      <h3>Known bugs</h3>
+      <p>
+      Mico 2.3.7 and 2.3.8 fail to reinitialize the orb instance if once
+      the ORB is shutdown.
+      </p>
+      <p>
+      Testsuite is missing.
+      </p>
+   </todo>
+
+   <see type="INTERNET">http://www.mico.org</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c++/namespaces.html</see>
+   <see type="REQ">client.cpp</see>
+   <see type="REQ">client.cpp.compile</see>
+
+   <author>xmlBlaster@marcelruff.info</author>
+
+   <date>2003 03 05</date>
+
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment></comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
