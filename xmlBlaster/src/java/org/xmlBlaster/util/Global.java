@@ -14,6 +14,7 @@ import org.jutils.log.LogDeviceConsole;
 import org.jutils.log.LogDeviceFile;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.enum.Constants;
@@ -100,6 +101,8 @@ public class Global implements Cloneable
    protected String[] args;
    protected Property property = null;
    protected String errorText = null;
+
+   protected ContextNode contextNode;
 
    protected String cbHostname = null;
 
@@ -672,6 +675,14 @@ public class Global implements Cloneable
    }
 
    /**
+    * The unique name of this xmlBlaster server instance. 
+    * @return Can be null during startup
+    */
+   public final ContextNode getContextNode() {
+      return this.contextNode;
+   }
+
+   /**
     * Access the id (as a String) currently used on server side.
     * @return ""
     */
@@ -713,6 +724,12 @@ public class Global implements Cloneable
     */
    public void setId(String id) {
       this.id = id;
+      if (this.contextNode == null) {
+         this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), ContextNode.ROOT_NODE);
+      }
+      else {
+         this.contextNode.setInstanceName(getStrippedId());
+      }
    }
 
    /**
