@@ -434,7 +434,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (log.CALL) log.call(ME, "Queuing message for destination " + entry.getReceiver());
       if (log.DUMP) log.dump(ME, "Putting PtP message to queue: " + entry.toXml(""));
       this.subjectQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
-      forwardToSessionQueue();
+      //forwardToSessionQueue();
+      // returns here with no waiting ...
+      this.glob.getSubjectInfoShuffler().shuffle(this);
    }
 
    /**
@@ -443,8 +445,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * we return 0 without doing anything.
     * @return number of messages taken from queue and forwarded
     */
-   synchronized final long forwardToSessionQueue() {
-
+    /*synchronized*/ public final long forwardToSessionQueue() {
       if (getSessions().length < 1 || this.subjectQueue.getNumOfEntries() < 1) return 0;
 
       long numMsgs = 0;
@@ -689,7 +690,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (log.DUMP) log.dump(ME, this.subjectQueue.toXml(""));
 
       if (log.TRACE) log.trace(ME, "Flushing " + this.subjectQueue.getNumOfEntries() + " messages");
-      forwardToSessionQueue();
+      // returns here with no waiting ...
+      this.glob.getSubjectInfoShuffler().shuffle(this);
    }
 
    /**

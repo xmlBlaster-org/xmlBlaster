@@ -74,6 +74,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private MsgDistributorPluginManager msgDistributorPluginManager;
 
+   private SubjectEntryShuffler subjectEntryShuffler;
+
    public void finalize() {
       if (log.TRACE) log.trace(ME, "Entering finalize");
       shutdown();
@@ -678,6 +680,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
            this.pluginHolder = factory.readConfigFile();
          }
          return this.pluginHolder;
+      }
+   }
+
+   public SubjectEntryShuffler getSubjectInfoShuffler() {
+      if (this.subjectEntryShuffler != null) return this.subjectEntryShuffler;
+      synchronized(SubjectEntryShuffler.class) {
+         if (this.subjectEntryShuffler == null) {
+            this.subjectEntryShuffler = new SubjectEntryShuffler(this);
+         }
+         return this.subjectEntryShuffler;           
       }
    }
 

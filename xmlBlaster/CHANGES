@@ -1,5 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o added a shuffler thread to forward entries from SubjectQueue to
+   SessionQueue (to acheave Thread safety).
+
  o added I_QueueSizeListener to listen to changes in size of a queue
 
  o Bugfix: Reconfiguration of client reconnect (same pubSessionId)
