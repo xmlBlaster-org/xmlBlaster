@@ -1,5 +1,5 @@
 #define  SERVER_HEADER generated/xmlBlaster
-#include <util/CompatibleCorba.h>
+#include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
 #include <generated/xmlBlaster.h>
 
