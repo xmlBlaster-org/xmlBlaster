@@ -195,7 +195,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       else {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
-         this.connectQos.setMaxSessions(100);
+         int maxSessions = info.getInt("mom.maxSessions", 100);
+         this.connectQos.setMaxSessions(maxSessions);
          /*
          if (isRunningNative) {
             Address address = this.connectQos.getAddress();
