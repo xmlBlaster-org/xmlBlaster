@@ -117,11 +117,11 @@ public class SocketUrl
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "Your given SOCKET url '" + url + "' is invalid");
       }
 
-      if (url.startsWith("socket://")) {
+      String urlLowerCase = url.toLowerCase();
+      if (urlLowerCase.startsWith("socket://")) {
          url = url.substring("socket://".length());
       }
-
-      if (url.startsWith("socket:")) {
+      else if (urlLowerCase.startsWith("socket:")) {
          url = url.substring("socket:".length());
       }
 
@@ -131,6 +131,10 @@ public class SocketUrl
          this.hostname = url.substring(0, pos);
          portStr = url.substring(pos+1);
          if (portStr != null && portStr.length() > 0) {
+            pos = portStr.indexOf("/");
+            if (pos > -1) {
+               portStr = portStr.substring(0, pos); // strip path e.g. "socket://myHost:8000/path/subpath"
+            }
             try {
                this.port = (new Integer(portStr)).intValue();
             }
