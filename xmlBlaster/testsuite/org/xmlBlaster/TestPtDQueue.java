@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestPtD.java
+Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.5 1999/12/14 10:31:29 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.1 1999/12/14 10:31:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,22 +20,24 @@ import test.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a love letter. 
+ * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a message. 
  * <p>
  * Note that the two clients (client logins) are simulated in this class.<br />
- * Manuel is the 'sender' and Ulrike the 'receiver'
+ * Manuel is the 'sender' and Ulrike the 'receiver'<br />
+ * Ulrike is not on line when Manuel sends the message, and will receive the message
+ * from her queue in the xmlBlaster when she logs in.
  * <p>
  * Invoke examples:<br />
  * <code>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD
+ *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtD
+ *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  * </code>
  */
-public class TestPtD extends TestCase implements I_Callback
+public class TestPtDQueue extends TestCase implements I_Callback
 {
    private Server senderXmlBlaster = null;
-   private final static String ME = "TestPtD";
+   private final static String ME = "TestPtDQueue";
 
    private final String senderName = "Manuel";
    private String publishOid = "";
@@ -45,18 +47,20 @@ public class TestPtD extends TestCase implements I_Callback
    private final String receiverName = "Ulrike";
    private CorbaConnection receiverConnection = null;
    private Server receiverXmlBlaster = null;
-   private int numReceived = 0;
 
+   private String passwd = "secret";
+
+   private int numReceived = 0;
    private boolean messageArrived = false;
 
 
    /**
-    * Constructs the TestPtD object.
+    * Constructs the TestPtDQueue object.
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestPtD(String testName)
+   public TestPtDQueue(String testName)
    {
        super(testName);
    }
@@ -67,22 +71,17 @@ public class TestPtD extends TestCase implements I_Callback
     * <p />
     * Creates a CORBA connection and does a login.<br />
     * - One connection for the sender client<br />
-    * - One connection for the receiver client
     */
    protected void setUp()
    {
       try {
-         String passwd = "secret";
-
-         receiverConnection = new CorbaConnection();
-         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
-
          senderConnection = new CorbaConnection();
          senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
       }
-      catch (Exception e) {
+      catch (XmlBlasterException e) {
           Log.error(ME, e.toString());
           e.printStackTrace();
+          assert("login - XmlBlasterException: " + e.reason, false);
       }
    }
 
@@ -100,15 +99,15 @@ public class TestPtD extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Subscribe to messages with XPATH.
+    * TEST: Sending a message to a not logged in client, which logs in later.
     * <p />
-    * The returned subscribeOid is checked
+    * The sent message will be stored in a xmlBlaster queue for this client and than delivered
     */
-   public void testPtOneDestination()
+   public void testPtUnknownDestination()
    {
-      if (Log.TRACE) Log.trace(ME, "Testing point to one destination ...");
+      if (Log.TRACE) Log.trace(ME, "Testing point to a unknown destination ...");
 
-      // Construct a love message and send it to Ulrike
+      // Construct a message and send it to "Martin Unknown"
       String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
                       "</key>";
 
@@ -118,7 +117,7 @@ public class TestPtD extends TestCase implements I_Callback
                    "   </destination>" +
                    "</qos>";
 
-      senderContent = "Hi " + receiverName + ", i love you, " + senderName;
+      senderContent = "Hi " + receiverName + ", who are you? " + senderName;
       MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
          publishOid = senderXmlBlaster.publish(messageUnit, qos);
@@ -128,8 +127,23 @@ public class TestPtD extends TestCase implements I_Callback
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
 
-      waitOnUpdate(5000L);
-      assertEquals("numReceived after sending", 1, numReceived); // message arrived?
+      waitOnUpdate(1000L);
+      assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
+      numReceived = 0;
+
+      // Now the receiver logs in, and should get the message from the xmlBlaster queue ...
+      try {
+         receiverConnection = new CorbaConnection();
+         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
+      } catch (XmlBlasterException e) {
+          Log.error(ME, e.toString());
+          e.printStackTrace();
+          assert("login - XmlBlasterException: " + e.reason, false);
+          return;
+      }
+
+      waitOnUpdate(1000L);
+      assertEquals("numReceived after '" + receiverName + "' logged in", 1, numReceived); // message arrived?
       numReceived = 0;
    }
 
@@ -194,26 +208,26 @@ public class TestPtD extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestPtD("testPtOneDestination"));
+       suite.addTest(new TestPtDQueue("testPtUnknownDestination"));
        return suite;
    }
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPtD
+    * Invoke: jaco testsuite.org.xmlBlaster.TestPtDQueue
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtD</code>
+    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</code>
     */
    public static void main(String args[])
    {
-      TestPtD testSub = new TestPtD("TestPtD");
+      TestPtDQueue testSub = new TestPtDQueue("TestPtDQueue");
       testSub.setUp();
-      testSub.testPtOneDestination();
+      testSub.testPtUnknownDestination();
       testSub.tearDown();
-      Log.exit(TestPtD.ME, "Good bye");
+      Log.exit(TestPtDQueue.ME, "Good bye");
    }
 }
