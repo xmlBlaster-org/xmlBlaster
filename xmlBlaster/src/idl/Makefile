@@ -8,7 +8,6 @@
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/make/make.h
 OUT_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster
-CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/server
 #------------------------------------------------------------------------------
 
 
