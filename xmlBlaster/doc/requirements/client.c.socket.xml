@@ -613,7 +613,7 @@ Solaris:
    The argument <code>userData</code> can be casted to
    <code>XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;</code>
    and can for example be helpful for clients
-   which want to transport client specific data in <code>xa->userData</code> to the <code>update()</code> method
+   which want to transport client specific data in <code>xa->userObject</code> to the <code>update()</code> method
    </p>
    <p>
    On line 92 up to 108 we specify a ConnectQos with XML syntax and use this to connect
@@ -640,7 +640,7 @@ Solaris:
    </p>
    <p>
    Note: If the client wishes to store some client specific data in the <i>XmlBlasterAccessUnparsed</i> instance
-   we provide a <code>void *</code> there: <code>xa->userData</code>.
+   we provide a <code>void *</code> there: <code>xa->userObject</code>.
    </p>
    </example>
 
@@ -1089,7 +1089,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.41 $</revision>
+   <revision>$Revision: 1.42 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
