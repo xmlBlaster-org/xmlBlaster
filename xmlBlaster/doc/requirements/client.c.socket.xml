@@ -992,6 +992,18 @@ Solaris:
            <i>cd xmlBlaster;  ./build  -Duse-gcc=1 c-delete c</i></td>
        </tr>
 
+       <tr>
+       <td>10</td>
+       <td><a href="http://wwws.hp.com/" target="others">HP-UX B.11.11 9000/800</a></td>
+       <td>gcc (GCC) 3.4.3</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.01</a></td>
+       <td>pthread</td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td>Unparsed access with raw XML strings. Created shared library libxmlBlasterClientCD.so only</td>
+       <td>2005-02-02</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><i>cd xmlBlaster;  ./build  -Duse-gcc=1 c-delete c-lib</i></td>
+       </tr>
       </table>
 
       <p>
