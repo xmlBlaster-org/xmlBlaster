@@ -5,17 +5,29 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HelloWorld connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  Linux C: gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
-   util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+  Linux C: 
+   gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
+   util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
+
+   With zlib compression:
+   gcc -Wall -pedantic -Wno-long-long -D_REENTRANT -g -DXMLBLASTER_ZLIB=1 -I. -o HelloWorld HelloWorld.c util/helper.c
+      util/msgUtil.c util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
+      -I/opt/zlib/include -L/opt/zlib/lib -lz
+   
+   Start with: "HelloWorld -plugin/socket/compress/type zlib:stream"
+
   Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
-   util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+   util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
             -DXMLBLASTER_C_COMPILE_AS_CPP
+  
   Linux Intel compiler:
         icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
-   util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+   util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
+  
   Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c util\*.c socket\*.c ws2_32.lib
+  
   Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
-        util/Properties.c socket/xmlBlasterSocket.c
+        util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c
         socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
 
   Linux with shared lib:
