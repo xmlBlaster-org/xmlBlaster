@@ -34,6 +34,9 @@ import org.xmlBlaster.util.MsgUnit;
  *
  *    java javaclients.script.XmlScript -prepareForPublish true -requestFile 2004-10-23_20_44_43_579.xml
  * </pre>
+ * <p>
+ * The setting <tt>-prepareForPublish true</tt> strips away routing informations if you want to publish
+ * a dumped dead message given by -requestFile.</p>
  */
 public class XmlScript {
    private static String ME = "XmlScript";
