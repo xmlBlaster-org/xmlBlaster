@@ -1,6 +1,6 @@
 package javaclients.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.GetKeyWrapper;
@@ -25,6 +25,7 @@ public class XmlDBClientSync
 {
    private static String   ME = "XmlDBClientSync";
    private final Global glob;
+   private final LogChannel log;
    private XmlBlasterConnection corbaConnection = null;
 
    /**
@@ -32,6 +33,7 @@ public class XmlDBClientSync
     */
    public XmlDBClientSync(Global glob) {
       this.glob = glob;
+      this.log = glob.getLog(null);
       initBlaster();
       query();
       logout();
@@ -45,11 +47,12 @@ public class XmlDBClientSync
       try {
          corbaConnection = new XmlBlasterConnection(glob);
          corbaConnection.connect(null, null);
-         Log.info(ME, "Connected to xmlBlaster");
+         log.info(ME, "Connected to xmlBlaster");
       }
       catch (Exception e) {
          e.printStackTrace();
-         Log.exit(ME, "Login to xmlBlaster failed");
+         log.error(ME, "Login to xmlBlaster failed");
+         System.exit(1);
       }
    }
 
@@ -59,7 +62,7 @@ public class XmlDBClientSync
     */
    public void logout() {
       if (corbaConnection == null) return;
-      Log.info(ME, "Logout ...");
+      log.info(ME, "Logout ...");
       corbaConnection.disconnect(null);
    }
 
@@ -80,17 +83,18 @@ public class XmlDBClientSync
       wrap.init(type, limit, confirm, queryStr);
 
       try {
+         log.info(ME, "Sending command string:\n" + wrap.toXml());
          GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQosWrapper qos = new GetQosWrapper();
          // get() blocks until the query is finished ...
          MessageUnit[] msgUnitArr = corbaConnection.get(key.toXml(), qos.toXml());
          if (msgUnitArr.length > 0)
-            Log.plain(new String(msgUnitArr[0].content));
+            log.plain(ME, new String(msgUnitArr[0].content));
          else
-            Log.info(ME, "No results for your query");
+            log.info(ME, "No results for your query");
       }
-      catch (Exception e) { Log.error(ME, "Query failed: " + e.toString()); }
+      catch (Exception e) { log.error(ME, "Query failed: " + e.toString()); }
    }
 
    /**
