@@ -370,7 +370,7 @@ public final class TopicHandler implements I_Timeout
 
             if (publishQosServer.isPtp()) {
                publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
-               if (!publishQosServer.isPubSubStyle()) {
+               if (!publishQosServer.isSubscribeable()) {
                   return publishReturnQos;
                }
             }
@@ -422,7 +422,7 @@ public final class TopicHandler implements I_Timeout
             }
             MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                              receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
-                             "PtP");
+                             Constants.SUBSCRIPTIONID_PtP);
             receiverSessionInfo.queueMessage(msgEntry);
          }
          else {
@@ -430,7 +430,7 @@ public final class TopicHandler implements I_Timeout
                SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                              destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                             "PtP");
+                             Constants.SUBSCRIPTIONID_PtP);
                destinationClient.queueMessage(msgEntry);
             }
             else {
@@ -443,7 +443,7 @@ public final class TopicHandler implements I_Timeout
                }
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                               destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                              "PtP");
+                              Constants.SUBSCRIPTIONID_PtP);
                destinationClient.queueMessage(msgEntry);
             }
          }
