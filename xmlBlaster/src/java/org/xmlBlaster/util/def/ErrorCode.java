@@ -100,6 +100,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode INTERNAL_PUBLISH_ARR = new ErrorCode("internal.publishArr",
+         "An internal error occurred when processing a publishArr() request.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.publish", "interface.publish"),
+         }
+      );
+
    public static final ErrorCode INTERNAL_ERASE = new ErrorCode("internal.erase",
          "An internal error occurred when processing a erase() request.",
          new ResourceInfo[] {
@@ -257,6 +264,12 @@ public final class ErrorCode implements java.io.Serializable
 
    public static final ErrorCode COMMUNICATION_NOCONNECTION = new ErrorCode("communication.noConnection",
          "A specific remote connection throws an exception on invocation.",
+         new ResourceInfo[] {
+         }
+      );
+
+   public static final ErrorCode COMMUNICATION_NOCONNECTION_SERVERDENY = new ErrorCode("communication.noConnection.serverDeny",
+         "Thrown by the server if no connection is accepted, usually on startup when the server is not ready for it.",
          new ResourceInfo[] {
          }
       );
