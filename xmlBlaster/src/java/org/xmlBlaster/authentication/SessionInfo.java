@@ -342,7 +342,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * Cluster wide unique identifier: /node/heron/client/<loginName>/<publicSessionId>,
     * e.g. for logging only
     * <p />
-    * @return e.g. "client/joe/2
+    * @return e.g. "/node/heron/client/joe/2
     */
    public final String getId() {
       return this.sessionName.getAbsoluteName();
