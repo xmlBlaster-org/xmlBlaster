@@ -317,13 +317,24 @@ abstract public class DeliveryConnectionsHandler
 
       // error - no success sending message:
 
-      if (ex == null)
-         ex = new XmlBlasterException(glob, 
-            isDead() ? ErrorCode.COMMUNICATION_NOCONNECTION_DEAD : ErrorCode.COMMUNICATION_NOCONNECTION,
-            ME, 
-            "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
-            "' to client [" + cons[0].getAddress().getSecretSessionId() + "] from [" + msgArr[0].getSender() +
-            "] failed, no callback connection is alive");
+      if (ex == null) {
+         if (cons.length == 0) {
+            ex = new XmlBlasterException(glob, 
+               isDead() ? ErrorCode.COMMUNICATION_NOCONNECTION_DEAD : ErrorCode.COMMUNICATION_NOCONNECTION,
+               ME, 
+               "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
+               "' from sender [" + msgArr[0].getSender() +
+               "] failed, no callback connection is alive");
+         }
+         else {
+            ex = new XmlBlasterException(glob, 
+               isDead() ? ErrorCode.COMMUNICATION_NOCONNECTION_DEAD : ErrorCode.COMMUNICATION_NOCONNECTION,
+               ME, 
+               "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
+               "' to client [" + cons[0].getAddress().getSecretSessionId() + "] from [" + msgArr[0].getSender() +
+               "] failed, no callback connection is alive");
+         }
+      }
 
       throw ex;
    }
