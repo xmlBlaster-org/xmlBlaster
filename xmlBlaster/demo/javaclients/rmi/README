@@ -4,7 +4,7 @@ How to use RMI to access xmlBlaster
 You can use any of our Java demos to talk to xmlBlaster over RMI
 just by specifing 
 
-  -client.protocol RMI
+  -protocol RMI
 
 on the command line. Or even switch the default protocol to RMI
 with this entry in xmlBlaster.properties

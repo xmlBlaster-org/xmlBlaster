@@ -1,5 +1,5 @@
 These demo clients run with any protocol supported by xmlBlaster,
-you can choose the protocol used with the -client.protocol
+you can choose the protocol used with the -protocol
 command line setting (see below).
 
 Currently supported are 'IOR' for CORBA, 'RMI', 'XML-RPC' and 'SOCKET'.

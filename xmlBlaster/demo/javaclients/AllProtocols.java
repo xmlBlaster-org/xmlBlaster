@@ -44,19 +44,19 @@ public class AllProtocols implements I_Callback
    private final Global glob;
    private final LogChannel log;
    private final String[] argsIOR = {
-      "-client.protocol",
+      "-protocol",
       "IOR",
    };
    private final String[] argsSocket = {
-      "-client.protocol",
+      "-protocol",
       "SOCKET",
    };
    private final String[] argsXmlRpc = {
-      "-client.protocol",
+      "-protocol",
       "XML-RPC",
    };
    private final String[] argsRmi = {
-      "-client.protocol",
+      "-protocol",
       "RMI",
    };
    private final Con[] conList = {

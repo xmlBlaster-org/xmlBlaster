@@ -118,7 +118,7 @@ importPackage(Packages.org.xmlBlaster.util);
       // you can set here the command line to pass to I_XmlBlasterAccess
       /*
       args = new Array(6);
-      args[0] = new String("-client.protocol");
+      args[0] = new String("-protocol");
       args[1] = new String("SOCKET");
       args[2] = new String("-socket.hostname");
       args[3] = new String("217.83.166.225");
