@@ -122,7 +122,7 @@ public:
       string me = ME + "::testQueueProperty";
       log_.info(me, "testing queue properties parsing: start");
 
-      string qos = string("<queue relating='client' storeSwapLevel='1468006' storeSwapBytes='524288' ") +
+      string qos = string("<queue relating='clientSide' storeSwapLevel='1468006' storeSwapBytes='524288' ") +
                    string("reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") + 
                    string("  <address type='IOR' hostname='127.0.0.2' dispatchPlugin='undef'>") + 
                    string("http://127.0.0.2:3412</address>\n") +
@@ -132,7 +132,7 @@ public:
       for (int i=0; i < 2; i++) {
          QueuePropertyBase propBase = factory.readObject(qos);
          ClientQueueProperty prop(propBase);
-         assertEquals(log_, me, string("client"), prop.getRelating(), "relating check");
+         assertEquals(log_, me, string("clientSide"), prop.getRelating(), "relating check");
          assertEquals(log_, me, 1468006L, prop.getStoreSwapLevel(), "storeSwapLevel check");
          assertEquals(log_, me, 524288L, prop.getStoreSwapBytes(), "storeSwapBytes check");
          assertEquals(log_, me, 629145L, prop.getReloadSwapLevel(), "reloadSwapLevel check");
@@ -163,7 +163,7 @@ public:
           string("  <ptp>false</ptp>\n") +
           string("  <duplicateUpdates>false</duplicateUpdates>\n") +
           string("  <session name='/node/http_127_0_0_2_3412/client/Tim/-3' timeout='86400000' maxSessions='10' clearSessions='false' sessionId='IIOP:01110C332A141532012A0F'/>\n") +
-          string("  <queue relating='client' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
+          string("  <queue relating='clientSide' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
           string("   <address type='IOR' hostname='127.0.0.2' dispatchPlugin='undef'>\n") +
           string("      http://127.0.0.2:3412\n") +
           string("   </address>\n") +
