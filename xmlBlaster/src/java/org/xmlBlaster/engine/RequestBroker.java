@@ -10,6 +10,7 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Timeout;
@@ -20,6 +21,8 @@ import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.engine.mime.I_SubscribeFilter;
+import org.xmlBlaster.engine.mime.SubscribePluginManager;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -114,6 +117,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
    private Timeout burstModeTimer;
 
+   private SubscribePluginManager subscribePluginManager = null;
+   private final Map subscribeFilterMap = Collections.synchronizedMap(new HashMap());
 
 
    /**
@@ -158,6 +163,77 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    public final Global getGlobal()
    {
       return this.authenticate.getGlobal();
+   }
+
+   /**
+    * Get filter object from cache. 
+    */
+   final I_SubscribeFilter getSubcribeFilter(String type, String version, String mime, String mimeExtended)
+   {
+      try {
+         StringBuffer key = new StringBuffer(80);
+         key.append(type).append(version).append(mime).append(mimeExtended);
+         Object obj = subscribeFilterMap.get(key.toString());
+         if (obj != null)
+            return (I_SubscribeFilter)obj;
+
+         // Check if the plugin is for all mime types
+         key.setLength(0);
+         key.append(type).append(version).append("*");
+         return (I_SubscribeFilter)subscribeFilterMap.get(key.toString());
+
+      } catch (Exception e) {
+         Log.error(ME, "Problems accessing subcribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
+         e.printStackTrace();
+         return (I_SubscribeFilter)null;
+      }
+   }
+
+   /**
+    * Invoked on new subscription, loads plugin
+    */
+   final void addSubcribeFilterPlugin(String type, String version)
+   {
+      StringBuffer key = new StringBuffer(80);
+      key.append(type).append(version);
+      Object obj = subscribeFilterMap.get(key.toString());
+      if (obj != null) {
+         Log.info(ME, "Subscribe filter '" + key.toString() + "' is loaded already");
+         return;
+      }
+
+      try {
+         subscribePluginManager = SubscribePluginManager.getInstance();
+         I_SubscribeFilter filter = subscribePluginManager.getPlugin(type, version);
+         if (filter == null) {
+            Log.error(ME, "Problems accessing plugin " + SubscribePluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            return;
+         }
+
+         subscribeFilterMap.put(key.toString(), filter); // Add a dummy instance without mime, so we can check above if loaded already
+         key.setLength(0);
+
+         String[] mime = filter.getMimeTypes();
+         String[] mimeExtended = filter.getMimeExtended();
+         // check plugin code:
+         if (mimeExtended == null || mimeExtended.length != mime.length) {
+            if (mimeExtended.length != mime.length)
+               Log.error(ME, "Subcribe plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
+            mimeExtended = new String[mime.length];
+            for (int ii=0; ii < mime.length; ii++)
+               mimeExtended[ii] = XmlKeyBase.DEFAULT_contentMimeExtended;
+         }
+
+         for (int ii = 0; ii < mime.length; ii++) {
+            key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
+            subscribeFilterMap.put(key.toString(), filter);
+            Log.info(ME, "Loaded subscribe filter '" + key.toString() + "'");
+            key.setLength(0);
+         }
+      } catch (Throwable e) {
+         Log.error(ME, "Problems accessing subcribe plugin manager, can't instantiate " + SubscribePluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
+         e.printStackTrace();
+      }
    }
 
    /**
@@ -406,7 +482,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
             SubscriptionInfo subsQuery = null;
             if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
-               subsQuery = new SubscriptionInfo(sessionInfo, msgQueue, xmlKey, subscribeQos);
+               subsQuery = new SubscriptionInfo(getGlobal(), sessionInfo, msgQueue, xmlKey, subscribeQos);
                returnOid[ii] = subsQuery.getUniqueKey();
                fireSubscriptionEvent(subsQuery, true);
             }
@@ -417,7 +493,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(jj);
                if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
                   xmlKeyExact = xmlKey;
-               SubscriptionInfo subs = new SubscriptionInfo(sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
+               SubscriptionInfo subs = new SubscriptionInfo(getGlobal(), sessionInfo, msgQueue, xmlKeyExact, subscribeQos);
                if (subsQuery != null)
                   subsQuery.addSubscription(subs);
                subscribeToOid(subs);                // fires event for subscription
@@ -887,7 +963,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
             //----- 2. now we can send updates to all interested clients:
             if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
-               msgUnitHandler.invokeCallback();
+               msgUnitHandler.invokeCallback(sessionInfo);
 
             // this gap is not 100% thread save
 
@@ -994,7 +1070,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
                // ... check if the new message matches ...
                if (xmlKey.match(xpath) == true) {
-                  SubscriptionInfo subs = new SubscriptionInfo(sessionInfo, existingQuerySubscription, xmlKey);
+                  SubscriptionInfo subs = new SubscriptionInfo(getGlobal(), sessionInfo, existingQuerySubscription, xmlKey);
                   subs.addMessageUnitHandler(msgUnitHandler);
                   existingQuerySubscription.addSubscription(subs);
                   matchingSubsVec.addElement(subs);

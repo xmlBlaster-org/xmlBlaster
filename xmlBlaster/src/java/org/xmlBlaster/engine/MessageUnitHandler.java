@@ -15,7 +15,9 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.SubscribeFilterQos;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.engine.mime.I_SubscribeFilter;
 
 import java.util.*;
 
@@ -59,6 +61,8 @@ public class MessageUnitHandler
    private String uniqueKey;
 
    private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MessageUnit is new created
+
+   //private I_SubscribeFilter subscribeFilter = null;
 
 
    /**
@@ -140,7 +144,7 @@ public class MessageUnitHandler
    }
 
    /**
-    * Accessing the key of this message
+    * Accessing the DOM parsed key of this message. 
     */
    public final XmlKey getXmlKey() throws XmlBlasterException
    {
@@ -208,10 +212,10 @@ public class MessageUnitHandler
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   public boolean setContent(XmlKey unparsedXmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Setting content of xmlKey " + uniqueKey);
-      if (this.xmlKey == null) this.xmlKey = xmlKey; // If MessageUnitHandler existed because of a subscription: remember xmlKey on first publish
+      if (this.xmlKey == null) this.xmlKey = unparsedXmlKey; // If MessageUnitHandler existed because of a subscription: remember xmlKey on first publish
 
       if (publishQos.readonly() && isPublishedWithData()) {
          Log.warn(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
@@ -265,7 +269,7 @@ public class MessageUnitHandler
 
       if (Log.TRACE) Log.trace(ME, "You have successfully subscribed to " + uniqueKey);
 
-      if (invokeCallback(sub) == false) {
+      if (invokeCallback(null, sub) == false) {
          Set removeSet = new HashSet();
          removeSet.add(sub);
          handleCallbackFailed(removeSet);
@@ -275,9 +279,9 @@ public class MessageUnitHandler
    }
 
    /**
-    * If a callback fails, we remove it from the subscription
-    * TODO: !!! -> generate dead letter
-    * TODO: !!! -> shouldn't we do a auto-logout to release all resources?
+    * If a callback fails, we remove it from the subscription. 
+    * <p />
+    * Generating dead letter and auto-logout to release all resources is done by CbWorker.
     */
    private void handleCallbackFailed(Set removeSet) throws XmlBlasterException
    {
@@ -352,10 +356,9 @@ public class MessageUnitHandler
    /**
     * Send updates to all subscribed clients.
     * <p />
-    * The whole update blocks if one client would block - to avoid this the IDL update()
-    * method is marked <code>oneway</code>
+    * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
     */
-   public final void invokeCallback() throws XmlBlasterException
+   public final void invokeCallback(SessionInfo publisherSessionInfo) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
@@ -367,7 +370,7 @@ public class MessageUnitHandler
 
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (invokeCallback(sub) == false) {
+            if (invokeCallback(publisherSessionInfo, sub) == false) {
                if (removeSet == null) removeSet = new HashSet();
                removeSet.add(sub); // We can't delete directly since we are in the iterator
             }
@@ -378,14 +381,26 @@ public class MessageUnitHandler
 
    /**
     * Send update to subscribed client (Pub/Sub mode only).
+    * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
     * @param sub The subscription handle of the client
     * @return false if the callback failed
     */
-   private final boolean invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
+   private final boolean invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub) throws XmlBlasterException
    {
       if (!isPublishedWithData()) {
          if (Log.TRACE) Log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
          return true;
+      }
+
+      SubscribeFilterQos[] filterQos = sub.getFilterQos();
+      if (filterQos != null) {
+         for (int ii=0; ii<filterQos.length; ii++) {
+            XmlKey key = sub.getMessageUnitHandler().getXmlKey(); // This key is DOM parsed
+            I_SubscribeFilter filter = requestBroker.getSubcribeFilter(filterQos[ii].getType(), filterQos[ii].getVersion(), 
+                                         xmlKey.getContentMime(), xmlKey.getContentMimeExtended());
+            if (filter != null && filter.match(/*publisherSessionInfo,*/ msgUnitWrapper, filterQos[ii].getQuery()) == false)
+               return true; // filtered message is not send to client
+         }
       }
 
       try {
