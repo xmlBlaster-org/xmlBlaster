@@ -77,6 +77,7 @@ public class TestSubXPathMany extends TestCase
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("con1", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                numReceived1++;
+               assertEquals("Message not expected", "command-navigation", updateKey.getOid());
                messageArrived1.append("OK");
                return "";
             }
@@ -88,6 +89,7 @@ public class TestSubXPathMany extends TestCase
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("con2", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                numReceived2++;
+               assertEquals("Message not expected", "command-radar-1", updateKey.getOid());
                messageArrived2.append("OK");
                return "";
             }
@@ -99,6 +101,7 @@ public class TestSubXPathMany extends TestCase
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("con3", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                numReceived3++;
+               assertEquals("Message not expected", "command-radar-1", updateKey.getOid());
                messageArrived3.append("OK");
                return "";
             }
@@ -146,11 +149,12 @@ public class TestSubXPathMany extends TestCase
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
          String subId = con1.subscribe(sk.toXml(), sq.toXml());
 
-         sk = new SubscribeKeyWrapper("//key[starts-with(@oid,'command-radar')]", Constants.XPATH);
+         String xpath2 = "//key[starts-with(@oid,'command-radar')]";
+         sk = new SubscribeKeyWrapper(xpath2, Constants.XPATH);
          sq = new SubscribeQosWrapper();
          subId = con2.subscribe(sk.toXml(), sq.toXml());
 
-         sk = new SubscribeKeyWrapper("xy-dummy", Constants.XPATH);
+         sk = new SubscribeKeyWrapper(xpath2, Constants.XPATH);
          sq = new SubscribeQosWrapper();
          subId = con3.subscribe(sk.toXml(), sq.toXml());
       }
@@ -202,6 +206,19 @@ public class TestSubXPathMany extends TestCase
       assertEquals("numReceived2 after subscribe", 0, numReceived2); // there should be no Callback
       assertEquals("numReceived3 after subscribe", 0, numReceived3); // there should be no Callback
 
+      doPublish();
+      waitOnUpdate(5000L, messageArrived1);
+      assertEquals("numReceived1 after publishing", 1, numReceived1); // message arrived?
+      waitOnUpdate(5000L, messageArrived2);
+      assertEquals("numReceived2 after publishing", 1, numReceived2); // message arrived?
+      waitOnUpdate(5000L, messageArrived3);
+      assertEquals("numReceived3 after publishing", 1, numReceived3); // message arrived?
+
+      numReceived1 = numReceived2 = numReceived3 = 0;
+      messageArrived1.setLength(0);
+      messageArrived2.setLength(0);
+      messageArrived3.setLength(0);
+
       if (con3 != null) { con3.disconnect(null); con3 = null; }
 
       doPublish();
@@ -209,7 +226,13 @@ public class TestSubXPathMany extends TestCase
       assertEquals("numReceived1 after publishing", 1, numReceived1); // message arrived?
       waitOnUpdate(5000L, messageArrived2);
       assertEquals("numReceived2 after publishing", 1, numReceived2); // message arrived?
+      waitOnUpdate(5000L, messageArrived3);
       assertEquals("numReceived3 after publishing", 0, numReceived3); // message arrived?
+      
+      numReceived1 = numReceived2 = numReceived3 = 0;
+      messageArrived1.setLength(0);
+      messageArrived2.setLength(0);
+      messageArrived3.setLength(0);
    }
 
    /**
@@ -229,7 +252,8 @@ public class TestSubXPathMany extends TestCase
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            fail("Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
+            //fail("Timeout of " + timeout + " occurred");
             break;
          }
       }
