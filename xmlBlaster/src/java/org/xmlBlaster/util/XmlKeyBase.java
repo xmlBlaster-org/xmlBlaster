@@ -102,11 +102,11 @@ public class XmlKeyBase
 
    /** The MIME type of the content, RFC1521 */
    public static final String DEFAULT_contentMime = "text/plain";
-   protected String contentMime = DEFAULT_contentMime;
+   protected String contentMime = null;
 
    /** Some further content info, e.g. the version number */
    public static final String DEFAULT_contentMimeExtended = "";
-   protected String contentMimeExtended = DEFAULT_contentMimeExtended;
+   protected String contentMimeExtended = null;
 
    /** IP address to generate unique oid */
    private static String ip_addr = null; // jacorb.util.Environment.getProperty("OAIAddr");
@@ -262,6 +262,12 @@ public class XmlKeyBase
     */
    public String getContentMime() throws XmlBlasterException
    {
+      if (contentMime == null) {
+         parseRaw();
+      }
+      if (contentMime != null) {
+         return contentMime;
+      }
       loadDomTree();
       return contentMime;
    }
@@ -278,6 +284,12 @@ public class XmlKeyBase
     */
    public String getContentMimeExtended() throws XmlBlasterException
    {
+      if (contentMimeExtended == null) {
+         parseRaw();
+      }
+      if (contentMimeExtended != null) {
+         return contentMimeExtended;
+      }
       loadDomTree();
       return contentMimeExtended;
    }
@@ -314,16 +326,37 @@ public class XmlKeyBase
          }
          isGeneratedOid = 0;
 
-         // try to find the queryType:
+         // try to find the queryType etc.:
          int start = xmlKey_literal.indexOf("<key oid=");
          int close = xmlKey_literal.indexOf('>', start);
-         String tmp = parseRaw(xmlKey_literal.substring(start, close), "queryType=");
+         String keyToken = xmlKey_literal.substring(start, close);
+         String tmp;
+
+         tmp = parseRaw(keyToken, "queryType=");
          if (tmp != null && tmp.length() > 0) {
             setQueryType(tmp);
             //Log.info(ME, "queryType='" + tmp + "'");
          }
          else {
             queryType = (isPublish) ? PUBLISH : EXACT_QUERY;
+         }
+
+         tmp = parseRaw(keyToken, "contentMime=");
+         if (tmp != null && tmp.length() > 0) {
+            contentMime = tmp;
+            //Log.info(ME, "contentMime='" + tmp + "'");
+         }
+         else {
+            contentMime = DEFAULT_contentMime;
+         }
+
+         tmp = parseRaw(keyToken, "contentMimeExtended=");
+         if (tmp != null && tmp.length() > 0) {
+            contentMimeExtended = tmp;
+            //Log.info(ME, "contentMimeExtended='" + tmp + "'");
+         }
+         else {
+            contentMimeExtended = DEFAULT_contentMimeExtended;
          }
       }
    }
@@ -569,6 +602,9 @@ public class XmlKeyBase
             throw new XmlBlasterException(ME+".MissingQuery", "Missing query string in <key queryType='XPATH'>//key</key> tag");
          }
       }
+
+      //Log.info(ME, "DOM parsed the XmlKey");
+      //Thread.currentThread().dumpStack();
 
       //if (/*isPublish && */isGeneratedOid) We do it allways to have nice formatting for emails etc.
          xmlKey_literal = xmlToDom.domToXml("\n"); // write the generated key back to literal string
