@@ -165,8 +165,8 @@ build -Duse-icc=true c
 cd xmlBlaster/src/c
 
 Linux C:
-  gcc -Wall -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/msgUtil.c util/Properties.c
-       socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+  gcc -Wall -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
+      util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
 
 Linux C++:
   g++ -Wall -g -DXMLBLASTER_C_COMPILE_AS_CPP -I. -o HelloWorld HelloWorld.c
@@ -1112,7 +1112,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.46 $</revision>
+   <revision>$Revision: 1.47 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
