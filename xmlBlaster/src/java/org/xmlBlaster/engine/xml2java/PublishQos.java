@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.13 2002/06/25 17:44:51 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.14 2002/08/30 07:51:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -341,7 +341,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       this.routeNodes = null; // clear cache
 
       if (routeNodeVec == null)
-         routeNodeVec = new Vector(12);
+         routeNodeVec = new Vector();
       routeNodeVec.addElement(routeInfo);
 
       // Set stratum to new values
