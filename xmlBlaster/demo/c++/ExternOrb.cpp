@@ -63,7 +63,6 @@ public:
    {
       doRun_ = false;
       this->join();
-      factory_.killDriverInstance("externOrb");
    }
 
 
