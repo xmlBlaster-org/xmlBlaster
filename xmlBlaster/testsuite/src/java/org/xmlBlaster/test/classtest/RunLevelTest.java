@@ -130,7 +130,7 @@ public class RunLevelTest extends TestCase {
       String me = ME + "-testPluginConfig";
       try {
          this.log.info(me, "start");
-         PluginConfig config = new PluginConfig(this.glob, "queue:JDBC", "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
+         PluginConfig config = new PluginConfig(this.glob, "queueJDBC", "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
          config.addAttribute("url", "jdbc:oracle:thin:@localhost:1521:noty");
          config.addAttribute("user", "joe");
          config.addAttribute("password", "secret");
@@ -163,17 +163,17 @@ public class RunLevelTest extends TestCase {
 
          PluginHolder holder = new PluginHolder(this.glob);
          
-         PluginConfig tmp = new PluginConfig(this.glob, "queue:JDBC", "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
+         PluginConfig tmp = new PluginConfig(this.glob, "queueJDBC", "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
          holder.addDefaultPluginConfig(tmp);
-         tmp = new PluginConfig(this.glob, "queue:RAM", "org.xmlBlaster.util.queue.ram.RAMQueuePlugin");
+         tmp = new PluginConfig(this.glob, "queueRAM", "org.xmlBlaster.util.queue.ram.RAMQueuePlugin");
          holder.addPluginConfig("avalon", tmp);
 
-         tmp = holder.getPluginConfig("avalon", "queue:RAM");
-         if (tmp == null) assertTrue(me + " getting 'avalon queue:RAM'", false);
+         tmp = holder.getPluginConfig("avalon", "queueRAM");
+         if (tmp == null) assertTrue(me + " getting 'avalon queueRAM'", false);
          this.log.info(me, tmp.toXml());
 
-         tmp = holder.getPluginConfig("avalon", "queue:JDBC");
-         if (tmp == null) assertTrue(me + " getting 'avalon queue:JDBC'", false);
+         tmp = holder.getPluginConfig("avalon", "queueJDBC");
+         if (tmp == null) assertTrue(me + " getting 'avalon queueJDBC'", false);
          this.log.info(me, tmp.toXml());
 
          PluginConfig[] help = holder.getAllPluginConfig("avalon");
@@ -183,7 +183,7 @@ public class RunLevelTest extends TestCase {
          String xml = new String();
          xml += "<xmlBlaster>\n" +
                 "   <!-- A typical plugin which is loaded by client request -->\n" +
-                "   <plugin id='dispatch:priority'\n" +
+                "   <plugin id='dispatchPriority'\n" +
                 "           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'\n" +
                 "           jar='/tmp/my.jar'>\n" +
                 "      <attribute id='config'>\n" +
@@ -201,12 +201,12 @@ public class RunLevelTest extends TestCase {
                 "      </attribute>\n" +
                 "   </plugin>\n" +
                 "\n" +
-                "   <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>\n" +
-                "      <attribute id='transientQueue'>queue:RAM</attribute>\n" +
-                "      <attribute id='persistentQueue'>queue:JDBC</attribute>\n" +
+                "   <plugin id='queueCACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>\n" +
+                "      <attribute id='transientQueue'>queueRAM</attribute>\n" +
+                "      <attribute id='persistentQueue'>queueJDBC</attribute>\n" +
                 "   </plugin>\n" +
                 "   \n" +
-                "  <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>\n" +
+                "  <plugin id='queueRAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>\n" +
                 "\n" +
                 "   <plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>\n" +
                 "      <attribute id='transientQueue'>storage:RAM</attribute>\n" +
@@ -231,7 +231,7 @@ public class RunLevelTest extends TestCase {
                 "         <action do='STOP' onShutdownRunlevel='2' sequence='4'/>\n" +
                 "      </plugin>\n" +
                 "     \n" +
-                "      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>\n" +
+                "      <plugin id='queueJDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>\n" +
                 "         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>\n" +
                 "         <attribute id='user'>joe</attribute>\n" +
                 "         <attribute id='password'>secret</attribute>\n" +
@@ -250,7 +250,7 @@ public class RunLevelTest extends TestCase {
                 " \n" +
                 "    <node id='avalon'>\n" +
                 "       ...\n" +
-                "      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>\n" +
+                "      <plugin id='queueJDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>\n" +
                 "         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>\n" +
                 "         <attribute id='user'>joe</attribute>\n" +
                 "         <attribute id='password'>secret</attribute>\n" +
@@ -271,17 +271,17 @@ public class RunLevelTest extends TestCase {
             assertEquals(me + " number of plugins for 'avalon' in plugin holder", 6, plugins.length);
 
             PluginConfig pluginConfig = null;
-            pluginConfig = pluginHolder.getPluginConfig("avalon","dispatch:priority");
+            pluginConfig = pluginHolder.getPluginConfig("avalon","dispatchPriority");
             if (pluginConfig == null) 
-               assertTrue(me + " getting plugin 'dispatch:priority' for avalon gives null", false);
+               assertTrue(me + " getting plugin 'dispatchPriority' for avalon gives null", false);
             String id = pluginConfig.getId();
-            assertEquals(me + " id for avalon/dispatch:priority", "dispatch:priority", id);
+            assertEquals(me + " id for avalon/dispatchPriority", "dispatchPriority", id);
             String className = pluginConfig.getClassName();
-            assertEquals(me + " className for avalon/dispatch:priority", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin", className);
+            assertEquals(me + " className for avalon/dispatchPriority", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin", className);
 
-            pluginConfig = pluginHolder.getPluginConfig("avalon","queue:CACHE");
-            pluginConfig = pluginHolder.getPluginConfig("avalon","queue:RAM");
-            pluginConfig = pluginHolder.getPluginConfig("avalon","queue:JDBC");
+            pluginConfig = pluginHolder.getPluginConfig("avalon","queueCACHE");
+            pluginConfig = pluginHolder.getPluginConfig("avalon","queueRAM");
+            pluginConfig = pluginHolder.getPluginConfig("avalon","queueJDBC");
             pluginConfig = pluginHolder.getPluginConfig("avalon","storage:CACHE");
             pluginConfig = pluginHolder.getPluginConfig("avalon","storage:RAM");
 
@@ -289,7 +289,7 @@ public class RunLevelTest extends TestCase {
             pluginConfig = pluginHolder.getPluginConfig("avalon","storage:JDBC");
 
             //should be the individual of heron (not from xmlBlaster)
-            pluginConfig = pluginHolder.getPluginConfig("heron","queue:JDBC");
+            pluginConfig = pluginHolder.getPluginConfig("heron","queueJDBC");
 
             xml = pluginHolder.toXml();
             this.log.info(ME, xml);
