@@ -1910,9 +1910,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       if (this.publishLoginEvent) {
          this.publishQosLoginEvent.clearRoutes();
+         MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
+         msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
+         
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyLoginEvent,
                                   sessionInfo.getLoginName().getBytes(),
-                                  this.publishQosLoginEvent.getData());
+                                  msgQosData);
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client has logged in
          this.publishQosLoginEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
       }
@@ -1937,8 +1940,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       if (this.publishLogoutEvent) {
          if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString());
          this.publishQosLogoutEvent.clearRoutes();
-         MsgUnit msgUnit = new MsgUnit(this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(),
-                                       this.publishQosLogoutEvent.getData());
+         
+         MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
+         msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
+         
+         MsgUnit msgUnit = new MsgUnit(this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(), msgQosData);
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client logged out
          this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
       }

@@ -8,6 +8,10 @@
       You can subscribe to "__sys__Login" to be notified when a new client logs in,
       and to "__sys__Logout" to be notified when a client logs out.
       The message content contains the unique login name of this client.
+      <p>
+         The public Session Id is passed in the client properties with the key "__sessionId".
+	 It is of type 'long'.
+      </p>
    </description>
    <example lang="Java">
       <![CDATA[
