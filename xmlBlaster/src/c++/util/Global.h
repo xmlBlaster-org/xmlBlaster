@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.17 2003/03/11 23:32:37 laghi Exp $
+Version:   $Id: Global.h,v 1.18 2003/03/15 21:46:40 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -32,9 +32,9 @@ namespace org { namespace xmlBlaster { namespace util {
  */
 class Dll_Export Global {
 
-typedef map<const char*, Log> LogMap;
+typedef map<string, Log> LogMap;
 
-friend Global& getInstance(const char* instanceName);
+friend Global& getInstance(const string &instanceName);
 private:
    const string           ME;
    LogMap                 logMap_;
@@ -75,7 +75,7 @@ public:
    /**
     * The method to call to get the singleton Timestamp object.
     */
-   static Global& getInstance(const char* instanceName="default");
+   static Global& getInstance(const string &instanceName="default");
 
    /**
     * The version field is automatically set by ant on compilation (see filter token in build.xml)
@@ -102,7 +102,7 @@ public:
     * If no log is found with that name, one is created and added to the
     * log map.
     */
-   Log& getLog(const char* logName="default");
+   Log& getLog(const string &logName="default");
 
    /**
     * Returns the property object associated to this global

@@ -7,7 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
 #include <util/lexical_cast.h>
-
+#include <util/Timestamp.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
@@ -31,7 +31,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    connection_         = NULL;
    deliveryManager_    = NULL;
    connectionProblems_ = NULL;
-   instanceName_       = lexical_cast<string>(this);
+   instanceName_       = lexical_cast<string>(TimestampFactory::getInstance().getTimestamp());
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()

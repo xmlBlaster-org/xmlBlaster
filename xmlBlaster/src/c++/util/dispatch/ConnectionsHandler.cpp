@@ -156,7 +156,9 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
    }
 
    bool ret = connection_->disconnect(qos);
+   enum States oldState = status_;
    status_ = DEAD;
+   if (connectionProblems_) connectionProblems_->reachedDead(oldState, this);
    return ret;
 }
 
@@ -413,7 +415,7 @@ void ConnectionsHandler::toPollingOrDead()
 
 void ConnectionsHandler::timeout(void * /*userData*/)
 {
-
+                                                    
   Lock lock(connectMutex_);
    pingIsStarted_ = false;
    timestamp_ = 0;

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $
+Version:   $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,9 +14,9 @@ Version:   $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $
 
 #if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.31 2003/03/15 21:46:40 laghi Exp $";
 #endif
 
 using namespace std;
@@ -61,7 +61,7 @@ Global::~Global()
    }
 }
 
-Global& Global::getInstance(const char*)
+Global& Global::getInstance(const string&)
 {
    static Global global;
    return global;
@@ -104,7 +104,7 @@ Property& Global::getProperty() const
 }
 
 
-Log& Global::getLog(const char* logName)
+Log& Global::getLog(const string &logName)
 {
    LogMap::iterator pos = logMap_.find(logName);
    if (pos != logMap_.end()) return (*pos).second;

@@ -29,6 +29,7 @@ private:
    Mutex            updateMutex_;
    int              numOfUpdates_;
    Address          *address_;
+   bool             isConnected_;
 
 public:
    TestFailsafe(int args, char ** argv) 
@@ -43,7 +44,9 @@ public:
       pubKey_         = 0;
       address_        = 0;
       numOfUpdates_   = 0;
+      isConnected_    = false;
    }
+
 
    virtual ~TestFailsafe()
    {
@@ -61,17 +64,20 @@ public:
    bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
    {
       log_.info(ME, "reconnected");
+      isConnected_ = true;
       return true;
    }
 
    void reachedDead(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
    {
       log_.info(ME, "lost connection");
+      isConnected_ = false;
    }
 
    void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
    {
       log_.info(ME, "going to poll modus");
+      isConnected_ = false;
    }
 
    void setUp()
@@ -124,7 +130,7 @@ public:
          Thread::sleepSecs(2);
       }
       else {
-         log_.info(ME, "plase stop the server (I will wait 20 seconds)");
+         log_.info(ME, "please stop the server now (I will wait 20 s)");
          Thread::sleepSecs(20);
       }
       log_.info(ME, "the communication is now down: ready to start the tests");
@@ -190,15 +196,15 @@ public:
       // and now we are reconnecting ...
       if (useEmbeddedServer_) {
          startEmbeddedServer();
-         Thread::sleepSecs(5);
+         Thread::sleepSecs(1);
       }
       else {
-         log_.info(ME, "please restart the server now (I will wait 20 seconds)");
-         Thread::sleepSecs(20);
+         for (int i=0; i < 30; i++) {
+            if (isConnected_) break;
+            log_.info(ME, "please restart the server now");
+            Thread::sleepSecs(2);
+         }
       }
-
-      log_.info(ME, "waiting 10 seconds to give it a chance to reconnect");
-      Thread::sleepSecs(10);
 
       // making  a subscription now should work ...
       SubscribeKey subKey(global_);
