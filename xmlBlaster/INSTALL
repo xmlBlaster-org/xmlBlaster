@@ -30,7 +30,7 @@ Howto install and compile xmlBlaster
 
 
 5) Try the xmlBlaster server
-   Examples in [] use a local running Webserver, customize .jacorb_properties befor)
+   Examples in [] use a local running Webserver, customize .jacorb_properties before)
 
    a) Start the JacORB Name Service:
 
@@ -53,3 +53,6 @@ Howto install and compile xmlBlaster
 		 [/usr/local/JacORB/bin/jaco org.xmlBlaster.Client]
 
 	 Good. You have done it!
+
+
+
