@@ -56,22 +56,14 @@ namespace util {
        * Constructs an new object.
        * You need to call the init() method to parse the XML string.
        */
-      SaxHandlerBase(int args=0, char *argc[]=0) : log_(args, argc),
-         charTrimmer_(), xmlChTrimmer_() {
-         if (log_.CALL) log_.trace(me(), "Creating new SaxHandlerBase");
-      }
+      SaxHandlerBase(int args=0, char *argc[]=0);
 
       
       /*
        * This method parses the XML string using the SAX parser.
        * @param xmlLiteral The XML string
        */
-      void init(const string &xmlLiteral) {
-         xmlLiteral_ = xmlLiteral;
-         if (xmlLiteral_.size() > 0) {
-            parse(xmlLiteral_);
-         }
-      }
+      void init(const string &xmlLiteral);
       
 
    private:      
@@ -80,27 +72,7 @@ namespace util {
        * @param xmlData Quality of service in XML notation
        */
       
-      void parse(const string &xmlData) {
-         try {
-            SAXParser parser;
-            // = ParserFactory.makeParser(); // DEFAULT_PARSER_NAME
-            parser.setDocumentHandler(this);
-            parser.setErrorHandler(this);
-            parser.setDTDHandler(this);
-            MemBufInputSource inSource((const XMLByte*)xmlData.c_str(), 
-                                       xmlData.size(), "xmlBlaster", false);
-            parser.parse(inSource);
-         }
-         catch (StopParseException &) { 
-            // If it does not work, it could be wrapped into SAXParseException
-            if (log_.TRACE) log_.trace(me(), string("StopParseException: ") +
-                                  "Parsing execution stopped half the way");
-            return;
-         }
-         catch (...) {
-           cerr << "SOME OTHER EXEPTION" << std::endl;
-         }
-      }
+      void parse(const string &xmlData);
 
    public:      
       /**
@@ -141,11 +113,8 @@ namespace util {
        * not the virtual method inherited from DocumentHandler !!
        */
       void characters(const XMLCh* const ch, const unsigned int start,
-                      const unsigned int length) {
-         char *chHelper = XMLString::transcode(ch);
-         character_.assign(string(chHelper), start, length);
-         delete chHelper;
-      }
+                      const unsigned int length);
+
 
       /**
        * Characters.
@@ -180,82 +149,30 @@ namespace util {
       //
       
       /** Warning. */
-      void warning(const SAXParseException &ex) {
-         string txt = getLocationString(ex);
-         txt += string("\n") + xmlLiteral_;
-         log_.warn(me(), txt);
-      }
+      void warning(const SAXParseException &ex) ;
       
       
       /** Error. */
-      void error(const SAXParseException &ex) {
-         string txt = getLocationString(ex);
-         txt += string("\n") + xmlLiteral_;
-         log_.warn(me(), txt);
-      }
+      void error(const SAXParseException &ex) ;
 
 
       /** Fatal error. */
-      void fatalError(const SAXParseException &ex) {
-         string txt = getLocationString(ex);
-         txt += string("\n") + xmlLiteral_;
-         log_.warn(me(), txt);
-         throw ex;
-      }
+      void fatalError(const SAXParseException &ex) ;
 
       void notationDecl(const XMLCh* const name, const XMLCh* const publicId, 
-                        const XMLCh* const systemId) {
-         string txt             = "notationDecl(name=";
-         char   *nameHelper     = XMLString::transcode(name);
-         char   *publicIdHelper = XMLString::transcode(publicId);
-         char   *systemIdHelper = XMLString::transcode(systemId);
-
-         txt += string(nameHelper) + ", publicId=" + publicIdHelper 
-            + ", systemId=" + systemIdHelper + ")";
-         if (log_.TRACE) log_.trace(me(), txt);
-         delete nameHelper;
-         delete publicIdHelper;
-         delete systemIdHelper;
-      }
+                        const XMLCh* const systemId) ;
       
 
       /** Fatal error. */
       void unparsedEntityDecl(const XMLCh* const name, 
                               const XMLCh* const publicId, 
                               const XMLCh* const systemId, 
-                              const XMLCh* const notationName) {
-
-         char *nameHelper         = XMLString::transcode(name);
-         char *publicIdHelper     = XMLString::transcode(publicId);
-         char *systemIdHelper     = XMLString::transcode(systemId);
-         char *notationNameHelper = XMLString::transcode(notationName); 
-
-         if (log_.TRACE) log_.trace(me(), string("unparsedEntityDecl(name=") +
-                                    nameHelper + ", publicId="+publicIdHelper+
-                                    ", systemId=" + systemIdHelper + 
-                                    ", notationName=" + notationNameHelper +
-                                    ")");
-         delete nameHelper;
-         delete publicIdHelper;
-         delete systemIdHelper;
-         delete notationNameHelper;
-      }
+                              const XMLCh* const notationName) ;
 
       
    private:
       /** Returns a string of the location. */
-      string getLocationString(const SAXParseException &ex) {
-         string str;
-         char*  systemIdHelper = XMLString::transcode(ex.getSystemId()); 
-         string systemId       = systemIdHelper;
-         delete systemIdHelper;
-         if (systemId != "") {
-            int index = systemId.find_last_of('/');
-            if (index != -1) systemId = systemId.substr(index + 1);
-            str += systemId;
-         }
-         return str + ":" + boost::lexical_cast<string>(ex.getLineNumber()) + ":" + boost::lexical_cast<string>(ex.getColumnNumber());
-      }
+      string getLocationString(const SAXParseException &ex) ;
 
       /**
        * These overwrite some virtual functions 
@@ -283,16 +200,7 @@ namespace util {
        * compare the strings should be portable to all platforms supported by
        * xerces.
        */
-      bool caseCompare(const XMLCh *name1, const char *name2) {
-         XMLCh* name1Helper = XMLString::replicate(name1);
-         XMLString::upperCase(name1Helper);
-         XMLCh* name2Helper = XMLString::transcode(name2);
-         XMLString::upperCase(name2Helper);
-         bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
-         delete name1Helper;
-         delete name2Helper;
-         return ret;
-      }
+      bool caseCompare(const XMLCh *name1, const char *name2) ;
    };
 }}} // namespace
 

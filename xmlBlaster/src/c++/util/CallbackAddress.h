@@ -4,12 +4,10 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
 -----------------------------------------------------------------------------*/
-
 #ifndef _UTIL_CALLBACKADDRESS_H
 #define _UTIL_CALLBACKADDRESS_H
 
 #include <string>
-
 using namespace std;
 
 namespace org { namespace xmlBlaster {
@@ -17,10 +15,11 @@ namespace util {
 
    /**
     * Helper class holding callback address string and protocol string.
-    */
+   */
    class CallbackAddress {
 
    private: 
+     
       string address_;
       string type_;
 
@@ -31,7 +30,6 @@ namespace util {
       CallbackAddress(const string &type) {
          type_ = type;
       }
-
 
       /**
        * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
@@ -48,9 +46,11 @@ namespace util {
        * Set the callback address, it should fit to the protocol-type.
        * @param address The callback address, e.g. "et@mars.univers"
        */
+
       void setAddress(const string &address) {
          address_ = address;
       }
+
 
 
       /**
@@ -78,7 +78,6 @@ namespace util {
          return toXml("");
       }
 
-
       /**
        * Dump state of this object into a XML ASCII string.
        * <br>
@@ -94,9 +93,7 @@ namespace util {
          return sb;
       }
    };
-
 }}}; // namespace 
 
 #endif
-
 

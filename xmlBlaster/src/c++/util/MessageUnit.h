@@ -47,81 +47,36 @@ namespace util {
       MessageUnit(const string &xmlKey,
                   unsigned long len,
                   const unsigned char * content, 
-                  const string &qos="<qos/>") :
-                        key_(xmlKey), len_(len), qos_(qos) {
-         
-         content_ = new unsigned char[len_];
-         memcpy(content_, content, len_);
-
-         //contentVec_.reserve(len);
-         //for (unsigned int ii=0; ii<len; ii++) {
-         //   contentVec_.push_back(content[ii]);
-         //}
-      }
+                  const string &qos="<qos/>");
 
       /**
        * Constructs a MessageUnit with a string. 
        */
       MessageUnit(const string &xmlKey,
                   const string &content, 
-                  const string &qos="<qos/>") :
-                        key_(xmlKey), len_(content.size()), qos_(qos) {
-         
-         content_ = new unsigned char[len_];
-         memcpy(content_, content.c_str(), len_);
-
-         //contentVec_.reserve(len_);
-         //for (unsigned int ii=0; ii<len_; ii++) {
-         //   contentVec_.push_back(content[ii]);
-         //}
-      }
+                  const string &qos="<qos/>");
 
       /**
        * Constructs the message unit. 
        */
       MessageUnit(const string &xmlKey,
                   const vector<unsigned char> &contentVec, 
-                  const string &qos="<qos/>") :
-                    key_(xmlKey), /*contentVec_(contentVec),*/ len_(contentVec.size()), qos_(qos) {
-         content_ = new unsigned char[len_];
-         for (unsigned int ii=0; ii<len_; ii++) {
-            content_[ii] = contentVec[ii];
-         }
-      }
+                  const string &qos="<qos/>");
 
       /**
        * Copy constructor
        */
-      MessageUnit(const MessageUnit& rhs) {
-         key_ = rhs.getKey();
-         //contentVec = rhs.getContentVec();
-         len_ = rhs.getContentLen();
-         content_ = new unsigned char[len_];
-         memcpy(content_, rhs.getContent(), len_);
-         qos_ = rhs.getQos();
-      }
+      MessageUnit(const MessageUnit& rhs);
 
       /**
        * Assignment constructor
        */
-      MessageUnit& operator=(const MessageUnit& rhs) {
-         if (this != &rhs) {
-            key_ = rhs.getKey();
-            //contentVec = rhs.getContentVec();
-            len_ = rhs.getContentLen();
-            content_ = new unsigned char[len_];
-            memcpy(content_, rhs.getContent(), len_);
-            qos_ = rhs.getQos();
-         }
-         return *this;
-      }
+      MessageUnit& operator=(const MessageUnit& rhs);
 
       /**
        * Destructor
        */
-      virtual ~MessageUnit() {
-         delete [] content_;
-      }
+      virtual ~MessageUnit();
 
       /**
        * @return The xml based key
@@ -135,15 +90,7 @@ namespace util {
        *         This is created for each invocation so 
        *         use it sparingly
        */
-      vector<unsigned char> getContentVec() const {
-         //return contentVec_;
-         vector<unsigned char> vec;
-         vec.reserve(len_);
-         for (unsigned int ii=0; ii<len_; ii++) {
-            vec.push_back(content_[ii]);
-         }
-         return vec;
-      }
+      vector<unsigned char> getContentVec() const;
 
       /**
        * Access the raw user data,
@@ -181,17 +128,7 @@ namespace util {
        * @param extraOffset indenting of tags for nice output
        * @return The MessageUnit as a XML ASCII string
        */
-      string toXml(const string &extraOffset="") {
-         string ret    = "\n   ";
-         string offset = extraOffset;
-
-         ret += offset + "<MessageUnit>";
-         ret += offset + "  <key>" + getKey() + "</key>";
-         ret += offset + "  <content>" + getContentStr() + "</content>";
-         ret += offset + "  <qos>" + getQos() + "</qos>";
-         ret += offset + "</MessageUnit>";
-         return ret;
-      }
+      string toXml(const string &extraOffset="");
    };
 }}} // namespace
 

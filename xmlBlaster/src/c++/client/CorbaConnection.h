@@ -91,9 +91,7 @@ namespace org { namespace xmlBlaster {
        * Accessing the orb handle.
        * @return org.omg.CORBA.ORB
        */
-      CORBA::ORB_ptr getOrb() {
-         return CORBA::ORB::_duplicate(orb_);
-      }
+      CORBA::ORB_ptr getOrb();
 
       
       /**
@@ -358,6 +356,7 @@ namespace org { namespace xmlBlaster {
    
    }; // class CorbaConnection
 }} // namespace
+
 
 #endif
 

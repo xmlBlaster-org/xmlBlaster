@@ -8,9 +8,13 @@ Comment:   Holding some constants
 #ifndef _UTIL_CONSTANTS_H
 #define _UTIL_CONSTANTS_H
 
+#include <util/XmlBCfg.h>
+#include <string>
+
+using namespace std;
 
 namespace org { namespace xmlBlaster {
-namespace util {
+  namespace util { namespace Constants {
 
 /**
  * Holding some Constants. 
@@ -20,12 +24,12 @@ namespace util {
  * to C++ as well. But we want to be independent from CORBA.
  * @see xmlBlaster/src/java/org/xmlBlaster/engine/helper/Constants.java
  */
-class Constants {
+   //class Dll_Export Constants {
 
-   public:
+   //public:
 
-   static const char * const DEFAULT_SECURITYPLUGIN_TYPE;
-   static const char * const DEFAULT_SECURITYPLUGIN_VERSION;
+   extern Dll_Export  const char * DEFAULT_SECURITYPLUGIN_TYPE;
+   extern Dll_Export  const char * DEFAULT_SECURITYPLUGIN_VERSION;
 
    enum {
       MINUTE_IN_MILLIS = 1000L*60,
@@ -65,7 +69,7 @@ class Constants {
     * The xmlBlaster SNMP node 1.3.6.1.4.1.11662 as registered at IANA. 
     * @return a long array containing the SNMP hierarchy to xmlBlaster
     */
-   static const long XMLBLASTER_OID_ROOT[];
+   extern Dll_Export long XMLBLASTER_OID_ROOT[];
 
    enum MessagePriority {
       /**
@@ -101,102 +105,78 @@ class Constants {
     * @param defaultPriority Value to use if not parseable
     * @return The int value for the message priority
     */
-   /*
-   static const int getPriority(string prio, int defaultPriority) const {
-      if (prio != null) {
-         prio = prio.trim();
-         try {
-            return new Integer(prio).intValue();
-         } catch (NumberFormatException e) {
-            prio = prio.toUpperCase();
-            if (prio.startsWith("MIN"))
-               return Constants.MIN_PRIORITY;
-            else if (prio.startsWith("LOW"))
-               return Constants.LOW_PRIORITY;
-            else if (prio.startsWith("NORM"))
-               return Constants.NORM_PRIORITY;
-            else if (prio.startsWith("HIGH"))
-               return Constants.HIGH_PRIORITY;
-            else if (prio.startsWith("MAX"))
-               return Constants.MAX_PRIORITY;
-            else
-               Global.instance().getLog("core").warn(ME, "Wrong format of <priority>" + prio +
-                    "</priority>, expected a number between (inclusiv) 0 - 9, setting to message priority to "
-                    + defaultPriority);
-         }
-      }
-      if (defaultPriority < Constants.MIN_PRIORITY || defaultPriority > Constants.MAX_PRIORITY) {
-          Global.instance().getLog("core").warn(ME, "Wrong message defaultPriority=" + defaultPriority + " given, setting to NORM_PRIORITY");
-          return Constants.NORM_PRIORITY;
-      }
-      return defaultPriority;
-   }
-   */
+   
+   /*const int getPriority(string prio, int defaultPriority);*/
 
    // Status id, on error usually an exception is thrown so we don't need "ERROR":
 
    /** The returned message status if OK */
-   static const char * const STATE_OK;
-   static const char * const RET_OK;
+   extern Dll_Export const char * STATE_OK;
+   extern Dll_Export const char * RET_OK;
 
    /** The returned message status if message timeout occured (but not erased) */
-   static const char * const STATE_TIMEOUT;
+   extern Dll_Export const char * STATE_TIMEOUT;
    /** The returned message status if message is explicitly erased by a call to erase() */
-   static const char * const STATE_ERASED;
+   extern Dll_Export const char * STATE_ERASED;
    /** The returned message status if message couldn't be forwarded to the master cluster node */
-   static const char * const STATE_FORWARD_ERROR;
+   extern Dll_Export const char * STATE_FORWARD_ERROR;
 
    /** Additional info for state. 
        The returned message status if message couldn't be forwarded to the master cluster node but
        is in the tail back queue to be delivered on reconnect or on client side message
        recording.
    */
-   static const char * const INFO_QUEUED;
+   extern Dll_Export const char * INFO_QUEUED;
 
    /** Type of a message queue */
-   static const char * const RELATING_SESSION;
+   extern Dll_Export const char * RELATING_SESSION;
    /** Type of a message queue */
-   static const char * const RELATING_SUBJECT;
+   extern Dll_Export const char * RELATING_SUBJECT;
    /** Type of a message queue */
-   static const char * const RELATING_UNRELATED;
+   extern Dll_Export const char * RELATING_UNRELATED;
 
    /** message queue onOverflow handling, default is blocking until queue takes messages again */
-   static const char * const ONOVERFLOW_BLOCK;
+   extern Dll_Export const char * ONOVERFLOW_BLOCK;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_DEADLETTER;
+   extern Dll_Export const char * ONOVERFLOW_DEADLETTER;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_DISCARD;
+   extern Dll_Export const char * ONOVERFLOW_DISCARD;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_DISCARDOLDEST;
+   extern Dll_Export const char * ONOVERFLOW_DISCARDOLDEST;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_EXCEPTION;
+   extern Dll_Export const char * ONOVERFLOW_EXCEPTION;
 
    /** If callback fails more often than is configured the login session is destroyed */
-   static const char * const ONEXHAUST_KILL_SESSION;
+   extern Dll_Export const char * ONEXHAUST_KILL_SESSION;
 
 
    /** Praefix to create a sessionId */
-   static const char * const SESSIONID_PRAEFIX;
-   static const char * const SUBSCRIPTIONID_PRAEFIX;
+   extern Dll_Export const char * SESSIONID_PRAEFIX;
+   extern Dll_Export const char * SUBSCRIPTIONID_PRAEFIX;
 
-   static const char * const INTERNAL_OID_PRAEFIX;
-   static const char * const INTERNAL_OID_CLUSTER_PRAEFIX;
+   extern Dll_Export const char * INTERNAL_OID_PRAEFIX;
+   extern Dll_Export const char * INTERNAL_OID_CLUSTER_PRAEFIX;
 
    /** JDBC access messages */
-   static const char * const JDBC_OID;
+   extern Dll_Export const char * JDBC_OID;
 
    /** message queue onOverflow handling */
-   static const char * const OID_DEAD_LETTER;
+   extern Dll_Export const char * OID_DEAD_LETTER;
 
    /** XmlKey queryType enum */
-   static const char * const XPATH;
-   static const char * const EXACT;
-   //static const char * const DOMAIN; // doesn't compile with g++ 3.1.1
-   static const char * const REGEX;
+   extern Dll_Export const char * XPATH;
+   extern Dll_Export const char * EXACT;
+   // const char * const DOMAIN; // doesn't compile with g++ 3.1.1
+   extern Dll_Export  const char * REGEX;
 
-};
+   extern Dll_Export const char * IOR;
+   extern Dll_Export const char * EMAIL;
+   extern Dll_Export const char * XML_RPC;
 
-}}}; // namespace 
+//};
+
+
+}}}}; // namespace 
 
 #endif
 
