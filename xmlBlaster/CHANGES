@@ -2,7 +2,14 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
-  - Changed to support security QoS tags used for login method
+
+  - CORBA/C++ client helper classes now support http IOR download, e.g.:
+       TestGet -iorHost myHost -iorPort 7609
+
+  - Changed/Enhanced property file lookup for C++ clients
+    see xmlBlaster/src/c++/util/Property.h
+
+  - Changed to support security QoS tags for login() method
     Performance changes to avoid double qos parsing of connect QoS
     (bug reported by Cyrille, again keeping me busy :-)
 
