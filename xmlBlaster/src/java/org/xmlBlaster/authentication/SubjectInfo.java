@@ -788,8 +788,6 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, try to login again");
       }
-      // only notify if connect/disconnect comes from client
-      if (sessionInfo.getConnectQos().isInternal()) return;
       
       if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
       synchronized (this.sessionMap) {
