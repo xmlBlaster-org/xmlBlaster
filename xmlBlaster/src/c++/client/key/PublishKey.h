@@ -1,0 +1,94 @@
+/**
+ * Wrap the XML key for a subscribe() invocation. 
+ * <p>
+ * See QueryKeySaxFactory for a syntax description of the allowed xml structure
+ * </p>
+ * @see org.xmlBlaster.util.key.QueryKeySaxFactory
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html" target="others">the interface.subscribe requirement</a>
+ *
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ */
+
+#ifndef _CLIENT_KEY_SUBSCRIBEKEY_H
+#define _CLIENT_KEY_SUBSCRIBEKEY_H
+
+#include <client/key/MsgKeyBase.h>
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::key;
+
+namespace org { namespace xmlBlaster { namespace client { namespace key {
+
+class Dll_Export PublishKey : public MsgKeyBase
+{
+public:
+
+   /**
+    * Minimal constructor.
+    */
+   PublishKey(Global& global);
+   
+   PublishKey(Global& global, const MsgKeyData& data);
+
+   PublishKey(const PublishKey& key);
+
+   PublishKey& operator =(const PublishKey& key);
+
+   /**
+    * Set the domain for this message, can be used for a simple grouping of
+    * messages to their master node with xmlBlaster clusters. 
+    * @param The domain, any chosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    *         defaults to "" where the local xmlBlaster instance is the master of the message.
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
+    */
+   void setDomain(const string& domain);
+
+
+   void setOid(const string& oid);
+
+   /**
+    * Set mime type (syntax) of the message content. 
+    * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'><br />
+    *         default is "text/plain" if not set
+    * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
+    */
+   void setContentMime(const string& contentMime);
+
+   /**
+    * Some further specifying information of the content.
+    * <p />
+    * For example the application version number the document in the content.<br />
+    * You may use this attribute for you own purposes.
+    * @param The MIME-extended info, for example<br />
+    *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
+    *         or "" (empty string) if not known
+    */
+   void setContentMimeExtended(const string& contentMimeExtended);
+
+   /**
+    * Set client specific meta informations. 
+    * <p />
+    * May be used to integrate your application tags, for example:
+    * <p />
+    * <pre>
+    *&lt;key oid='4711' contentMime='text/xml'>
+    *   &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
+    *      &lt;DRIVER id='FileProof' pollingFreq='10'>
+    *      &lt;/DRIVER>
+    *   &lt;/AGENT>
+    *&lt;/key>
+    * </pre>
+    * @param str Your tags in ASCII XML syntax
+    */
+   void setClientTags(const string& tags);
+
+};
+
+}}}} // namespace
+
+#endif
+
+
+
