@@ -130,11 +130,13 @@
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter.howto</see>
    <see type="REQ">mime.plugin.access.regex</see>
+   <see type="REQ">mime.plugin.access.sql92</see>
+   <see type="REQ">mime.plugin.access.xpath</see>
    <see type="REQ">util.property.env</see>
    <see type="REQ">mime.plugin.publishfilter</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
