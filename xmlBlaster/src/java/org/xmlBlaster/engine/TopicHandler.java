@@ -41,7 +41,7 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
@@ -233,23 +233,23 @@ public final class TopicHandler implements I_Timeout
     */
    private void startupMsgstore() throws XmlBlasterException   {
       synchronized (this) {
-         TopicCacheProperty topicCacheProperty = this.topicProperty.getTopicCacheProperty();
+         MsgUnitStoreProperty msgUnitStoreProperty = this.topicProperty.getMsgUnitStoreProperty();
          if (this.msgUnitCache == null) {
-            String type = topicCacheProperty.getType();
-            String version = topicCacheProperty.getVersion();
-            StorageId msgstoreId = new StorageId("topic", glob.getNodeId()+"/"+getUniqueKey());
-            this.msgUnitCache = glob.getMsgStorePluginManager().getPlugin(type, version, msgstoreId, topicCacheProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+            String type = msgUnitStoreProperty.getType();
+            String version = msgUnitStoreProperty.getVersion();
+            StorageId msgUnitStoreId = new StorageId("msgUnitStore", glob.getNodeId()+"/"+getUniqueKey());
+            this.msgUnitCache = glob.getMsgUnitStorePluginManager().getPlugin(type, version, msgUnitStoreId, msgUnitStoreProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
          }
          else {
             log.info(ME, "Reconfiguring message store.");
-            this.msgUnitCache.setProperties(topicCacheProperty);
+            this.msgUnitCache.setProperties(msgUnitStoreProperty);
          }
       }
    }
 
    /**
     * Should be invoked delayed as soon as TopicHandler instance is created an registered everywhere
-    * as we ask the msgstore for the real messages if some history entries existed. 
+    * as we ask the msgUnitStore for the real messages if some history entries existed. 
     * <p>
     * NOTE: this.historyQueue can be null if maxMsgs=0 is configured
     * </p>
@@ -385,7 +385,7 @@ public final class TopicHandler implements I_Timeout
              }
          }
 
-         // Remove oldest history entry (if queue is full) and decrease reference counter in topicCache
+         // Remove oldest history entry (if queue is full) and decrease reference counter in msgUnitStore
          long numHist = getNumOfHistoryEntries();
          if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
             ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
@@ -550,7 +550,7 @@ public final class TopicHandler implements I_Timeout
       if (entry != null) {
          boolean useRandom = false;
          if (useRandom) {
-            this.historyQueue.removeRandom(entry); // Note: This reduces the msgstore referencecounter
+            this.historyQueue.removeRandom(entry); // Note: This reduces the msgUnitStore referencecounter
          }
          else {
             // found entry, decrement but leave in history queue as we don't have a removeRandom
@@ -568,7 +568,7 @@ public final class TopicHandler implements I_Timeout
       if (this.historyQueue != null) {
          try {
             !! where to get msgUnitWrapperHistoryEntry from? avoid removeRandom() as it complicates persistent queue implementation
-            this.historyQueue.removeRandom(msgUnitWrapperHistoryEntry); // Note: This reduces the msgstore referencecounter
+            this.historyQueue.removeRandom(msgUnitWrapperHistoryEntry); // Note: This reduces the msgUnitStore referencecounter
          }
          catch (XmlBlasterException e) {
             log.error(ME, "Internal problem in entryDestroyed removeRandom of history queue (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
@@ -1152,7 +1152,7 @@ public final class TopicHandler implements I_Timeout
             this.historyQueue.clear();
          }
          if (hasCacheEntries()) {
-            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgstore cache entries");
+            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgUnitStore cache entries");
             this.msgUnitCache.clear();  // Who removes the MsgUnitWrapper entries from their Timer?!!!! TODO
          }
 
@@ -1361,12 +1361,12 @@ public final class TopicHandler implements I_Timeout
             }
             else {
                toSoftErased(sessionInfo); // kills all history entries
-               long numMsgStore = this.msgUnitCache.getNumOfEntries();
-               if (numMsgStore < 1) { // has no callback references?
+               long numMsgUnitStore = this.msgUnitCache.getNumOfEntries();
+               if (numMsgUnitStore < 1) { // has no callback references?
                   toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
                }
                else {
-                  log.info(ME, "Erase not possible, we are still referenced by " + numMsgStore +
+                  log.info(ME, "Erase not possible, we are still referenced by " + numMsgUnitStore +
                   " callback queue entries, transition to topic state " + getStateStr());
                }
             }
