@@ -314,16 +314,27 @@ TODO
       <mkdir dir="${build.dir}"/>
       <osfamily property="os.family" />
       <echo message=" OS_FAMILY     = ${os.family}"/>  <!-- "unix", "dos", "mac" "windows" -->
+      <property name="${os.family}" value="true" />    <!-- set e.g unix=true to be used in if="unix" conditions -->
+      <!--
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
             <property name="BUILD_UNIX" value="true" />
             <property name="unix" value="true" />
+         </case>
+         <case value="mac">
+            <property name="BUILD_MAC" value="true" />
+            <property name="mac" value="true" />
+         </case>
+         <case value="dos">
+            <property name="BUILD_DOS" value="true" />
+            <property name="dos" value="true" />
          </case>
          <default>
             <property name="BUILD_WINDOWS" value="true" />
             <property name="windows" value="true" />
          </default>
       </switch>
+      -->
       <condition property="linux">
          <equals arg1="${os.name}" arg2="Linux"/>
       </condition>
@@ -1458,22 +1469,23 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="c++ client integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
+      <property name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       <foreach list="TestGet,TestSub,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver"
-               target="compileCppExe" param="exeName" delimiter="," />
+               target="compileCppExe" param="exeName" delimiter=","/>
    </target>
 
    <target name="compileCppExe" description="For internal use only (C++ clients build)">
-      <echo message="Compiling of C++ test client '${testsuite.dir}/src/c++/bin/${exeName}' ..."/>
+      <echo message="Compiling of C++ test client '${compileCppSourcePath}/bin/${exeName}' ..."/>
       <mkdir dir="${build.dir}/obj"/>
-      <mkdir dir="${testsuite.dir}/src/c++/bin"/>
+      <mkdir dir="${compileCppSourcePath}/bin"/>
       <cc debug="${cpp.debug}" link="executable"
-          outfile="${testsuite.dir}/src/c++/bin/${exeName}"
+          outfile="${compileCppSourcePath}/bin/${exeName}"
           objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
          <compiler refid="msvc"/>
          <compiler refid="bcc"/>
-         <fileset dir="${testsuite.dir}/src/c++" includes="${exeName}.cpp"/>
+         <fileset dir="${compileCppSourcePath}" includes="${exeName}.cpp"/>
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
          <sysincludepath location="${CORBACPP_HOME}" if="TAO" />          <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
@@ -1549,72 +1561,11 @@ TODO
    </target>
 
    <target name="cpp-demo" depends="prepare-cpp" description="c++ client demo - create C++ demo clients"> <!-- depends="prepare,cpp-lib" -->
-      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo" target="compileCppDemoExe" param="exeName" delimiter="," />
+      <property name="compileCppSourcePath" value="${demo.dir}/c++"/>
+      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo" target="compileCppExe" param="exeName" delimiter="," />
    </target>
 
-   <target name="compileCppDemoExe" description="For internal use only (C++ demo build)">
-      <echo message="Compiling of C++ demo client '${demo.dir}/c++/bin/${exeName}' ..."/>
-      <mkdir dir="${build.dir}/obj"/>
-      <mkdir dir="${demo.dir}/c++/bin"/>
-      <cc debug="${cpp.debug}" link="executable"
-          outfile="${demo.dir}/c++/bin/${exeName}"
-          objdir="${build.dir}/obj"
-          multithreaded="true" exceptions="true">
-         <compiler refid="gcc"/>
-         <compiler refid="msvc"/>
-         <compiler refid="bcc"/>
-         <fileset dir="${demo.dir}/c++" includes="${exeName}.cpp"/>
-         <includepath location="${src.cpp.dir}" />
-         <!-- sysincludepath location="${STL_HOME}/stlport" / -->
-         <sysincludepath location="${CORBACPP_HOME}/include" />
-         <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
-         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
-
-         <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-         <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" />
-         <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
-         <libset dir="${lib.dir}" libs="xmlBlasterClient" />
-
-         <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
-         <syslibset dir="/usr/lib" libs="pthread" if="unix"/> <!-- if="Linux" -->
-
-         <!-- linker name="gcc"  if="use-gcc">
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-            <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
-         </linker -->
-         <linker name="msvc"> <!-- if="use-msvc" --> <!-- linker does not support nested switch -->
-            <!-- TAO -->
-            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO,windows" />       
-            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO,windows" />
-
-            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-
-            <!-- MICO -->
-            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
-            <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
-
-            <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
-         </linker>
-         <!-- linker name="bcc"  if="use-bcc" /-->
-
-         <defineset>
-           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
-           <define name="WIN32" value="1" if="windows" />        
-           <define name="_WINDOWS" value="1" if="windows" />
-           <define name="_MBCS" value="1" if="windows" />
-           <define name="_USRDLL" value="1" if="windows" />
-           <define name="DLL_BUILD" value="1" if="windows" />
-           <define name="pedantic" if="unix" />
-           <define name="Wall" if="unix" />
-         </defineset>
-      </cc>
-   </target>
-
-   <target name="cpp" depends="cpp-lib, cpp-test" description="Compile C++ client library and test/demo clients"/>
+   <target name="cpp" depends="cpp-lib, cpp-demo, cpp-test" description="Compile C++ client library and test/demo clients"/>
 
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
