@@ -3,7 +3,7 @@ Name:      XmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Store MessageUnits in a File-database or holds in a Cache
-Version:   $Id $
+Version:   $Id: XmlDb.java,v 1.2 2000/08/22 22:26:12 kron Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb;

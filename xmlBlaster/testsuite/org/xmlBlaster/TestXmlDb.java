@@ -3,7 +3,7 @@ Name:      TestXmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing xmldb
-Version:   $Id $
+Version:   $Id: TestXmlDb.java,v 1.3 2000/08/22 22:25:38 kron Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
