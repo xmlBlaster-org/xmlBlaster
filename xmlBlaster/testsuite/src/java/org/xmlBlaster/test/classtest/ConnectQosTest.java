@@ -64,7 +64,7 @@ public class ConnectQosTest extends TestCase {
          "   <isClusterNode>true</isClusterNode>\n" +
          "   <duplicateUpdates>false</duplicateUpdates>\n" +
          "   <session name='/node/avalon/client/joe/2' timeout='" + sessionTimeout + "' maxSessions='27' clearSessions='true' sessionId='xyz'/>\n" +
-         "   <queue relating='subject' maxMsg='1009' maxBytes='4000' onOverflow='deadMessage'>\n" +
+         "   <queue relating='subject' type='XY' version='7.0' maxMsg='1009' maxBytes='4009' maxMsgCache='509' maxBytesCache='777' storeSwapLevel='20009' storeSwapBytes='10000' reloadSwapLevel='20000' reloadSwapBytes='30000' onOverflow='deadMessage'>\n" +
          "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
          "         <ptp>true</ptp>\n" +
          "         IOR:00011200070009990000....\n" +
@@ -98,7 +98,6 @@ public class ConnectQosTest extends TestCase {
          "   </serverRef>\n" +
          "</qos>\n";
 
-
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
          ConnectQosData qos = factory.readObject(xml); // parse
          String newXml = qos.toXml();                  // dump
@@ -123,6 +122,16 @@ public class ConnectQosTest extends TestCase {
          {
             CbQueueProperty prop = qos.getSubjectCbQueueProperty();
             assertEquals("", 1009L, prop.getMaxMsg());
+            assertEquals("", "XY", prop.getType());
+            assertEquals("", "7.0", prop.getVersion());
+            assertEquals("", 4009L, prop.getMaxBytes());
+            assertEquals("", 509L, prop.getMaxMsgCache());
+            assertEquals("", 777L, prop.getMaxBytesCache());
+            assertEquals("", 20009L, prop.getStoreSwapLevel());
+            assertEquals("", 10000L, prop.getStoreSwapBytes());
+            assertEquals("", 20000L, prop.getReloadSwapLevel());
+            assertEquals("", 30000L, prop.getReloadSwapBytes());
+            assertEquals("", "deadMessage", prop.getOnOverflow());
             assertEquals("", true, qos.subjectCbQueuePropertyIsInitialized());
          }
 
