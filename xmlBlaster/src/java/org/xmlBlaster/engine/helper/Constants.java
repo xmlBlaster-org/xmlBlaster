@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 
 /**
  * Holding some Constants
+ * See xmlBlaster/src/c++/util/Constants.h
  */
 public class Constants
 {
