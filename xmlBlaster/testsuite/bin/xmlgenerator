@@ -1,6 +1,0 @@
-#!/bin/sh
-#
-# Starting the SAXCounter using IBM-SAXParser (Validating)
-#
-
-java testsuite.XMLGenerator.com.ibm.XMLGenerator.XMLGenerator $@
