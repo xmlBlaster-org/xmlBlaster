@@ -1,4 +1,4 @@
-This is xmlBlaster version 1.0.1 Xmas 2005-02-08
+This is xmlBlaster version 1.0.2 Xmas 2005-02-24
 
 
 XmlBlaster  is  under development or productive in a huge range
@@ -7,7 +7,7 @@ telecommunication, radar, car industry, process monitoring etc.
 
 This  release  is backward compatible to the previous regarding
 the client server communication protocols.
-It  contains  a  SOCKET protocol layer bug fix and many smaller
+It contains a persistent subscription  bug fix and many smaller
 refinements.
 
 It  is  tested under Linux/Solaris-SPARC/FreeBSD/WinXP with JDK

@@ -1,11 +1,23 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for 1.x
-===============
+Changes for 1.0.2 [2005-02-24] #13271 "Xmas release patch 2"
+============================================================
+
+ o #13266 Bugfix for QosData.clone() which didn't deep clone the client property map
+   This could have impact on the reported sessionId for __sys__Login and __sys__Logout events.
+
+ o #13267 __sys__Login and __sys__Logout events now return the public session id
+   in the "__publicSessionId" client property as a long and the cluster wide unique
+   absoluteName with "__absoluteName". The old "__sessionId" is not supported anymore.
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.LoginLogoutEvent.html
+
  o #13263 build.xml for C/C++:
    Added CFLAGS and LDFLAGS so one can configure C/C++ compilation and linkage
    Remove /usr/lib path for library as it is default and prevented a /usr/lib64 path on 64 bit machines
+
+ o #13261 C/C++ port to Xeon 64 bit, added CFLAGS and LDFLAGS to build.properties
+   (for example you can force 32 bit compilation on 64 bit machines with -m32 for g++)
 
  o #13257 Setting duplicateUpdates to deprecated, please use 'multiSubscribe'
    as described in requirement
