@@ -136,8 +136,8 @@ MutexClass::~MutexClass()
 
 Lock::Lock(const MutexClass& mutex, bool ignore)
 {
-   if (ignore) lock_ = new LockImpl(*(mutex.mutex_));
-   else lock_ = NULL;
+   if (ignore) lock_ = NULL;
+   else lock_ = new LockImpl(*(mutex.mutex_));
 }
 
 Lock::~Lock() 
