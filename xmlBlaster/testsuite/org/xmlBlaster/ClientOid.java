@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.3 1999/11/20 22:42:04 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.4 1999/11/22 18:07:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -70,14 +70,14 @@ public class ClientOid
          //    xmlBlaster/src/java/org/xmlBlaster/clientIdl/BlasterCallbackImpl.java
 
 
-         String qos = orb.object_to_string(callback);
+         String qos = "<qos></qos>";
 
          //----------- Login to the server -----------------------
          try {
             String passwd = "some";
             xmlServer = authServer.login(loginName, passwd, callback, qos);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
          //------------ Use the returned IOR as Server Reference ------
@@ -91,14 +91,14 @@ public class ClientOid
          try {
             xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
          try {
             xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
 
@@ -114,7 +114,7 @@ public class ClientOid
             xmlServer.publishArr(marr, qarr);
 
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
          Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
@@ -126,7 +126,7 @@ public class ClientOid
          try {
             xmlServer.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Unsubscribe done" + stop.nice());
 
@@ -139,7 +139,7 @@ public class ClientOid
                Log.info(ME, "   Returned oid=" + returnArr[ii]);
             }
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
 
@@ -147,7 +147,7 @@ public class ClientOid
          try {
             authServer.logout(xmlServer);
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
 
@@ -156,7 +156,7 @@ public class ClientOid
             xmlServer.publishArr(marr, qarr);
 
          } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.error(ME, "XmlBlasterException: " + e.reason);
          }
 
          Log.info(ME, "Sending done, waiting for response ..." + stop.nice());

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.19 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.20 1999/11/22 18:07:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -181,11 +181,27 @@ public class RequestBroker implements ClientListener
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+         if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
+            xmlKeyExact = xmlKey;
+
+         /*
+         SubscriptionInfo subs = null;
          if (xmlKeyExact == null) {
-            Log.error(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
-            throw new XmlBlasterException(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
-            
+            if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription on a yet unknown message ...
+               subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+               MessageUnitHandler msg = new MessageUnitHandler(this, subs);
+               synchronized(messageContainerMap) {
+                  messageContainerMap.put(xmlKey.getUniqueKey(), msg);
+               }
+            }
+            else {
+               Log.error(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+               throw new XmlBlasterException(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+            }
          }
+         else {
+         }
+         */
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
          subscribeToOid(subs);                // fires event for subscription
       }
@@ -194,7 +210,7 @@ public class RequestBroker implements ClientListener
 
    /**
     * @param clientName is only needed for nicer logging output
-    * @return Array of matching XmlKey objects
+    * @return Array of matching XmlKey objects (may contain null elements)
     */
    private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
    {
@@ -235,10 +251,13 @@ public class RequestBroker implements ClientListener
       else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
          Log.info(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
+         /*
          if (xmlKeyExact == null) {
             Log.warning(ME + ".OidUnknown", "Sorry, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
             throw new XmlBlasterException(ME + ".OidUnknown", "Sorry, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
          }
+         Will be generated
+         */
          xmlKeyVec.addElement(xmlKeyExact);
       }
 
@@ -271,7 +290,7 @@ public class RequestBroker implements ClientListener
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(oid);
          if (obj == null) {
-            Log.error(ME, "getMessageHandlerFromOid(): key oid " + oid + " is unknown, messageHandler == null");
+            if (Log.TRACE) Log.trace(ME, "getMessageHandlerFromOid(): key oid " + oid + " is unknown, messageHandler == null");
             return null;
          }
          return (MessageUnitHandler)obj;
@@ -358,6 +377,17 @@ public class RequestBroker implements ClientListener
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
+      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+         if (xmlKeyExact == null) {
+            Log.error(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+            throw new XmlBlasterException(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+
+         }
+         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
+         fireSubscriptionEvent(subs, false);
+      }
       /*
       String uniqueKey = xmlKey.getUniqueKey();
       MessageUnitHandler msgHandler = getMessageHandlerFromOid(uniqueKey);
@@ -375,12 +405,14 @@ public class RequestBroker implements ClientListener
       }
       */
 
+      /*
       SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey, unSubscribeQoS);
       if (subs == null) {
          Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + subs.getClientInfo().getUniqueKey() + " subcription-id=" + subs.getUniqueKey());
          throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + subs.getClientInfo().getUniqueKey());
       }
       fireSubscriptionEvent(subs, false);
+      */
    }
 
 
@@ -392,7 +424,7 @@ public class RequestBroker implements ClientListener
     */
    public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish() one message ...");
+      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
 
       if (messageUnit == null || qos_literal==null) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
@@ -439,7 +471,7 @@ public class RequestBroker implements ClientListener
     */
    public String[] publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.CALLS) Log.calls(ME, "Entering publish(array) ...");
 
       if (messageUnitArr == null || qos_literal_Arr==null || messageUnitArr.length != qos_literal_Arr.length) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");

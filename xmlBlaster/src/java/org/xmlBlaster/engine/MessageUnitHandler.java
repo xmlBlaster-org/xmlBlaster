@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.12 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.13 1999/11/22 18:07:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -272,6 +272,10 @@ public class MessageUnitHandler
     */
    public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
    {
+      if (xmlKey == null) {
+         Log.warning(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
+         return;
+      }
       BlasterCallback cb = sub.getClientInfo().getCB();
       XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
       MessageUnit[] updateMsgArr = new MessageUnit[1];
@@ -334,8 +338,11 @@ public class MessageUnitHandler
 
       sb.append(offset + "<MessageUnitHandler>");
       sb.append(offset + "   <uniqueKey>" + getUniqueKey() + "</uniqueKey>");
-      sb.append(xmlKey.printOn(extraOffset + "   ").toString());
-      sb.append(offset + "   <content>" + messageUnit.content + "</content>");
+      if (xmlKey==null)
+         sb.append(offset + "   <XmlKey>null</XmlKey>");
+      else
+         sb.append(xmlKey.printOn(extraOffset + "   ").toString());
+      sb.append(offset + "   <content>" + (messageUnit.content==null ? "null" : messageUnit.content.toString()) + "</content>");
       while (iterator.hasNext()) {
          SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
          sb.append(subs.printOn(extraOffset + "   ").toString());

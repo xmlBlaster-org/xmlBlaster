@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.18 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.19 1999/11/22 18:07:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -98,9 +98,15 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String publish(MessageUnit messageUnit, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + requestBroker.printOn().toString());
+
       ClientInfo clientInfo = authenticate.check();
 
-      return requestBroker.publish(messageUnit, qos_literal);
+      String retVal = requestBroker.publish(messageUnit, qos_literal);
+
+      if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + requestBroker.printOn().toString());
+
+      return retVal;
    }
 
 
@@ -110,6 +116,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String[] publishArr(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      if (Log.DUMP) Log.dump(ME, "-------START-publishArr()---------\n" + requestBroker.printOn().toString());
       ClientInfo clientInfo = authenticate.check();
 
       String[] returnArr = new String[0];
@@ -119,7 +126,11 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          return returnArr;
       }
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + messageUnitArr.length + " Messages");
-      return requestBroker.publish(messageUnitArr, qos_literal_Arr);
+
+      String[] strArr = requestBroker.publish(messageUnitArr, qos_literal_Arr);
+
+      if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + requestBroker.printOn().toString());
+      return strArr;
    }
 
 
@@ -129,13 +140,18 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering erase(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + requestBroker.printOn().toString());
       ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
       if (Log.CALLS) Log.calls(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
 
-      return requestBroker.erase(xmlKey, xmlQoS);
+      String [] retArr = requestBroker.erase(xmlKey, xmlQoS);
+
+      if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + requestBroker.printOn().toString());
+
+      return retArr;
    }
 
 
@@ -147,6 +163,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public MessageUnit[] get(String xmlKey_literal, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       ClientInfo clientInfo = authenticate.check();
@@ -157,6 +174,8 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       //throw new XmlBlasterException(ME+".NotImplemented", "Sorry, get() is not yet implemented");
 
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
+      if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + requestBroker.printOn().toString());
+
       return messageUnitArr;
    }
 
