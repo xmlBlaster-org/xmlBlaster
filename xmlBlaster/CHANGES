@@ -1,5 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Ported C client library to OSF1 V5.1 1885 alpha
+   Thanks to FdGiglio@naples.sema.slb.com
+
+ o Cluster: Fixed that protocol settings for embeded cluster clients are respected
+   (The setting CREATED_BY_SETTER is now enforced to be stronger than env settings)
+
  o XmlBlaster cluster now support unSubscribe() routing
 
  o Changed subscription ID to be cluster wide unique
@@ -9,6 +15,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o Bugfix for corrupted PublishQos, occurring
    since 0.85c
+
+ o Added publish QoS sender name check (authentication) to avoid spoofing
 
  o C-client: Fixed gcc warnings on IBM s390 (with Linux)
    for printf() and sscanf() with %u and size_t
