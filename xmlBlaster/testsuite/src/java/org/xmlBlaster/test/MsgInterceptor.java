@@ -51,11 +51,13 @@ public class MsgInterceptor implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       String contentStr = new String(content);
       String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
+      /*
       log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
                    " priority=" + updateQos.getPriority() +
                    " state=" + updateQos.getState() +
                    " content=" + cont);
-      log.info(ME, "Receiving update of a message " + updateQos.toXml());
+      */
+      log.info(ME, "Receiving update of a message " + updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
       if (!updateQos.isErased()) {
          msgs.add(new Msg(cbSessionId, updateKey, content, updateQos));
       }
