@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.property;
 
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.context.ContextNode;
 
 /**
  * Base class for the various property data type implementations. 
@@ -13,7 +14,7 @@ import org.xmlBlaster.util.enum.Constants;
  */
 public abstract class PropEntry implements java.io.Serializable, Cloneable
 {
-   public static final String SEP = "/";
+   public static final String SEP = ContextNode.SEP; // "/";
 
    public static final int CREATED_BY_DEFAULT = 0;
    public static final int CREATED_BY_JVMENV = 1;
@@ -57,6 +58,16 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
     */
    public abstract void setValue(String value, int creationOrigin);
 
+   public final String setFromEnv(org.xmlBlaster.util.Global glob, ContextNode contextNode, String propName) {
+      String className = null;
+      String instanceName = null;
+      if (contextNode != null) {
+         className = contextNode.getClassName();
+         instanceName = contextNode.getInstanceName();
+      }
+      return setFromEnv(glob, glob.getStrippedId(), null, className, instanceName, propName);
+   }
+
    /**
     * Example how an environment is checked for a property:
     * <pre>
@@ -66,25 +77,27 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
     * context='client/joe' or '/topic/HelloWorld'
     * className='queue'
     * instanceName='history'
-    * propName='maxMsg'
+    * propName='maxEntries'
     * </pre>
     *
     * Old style:
     * <pre>
-    * nodeId="heron" context="history.queue." propName="maxMsg" -> "history.queue.maxMsg[heron]"
+    * nodeId="heron" context="history.queue." propName="maxEntries" -> "history.queue.maxEntries[heron]"
     * </pre>
     *
     * Currently this precedence is supported:
     * <pre>
-    *  maxMsg                                                   (weakest, not recommended)
-    *  msgUnitStore.persistence.maxMsg                          (deprecated)
-    *  persistence/msgUnitStore/maxMsg                          (recommended)
-    *  msgUnitStore.persistence.maxMsg[heron]                   (deprecated)
-    *  /node/heron/persistence/msgUnitStore/maxMsg
-    *  /node/heron/topic/hello/persistence/msgUnitStore/maxMsg  (strongest)
+    *  maxEntries                                                   (weakest, not recommended)
+    *  persistence.maxEntries                                       (deprecated)
+    *  persistence/maxEntries                                       (recommended)
+    *  msgUnitStore.persistence.maxEntries                          (deprecated)
+    *  persistence/msgUnitStore/maxEntries                          (recommended)
+    *  msgUnitStore.persistence.maxEntries[heron]                   (deprecated)
+    *  /node/heron/persistence/msgUnitStore/maxEntries
+    *  /node/heron/topic/hello/persistence/msgUnitStore/maxEntries  (strongest)
     * </pre>
     */
-   public String setFromEnv(org.xmlBlaster.util.Global glob,
+   public final String setFromEnv(org.xmlBlaster.util.Global glob,
                              String nodeId, String context, String className,
                              String instanceName, String propName) {
       if (propName == null) {
@@ -98,7 +111,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       StringBuffer name = new StringBuffer(100);
       String usedName = name.toString();
 
-      // check "maxMsg" variant
+      // check "maxEntries" variant
       name.append(propName);
       //System.out.println("Checking prop=" + name.toString());
       if (props.propertyExists(name.toString())) {
@@ -106,7 +119,29 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          usedName = name.toString();
       }
 
-      // check OLD STYLE "history.queue.maxMsg" (deprecated)
+      // check OLD STYLE "queue.maxEntries" (deprecated)
+      if (nodeId != null) {
+         name.setLength(0);
+         name.append(className).append(".").append(propName);
+         //System.out.println("Checking prop=" + name.toString());
+         if (props.propertyExists(name.toString())) {
+            setValue(props.get(name.toString(), getValueString()), PropEntry.CREATED_BY_PROPFILE);
+            usedName = name.toString();
+         }
+      }
+
+      // check "queue/maxEntries" variant
+      if (className != null && instanceName != null) {
+         name.setLength(0);
+         name.append(className).append(SEP).append(propName);
+         //System.out.println("Checking prop=" + name.toString());
+         if (props.propertyExists(name.toString())) {
+            setValue(props.get(name.toString(), getValueString()), CREATED_BY_PROPFILE);
+            usedName = name.toString();
+         }
+      }
+
+      // check OLD STYLE "history.queue.maxEntries" (deprecated)
       if (nodeId != null) {
          name.setLength(0);
          name.append(instanceName).append(".").append(className).append(".").append(propName);
@@ -117,7 +152,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          }
       }
 
-      // check "queue/history/maxMsg" variant
+      // check "queue/history/maxEntries" variant
       if (className != null && instanceName != null) {
          name.setLength(0);
          name.append(className).append(SEP).append(instanceName).append(SEP).append(propName);
@@ -128,7 +163,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          }
       }
 
-      // check OLD STYLE "history.queue.maxMsg[heron]" (deprecated)
+      // check OLD STYLE "history.queue.maxEntries[heron]" (deprecated)
       if (nodeId != null) {
          name.setLength(0);
          name.append(instanceName).append(".").append(className).append(".").append(propName).append("[").append(nodeId).append("]");
@@ -139,7 +174,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          }
       }
 
-      // check "/node/frodo/queue/history/maxMsg" variant
+      // check "/node/frodo/queue/history/maxEntries" variant
       if (nodeId != null && className != null && instanceName != null) {
          name.setLength(0);
          name.append("/node/").append(nodeId);
@@ -152,7 +187,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          }
       }
 
-      // check "/node/frodo/client/joe/queue/history/maxMsg" variant
+      // check "/node/frodo/client/joe/queue/history/maxEntries" variant
       if (nodeId != null && className != null && instanceName != null && context != null) {
          name.setLength(0);
          name.append("/node/").append(nodeId);
