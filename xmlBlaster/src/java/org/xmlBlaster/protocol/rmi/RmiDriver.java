@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.7 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.8 2000/10/10 20:26:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -65,6 +65,9 @@ import java.rmi.Naming;
  *        -Djava.rmi.server.hostname=hostname.domainname
  *        ...
  * </pre>
+ * Another option is to include the directory of xmlBlaster.policy into
+ * your CLASSPATH.
+ *
  * @see http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html
  * @see http://archives.java.sun.com/archives/rmi-users.html
  */
@@ -105,6 +108,18 @@ public class RmiDriver implements I_Driver
 
       // Create and install a security manager
       if (System.getSecurityManager() == null) {
+         java.net.URL serverPolicyURL = RmiDriver.class.getClassLoader().getResource("xmlBlaster.policy");
+         if (serverPolicyURL != null ) {
+            String serverPolicy = serverPolicyURL.getFile();
+            System.setProperty("java.security.policy", serverPolicy);
+            Log.info(ME, "Setting security policy from file " + serverPolicy + ", found it in your CLASSPATH.");
+         }
+         else {
+            if (System.getProperty("java.security.policy") == null) {
+               String text = "java.security.policy is not set, please include config/xmlBlaster.policy into your CLASSPATH or pass the file on startup like 'java -Djava.security.policy=<path>xmlBlaster.policy'...";
+               throw new XmlBlasterException("RmiDriverFailed", text);
+            }
+         }
          System.setSecurityManager(new RMISecurityManager());
          if (Log.TRACE) Log.trace(ME, "Started RMISecurityManager");
       }
