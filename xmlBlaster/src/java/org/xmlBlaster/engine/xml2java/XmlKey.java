@@ -335,7 +335,7 @@ public final class XmlKey
          }
       }
 
-      log.info(ME, "DOM parsed the XmlKey");
+      log.info(ME, "DOM parsed the XmlKey " + getOid());
    }
 
    /**
