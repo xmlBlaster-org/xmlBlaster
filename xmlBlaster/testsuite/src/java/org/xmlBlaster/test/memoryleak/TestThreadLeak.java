@@ -1,4 +1,4 @@
-package org.xmlBlaster.test.memmoryleak;
+package org.xmlBlaster.test.memoryleak;
 import org.jutils.runtime.ThreadLister;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -29,7 +29,7 @@ import java.io.BufferedReader;
  * 2. if Jacorb contains a locking bug.
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 
 public class TestThreadLeak extends TestCase implements I_Callback {
