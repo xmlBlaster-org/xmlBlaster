@@ -160,10 +160,13 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          runlevelManager.initPluginManagers();
          runlevelManager.changeRunlevel(runlevel, false);
       } catch (Throwable e) {
-         if (!(e instanceof XmlBlasterException)) {
-            e.printStackTrace();
+         if (e instanceof XmlBlasterException) {
+            log.error(ME, e.getMessage());
          }
-         log.error(ME, e.toString());
+         else {
+            e.printStackTrace();
+            log.error(ME, e.toString());
+         }
          if (glob.isEmbedded()) {
             throw new IllegalArgumentException(e.toString());
          }

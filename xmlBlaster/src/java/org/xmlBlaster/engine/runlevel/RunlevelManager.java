@@ -254,7 +254,7 @@ public final class RunlevelManager
                this.log.warn(ME, ".fireRunlevelEvent. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
             }
             else {
-               throw new XmlBlasterException(this.glob, code, ME + ".fireRunlevelEvent",  ".fireRunlevelEvent. Exception when loading the plugin '" + pluginConfig.getId() + "'", ex);
+               throw new XmlBlasterException(this.glob, code, ME + ".fireRunlevelEvent",  "Can't load plugin '" + pluginConfig.getId() + "'", ex);
             }
          }
       }

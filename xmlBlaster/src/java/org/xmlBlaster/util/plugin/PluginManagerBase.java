@@ -242,10 +242,14 @@ public class PluginManagerBase implements I_PluginManager {
          log.error(ME, "No right to access the plugin class or initializer '" + pluginName + "': " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoAccess", "No right to access the plugin class or initializer '" + pluginName + "'", e);
       }
+      catch (InstantiationException e) {
+         String text = "The plugin class or initializer '" + pluginName + "' is invalid, check if the plugin has a default constructor";
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", text, e);
+      }
       catch (Throwable e) {
-         log.error(ME, "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: \n'" + e.toString() + "'");
-         e.printStackTrace();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file", e);
+         String text = "The plugin class or initializer '" + pluginName + "' is invalid, check the plugin name, check if the plugin has a default constructor and check the CLASSPATH to the plugin";
+         //e.printStackTrace();
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", text, e);
       }
    }
 
