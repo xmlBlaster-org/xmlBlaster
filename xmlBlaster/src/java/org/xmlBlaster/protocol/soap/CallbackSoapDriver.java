@@ -3,7 +3,7 @@ Name:      CallbackSoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using SOAP interface.
-Version:   $Id: CallbackSoapDriver.java,v 1.1 2002/08/23 21:24:57 ruff Exp $
+Version:   $Id: CallbackSoapDriver.java,v 1.2 2002/08/24 18:06:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
@@ -58,6 +58,20 @@ public class CallbackSoapDriver implements I_CallbackDriver
     */
    public String getProtocolId() {
       return "SOAP";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**

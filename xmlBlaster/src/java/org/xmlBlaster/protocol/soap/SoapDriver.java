@@ -3,7 +3,7 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.2 2002/08/24 18:05:52 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.3 2002/08/24 18:06:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
@@ -39,7 +39,7 @@ import java.io.File;
  * The variable soap.port (default 8686) sets the http web server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java java -Djafw.saw.server.config=/home/xmlblast/xmlBlaster/config/config.xml -jar lib/xmlBlaster.jar  -soap.port 9090
+ * java -Djafw.saw.server.config=/home/xmlblast/xmlBlaster/config/config.xml -jar lib/xmlBlaster.jar  -soap.port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
