@@ -13,5 +13,5 @@
 #   Copy orb.properties to JAVA_HOME/lib or edit the existing
 #   orb.properties file. Then you don't need this script.
 #
-java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton $@
+java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton "$@"
 
