@@ -32,11 +32,64 @@
       </p>
    ]]>
    </description>
+
+   <changerequest prio='MEDIUM' status="OPEN">
+   <!-- name>Michele,Marcel</name -->
+   <p>
+   Only one callback address is active.
+   If the callback fails, the subsequent callback addresses will be
+   tried until the message is delivered.
+   If all callback addresses fail, the result will depend on the
+   specified login qos.
+   </p>
+
+
+   <![CDATA[
+   <!-- QoS of a login method, this raw string is delivered to xmlBlaster. -->
+   <qos>
+      <callbacks retrials='2' delay='10000' ptp='false'>
+            <!-- set ptp attr to false (default='true') if you don't want any ptp messages
+            (prevent spaming...). retrials is the number of times the message has to be sent in case
+            of insuccess.  It defaults to 0. delay is the waiting time in ms between these retries.
+            it defaults to '10000'.-->
+
+         <callback type='IOR' timeout='10000'>     <!-- Use CORBA to deliver messages
+               If the update callback does not return within 10 s (10000 ms) the connection
+               is shut down. -->
+            IOR:00011200070009990000....
+             <compress type='zip' minSize='1000' />
+                <!-- compress messages bigger than 1000 bytes before sending them to me -->
+         </callback>
+
+         <callback type='EMAIL'>   <!-- You get new updates sent with email -->
+            et@mars.universe
+         </callback>
+
+         <callback type='XML-RPC' timeout='40000'> <!-- You must have the xml-rpc driver
+               running (see xmlBlaster.properties) to receive the updates -->
+               http:/www.mars.universe:8080/RPC2
+            <burstmode collecttime='400'/>
+               <!-- collect messages for 400 ms and update them in 1 callback. -->
+         </callback>
+
+      </callbacks>
+   </qos>
+   ]]>
+   
+   <p>
+   Delegated subscribes: it is possible to subscribe for somebody else to certain messages. This can
+   be handled by logging in again with the callback addresses of that delegated client (kind of gift)
+   If the collecttime in 'burstmode' exceeds the delay in callbacks, it is set to the delay value and
+   a warning is written in the server log file.
+   </p>
+   </changerequest>
+
+
+
    <example lang="Java">
       <![CDATA[
       <!-- QoS of a login method, this raw string is delivered to xmlBlaster -->
       <qos>
-
          <callback type='IOR'>     <!-- Use CORBA to deliver messages -->
             IOR:00011200070009990000....
          </callback>
@@ -91,11 +144,10 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
       <test tool="SUITE"></test>
    </testcase>
 </requirement>
-
