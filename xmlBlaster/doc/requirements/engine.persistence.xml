@@ -6,44 +6,55 @@
    <description>
       <p>
       To store messages from xmlBlaster and to restore them again after a new
-      startup of the server there is a lightweight interface, called I_PersitenceDriver,
+      startup of the server or after a server crash there is are two interfaces, called I_Map and I_Queue,
       available.
       </p>
       <p>
+      Currently we provide plugins to store messages to Postgres or Oracle.<br />
       You may supply your own persistence layer, which for example stores
-      the messages in a database like Oracle, PostgreSQL or Ozone, or wherever
-      you like.
+      the messages in a database like Ozone or MySQL or even to your own designed
+      high performing native database.
       </p>
 
       <p>
-      Currently we only provide a very simple file based store, called FileDriver,
-      which may be used as a reference implementation to your own persistency.
+      Writing an own persistence layer is straight forward:
+      </p>
+      <ol>
+        <li>Decide if you need another persistent queue (I_Queue) or if you need
+            another random access plugin (I_Map).
+        </li>
+        <li>If you need a persistent queue implement the I_Queue interface (look into JdbcQueuePlugin.java
+            how you could do it).
+        </li>
+        <li>
+           Register your plugin in xmlBlaster.properties (see other examples there), e.g.
+           QueuePlugin[FAST][1.0]=com.myComp.persist.FastPersistencePlugin
+        </li>
+      </ol>
+      <p>
+      We provide a cache implementation for I_Map and for I_Queue which can usually
+      directly use your new persistence plugin. The current cache plugin
+      stores persistent messages and swaps transient messages if you
+      want to handle huge message amounts in xmlBlaster which don't fit to RAM anymore.
       </p>
 
-      <p>
-      Writing an own persistence layer is very easy:
-      <br />
-      1. Implement the I_PersitenceDriver interface (look into FileDriver
-      how you could do it).
-      <br />
-      2. Register the driver with xmlBlaster through the xmlBlaster.properties
-      file with the Persistence.* variables.
-      </p>
-
-      <p>
-      Note that this interface is very likely to change in one of the next
-      xmlBlaster releases, since it is too simple (no caching support).
-      </p>
    </description>
-   <see type="REQ">engine.persistence.FileDriver</see>
-   <see type="REQ">engine.qos.publish.persistent</see>
+   <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
+   <see type="API">org.xmlBlaster.engine.msgstore.I_Map</see>
+   <see type="API">org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</see>
+
+   <see type="REQ">queue.jdbc</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">org.xmlBlaster.test.persistence.TestPersistence</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.msgstore.I_MapTest</test>
    </testcase>
 </requirement>
 
