@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: SocketCallbackImpl.java,v 1.1 2002/02/14 15:01:15 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.2 2002/02/15 12:56:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -16,6 +16,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
+import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import java.io.InputStream;
@@ -63,6 +64,11 @@ public class SocketCallbackImpl extends Thread
       this.inputStream = inputStream;
       this.callback = callback;
       this.callbackAddressStr = sockCon.getLocalAddress();
+      start();
+   }
+
+   public void finalize() {
+      Log.info(ME, "Garbage Collected");
    }
 
 
@@ -97,6 +103,7 @@ public class SocketCallbackImpl extends Thread
     */
    public void run()
    {
+      Log.info(ME, "Started callback receiver");
       while(running) {
 
          try {
@@ -161,8 +168,10 @@ public class SocketCallbackImpl extends Thread
             Log.error(ME, e.toString());
          }
          catch(Throwable e) {
-            e.printStackTrace();
-            Log.error(ME, e.toString());
+            if (!(e instanceof IOException)) e.printStackTrace();
+            Log.error(ME, "Closing connection to server: " + e.toString());
+            sockCon.shutdown();
+            throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
          }
       }
    }
@@ -177,6 +186,9 @@ public class SocketCallbackImpl extends Thread
       return addr;
    }
 
+   /**
+    * Shutdown callback, called by SocketConnection on problems
+    */
    public void shutdown() {
       running = false;
       try { inputStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
