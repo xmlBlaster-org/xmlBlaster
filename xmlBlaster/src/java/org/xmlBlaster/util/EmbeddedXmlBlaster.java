@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.9 2003/03/27 10:26:14 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.10 2003/03/27 12:14:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -155,8 +155,8 @@ public class EmbeddedXmlBlaster
     */
    public void stopServer(boolean sync) {
       try {
-         log.info(ME, "Stopping the xmlBlaster server instance ...");
-         this.xmlBlasterMain.shutdown();
+         log.info(ME, "Stopping the xmlBlaster server instance (sync=" + sync + ") ...");
+         this.xmlBlasterMain.destroy();  // does a glob.shutdown() as well
          if (sync) {
             while(true) {
                if (this.xmlBlasterMain == null)
@@ -176,8 +176,9 @@ public class EmbeddedXmlBlaster
             log.info(ME, "Server is processing shutdown!");
       }
       finally {
-         if (sync)
-            glob.shutdown();
+         this.glob = null;
+         this.xmlBlasterMain = null;
+         this.log = null;
       }
    }
 
