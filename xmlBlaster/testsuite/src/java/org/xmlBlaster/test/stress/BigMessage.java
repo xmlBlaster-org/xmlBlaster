@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -43,7 +43,7 @@ public class BigMessage extends TestCase implements I_Callback
    private final Global glob;
    private final LogChannel log;
 
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String name;
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
@@ -91,7 +91,7 @@ public class BigMessage extends TestCase implements I_Callback
 
       try {
          log.info(ME, "Connecting ...");
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }

@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -45,7 +45,7 @@ public class TestSubExact extends TestCase implements I_Callback
    private String subscribeOid;
    private String oidExact = "HelloMessage";
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -78,10 +78,10 @@ public class TestSubExact extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         ConnectQos qos = new ConnectQos(glob, senderName, passwd); // == "<qos></qos>";
+         senderConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());

@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.8 2003/01/13 23:38:38 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.9 2003/03/25 22:09:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -13,8 +13,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
@@ -46,7 +47,7 @@ public class LoadTestSub extends TestCase implements I_Callback
 
    private String subscribeOid;
    private String publishOid = "LoadTestSub";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String receiverName;         // sender/receiver is here the same client
    private String passwd;
@@ -94,8 +95,9 @@ public class LoadTestSub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob);
-         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         senderConnection = glob.getXmlBlasterAccess();
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         senderConnection.connect(connectQos, this); // Login to xmlBlaster
          if (burstModePublish > numPublish)
             burstModePublish = numPublish;
          if ((numPublish % burstModePublish) != 0)
@@ -313,7 +315,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       System.out.println("   -numPublish         Number of messages to send [5000].");
       System.out.println("   -publish.burstMode  Collect given number of messages when publishing [1].");
       System.out.println("   -publish.oneway     Send messages oneway (publish does not receive return value) [false].");
-      XmlBlasterConnection.usage();
+      System.out.println(Global.instance().usage());
    }
 
    /**

@@ -11,7 +11,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
@@ -48,7 +48,7 @@ public class TestPublishFilter extends TestCase
    private final Global glob;
    private final LogChannel log;
 
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String name;
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
@@ -101,7 +101,7 @@ public class TestPublishFilter extends TestCase
 
       try {
          log.info(ME, "Connecting ...");
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {

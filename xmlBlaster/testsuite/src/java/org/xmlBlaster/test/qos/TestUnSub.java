@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.5 2003/01/18 17:18:04 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.6 2003/03/25 22:09:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -11,8 +11,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
@@ -50,7 +51,7 @@ public class TestUnSub extends TestCase implements I_Callback
 
    private String subscribeOid;
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -84,9 +85,10 @@ public class TestUnSub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
-         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         senderConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, e.toString());

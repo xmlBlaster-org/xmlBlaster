@@ -26,7 +26,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -58,7 +58,7 @@ public class TestPersistence2 extends TestCase
    private final String senderPasswd = "secret";
 
    private String publishOid = "HelloPersistent";
-   private XmlBlasterConnection senderConnection = null;
+   private I_XmlBlasterAccess senderConnection = null;
    private String senderContent = "Some persistent content";
 
    private EmbeddedXmlBlaster serverThread;
@@ -96,10 +96,11 @@ public class TestPersistence2 extends TestCase
 
    private void doLogin() {
       try {
-         this.senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
-         ConnectQos qos = new ConnectQos(glob, senderName, senderPasswd);
+         Global senderGlobal = Util.getOtherServerPorts(glob, serverPort);
+         this.senderConnection = senderGlobal.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(senderGlobal, senderName, senderPasswd);
 
-         this.updateInterceptor = new MsgInterceptor(glob, log, null);
+         this.updateInterceptor = new MsgInterceptor(senderGlobal, log, null);
          this.senderConnection.connect(qos, this.updateInterceptor);
       }
       catch (XmlBlasterException e) {
@@ -230,9 +231,10 @@ public class TestPersistence2 extends TestCase
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
          Util.delay( delay4Server );    // Wait some time
 
-         this.senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
-         ConnectQos qos = new ConnectQos(glob, senderName, senderPasswd);
-         this.updateInterceptor = new MsgInterceptor(glob, log, null);
+         Global globSender = Util.getOtherServerPorts(glob, serverPort);
+         this.senderConnection = globSender.getXmlBlasterAccess(); // Find orb
+         ConnectQos qos = new ConnectQos(globSender, senderName, senderPasswd);
+         this.updateInterceptor = new MsgInterceptor(globSender, log, null);
          this.senderConnection.connect(qos, this.updateInterceptor);
       }
       catch (XmlBlasterException e) {

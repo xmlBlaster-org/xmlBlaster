@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing persistent messages
-Version:   $Id: TestPersistence.java,v 1.7 2003/01/13 23:38:37 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.8 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -43,7 +43,7 @@ public class TestPersistence extends TestCase implements I_Callback
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloPersistent";
-   private XmlBlasterConnection senderConnection = null;
+   private I_XmlBlasterAccess senderConnection = null;
    private String senderContent = "Some persistent content";
 
    private int numReceived = 0;
@@ -73,9 +73,9 @@ public class TestPersistence extends TestCase implements I_Callback
       this.log = this.glob.getLog("test");
       try {
          String passwd = "secret";
-         senderConnection = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, passwd, qos, this);
+         senderConnection = glob.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(glob, senderName, passwd); // == "<qos></qos>";
+         senderConnection.connect(qos, this);
       }
       catch (Exception e) {
           log.error(ME, e.toString());

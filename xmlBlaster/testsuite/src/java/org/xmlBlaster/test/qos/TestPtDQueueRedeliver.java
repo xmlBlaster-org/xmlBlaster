@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -34,7 +34,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -76,12 +76,12 @@ public class TestPtDQueueRedeliver extends TestCase
    private String oid = "TestPtDQueueRedeliver.Msg";
    private EmbeddedXmlBlaster serverThread = null;
    private String sessionNameRcv = "TestPtDQueueRedeliverReceiver";
-   private XmlBlasterConnection conRcv;
+   private I_XmlBlasterAccess conRcv;
    private boolean connectedRcv = false;
    private MsgInterceptor updateInterceptorRcv;
 
    private String sessionNameSnd = "TestPtDQueueRedeliverSender";
-   private XmlBlasterConnection conSnd;
+   private I_XmlBlasterAccess conSnd;
    private MsgInterceptor updateInterceptorSnd;
 
    /** For Junit */
@@ -139,7 +139,7 @@ public class TestPtDQueueRedeliver extends TestCase
       try {
 
          log.info(ME, "============ STEP 1: Start publisher");
-         conSnd = new XmlBlasterConnection(glob);
+         conSnd = glob.getXmlBlasterAccess();
          ConnectQos qosPub = new ConnectQos(glob);
          ConnectReturnQos crqPub = conSnd.connect(qosPub, null);  // Login to xmlBlaster, no updates
          log.info(ME, "Connect success as " + crqPub.getSessionName());
@@ -193,7 +193,7 @@ public class TestPtDQueueRedeliver extends TestCase
          // A testsuite helper to collect update messages
          this.updateInterceptorRcv = new MsgInterceptor(glob, log, null);
 
-         conRcv = new XmlBlasterConnection(glob);
+         conRcv = glob.getXmlBlasterAccess();
          
          ConnectQos qosSub = new ConnectQos(glob, sessionNameRcv, passwd);
 

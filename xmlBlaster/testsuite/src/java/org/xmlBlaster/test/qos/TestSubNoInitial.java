@@ -3,7 +3,7 @@ Name:      TestSubNoInitial.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubNoInitial.java,v 1.6 2003/01/05 23:08:24 ruff Exp $
+Version:   $Id: TestSubNoInitial.java,v 1.7 2003/03/25 22:09:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,7 +12,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -47,7 +48,7 @@ public class TestSubNoInitial extends TestCase implements I_Callback
 
    private String subscribeOid;
    private String publishOid = "dummyTestSubNoInitial";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -84,11 +85,15 @@ public class TestSubNoInitial extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
 
          String passwd = "secret";
          ConnectQos qos = new ConnectQos(glob, senderName, passwd);
-         senderConnection.connect(qos, this, cbSessionId); // Login to xmlBlaster
+         CallbackAddress cbAddress = new CallbackAddress(this.glob);
+         cbAddress.setSecretSessionId(cbSessionId); // to protect our callback server - see method update()
+         cbAddress.setDispatchPlugin("undef");
+         qos.addCallbackAddress(cbAddress);
+         senderConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());

@@ -12,8 +12,8 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.client.I_ConnectionProblems;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -71,7 +71,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
 
    private ConnectQos connectQos;
    private ConnectReturnQos connectReturnQos;
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String name;
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
@@ -137,7 +137,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
 
          // Connecting to server
          log.info(ME, "Connecting with XmlRpc ...");
-         this.con = new XmlBlasterConnection(glob);
+         this.con = glob.getXmlBlasterAccess();
          this.connectQos = new ConnectQos(glob, name, passwd);
 
          CallbackAddress cbAddress = new CallbackAddress(glob);
@@ -267,7 +267,12 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
 
       // Now kill our callback server
       log.info(ME, "Shutdown callback, expecting messages to be queued or destroyed depending on the priority");
-      con.shutdown();
+      try {
+         con.getCbServer().shutdown();
+      }
+      catch (XmlBlasterException e) {
+         fail("ShutdownCB: " + e.getMessage());
+      }
       this.updateInterceptor.clear();
 
       // These messages are depending on the priority queued or destroyed

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -39,7 +39,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
    private final Global glob;
    private final LogChannel log;
 
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String name;
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;

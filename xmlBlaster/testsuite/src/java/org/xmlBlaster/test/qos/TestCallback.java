@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.4 2003/01/05 23:08:21 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.5 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,7 +15,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -43,7 +43,7 @@ public class TestCallback extends TestCase implements I_Callback
 
    private boolean isDeadMessage = false;
    private String subscribeDeadMessageOid = null;
-   private XmlBlasterConnection conAdmin = null;
+   private I_XmlBlasterAccess conAdmin = null;
    private String publishOid = null;
 
    private boolean isSocket = false;
@@ -79,8 +79,9 @@ public class TestCallback extends TestCase implements I_Callback
       }
 
       try {
-         conAdmin = new XmlBlasterConnection(glob);
-         ConnectQos qos = new ConnectQos(glob, "admin", passwd);
+         Global globAdmin = this.glob.getClone(null);
+         conAdmin = globAdmin.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(globAdmin, "admin", passwd);
          conAdmin.connect(qos, this);
 
          subscribeDeadMessageOid = conAdmin.subscribe("<key oid='__sys__deadMessage'/>", null).getSubscriptionId();
@@ -104,11 +105,12 @@ public class TestCallback extends TestCase implements I_Callback
          if (conAdmin != null) {
             EraseReturnQos[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
             if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
-            conAdmin.disconnect(new DisconnectQos(glob));
+            conAdmin.disconnect(null);
          }
       }
       catch (Exception e) {
          log.error(ME, e.toString());
+         e.printStackTrace();
          assertTrue(e.toString(), false);
       }
    }
@@ -122,11 +124,18 @@ public class TestCallback extends TestCase implements I_Callback
       log.info(ME, "testCallbackFailure() ...");
       try {
          log.info(ME, "Connecting ...");
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
-         ConnectQos qos = new ConnectQos(glob, name, passwd);
+         Global globSub = this.glob.getClone(null);
+         I_XmlBlasterAccess con = globSub.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(globSub, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
 
-         con.shutdownCb(); // Destroy the callback server
+         try {
+            con.getCbServer().shutdown(); // Destroy the callback server
+         }
+         catch (Throwable e) {
+            log.error(ME, "testCallbackFailure: " + e.toString());
+            fail(e.toString());
+         }
 
          String subscribeOid = con.subscribe("<key oid='testCallbackMsg'/>", null).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");

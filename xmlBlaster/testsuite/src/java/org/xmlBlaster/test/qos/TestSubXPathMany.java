@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.EraseKey;
@@ -49,7 +49,7 @@ public class TestSubXPathMany extends TestCase
    private final LogChannel log;
 
    private String publishOid = "";
-   private XmlBlasterConnection con1, con2, con3;
+   private I_XmlBlasterAccess con1, con2, con3;
 
    private int numReceived1 = 0;        // error checking
    private StringBuffer messageArrived1 = new StringBuffer();
@@ -82,8 +82,9 @@ public class TestSubXPathMany extends TestCase
    protected void setUp() {
       ConnectQos connectQos;
       try {
-         con1 = new XmlBlasterConnection(glob); // Find orb
-         connectQos = new ConnectQos(glob, "con1", "secret");
+         Global glob1 = glob.getClone(null);
+         con1 = glob1.getXmlBlasterAccess(); // Find orb
+         connectQos = new ConnectQos(glob1, "con1", "secret");
          con1.connect(connectQos,  new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("con1", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
@@ -94,8 +95,9 @@ public class TestSubXPathMany extends TestCase
             }
          });
 
-         con2 = new XmlBlasterConnection(glob); // Find orb
-         connectQos = new ConnectQos(glob, "con2", "secret");
+         Global glob2 = glob.getClone(null);
+         con2 = glob2.getXmlBlasterAccess(); // Find orb
+         connectQos = new ConnectQos(glob2, "con2", "secret");
          con2.connect(connectQos,  new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("con2", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
@@ -106,8 +108,9 @@ public class TestSubXPathMany extends TestCase
             }
          });
 
-         con3 = new XmlBlasterConnection(glob); // Find orb
-         connectQos = new ConnectQos(glob, "con3", "secret");
+         Global glob3 = glob.getClone(null);
+         con3 = glob3.getXmlBlasterAccess(); // Find orb
+         connectQos = new ConnectQos(glob3, "con3", "secret");
          con3.connect(connectQos,  new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("con3", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");

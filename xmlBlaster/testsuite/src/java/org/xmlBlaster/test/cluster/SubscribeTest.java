@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -43,7 +43,7 @@ public class SubscribeTest extends TestCase {
    private LogChannel log;
    private ServerHelper serverHelper;
 
-   private XmlBlasterConnection heronCon, avalonCon, golanCon, frodoCon, bilboCon, bilboCon2;
+   private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon, bilboCon2;
 
    private int updateCounterHeron = 0;
    private int updateCounterFrodo = 0;
@@ -219,7 +219,7 @@ public class SubscribeTest extends TestCase {
       System.err.println("***SubscribeTest: Subscribe a message from a cluster slave ...");
 
       int num = 2;
-      XmlBlasterConnection[] bilboCons = new XmlBlasterConnection[num];
+      I_XmlBlasterAccess[] bilboCons = new I_XmlBlasterAccess[num];
 
       try {
          System.err.println("->Connect to avalon ...");
@@ -280,7 +280,7 @@ public class SubscribeTest extends TestCase {
             updateCounterBilbo2 = 0;
 
             // We stay logged in but kill over callback server ...
-            bilboCons[ii].shutdownCb();
+            bilboCons[ii].getCbServer().shutdown();
          }
 
          System.err.println("->testSubscribe done, SUCCESS.");

@@ -13,13 +13,15 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionHandler;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -28,12 +30,12 @@ import junit.framework.*;
 
 
 /**
- * Tests the fail save behavior of the XmlBlasterConnection client helper class,
+ * Tests the fail save behavior of the I_XmlBlasterAccess client helper class,
  * especially the pinging to xmlBlaster. This allows auto detection if the
  * connection to xmlBlaster is lost.
  *
  * <br />For a description of what this fail save mode can do for you, please
- * read the API documentation of XmlBlasterConnection.
+ * read the API documentation of I_XmlBlasterAccess.
  * <p>
  * This is an interesting example, since it creates a XmlBlaster server instance
  * in the same JVM , but in a separate thread, talking over CORBA with it.
@@ -41,10 +43,10 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *   java junit.textui.TestRunner org.xmlBlaster.test.qos.TestFailSavePing
- *   java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestFailSavePing
+ *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSavePing
  * </pre>
  */
-public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionProblems
+public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionStateListener
 {
    private static String ME = "TestFailSavePing";
    private final Global glob;
@@ -54,7 +56,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
 
-   private XmlBlasterConnection con;
+   private I_XmlBlasterAccess con;
    private String senderName;
 
    private int numReceived = 0;         // error checking
@@ -88,32 +90,22 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       try {
          numReceived = 0;
 
-         con = new XmlBlasterConnection(glob); // Find server
+         con = glob.getXmlBlasterAccess(); // Find server
 
-         ConnectQos connectQos = new ConnectQos(glob); // == "<qos></qos>";
+         String passwd = "secret";
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
 
          // Setup fail save handling ...
          Address addressProp = new Address(glob);
          addressProp.setDelay(4000L);         // retry connecting every 4 sec
          addressProp.setRetries(-1);          // -1 == forever
          addressProp.setPingInterval(1000L);  // ping every second
-//         addressProp.setMaxEntries(1000);         // queue up to 1000 messages
-         con.initFailSave(this);
+         con.registerConnectionListener(this);
 
          connectQos.setAddress(addressProp);
          
-         /* Old way:
-         // Setup fail save handling ...
-         long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
-         int retries = -1;           // -1 == forever
-         int maxMessages = 1000;
-         long pingInterval = 1000L;
-         con.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
-         */
-
          // and do the login ...
-         String passwd = "secret";
-         con.login(senderName, passwd, connectQos, this); // Login to xmlBlaster
+         con.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
           log.warn(ME, "setUp() - login failed");
@@ -220,14 +212,13 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
 
 
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was established.
     * <p />
-    * This method is enforced through interface I_ConnectionProblems
+    * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reConnected()
-   {
-      log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to xmlBlaster");
+   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       testSubscribe();    // initialize subscription again
       try {
          testPublish(1);
@@ -243,19 +234,22 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
             assertTrue("Publishing problems: " + e.getMessage(), false);
       }
 
-      con.resetQueue(); // discard messages (dummy)
+      connectionHandler.getQueue().clear(); // discard messages (dummy)
    }
 
 
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was lost.
     * <p />
-    * This method is enforced through interface I_ConnectionProblems
+    * This method is enforced through interface I_ConnectionStateListener
     */
-   public void lostConnection()
-   {
-      log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
+   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+   }
+
+   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**

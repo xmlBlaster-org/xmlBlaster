@@ -9,7 +9,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 import java.io.*;
@@ -26,7 +26,7 @@ public class PublishSame
 {
    private final String ME = "PublishSame";
    private final LogChannel log;
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
 
@@ -36,7 +36,7 @@ public class PublishSame
       long lCount = 0L;
 
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob);
          conRetQos = con.connect(qos, new I_Callback() {
 
@@ -98,7 +98,7 @@ public class PublishSame
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.out.println("Example: java PublishSame -loginName Jeff\n");
          System.exit(1);
       }

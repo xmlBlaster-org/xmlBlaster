@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -51,10 +51,10 @@ public class TestLoginLogoutEvent extends TestCase
    private final Global glob;
    private final LogChannel log;
 
-   private XmlBlasterConnection firstConnection;
+   private I_XmlBlasterAccess firstConnection;
    private String firstName;
 
-   private XmlBlasterConnection secondConnection;
+   private I_XmlBlasterAccess secondConnection;
    private String secondName;
 
    private String expectedName;
@@ -93,9 +93,10 @@ public class TestLoginLogoutEvent extends TestCase
    protected void setUp()
    {
       try {
-         firstConnection = new XmlBlasterConnection(glob); // Find orb
-         ConnectQos qos = new ConnectQos(glob, firstName, passwd);
-         this.updateInterceptFirst = new MsgInterceptor(glob, log, null);
+         Global firstGlob = glob.getClone(null);
+         firstConnection = firstGlob.getXmlBlasterAccess(); // Find orb
+         ConnectQos qos = new ConnectQos(firstGlob, firstName, passwd);
+         this.updateInterceptFirst = new MsgInterceptor(firstGlob, log, null);
          firstConnection.connect(qos, this.updateInterceptFirst); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -184,9 +185,10 @@ public class TestLoginLogoutEvent extends TestCase
       numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
       try {
-         this.secondConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos qos = new ConnectQos(glob, secondName, passwd); // == "<qos></qos>";
-         this.updateInterceptSecond = new MsgInterceptor(glob, log, null);
+         Global secondGlob = glob.getClone(null);
+         this.secondConnection = secondGlob.getXmlBlasterAccess(); // Find orb
+         ConnectQos qos = new ConnectQos(secondGlob, secondName, passwd); // == "<qos></qos>";
+         this.updateInterceptSecond = new MsgInterceptor(secondGlob, log, null);
          this.secondConnection.connect(qos, this.updateInterceptSecond); // Login to xmlBlaster
          
          // login event arrived?

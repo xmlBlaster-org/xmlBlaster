@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -50,7 +50,7 @@ public class TestSubMultiSubscribe extends TestCase
    private MsgInterceptor updateInterceptor;
    
    private String publishOid = "HelloMessageMultiSub";
-   private XmlBlasterConnection connection;
+   private I_XmlBlasterAccess connection;
 
    /**
     * Constructs the TestSubMultiSubscribe object.
@@ -68,7 +68,7 @@ public class TestSubMultiSubscribe extends TestCase
     */
    protected void setUp() {
       try {
-         connection = new XmlBlasterConnection(glob); // Find orb
+         connection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
          this.updateInterceptor = new MsgInterceptor(glob,log, null);
          connection.connect(qos, this.updateInterceptor);

@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -47,8 +47,8 @@ public class TestSessionCb extends TestCase
    private static String ME = "TestSessionCb";
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection con1 = null;
-   private XmlBlasterConnection con2 = null;
+   private I_XmlBlasterAccess con1 = null;
+   private I_XmlBlasterAccess con2 = null;
    private String assertInUpdate = null;
    private String oid = "TestSessionCb-msg";
    private int deadMessageCounter = 0;
@@ -103,48 +103,50 @@ public class TestSessionCb extends TestCase
    public void testSessionCb() {
       if (isSocket) return;
       log.info(ME, "testSessionCb() ...");
+      final Global glob1 = glob.getClone(null);
+      final Global glob2 = glob.getClone(null);
       try {
          log.info(ME, "Connecting ...");
-         con1 = new XmlBlasterConnection(glob);
-         ConnectQos qos = new ConnectQos(glob);
+         con1 = glob1.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(glob1);
          assertInUpdate = null;
          con1.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "****** Con1 update arrived" + updateKey.toXml() + updateQos.toXml());
-                  assertInUpdate = glob.getId() + ": Did not expect message update in first handler";
+                  assertInUpdate = glob1.getId() + ": Did not expect message update in first handler";
                   fail(assertInUpdate); // This is routed to server, not to junit
                   return "";
                }
             });
 
-         SubscribeKey sk = new SubscribeKey(glob, oid);
-         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeKey sk = new SubscribeKey(glob1, oid);
+         SubscribeQos sq = new SubscribeQos(glob1);
          SubscribeReturnQos sr1 = con1.subscribe(sk.toXml(), sq.toXml());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
-         con1.shutdownCb();
+         con1.getCbServer().shutdown();
 
          log.info(ME, "############ Con1 is down");
 
          assertInUpdate = null;
-         con2 = new XmlBlasterConnection(glob);
-         qos = new ConnectQos(glob);  // force a new session
+         con2 = glob2.getXmlBlasterAccess();
+         qos = new ConnectQos(glob2);  // force a new session
          con2.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "****** Con2 update arrived" + updateKey.toXml() + updateQos.toXml());
-                  assertInUpdate = glob.getId() + "Reveiving asynchronous message '" + updateKey.getOid() + "' in second handler";
+                  assertInUpdate = glob2.getId() + "Reveiving asynchronous message '" + updateKey.getOid() + "' in second handler";
                   log.info(ME, assertInUpdate);
                   return "";
                }
             });
 
-         sk = new SubscribeKey(glob, oid);
-         sq = new SubscribeQos(glob);
+         sk = new SubscribeKey(glob2, oid);
+         sq = new SubscribeQos(glob2);
          SubscribeReturnQos sr2 = con2.subscribe(sk.toXml(), sq.toXml());
 
-         sk = new SubscribeKey(glob, Constants.OID_DEAD_LETTER);
-         sq = new SubscribeQos(glob);
+         sk = new SubscribeKey(glob2, Constants.OID_DEAD_LETTER);
+         sq = new SubscribeQos(glob2);
          SubscribeReturnQos srDeadMessage = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                deadMessageCounter++;
@@ -156,8 +158,8 @@ public class TestSessionCb extends TestCase
 
          log.info(ME, "############ Con2 subscribed for msg and for DEAD letter, publishing now msg");
 
-         PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
-         PublishQos pq = new PublishQos(glob);
+         PublishKey pk = new PublishKey(glob2, oid, "text/plain", "1.0");
+         PublishQos pq = new PublishQos(glob2);
          MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          PublishReturnQos retQos = con2.publish(msgUnit);
          log.info(ME, "Published message oid=" + oid);

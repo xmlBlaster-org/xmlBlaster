@@ -10,9 +10,11 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 
 import java.util.Vector;
@@ -161,17 +163,25 @@ public class ServerHelper {
    }
 
    /** Connect in fail save mode to a server node (as given in glob.getId()) */
-   public XmlBlasterConnection connect(final Global glob, I_Callback cb) throws XmlBlasterException {
+   public I_XmlBlasterAccess connect(final Global glob, I_Callback cb) throws XmlBlasterException {
       final String clientName = "ClientTo[" + glob.getId() + "]";
       if (glob.getId() == null || glob.getId().length() < 1) log.error(ME, "glob.getId() is not set");
-      XmlBlasterConnection con = new XmlBlasterConnection(glob);
+      I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
-      con.initFailSave(new I_ConnectionProblems() {
-            public void reConnected() {
-               log.info(clientName, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
+      con.registerConnectionListener(new I_ConnectionStateListener() {
+            public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               log.info(clientName, "Changed from connection state " + oldState +
+                                     " to " + ConnectionStateEnum.ALIVE + " with " +
+                                     connectionHandler.getQueue().getNumOfEntries() + " queue entries pending" +
+                                     ": We were lucky, reconnected to " + glob.getId());
             }
-            public void lostConnection() {
-               log.warn(clientName, "I_ConnectionProblems: Lost connection to " + glob.getId());
+            public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               log.warn(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
+                                    ConnectionStateEnum.POLLING + ": Lost connection to " + glob.getId());
+            }
+            public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               log.error(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
+                                     ConnectionStateEnum.DEAD + ": Lost connection to " + glob.getId());
             }
          });
 

@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -45,7 +45,7 @@ public class TestSubId extends TestCase implements I_Callback
    private String subscribeId;
    private String oidExact = "HelloMessage";
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -81,7 +81,7 @@ public class TestSubId extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
          connectQos = new ConnectQos(glob, senderName, passwd);
          connectReturnQos = senderConnection.connect(connectQos, this); // Login to xmlBlaster

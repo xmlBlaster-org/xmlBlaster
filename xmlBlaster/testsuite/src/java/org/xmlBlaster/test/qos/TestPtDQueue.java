@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.6 2003/01/06 11:34:32 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.7 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
@@ -45,11 +45,11 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
    private final String senderName = "William";
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection = null;
+   private I_XmlBlasterAccess senderConnection = null;
    private String senderContent;
 
    private final String receiverName = "Averell";
-   private XmlBlasterConnection receiverConnection = null;
+   private I_XmlBlasterAccess receiverConnection = null;
 
    private String passwd = "secret";
 
@@ -80,7 +80,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob);
+         senderConnection = glob.getXmlBlasterAccess();
          senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
          log.info(ME, "Successful login for " + senderName);
       }
@@ -170,10 +170,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
          // Now the receiver logs in and should get the message from the xmlBlaster queue ...
          try {
-            receiverConnection = new XmlBlasterConnection(glob);
-            //ConnectQos connectQos = new ConnectQos(glob, receiverName, passwd);
-            //receiverConnection.connect(connectQos, this);
-            receiverConnection.login(receiverName, passwd, new ConnectQos(glob), this);
+            receiverConnection = glob.getXmlBlasterAccess();
+            ConnectQos connectQos = new ConnectQos(glob, receiverName, passwd);
+            receiverConnection.connect(connectQos, this); // Login to xmlBlaster
          } catch (XmlBlasterException e) {
              log.error(ME, e.toString());
              e.printStackTrace();

@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.6 2002/12/18 13:16:21 ruff Exp $
+Version:   $Id: RamTest.java,v 1.7 2003/03/25 22:09:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -14,9 +14,10 @@ import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -48,7 +49,7 @@ public class RamTest extends TestCase
    private StopWatch stopWatch = null;
 
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
 
@@ -86,9 +87,10 @@ public class RamTest extends TestCase
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
-         senderConnection.login(senderName, passwd, null); // Login to xmlBlaster without Callback
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         senderConnection.connect(connectQos, null); // Login to xmlBlaster without Callback
       }
       catch (Exception e) {
           log.error(ME, e.toString());

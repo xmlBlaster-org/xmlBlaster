@@ -9,7 +9,7 @@ package org.xmlBlaster.test.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -46,7 +46,7 @@ public class TestSubXPath extends TestCase
    private final LogChannel log;
 
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String receiverName;         // sender/receiver is here the same client
 
@@ -77,7 +77,7 @@ public class TestSubXPath extends TestCase
     */
    protected void setUp() {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(this.glob, this.senderName, "secret");
          this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
          senderConnection.connect(qos, this.updateInterceptor); // Login to xmlBlaster

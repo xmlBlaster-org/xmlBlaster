@@ -13,7 +13,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -62,7 +62,7 @@ public class TestPtSession extends TestCase
    private final LogChannel log;
 
    class ConHolder {
-      public XmlBlasterConnection con;
+      public I_XmlBlasterAccess con;
       public MsgInterceptor update;
       public ConnectReturnQos connectReturnQos;
    };
@@ -120,9 +120,10 @@ public class TestPtSession extends TestCase
          this.conHolderArr[ii] = new ConHolder();
          try {
             log.info(ME, "Connecting ...");
-            this.conHolderArr[ii].con = new XmlBlasterConnection(glob);
-            ConnectQos qos = new ConnectQos(glob, name, passwd);
-            this.conHolderArr[ii].update = new MsgInterceptor(glob, log, null);
+            Global globTmp = glob.getClone(null);
+            this.conHolderArr[ii].con = globTmp.getXmlBlasterAccess();
+            ConnectQos qos = new ConnectQos(globTmp, name, passwd);
+            this.conHolderArr[ii].update = new MsgInterceptor(globTmp, log, null);
             this.conHolderArr[ii].connectReturnQos = this.conHolderArr[ii].con.connect(qos, this.conHolderArr[ii].update);
          }
          catch (Exception e) {

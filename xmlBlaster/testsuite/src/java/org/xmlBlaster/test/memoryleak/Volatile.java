@@ -11,7 +11,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import java.io.*;
 
@@ -27,7 +27,7 @@ public class Volatile
 {
    private final String ME = "Volatile";
    private final LogChannel log;
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
 
@@ -37,7 +37,7 @@ public class Volatile
       long lCount = 0L;
 
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob);
          conRetQos = con.connect(qos, new I_Callback() {
 
@@ -102,7 +102,7 @@ public class Volatile
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.out.println("Example: java Volatile -loginName Jeff\n");
          System.exit(1);
       }

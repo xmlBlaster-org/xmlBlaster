@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.6 2003/01/05 23:08:22 ruff Exp $
+Version:   $Id: TestGet.java,v 1.7 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
@@ -39,7 +39,7 @@ public class TestGet extends TestCase
    private final LogChannel log;
 
    private String publishOid = "TestGet";
-   private XmlBlasterConnection connection;
+   private I_XmlBlasterAccess connection;
    private String loginName;
    private String senderContent = "A test message";
 
@@ -70,11 +70,11 @@ public class TestGet extends TestCase
    protected void setUp()
    {
       try {
-         connection = new XmlBlasterConnection(glob); // Find orb
+         connection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(glob, loginName, passwd); // == "<qos></qos>";
          // Login to xmlBlaster, don't create a callback server
-         connection.login(loginName, passwd, qos);
+         connection.connect(qos, null);
       }
       catch (Exception e) {
           log.error(ME, e.toString());

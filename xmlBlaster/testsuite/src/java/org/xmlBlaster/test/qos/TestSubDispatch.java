@@ -3,15 +3,16 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.5 2003/01/10 12:15:37 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.6 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -45,7 +46,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
    private boolean messageArrived = false;
 
    private String publishOid = "dummyTestSubDispatch";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -82,9 +83,10 @@ public class TestSubDispatch extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
-         senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         senderConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());

@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -81,7 +81,7 @@ public class TestSession extends TestCase implements I_Callback
       log.info(ME, "testZeroSessions() ...");
       try {
          log.info(ME, "Connecting ...");
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          qos.setMaxSessions(-16);
          con.connect(qos, this); // Login to xmlBlaster
@@ -101,13 +101,13 @@ public class TestSession extends TestCase implements I_Callback
       log.info(ME, "testSessionOverflow() ...");
       int numLogin = 5;
       int maxSessions = numLogin - 2;
-      XmlBlasterConnection[] con = new XmlBlasterConnection[5];
+      I_XmlBlasterAccess[] con = new I_XmlBlasterAccess[5];
       try {
          for (int ii=0; ii<numLogin; ii++) {
             try {
                log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
-               con[ii] = new XmlBlasterConnection(glob);
-               ConnectQos qos = new ConnectQos(glob, name, passwd);
+               con[ii] = glob.getClone(null).getXmlBlasterAccess();
+               ConnectQos qos = new ConnectQos(con[ii].getGlobal(), name, passwd);
                qos.setMaxSessions(maxSessions);
                con[ii].connect(qos, this); // Login to xmlBlaster
                if (ii >= maxSessions)
@@ -147,11 +147,11 @@ public class TestSession extends TestCase implements I_Callback
    {
       log.info(ME, "testSessionTimeout() ...");
       long timeout = 1000L;
-      XmlBlasterConnection con = null;
+      I_XmlBlasterAccess con = null;
       try {
          try {
-            con = new XmlBlasterConnection();
-            ConnectQos qos = new ConnectQos(null, name, passwd);
+            con = glob.getXmlBlasterAccess();
+            ConnectQos qos = new ConnectQos(glob, name, passwd);
             qos.setSessionTimeout(timeout);
             con.connect(qos, this);
          }
@@ -192,11 +192,11 @@ public class TestSession extends TestCase implements I_Callback
    {
       log.info(ME, "testSessionTimeoutRespan() ...");
       long timeout = 2000L;
-      XmlBlasterConnection con = null;
+      I_XmlBlasterAccess con = null;
       try {
          try {
-            con = new XmlBlasterConnection();
-            ConnectQos qos = new ConnectQos(null, name, passwd);
+            con = glob.getXmlBlasterAccess();
+            ConnectQos qos = new ConnectQos(glob, name, passwd);
             qos.setSessionTimeout(timeout);
             con.connect(qos, this);
          }
@@ -237,12 +237,12 @@ public class TestSession extends TestCase implements I_Callback
       log.info(ME, "***testClearSession() ...");
       int numLogin = 5;
       int maxSessions = numLogin - 2;
-      XmlBlasterConnection[] con = new XmlBlasterConnection[5];
+      I_XmlBlasterAccess[] con = new I_XmlBlasterAccess[5];
       for (int ii=0; ii<numLogin; ii++) {
          try {
             log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
-            con[ii] = new XmlBlasterConnection();
-            ConnectQos qos = new ConnectQos(null, name, passwd);
+            con[ii] = glob.getClone(null).getXmlBlasterAccess();
+            ConnectQos qos = new ConnectQos(con[ii].getGlobal(), name, passwd);
             qos.setMaxSessions(maxSessions);
             con[ii].connect(qos, this); // Login to xmlBlaster
          }

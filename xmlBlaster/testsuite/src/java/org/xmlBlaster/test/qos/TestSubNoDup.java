@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -34,7 +34,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubNoDup
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestSubNoDup
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestSubNoDup
  * </pre>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.duplicate.html" target="others">duplicate subscribe requirement</a>
  */
@@ -49,7 +49,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
    private String subscribeId3;
    private String oidExact = "HelloMessageNoDup";
    private String publishOid = null;
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderContent;
 
    private boolean duplicates = false;
@@ -190,7 +190,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
 
    private void connect() {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
          qos.setDuplicateUpdates(duplicates);
          senderConnection.connect(qos, this);

@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -54,7 +54,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
    private MsgInterceptor updateInterceptor2;
 
    private String publishOid = "HelloMessageNoLocal";
-   private XmlBlasterConnection connection;
+   private I_XmlBlasterAccess connection;
 
    /**
     * Constructs the TestSubNoLocal object.
@@ -163,7 +163,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
 
    private void connect() {
       try {
-         connection = new XmlBlasterConnection(glob); // Find orb
+         connection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
          connection.connect(qos, this);
       }

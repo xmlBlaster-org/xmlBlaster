@@ -14,24 +14,25 @@ import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.util.recorder.I_InvocationRecorder;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
 
 
 /**
- * Tests the fail save behavior of the XmlBlasterConnection client helper class,
+ * Tests the fail save behavior of the I_XmlBlasterAccess client helper class,
  * especially the asynchronous playback of messages. 
  * <p />
  * When the connection to xmlBlaster is lost, and you continue to publish messages
@@ -48,7 +49,7 @@ import junit.framework.*;
  *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSaveAsync
  * </pre>
  */
-public class TestFailSaveAsync extends TestCase implements I_Callback, I_ConnectionProblems
+public class TestFailSaveAsync extends TestCase implements I_Callback, I_ConnectionStateListener
 {
    private static String ME = "TestFailSaveAsync";
    private final Global glob;
@@ -58,7 +59,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
 
-   private XmlBlasterConnection con;
+   private I_XmlBlasterAccess con;
    private String senderName;
 
    private int numReceived;
@@ -118,7 +119,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       try {
          numReceived = 0;
 
-         con = new XmlBlasterConnection(glob); // Find server
+         con = glob.getXmlBlasterAccess(); // Find server
 
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
@@ -128,8 +129,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
          addressProp.setDelay(400L);          // retry connecting every 400 milli sec
          addressProp.setRetries(-1);          // -1 == forever
          addressProp.setPingInterval(400L);   // ping every 400 milli second
-//         addressProp.setMaxEntries(10000);        // queue up to 10000 messages
-         con.initFailSave(this);
+         con.registerConnectionListener(this);
 
          connectQos.setAddress(addressProp);
          
@@ -273,36 +273,29 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    }
 
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was established.
-    * <p />
-    * This method is enforced through interface I_ConnectionProblems
-    * <p />
-    * This method is invoked by the login polling thread from XmlBlasterConnection.
     */
-   public void reConnected() {
-      log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to xmlBlaster");
+   public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       subscribe();    // initialize subscription again
       reconnected = true;
-      I_InvocationRecorder recorder = con.getRecorder();
-      try {
-         recorder.pullback(pullbackRate); // rate=5: Send asynchronous every 200 millis a tailback message
-      }
-      catch (XmlBlasterException e) {
-         fail(ME + " pullback failed: " + e.toString());
-      }
       allTailbackAreFlushed = true;
    }
 
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was lost.
     * <p />
-    * This method is enforced through interface I_ConnectionProblems
+    * This method is enforced through interface I_ConnectionStateListener
     */
-   public void lostConnection() {
-      log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
+   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
       allTailbackAreFlushed = false;
+   }
+
+   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**

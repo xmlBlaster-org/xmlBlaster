@@ -8,8 +8,9 @@ package org.xmlBlaster.test;
 
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Global;
 
 import junit.framework.*;
 
@@ -20,24 +21,25 @@ import junit.framework.*;
  */
 public class StopXmlBlaster extends TestCase
 {
-   String[] args = new String[0];
+   Global glob;
 
    public StopXmlBlaster(String name) { // For Junit invoke
       super(name);
+      this.glob = Global.instance();
    }
 
    public StopXmlBlaster(String[] args, String name) { // Used by our main
       super(name);
-      this.args = args;
+      this.glob = new Global(args);
       testStop();
    }
 
    /** Stop xmlBlaster server (invoked by junit automatically as name starts with 'test') */
    public void testStop() {
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(args);
+         I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
 
-         ConnectQos qos = new ConnectQos(null, "joe", "secret");
+         ConnectQos qos = new ConnectQos(glob, "joe", "secret");
          con.connect(qos, null);
 
          con.publish(new MsgUnit("<key oid='__cmd:?exit=0'/>", "".getBytes(), "<qos/>"));
@@ -48,8 +50,10 @@ public class StopXmlBlaster extends TestCase
          try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
 
          try {
-            XmlBlasterConnection con2 = new XmlBlasterConnection(args);
-            con2.connect(qos, null);
+            Global glob2 = this.glob.getClone(null);
+            I_XmlBlasterAccess con2 = glob2.getXmlBlasterAccess();
+            ConnectQos connectQos = new ConnectQos(glob2, "joe", "secret");
+            con2.connect(connectQos, null);
             fail("No connection expected");
          }
          catch(org.xmlBlaster.util.XmlBlasterException e) {

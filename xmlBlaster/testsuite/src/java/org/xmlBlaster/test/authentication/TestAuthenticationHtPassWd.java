@@ -9,7 +9,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.test.Util;
@@ -28,7 +28,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   private String userhome = "";
   private Global glob = null;
   private LogChannel log = null;
-  private XmlBlasterConnection con = null;
+  private I_XmlBlasterAccess con = null;
   private int serverPort = 7604;
 
   public final String ME = "TestAuthenticationHtPassWd";
@@ -99,10 +99,10 @@ public class TestAuthenticationHtPassWd extends TestCase
     setupTestCase(1);
     boolean isValue=true;
     try
-    { con = new XmlBlasterConnection(glob);
+    { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize XmlBlasterConnection: " + ex.toString());
+    { log.error(ME,"Could not initialize I_XmlBlasterAccess: " + ex.toString());
       ex.printStackTrace();
     }
     try
@@ -124,10 +124,10 @@ public class TestAuthenticationHtPassWd extends TestCase
     setupTestCase(2);
     boolean isValue = true;
     try
-    { con = new XmlBlasterConnection(glob);
+    { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize XmlBlasterConnection");
+    { log.error(ME,"Could not initialize I_XmlBlasterAccess");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,RIGHT_USERNAME, RIGHT_PASSWORD);
@@ -148,10 +148,10 @@ public class TestAuthenticationHtPassWd extends TestCase
     setupTestCase(3);
     boolean isValue = false;
     try
-    { con = new XmlBlasterConnection(glob);
+    { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize XmlBlasterConnection");
+    { log.error(ME,"Could not initialize I_XmlBlasterAccess");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);
@@ -170,10 +170,10 @@ public class TestAuthenticationHtPassWd extends TestCase
     setupTestCase(4);
     boolean isValue = true;
     try
-    { con = new XmlBlasterConnection(glob);
+    { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize XmlBlasterConnection");
+    { log.error(ME,"Could not initialize I_XmlBlasterAccess");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);

@@ -23,6 +23,15 @@ public class Util
    /**
     * If you want to start a second xmlBlaster instances
     * set environment that the ports don't conflict
+    * @return A cloned Global which is configured with different serverPort
+    */
+   public static Global getOtherServerPorts(Global orig, int serverPort) {
+      return orig.getClone(getOtherServerPorts(serverPort));
+   }
+
+   /**
+    * If you want to start a second xmlBlaster instances
+    * set environment that the ports don't conflict
     */
    public static String[] getOtherServerPorts(int serverPort) {
       Vector vec = getOtherServerPortVec(serverPort);

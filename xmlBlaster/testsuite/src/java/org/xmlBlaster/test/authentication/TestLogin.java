@@ -12,7 +12,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
@@ -35,7 +35,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.authentication.TestLogin
- *    java junit.swingui.TestRunner org.xmlBlaster.test.authentication.TestLogin
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.authentication.TestLogin
  * </pre>
  */
 public class TestLogin extends TestCase implements I_Callback
@@ -46,11 +46,11 @@ public class TestLogin extends TestCase implements I_Callback
 
    private String publishOid = "";
    private String firstOid = "FirstOid";
-   private XmlBlasterConnection callbackConnection;
+   private I_XmlBlasterAccess callbackConnection;
    private String senderName;
    private String senderContent;
 
-   private XmlBlasterConnection secondConnection;
+   private I_XmlBlasterAccess secondConnection;
    private String secondName;
    private String secondOid = "SecondOid";
 
@@ -91,12 +91,13 @@ public class TestLogin extends TestCase implements I_Callback
       try {
          String passwd = "secret";
 
-         callbackConnection = new XmlBlasterConnection(glob); // Find orb
+         callbackConnection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob, senderName, passwd);
          callbackConnection.connect(qos, this); // Login to xmlBlaster
 
-         secondConnection = new XmlBlasterConnection(); // Find orb
-         qos = new ConnectQos(glob, secondName, passwd);
+         Global secondGlobal = glob.getClone(null);
+         secondConnection = secondGlobal.getXmlBlasterAccess(); // Find orb
+         qos = new ConnectQos(secondGlobal, secondName, passwd);
          secondConnection.connect(qos, this);
 
       }
@@ -159,7 +160,7 @@ public class TestLogin extends TestCase implements I_Callback
       DisconnectQos qos = new DisconnectQos(glob);
       qos.clearSessions(true);
       callbackConnection.disconnect(qos);
-      secondConnection.disconnect(qos);
+      secondConnection.disconnect(null);
    }
 
 

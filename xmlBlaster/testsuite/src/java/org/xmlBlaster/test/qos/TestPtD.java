@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.5 2003/01/05 23:08:22 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.6 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -13,7 +13,7 @@ import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -48,14 +48,14 @@ public class TestPtD extends TestCase implements I_Callback
 
    private final String senderName = "Manuel";
    private String publishOid = "";
-   private XmlBlasterConnection senderConnection = null;
+   private I_XmlBlasterAccess senderConnection = null;
    private String senderContent;
 
    private final String receiverName = "Ulrike";
-   private XmlBlasterConnection receiverConnection = null;
+   private I_XmlBlasterAccess receiverConnection = null;
 
    private final String receiver2Name = "KGB";
-   private XmlBlasterConnection receiver2Connection = null;
+   private I_XmlBlasterAccess receiver2Connection = null;
 
    private int numReceived = 0;
 
@@ -87,14 +87,17 @@ public class TestPtD extends TestCase implements I_Callback
       try {
          String passwd = "secret";
 
-         receiverConnection = new XmlBlasterConnection(glob);
-         receiverConnection.connect(new ConnectQos(glob, receiverName, passwd), this);
+         Global receiverGlob = glob.getClone(null);
+         receiverConnection = receiverGlob.getXmlBlasterAccess();
+         receiverConnection.connect(new ConnectQos(receiverGlob, receiverName, passwd), this);
 
-         receiver2Connection = new XmlBlasterConnection(glob);
-         receiver2Connection.connect(new ConnectQos(glob, receiver2Name, passwd), this);
+         Global receiver2Glob = glob.getClone(null);
+         receiver2Connection = receiver2Glob.getXmlBlasterAccess();
+         receiver2Connection.connect(new ConnectQos(receiver2Glob, receiver2Name, passwd), this);
 
-         senderConnection = new XmlBlasterConnection(glob);
-         senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
+         Global receiver3Glob = glob.getClone(null);
+         senderConnection = receiver3Glob.getXmlBlasterAccess();
+         senderConnection.connect(new ConnectQos(receiver3Glob, senderName, passwd), this);
       }
       catch (Exception e) {
           log.error(ME, e.toString());

@@ -17,7 +17,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -42,7 +42,7 @@ public class EraseTest extends TestCase {
    private LogChannel log;
    private ServerHelper serverHelper;
 
-   private XmlBlasterConnection heronCon, avalonCon, golanCon, frodoCon, bilboCon;
+   private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon;
 
    private int updateCounterHeron = 0;
    private int updateCounterFrodo = 0;

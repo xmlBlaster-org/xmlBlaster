@@ -6,7 +6,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -72,7 +72,7 @@ public class XmlBlasterClassloaderTest extends TestCase {
       try {
          EmbeddedXmlBlaster embed = EmbeddedXmlBlaster.startXmlBlaster(glob);
 
-         XmlBlasterConnection conn = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess conn = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, "marcel", "secret");
          conn.connect( qos, null ); // Login to xmlBlaster
 

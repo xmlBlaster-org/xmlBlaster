@@ -14,7 +14,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 import java.io.*;
@@ -34,7 +34,7 @@ public class PublishErase
 {
    private final String ME = "PublishErase";
    private final LogChannel log;
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
 
@@ -43,7 +43,7 @@ public class PublishErase
       log = glob.getLog(null);
 
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob);
          conRetQos = con.connect(qos, new I_Callback() {
 
@@ -113,7 +113,7 @@ public class PublishErase
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java PublishErase -loginName Jeff\n");
          System.exit(1);
       }

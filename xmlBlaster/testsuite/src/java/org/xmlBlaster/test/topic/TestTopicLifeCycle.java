@@ -31,7 +31,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -64,7 +64,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
    private final LogChannel log;
 
    private final String senderName = "Gesa";
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String senderContent = "Some message content";
    private String publishOid = "TestTopicLifeCycleMsg";
    private SubscribeReturnQos subscribeReturnQos;
@@ -106,7 +106,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
 
       try {
          String passwd = "secret";
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          con.connect(qos, this);
       }

@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -40,7 +40,7 @@ public class TestErase extends TestCase implements I_Callback
    private String subscribeId;
    private String oidExact = "HelloMessage";
    private String publishOid = null;
-   private XmlBlasterConnection con;
+   private I_XmlBlasterAccess con;
    private String senderContent;
 
    private boolean expectingErase = false;
@@ -167,7 +167,7 @@ public class TestErase extends TestCase implements I_Callback
 
    private void connect() {
       try {
-         con = new XmlBlasterConnection(glob); // Find orb
+         con = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this);
       }

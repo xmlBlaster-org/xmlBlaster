@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.5 2003/01/03 17:19:02 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.6 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -11,7 +11,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -47,7 +48,7 @@ public class TestSubMulti extends TestCase implements I_Callback
    private final LogChannel log;
 
    private String publishOid = "";
-   private XmlBlasterConnection con;
+   private I_XmlBlasterAccess con;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -81,9 +82,10 @@ public class TestSubMulti extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          String passwd = "secret";
-         con.login(senderName, passwd, null, this); // Login to xmlBlaster
+         ConnectQos qos = new ConnectQos(glob, senderName, passwd);
+         con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());

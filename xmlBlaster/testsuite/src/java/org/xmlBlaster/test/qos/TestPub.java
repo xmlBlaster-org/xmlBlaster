@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.5 2003/01/05 23:08:23 ruff Exp $
+Version:   $Id: TestPub.java,v 1.6 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
@@ -44,7 +44,7 @@ public class TestPub extends TestCase implements I_Callback
 
    private String subscribeOid;
    private String publishOid = "ReadonlyMessage";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
@@ -79,10 +79,10 @@ public class TestPub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
+         senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         senderConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, e.toString());

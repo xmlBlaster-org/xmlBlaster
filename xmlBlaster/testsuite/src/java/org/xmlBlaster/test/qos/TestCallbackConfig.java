@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.10 2003/01/19 21:56:55 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.11 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -44,7 +44,7 @@ public class TestCallbackConfig extends TestCase
    private final LogChannel log;
    private String name;
    private String passwd = "secret";
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String publishOid = null;
    private String cbSessionId = "topSecret";
    private MsgInterceptor updateInterceptor;
@@ -71,7 +71,7 @@ public class TestCallbackConfig extends TestCase
       Util.resetPorts();
       Util.resetPorts(glob);
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(null, "admin", passwd);
          
          // We configure detailed how our callback is handled by xmlBlaster

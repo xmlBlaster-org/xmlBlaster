@@ -12,7 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -55,7 +55,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    private boolean messageArrived = false;
 
    private final String publishOid1 = "dummy1";
-   private XmlBlasterConnection oneConnection;
+   private I_XmlBlasterAccess oneConnection;
    private String oneName;
 
    private int numReceived = 0;         // error checking
@@ -64,12 +64,12 @@ public class MassiveSubTest extends TestCase implements I_Callback {
 
    class Client {
       String loginName;
-      XmlBlasterConnection connection;
+      I_XmlBlasterAccess connection;
       String subscribeOid;
       boolean oneConnection;
    }
    private Client[] manyClients;
-   private XmlBlasterConnection[] manyConnections;
+   private I_XmlBlasterAccess[] manyConnections;
    private StopWatch stopWatch = new StopWatch();
 
 
@@ -125,13 +125,12 @@ public class MassiveSubTest extends TestCase implements I_Callback {
 
       numReceived = 0;
       try {
-         oneConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos loginQosW = new ConnectQos(glob); // "<qos></qos>"; During login this is manipulated (callback address added)
+         oneConnection = glob.getXmlBlasterAccess(); // Find orb
+         ConnectQos connectQos = new ConnectQos(glob, oneName, "secret"); // "<qos></qos>"; During login this is manipulated (callback address added)
          // If we have many subs on one con, we must raise the max size of the callback queue!
-         CbQueueProperty cbProp =loginQosW.getSessionCbQueueProperty();
+         CbQueueProperty cbProp =connectQos.getSessionCbQueueProperty();
          cbProp.setMaxEntries(numSubscribers+1000);
-         String passwd = "secret";
-         oneConnection.login(oneName, passwd, null, this); // Login to xmlBlaster
+         oneConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());
@@ -228,7 +227,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
              assertTrue("numSubscribers not divadable by breakpoint", false);
           }
 
-          manyConnections = new XmlBlasterConnection[numSubscribers/maxSubPerCon];
+          manyConnections = new I_XmlBlasterAccess[numSubscribers/maxSubPerCon];
       } // end of if ()
       
          
@@ -248,17 +247,18 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                   ci++;
                   try {
                      log.trace(ME,"Creating connection no: " +ci);
-                     manyConnections[ci] = new XmlBlasterConnection(glob);
-                     ConnectQos loginQosW = new ConnectQos(glob); // "<qos></qos>"; During login this is manipulated (callback address added)
+                     Global gg = glob.getClone(null);
+                     manyConnections[ci] = gg.getXmlBlasterAccess();
+                     ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
                      // If we have many subs on one con, we must raise the max size of the callback queue!
-                     CbQueueProperty cbProp =loginQosW.getSessionCbQueueProperty();
+                     CbQueueProperty cbProp =connectQos.getSessionCbQueueProperty();
                      // algo is maxSubPerCon*4
                      cbProp.setMaxEntries(maxSubPerCon*1000);//This means we have a backlog of 1000 messages per subscriber as i normal when each con only have one subscriber!
                      //cbProp.setMaxBytes(4000);
                      //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
-                     //loginQosW.setSubjectQueueProperty(cbProp);
-                     log.trace(ME,"Login qos: " +  loginQosW.toXml());
-                     manyConnections[ci].login(sub.loginName, passwd, loginQosW, this);
+                     //connectQos.setSubjectQueueProperty(cbProp);
+                     log.trace(ME,"Login qos: " +  connectQos.toXml());
+                     manyConnections[ci].connect(connectQos, this);
                   }
                   catch (Exception e) {
                      log.error(ME, "Login failed: " + e.toString());
@@ -272,9 +272,10 @@ public class MassiveSubTest extends TestCase implements I_Callback {
             }
          }else {
             try {
-               sub.connection = new XmlBlasterConnection(glob);
-               ConnectQos loginQosW = new ConnectQos(glob); // "<qos></qos>"; During login this is manipulated (callback address added)
-               sub.connection.login(sub.loginName, passwd, loginQosW, this);
+               Global gg = glob.getClone(null);
+               sub.connection = gg.getXmlBlasterAccess();
+               ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
+               sub.connection.connect(connectQos, this);
             }
             catch (Exception e) {
                log.error(ME, "Login failed: " + e.toString());

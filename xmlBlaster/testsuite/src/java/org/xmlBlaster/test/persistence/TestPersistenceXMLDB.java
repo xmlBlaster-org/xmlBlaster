@@ -3,13 +3,13 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing persistent messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.8 2003/01/13 23:38:37 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.9 2003/03/25 22:09:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
 import org.jutils.log.LogChannel;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.I_Callback;
@@ -44,7 +44,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    private final String senderPasswd = "secret";
    private String publishOid = "amIpersistent";
    private String subscribeString = "subscribeMe";
-   private XmlBlasterConnection senderConnection = null;
+   private I_XmlBlasterAccess senderConnection = null;
    private String senderContent = "Smoked < Ham"; // not well formed XML on purpose
    // private String sendetContent = "<description>Smoked Ham</description>";
 
@@ -116,11 +116,11 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param passwd     The loginpassword.
     * @return The sender connection.
     */
-   protected XmlBlasterConnection connectClient(String name, String passwd) {
+   protected I_XmlBlasterAccess connectClient(String name, String passwd) {
       log.info(ME, "connect to client: name='" + name + "' passwd='" + passwd + "'");
-         XmlBlasterConnection sc = null;
+         I_XmlBlasterAccess sc = null;
       try {
-         sc = new XmlBlasterConnection(glob);
+         sc = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd); // == "<qos></qos>";
          sc.connect(qos, this);
          log.info( ME, name + " connected" );
@@ -136,7 +136,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * Disconnects a client from the server.
     * @param sc A connection of a client to xmlBlaster.
     */
-   protected void disconnectClient(XmlBlasterConnection sc) {
+   protected void disconnectClient(I_XmlBlasterAccess sc) {
       try {
          sc.disconnect(null);
          sc = null;
@@ -178,7 +178,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * Publish a persistent message.
     * @param sc A connection of a client to xmlBlaster.
     */
-   public void sendPersistent(XmlBlasterConnection sc) {
+   public void sendPersistent(I_XmlBlasterAccess sc) {
         if (log.CALL) log.call(ME, "sendPersistent");
       if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
 
@@ -206,7 +206,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * Subscribes to publishOid at the given connection.
     * @param sc A connection of a client to xmlBlaster.
     */
-   protected void subscribe(XmlBlasterConnection sc) {
+   protected void subscribe(I_XmlBlasterAccess sc) {
         if (log.CALL) log.call(ME, "subscribe");
 
       String xmlKeySub = "<key oid='' queryType='XPATH'>\n" + "/xmlBlaster/key/" + subscribeString + " </key>";

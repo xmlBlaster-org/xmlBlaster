@@ -9,11 +9,11 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -28,7 +28,7 @@ public class TestLogout extends TestCase implements I_Callback
    private final Global glob;
    private final LogChannel log;
 
-   private XmlBlasterConnection con;
+   private I_XmlBlasterAccess con;
 
    /**
     * Constructs the TestLogout object from out main().
@@ -53,11 +53,11 @@ public class TestLogout extends TestCase implements I_Callback
     */
    protected void setUp() {
       try {
-         con = new XmlBlasterConnection(glob); // Find orb
+         con = glob.getXmlBlasterAccess(); // Find orb
          /*
-         con.initFailSave(new I_ConnectionProblems() {
+         con.initFailSave(new I_ConnectionStateListener() {
                public void reConnected() {
-                  log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
+                  log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to " + glob.getId());
                   try {
                      con.flushQueue();    // send all tailback messages
                   } catch (XmlBlasterException e) {
@@ -65,7 +65,7 @@ public class TestLogout extends TestCase implements I_Callback
                   }
                }
                public void lostConnection() {
-                  log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
+                  log.warn(ME, "I_ConnectionStateListener: Lost connection to " + glob.getId());
                }
             });
          */
