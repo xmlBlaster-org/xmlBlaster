@@ -108,6 +108,10 @@ public class SubscribeTest extends TestCase {
             System.err.println("->Connect to bilbo ...");
             bilboCon = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                     if (updateQos.isErased()) {
+                        log.info(ME, "Ignoring erase message");
+                        return "";
+                     }
                      updateCounterBilbo++;
                      log.info(ME+":"+serverHelper.getBilboGlob().getId(),
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo + " ...");
@@ -127,6 +131,10 @@ public class SubscribeTest extends TestCase {
             System.err.println("->Connect to bilbo 2 ...");
             bilboCon2 = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                     if (updateQos.isErased()) {
+                        log.info(ME, "Ignoring erase message");
+                        return "";
+                     }
                      updateCounterBilbo2++;
                      log.info(ME+":"+serverHelper.getBilboGlob().getId() + "#2",
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo2 + " ...");
@@ -200,17 +208,26 @@ public class SubscribeTest extends TestCase {
    public void testSubscribe() {
       System.err.println("***SubscribeTest: Subscribe a message from a cluster slave ...");
 
+      int num = 2;
+      XmlBlasterConnection[] bilboCons = new XmlBlasterConnection[num];
+
       try {
          System.err.println("->Connect to avalon ...");
          avalonCon = serverHelper.connect(serverHelper.getAvalonGlob(), null);
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
-         for (int ii=0; ii<2; ii++) {
+         for (int ii=0; ii<num; ii++) {
             final int counter = ii;
             System.err.println("->Connect to bilbo #" + ii + " ...");
-            bilboCon = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
+            bilboCons[ii] = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                   int bilboConInstanceCounter = counter; 
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                     log.info(ME+":"+serverHelper.getBilboGlob().getId() + "#" + bilboConInstanceCounter,
+                              "Receiving update '" + updateKey.getOid() + "' state=" + updateQos.getState() + ", " + updateCounterBilbo + " ...");
+                     if (updateQos.isErased()) {
+                        log.info(ME, "Ignoring erase message");
+                        return "";
+                     }
                      updateCounterBilbo++;
                      log.info(ME+":"+serverHelper.getBilboGlob().getId() + "#" + bilboConInstanceCounter,
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo + " ...");
@@ -232,7 +249,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
             sk.setDomain(domain);
             SubscribeQosWrapper sq = new SubscribeQosWrapper();
-            SubscribeRetQos srq = bilboCon.subscribe(sk.toXml(), sq.toXml());
+            SubscribeRetQos srq = bilboCons[ii].subscribe(sk.toXml(), sq.toXml());
 
             waitOnUpdate(2000L, 1);
             try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // wait longer to check if too many arrive
@@ -248,7 +265,7 @@ public class SubscribeTest extends TestCase {
             assertEquals("Erase", 1, arr.length);
 
             // We stay logged in but kill over callback server ...
-            bilboCon.shutdownCb();
+            bilboCons[ii].shutdownCb();
          }
 
          System.err.println("->testSubscribe done, SUCCESS.");
@@ -258,10 +275,12 @@ public class SubscribeTest extends TestCase {
          fail("SubscribeToBilbo-Exception: " + e.toString());
       }
       finally {
-         if (bilboCon != null) {
-            bilboCon.disconnect(null);
-            bilboCon = null;
-         }   
+         for (int jj=0; jj<bilboCons.length; jj++) {
+            if (bilboCons[jj] != null) {
+               bilboCons[jj].disconnect(null);
+               bilboCons[jj] = null;
+            }
+         }
          if (avalonCon != null) {
             avalonCon.disconnect(null);
             avalonCon = null;
