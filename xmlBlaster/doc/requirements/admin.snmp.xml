@@ -7,6 +7,10 @@
     <p>
     There is support to monitor and control xmlBlaster with <a href="http://www.snmplink.org/" target="others">snmp</a>.
     </p>
+    <p>
+    The MIB is tested with <a href="http://www.ibr.cs.tu-bs.de/projects/jasmin/jax.html" target="others">JAX 0.0.15</a>
+    using the <a href="http://sourceforge.net/projects/net-snmp" target="others">ucd-snmp 4.5</a> agent.
+    </p>
    </description>
 
    <example lang="Java" type="HTML">
@@ -83,7 +87,7 @@
    
    <date>2002 06 11</date>
    
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
