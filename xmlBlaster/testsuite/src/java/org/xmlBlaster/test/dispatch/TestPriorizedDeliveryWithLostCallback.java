@@ -60,7 +60,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback
- *    java junit.swingui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback
  * </pre>
  * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
  */
