@@ -3,13 +3,14 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.50 2002/06/10 22:43:24 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.51 2002/06/27 14:13:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
@@ -41,11 +42,13 @@ import org.jacorb.poa.gui.beans.FillLevelBar;
  */
 public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
 {
+   private final Global glob;
+   private final LogChannel log;
+
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
    private final String ME = "MainGUI";
    /** The xmlBlaster server, is set from Main() constructor */
    org.xmlBlaster.Main xmlBlasterMain = null;
-   private String[] args = null;
 
    private Button exitButton;
    private Button hideButton;
@@ -108,9 +111,11 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    /**
     * Construct the xmlBlaster GUI.
     */
-   public MainGUI(String[] args, org.xmlBlaster.Main main)
+   public MainGUI(Global glob, org.xmlBlaster.Main main)
    {
       this.xmlBlasterMain = main;
+      this.glob = glob;
+      this.log = glob.getLog("core");
 
       // set the application icon
       java.net.URL oUrl;
@@ -130,7 +135,6 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
 
 
       setTitle("XmlBlaster Control Panel");
-      this.args = args;
       init();
 
       // Poll xmlBlaster internal states
@@ -147,7 +151,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    {
       show();
       if (this.xmlBlasterMain == null)
-         this.xmlBlasterMain = new org.xmlBlaster.Main(args, this);
+         this.xmlBlasterMain = new org.xmlBlaster.Main(glob, this);
    }
 
 
@@ -159,7 +163,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    public void log(int level, String source, String str)
    {
-      str = Log.bitToLogLevel(level) + " [" + source + "] " + str;
+      str = log.bitToLogLevel(level) + " [" + source + "] " + str;
       if (logOutput == null) {
          System.err.println(str + "\n");
          return;
@@ -245,8 +249,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    private void init()
    {
-      Log.setDefaultLogLevel();
-      Log.getLogChannel().addLogDevice(this);
+      log.setDefaultLogLevel();
+      log.addLogDevice(this);
 
       setLayout(new GridBagLayout());
       GridBagConstraints gbc = new GridBagConstraints();
@@ -260,8 +264,9 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
             toolkit.beep();
             if (clientQuery != null)
                clientQuery.logout();
-            //Log.getLogChannel().removeLogDevice(this);
-            Log.exit(ME, "Good bye!");
+            //log.getLogChannel().removeLogDevice(this);
+            log.info(ME, "Good bye!");
+            System.exit(0);
          }
       }
       exitButton.addActionListener(new BeepListener());
@@ -348,15 +353,15 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          public void actionPerformed(ActionEvent e) {
             // logOutput.setText("");  // clear log window
             try {
-               Log.info(ME, "Dump start");
+               log.info(ME, "Dump start");
                Authenticate auth = xmlBlasterMain.getAuthenticate();
                StringBuffer buf = new StringBuffer(auth.toXml());
                buf.append(xmlBlasterMain.getXmlBlaster().toXml());
                log(org.jutils.log.LogConstants.LOG_DUMP, "MainGUI", buf.toString());
-               Log.info(ME, "Dump end");
+               log.info(ME, "Dump end");
             }
             catch(XmlBlasterException ee) {
-               Log.error(ME, "Sorry, dump failed: " + ee.reason);
+               log.error(ME, "Sorry, dump failed: " + ee.reason);
             }
          }
       }
@@ -386,8 +391,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    private void hideWindow()
    {
       if (isShowing()) {
-         Log.getLogChannel().removeLogDevice(this);
-         Log.info(ME, "Press <g> and <Enter> to popup the GUI again (press ? for other options).");
+         log.removeLogDevice(this);
+         log.info(ME, "Press <g> and <Enter> to popup the GUI again (press ? for other options).");
          setVisible(false); // dispose(); would clean up all resources
       }
    }
@@ -400,8 +405,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    void showWindow()
    {
       if (!isShowing()) {
-         if (Log.TRACE) Log.trace(ME, "Show window again ...");
-         Log.getLogChannel().addLogDevice(this);
+         if (log.TRACE) log.trace(ME, "Show window again ...");
+         log.addLogDevice(this);
          show();
       }
    }
@@ -417,10 +422,10 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          boolean switchOn = e.getStateChange() == ItemEvent.SELECTED;
          String logLevel = (String)e.getItem(); // e.g. "WARNING"
          if (switchOn)
-            Log.addLogLevel(logLevel);
+            log.addLogLevel(logLevel);
          else
-            Log.removeLogLevel(logLevel);
-         System.out.println(ME + ": New log level is: " + Log.bitToLogLevel(Log.getLogLevel()));
+            log.removeLogLevel(logLevel);
+         System.out.println(ME + ": New log level is: " + log.bitToLogLevel(log.getLogLevel()));
       }
    }
 
@@ -524,25 +529,25 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       info.addItemListener(new LogLevelListener());
       container.add(info);
 
-      if (true/*Log.CALL*/) { // Log.CALL=true/false: check for dead code elimination
+      if (true/*log.CALL*/) { // log.CALL=true/false: check for dead code elimination
          Checkbox calls = new Checkbox("CALL", null, false);
          calls.addItemListener(new LogLevelListener());
          container.add(calls);
       }
 
-      if (true/*Log.TIME*/) {
+      if (true/*log.TIME*/) {
          Checkbox time = new Checkbox("TIME", null, false);
          time.addItemListener(new LogLevelListener());
          container.add(time);
       }
 
-      if (true/*Log.TRACE*/) {
+      if (true/*log.TRACE*/) {
          Checkbox trace = new Checkbox("TRACE", null, false);
          trace.addItemListener(new LogLevelListener());
          container.add(trace);
       }
 
-      if (true/*Log.DUMP*/) {
+      if (true/*log.DUMP*/) {
          Checkbox dump = new Checkbox("DUMP", null, false);
          dump.addItemListener(new LogLevelListener());
          container.add(dump);
@@ -568,7 +573,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    static public void main(String[] args)
    {
-      Main.controlPanel = new MainGUI(args, null);
+      Global glob = new Global(args);
+      Main.controlPanel = new MainGUI(glob, null);
       Main.controlPanel.run();
    }
 
@@ -600,7 +606,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       {
          Thread.currentThread().setName("XmlBlaster GUIPollingThread");
          try {
-            if (Log.TRACE) Log.trace(ME, "Starting poller");
+            if (log.TRACE) log.trace(ME, "Starting poller");
             while (true) {
                sleep(POLLING_FREQUENCY);
                mainGUI.pollEvent(POLLING_FREQUENCY);  // Todo: calculate the exact sleeping period
@@ -656,7 +662,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                         queryOutput.setText("****** Sorry, no match ******");
                   }
                } catch(XmlBlasterException e) {
-                  Log.error(ME, "XmlBlasterException: " + e.reason);
+                  log.error(ME, "XmlBlasterException: " + e.reason);
                }
                break;
             case KeyEvent.VK_DOWN:
@@ -717,7 +723,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          sessionId = authenticate.login(loginName, passwd, null, null); // synchronous access only, no callback.
          */
          unsecureSessionInfo = authenticate.unsecureCreateSession("__sys__GuiQuery");
-         Log.info(ME, "login for '__sys__GuiQuery' successful.");
+         log.info(ME, "login for '__sys__GuiQuery' successful.");
       }
 
       /**
@@ -729,10 +735,10 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
             XmlKey kk = new XmlKey(this.authenticate.getGlobal(), "<key oid='' queryType='" + queryType + "'>" + queryString + "</key>");
             stop.restart();
             MessageUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(unsecureSessionInfo, kk, new GetQoS(this.authenticate.getGlobal(), null));
-            Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
+            log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
-            Log.error(ME, "XmlBlasterException: " + e.reason);
+            log.error(ME, "XmlBlasterException: " + e.reason);
             return new MessageUnit[0];
          }
       }
