@@ -14,13 +14,14 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.enum.MethodName;
 
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
 
 
 /**
  * Base class to enter xmlBlaster method invocations (messages) into an ordered queue.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
@@ -30,8 +31,10 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    protected transient Global glob;
    protected transient LogChannel log;
 
+   private String logId;
+
    /** The queue to which this entry belongs (set in the constructors) */
-   private transient I_Queue ownerQueue;
+   private final StorageId storageId;
 
    /** How often the entry was tried to send but failed */
    private int redeliverCounter = 0;
@@ -46,16 +49,23 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    protected boolean durable;
 
    /** Which method we invoke, e.g. "update" or "publish" */
-   protected final MethodName methodName;
+   protected final String entryType;
+
+   /**
+    * @param methodName use methodName as entryType
+    */
+   public MsgQueueEntry(Global glob, MethodName methodName, PriorityEnum priority, StorageId storageId, boolean durable) {
+      this(glob, methodName.toString(), priority, (Timestamp)null, storageId, durable);
+   }
 
    /**
     * Creates a new queue entry object. 
     * @param priority The message priority
-    * @param queue The queue i belong to
+    * @param storageId The queue i belong to
     * @see org.xmlBlaster.util.Timestamp
     */
-   public MsgQueueEntry(Global glob, MethodName methodName, PriorityEnum priority, I_Queue queue, boolean durable) {
-      this(glob, methodName, priority, null, queue, durable);
+   public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, StorageId storageId, boolean durable) {
+      this(glob, entryType, priority, (Timestamp)null, storageId, durable);
    }
 
    /**
@@ -63,10 +73,10 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     *
     * @param timestamp The unique nano timestamp as from org.xmlBlaster.util.Timestamp or null to create one now
     */
-   public MsgQueueEntry(Global glob, MethodName methodName, PriorityEnum priority, Timestamp timestamp, I_Queue queue, boolean durable) {
+   public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean durable) {
       this.uniqueIdTimestamp = (timestamp == null) ? new Timestamp() : timestamp;
 
-      if (methodName == null || priority == null || glob == null || queue ==null) {
+      if (entryType == null || priority == null || glob == null || storageId ==null) {
          glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
@@ -74,11 +84,11 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
       this.glob = glob;
       this.log = glob.getLog("dispatch");
-      this.methodName = methodName;
+      this.entryType = entryType;
       this.priority = priority;
-      this.ownerQueue = queue;
+      this.storageId = storageId;
       this.durable = durable;
-      if (log.TRACE) log.trace(ME+"-/client/"+this.ownerQueue.getQueueId(), "Creating new MsgQueueEntry for published message, id=" + getUniqueId());
+      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Creating new MsgQueueEntry for published message, id=" + getUniqueId());
    }
 
    public final void setGlobal(Global global) {
@@ -123,9 +133,22 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    }
 
    /**
+    * The unique creation timestamp (unique in a Global of a virtual machine)
+    * @param nano seconds
+    */
+   public final Long getUniqueIdLong() {
+      return this.uniqueIdTimestamp.getTimestampLong();
+   }
+
+   /**
     * Flag which marks the entry as outdated
     */
    public abstract boolean isExpired();
+
+   /**
+    * Flag which marks the entry as destroyed, you should take it from queue and ignore/discard it
+    */
+   public abstract boolean isDestroyed();
 
    /**
     * @return If it is an internal message (oid starting with "_"). 
@@ -150,11 +173,10 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    /**
     * To which queue do i belong
     */
-    /*
-   public final I_Queue getMsgQueue() {
-      return this.ownerQueue;
+   public final StorageId getStorageId() {
+      return this.storageId;
    }
-      */
+
    /**
     * Increment the counter if message delivery fails (exception during sending)
     * We don't know if other side has processed it completely or not
@@ -284,16 +306,32 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * @see I_QueueEntry.getEmbeddedObject()
     */
 //   public Object getEmbeddedObject() {
-//      return this.getMessageUnit();
+//      return this.getMsgUnit();
 //   }
 
 
    /**
-    * @return e.g. "publish" from MethodName.PUBLISH
+    * @return e.g. "publish"
     * @see I_QueueEntry#getEmbeddedType()
     */
    public String getEmbeddedType() {
-      return methodName.toString();
+      return entryType;
+   }
+
+   /**
+    * Notification if this entry is added to queue
+    * @see I_Entry#added(StorageId)
+    */
+   public void added(StorageId storageId) throws XmlBlasterException {
+      log.info(ME, getLogId() + " is added to queue: REFERENCE COUNTER IMPL MISSING");
+   }
+
+   /**
+    * Notification if this entry is removed from queue
+    * @see I_Entry#removed(StorageId)
+    */
+   public void removed(StorageId storageId) throws XmlBlasterException {
+      log.info(ME, getLogId() + " is removed from queue: REFERENCE COUNTER IMPL MISSING");
    }
 
    /**
@@ -301,7 +339,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * @see #getEmbeddedType()
     */
    public MethodName getMethodName() {
-      return methodName;
+      return MethodName.toMethodName(this.entryType);
    }
 
    /**
@@ -313,13 +351,6 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 //   }
 
    /**
-    * Set the queue, usually called if recovered from persistent store.
-    */
-   public void setQueue(I_Queue queue) {
-      this.ownerQueue = queue;
-   }
-
-   /**
     * Returns a shallow clone
     */
    public Object clone() {
@@ -328,7 +359,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
          entry = (MsgQueueEntry)super.clone();
       }
       catch(CloneNotSupportedException e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal clone problem: " + e.toString());
       }
       return entry;
    }
@@ -337,14 +368,17 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * Return a human readable identifier for logging output.
     * @return e.g. "callback:/node/heron/client/joe/2/17/HIGH/23455969/TheMessageOid"
     */
-   public String getLogId() {
-      StringBuffer sb = new StringBuffer(80);
-      sb.append(ownerQueue.getQueueId());
-      sb.append("/").append(priority);
-      //sb.append("/").append(priority.toString());
-      sb.append("/").append(getUniqueId());
-      sb.append("/").append(getKeyOid());
-      return sb.toString();
+   public final String getLogId() {
+      if (this.logId == null) {
+         StringBuffer sb = new StringBuffer(80);
+         sb.append(getStorageId());
+         sb.append("/").append(priority);
+         //sb.append("/").append(priority.toString());
+         sb.append("/").append(getUniqueId());
+         //sb.append("/").append(getKeyOid());
+         this.logId = sb.toString();
+      }
+      return this.logId;
    }
 }
 

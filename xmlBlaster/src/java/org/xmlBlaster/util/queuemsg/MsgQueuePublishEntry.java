@@ -6,46 +6,47 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queuemsg;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
 
 import java.util.ArrayList;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
  * @author laghi@swissinfo.org
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class MsgQueuePublishEntry extends MsgQueueEntry
 {
    private final static String ME = "PublishQueueEntry";
    private final MsgQosData msgQosData;
    private SessionName receiver;
-   /** The MessageUnit with key/content/qos (raw struct) */
-   private MessageUnit msgUnit;
+   /** The MsgUnit with key/content/qos (raw struct) */
+   private MsgUnit msgUnit;
 
    /**
     * Use this constructor if a new message object is fed by method publish(). 
     * <p />
     * @param msgUnit The raw data
     */
-   public MsgQueuePublishEntry(Global glob, MessageUnit msgUnit, I_Queue queue)
+   public MsgQueuePublishEntry(Global glob, MsgUnit msgUnit, StorageId storageId)
          throws XmlBlasterException {
-      super(glob, MethodName.PUBLISH, msgUnit.getMsgQosData().getPriority(), queue, msgUnit.getMsgQosData().isDurable());
+      super(glob, MethodName.PUBLISH, ((MsgQosData)msgUnit.getQosData()).getPriority(), storageId, ((MsgQosData)msgUnit.getQosData()).isDurable());
       if (msgUnit == null) {
          glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
       }
       this.msgUnit = msgUnit;
-      this.msgQosData = msgUnit.getMsgQosData();
+      this.msgQosData = (MsgQosData)msgUnit.getQosData();
    }
 
    /**
@@ -55,6 +56,12 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
       return this.msgQosData.isExpired();
    }
 
+   /**
+    * @see MsgQueueEntry#isDestroyed
+    */
+   public final boolean isDestroyed() {
+      return false;
+   }
 
    public final MsgQosData getMsgQosData() {
       return this.msgQosData;
@@ -65,14 +72,14 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     * <p />
     * See private getUpdateQos(int,int,int)
     */
-   public final MessageUnit getMessageUnit() {
+   public final MsgUnit getMsgUnit() {
       return this.msgUnit;
    }
 
    /**
     * Get the message unit.
     */
-   public final void setMessageUnit(MessageUnit msg) {
+   public final void setMsgUnit(MsgUnit msg) {
       this.msgUnit = msg;
    }
 
@@ -108,7 +115,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     * @return If it is an internal message (oid starting with "_"). 
     */
    public boolean isInternal() {
-      return (getMessageUnit().getMsgKeyData().isInternal() || getMessageUnit().getMsgKeyData().isPluginInternal());
+      return (getMsgKeyData().isInternal() || getMsgKeyData().isPluginInternal());
    }
 
    /**
@@ -147,11 +154,15 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
       return this.receiver;
    }
 
+   public final MsgKeyData getMsgKeyData() {
+      return (MsgKeyData)getMsgUnit().getKeyData();
+   }
+
    /**
     * @see MsgQueueEntry#getKeyOid()
     */
    public final String getKeyOid() {
-      return getMessageUnit().getMsgKeyData().getOid();
+      return getMsgKeyData().getOid();
    }
 
    /**

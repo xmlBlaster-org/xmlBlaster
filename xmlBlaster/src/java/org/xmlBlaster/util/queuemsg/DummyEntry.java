@@ -3,7 +3,7 @@ package org.xmlBlaster.util.queuemsg;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 
@@ -12,26 +12,29 @@ import org.xmlBlaster.util.enum.PriorityEnum;
  */
 public class DummyEntry extends MsgQueueEntry {
 
-   /**
-    * This constructor is for internal creation from persistence only (passing the original timestamp). 
-    */
-   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, I_Queue queue, boolean durable) {
-      super(glob, MethodName.DUMMY_ENTRY, priority, timestamp, queue, durable);
-   }
-
-   public DummyEntry(Global glob, PriorityEnum priority, I_Queue queue, boolean durable) {
-      super(glob, MethodName.DUMMY_ENTRY, priority, queue, durable);
-   }
+   public static final String ENTRY_TYPE = "DUMMY";
 
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
     */
-   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, I_Queue queue, int size, boolean durable) {
-      super(glob, MethodName.DUMMY_ENTRY, priority, timestamp, queue, durable);
+   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean durable) {
+      super(glob, ENTRY_TYPE, priority, timestamp, storageId, durable);
    }
 
-   public DummyEntry(Global glob, PriorityEnum priority, I_Queue queue, int size, boolean durable) {
-      super(glob, MethodName.DUMMY_ENTRY, priority, queue, durable);
+   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, boolean durable) {
+      super(glob, ENTRY_TYPE, priority, storageId, durable);
+      //log.error("DummyEntry", ""+getUniqueId());
+   }
+
+   /**
+    * This constructor is for internal creation from persistence only (passing the original timestamp). 
+    */
+   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, int size, boolean durable) {
+      super(glob, ENTRY_TYPE, priority, timestamp, storageId, durable);
+   }
+
+   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, int size, boolean durable) {
+      super(glob, ENTRY_TYPE, priority, storageId, durable);
    }
 
    public Object getEmbeddedObject() {
@@ -39,6 +42,13 @@ public class DummyEntry extends MsgQueueEntry {
    }
 
    public final boolean isExpired() {
+      return false;
+   }
+
+   /**
+    * @see MsgQueueEntry#isDestroyed
+    */
+   public final boolean isDestroyed() {
       return false;
    }
 
@@ -55,7 +65,7 @@ public class DummyEntry extends MsgQueueEntry {
    }
 
    public String getEmbeddedType() {
-      return "DummyEntry";
+      return ENTRY_TYPE;
    }
 
    public boolean isInternal() {

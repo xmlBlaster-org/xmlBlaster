@@ -13,8 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 /**
  * Wraps an publish() message into an entry for a sorted queue.
  * @author laghi@swissinfo.org
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class MsgQueueConnectEntry extends MsgQueueEntry
 {
@@ -35,9 +34,9 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     * Use this constructor if a new message object is fed by method publish(). 
     * <p />
     */
-   public MsgQueueConnectEntry(Global glob, I_Queue queue, ConnectQos connectQos)
+   public MsgQueueConnectEntry(Global glob, StorageId storageId, ConnectQos connectQos)
          throws XmlBlasterException {
-      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, queue, /*isDurable*/true);
+      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, /*isDurable*/true);
       this.connectQos = connectQos;
    }
 
@@ -45,6 +44,13 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     * @see MsgQueueEntry#isExpired
     */
    public final boolean isExpired() {
+      return false;
+   }
+
+   /**
+    * @see MsgQueueEntry#isDestroyed
+    */
+   public final boolean isDestroyed() {
       return false;
    }
 
