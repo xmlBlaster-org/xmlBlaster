@@ -1111,6 +1111,7 @@ synchronized (this) {
                         // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
                         while (iterator.hasNext()) {
                            I_PublishFilter plugin = (I_PublishFilter)iterator.next();
+                           if (log.TRACE) log.trace(ME, "Message " + xmlKey.getKeyOid() + " is forwarded to publish plugin");
                            String ret = plugin.intercept(sessionInfo.getSubjectInfo(), msgUnitWrapper);
                            if (ret == null || ret.length() == 0 || ret.equals(Constants.STATE_OK))
                               break;
