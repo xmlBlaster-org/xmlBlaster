@@ -8,9 +8,7 @@ Comment:   Testing the Timeout Features
 #ifndef _TESTSUITE_H
 #define _TESTSUITE_H
 
-#ifdef _WINDOWS
-#   include <assert.h>
-#endif
+#include <assert.h> // windows
 #include <client/XmlBlasterAccess.h>
 #include <util/EmbeddedServer.h>
 #include <util/XmlBlasterException.h>
