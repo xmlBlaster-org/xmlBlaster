@@ -3,7 +3,7 @@ Name:      JavascriptCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages to invoke a javascript
-Version:   $Id: JavascriptCallback.java,v 1.2 2002/03/28 15:57:43 ruff Exp $
+Version:   $Id: JavascriptCallback.java,v 1.3 2002/03/29 12:59:34 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -21,7 +21,7 @@ import org.mozilla.javascript.JavaScriptException;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XML-RPC.
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 public class JavascriptCallback implements I_Callback
@@ -52,13 +52,11 @@ public class JavascriptCallback implements I_Callback
          args[1] = updateKey;
          args[2] = new String(content);
          args[3] = updateQoS;
-
-         ScriptableObject.callMethod(this.script, "update", args);
-      }
+         return (String)ScriptableObject.callMethod(this.script, "update", args);
+     }
       catch (JavaScriptException ex) {
          throw new XmlBlasterException("JavascriptCallback.update()", ex.toString());
       }
-      return "";
    }
 
 }
