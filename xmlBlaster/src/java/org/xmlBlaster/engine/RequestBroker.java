@@ -220,7 +220,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                buf.append("<key oid='").append(Constants.OID_DEAD_LETTER).append("'><oid>").append(entry.getMessageUnitWrapper().getUniqueKey()).append("</oid></key>");
                msgUnit.setKey(buf.toString());
                msgUnit.setQos(pubQos.toXml());
-               XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+               XmlKey xmlKey = new XmlKey(getGlobal(), msgUnit.getXmlKey(), true);
                retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQos(msgUnit.getQos()));
             }
             catch(Throwable e) {
@@ -267,7 +267,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                // PublishQos flag: 'fromPersistenceStore' must be true
                publishQos.setFromPersistenceStore(true);
 
-               XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+               XmlKey xmlKey = new XmlKey(getGlobal(), msgUnit.getXmlKey(), true);
 
                // RequestBroker publishes messages self
                this.publish(unsecureSessionInfo, xmlKey, msgUnit, publishQos);
@@ -539,6 +539,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                if (msgUnitWrapper.getPublishQos().getRemainingLife() >= 0L) {
                   buf.append("   <expiration remainingLife='").append(msgUnitWrapper.getPublishQos().getRemainingLife()).append("'/>\n");
                }
+               buf.append("   <route>\n"); // server internal added routing informations
+               buf.append("      <node id='").append(getGlobal().getId()).append("'/>");
+               buf.append("   </route>\n"); // server internal added routing informations
 
                buf.append("</qos>");
                mm.qos = buf.toString(); // !!! GetReturnQos should be an object
@@ -636,7 +639,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    {
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
-         retArr[ii] = publish(sessionInfo, new XmlKey(msgUnitArr[ii].xmlKey, true), msgUnitArr[ii], new PublishQos(msgUnitArr[ii].qos));
+         retArr[ii] = publish(sessionInfo, new XmlKey(getGlobal(), msgUnitArr[ii].xmlKey, true), msgUnitArr[ii], new PublishQos(msgUnitArr[ii].qos));
       }
       return retArr;
    }
@@ -646,7 +649,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
    private String publish(SessionInfo sessionInfo, MessageUnit msgUnit) throws XmlBlasterException
    {
-      return publish(sessionInfo, new XmlKey(msgUnit.xmlKey, true), msgUnit, new PublishQos(msgUnit.qos));
+      return publish(sessionInfo, new XmlKey(getGlobal(), msgUnit.xmlKey, true), msgUnit, new PublishQos(msgUnit.qos));
    }
 
    /**
@@ -976,12 +979,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      Log.warn(ME, tmp);
                      throw new XmlBlasterException("PtP.Failed", tmp);
                   }
-                  receiverSessionInfo.queueMessage(new MsgQueueEntry(receiverSessionInfo, msgUnitWrapper));
+                  receiverSessionInfo.queueMessage(new MsgQueueEntry(getGlobal(), receiverSessionInfo, msgUnitWrapper));
                }
                else {
                   if (publishQos.forceQueuing()) {
                      SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
-                     destinationClient.queueMessage(new MsgQueueEntry(destinationClient, msgUnitWrapper));
+                     destinationClient.queueMessage(new MsgQueueEntry(getGlobal(), destinationClient, msgUnitWrapper));
                   }
                   else {
                      SubjectInfo destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
@@ -990,7 +993,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                         Log.warn(ME, tmp);
                         throw new XmlBlasterException("PtP.Failed", tmp+" Client is not logged in and <destination forceQueuing='true'> is not set");
                      }
-                     destinationClient.queueMessage(new MsgQueueEntry(destinationClient, msgUnitWrapper));
+                     destinationClient.queueMessage(new MsgQueueEntry(getGlobal(), destinationClient, msgUnitWrapper));
                   }
                }
             }
