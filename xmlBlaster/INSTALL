@@ -8,8 +8,8 @@
 -----------------------------------------------------------------
 
    - JDK 1.2 or later
-   - a 'make' utility recommended. For DOS/Windows, e.g.
-     M$ "nmake" which comes with Visual C++ or cygwin's make)
+   - a 'make' utility recommended. For DOS/Windows, e.g. cygwin's make.
+	  Note that Windows nmake will not work properly with xmlBlaster Makefiles
    - JacOrb (CORBA)
    - XSL processor
 
@@ -30,7 +30,7 @@
      setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
 
 2. If you use sh, ksh or bash, you may chose to source the
-   $HOME/xmlBlaster-path/.bashrc into your environment.
+   $XMLBLASTER_HOME/.bashrc into your environment.
 
       source  $XMLBLASTER_HOME/.bashrc
 
@@ -42,7 +42,7 @@
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
 
-   Or you can do this automatically from your statup shell script.
+   Or you can do this automatically from your startup shell script.
    After a new login type 'make all' in the XMLBLASTER_HOME directory.
 
 
@@ -108,7 +108,7 @@ You have three options to start the xmlBlaster-Server.
 
 
 
-4. Variant using a name service and a local web server to publish the name service.
+4. Variant using a naming service and a local web server to publish the name service.
    Edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
 
      rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
@@ -120,7 +120,12 @@ You have three options to start the xmlBlaster-Server.
 
                              Testsuite
 -------------------------------------------------------------------------
-undefined
+In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
+a number of Java based test clients to automatically test xmlBlaster.
+
+You may also use the provided test clients to study the usage of xmlBlaster.
+
+
 
 #################################################################
 #                                                               #
@@ -172,6 +177,8 @@ AWARE: The current COPE Version 0.50_51 has problems with oneway methods
 
 4) idl2perl -imp xmlBlaster.idl
 
+5) cd ${XMLBLASTER_HOME}/testsuite/perl
+   and follow the instructions in ${XMLBLASTER_HOME}/testsuite/perl/README
 
                          Tcl - Client
 -----------------------------------------------------------------------
