@@ -7,8 +7,9 @@ package org.xmlBlaster.protocol.corba;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.JdkCompatible;
+//import org.xmlBlaster.util.JdkCompatible;
 import java.util.Properties;
+import java.util.Enumeration;
 
 /**
  * OrbInstanceFactory singleton to create a CORBA orb instance. 
@@ -53,19 +54,21 @@ public final class OrbInstanceFactory
     *
     * @param glob Handle to access logging, properties etc.
     * @param forCB true=Initialize for callback server, false=Initialize for xmlBlaster server
-    * @return The used hostname
+    * @return The used properties for the ORB
     */
-   private synchronized static String initializeOrbEnv(Global glob, boolean forCB)
+   private synchronized static Properties initializeOrbEnv(Global glob, boolean forCB)
    {
       LogChannel log = glob.getLog("corba");
       final String ME = "OrbInstanceFactory";
-
+      Properties props = new Properties();
+      //props.put("org.omg.CORBA.ORBClass", "SomeORBImplementation");
+ 
       if (first) {
          first = false;
          origORBClass = System.getProperty("org.omg.CORBA.ORBClass");
-         if (origORBClass==null) origORBClass=""; // System.setProperties does not like null values
+      //   if (origORBClass==null) origORBClass=""; // System.setProperties does not like null values
          origORBSingletonClass = System.getProperty("org.omg.CORBA.ORBSingletonClass");
-         if (origORBSingletonClass==null) origORBSingletonClass="";
+      //   if (origORBSingletonClass==null) origORBSingletonClass="";
       }
       /*
       # orb.properties file for JacORB, copy to JAVA_HOME/lib
@@ -93,50 +96,54 @@ public final class OrbInstanceFactory
          if (tmp.length() < 1) {      // As with JDK 1.4.1 i get NPE when trying to reset System.setProperty(key, null) we use an empty string
             tmp = "org.jacorb.orb.ORB";
          }
-         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", tmp);
+         //JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", tmp);
+         props.put("org.omg.CORBA.ORBClass", tmp);
 
          tmp = glob.getProperty().get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
          if (tmp.length() < 1) {
             tmp = "org.jacorb.orb.ORBSingleton";
          }
-         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", tmp);
+         //JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", tmp);
+         props.put("org.omg.CORBA.ORBSingletonClass", tmp);
       }
          
       String hostname = null;
-
-      // Set host/port for JacOrb
-
       String postfix = "";
       if (forCB) postfix = "CB";
-
       // We use the IP of the xmlBlaster bootstrap HTTP server as a default ...
       if (forCB)
          hostname = glob.getCbHostname();
       hostname = glob.getProperty().get("hostname"+postfix, hostname);
       // ... and overwrite it with a IOR specific hostname if given:
       hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
+      if (log.TRACE) log.trace(ME, "initializeOrbEnv(forCB=" + forCB + ") hostname=" + hostname);
 
-      if (System.getProperty("org.omg.CORBA.ORBClass").indexOf("jacorb") >= 0) {
+      String orbClass = (String)props.get("org.omg.CORBA.ORBClass");
+      if (orbClass != null && orbClass.indexOf("jacorb") >= 0) {
+         // Setting JacORB
          if (hostname != null) {
-            JdkCompatible.setSystemProperty("OAIAddr", hostname);
-            if (log.TRACE) log.trace(ME, "Using ior.hostname"+postfix+"=" + System.getProperty("OAIAddr"));
+            //JdkCompatible.setSystemProperty("OAIAddr", hostname);
+            props.put("OAIAddr", hostname);
+            if (log.TRACE) log.trace(ME, "Using OAIAddr=ior.hostname"+postfix+"=" + props.getProperty("OAIAddr"));
          }
          
          int port = glob.getProperty().get("ior.port"+postfix, 0);
          if (port > 0) {
-            JdkCompatible.setSystemProperty("OAPort", ""+port);
-            if (log.TRACE) log.trace(ME, "Using ior.port"+postfix+"=" + System.getProperty("OAPort"));
+            //JdkCompatible.setSystemProperty("OAPort", ""+port);
+            props.put("OAPort", ""+port);
+            if (log.TRACE) log.trace(ME, "Using OAPort=ior.port"+postfix+"=" + props.getProperty("OAPort"));
          }
 
          int verbose = glob.getProperty().get("jacorb.verbosity", -1);
          if (verbose >= 0) {
-            JdkCompatible.setSystemProperty("jacorb.verbosity", ""+verbose);
-            if (log.TRACE) log.trace(ME, "Using jacorb.verbosity=" + System.getProperty("jacorb.verbosity"));
+            //JdkCompatible.setSystemProperty("jacorb.verbosity", ""+verbose);
+            props.put("jacorb.verbosity", ""+verbose);
+            if (log.TRACE) log.trace(ME, "Using jacorb.verbosity=" + props.getProperty("jacorb.verbosity"));
          }
       }
 
-      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
-      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
+      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + props.getProperty("org.omg.CORBA.ORBClass"));
+      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + props.getProperty("org.omg.CORBA.ORBSingletonClass"));
 
       /*
       CHANGED 2003-02-27 Marcel:
@@ -153,12 +160,15 @@ public final class OrbInstanceFactory
          if (log.TRACE) log.trace(ME, "Using system ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService"));
       }
       */
-      if (glob.getProperty().get("ORBInitRef.NameService", (String)null) != null) {
-         JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
-         if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
-         //log.error(ME, "DEBUG ONLY: Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
+      if (glob.getProperty().get("ORBInitRef", (String)null) != null) {
+         String tmp = glob.getProperty().get("ORBInitRef", "NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root");
+         // -ORBInitRef "NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"
+         //JdkCompatible.setSystemProperty("ORBInitRef", tmp);
+         props.put("ORBInitRef", tmp);
+         if (log.TRACE) log.trace(ME, "Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
+         //log.error(ME, "DEBUG ONLY: Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
       }
-      return hostname;
+      return props;
    }
 
    /**
@@ -171,14 +181,23 @@ public final class OrbInstanceFactory
     */
    public static org.omg.CORBA.ORB createOrbInstance(Global glob, String[] args, Properties props, boolean forCB) {
       synchronized (System.class) {
-         String hostname = initializeOrbEnv(glob, forCB);
-         org.omg.CORBA.ORB anOrb = org.omg.CORBA.ORB.init(args, props);
+         Properties properties = initializeOrbEnv(glob, forCB);
+         if (props != null) {
+            Enumeration e = props.propertyNames();
+            while (e.hasMoreElements()) {
+               String key = (String)e.nextElement();
+               properties.put(key, props.get(key));
+            }
+         }
+         org.omg.CORBA.ORB anOrb = org.omg.CORBA.ORB.init(args, properties);
+         /*
          if (origORBClass != null) {
             JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", origORBClass);
          }
          if (origORBSingletonClass != null) {
             JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", origORBSingletonClass);
          }
+         */
          return anOrb;
       }
    }
