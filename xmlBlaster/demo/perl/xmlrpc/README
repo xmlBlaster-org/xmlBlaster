@@ -1,12 +1,46 @@
+-------------------------------------------------------------------
+Required libraries :
+
+      this demo use xml-rpc protocol to connect to xmlBlaster server.
+      the xml-rpc implementation used in this demo is Frontier.
+
+      - XML Expat
+      install expat (expat-1.95.2 at http://sourceforge.net/projects/expat/)
+      on my linux redhat 7.2 it was already installed.
+      
+      - perl XML Parser :
+      perl module XML-Parser (XML-Parser.2.30 at http://search.cpan.org/search?dist=XML-Parser)
+
+      - perl XMLRPC :
+      xml-rpc implemeted by Frontier (Frontier-RPC-x.xx).
+      Look at CPAN for this package or
+      http://bitsko.slc.ut.us/~ken/xml-rpc/
+      (Frontier-RPC-0.07b4.tar.gz)
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
 Howto start the Perl/XmlRpc demo:
 
- - Start xmlBlaster
+ - Start xmlBlaster (with xmlrpc dumping switched on)
 
       cd xmlBlaster
-      java -jar lib/xmlBlaster.jar
+      java -jar lib/xmlBlaster.jar -plugin/xmlrpc/debug true
 
 
- - Run a Perl demo client : xmlBlasterClient.pl
+ - Run a Perl demo client :
+
+      (1) cd xmlBlaster/demo/perl/xmlrpc
+
+      (2) hello.pl
+
+      It will try to lookup xmlBlaster on the same machine, or try
+
+      (3) perl hello.pl http://myHost:8080/
+
+      If xmlBlaster is running on 'myHost'
+
+
+ - Run another Perl demo client : xmlBlasterClient.pl
 
       1/ cd xmlBlaster/demo/perl/xmlrpc
 
@@ -26,49 +60,34 @@ Howto start the Perl/XmlRpc demo:
       It will try to get all messages actually in xmlBlaster server.
 
 Thats it!
-
-
-
--------------------------------------------------------------------
-Required libraries :
-
-      this demo use xml-rpc protocol to connect to xmlBlaster server.
-      the xml-rpc implementation used in this demo is Frontier.
-
-      - XML Expat
-      install expat (expat-1.95.2 at http://sourceforge.net/projects/expat/)
-      on my linux redhat 7.2 it was already installed.
-      
-      - perl XML Parser :
-      perl module XML-Parser (XML-Parser.2.30 at http://search.cpan.org/search?dist=XML-Parser)
-
-      - perl XMLRPC :
-      xml-rpc implemeted by Frontier (Frontier-RPC-x.xx).
-      Look at CPAN for this package.
 -------------------------------------------------------------------
 
 
 
 -------------------------------------------------------------------
-For Perl XMLRPC implementations see:
-   http://www.xmlrpc.com/directory/1568/implementations
+Playing with the Frontier-XmlRpc command line client rpc-client.pl:
 
-Ken McLeod has implemented XMLRPC for Perl
-   http://search.cpan.org/CPAN/authors/id/K/KM/KMACLEOD/Frontier-RPC-0.06.tar.gz
-   Unpack it and do:
-        perl Makefile.PL
-        make
-        make test
-        make install
-     
-Get more informations about INSTALLATION at
-   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto-perl.html
+1. Create a login session (we need the sessionId):
+
+   perl rpc-client.pl http://myHost:8080/RPC2 authenticate.login "marcel, secret, <qos/>,  ab123"
+
+Somewhere the secret sessionId is returned like "sessionId:192.168.1.4-null-1064571259045-162717338-6"
+(See xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/AuthenticateImpl.java for supported methods)
+
+2. Now access the free memory in the server:
+
+   perl rpc-client.pl http://myHost:8080/RPC2 xmlBlaster.get "'sessionId:192.168.1.4-null-1064571396303--606564280-8', '<key oid=\'__sys__freeMem\'/>', <qos/>"
+
+Somewhere "$result = ARRAY(0x85402b0)" is returned which would
+need to be inspected by Data::Dumper or as in MsgUnit.pm
+(See xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java for supported methods)
 -------------------------------------------------------------------
 
 
 This is the simplest Perl client code:
 -------------------------------------------------------------------
 use Frontier::Client;
+use Data::Dumper;
 
 # Make an object to represent the XMLRPC server.
 $server_url = 'http://myHost:8080/';
@@ -83,7 +102,7 @@ print "\nLogin success with sessionId=$sessionId \n";
 
 # Call the server and get its current memory consumption.
 $message = $server->call('xmlBlaster.get', $sessionId, "<key oid='__cmd:?totalMem'></key>", "<qos></qos>");
-print "\nResult for a get():\n----------------\n $message \n----------------\n";
+print "\nResult for a get():\n----------------\n Dumper($message) \n----------------\n";
 -------------------------------------------------------------------
 
 See
