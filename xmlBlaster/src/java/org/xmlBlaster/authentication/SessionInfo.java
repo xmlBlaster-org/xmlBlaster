@@ -415,7 +415,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       // Remember persistent values:
       newConnectQos.isFromPersistenceRecovery(this.connectQos.isFromPersistenceRecovery());
       newConnectQos.setPersistenceUniqueId(this.connectQos.getPersistenceUniqueId());
-
+      if (this.connectQos.getData().isPersistent()) // otherwise persistent sessions could be made transient
+         newConnectQos.getData().setPersistent(true); // and would never be deleted from persistence.
       this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
    }
 

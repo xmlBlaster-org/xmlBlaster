@@ -323,10 +323,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       QueryQosData subscribeQosData = subscriptionInfo.getQueryQosData();
       if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: key='" + data.toXml() + "'");
       if (subscribeQosData != null) if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: qos='" + subscribeQosData.toXml() + "'");
-      if (subscribeQosData == null || subscribeQosData.getPersistentProp() == null || !subscribeQosData.getPersistentProp().getValue()) return;
+      if (subscribeQosData == null || !subscribeQosData.isPersistent()) return;
 
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo(); 
-      if (!sessionInfo.getConnectQos().getData().getPersistentProp().getValue()) {
+      if (!sessionInfo.getConnectQos().getData().isPersistent()) {
          sessionInfo.getConnectQos().getData().setPersistent(true);
          this.addSession(sessionInfo);         
       }
