@@ -3,7 +3,7 @@ Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.1 2000/06/25 19:09:45 ruff Exp $
+Version:   $Id: MessageUnit.java,v 1.2 2000/11/12 13:21:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
@@ -47,5 +47,41 @@ public class MessageUnit implements java.io.Serializable
       for (int ii=0; ii<content.length; ii++)
          newContent[ii] = content[ii];
       return new MessageUnit(xmlKey, content, qos);
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @return The data of this MessageUnit as a XML ASCII string
+    */
+   public final String toXml()
+   {
+      return toXml((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @return The data of this MessageUnit as a XML ASCII string
+    */
+   public final String toXml(String extraOffset)
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset + "<MessageUnit>");
+      sb.append(offset + xmlKey);
+      sb.append(offset + "   <content>");
+      sb.append(offset + "   " + new String(content));
+      sb.append(offset + "   </content>\n");
+      sb.append(offset + qos);
+      sb.append(offset + "</MessageUnit>\n");
+
+      return sb.toString();
    }
 }
