@@ -64,7 +64,7 @@ class Dll_Export QueryQosData : public QosData
    /** send on subscribe an initial update with the current message */
    bool initialUpdate_;
 
-   /** for erase(): Notify the subscribers on erase? */
+   /** for subscribe(): Notify the subscribers on erase? */
    bool notify_;
 
    /** Mime based filter rules */
