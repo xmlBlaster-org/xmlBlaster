@@ -1617,7 +1617,7 @@ TODO
       </cc>
    </target>
 
-   <target name="cpp" depends="cpp-lib, cpp-test, cpp-demo" description="Compile C++ client library and test/demo clients"/>
+   <target name="cpp" depends="cpp-lib, cpp-test, cpp" description="Compile C++ client library and test/demo clients"/>
 
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
