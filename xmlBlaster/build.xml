@@ -72,12 +72,10 @@ Else add it manually.
   <property name="bin.dir" value="./bin"/>
   <property name="lib.dir" value="./lib"/>
   <property name="req.dir" value="./doc/requirements"/>
-  <property name="classes.webinf.dir" value="./demo/html/WEB-INF/classes"/>
   <property name="packages" value="org.xmlBlaster.*"/>
 
-  <property name="www.dir"              value="${demo.dir}/html"/>
-  <property name="WEB-INF"              value="${www.dir}/WEB-INF"/>
-  <property name="WEB-INF.classes"      value="${WEB-INF}/classes"/>
+  <property name="demo.http.dir"        value="${demo.dir}/http"/>
+  <property name="WEB-INF"              value="${demo.http.dir}/WEB-INF"/>
   <!-- The document root of the servlet engine (deploy dir for war files): -->
   <property name="WWW_ROOT"             value="${user.home}/jakarta-tomcat/webapps"/>
 
@@ -85,8 +83,9 @@ Else add it manually.
   <property name="idl.class" value="org.jacorb.idl.parser"/>
 
   <property name="build.dir" value="./build"/>
-  <property name="build.src" value="./build/src"/>
-  <property name="build.dest" value="./build/classes"/>
+  <property name="build.src" value="${build.dir}/src"/>
+  <property name="build.dest" value="${build.dir}/classes"/>
+  <property name="build.war" value="${build.dir}/war"/>
 
   <property name="dist.dir" value="./dist"/>
 
@@ -285,34 +284,35 @@ Else add it manually.
   <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
   <!-- =================================================================== -->
   <target name="deploy_war">
-     <!-- COPY THE SERVLETS IN THE WEB-INF/classes FOLDER -->
-     <mkdir dir="${WEB-INF.classes}/html/systemInfo"/>
-     <copy todir="${WEB-INF.classes}/html/systemInfo">
-       <fileset dir="${build.dest}/html/systemInfo"/>
-     </copy>
-     <mkdir dir="${WEB-INF.classes}/org/xmlBlaster/protocol/http"/>
-     <copy todir="${WEB-INF.classes}/org/xmlBlaster/protocol/http">
+     <mkdir dir="${build.war}"/>
+     <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
+     <copy file="${WEB-INF}/web.xml" tofile="${build.war}/WEB-INF/web.xml"/>
+     <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http">
        <fileset dir="${build.dest}/org/xmlBlaster/protocol/http"/>
      </copy>
+     <copy todir="${build.war}/WEB-INF/classes/http">
+       <fileset dir="${build.dest}/http"/>
+     </copy>
+     <unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
+     <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
+     <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" />
 
-     <delete>
-       <fileset dir="${www.dir}/javascript"/>
-     </delete>
-     <copy todir="${www.dir}/javascript">
+     <copy todir="${build.war}/javascript">
        <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/javascript"/>
      </copy>
-     <delete>
-       <fileset dir="${www.dir}/persistentWindow"/>
-     </delete>
-     <copy todir="${www.dir}/persistentWindow">
+     <copy todir="${build.war}/persistentWindow">
        <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
      </copy>
-     <delete file="${www.dir}/xmlBlaster.css"/>
-     <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${www.dir}/xmlBlaster.css"/>
+     <copy todir="${build.war}/dhtml">
+       <fileset dir="${demo.http.dir}/dhtml"/>
+     </copy>
+     <copy todir="${build.war}/svg">
+       <fileset dir="${demo.http.dir}/svg"/>
+     </copy>
 
      <jar jarfile="${build.dir}/xmlBlaster.war"
-          basedir="${www.dir}/"
-          includes="*.*,systemInfo/*.html,systemInfo/colors/*.*,javascript/**,persistentWindow/**,WEB-INF/**/*.*"/>
+          basedir="${build.war}/"
+          includes="**"/>
 
      <copy file="${lib.dir}/${name}.jar" tofile="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
      <delete dir="${WWW_ROOT}/xmlBlaster"/>
@@ -323,13 +323,11 @@ Else add it manually.
      <echo message=""/>
      <echo message="   Start xmlBlaster and a demo data publisher:"/>
      <echo message="      java org.xmlBlaster.Main -xmlrpc.port 8089    (we switch port to allow tomcat on 8080)"/>
-     <echo message="      java html.systemInfo.SystemInfoPublisher"/>
+     <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
      <echo message=""/>
      <echo message="   Start tomcat and invoke the demo with:"/>
      <echo message="      tomcat.sh start"/>
-     <echo message="      http://HOSTNAME:8080/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
-     <echo message=""/>
-     <echo message="   WARNING: The tomcat integration is not finished!!!"/>
+     <echo message="      http://HOSTNAME:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
   </target>
 
   <!-- =================================================================== -->
