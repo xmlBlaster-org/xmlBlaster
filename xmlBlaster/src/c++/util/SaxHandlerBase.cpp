@@ -78,16 +78,16 @@ SaxHandlerBase::parse(const string &xmlData)
     return;
   }
 
-  catch (const exception& err) {
-    log_.error(me(), string("parse: exception. message:") + err.what());
-    return;
-  }
   catch (const bad_alloc& err) {
     log_.error(me(), string("parse: bad_alloc exception. message:") + err.what());
     return;
   }
   catch (const bad_exception& err) {
        log_.error(me(), string("parse: bad_exception exception. message:") + err.what());
+    return;
+  }
+  catch (const exception& err) {
+    log_.error(me(), string("parse: exception. message:") + err.what());
     return;
   }
   catch (...) {

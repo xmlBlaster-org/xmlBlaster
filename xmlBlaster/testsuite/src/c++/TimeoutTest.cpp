@@ -35,6 +35,11 @@ public:
    TimeoutTest(string name) : ME(name) {
    }
 
+   ~TimeoutTest()
+   {
+      delete timeoutObject;
+   }
+
    void timeout(void *userData) {
       cout << "this is the timeout for the test" << endl;
       if (userData == NULL) return;
@@ -68,8 +73,8 @@ public:
    void tearDown() {
       cout << ME << " tearDown(): will delete now" << endl;
       timeoutObject->shutdown();
-      delete timeoutObject;
-      cout << ME << " tearDown(): has deleted now" << endl;
+      delete TimestampFactory::getInstance()
+	  cout << ME << " tearDown(): has deleted now" << endl;
    }
 };
    
@@ -85,6 +90,8 @@ int main(int args, char *argc[]) {
    test->setUp(args, argc);
    test->testTimeout();
    test->tearDown();
+   delete test;
    return 0;
 }
+
 

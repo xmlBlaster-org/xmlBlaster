@@ -20,7 +20,7 @@ SecurityQos::SecurityQos(int args, const char * const argc[])
    prep(args, argc);
 }
 
-SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, const char * const argc[]=0)
+SecurityQos::SecurityQos(const string& xmlQoS_literal, int args, const char * const argc[])
    : SaxHandlerBase(args, argc),
      ME("SecurityQos-simple"),
      trim_()
@@ -32,8 +32,8 @@ SecurityQos::SecurityQos(const string& xmlQoS_literal, int args=0, const char * 
 
 SecurityQos::SecurityQos(const string& loginName,
                          const string& password,
-                         int args=0,
-                          const char * const argc[]=0)
+                         int args,
+                          const char * const argc[])
    : SaxHandlerBase(args, argc), ME("SecurityQos-simple"), trim_()
 {
    log_.call(ME, "third constructor");
