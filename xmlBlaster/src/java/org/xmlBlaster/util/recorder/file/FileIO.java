@@ -74,7 +74,7 @@ public class FileIO
 
 
    /**
-    * @param filename An absolute or relative path including the fileName
+    * @param filename An absolute or relative path including the fileName, missing directories will be created
     * @param userDataHandler Your implementation of your data format marshalling
     */
    public FileIO(String fileName, I_UserDataHandler userDataHandler, long maxEntries, boolean useSync) throws IOException {
