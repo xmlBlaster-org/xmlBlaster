@@ -41,7 +41,7 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb);
 /**
  * See header for a description. 
  */
-CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
+CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* argv,
                         UpdateCbFp update, void *updateUserData)
 {
    CallbackServerUnparsed *cb = (CallbackServerUnparsed *)calloc(1,
@@ -250,6 +250,9 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
             if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
                "Calling client %s() for requestId '%s' ...",
                socketDataHolder.methodName, socketDataHolder.requestId);
+            
+            strcpy(msgUnitArr->secretSessionId, socketDataHolder.secretSessionId);
+            msgUnitArr->isOneway = (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
             success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException, &socketDataHolder);
          }
       }
@@ -469,10 +472,10 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    msgUnit.contentLen = strlen(exception->errorCode) + strlen(exception->message) + 11;
    msgUnit.content = (char *)calloc(msgUnit.contentLen, sizeof(char));
    
-   memcpy(msgUnit.content, exception->errorCode, strlen(exception->errorCode));
+   memcpy((char *)msgUnit.content, exception->errorCode, strlen(exception->errorCode));
    currpos = strlen(exception->errorCode) + 4;
    
-   memcpy(msgUnit.content+currpos, exception->message, strlen(exception->message));
+   memcpy((char *)msgUnit.content+currpos, exception->message, strlen(exception->message));
    
    data = encodeMsgUnit(&msgUnit, &dataLen, cb->logLevel >= LOG_DUMP);
 
@@ -480,7 +483,7 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
                              socketDataHolder->methodName, socketDataHolder->secretSessionId,
                              data, dataLen, cb->logLevel >= LOG_DUMP, &rawMsgLen);
    free(data);
-   free(msgUnit.content);
+   free((char *)msgUnit.content);
 
    /*ssize_t numSent =*/(void) writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
@@ -547,11 +550,11 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 const char *callbackServerRawUsage()
 {
    return 
-      "\n  -dispatch/callback/plugin/socket/hostname [localhost]"
-      "\n                       The IP where to establish the callback server"
-      "\n                       Can be useful on multi homed hosts"
-      "\n  -dispatch/callback/plugin/socket/port [7611]"
-      "\n                       The port of the callback server";
+      "\n   -dispatch/callback/plugin/socket/hostname [localhost]"
+      "\n                       The IP where to establish the callback server."
+      "\n                       Can be useful on multi homed hosts."
+      "\n   -dispatch/callback/plugin/socket/port [7611]"
+      "\n                       The port of the callback server.";
 }
 
 #ifdef USE_MAIN_CB
