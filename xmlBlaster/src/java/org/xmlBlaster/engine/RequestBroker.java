@@ -702,7 +702,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                // Check with MsgQueueEntry.getUpdateQos() !!!
                StringBuffer buf = new StringBuffer();
                buf.append("\n<qos>\n");
-               buf.append("   <state id='").append(Constants.STATE_OK).append("'/>\n");    // OK | EXPIRED | ERASED
+               buf.append("   <state id='").append(Constants.STATE_OK).append("'/>\n");    // OK | TIMEOUT | ERASED
                buf.append("   <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>\n");
                buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
 
@@ -1031,13 +1031,24 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
    public final String update(SessionInfo sessionInfo, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
-      //Transform an update to a publish: PublishKeyWrapper/PublishQosWrapper ?
-      XmlKey key = new XmlKey(glob, updateKey.toXml(), true);
-      //log.info(ME, "Dump of cluster update(): " + updateQos.toXml());
-      PublishQos qos = new PublishQos(glob, updateQos);
-      MessageUnit msgUnit = new MessageUnit(key.literal(), content, qos.toXml());
+      if (updateQos.isErased()) {
+         XmlKey key = new XmlKey(glob, updateKey.toXml(), false);
+         EraseQoS qos = new EraseQoS(glob, updateQos);
+         String[] ret = glob.getRequestBroker().erase(sessionInfo, key, qos, true);
+         if (ret != null && ret.length > 0)
+            return ret[0];
+         else
+            return "<qos/>";
+      }
+      else {
+         //Transform an update to a publish: PublishKeyWrapper/PublishQosWrapper ?
+         XmlKey key = new XmlKey(glob, updateKey.toXml(), true);
+         //log.info(ME, "Dump of cluster update(): " + updateQos.toXml());
+         PublishQos qos = new PublishQos(glob, updateQos);
+         MessageUnit msgUnit = new MessageUnit(key.literal(), content, qos.toXml());
 
-      return publish(sessionInfo, key, msgUnit, qos, true);
+         return publish(sessionInfo, key, msgUnit, qos, true);
+      }
    }
 
    /**
@@ -1081,7 +1092,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          if (publishQos.isPubSubStyle()) {
             if (log.TRACE) log.trace(ME, "Doing publish() in Pub/Sub style");
-synchronized (this) {
+synchronized (this) { // Change to snychronized(messageUnitHandler) {
             //----- 1. set new value or create the new message:
             MessageUnitHandler msgUnitHandler = null;
             boolean contentChanged = true;
@@ -1182,7 +1193,7 @@ synchronized (this) {
             //----- 2. now we can send updates to all interested clients:
             if (log.TRACE) log.trace(ME, "Message " + xmlKey.getKeyOid() + " handled, now we can send updates to all interested clients.");
             if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
-               msgUnitHandler.invokeCallback(sessionInfo);
+               msgUnitHandler.invokeCallback(sessionInfo, Constants.STATE_OK);
 
             //----- 3. check all known query subscriptions if the new message fits as well
             // TODO: Only check if it is a new message (XmlKey is immutable)
@@ -1277,7 +1288,7 @@ synchronized (this) {
    {
       if (log.TRACE) log.trace(ME, "Published message is marked as volatile, erasing it");
       fireMessageEraseEvent(sessionInfo, msgUnitHandler);
-      msgUnitHandler.erase();
+      msgUnitHandler.erase(sessionInfo, null); // no erase event for volatile messages
       msgUnitHandler = null;
    }
 
@@ -1330,7 +1341,6 @@ synchronized (this) {
       }
    }
 
-
    /**
     * Client wants to erase a message.
     * <p />
@@ -1342,19 +1352,36 @@ synchronized (this) {
     * @return String array with the xml encoded key oid's which are deleted
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   String[] erase(SessionInfo sessionInfo, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException
+   String[] erase(SessionInfo sessionInfo, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException {
+      return erase(sessionInfo, xmlKey, eraseQos, false);
+   }
+
+   /**
+    * Client wants to erase a message.
+    * <p />
+    * @param sessionInfo  The SessionInfo object, describing the invoking client
+    * @param xmlKey      Key allowing XPath or exact selection<br>
+    *                    See XmlKey.dtd for a description
+    * @param eraseQoS    Quality of Service, flags to control the erasing
+    * @param isClusterUpdate true if it is a update() callback message from another cluster node
+    *
+    * @return String array with the xml encoded key oid's which are deleted
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
+    */
+   private String[] erase(SessionInfo sessionInfo, XmlKey xmlKey, EraseQoS eraseQos, boolean isClusterUpdate) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
-         //log.info(ME, "BEFORE ERASE: " + toXml());
+         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") +
+                "erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() +
+                "', query='" + xmlKey.getQueryString() + "') client '" + sessionInfo.getLoginName() + "' ...");
 
          Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, eraseQos);
-         Set oidSet = new HashSet(xmlKeyVec.size());  // for return values
+         Set oidSet = new HashSet(xmlKeyVec.size());  // for return values (TODO: change to TreeSet to maintain order)
 
          for (int ii=0; ii<xmlKeyVec.size(); ii++) {
             XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
 
-            if (useCluster) { // cluster support - forward erase to master
+            if (useCluster && !isClusterUpdate) { // cluster support - forward erase to master
                try {
                   EraseRetQos ret[] = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
                   //Thread.currentThread().dumpStack();
@@ -1387,7 +1414,7 @@ synchronized (this) {
                fireMessageEraseEvent(sessionInfo, msgUnitHandler);
             } catch (XmlBlasterException e) {
             }
-            msgUnitHandler.erase();
+            msgUnitHandler.erase(sessionInfo, Constants.STATE_ERASED);
             msgUnitHandler = null;
          }
          //log.info(ME, "AFTER ERASE: " + toXml());
