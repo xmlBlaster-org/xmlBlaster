@@ -1,5 +1,13 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
+<!--
+Name:      requirement.dtd
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Validates xml requirements
+Version:   $Id: requirement.dtd,v 1.9 2000/03/24 23:44:39 ruff Exp $
+-->
+
 <!ELEMENT requirement (
 	topic,
 	description,
@@ -38,5 +46,16 @@
 			 status (OPEN | INWORK | CLOSED) "OPEN">  
 
 <!ATTLIST example lang (Java | C | CPP | Perl | Python | TCL | Javascript) "Java">  
+
+<!--
+   The type API allows the XSL to create a link into the xmlBlaster javadoc
+   the type REQ creates a link to another requirement file
+	Example: (don't give any extensions)
+   <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
+ -->
+<!ATTLIST see type (API | REQ | OTHER) "API">
+
 <!ATTLIST testcase status (OPEN | CLOSED) "OPEN">  
+
+<!-- The type SUITE allows the XSL to create a link into the xmlBlaster testsuite -->
 <!ATTLIST test tool (SUITE | MANUAL) "SUITE">  

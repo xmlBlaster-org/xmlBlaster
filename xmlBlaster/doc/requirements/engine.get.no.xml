@@ -17,11 +17,11 @@
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestGet.testGet()#1</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestGet</test>
    </testcase>
 </requirement>
 

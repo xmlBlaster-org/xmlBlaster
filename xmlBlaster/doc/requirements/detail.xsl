@@ -3,8 +3,9 @@
 Name:      detail.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Generating a detailed html view on one requirement
-Version:   $Id: detail.xsl,v 1.1 2000/03/24 22:18:58 ruff Exp $
+Comment:   Generating a detailed html view for one requirement
+See:       xmlBlaster/doc/requirements/requirement.dtd
+Version:   $Id: detail.xsl,v 1.2 2000/03/24 23:44:38 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -17,6 +18,8 @@ Author:    ruff@swand.lake.de
 
 <xsl:output method="html"/>
 
+
+<!-- Create the HTML output for one requirement -->
 <xsl:template match="requirement">
    <html>
    <head>
@@ -27,17 +30,13 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <p class="sideend">
-       Last updated $Date: 2000/03/24 22:18:58 $ $Author: ruff $
-   </p>
+   <!-- p class="sideend"> Last updated $Date: 2000/03/24 23:44:38 $ $Author: ruff $ </p -->
+
+   <p class="sitetitel">REQUIREMENT</p>
    <p class="sitetitel"><xsl:value-of select="@id"/></p>
 
    <p /><br />
    <table cellpadding="2" cellspacing="4">
-      <tr>
-         <td class="reqId">Requirement Id</td>
-         <td><xsl:value-of select="@id"/></td>
-      </tr>
       <tr>
          <td class="reqId">Type</td>
          <td><xsl:value-of select="@type"/></td>
@@ -49,67 +48,90 @@ Author:    ruff@swand.lake.de
       <tr>
          <td class="reqId">Status</td>
          <td>
-         	<xsl:attribute name="class"><xsl:value-of select="@status"/></xsl:attribute>
+            <xsl:attribute name="class"><xsl:value-of select="@status"/></xsl:attribute>
             <xsl:value-of select="@status"/>
          </td>
       </tr>
+   <p /><br />
+   </table>
+
+   <table cellpadding="2" cellspacing="4">
+      <tr>
+         <td class="reqId">Topic</td>
+         <td class="topic"><xsl:value-of select="topic"/></td>
+      </tr>
       <tr>
          <td class="reqId">Description</td>
-         <td><xsl:value-of select="description"/></td>
+         <td class="description"><xsl:value-of select="description"/></td>
       </tr>
       <tr>
          <td class="reqId">Example</td>
-         <td><pre><xsl:value-of select="example"/></pre></td>
+         <td class="example"><pre><xsl:value-of select="example"/></pre></td>
       </tr>
       <xsl:for-each select="see">
          <tr>
-            <td class="reqId">See</td>
-            <td>
-               <xsl:if test="@type='API'">
+            <xsl:if test="@type='API'">
+               <td class="reqId">See Javadoc API</td>
+               <td>
                <a>
-         			<xsl:attribute name="href">../api/<xsl:value-of select="."/></xsl:attribute>
+                  <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
                   <xsl:value-of select="."/>
                </a>
-               </xsl:if>
-               <xsl:if test="@type!='API'">
+               </td>
+            </xsl:if>
+
+            <xsl:if test="@type='REQ'">
+               <td class="reqId">See Requirement</td>
+               <td>
                <a>
+                  <xsl:attribute name="href"><xsl:value-of select="."/>.html</xsl:attribute>
                   <xsl:value-of select="."/>
                </a>
-               </xsl:if>
-            </td>
+               </td>
+            </xsl:if>
+
+            <xsl:if test="@type='OTHER'">
+               <td class="reqId">See</td>
+               <td><xsl:value-of select="."/></td>
+            </xsl:if>
          </tr>
       </xsl:for-each>
+
       <xsl:for-each select="testcase">
          <xsl:if test="@status='CLOSED'">
             <tr>
-               <td class="reqId">Testcase</td>
-               <td>
-                  <xsl:if test="test/@tool='SUITE'">
+               <xsl:if test="test/@tool='SUITE'">
+                  <td class="reqId">See Testcase Code</td>
+                    <td>
                   <a>
-            			<xsl:attribute name="href">../../<xsl:value-of select="test"/>.html</xsl:attribute>
+                     <xsl:attribute name="href">../../<xsl:value-of select="translate(test,'.','/')"/>.html</xsl:attribute>
                      <xsl:value-of select="test"/>
                   </a>
-                  </xsl:if>
-                  <xsl:if test="test/@tool!='SUITE'">
-                  <a>
-                     <xsl:value-of select="test"/>
-                  </a>
-                  </xsl:if>
-               </td>
+                  </td>
+               </xsl:if>
+
+               <xsl:if test="test/@tool!='SUITE'">
+                  <td class="reqId">Testcase</td>
+                  <td><xsl:value-of select="test"/></td>
+               </xsl:if>
             </tr>
          </xsl:if>
       </xsl:for-each>
+
    </table>
 
    <p class="sideend">
    This page is generated from the requirement XML file xmlBlaster/doc/requirements/<xsl:value-of select="@id"/>.xml
+   </p>
+   <p class="sideend">
+      <a href="requirement.html" target="Content">Back to overview</a><br />
    </p>
    </body>
    </html>
 </xsl:template>
 
 
-
+<!-- Error handling -->
 <xsl:template match="*">
   <center><p class="xmlerror"><blink>XSL parsing error</blink><br />
   Can't handle your supplied XML file</p>

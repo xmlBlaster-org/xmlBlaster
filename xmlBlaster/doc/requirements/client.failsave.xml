@@ -56,13 +56,14 @@
       }
       ]]>
    </example>
+   <see>org.xmlBlaster.client.CorbaConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSave.testFailSave()</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSave</test>
    </testcase>
 </requirement>
 

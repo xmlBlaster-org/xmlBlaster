@@ -30,8 +30,11 @@ one html file
 
 Generate HTML output with Sun XML parser:
 =========================================
+Table with all requirements:
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver all.xml html.xsl requirement.html
 
+Detail info of one requirement:
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver engine.qos.publish.destination.PtX.xml detail.xsl engine.qos.publish.destination.PtX.html
 
 Generate HTML output with James Clarks XML parser:
 ================================================w==

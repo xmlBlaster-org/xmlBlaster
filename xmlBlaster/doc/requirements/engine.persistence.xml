@@ -29,11 +29,11 @@
    <see>engine.qos.publish.IsDurable</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestPersistence.testDurable()</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPersistence</test>
    </testcase>
 </requirement>
 
