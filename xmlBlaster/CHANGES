@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o Merged basic JMX support from branch jmx_gui
+
  o BUGFIX: PersistentStore and PersistentQueue have now separate pools. Avoids
    deadlocks when configured with only 1 connection AND msg store AND
    other queues are peeking objects from persistence (for example when both caching).
