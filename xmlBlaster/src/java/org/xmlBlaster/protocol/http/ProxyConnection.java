@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.14 2000/05/13 20:07:32 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.15 2000/05/14 14:17:12 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -36,7 +36,7 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -86,11 +86,13 @@ public class ProxyConnection implements I_Callback
    }
 
    /**
-    * Close connection to xmlBlaster and to all browsers using this login. 
+    * Close connection to xmlBlaster and to all browsers using this login.
     */
    public void cleanup()
    {
       if (Log.CALLS) Log.calls(ME, "Entering cleanup() ...");
+
+      BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
 
       // Logout from xmlBlaster
       if (corbaConnection != null) {
@@ -109,12 +111,12 @@ public class ProxyConnection implements I_Callback
 
 
    /**
-    * Clean up if a browser disappears or does a logout. 
+    * Clean up if a browser disappears or does a logout.
     * @param sessionId The unique browser identifier
     */
    public void cleanup(String sessionId)
    {
-      BlasterHttpProxy.cleanup(corbaConnection.getLoginName());
+      BlasterHttpProxy.cleanupBySessionId(sessionId);
       HttpPushHandler ph = getHttpPushHandler(sessionId);
       if (ph == null) {
          // No error, may be invoked multiple times (e.g. form servlet and pingThread)
@@ -129,6 +131,7 @@ public class ProxyConnection implements I_Callback
       if (httpConnections.isEmpty()) {
          // Logout from xmlBlaster if no browser uses this connection anymore
          if (corbaConnection != null) {
+            BlasterHttpProxy.cleanupByLoginName(corbaConnection.getLoginName());
             Log.info(ME, "Corba connection for '" + corbaConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
             corbaConnection.logout();
             corbaConnection = null;
