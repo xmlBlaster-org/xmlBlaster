@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.22 2002/03/31 20:36:26 ruff Exp $
+Version:   $Id: Parser.java,v 1.23 2002/04/19 10:59:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -75,6 +75,12 @@ import java.util.Vector;
  */
 public class Parser
 {
+   /* TODO: Try performance with 
+         b[i*2] = (byte)(c & 0xff);
+         b[i*2 + 1] = (byte)((c >> 8) & 0xff);
+     to cast char[] into byte[]
+   */
+
    private static final String ME = "Parser";
    
    public static final int NUM_FIELD_LEN = 10;
