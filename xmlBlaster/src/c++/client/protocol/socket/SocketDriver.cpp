@@ -122,24 +122,24 @@ void SocketDriver::freeResources(bool deleteConnection)
  catch it and to a shutdown() on us. This will cleanup the resources.
  */
 #define catch_MACRO(methodName, deleteConnection)                     \
+   catch(const XmlBlasterException *ex) {                             \
+      freeResources(deleteConnection);                                \
+      throw ex;                                                       \
+   }                                                                  \
    catch(XmlBlasterException &ex) {                                   \
       freeResources(deleteConnection);                                \
       ex.setLocation(ME + string(methodName));                        \
       throw ex;                                                       \
    }                                                                  \
-   catch(const XmlBlasterException *ex) {                             \
-      freeResources(deleteConnection);                                \
-      throw ex;                                                       \
-   }                                                                  \
-   catch(const ::ExceptionStruct &ex) {                           \
-      freeResources(deleteConnection);                                \
-      throw convertFromSocketException(ex);                           \
-   }                                                                  \
-   catch(const ::ExceptionStruct *ex) {                           \
+   catch(const ::ExceptionStruct *ex) {                               \
       freeResources(deleteConnection);                                \
       org::xmlBlaster::util::XmlBlasterException xx = convertFromSocketException(*ex); \
       delete ex;                                                      \
       throw xx;                                                       \
+   }                                                                  \
+   catch(const ::ExceptionStruct &ex) {                               \
+      freeResources(deleteConnection);                                \
+      throw convertFromSocketException(ex);                           \
    }                                                                  \
    catch(const exception &ex) {                                       \
       freeResources(deleteConnection);                                \
