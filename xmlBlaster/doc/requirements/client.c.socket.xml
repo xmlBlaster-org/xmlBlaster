@@ -1069,7 +1069,7 @@ build reportShow
    </configuration>
 
    <todo type='HTML'>
-      <h2>This beta release is considered stable, but we need to:</h2>
+      <h2>This release is stable, but we need to:</h2>
       <p>
       <ul>
       <li> Adding mutex to every function call?<br />
@@ -1080,12 +1080,16 @@ build reportShow
       If you have such a case just add your own mutex to the function calls.</li>
 
       <li> Invoking xmlBlaster from within the callback thread (in update() function)
-        will deadlock (i believe so).
-        Probably we need to add a thread pool</li>
+        will deadlock if the update is only one unique thread.
+        This is fixed and supported now, we
+        have now a dedicated thread for each update delivered into the client code!
+        Probably we could tune it with a thread pool</li>
 
       <li> Add another layer which parses the QoS with Expat</li>
 
       <li> Add client persistent queue with <a href="http://www.sqlite.org" target='others'>SQLite</a></li>
+
+      <li> Integrate Base64 support, for example from <a href="http://wbxmllib.sourceforge.net/html/group__wbxml__base64.html" target='others'>WBXML</a></li>
 
       </ul>
       </p>
@@ -1097,7 +1101,6 @@ build reportShow
 
    <see type="CODE" lang="C">HelloWorld.c</see>
    <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
-   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/c/README</see>
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
    <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
    <see type="REQ">protocol.socket</see>
@@ -1109,7 +1112,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.45 $</revision>
+   <revision>$Revision: 1.46 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
