@@ -708,11 +708,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final boolean modifyEntry(String queueName, String nodeId, I_Entry entry)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addSingleEntry"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "modifyEntry"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addSingleEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addSingleEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
 
       Connection conn = null;
