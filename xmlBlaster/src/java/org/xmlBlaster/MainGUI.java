@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.10 1999/12/22 22:50:35 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.11 1999/12/22 23:11:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 
+import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
 import jacorb.poa.gui.beans.FillLevelBar;
@@ -58,6 +59,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    private TextField  inputTextField = new TextField();
    private TextArea queryOutput = null;
    private ClientQuery clientQuery = null;
+   private QueryHistory queryHistory;
 
 
    /**
@@ -379,6 +381,17 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
+    * Access the query history. 
+    */
+   private QueryHistory getQueryHistory()
+   {
+      if (queryHistory == null)
+        queryHistory = new QueryHistory();
+      return queryHistory;
+   }
+
+
+   /**
     *  Invoke: jaco org.xmlBlaster.MainGUI
     */
    static public void main(String[] args)
@@ -443,17 +456,21 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          switch (ev.getKeyCode())
          {
             case KeyEvent.VK_ENTER:
-               try {
+               //try {
                   if (clientQuery == null)
                      clientQuery = new ClientQuery("ClientQuery-local", "secret");
                   queryOutput.setText("");
+                  getQueryHistory().changedHistory(inputTextField.getText());
                   MessageUnit[] msgArr = clientQuery.get(inputTextField.getText());
                   for (int ii=0; ii<msgArr.length; ii++) {
+                     /*
                      UpdateKey updateKey = new UpdateKey();
                      updateKey.init(msgArr[ii].xmlKey);
+                     queryOutput.append("### UpdateKey:\n" + updateKey.printOn().toString());
+                     */
+                     queryOutput.append("### UpdateKey:\n" + msgArr[ii].xmlKey);
                      queryOutput.append("\n");
-                     queryOutput.append("UpdateKey\n" + updateKey.printOn().toString());
-                     queryOutput.append("content\n" + new String(msgArr[ii].content) + "\n");
+                     queryOutput.append("### Content:\n" + new String(msgArr[ii].content) + "\n");
                      queryOutput.append("======================================================\n");
                   }
                   if (msgArr.length == 0) {
@@ -466,16 +483,17 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
                      else
                         queryOutput.setText("****** Sorry, no match ******");
                   }
+                  /*
                } catch(XmlBlasterException e) {
                   Log.error(ME, "XmlBlasterException: " + e.reason);
-               }
+               }    */
                break;
-            /*
-            case KeyEvent.VK_DOWN: displayHistory(getHistory().getNext());
+            case KeyEvent.VK_DOWN:
+               displayHistory(getQueryHistory().getNext());
                break;
-            case KeyEvent.VK_UP: displayHistory(getHistory().getPrev());
+            case KeyEvent.VK_UP:
+               displayHistory(getQueryHistory().getPrev());
                break;
-            */
          }
       }
       public final void keyReleased(KeyEvent ev)
@@ -487,6 +505,11 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    }
 
 
+   private void displayHistory(String stmt)
+   {
+      if (stmt.length() < 1) return;
+      inputTextField.setText(stmt);
+   }
 
 
    /**
@@ -544,6 +567,83 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       {
          corbaConnection.logout(xmlBlaster);
       }
+   }
+
+
+   /**
+    * Implements a stack to hold the previous XPath queries. 
+    */
+   private class QueryHistory
+   {
+     private String ME = "QueryHistory";
+     private Vector stack = new Vector();
+     private int currentIndex = 0;
+
+
+     /**
+      * Constructs a history stack. 
+      */
+     public QueryHistory()
+     {
+     }
+
+     /**
+      * Add new statement into history. 
+      */
+     public void changedHistory(String stmt)
+     {
+       if (stack.size() > 1) {
+         String last = (String)stack.elementAt(stack.size()-1);
+         if (last.equals(stmt)) return;
+       }
+       currentIndex = stack.size();
+       stack.addElement(stmt);
+     }
+
+
+     /**
+      * Access previous. 
+      */
+     String getPrev()
+     {
+       if (stack.size() < 1) return "";
+       if (currentIndex > 0) currentIndex--;
+       return (String)stack.elementAt(currentIndex);
+     }
+
+
+     /**
+      * Access next. 
+      */
+     String getNext()
+     {
+       if (stack.size() < 1) return "";
+       if (currentIndex < stack.size()-1) currentIndex++;
+       return (String)stack.elementAt(currentIndex);
+     }
+
+
+     /**
+      * Access last (the newest), sets current to last. 
+      */
+     String getLast()
+     {
+       if (stack.size() < 1) return "";
+       currentIndex = stack.size() - 1;
+       return (String)stack.elementAt(currentIndex);
+     }
+
+
+     /**
+      * Access first (the oldest), sets current to first. 
+      */
+     String getFirst()
+     {
+       if (stack.size() < 1) return "";
+       currentIndex = 0;
+       return (String)stack.elementAt(currentIndex);
+     }
+
    }
 }
 
