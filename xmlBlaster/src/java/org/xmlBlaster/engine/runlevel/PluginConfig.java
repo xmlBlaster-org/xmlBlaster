@@ -73,9 +73,9 @@ public class PluginConfig
       this.uniqueTimestamp = new Timestamp();
       this.glob = glob;
       this.log = this.glob.getLog("runlevel");
-      if (this.log.CALL) this.log.call(ME, "constructor");
-      if (this.log.TRACE) 
-         this.log.trace(ME, "constructor id='" + id + "', className='" + className + "'");
+      //if (this.log.CALL) this.log.call(ME, "constructor");
+      //if (this.log.TRACE) 
+      //   this.log.trace(ME, "constructor id='" + id + "', className='" + className + "'");
       this.id = id;
       this.className = className;
       this.jarPath = jar;
