@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.23 2002/05/28 10:19:41 ruff Exp $
+Version:   $Id: Global.java,v 1.24 2002/05/30 16:20:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -202,7 +202,8 @@ public class Global implements Cloneable
       if (key != null && key.length() > 0) {
          initLog(log);
          logChannels.put(key, log);
-         log.info(ME, "New log channel '" + key + "' ready: " + LogChannel.bitToLogLevel(log.getLogLevel()));
+         //log.info(ME, "New log channel '" + key + "' ready: " + LogChannel.bitToLogLevel(log.getLogLevel()));
+         if (log.TRACE) log.trace(ME, "New log channel '" + key + "' ready: " + LogChannel.bitToLogLevel(log.getLogLevel()));
          return true;
       }
       return false;
@@ -227,7 +228,7 @@ public class Global implements Cloneable
 
    /**
     * Access the logging class. 
-    * @deprecated Use getLog(String) instead
+    * @deprecated Use getLog(String) instead, e.g. <code>LogChannel log = glob.getLog(null);</code>
     */
    public final org.xmlBlaster.util.Log getLog() {
       return log;
@@ -666,9 +667,10 @@ public class Global implements Cloneable
       sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
       sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
       sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
+      sb.append("    Supported is [core], [auth], [cb], [mime], [corba]\n");
       sb.append("\n");
       sb.append("  Control logging of properties framework:\n");
-      sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup[" + Property.DEFAULT_VERBOSE + "].\n");
+      sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
       return sb.toString();
    }
 }
