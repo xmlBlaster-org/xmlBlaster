@@ -3,6 +3,6 @@
 <!ELEMENT param (#CDATA)> 
 
 <!ATTLIST key oid ID #IMPLIED>
-<!ATTLIST key queryType (  PUBLISH | XPATH | REGEX ) "EXACT">
+<!ATTLIST key queryType ( XPATH | REGEX ) "EXACT">
 <!ATTLIST key contentMime (  text/plain | image/gif ) "text/xml">
 
