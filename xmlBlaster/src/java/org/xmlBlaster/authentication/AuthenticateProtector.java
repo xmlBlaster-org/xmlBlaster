@@ -60,7 +60,9 @@ final public class AuthenticateProtector implements I_Authenticate
    /** helper */
    public final ConnectReturnQosServer connect(ConnectQosServer xmlQos, String secretSessionId) throws XmlBlasterException {
       // serialize first to have a clone for security reasons (and to guarantee our Global)
-      return this.authenticate.connect(new ConnectQosServer(glob, xmlQos.toXml()), secretSessionId);
+      // Note: We throw away the ConnectQosServer facade and create a new one (no specific data enters the core)
+      ConnectReturnQosServer tmp = this.authenticate.connect(new ConnectQosServer(glob, xmlQos.toXml()), secretSessionId);
+      return new ConnectReturnQosServer(glob, tmp.toXml());
    }
 
    /** helper */
