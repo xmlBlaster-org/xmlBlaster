@@ -146,48 +146,33 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       String managerName = pluginInfo.toString(); //  + "-" + pluginInfo.getTypeVersion();
       Object obj = this.glob.getObjectEntry(managerName);              
       JdbcManagerCommonTable manager = null;
-      if (obj == null) {
-         synchronized (JdbcManagerCommonTable.class) {
-            obj = this.glob.getObjectEntry(managerName); // could have been initialized meanwhile              
-            if ( obj == null) {
-               JdbcConnectionPool pool = new JdbcConnectionPool();
-               try {
-                  pool.initialize(this.glob, pluginInfo.getParameters());
-                  manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName);
-                  pool.registerStorageProblemListener(manager);
-                  manager.setUp();
-                  if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
-               }
-               catch (ClassNotFoundException ex) {
-                  this.log.error(location, "getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
-                  ex.printStackTrace();
-                  throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager class not found", ex);
-               }
-               catch (SQLException ex) {
-                  if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager SQL exception: " + ex.getMessage());
-                  throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager SQL exception", ex);
-               }
-               catch (Throwable ex) {
-                  if (this.log.TRACE) {
-                     this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
-                     ex.printStackTrace();
-                  } 
-                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcCommonTableQueueManager throwable", ex);
-               }
-
-               this.glob.addObjectEntry(managerName, manager);
-            }
-         }
-      }
-      else manager = (JdbcManagerCommonTable)obj;
-
       try {
+         if (obj == null) {
+           synchronized (JdbcManagerCommonTable.class) {
+              obj = this.glob.getObjectEntry(managerName); // could have been initialized meanwhile              
+              if ( obj == null) {
+                 JdbcConnectionPool pool = new JdbcConnectionPool();
+                 pool.initialize(this.glob, pluginInfo.getParameters());
+                 manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName);
+                 pool.registerStorageProblemListener(manager);
+                 manager.setUp();
+                 if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
+      
+                 this.glob.addObjectEntry(managerName, manager);
+              }
+              else manager = (JdbcManagerCommonTable)obj;
+           }
+         }
+         else manager = (JdbcManagerCommonTable)obj;
+
          if (!manager.getPool().isInitialized()) {
             manager.getPool().initialize(this.glob, pluginInfo.getParameters());
             if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
          }
       }
       catch (ClassNotFoundException ex) {
+         this.log.error(location, "getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
+         ex.printStackTrace();
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueCommonTableManager: class not found when initializing the connection pool", ex);
       }
       catch (SQLException ex) {
@@ -362,11 +347,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                    " Number of entries=" + getNumOfEntries_() + ", maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
       }
 */        
-      String exTxt = null;
-      if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
 
       synchronized (this.modificationMonitor) {
+         String exTxt = null;
+         if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
          if (getNumOfBytes_() > getMaxNumOfBytes()) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: the maximum number of bytes reached." +
                    " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
@@ -406,11 +391,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return;
       }
 
-      String exTxt = null;
-      if ((exTxt=spaceLeft(queueEntries.length, /*calculateSizeInBytes(queueEntries)*/ 0L)) != null)
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
-
       synchronized (this.modificationMonitor) {
+         String exTxt = null;
+         if ((exTxt=spaceLeft(queueEntries.length, /*calculateSizeInBytes(queueEntries)*/ 0L)) != null)
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
+
          if (getNumOfBytes_() > getMaxNumOfBytes()) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put[]: the maximum number of bytes reached." +
                   " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
@@ -1088,7 +1073,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       return this.manager;
    }
 
-
    /**
     * Clears everything and removes the queue (i.e. frees the associated table)
     */
@@ -1108,15 +1092,12 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
    }
 
-
    /**
     * @see I_Queue#removeHead(I_QueueEntry)
     */
    public long removeHead(I_QueueEntry toEntry) throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "removeHead not implemented yet");
    }
-
-
 
    /**
     * Shutdown the implementation, sync with data store
@@ -1126,7 +1107,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.isDown) return;
       this.isDown = true;
       this.manager.unregisterQueue(this);
-      //      clear();
    }
 
    public boolean isShutdown() {

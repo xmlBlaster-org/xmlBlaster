@@ -479,7 +479,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             
                   ArrayList transients = null;
                   try {
-                     ArrayList swaps = this.transientQueue.peekLowest((int)exceedingEntries, exceedingSize, null, true);
+                     ArrayList swaps = null;
+                     boolean needsLoading = false;
+                     if (this.transientQueue.getNumOfEntries() == 0)
+                        swaps = this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
+                     else {
+                        swaps = this.transientQueue.takeLowest((int)queueEntries.length, sizeOfEntries, null, true);
+                        needsLoading = true;
+                     }
                      if (this.log.TRACE) {
                         this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
                      }
@@ -493,7 +500,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                      }
                      if (transients.size() > 0)
                         this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
-                     this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
+                     if (needsLoading) loadFromPersistence();
                   }
                   catch (XmlBlasterException ex) {
                      this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));

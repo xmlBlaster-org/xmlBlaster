@@ -238,6 +238,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       int oldStatus;
       I_StorageProblemListener lst = null;
       synchronized(this) {
+         if (!this.isShutdown) return;
          if (disconnectFirst) disconnect();
          this.connections = new Connection[this.capacity];
          for (int i = 0; i < this.capacity; i++) {
@@ -249,8 +250,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          oldStatus = this.status;
          this.status = I_StorageProblemListener.AVAILABLE;
          lst = this.storageProblemListener;
+         this.isShutdown = false;
       }
-      this.isShutdown = false;
       if (lst != null) lst.storageAvailable(oldStatus);
       this.log.info(ME, "Successfully reconnected to database");
    }
@@ -611,22 +612,23 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          this.waitingCalls++;
       }
       if (this.log.CALL) this.log.call(ME, "getConnection " + this.currentIndex + " waiting calls: " + this.waitingCalls);
+      
+      if (this.isShutdown) {
+         try {
+            connect(false);
+         }
+         catch (SQLException ex) {
+            String additionalMsg = "check system classpath and 'jdbc.drivers' system property\n";
+            additionalMsg += "'classpath' is: '" + System.getProperty("classpath", "") + "'\n";
+            additionalMsg +=  "'jdbc.drivers' is: '" + System.getProperty("jdbc.drivers", "") + "'\n";
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getConnection()", ex.getMessage() + " " + additionalMsg);
+         }
+      }
       synchronized (this.getConnectionMonitor) {
          synchronized (this.waitingCallsMonitor) {
             this.waitingCalls--;
          }
-         if (this.isShutdown) {
-            try {
-               connect(false);
-            }
-            catch (SQLException ex) {
-               String additionalMsg = "check system classpath and 'jdbc.drivers' system property\n";
-               additionalMsg += "'classpath' is: '" + System.getProperty("classpath", "") + "'\n";
-               additionalMsg +=  "'jdbc.drivers' is: '" + System.getProperty("jdbc.drivers", "") + "'\n";
-               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getConnection()", ex.getMessage() + " " + additionalMsg);
-            }
-         }
-         return get();
+          return get();
       }
    }
 

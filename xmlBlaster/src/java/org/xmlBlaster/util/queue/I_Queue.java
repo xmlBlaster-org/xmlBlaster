@@ -427,7 +427,8 @@ public interface I_Queue extends I_StorageProblemNotifier
    public long clear();
 
    /**
-    * Shutdown the implementation, sync with data store, free resources
+    * Shutdown the implementation, sync with data store, free resources.
+    * Persistent entries will NOT be deleted.
     */
    public void shutdown();
 

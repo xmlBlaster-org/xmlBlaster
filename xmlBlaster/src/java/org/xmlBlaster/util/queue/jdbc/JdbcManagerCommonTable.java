@@ -255,7 +255,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //          st.execute(""); <-- this will not work on ORACLE (fails)
 //         st.execute("SELECT count(*) from " + this.tablesTxt);
 //         st.execute(this.pingStatement);
-         conn.getMetaData().getTables(null, null, null, null);
+
+         ResultSet rs = conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
          return true;
       }
@@ -1276,28 +1277,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final void setUp() throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "setUp");
-
-      try {
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
-         tablesCheckAndSetup(this.pool.isDbAdmin());
-         this.dbInitialized = true;
-      }
-      catch (XmlBlasterException ex) {
-         throw ex;
-      }
-      catch (Throwable ex) {
-         Connection conn = null;
-         try {
-            conn = this.pool.getConnection();
-            if (checkIfDBLoss(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems"))
-               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".setUp", "", ex); 
-         }
-         finally {
-            if (conn != null) this.pool.releaseConnection(conn);
-         }
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".setUp", "", ex);
-      }
+      if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
+      tablesCheckAndSetup(this.pool.isDbAdmin());
+      this.dbInitialized = true;
    }
+
 
    private final ArrayList processResultSet(ResultSet rs, StorageId storageId, int numOfEntries, long numOfBytes, boolean onlyId)
       throws SQLException, XmlBlasterException {
@@ -1737,7 +1721,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                this.log.trace(getLogId(queueName, nodeId, "deleteEntries"), "' " + req + "'");
             count +=  update(req, conn);
          }
-         if (count != uniqueIds.length) conn.rollback();
+         if (count != uniqueIds.length) conn.rollback(); // not all entries have been deleted: 
+                                                         // will be handled individually below (to know which is deleted and which not)
          else {
             if (!conn.getAutoCommit()) conn.commit();
             boolean[] ret = new boolean[uniqueIds.length];
@@ -1767,6 +1752,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
       }
 
+      // handle individually because of the above rollback
       boolean[] ret = new boolean[uniqueIds.length];
       for (int i=0; i < uniqueIds.length; i++) {
          ret[i] = deleteEntry(queueName, nodeId, uniqueIds[i]) == 1;
@@ -1932,22 +1918,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
 
-      if (numOfEntries > Integer.MAX_VALUE)
+      if (numOfEntries >= Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(queueName, nodeId, "deleteFirstEntries"),
-               "The number of entries=" + numOfEntries + " to be deleted is too big for this system");
+                  "The number of entries=" + numOfEntries + " to delete exceeds the maximum allowed byteSize");
 
       PreparedQuery query = null;
-
-//      int count = 0;
-
-  //    ArrayList list = null;
       try {
          String req = "select dataId,byteSize from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, dataid ASC";
          query = new PreparedQuery(pool, req, false, this.log, -1);
          // I only want the uniqueId (dataId)
-         if (numOfEntries >= Integer.MAX_VALUE)
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(queueName, nodeId, "deleteFirstEntries"),
-                     "The number of entries=" + numOfEntries + " to delete exceeds the maximum allowed byteSize");
 
          ret = processResultSetForDeleting(query.rs, (int)numOfEntries, amount);
 
