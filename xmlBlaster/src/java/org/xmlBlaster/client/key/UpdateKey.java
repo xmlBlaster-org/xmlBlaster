@@ -19,6 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public class UpdateKey
 {
+   private final Global glob;
    private final static String ME = "UpdateKey";
    private final MsgKeyData msgKeyData;
 
@@ -26,11 +27,16 @@ public class UpdateKey
     * Parse the given xml data. 
     */
    public UpdateKey(Global glob, String xmlKey) throws XmlBlasterException {
+      this.glob = glob;
       this.msgKeyData = glob.getMsgKeyFactory().readObject(xmlKey);
    }
 
    public MsgKeyData getData() {
       return this.msgKeyData;
+   }
+
+   public Global getGlobal() {
+      return this.glob;
    }
 
    /**

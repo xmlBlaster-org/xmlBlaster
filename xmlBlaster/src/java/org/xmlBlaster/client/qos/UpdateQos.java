@@ -83,6 +83,10 @@ public final class UpdateQos
       return this.msgQosData;
    }
 
+   public Global getGlobal() {
+      return this.glob;
+   }
+
    /**
     * Access sender name.
     * @return loginName and session of sender
