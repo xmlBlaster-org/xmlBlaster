@@ -3,7 +3,7 @@ Name:      KeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: KeyWrapper.java,v 1.6 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: KeyWrapper.java,v 1.7 2000/11/05 13:26:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -48,6 +48,16 @@ public class KeyWrapper
    {
       if (oid != null)
          this.oid = oid;
+   }
+
+
+   /**
+    * Access the $lt;key oid="...">.
+    * @return The unique key oid
+    */
+   public String getUniqueKey()
+   {
+      return oid;
    }
 
 
