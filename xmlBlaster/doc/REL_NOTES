@@ -2,6 +2,19 @@
 
 Changes for 0.78 [???     2000]
 ==============================
+  - There is now RMI support for xmlBlaster available.
+    The Servers are in
+       xmlBlaster/src/java/org/xmlBlaster/protocol/rmi
+    A simple demo client is in
+       xmlBlaster/demo/javaclients/rmi
+    Read the INSTALL file about how to use RMI support.
+    This is an alpha release, no test suite etc. yet.
+    The reason for RMI support is a future support
+    of JINI (which is based on RMI).
+    The Discovery and Lookup of Jini are very fault tolerant
+    and could be a base for xmlBlaster replication,
+    load balancing and master/slave operation.
+
   - Added XmlBlasterException.java in org.xmlBlaster.util package.
     This allows Corba independend Exception handling.
     The xmlBlaster.idl defined XmlBlasterException
