@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.43 2000/04/05 14:25:47 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.44 2000/05/03 17:42:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.44 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -103,7 +103,7 @@ public class CorbaConnection implements ServerOperations
    private String dummyS = "";
 
    /** Cache **/
-   private BlasterCache cache           = null;
+   private BlasterCache cache = null;
 
 
    /**
@@ -200,10 +200,10 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Setup the cache mode.
+    * Setup the cache mode. 
     *
-    * @param size Size of the cache. This number specifies the count of subscribtions the cache
-    *             can made. it specifies NOT the number of messages.
+    * @param size Size of the cache. This number specifies the count of subscriptions the cache
+    *             can hold. It specifies NOT the number of messages.
     */
    public void initCache(int size)
    {
@@ -787,9 +787,9 @@ public class CorbaConnection implements ServerOperations
             units = cache.get( xmlKey, qos );
             //not found in cache
             if( units == null ) {
-               units = xmlBlaster.get(xmlKey, qos);                                                             //get messages from xmlBlaster
-               String subId = xmlBlaster.subscribe(xmlKey, qos);                                //subscribe to this messages
-               cache.newEntry(subId, xmlKey, units);                                                            //fill messages to cache
+               units = xmlBlaster.get(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
+               String subId = xmlBlaster.subscribe(xmlKey, qos); //subscribe to this messages (asynchronous)
+               cache.newEntry(subId, xmlKey, units);             //fill messages to cache
                Log.info(ME,"New Entry in Cache created (subId="+subId+")");
             }
          }
@@ -1055,10 +1055,10 @@ class DefaultCallback implements BlasterCallbackOperations
          //The boss should not be interested in cache updates
          boolean forCache = false;
          if( cache != null ) {
-                forCache = cache.update(updateQoS.getSubscriptionId(), updateKey.toXml(), content);
+            forCache = cache.update(updateQoS.getSubscriptionId(), updateKey.toXml(), content);
          }
          if (!forCache)
-                boss.update(loginName, updateKey, content, updateQoS); // Call my boss
+            boss.update(loginName, updateKey, content, updateQoS); // Call my boss
       }
    }
 } // class DefaultCallback

@@ -3,7 +3,7 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.1 2000/03/08 17:27:13 kkrafft2 Exp $
+Version:   $Id: BlasterCache.java,v 1.2 2000/05/03 17:42:01 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -17,32 +17,39 @@ import java.util.*;
 /**
  * Caches the messages updated from xmlBlaster.
  * <p />
+ * It is used to allow local (client side) cached messages
+ * which you can access with the <strong>synchronous</strong>
+ * get() method.
+ * <p />
+ * If the CorbaConnection has swithced this cache on,
+ * a get() automatically makes a subscribe() behind the scenes as well
+ * and subsequent get()s are high performing local calls.
  */
 public class BlasterCache
 {
    private static final String ME = "BlasterCache";
-   
+
    private Hashtable query2SubId             = null;
    private Hashtable subscriptions           = null;
    private CorbaConnection corbaConnection   = null;
    private int size                          = 0;
 
-   
+
    public BlasterCache(CorbaConnection corbaConnection, int size)
    {
       this.corbaConnection = corbaConnection;
       query2SubId = new Hashtable();
       subscriptions = new Hashtable();
-      this.size = size;	    
+      this.size = size;
    }
-   
+
    public void addSubscription(String query, String subId)
    {
       if(Log.CALLS) Log.calls(ME,"Adding new subscription to BlasterCache(query="+query+", subId="+subId+")");
       query2SubId.put(query,subId);
       subscriptions.put(subId, new Hashtable());
    }
-   
+
 
    public boolean update(String subId, String xmlKey, byte[] content)
    {
@@ -58,7 +65,7 @@ public class BlasterCache
          return true;
       }
    }
-   
+
 
    public MessageUnitContainer[] get( String xmlKey, String xmlQos ) throws XmlBlasterException
    {
@@ -66,7 +73,7 @@ public class BlasterCache
 
       //Look into cache if xmlKey is already there
       String subId = (String)query2SubId.get(xmlKey);
-      
+
       //if yes, return the content of the cache entry
       if(subId != null) {
          Hashtable messages = (Hashtable)subscriptions.get( subId );
@@ -85,8 +92,8 @@ public class BlasterCache
       }
 
       return units;
-      
    }
+
 
    /**
     * creates an new entry in the cache
@@ -96,7 +103,7 @@ public class BlasterCache
     */
    public boolean newEntry( String subId, String xmlKey, MessageUnitContainer[] units )
    {
- 		if(query2SubId.size() < size) { 
+      if(query2SubId.size() < size) {
          addSubscription( xmlKey, subId );
          for( int i = 0; i < units.length; i++ )
             update( subId, units[i].msgUnit.xmlKey, units[i].msgUnit.content );
@@ -105,7 +112,4 @@ public class BlasterCache
       else
          return false;
    }
-   
-   
-
 } // BlasterCache
