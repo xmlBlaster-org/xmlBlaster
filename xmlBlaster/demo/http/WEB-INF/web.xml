@@ -19,6 +19,11 @@
     <servlet-name>BlasterHttpProxyServlet</servlet-name>
     <description>Persistent HTTP connection demo servlet</description>
     <servlet-class>org.xmlBlaster.protocol.http.BlasterHttpProxyServlet</servlet-class>
+    <!--init-param>
+      <param-name>hostname</param-name>
+      <param-value>192.168.2.5</param-value>
+      <description>Find the host where xmlBlaster runs (set it if not running on tomcats host)</description>
+    </init-param -->
     <init-param>
       <param-name>info</param-name>
       <param-value>true</param-value>
