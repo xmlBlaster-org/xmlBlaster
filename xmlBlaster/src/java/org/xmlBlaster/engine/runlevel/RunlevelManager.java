@@ -217,7 +217,13 @@ public final class RunlevelManager
                }
             }
          }
+         if (to <= RUNLEVEL_HALTED) {
+            synchronized (runlevelListenerSet) {
+               runlevelListenerSet.clear();
+            }
+         }
       }
+
       if (log.CALL) log.call(ME, "Leaving changeRunlevel with runlevel = " + toRunlevelStr(currRunlevel)); 
       this.runlevelListenerSet.clear();
       return numErrors;
