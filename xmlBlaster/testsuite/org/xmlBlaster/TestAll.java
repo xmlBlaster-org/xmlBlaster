@@ -19,8 +19,8 @@ import junit.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestAll
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+ *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
+ *    java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
  * </pre>
  */
 public class TestAll
@@ -41,6 +41,7 @@ public class TestAll
       suite.addTest(TestSubExact.suite());
       suite.addTest(TestSubNoDup.suite());
       suite.addTest(TestSub.suite());
+      suite.addTest(TestSubNoInitial.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());
       suite.addTest(new TestSuite(testsuite.org.xmlBlaster.TestSubXPathMany.class));
