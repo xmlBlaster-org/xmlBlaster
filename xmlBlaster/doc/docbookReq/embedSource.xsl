@@ -14,15 +14,6 @@ Author:    laghi@swissinfo.org
 
 <xsl:output method="xml"/>
  
-  <!--
-      If you put this stylesheet in the directory where the requirements reside, you don't need
-      to pass this paramterer.
-      For some (to me unknown) reason forrest takes everything relative to the forrest:context
-      directory, so this has to be set to:
-      
-      <map:parameter name="offset" value="../src/documentation/xdocs/xmlBlaster/doc/requirements"/>
-      
-   -->
   <xsl:param name="offset" select="''"/>
    
   <xsl:template match="@*|*|text()|processing-instruction()|comment()">
