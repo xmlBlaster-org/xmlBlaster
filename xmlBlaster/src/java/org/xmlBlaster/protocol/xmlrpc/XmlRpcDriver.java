@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.9 2000/10/24 11:42:58 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.10 2000/10/26 09:50:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -58,10 +58,10 @@ public class XmlRpcDriver implements I_Driver
    /** The port for the xml-rpc web server */
    private int xmlPort = 8080;
    /** The xml-rpc HTTP web server */
-   private WebServer webserver;
+   private WebServer webServer;
 
 
-   /** 
+   /**
     * Get a human readable name of this driver.
     * <p />
     * Enforced by interface I_Driver.
@@ -89,13 +89,13 @@ public class XmlRpcDriver implements I_Driver
       System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
       xmlPort = XmlBlasterProperty.get("xmlrpc.port", 8080);
       try {
-         webserver = new WebServer(xmlPort);
+         webServer = new WebServer(xmlPort);
          // publish the public methods to the XmlRpc web server:
-         webserver.addHandler("authenticate", new AuthenticateImpl(authenticate));
-         webserver.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
+         webServer.addHandler("authenticate", new AuthenticateImpl(authenticate));
+         webServer.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
          Log.info(ME, "Started successfully XML-RPC driver, the web server is listening on port " + xmlPort);
       } catch (IOException e) {
-         Log.error(ME, "Error creating webserver: " + e.toString());
+         Log.error(ME, "Error creating webServer: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -108,11 +108,11 @@ public class XmlRpcDriver implements I_Driver
     */
    public void shutdown()
    {
-      if (webserver != null) {
-         webserver.removeHandler("authenticate");
-         webserver.removeHandler("xmlBlaster");
+      if (webServer != null) {
+         webServer.removeHandler("authenticate");
+         webServer.removeHandler("xmlBlaster");
       }
-      // missing code to close socket!!!
+      webServer.shutdown();
       Log.info(ME, "XML-RPC driver stopped, handler released.");
    }
 

@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackServer.java,v 1.3 2000/10/24 12:02:09 ruff Exp $
+Version:   $Id: XmlRpcCallbackServer.java,v 1.4 2000/10/26 09:50:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -137,7 +137,7 @@ class XmlRpcCallbackServer extends AbstractCallbackExtended
    {
       if (webServer != null)
          webServer.removeHandler("$default");
-      // missing code to close socket !!!
+      webServer.shutdown();
       Log.info(ME, "The XML-RPC callback server is shutdown.");
    }
 

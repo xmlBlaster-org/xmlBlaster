@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.13 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: RamTest.java,v 1.14 2000/10/26 09:50:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -158,7 +158,10 @@ public class RamTest extends TestCase
          // 2. publish all the messages
          String[] publishOidArr = senderConnection.publishArr(msgUnitArr);
 
-         long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
+         long avg = 0;
+         double elapsed = stopWatch.elapsed();
+         if (elapsed > 0.)
+            avg = (long)(NUM_PUBLISH / (elapsed/1000L));
          Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
 
          assertNotEquals("returned publishOidArr == null", null, publishOidArr);
