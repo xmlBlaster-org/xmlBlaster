@@ -2,6 +2,7 @@
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -103,8 +104,12 @@ public class HelloWorld3 implements I_Callback
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
-      catch (Exception e) {
-         log.error("", e.getMessage());
+      catch (XmlBlasterException e) {
+         log.error("HelloWorld3", e.getMessage());
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         log.error("HelloWorld3", e.toString());
       }
    }
 
