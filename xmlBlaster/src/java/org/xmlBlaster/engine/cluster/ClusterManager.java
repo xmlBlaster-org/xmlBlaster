@@ -43,17 +43,18 @@ import java.util.Comparator;
  */
 public final class ClusterManager
 {
-   private final String ME = "ClusterManager";
+   private String ME = "ClusterManager";
 
-   private final Global glob;
-   private final Log log;
+   // The following 8 declarations are 'final' but the SUN JDK 1.3.1 does not like it
+   private Global glob;
+   private Log log;
 
-   private final MapMsgToMasterPluginManager mapMsgToMasterPluginManager;
-   private final LoadBalancerPluginManager loadBalancerPluginManager;
-   private final I_LoadBalancer loadBalancer;
+   private MapMsgToMasterPluginManager mapMsgToMasterPluginManager;
+   private LoadBalancerPluginManager loadBalancerPluginManager;
+   private I_LoadBalancer loadBalancer;
 
-   public final String pluginLoadBalancerType;
-   public final String pluginLoadBalancerVersion;
+   public String pluginLoadBalancerType;
+   public String pluginLoadBalancerVersion;
 
    /**
     * Map containing ClusterNode objects, the key is a 'node Id'
