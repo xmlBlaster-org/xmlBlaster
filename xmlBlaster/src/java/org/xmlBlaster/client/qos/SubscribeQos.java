@@ -21,6 +21,7 @@ import org.xmlBlaster.util.qos.HistoryQos;
  *   &lt;id>__subId:/node/heron/client/joe/3/34&lt;/id> &lt; Force a subscription ID from client side -->
  *   &lt;meta>false&lt;/meta>       &lt;!-- Don't send me the xmlKey meta data on updates -->
  *   &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
+ *   &lt;multiSubscribe>false&lt;/multiSubscribe> &lt;!-- Ignore a second subscribe on same oid or XPATH -->
  *   &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *   &lt;initialUpdate>false&lt;/initialUpdate>;
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
@@ -57,6 +58,16 @@ public final class SubscribeQos
     */
    public void setSubscriptionId(String subId) {
       this.queryQosData.setSubscriptionId(subId);
+   }
+
+   /**
+    * Are multiple subscribes allowed?
+    * Defaults to true. 
+    * @return true Multiple subscribes deliver multiple updates
+    *         false Ignore more than one subscribes on same oid
+    */
+   public void setMultiSubscribe(boolean multiSubscribe) {
+      this.queryQosData.setMultiSubscribe(multiSubscribe);
    }
 
    /**

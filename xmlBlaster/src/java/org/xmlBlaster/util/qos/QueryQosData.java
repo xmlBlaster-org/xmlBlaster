@@ -45,6 +45,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    /** not yet supported */
    private boolean content = true;
 
+   /** allow duplicate identical subscriptions */
+   private boolean multiSubscribe = true;
+
+   /** update messages i have sent myself to myself? */
    private boolean local = true;
 
    /** send on subscribe an initial update with the current message */
@@ -89,6 +93,17 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       this.factory = (factory==null) ? glob.getQueryQosFactory() : factory;
    }
 
+   /**
+    * Allow to subscribe multiple times to the same query/oid
+    * @return defaults to true
+    */
+   public boolean getMultiSubscribe() {
+      return this.multiSubscribe;
+   }
+
+   public void setMultiSubscribe(boolean multiSubscribe) {
+      this.multiSubscribe = multiSubscribe;
+   }
 
    /**
     * Do we want to have an initial update on subscribe if the message

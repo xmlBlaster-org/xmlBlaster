@@ -25,6 +25,7 @@ import java.util.ArrayList;
  *   &lt;erase forceDestroy='true'/>  &lt;!-- Kill a MsgUnit even if there are pending updates or subscriptions -->
  *   &lt;meta>false&lt;/meta>       &lt;!-- Don't send me the xmlKey meta data on updates -->
  *   &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
+ *   &lt;multiSubscribe>false&lt;/multiSubscribe> &lt;!-- Ignore a second subscribe on same oid or XPATH -->
  *   &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *   &lt;initialUpdate>false&lt;/initialUpdate>; <!-- don't send an initial message after subscribe -->
  *   &lt;notify>false&lt;/notify>;  &lt;!-- Suppress erase event to subcribers -->
@@ -50,6 +51,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    private boolean inErase = false;
    private boolean inMeta = false;
    private boolean inContent = false;
+   private boolean inMultiSubscribe = false;
    private boolean inLocal = false;
    private boolean inInitialUpdate = false;
    private boolean inNotify = false;
@@ -139,6 +141,20 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
                log.warn(ME, "Ignoring sent <content> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("multiSubscribe")) {
+         if (!inQos)
+            return;
+         inMultiSubscribe = true;
+         queryQosData.setMultiSubscribe(true);
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               log.warn(ME, "Ignoring sent <multiSubscribe> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -246,6 +262,14 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("multiSubscribe")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            queryQosData.setMultiSubscribe(new Boolean(tmp).booleanValue());
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("local")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
@@ -308,6 +332,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       sb.append(offset).append(" <erase forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
       if (!queryQosData.getWantMeta()) sb.append(offset).append(" <meta>false</meta>");
       if (!queryQosData.getWantContent()) sb.append(offset).append(" <content>false</content>");
+      if (!queryQosData.getMultiSubscribe()) sb.append(offset).append(" <multiSubscribe>false</multiSubscribe>");
       if (!queryQosData.getWantLocal()) sb.append(offset).append(" <local>false</local>");
       if (!queryQosData.getWantInitialUpdate()) sb.append(offset).append(" <initialUpdate>false</initialUpdate>");
       if (!queryQosData.getWantNotify()) sb.append(offset).append(" <notify>false</notify>");
