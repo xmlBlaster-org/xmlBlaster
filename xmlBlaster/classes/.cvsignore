@@ -1,2 +1,3 @@
 org
 testsuite
+*.class
