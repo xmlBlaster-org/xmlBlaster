@@ -35,9 +35,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    Renamed xmlBlasterAccess->userData to userObject to avoid ambiguity
 
  o C-client library (Incompatible API change):
-   Fixed unSubscribe() and erase() to return now 'QosArr *' instead
-   of 'char *'. See xmlBlaster/demo/c/socket/HelloWorld3.c for a usage
-   example.
+   - Fixed unSubscribe() and erase() to return now 'QosArr *' instead
+     of 'char *'.
+   - ping() now wants a third agrument 'xmlBlasterException*'
+   See xmlBlaster/demo/c/socket/HelloWorld3.c for a usage example.
 
  o Renamed build.sh to build. Now on UNIX and Windows the build command is the same,
    for example 'build all', note that you have to manually delete the old 'build'
