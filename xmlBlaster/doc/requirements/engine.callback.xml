@@ -141,8 +141,8 @@
       <p>
       </p>
    </description>
-   <example lang="Java">
-   This shows the callback part of a connect() or subscribe() QoS:
+   <example lang="any">
+   This shows the callback part of a connect() QoS:
    <![CDATA[
    <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000'
              retries='5' delay='60000' oneway='true' useForSubjectQueue='true'>
@@ -167,6 +167,29 @@
    The messages are sent oneway, there is no return value or exception transfer
    for this method invocation. In other words there is no
    application level ACK. Default is oneway='false'.
+   </example>
+   <example lang="Java">
+   This shows the hardcoded callback configuration of a connect() QoS for Java clients:
+   <![CDATA[
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.engine.helper.CallbackAddress;
+
+   ...
+
+   XmlBlasterConnection con = new XmlBlasterConnection(glob);
+   ConnectQos connectQos = new ConnectQos(glob, name, passwd);
+
+   CallbackAddress cbAddress = new CallbackAddress(glob);
+   cbAddress.setDelay(4000L);      // retry connecting every 4 sec
+   cbAddress.setRetries(-1);       // -1 == forever
+   cbAddress.setPingInterval(4000L); // ping every 4 seconds
+
+   connectQos.addCallbackAddress(cbAddress);
+
+   // Connect to xmlBlaster ...
+   ConnectReturnQos connectReturnQos = con.connect(connectQos, this);
+    ]]>
    </example>
    <configuration where="client">
       <p>
@@ -259,7 +282,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>
