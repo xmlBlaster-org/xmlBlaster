@@ -171,6 +171,10 @@ public class Constants
    /** Praefix to create a sessionId */
    public final static String SESSIONID_PRAEFIX = "sessionId:";
    public final static String SUBSCRIPTIONID_PRAEFIX = "__subId:";
+   /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
+     * see Requirement engine.qos.subscribe.id
+     */
+   public final static String SUBSCRIPTIONID_CLIENT_PRAEFIX = "__subId:/node/";
 
    public final static String INTERNAL_OID_PRAEFIX = "__sys__";
    public final static String INTERNAL_OID_CLUSTER_PRAEFIX = INTERNAL_OID_PRAEFIX +"cluster";  // "__sys__cluster"
