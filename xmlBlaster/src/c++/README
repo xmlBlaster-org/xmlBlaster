@@ -1,5 +1,12 @@
 
 This is the implementation of the xmlBlaster client classes in c++.
+They are helper classes for simpler CORBA access to xmlBlaster.
+
+The source code is compiled to a shared library
+
+   xmlBlaster/lib/libxmlBlasterClient.so
+
+(the extension is .so on Linux, .sl on HPUX, .dll on Windows)
 
 
 HOW TO BUILD THE CLIENT CLASSES:
