@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: NodeEntryImpl.java,v 1.1 2002/07/05 06:56:00 ruff Exp $
+ * $Id: NodeEntryImpl.java,v 1.2 2002/07/05 14:21:10 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -27,29 +27,25 @@ import jax.AgentXEntry;
 public class NodeEntryImpl extends NodeEntry
 {
 
+    public NodeEntryImplPeer nodeEntryImplPeer;
+
     /**
      * NodeEntryImpl
      * - initializes mib variables.
      * - builds a reference to NodeEntryImplPeer, which implements NodeEntryImpl methods.
      */
     public NodeEntryImpl(long nodeIndex, 
-                    String nodeNameVal, 
-                    String hostnameVal,
-                    long portVal, 
-                    long maxClientsVal, 
-                    long clientThresholdVal, 
-                    String errorLogfileVal, 
-                    int logLevelVal)
+                         NodeEntryImplPeer nodeEntryImplPeer)
     {
         super(nodeIndex);
-        nodeName = nodeNameVal.getBytes();
-        hostname = hostnameVal.getBytes();
-        port = portVal;
-        maxClients = maxClientsVal;
-        clientThreshold = clientThresholdVal;
-        errorLogfile = errorLogfileVal.getBytes();
-        logLevel = logLevelVal;
-        // nodeEntryImplPeer = new NodeEntryImplPeer();
+        nodeName = nodeEntryImplPeer.get_nodeName().getBytes();
+        hostname = nodeEntryImplPeer.get_hostname().getBytes();
+        port = nodeEntryImplPeer.get_port();
+        maxClients = nodeEntryImplPeer.get_maxClients();
+        clientThreshold = nodeEntryImplPeer.get_clientThreshold();
+        errorLogfile = nodeEntryImplPeer.get_errorLogfile().getBytes();
+        logLevel = nodeEntryImplPeer.get_logLevel();
+        this.nodeEntryImplPeer = nodeEntryImplPeer;
     }
 
     /**

@@ -13,31 +13,22 @@ import java.util.Iterator;
 
 public class ConnectionTableSubject implements Subject {
 
-      public String connectionHost;
-      public long connectionPort;
-      public String connectionAddress;
-      public int connectionProtocol;
+      public ConnectionEntryImplPeer connectionEntryImplPeer;
       public ArrayList observers = new ArrayList();
       public Integer nodeIndex;
 
       public void addEntry(NodeTableObserver nodeTableObserver,
                          String nodeName,
-                         String connectionHostVal,
-                         long connectionPortVal,
-                         String connectionAddressVal,
-                         int connectionProtocolVal) {
+                         ConnectionEntryImplPeer connectionEntryImplPeer) {
 
-            connectionHost = connectionHostVal;
-            connectionPort = connectionPortVal;
-            connectionAddress = connectionAddressVal;
-            connectionProtocol = connectionProtocolVal;
-            nodeIndex = nodeTableObserver.getIndex(nodeName);
-            if (nodeIndex != null) {
-                notifyObservers();
-            }
-            else {
-                System.out.println("Cannot add connection entry. Node entry " + nodeName + " does not exist.");
-            }
+	  this.connectionEntryImplPeer = connectionEntryImplPeer;
+          nodeIndex = nodeTableObserver.getIndex(nodeName);
+          if (nodeIndex != null) {
+              notifyObservers();
+	  }
+          else {
+	      System.out.println("Cannot add connection entry. Node entry " + nodeName + " does not exist.");
+          }
       }
  
       public Integer removeEntry( int index ) {

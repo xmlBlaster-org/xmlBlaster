@@ -1,6 +1,6 @@
 /**
-  NodeTableObserver adds itself to the integer bag as observer. 
-  When NodeTableObserver receives an update, it .... 
+  ConnectionTableObserver adds itself to the integer bag as observer. 
+  When ConnectionTableObserver receives an update, it .... 
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -23,44 +23,45 @@ public class ConnectionTableObserver implements Observer {
             this.session = session;
             connectionTableSubject.addObserver( this );
             connectionTable = new ConnectionTable();
-            session.addGroup(connectionTable);
+  	    session.addGroup(connectionTable);
             connectionHashtable = new Hashtable();
             indexSet = new BitSet();
             for (int i = 1; i <= MAXINDX; i++) {
-                indexSet.set(i);
+		indexSet.set(i);
             }
       }
 
       public void update( Subject o ) {
             if( o == connectionTableSubject ) {
-                  if (connectionHashtable.containsKey(connectionTableSubject.connectionHost)) {
-                     System.out.println("A connection to " + connectionTableSubject.connectionHost + " already exists.");
+		String connectionHost = connectionTableSubject.connectionEntryImplPeer.get_connectionHost();
+		long connectionPort = connectionTableSubject.connectionEntryImplPeer.get_connectionPort();
+                // n.z.d. connectionHost ist nicht eindeutig
+                // concat mit connectionPort
+                  if (connectionHashtable.containsKey(connectionHost + connectionPort)) {
+                     System.out.println("A connection to " + connectionHost + connectionPort + " already exists.");
                   }
                   else {
-                      System.out.println("Insert connection = " + connectionTableSubject.connectionHost);
-                      // new nodeIndex
+                      System.out.println("Insert connection = " + connectionHost + connectionPort);
+		      // new nodeIndex
                       int connectionIndex = 1;
                       while (connectionIndex <= MAXINDX && !indexSet.get(connectionIndex)) {
-                          connectionIndex++;
+			  connectionIndex++;
                       }
 
                       if (connectionIndex > MAXINDX) {
                          System.out.println("Error: connectionIndex > " + MAXINDX);
                       }
                       else {
-                          // remove connectionIndex from indexSet
+			  // remove connectionIndex from indexSet
                           indexSet.clear(connectionIndex);
 
-                          // insert connectionHost and connectionIndex in connectionHashtable
-                          connectionHashtable.put(connectionTableSubject.connectionHost, new Integer(connectionIndex));
+                          // insert connectionHost + connectionPort and connectionIndex in connectionHashtable
+                          connectionHashtable.put(connectionHost + connectionPort, new Integer(connectionIndex));
   
                           // insert new connectionEntry in connectionTable
                           connectionEntry = new ConnectionEntryImpl(connectionTableSubject.nodeIndex.intValue(),
                               connectionIndex, 
-                              connectionTableSubject.connectionHost,
-                              connectionTableSubject.connectionPort,
-                              connectionTableSubject.connectionAddress, 
-                              connectionTableSubject.connectionProtocol);
+                              connectionTableSubject.connectionEntryImplPeer);
                           connectionTable.addEntry(connectionEntry);
                       }
                   }

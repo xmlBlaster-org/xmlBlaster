@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: SessionEntryImpl.java,v 1.1 2002/07/05 06:56:00 ruff Exp $
+ * $Id: SessionEntryImpl.java,v 1.2 2002/07/05 14:21:10 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -46,8 +46,8 @@ public class SessionEntryImpl extends SessionEntry
         sessionName = sessionNameVal.getBytes();
         cbQueueMaxMsgs = cbQueueMaxMsgsVal;
         cbQueueThreshold = cbQueueThresholdVal;
-        clearCbQueue = clearCbQueueVal;
-        closeSession = closeSessionVal;
+	clearCbQueue = clearCbQueueVal;
+	closeSession = closeSessionVal;
         // sessionEntryImplPeer = new SessionEntryImplPeer();
     }
 
