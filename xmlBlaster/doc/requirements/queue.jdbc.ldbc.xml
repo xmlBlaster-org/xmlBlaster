@@ -4,14 +4,16 @@
 
 <requirement id='queue.jdbc.ldbc' type='NEW' prio='LOW' status='INWORK'>
    <topic>
-     JDBC Plugin which stores all queues in a common table using Liberty Database Connectivity Abstraction.
+     The common table plugin supports using the Liberty Database Connectivity Abstraction Layer.
    </topic>
 
    <description>
       <p>The Liberty data base connectivity package <a href="http://ldbc.sourceforge.net/">http://ldbc.sourceforge.net/</a>
-      provides vendor-independant database access. The <i>org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin</i>
-      is based on <i>JdbcQueueCommonTablePlugin</i> with changes to accomodate syntax and functionality differences only.
-      <b>This code is currently beta and has only been tested with MySQL, Postgres and Hsqldb. Hsqldb is known NOT to work 
+      provides vendor-independant database access. The <i>org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</i>
+      is able to support the Liberty Abstraction Layer and has been<br></br> tested with the following database engines.
+		<br></br>MySQL
+		<br></br>Postgres<br></br>
+      <b>This code is currently beta and has only been tested with MySQL, Postgres and Hsqldb.<br></br> Hsqldb is known NOT to work 
       at present.</b>
       </p>
       <p><a href="queue.jdbc.commontable.html">See queue.jdbc.commontable</a> for a description of the common table architecture.
@@ -21,13 +23,13 @@
    <example lang="Java" type="HTML">
       <p>This is a configuration example from xmlBlaster.properties:
       </p>
-      Configuration for the ldbc plugin in debug mode.
+      Configuration for the ldbc driver in debug mode.
       <pre>
-JdbcStorage[MySQL]=org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin,\
+JdbcStorage[MySQL]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
            url=jdbc:ldbc:mysql://localhost/xmlb[ldbc.trace=detailed],\
       </pre>
       <p>It is not possible to use the ldbc trace to file functionality as the parameter format
-      to pass the file name to ldbc will break xmlBlasters parameter parsing.
+      to pass the file name to ldbc will break<br></br> xmlBlasters parameter parsing.
       </p>
       <p>[ldbc.trace=on] Method calls, parameters, exceptions and statements.</p>
       <p>[ldbc.trace=detailed] All of On plus prepared statement and result set calls.</p>
@@ -42,7 +44,7 @@ JdbcStorage[MySQL]=org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin,\
 persistence/topicStore/defaultPlugin=JDBC,1.0
 persistence/msgUnitStore/defaultPlugin=CACHE,1.0
 
-QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin,\
+QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                     url=jdbc:ldbc:mysql://localhost/xmlb,\
                     user=xmlb,\
                     password=secret,\
@@ -53,7 +55,10 @@ QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin
                     nodesTableName=NODES,\
                     queuesTableName=QUEUES,\
                     entriesTableName=ENTRIES,\
-                    dbAdmin=true
+                    dbAdmin=true,\
+                    cascadeDeleteSupported=false,\
+                    nestedBracketsSupported=false,\
+                    configurationIdentifier=ldbc
                     
 QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
 QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,\
@@ -66,10 +71,8 @@ useTopicStore=true
 
 JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
 
-#The default mapping below can not be changed when using the ldbc plugin
-#This line is informational only and will break the parser because of the decimal(19,0) entry.
-#JdbcDriver.mapping[ALL]=string=varchar(128),longint=decimal(19,0),int=int,boolean=char(1),\
-#blob=blob,keyAttr=not null,blobVarName=ablob
+JdbcDriver.mapping[ldbc]=string=varchar(128),"longint=decimal(19,0)",int=int,boolean=char(1),\
+		blob=blob,pingStatement=Show All,blobVarName=ablob, keyAttr=not null
      </pre>
      <table border="1">
         <tr>
@@ -146,6 +149,21 @@ JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
           <td>true</td>
           <td>if set to true xmlBlaster will try to create tables if needed.</td>
         </tr>
+		  <tr>
+          <td>cascadeDeleteSupported</td>
+          <td>false</td>
+          <td>Ldbc does not currently support cascade delete. A code work around has been put in place.</td>
+        </tr>
+		  <tr>
+          <td>nestedBracketsSupported</td>
+          <td>false</td>
+          <td>Ldbc does not support nested brackets in some queries.</td>
+        </tr>
+		  <tr>
+          <td>configurationIdentifier</td>
+          <td>ldbc</td>
+          <td>The identifier used for database mapping. See JdbcDriver.mapping[ldbc]</td>
+        </tr>
         <tr>
             <td>maxStatementLength</td>
             <td>2048</td>
@@ -199,7 +217,6 @@ JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
 
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
    <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</see>
-   <see type="API">org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin</see>
    <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
    <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
    <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
@@ -210,7 +227,7 @@ JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
 
    <author>Peter Bennett</author>
    <date>2003 11 05</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
