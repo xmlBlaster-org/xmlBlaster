@@ -866,7 +866,7 @@ CorbaConnection::copyFromCorba(vector<util::MessageUnit> &msgVec,
 {
   unsigned int len = units->length();
   msgVec.reserve(len);
-  for (unsigned int ii=0; ii<len; ii++) {
+  for (CORBA::ULong ii=0; ii<len; ii++) {
      const serverIdl::MessageUnit &msgUnit = static_cast<const serverIdl::MessageUnit>(units[ii]);
      unsigned long len = static_cast<unsigned long>(msgUnit.content.length());
      const unsigned char * blob = static_cast<const unsigned char *>(&msgUnit.content[0]);
