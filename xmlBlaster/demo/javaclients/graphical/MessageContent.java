@@ -48,7 +48,6 @@ public class MessageContent implements Storable {
       while (enum.hasMoreElements()) {
          String uniqueId = (String)enum.nextElement();
          Figure fig = (Figure)table.get(uniqueId);
-         if (fig instanceof XmlBlasterDrawing) continue;
          out.writeString(uniqueId);
          out.writeStorable(fig);
       }

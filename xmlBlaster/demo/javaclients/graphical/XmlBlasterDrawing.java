@@ -353,17 +353,14 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)tmpAdded.get(uniqueId);
-               if (!(fig instanceof XmlBlasterDrawing)) {
-                  add(uniqueId, fig);
-                  super.add(fig);
-               }
+               add(uniqueId, fig);
+               super.add(fig);
             }
            
             enum = tmpChanged.keys();
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)tmpChanged.get(uniqueId);
-                                        if (fig instanceof Drawing) continue;
                Figure oldFigure = (Figure)this.timestampFigureTable.get(uniqueId);
                add(uniqueId, fig);
                super.replace(oldFigure, fig);
@@ -379,7 +376,6 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)this.timestampFigureTable.get(uniqueId);
-                                        if (fig instanceof Drawing) continue;
                remove(uniqueId, fig);
                if (fig != null) {
                   super.orphan(fig);
