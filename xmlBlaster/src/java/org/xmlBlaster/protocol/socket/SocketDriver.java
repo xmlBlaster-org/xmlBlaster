@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.3 2002/02/14 19:04:52 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.4 2002/02/14 22:53:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -16,15 +16,19 @@ import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.BufferedOutputStream;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -56,7 +60,7 @@ import java.util.Collections;
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  * @see org.xmlBlaster.protocol.socket.Parser
  */
-public class SocketDriver extends Thread implements I_Driver
+public class SocketDriver extends Thread implements I_Driver, I_CallbackDriver
 {
    private static final String ME = "SocketDriver";
    /** The singleton handle for this authentication server */
@@ -81,7 +85,7 @@ public class SocketDriver extends Thread implements I_Driver
 
    /**
     * This static map is a hack!. We need this to map asynchronous update() to the correct socket
-    * The key is the unique client loginName, the value is the HandleRequest instances belonging to this client.
+    * The key is the unique client loginName, the value is the HandleClient instances belonging to this client.
     * <p />
     * TODO: Change loginName to sessionId when the new callback framework is available
     */
@@ -169,7 +173,7 @@ public class SocketDriver extends Thread implements I_Driver
                Log.info(ME, "Closing server " + hostname + " on port " + socketPort + ".");
                break;
             }
-            HandleRequest hh = new HandleRequest(this, accept);
+            HandleClient hh = new HandleClient(this, accept);
          }
       }
       catch (java.net.UnknownHostException e) {
@@ -184,11 +188,53 @@ public class SocketDriver extends Thread implements I_Driver
       catch (IOException e) {
          Log.error(ME, "Socket server problem on " + hostname + ":" + socketPort + ": " + e.toString());
       }
-
-      if (listen != null) {
-         try { listen.close(); } catch (java.io.IOException e) { Log.warn(ME, "listen.close()" + e.toString()); }
-         listen = null;
+      finally {
+         if (listen != null) {
+            try { listen.close(); } catch (java.io.IOException e) { Log.warn(ME, "listen.close()" + e.toString()); }
+            listen = null;
+         }
       }
+   }
+
+
+   /**
+    * Intialize the driver.
+    * <p />
+    * Enforced by I_CallbackDriver
+    * @param  callbackAddress Contains the callback address,
+    *         e.g. the stringified CORBA callback handle of the client or his email address.
+    */
+   public void init(CallbackAddress callbackAddress) throws XmlBlasterException {
+      Log.error(ME, "Implement init()");
+   }
+
+
+   /**
+    * Send the message update to the client.
+    * <p />
+    * The protocol for sending is implemented in the derived class
+    * <p />
+    * Enforced by I_CallbackDriver
+    *
+    * @param clientInfo Data about a specific client
+    * @param msgUnitWrapper For Logoutput only (deprecated?)
+    * @param messageUnitArr Array of all messages to send
+    * @return Clients should return a qos as follows.
+    *         An empty qos string "" is valid as well and
+    *         interpreted as OK
+    * <pre>
+    *  &lt;qos>
+    *     &lt;state>       &lt;!-- Client processing state -->
+    *        OK            &lt;!-- OK | ERROR -->
+    *     &lt;/state>
+    *  &lt;/qos>
+    * </pre>
+    * @exception On callback problems you need to throw a XmlBlasterException e.id="CallbackFailed",
+    *            the message will queued until the client logs in again
+    */
+   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException {
+      Log.error(ME, "Implement sendUpdate()");
+      return "";
    }
 
 
@@ -198,6 +244,9 @@ public class SocketDriver extends Thread implements I_Driver
    public void shutdown()// throws IOException
    {
       if (Log.CALL) Log.call(ME, "Entering shutdown");
+      
+      //System.out.println(org.jutils.runtime.StackTrace.getStackTrace());
+
       running = false;
 
       boolean closeHack = true;
@@ -221,6 +270,10 @@ public class SocketDriver extends Thread implements I_Driver
       } catch (java.io.IOException e) {
          Log.warn(ME, "shutdown problem: " + e.toString());
       }
+
+      socketMap.clear();
+
+      Log.info(ME, "Socket driver stopped, all resources released bye.");
    }
 
    /**
@@ -241,143 +294,3 @@ public class SocketDriver extends Thread implements I_Driver
       return text;
    }
 }
-
-
-
-/**
- * Handles a request from a client, delivering the AuthServer IOR
- */
-class HandleRequest extends Thread
-{
-   private String ME = "SocketDriverRequest";
-   private SocketDriver driver;
-   /** The singleton handle for this authentication server */
-   private I_Authenticate authenticate;
-   /** The singleton handle for this xmlBlaster server */
-   private I_XmlBlaster xmlBlasterImpl;
-   private Socket sock;
-   private boolean running = true;
-   private InputStream iStream;
-   private OutputStream oStream;
-
-
-   /**
-    */
-   public HandleRequest(SocketDriver driver, Socket sock) throws IOException {
-      this.sock = sock;
-      this.driver = driver;
-      this.authenticate = driver.getAuthenticate();
-      this.xmlBlasterImpl = driver.getXmlBlaster();
-      this.iStream = sock.getInputStream();
-      this.oStream = sock.getOutputStream();
-      start();
-   }
-
-   public void shutdown() {
-      running = false;
-   }
-
-   public OutputStream getOutputStream() {
-      return this.oStream;
-   }
-
-   /**
-    * Serve a client
-    */
-   public void run() {
-      if (Log.CALL) Log.call(ME, "Handling client request ...");
-      Parser receiver = new Parser();
-      try {
-         Log.info(ME, "Client accepted ...");
-
-         while (running) {
-
-            try {
-               receiver.parse(iStream);  // blocks until a message arrive
-
-               Log.info(ME, "Received message '" + receiver.getMethodName() + "'");
-               if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-
-               if (Constants.PUBLISH.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.publish();
-               }
-               else if (Constants.GET.equals(receiver.getMethodName())) {
-                  //MessageUnit[] arr = xmlBlasterImpl.get();
-               }
-               else if (Constants.PING.equals(receiver.getMethodName())) {
-                  Log.info(ME, "Responding to ping");
-               }
-               else if (Constants.SUBSCRIBE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.subscribe();
-               }
-               else if (Constants.UNSUBSCRIBE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.unSubscribe();
-               }
-               else if (Constants.UPDATE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.update();
-               }
-               else if (Constants.ERASE.equals(receiver.getMethodName())) {
-                  //String response = xmlBlasterImpl.erase();
-               }
-               else if (Constants.CONNECT.equals(receiver.getMethodName())) {
-                  ConnectQos conQos = new ConnectQos(receiver.getQos());
-                  driver.getSocketMap().put(conQos.getUserId(), this);
-                  ConnectReturnQos retQos = authenticate.connect(conQos);
-                  //socketMap.put(conQos.getSessionId(), this); // To late
-                  Parser parser = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
-                                      receiver.getMethodName(), receiver.getSessionId());
-                  parser.addQos(retQos.toXml());
-                  oStream.write(parser.createRawMsg());
-                  oStream.flush();
-                }
-               else if (Constants.DISCONNECT.equals(receiver.getMethodName())) {
-                  String qos = authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
-                  Parser parser = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
-                                      receiver.getMethodName(), receiver.getSessionId());
-                  parser.addQos(qos);
-                  oStream.write(parser.createRawMsg());
-                  oStream.flush();
-               }
-            }
-            catch (XmlBlasterException e) {
-               Log.error(ME, "Server can't handle message: " + e.toString());
-               Parser parser = new Parser(Parser.EXCEPTION_TYPE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
-               parser.setChecksum(false);
-               parser.setCompressed(false);
-               parser.addException(e);
-               try {
-                  oStream.write(parser.createRawMsg());
-                  oStream.flush();
-               }
-               catch (Throwable e2) {
-                  Log.error(ME, "Lost connection to client, can't deliver exception message: " + e2.toString());
-                  try { authenticate.disconnect(receiver.getSessionId(), "<qos/>"); } catch(Throwable e3) { e3.printStackTrace(); }
-                  shutdown();
-               }
-            }
-            catch (IOException e) {
-               Log.error(ME, "Lost connection to client: " + e.toString());
-               try { authenticate.disconnect(receiver.getSessionId(), "<qos/>"); } catch(Throwable e3) { e3.printStackTrace(); }
-               shutdown();
-            }
-            catch (Throwable e) {
-               e.printStackTrace();
-               Log.error(ME, "Lost connection to client: " + e.toString());
-               try { authenticate.disconnect(receiver.getSessionId(), "<qos/>"); } catch(Throwable e3) { e3.printStackTrace(); }
-               shutdown();
-            }
-         } // while(running)
-      }
-      finally {
-         try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-         try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-         try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-      }
-   }
-}
-
-
-
-
-
-

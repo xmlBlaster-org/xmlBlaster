@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.8 2002/02/14 19:04:26 ruff Exp $
+Version:   $Id: Parser.java,v 1.9 2002/02/14 22:53:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -349,74 +349,65 @@ public class Parser extends Converter
     * This parses the raw message from an InputStream (typically from a socket).
     * Use the get...() methods to access the data.
     */
-   public void parse(InputStream inputStream) throws XmlBlasterException {
+   public void parse(InputStream inputStream) throws IOException {
 
       initialize();
-      try {
-         for (int ii=0; ii<20 && (inputStream.available() <= 0); ii++) {
-            Log.warn(ME, "Client sends empty data, trying again after sleeping 10 milli ...");
-            org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
-         }
-         BufferedInputStream in = new BufferedInputStream(inputStream);
-
-         msgLength = toLong(in);
-
-         if (msgLength == 10) {
-            setMethodName(Constants.PING);
-            return; // The shortest ping ever
-         }
-
-         checksum = (readNext(in) > 0);
-         compressed = (readNext(in) > 0);
-
-         byte[] dummy = new byte[1];
-         dummy[0] = (byte)readNext(in);
-         type = new String(dummy);
-
-         //type = Integer.toString(readNext(in)); Gives mit "82" instead of "R"
-
-         byte4 = (byte)readNext(in);
-         byte5 = (byte)readNext(in);
-
-         version = readNext(in) - 48;
-         
-         requestId = toString(in);
-         methodName = toString(in);
-         sessionId = toString(in);
-
-         lenUnzipped = toLong0(in, -1);
-
-         String qos = null;
-         String xmlKey = null;
-         byte[] content = null;
-         for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
-            qos = toString(in);
-            MessageUnit msgUnit = new MessageUnit(null, null, qos);
-            addMessage(msgUnit);
-            if (index >= msgLength) break;
-
-            msgUnit.setKey(toString(in));
-            if (index >= msgLength) break;
-
-            msgUnit.setContent(toByte(in));
-            if (index >= msgLength) break;
-         }
-
-         if (checksum)
-            checkSumResult = toLong0(in, -1);
-
-         if (index != msgLength) {
-            String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength;
-            Log.error(ME, str + " we need to disconnect the client, can't recover.");
-            throw new XmlBlasterException(ME, str);
-         }
-         in.close();
+      for (int ii=0; ii<20 && (inputStream.available() <= 0); ii++) {
+         Log.warn(ME, "Client sends empty data, trying again after sleeping 10 milli [" + ii + "]...");
+         org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
       }
-      catch(IOException e) {
-         e.printStackTrace();
-         String text = "Received message corrupted and lost.";
-         Log.warn(ME, text + " " + e.toString());
-         throw new XmlBlasterException(ME, text);
+      BufferedInputStream in = new BufferedInputStream(inputStream);
+
+      msgLength = toLong(in);
+
+      if (msgLength == 10) {
+         setMethodName(Constants.PING);
+         return; // The shortest ping ever
+      }
+
+      checksum = (readNext(in) > 0);
+      compressed = (readNext(in) > 0);
+
+      byte[] dummy = new byte[1];
+      dummy[0] = (byte)readNext(in);
+      type = new String(dummy);
+
+      //type = Integer.toString(readNext(in)); Gives mit "82" instead of "R"
+
+      byte4 = (byte)readNext(in);
+      byte5 = (byte)readNext(in);
+
+      version = readNext(in) - 48;
+      
+      requestId = toString(in);
+      methodName = toString(in);
+      sessionId = toString(in);
+
+      lenUnzipped = toLong0(in, -1);
+
+      String qos = null;
+      String xmlKey = null;
+      byte[] content = null;
+      for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
+         qos = toString(in);
+         MessageUnit msgUnit = new MessageUnit(null, null, qos);
+         addMessage(msgUnit);
+         if (index >= msgLength) break;
+
+         msgUnit.setKey(toString(in));
+         if (index >= msgLength) break;
+
+         msgUnit.setContent(toByte(in));
+         if (index >= msgLength) break;
+      }
+
+      if (checksum)
+         checkSumResult = toLong0(in, -1);
+
+      if (index != msgLength) {
+         String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength;
+         Log.error(ME, str + " we need to disconnect the client, can't recover.");
+         throw new IOException(str);
       }
    }
 
