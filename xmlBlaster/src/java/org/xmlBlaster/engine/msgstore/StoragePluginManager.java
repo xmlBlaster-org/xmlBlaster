@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      MsgUnitStorePluginManager.java
+Name:      StoragePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -10,13 +10,13 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.context.ContextNode;
 
 /**
- * MsgUnitStorePluginManager loads the I_Map implementation plugins. 
+ * StoragePluginManager loads the I_Map implementation plugins. 
  * <p>
  * Usage examples:
  * </p>
@@ -25,44 +25,51 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
  * #------------------------------------------------------------------------------
  * # Declare existing queue implementation plugins
  * # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
- * MsgUnitStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
- * MsgUnitStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
- * MsgUnitStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
+ * StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+ * StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+ * StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,transientMap=RAM,persistentMap=JDBC
  * 
  * # Choose the plugin (each publisher can overwrite this in its publish topic-QoS)
- * msgUnitStore.defaultPlugin=CACHE,1.0
+ * persistence/defaultPlugin=CACHE,1.0
+ * persistence/topicStore/defaultPlugin=JDBC,1.0
+ * persistence/msgUnitStore/defaultPlugin=CACHE,1.0
+ *
  * # If you choose CACHE as defaultPlugin configure the CACHE plugin:
- * msgUnitStore.cache.persistentQueue=JDBC,1.0
- * msgUnitStore.cache.transientQueue=RAM,1.0
+ * persistence.cache.persistentQueue=JDBC,1.0
+ * persistence.cache.transientQueue=RAM,1.0
  * #------------------------------------------------------------------------------
  * </pre>
  * @author <a href="mailto:laghi@swissinfo.com">Michele Laghi</a>.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.queue.html" target="others">engine.queue</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>
  */
-public class MsgUnitStorePluginManager extends PluginManagerBase
+public class StoragePluginManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
    private final LogChannel log;
+   private final String pluginEnvClass = "persistence"; // Used for env lookup like "persistence/topicStore/StoragePlugin[JDBC][1.0]=..."
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.engine.msgstore.ram.MapPlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
-                                                          {"CACHE", "org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin"} };
-   public static final String pluginPropertyName = "MsgUnitStorePlugin";
+                                                          {"CACHE", "org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin"} };
+   public static final String pluginPropertyName = "StoragePlugin";
 
-   public MsgUnitStorePluginManager(Global glob) {
+   public StoragePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
       this.log = glob.getLog("core");
-      this.ME = "MsgUnitStorePluginManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Constructor MsgUnitStorePluginManager");
+      this.ME = "StoragePluginManager" + this.glob.getLogPrefixDashed();
+      if (log.CALL) log.call(ME, "Constructor StoragePluginManager");
    }
 
    /**
     * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
-   public I_Map getPlugin(String typeVersion, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
-      return getPlugin(new PluginInfo(glob, this, typeVersion), uniqueQueueId, props);
+   public I_Map getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      return getPlugin(new PluginInfo(glob, this, typeVersion, 
+                                      new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+                       storageId, props);
    }
 
    /**
@@ -73,24 +80,26 @@ public class MsgUnitStorePluginManager extends PluginManagerBase
     * @param fn The file name for persistence or null (will be generated or ignored if RAM based)
     * @return The plugin for this type and version or null if none is specified or type=="undef"
     */
-   public I_Map getPlugin(String type, String version, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
-      return getPlugin(new PluginInfo(glob, this, type, version), uniqueQueueId, props);
+   public I_Map getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      return getPlugin(new PluginInfo(glob, this, type, version,
+                                      new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+                       storageId, props);
    }
 
-   public I_Map getPlugin(PluginInfo pluginInfo, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
+   public I_Map getPlugin(PluginInfo pluginInfo, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       if (pluginInfo.ignorePlugin())
          return null;
 
       I_Map plugin = (I_Map)super.instantiatePlugin(pluginInfo, false);
-      plugin.initialize(uniqueQueueId, props);
+      plugin.initialize(storageId, props);
 
       return plugin;
    }
 
    /**
     * Enforced by PluginManagerBase. 
-    * @return The name of the property in xmlBlaster.property "MsgUnitStorePlugin"
-    * for "MsgUnitStorePlugin[JDBC][1.0]"
+    * @return The name of the property in xmlBlaster.property "StoragePlugin"
+    * for "StoragePlugin[JDBC][1.0]"
     */
    protected String getPluginPropertyName() {
       return pluginPropertyName;
