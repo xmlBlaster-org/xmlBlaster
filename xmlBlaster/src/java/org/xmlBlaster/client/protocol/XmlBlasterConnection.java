@@ -7,8 +7,8 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
+import org.jutils.log.LogChannel;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
@@ -28,6 +28,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.KeyWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -109,10 +110,14 @@ import java.util.Collections;
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_XmlBlaster, I_CallbackServer, I_Timeout
 {
    private String ME = "XmlBlasterConnection";
-   // protected Global glob = null; see AbstractCallbackExtended
+   // Global glob and LogChannel log  see AbstractCallbackExtended
 
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
    protected String serverNodeId = "xmlBlaster";
+
+   protected int recorderCounter = 0;
+
+   private boolean firstConnect = true;
 
    private boolean disconnectInProgress = false;
 
@@ -148,6 +153,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /** Handle on the ever running ping thread.Only switched on in fail save mode */
    private PingThread pingThread = null;
+
+   private LoginThread loginThread = null;
 
    /** Remember the number of successful logins */
    private long numLogins = 0L;
@@ -193,6 +200,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * </pre>
     */
    public XmlBlasterConnection() throws XmlBlasterException {
+      super(Global.instance());
       initArgs(null);
    }
 
@@ -217,11 +225,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * </pre>
     */
    public XmlBlasterConnection(String[] args) throws XmlBlasterException {
+      super(Global.instance());
       initArgs(args);
    }
 
    public XmlBlasterConnection(Global glob) throws XmlBlasterException {
-      this.glob = glob;
+      super(glob);
       if (glob.wantsHelp()) {
          usage();
       }
@@ -239,7 +248,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    private void initArgs(String[] args) {
-      this.glob = new Global();
       if (this.glob.init(args) != 0) {
          usage();
       }
@@ -293,10 +301,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       try {
          secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
          if (secMechanism != null)  // to avoid double logging for login()
-            Log.info(ME, "Loaded security plugin=" + secMechanism + " version=" + secVersion);
+            log.info(ME, "Loaded security plugin=" + secMechanism + " version=" + secVersion);
       }
       catch (Exception e) {
-         Log.error(ME, "Security plugin initialization failed. Reason: "+e.toString());
+         log.error(ME, "Security plugin initialization failed. Reason: "+e.toString());
          secPlgn = null;
       }
    }
@@ -315,7 +323,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (driverType == null || driverType.length() < 1)
          throw new XmlBlasterException(ME+".UnknownDriver", "Connection to " + getServerNodeId() + " failed, the protocol type is unknown");
 
-      Log.info(ME, "Using 'client.protocol=" + driverType + "' to access " + getServerNodeId());
+      if (log.TRACE) log.trace(ME, "Using 'client.protocol=" + driverType + "' to access " + getServerNodeId());
 
       if (driverType.equalsIgnoreCase("SOCKET")) {
          driver = new SocketConnection(this.glob);
@@ -331,7 +339,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
       else {
          String text = "Unknown protocol '" + driverType + "' to access " + getServerNodeId() + ", use SOCKET, IOR, RMI or XML-RPC.";
-         Log.error(ME, text);
+         log.error(ME, text);
          throw new XmlBlasterException(ME+".UnknownDriver", text);
       }
    }
@@ -344,7 +352,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (driverType == null) driverType = glob.getProperty().get("client.protocol", "IOR");
       if (driverClassName == null) driverClassName = glob.getProperty().get("client.protocol.class",
                                                                             "org.xmlBlaster.protocol.corba.CorbaConnection");
-      Log.info(ME, "Using 'client.protocol=" + driverType + "' and 'client.protocol.class=" + driverClassName + "'to access " + getServerNodeId());
+      log.info(ME, "Using 'client.protocol=" + driverType + "' and 'client.protocol.class=" + driverClassName + "'to access " + getServerNodeId());
       try {
          java.lang.Class driverClass = Class.forName(driverClassName);
          java.lang.Class[] paramTypes = new java.lang.Class[1];
@@ -356,7 +364,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
       catch(Exception e) {
          String text = "Invalid driver class '" + driverClassName + "' to access " + getServerNodeId() + ". (Check package name and constructors!)";
-         Log.error(ME, text);
+         log.error(ME, text);
          throw new XmlBlasterException(ME+".InvalidDriver", text);
       }
    }
@@ -386,7 +394,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          this.clientProblemCallback = new DummyConnectionProblemHandler(this);
       else
          this.clientProblemCallback = connCallback;
-      Log.info(ME, "Initializing fail save mode");
+      log.info(ME, "Initializing fail save mode");
    }
 
 
@@ -418,6 +426,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection(Applet ap, String driverType) throws XmlBlasterException
    {
+      super(Global.instance());
       if (driverType.equalsIgnoreCase("SOCKET"))
          driver = new SocketConnection(glob, ap);
       else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
@@ -428,7 +437,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          driver = new XmlRpcConnection(glob, ap);
       else {
          String text = "Unknown protocol '" + driverType + "' to access " + getServerNodeId() + ", use IOR, RMI or XML-RPC.";
-         Log.error(ME, text);
+         log.error(ME, text);
          throw new XmlBlasterException(ME+".UnknownDriver", text);
       }
    }
@@ -459,9 +468,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *  connectQos.setAddress(addressProp);
     * </pre>
     */
-   public synchronized void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
+   public synchronized void initFailSave(I_ConnectionProblems connCallback, long retryInterval,
+                                         int retries, int maxInvocations, long pingInterval)
    {
-      if (Log.CALL) Log.call(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
+      if (log.CALL) log.call(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
       if (this.addressFailSaveSettings == null) this.addressFailSaveSettings = new Address(glob);
       this.clientProblemCallback = connCallback;
       this.addressFailSaveSettings.setDelay(retryInterval);
@@ -488,18 +498,24 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (cache != null)
          return; // Is initialized already
-      if (Log.CALL) Log.call(ME, "Initializing cache: size=" + size);
+      if (log.CALL) log.call(ME, "Initializing cache: size=" + size);
       cache = new BlasterCache(size);
-      Log.info(ME, "BlasterCache has been initialized with size="+size);
+      log.info(ME, "BlasterCache has been initialized with size="+size);
    }
 
    /**
     * Killing the ping thread (not recommended).
     */
-   public void killPing()
+   protected void killPing()
    {
       if (pingThread != null)
          pingThread.pingRunning = false;
+   }
+
+   protected void killLoginThread()
+   {
+      if (loginThread != null)
+         loginThread.pollRunning = false;
    }
 
 
@@ -551,7 +567,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       this.ME = "XmlBlasterConnection-" + loginName;
       this.updateClient = client;
-      if (Log.CALL) Log.call(ME, "login() ...");
+      if (log.CALL) log.call(ME, "login() ...");
 
       if (qos == null)
          qos = new ConnectQos(glob);
@@ -666,8 +682,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       String loginName = connectQos.getSecurityQos().getUserId();
       this.ME = "XmlBlasterConnection-" + loginName;
       this.updateClient = client;
-      if (Log.CALL) Log.call(ME, "connect() ...");
-      if (Log.DUMP) Log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + connectQos.toXml());
+      if (log.CALL) log.call(ME, "connect() ...");
+      if (log.DUMP) log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + connectQos.toXml());
 
       Address address = connectQos.getAddress();
       if (address == null) {
@@ -689,21 +705,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       // You should call initFailSave(I_ConnectionProblems) first
       if (this.clientProblemCallback != null && address.getDelay() < 1) {
          address.setDelay(4 * 1000L);
-         if (Log.TRACE) Log.trace(ME, "You have called initFailSave() but -delay is 0, setting ping delay to " + address.getDelay() + " millis");
+         if (log.TRACE) log.trace(ME, "You have called initFailSave() but -delay is 0, setting ping delay to " + address.getDelay() + " millis");
       }
       if (this.clientProblemCallback == null && address.getDelay() > 0) {
-         Log.warn(ME, "You have set -delay " + address.getDelay() + ", but not called initFailSave(), using default error recovery on connection problems");
+         log.warn(ME, "You have set -delay " + address.getDelay() + ", but not called initFailSave(), using default error recovery on connection problems");
          this.clientProblemCallback = new DummyConnectionProblemHandler(this);
-      }
-      if (this.clientProblemCallback != null) { // fail save mode (RamRecorder or FileRecorder):
-         String type = glob.getProperty().get("recorder.type", (String)null);
-         type = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", type);
-         
-         String version = glob.getProperty().get("recorder.version", "1.0");
-         version = glob.getProperty().get("recorder.version["+getServerNodeId()+"]", version);
-
-         this.recorder = glob.getRecorderPluginManager().getPlugin(type, version, address.getMaxMsg(), this, null);
-         Log.info(ME, "Activated fail save mode: " + address.getSettings());
       }
 
       // Load the client helper to export/import messages:
@@ -739,27 +745,105 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             addr.setSessionId(cbSessionId);
 
          prop.setCallbackAddress(addr);
-         Log.info(ME, "Callback settings: " + prop.getSettings());
+         log.info(ME, "Callback settings: " + prop.getSettings());
       } // Callback server configured and running
 
-      //Log.info(ME, "DUMP of ConnectQos\n"  + connectQos.toXml());
+      this.connectReturnQos = loginRaw();
+      /*
+      //log.info(ME, "DUMP of ConnectQos\n"  + connectQos.toXml());
       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
          this.connectReturnQos = driver.connect(connectQos);
          numLogins++;
+         initFailSave();
       }
       catch(ConnectionException e) {
-         if (Log.TRACE) Log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ".");
-         if (Log.DUMP) Log.dump(ME, "Authentication string is\n" + connectQos.toXml());
+         if (log.TRACE) log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ".");
+         if (log.DUMP) log.dump(ME, "Authentication string is\n" + connectQos.toXml());
          if (numLogins == 0)
-            startPinging();
+            doLoginPolling();//  startPinging();
          throw new XmlBlasterException(e);
       }
       if (isReconnectPolling && numLogins > 0)
          clientProblemCallback.reConnected();
 
       startPinging();
+      */
       return connectReturnQos;
+   }
+
+   /**
+    * Start the message recording framework. 
+    * <p />
+    * Only if -queue.maxMsg > 0
+    */
+   private void initFailSave() {
+      try {
+         if (this.clientProblemCallback != null && this.recorder==null &&
+             connectQos.getAddress().getMaxMsg() > 0) { // fail save mode (RamRecorder or FileRecorder):
+
+            String type = glob.getProperty().get("recorder.type", (String)null);
+            type = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", type);
+            
+            String version = glob.getProperty().get("recorder.version", "1.0");
+            version = glob.getProperty().get("recorder.version["+getServerNodeId()+"]", version);
+
+            this.recorder = glob.getRecorderPluginManager().getPlugin(type, version, createRecorderFileName(),
+                            connectQos.getAddress().getMaxMsg(), this, null);
+            log.info(ME, "Activated fail save mode: " + connectQos.getAddress().getSettings());
+         }
+      } catch (XmlBlasterException e) {
+         log.error(ME, "Fail save message recorder problem: " + e.toString());
+      }
+   }
+
+   /**
+    * Generate a unique name for this connection tail back messages. 
+    * <p />
+    * It must be unique but should not be arbitrary, to allow a crashed client
+    * to find the file again. You should specify it in such a case yourself:<br />
+    * -
+    * See the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder</a> requirement
+    * see org.xmlBlaster.util.recorder.file.FileRecorder#createPathString(String)
+    */
+   private String createRecorderFileName() {
+      String fn = null;
+      fn = glob.getProperty().get("recorder.fn", (String)null);
+      fn = glob.getProperty().get("recorder.fn["+glob.getId()+"]", fn);
+      if (fn != null) {
+         if (log.TRACE) log.trace(ME, "Using given message recorder file name '" + fn + "'.");
+         return fn;
+      }
+
+      String from = glob.getId();
+      String to = getServerNodeId();
+      if (from == null || from.equals(to)) {
+         String loginName = getLoginName();
+         try {
+            if (loginName == null && connectQos != null)
+               loginName = connectQos.getUserId();
+            if (this.connectReturnQos != null)
+               loginName += this.connectReturnQos.getPublicSessionId();
+            else {
+               synchronized (this) {
+                  loginName += (recorderCounter++);
+               }
+            }
+         } catch (Throwable e) {
+            loginName = "unknown";
+         }
+               
+         fn = "tailback-" + loginName + "-to-" + to + ".frc";
+         if (log.TRACE) log.trace(ME, "Using message recorder file name '" + fn + "', generated for normal clients");
+         return fn;
+      }
+      else {
+         // When we are a client in a cluster node, there is only exactly one login session,
+         // the file <clientNodeId>-to-<serverNodeId>.frc is unique
+         fn = "tailback-" + from + "-to-" + to + ".frc";
+         if (log.TRACE) log.trace(ME, "Using message recorder file name '" + fn + "', generated for cluster clients");
+         return fn;
+      }
    }
 
    /**
@@ -781,7 +865,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public I_CallbackServer initCbServer(String loginName, String driverType) throws XmlBlasterException
    {
       if (driverType == null) driverType = glob.getProperty().get("client.cbProtocol", driver.getProtocol());
-      Log.info(ME, "Using 'client.cbProtocol=" + driverType + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
+      if (log.TRACE) log.trace(ME, "Using 'client.cbProtocol=" + driverType + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
 
       try {
          if (driverType.equalsIgnoreCase("SOCKET")) {
@@ -810,12 +894,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          throw e;
       }
       catch (Throwable e) {
-         Log.error(ME, "Creation of CallbackServer failed: " + e.toString());
+         log.error(ME, "Creation of CallbackServer failed: " + e.toString());
          e.printStackTrace();
          throw new XmlBlasterException(ME, "Creation of CallbackServer failed: " + e.toString());
       }
       String text = "Unknown driverType '" + driverType + "' to install xmlBlaster callback server.";
-      Log.error(ME, text);
+      log.error(ME, text);
       throw new XmlBlasterException(ME+".UnknownDriver", text);
    }
 
@@ -824,25 +908,44 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * For internal use only.
     * The qos needs to be set up correctly if you wish a callback
-    * @exception       XmlBlasterException if login fails
+    * @return The returned QoS on success, null in fail save mode without connection,
+    *         otherwise an exception is thrown
+    * @exception       XmlBlasterException if login fails without fails save mode
     */
-   private void loginRaw() throws XmlBlasterException
+   private ConnectReturnQos loginRaw() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "loginRaw() ...");
+      if (log.CALL) log.call(ME, "loginRaw(firstConnect=" + firstConnect + ") ...");
       try {
-         driver.loginRaw();
+         if (firstConnect) {
+            this.connectReturnQos = driver.connect(connectQos);
+            firstConnect = false;
+            initFailSave();
+         }
+         else   
+            this.connectReturnQos = driver.loginRaw();
          numLogins++;
-         if (Log.TRACE) Log.trace(ME, "Success login");
-      } catch(ConnectionException e) {
-         if (Log.TRACE) Log.trace(ME, "Login failed , numLogins=" + numLogins);
-         if (numLogins == 0)
-            startPinging();
-         throw new XmlBlasterException(e);
-      }
-      if (isReconnectPolling && numLogins > 0)
-         clientProblemCallback.reConnected();
+         if (log.TRACE) log.trace(ME, "Successful login to " + getServerNodeId());
 
-      startPinging();
+         if (isReconnectPolling)
+            clientProblemCallback.reConnected();
+
+         startPinging();
+         return this.connectReturnQos;
+
+      } catch(ConnectionException e) {
+         if (log.TRACE) log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ".");
+         if (log.DUMP) log.dump(ME, "Authentication string is\n" + connectQos.toXml());
+         if (firstConnect) {
+            initFailSave();
+         }
+
+         if (isInFailSaveMode()) {
+            doLoginPolling();
+            return null;
+         }
+         else
+            throw new XmlBlasterException(e);
+      }
    }
 
 
@@ -855,14 +958,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (noConnect) {// LoginThread tried already and gave up
          if (isInFailSaveMode())
-            Log.error(ME, "Can't establish connection to " + getServerNodeId() + ", pinging retries = " + retries + " exceeded.");
+            log.error(ME, "Can't establish connection to " + getServerNodeId() + ", pinging retries = " + retries + " exceeded.");
          else
-            Log.error(ME, "Can't establish connection to " + getServerNodeId() + ", no fail save mode.");
+            log.error(ME, "Can't establish connection to " + getServerNodeId() + ", no fail save mode.");
          throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
       }
 
       if (isInFailSaveMode()) {
          synchronized(pollingMonitor) {
+            if (!isReconnectPolling) {
+               log.error(ME, "Lost connection to " + getServerNodeId() + " server: " + e.toString());
+               driver.init();
+               doLoginPolling();
+            }
+            /*
             if (isReconnectPolling) {
                // Thread.currentThread().dumpStack();
                throw new XmlBlasterException("TryingReconnect", "Still trying to find " + getServerNodeId() + " again ..."); // Client may hope on reconnect
@@ -872,12 +981,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                doLoginPolling();
             }
             else {
-               Log.error(ME, "Lost connection to " + getServerNodeId() + " server: " + e.toString());
+               log.error(ME, "Lost connection to " + getServerNodeId() + " server: " + e.toString());
                driver.init();
                clientProblemCallback.lostConnection(); // notify client
                doLoginPolling();
                throw new XmlBlasterException("TryingReconnect", "Trying to find " + getServerNodeId() + " again ..."); // Client may hope on reconnect
             }
+            */
          }
       }
       else {
@@ -892,14 +1002,19 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void doLoginPolling()
    {
-      if (connectQos == null || connectQos.getAddress() == null) {
-         Thread.currentThread().dumpStack();
-         throw new IllegalArgumentException("Address==null in XmlBlasterConnection");
+      if (isInFailSaveMode()) {
+         if (isReconnectPolling == false) {
+            if (connectQos == null || connectQos.getAddress() == null) {
+               Thread.currentThread().dumpStack();
+               throw new IllegalArgumentException("Address==null in XmlBlasterConnection");
+            }
+            log.info(ME, "Going to poll for " + getServerNodeId() + " and queue your messages ...");
+            isReconnectPolling = true;
+            clientProblemCallback.lostConnection(); // notify client
+            loginThread = new LoginThread(this, connectQos.getAddress().getDelay(), retries);
+            loginThread.start();
+         }
       }
-      Log.info(ME, "Going to poll for " + getServerNodeId() + " and queue your messages ...");
-      isReconnectPolling = true;
-      LoginThread lt = new LoginThread(this, connectQos.getAddress().getDelay(), retries);
-      lt.start();
    }
 
 
@@ -909,7 +1024,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private void startPinging()
    {
       if (this.clientProblemCallback == null) {
-         if (Log.TRACE) Log.trace(ME, "No ping initialized, we are not in fails save mode");
+         if (log.TRACE) log.trace(ME, "No ping initialized, we are not in fails save mode");
          return;
       }
       if (connectQos.getAddress().getPingInterval() > 0L && pingThread == null) {
@@ -934,7 +1049,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public synchronized boolean logout()
    {
-      if (Log.CALL) Log.call(ME, "logout() ...");
+      if (log.CALL) log.call(ME, "logout() ...");
       return disconnect(new DisconnectQos());
    }
 
@@ -961,26 +1076,27 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public synchronized boolean disconnect(DisconnectQos qos, boolean flush, boolean shutdown, boolean shutdownCb)
    {
-      if (Log.CALL) Log.call(ME, "disconnect() ...");
+      if (log.CALL) log.call(ME, "disconnect() ...");
 
       if (disconnectInProgress) {
-         Log.warn(ME, "Calling disconnect again is ignored, you are in shutdown progress already");
+         log.warn(ME, "Calling disconnect again is ignored, you are in shutdown progress already");
          return false;
       }
 
       disconnectInProgress = true;
 
       killPing();
+      killLoginThread();
 
       if (!isLoggedIn()) {
-         Log.warn(ME, "You called disconnect() but you are are not logged in, we ignore it.");
+         log.warn(ME, "You called disconnect() but you are are not logged in, we ignore it.");
          disconnectInProgress = false;
          //Thread.currentThread().dumpStack();
          return false;
       }
 
       if (recorder != null && recorder.getNumUnread() > 0)
-         Log.warn(ME, "You called disconnect(). Please note that there are " + recorder.getNumUnread() + " unsent invocations/messages in the queue");
+         log.warn(ME, "You called disconnect(). Please note that there are " + recorder.getNumUnread() + " unsent invocations/messages in the queue");
 
       synchronized (callbackMap) {
          Set keys = callbackMap.keySet();
@@ -992,7 +1108,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                driver.unSubscribe(key.toXml(), "");
             }
             catch(XmlBlasterException e) {
-               Log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
+               log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
             }
             catch(ConnectionException e) {
                break;
@@ -1010,10 +1126,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       boolean ret = false;
       try {
          ret = driver.logout();
-         Log.info(ME, "Successful disconnect from " + getServerNodeId());
+         log.info(ME, "Successful disconnect from " + getServerNodeId());
       } catch(Throwable e) {
          e.printStackTrace();
-         Log.warn(ME+".disconnect()", e.toString());
+         log.warn(ME+".disconnect()", e.toString());
       }
 
       if (shutdown) {
@@ -1025,7 +1141,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
            shutdownCb();
          } catch (Throwable e) {
             e.printStackTrace();
-            Log.warn(ME+".disconnect()", e.toString());
+            log.warn(ME+".disconnect()", e.toString());
          }
       }
 
@@ -1073,7 +1189,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public boolean shutdownCb() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "shutdownCb() ...");
+      if (log.CALL) log.call(ME, "shutdownCb() ...");
       //Thread.currentThread().dumpStack();
       if (this.cbServer != null)
          return this.cbServer.shutdownCb();
@@ -1104,7 +1220,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public synchronized boolean shutdown(boolean flush)
    {
-      if (Log.CALL) Log.call(ME, "shutdown(" + flush + ") ...");
+      if (log.CALL) log.call(ME, "shutdown(" + flush + ") ...");
 
       try {
          if (isLoggedIn() && !disconnectInProgress) {
@@ -1117,7 +1233,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          }
          return driver.shutdown();
       } catch(Exception e) {
-         Log.warn(ME, e.toString());
+         log.warn(ME, e.toString());
          e.printStackTrace();
          return false;
       }
@@ -1148,7 +1264,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public final String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
       //The boss should not be interested in cache updates
-      if (Log.CALL) Log.call(ME, "Entering update(" + ((cache != null) ? "using cache" : "no cache") + ") ...");
+      if (log.CALL) log.call(ME, "Entering update(" + ((cache != null) ? "using cache" : "no cache") + ") ...");
       boolean forCache = false;
       if( cache != null ) {
          forCache = cache.update(updateQos.getSubscriptionId(), updateKey, content, updateQos);
@@ -1241,7 +1357,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public final String subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "subscribe(with callback) ...");
+      if (log.CALL) log.call(ME, "subscribe(with callback) ...");
       if (updateClient == null) {
          String text = "No callback server is incarnated. " +
                        " Please use XmlBlasterConnection - constructor with default I_Callback given.";
@@ -1268,7 +1384,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "subscribe() ...");
+      if (log.CALL) log.call(ME, "subscribe() ...");
       try {
          return subscribeRaw(xmlKey, qos);
       } catch(XmlBlasterException e) {
@@ -1287,7 +1403,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
-      if (Log.CALL) Log.call(ME, "unSubscribe() ...");
+      if (log.CALL) log.call(ME, "unSubscribe() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for unSubscribe()");
       try {
@@ -1326,52 +1442,132 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *            id="TryingReconnect" if we are in fail save mode and polling for a connection,
     #            your message is tailed back and flushed on reconnect
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException
+   public final PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing ...");
+      if (log.TRACE) log.trace(ME, "Publishing ...");
       try {
          if (secPlgn!=null) {
             MessageUnit mu = secPlgn.exportMessage(msgUnit);
-            return secPlgn.importMessage(driver.publish(mu));
+            return new PublishRetQos(glob, secPlgn.importMessage(driver.publish(mu)));
          }
          else {
-            return driver.publish(msgUnit);
+            return new PublishRetQos(glob, driver.publish(msgUnit));
          }
       } catch(XmlBlasterException e) {
-         if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
       } catch(ConnectionException e) {
-         if (recorder != null) recorder.publish(msgUnit);
+         PublishRetQos retQos = null;
+         if (recorder != null) { 
+            String oid = getAndReplaceOid(msgUnit);
+            recorder.publish(msgUnit);
+            retQos = new PublishRetQos(glob, Constants.STATE_OK);
+            retQos.setStateInfo("QUEUED");
+            retQos.setOid(oid);
+         }
          handleConnectionException(e);
+         if (retQos != null)
+            return retQos;
       }
-      return dummyS; // never reached, there is always an exception thrown
+      return new PublishRetQos(glob, null); // never reached, there is always an exception thrown
    }
 
+   /** Extract the key oid, if none is there insert one */
+   private String getAndReplaceOid(MessageUnit msgUnit) {
+      String key = msgUnit.getXmlKey();
+      String oid = parseOid(key);
+      if (oid == null || oid.length() < 1) {
+         log.warn(ME, "Generating unknown key oid for message recorder is not implemented");
+         //oid = generateKeyOid();
+         //generateOidIntoXmlKey();
+         //msgUnit.setXmlKey(key);
+      }
+      return oid;
+   }
+
+   /** Extract the oid from a "<key oid='' ..." string */
+   private final String parseOid(String str) {
+      int keyStart = str.indexOf("<key");
+      if (keyStart < 0) return null;
+      int keyEnd = str.indexOf(">", keyStart+1);
+      if (keyEnd < 0) return null;
+      str = str.substring(keyStart, keyEnd);
+      
+      String token = "oid=";
+      int index = str.indexOf(token);
+      if (index >= 0) {
+         int from = index+token.length();
+         char apo = str.charAt(from);
+         int end = str.indexOf(apo, from+1);
+         if (end > 0) {
+            return str.substring(from+1, end);
+         }
+      }
+      return null;
+   }
+
+   /**
+    * Generates a unique key.
+    * <p />
+    * TODO: include IP adress and PID for global uniqueness
+    */
+   private final String generateKeyOid() {
+      StringBuffer oid = new StringBuffer(160);
+      
+      String from = glob.getId();
+      String to = getServerNodeId();
+      if (from == null || from.equals(to)) {
+         String loginName = getLoginName();
+         if (loginName != null)
+            oid.append(loginName);
+         try {
+            if (loginName == null && connectQos != null)
+               oid.append(connectQos.getUserId());
+         } catch (Throwable e) {
+            oid.append("unknown");
+         }
+         oid.append(to);
+      }
+      else {
+         oid.append(from).append(to);
+      }
+
+      // This is unique in this JVM
+      Timestamp t = new Timestamp();
+      oid.append(t.getTimestamp());
+
+      return oid.toString();
+   }
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "publishArr() ...");
+      if (log.CALL) log.call(ME, "publishArr() ...");
       try {
+         String[] arr;
          if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
             MessageUnit mu[] = exportAll(msgUnitArr);
             String[] result = driver.publishArr(mu);
-            return importAll(result);
+            arr = importAll(result);
          }
          else { // security plugin not available
-            return driver.publishArr(msgUnitArr);
+            arr = driver.publishArr(msgUnitArr);
          }
+         PublishRetQos[] qosArr = new PublishRetQos[arr.length];
+         for (int ii=0; ii<qosArr.length; ii++)
+            qosArr[ii] = new PublishRetQos(glob, arr[ii]);
+         return qosArr;
       } catch(XmlBlasterException e) {
-         if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
       } catch(ConnectionException e) {
          if (recorder != null) recorder.publishArr(msgUnitArr);
          handleConnectionException(e);
       }
-      return dummySArr;
+      return new PublishRetQos[0];
    }
 
    /**
@@ -1403,7 +1599,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             msgUnitArr[i] = (MessageUnit)it.next();
          }
          this.publishOnewayBurstModeVec.clear();
-         Log.info(ME+".flushPublishOnewaySet()", "Burst mode timeout after " + this.publishOnewayCollectTime + " millis occurred, publishing " + msgUnitArr.length + " oneway messages ...");
+         log.info(ME+".flushPublishOnewaySet()", "Burst mode timeout after " + this.publishOnewayCollectTime + " millis occurred, publishing " + msgUnitArr.length + " oneway messages ...");
          publishOneway(msgUnitArr, true);
       }
    }
@@ -1421,16 +1617,16 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void publishOneway(MessageUnit [] msgUnitArr, boolean flushBurstMode)
    {
-      if (Log.CALL) Log.call(ME, "publishOneway() ...");
+      if (log.CALL) log.call(ME, "publishOneway() ...");
       try {
          if (this.publishOnewayCollectTime > 0L && !flushBurstMode) {
             synchronized(this.publishOnewayTimer) {
-               //Log.info(ME, "publishOneway() adding set ...");
+               //log.info(ME, "publishOneway() adding set ...");
                for (int ii = 0; ii<msgUnitArr.length; ii++) {
                   this.publishOnewayBurstModeVec.addElement(msgUnitArr[ii].getClone());
                }
                if (this.publishOnewayTimerKey == null) {
-                  if (Log.TRACE) Log.trace(ME, "Spanning timer = " +  this.publishOnewayCollectTime);
+                  if (log.TRACE) log.trace(ME, "Spanning timer = " +  this.publishOnewayCollectTime);
                   this.publishOnewayTimerKey = this.publishOnewayTimer.addTimeoutListener(this, this.publishOnewayCollectTime, null);
                }
                return;
@@ -1443,13 +1639,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          }
          driver.publishOneway(mu);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e.reason);
+         log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e.reason);
       } catch(ConnectionException e) {
          try {
             if (recorder != null) recorder.publishArr(msgUnitArr);
             handleConnectionException(e);
          } catch(XmlBlasterException e2) {
-            Log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e2.reason);
+            log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e2.reason);
          }
       }
    }
@@ -1460,7 +1656,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
-      if (Log.CALL) Log.call(ME, "erase() ...");
+      if (log.CALL) log.call(ME, "erase() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for erase()");
       try {
@@ -1473,7 +1669,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             return driver.erase(xmlKey, qos);
          }
       } catch(XmlBlasterException e) {
-         if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
       } catch(ConnectionException e) {
          if (recorder != null) recorder.erase(xmlKey, qos);
@@ -1504,7 +1700,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
       MessageUnit[] units = null;
-      if (Log.CALL) Log.call(ME, "get() ...");
+      if (log.CALL) log.call(ME, "get() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for get()");
       try {
@@ -1516,7 +1712,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                units = getRaw(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
                String subId = subscribeRaw(xmlKey, qos); //subscribe to this messages (asynchronous)
                cache.newEntry(subId, xmlKey, units);     //fill messages to cache
-               Log.info(ME, "New entry in cache created (subId="+subId+")");
+               log.info(ME, "New entry in cache created (subId="+subId+")");
             }
          }
          else {
@@ -1524,7 +1720,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          }
          return units;
       } catch(XmlBlasterException e) {
-         if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
       } catch(ConnectionException e) {
          if (recorder != null) recorder.get(xmlKey, qos);
@@ -1581,17 +1777,17 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          return;
       try {
          driver.ping("");
-         if (Log.CALL) Log.call(ME, "ping success() ...");
+         if (log.CALL) log.call(ME, "ping success() ...");
          return;
       } catch(ConnectionException e) {
-         if (Log.TRACE) Log.trace(ME, "ping failed, " + getServerNodeId() + " seems to be down, try to reactivate connection ...");
+         if (log.TRACE) log.trace(ME, "ping failed, " + getServerNodeId() + " seems to be down, try to reactivate connection ...");
          try {
             handleConnectionException(e);
          } catch(XmlBlasterException ep) {
-            if (Log.TRACE) Log.trace(ME, "Exception in ping! " + ep.reason);
+            if (log.TRACE) log.trace(ME, "Exception in ping! " + ep.reason);
          }
       } catch(XmlBlasterException e) {
-         Log.error(ME, "ping failed: " + e.toString());
+         log.error(ME, "ping failed: " + e.toString());
       }
       return ; // never reached, there is always an exception thrown
    }
@@ -1599,7 +1795,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public int queueSize()
    {
       if (recorder == null) {
-         Log.warn(ME, "Internal error: don't call queueSize(), you are not in fail save mode");
+         log.warn(ME, "Internal error: don't call queueSize(), you are not in fail save mode");
          return 0;
       }
 
@@ -1607,10 +1803,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
 
-   public void flushQueue() throws XmlBlasterException
+   public final void flushQueue() throws XmlBlasterException
    {
       if (recorder == null) {
-         Log.warn(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
+         log.warn(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
          return;
       }
 
@@ -1621,7 +1817,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public void resetQueue()
    {
       if (recorder == null) {
-         Log.warn(ME, "Internal error: don't call resetQueue(), you are not in fail save mode");
+         log.warn(ME, "Internal error: don't call resetQueue(), you are not in fail save mode");
          return;
       }
 
@@ -1632,7 +1828,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public void shutdownQueue()
    {
       if (recorder == null) {
-         Log.warn(ME, "Internal error: don't call shutdownQueue(), you are not in fail save mode");
+         log.warn(ME, "Internal error: don't call shutdownQueue(), you are not in fail save mode");
          return;
       }
 
@@ -1651,6 +1847,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       private final int RETRIES;         // -1 = forever
       private int counter = 0;
       private int logInterval = 10;
+      boolean pollRunning = true;
 
 
       /**
@@ -1666,29 +1863,38 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             logInterval = 1;
          else
             logInterval = (int)(30000L / retryInterval);
-         if (Log.CALL) Log.call(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
+         if (log.CALL) log.call(ME, "Entering constructor retry delay=" + retryInterval + " millis and retries=" + retries);
       }
 
       public void run() {
-         Log.info(ME, "Polling for " + getServerNodeId() + " server");
+         log.info(ME, "Polling for " + getServerNodeId() + " server every " + RETRY_INTERVAL + " millis " + ((RETRIES==-1) ? "forever." : ("" + retries + " times.")));
          con.isReconnectPolling = true;
          for (int ii=0; ii<RETRIES || RETRIES==-1; ii++) {
-            try {
-               con.loginRaw();
-               Log.info(ME, "Success, a new connection to " + getServerNodeId() + " is established.");
+            if (pollRunning == false) {
                con.isReconnectPolling = false;
                return;
+            }
+            try {
+               if (con.loginRaw() != null) {
+                  log.info(ME, "Success, a new connection to " + getServerNodeId() + " is established after " + counter + " retries.");
+                  con.isReconnectPolling = false;
+                  return;
+               }
+               else {
+                  if ((counter % logInterval) == 0)
+                     log.warn(ME, "No connection established, " + getServerNodeId() + " still seems to be down after " + (counter+1) + " login retries.");
+                  counter++;
+                  try {
+                     Thread.currentThread().sleep(RETRY_INTERVAL);
+                  } catch (InterruptedException i) { }
+               }
             } catch(Exception e) {
-               if ((counter % logInterval) == 0)
-                  Log.warn(ME, "No connection established, " + getServerNodeId() + " still seems to be down after " + (counter+1) + " pings.");
-               counter++;
-               try {
-                  Thread.currentThread().sleep(RETRY_INTERVAL);
-               } catch (InterruptedException i) { }
+               log.error(ME, "Unexpected exception while login polling: " + e.toString());
             }
          }
+         con.isReconnectPolling = false;
          con.noConnect = true; // communicate back to XmlBlasterConnection that we give up
-         Log.info(ME, "max polling for " + getServerNodeId() + " server done, no success");
+         log.info(ME, "max polling for " + getServerNodeId() + " server done, no success");
       }
    } // class LoginThread
 
@@ -1709,10 +1915,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       PingThread(XmlBlasterConnection con, long pingInterval) {
          this.con = con;
          this.PING_INTERVAL = pingInterval;
-         if (Log.CALL) Log.call(ME, "Entering constructor ping interval=" + pingInterval + " millis");
+         if (log.CALL) log.call(ME, "Entering constructor ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         Log.info(ME, "Pinging " + getServerNodeId() + " server every " + PING_INTERVAL + " millis.");
+         log.info(ME, "Pinging " + getServerNodeId() + " server every " + PING_INTERVAL + " millis.");
          while (pingRunning) {
             try {
                con.ping();
@@ -1758,7 +1964,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        */
       public void lostConnection()
       {
-         Log.warn(ME, "I_ConnectionProblems: Lost connection to " + getServerNodeId() + "");
+         log.warn(ME, "I_ConnectionProblems: Lost connection to " + getServerNodeId() + "");
       }
 
       /**
@@ -1773,14 +1979,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       {
          try {
             if (xmlBlasterConnection.queueSize() > 0) {
-               Log.info(ME, "We were lucky, reconnected to " + getServerNodeId() + ", sending tailback " + xmlBlasterConnection.queueSize() + " messages ...");
+               log.info(ME, "We were lucky, reconnected to " + getServerNodeId() + ", sending tailback " + xmlBlasterConnection.queueSize() + " messages ...");
                xmlBlasterConnection.flushQueue();
             }
             else
-               Log.info(ME, "We were lucky, reconnected to " + getServerNodeId() + ", no tailback messages to flush");
+               log.info(ME, "We were lucky, reconnected to " + getServerNodeId() + ", no tailback messages to flush");
          }
          catch (XmlBlasterException e) {
-            Log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
+            log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
          }
       }
    }
@@ -1806,19 +2012,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -recorder.type      The plugin type to use for tail back messages in fail save mode [FileRecorder]\n";
       text += "   -recorder.version   The version of the plugin [1.0]\n";
 
-      Log.plain(text);
+      LogChannel log = glob.getLog(null);
+      log.plain("",text);
       try {
-         Log.plain(new ConnectQos(glob).usage());
+         log.plain("",new ConnectQos(glob).usage());
       } catch (XmlBlasterException e) {}
-      Log.plain(new Address(glob).usage());
-      Log.plain(new QueueProperty(glob,null).usage());
-      Log.plain(new CallbackAddress(glob).usage());
-      Log.plain(new CbQueueProperty(glob,null,null).usage());
-      Log.plain(SocketConnection.usage());
-      Log.plain(CorbaConnection.usage());
-      Log.plain(RmiConnection.usage());
-      Log.plain(XmlRpcConnection.usage());
-      Log.plain(Global.usage()); // for LogChannel help
+      log.plain("",new Address(glob).usage());
+      log.plain("",new QueueProperty(glob,null).usage());
+      log.plain("",new CallbackAddress(glob).usage());
+      log.plain("",new CbQueueProperty(glob,null,null).usage());
+      log.plain("",SocketConnection.usage());
+      log.plain("",CorbaConnection.usage());
+      log.plain("",RmiConnection.usage());
+      log.plain("",XmlRpcConnection.usage());
+      log.plain("",Global.usage()); // for LogChannel help
    }
 
 } // class XmlBlasterConnection
