@@ -112,6 +112,18 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    boolean isConnected();
 
    /**
+    * Access the returned QoS of a connect() call. 
+    * @return is null if connect() was not called before
+    */
+   ConnectReturnQos getConnectReturnQos();
+
+   /**
+    * Access the current ConnectQos.
+    * @return is null if connect() was not called before
+    */
+   ConnectQos getConnectQos();
+
+   /**
     * Logout from the server. 
     * <p>
     * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
