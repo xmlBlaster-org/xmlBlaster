@@ -532,7 +532,15 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void notifyAboutNewEntry() {
       if (log.CALL) log.call(ME, "Entering notifyAboutNewEntry("+this.notifyCounter+")");
       this.notifyCounter++;
-      activateDispatchWorker();
+      //activateDispatchWorker();
+
+      if (checkSending(true) == false)
+         return;
+
+      if (useBurstModeTimer() == true)
+         return;
+
+      startWorkerThread(false);
    }
 
    /**
@@ -548,7 +556,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    private void activateDispatchWorker() {
 
-      if (checkSending() == false)
+      if (checkSending(false) == false)
          return;
 
       if (useBurstModeTimer() == true)
@@ -633,9 +641,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
+    * @param isPublisherThread We take care that the publisher thread, coming through putPost()
+    *        does never too much work to return fast enough and avoid possible dead locks.
     * @return true is status is OK and we can try to send a message
     */
-   private boolean checkSending() {
+   private boolean checkSending(boolean isPublisherThread) {
       if (this.isShutdown) {
          if (log.TRACE) log.trace(ME, "The dispatcher is shutdown, can't activate callback worker thread" + toXml(""));
          return false; // assert
@@ -645,7 +655,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          return false;
       }
 
-      if (msgQueue.isShutdown()) { // assert
+      if (msgQueue.isShutdown() && !isPublisherThread) { // assert
          if (log.TRACE) log.trace(ME, "The queue is shutdown, can't activate callback worker thread.");
          // e.g. client has disconnected on the mean time.
          //Thread.currentThread().dumpStack();
@@ -658,7 +668,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          return false;
       }
 
-      if (this.dispatchConnectionsHandler.isDead()) {
+      if (this.dispatchConnectionsHandler.isDead() && !isPublisherThread) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
          if (log.TRACE) log.trace(ME, text);
          givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
