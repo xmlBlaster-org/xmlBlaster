@@ -46,14 +46,14 @@ AUTHOR:
          /**
           * Callback from xmlBlasterFrame/callbackFrame that the persistent
           * http connection is established.
-          * Now (and not earlier) we may load our application.
+          * Now (and not earlier) we may load our application (static frames may be loaded earlier)
           */
          function loginSucceeded(persistentWindow)
          {
             Log = top.xmlBlasterWindow.Log;
             // Switch debugging on/off
-            Log.INFO = true;
-            Log.TRACE = true;
+            Log.INFO = false;
+            Log.TRACE = false;
             Log.trace("Login succeeded, loading application ...");
 
             isExplorer = (navigator.appVersion.indexOf("MSIE") != -1);
@@ -77,6 +77,7 @@ AUTHOR:
          {
             if ((typeof top.xmlBlasterWindow) != "undefined" &&
                 (typeof top.xmlBlasterWindow.location) != "undefined" &&
+                top.xmlBlasterWindow.location != null &&
                 (typeof top.xmlBlasterWindow.location.href) != "undefined")
                top.xmlBlasterWindow.location.href = "/xmlBlaster/BlasterHttpProxyServlet?ActionType=logout";
          }

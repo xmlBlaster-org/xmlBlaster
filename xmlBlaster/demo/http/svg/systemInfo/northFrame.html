@@ -38,6 +38,8 @@ COMMENT:
             top.xmlBlasterWindow.addUpdateListener( self );
             top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("cpuinfo"), " ");
             top.xmlBlasterWindow.Log.trace("OK, subscribed to cpuinfo");
+            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("meminfo"), " ");
+            top.xmlBlasterWindow.Log.trace("OK, subscribed to meminfo");
             top.xmlBlasterWindow.setReady( self, true );
             top.xmlBlasterWindow.Log.trace("OK, i am ready");
          }
@@ -55,48 +57,63 @@ COMMENT:
 
             Log.trace("Drawing to SVG in frame '" + frameName + "': '" + value + "'");
 
-            var svgFrame = parent.svgFrame;
-            if ((typeof svgFrame) == "undefined" || svgFrame == null) {
-               Log.error("northFrame.html: ERROR: parent.svgFrame=undefined, your update of " + value + " is lost!");
-               return;
-            }
-            Log.trace("northFrame.html: OK svgFrame=" + svgFrame);
-            // northFrame.html: OK svgFrame=[xpconnect wrapped Window]   
+            var svgdoc = getSVGDocument(parent.svgFrame, "systemInfoSVGPlugin");
+            if (svgdoc == null) return;
 
-            if ((typeof svgFrame.document) == "undefined" || svgFrame.document == null ) {
-               Log.error("html: SVG PLUGIN ERROR: svgFrame.document=undefined, your update of " + value + " is lost!");
-               return;
-            }
-            Log.trace("northFrame.html: OK svgFrame.document=" + svgFrame.document);
+            var myRectangle=svgdoc.getElementById('rectangle.CPU');
 
-            var embedWindow = svgFrame.document.embeds["systemInfoSVGPlugin"];
-            if ((typeof embedWindow) == "undefined" || embedWindow == null) {
-               Log.error("northFrame.html: SVG PLUGIN ERROR: document.embeds['systemInfoSVGPlugin']=undefined, your update of " + value + " is lost!");
-               return;
-            }
-            Log.trace("northFrame.html: OK embedWindow=" + embedWindow);
-
-            if ((typeof embedWindow.getSVGDocument) == "undefined") {
-               Log.error("html: SVG PLUGIN ERROR: embedWindow.getSVGDocument()=undefined, your update of " + value + " is lost!");
-               return;
-            }
-
-            var svgdoc = embedWindow.getSVGDocument();
-            Log.trace("northFrame.html: svgdoc=" + svgdoc);
-            var myRectangle=svgdoc.getElementById('rectangle');
-            Log.trace("northFrame.html: rectangle object=" + myRectangle);
             myRectangle.setAttribute('width', value);
             if (value > 80)
                myRectangle.getStyle().setProperty('fill','red')
             else if (value > 60)
                myRectangle.getStyle().setProperty('fill','yellow')
             else
-               myRectangle.getStyle().setProperty('fill','pink')
+               myRectangle.getStyle().setProperty('fill','green')
 
             Log.trace("SVG picture is successfully updated with new value");
             
             top.xmlBlasterWindow.setReady( self, true );
 
+         }
+
+         /**
+          * Access the SVG plugin, do some error checking
+          * @param svgFrame   The frame containing the embeded svg, e.g. parent.svgFrame;
+          * @param pluginName The name from the embed tag, for example "systemInfoSVGPlugin" from
+          *        <embed src="systemInfo.svg" type="image/svg-xml" name="systemInfoSVGPlugin" />
+          * @return The SVG root document, or null on error
+          */
+         function getSVGDocument(svgFrame, pluginName)
+         {
+            var Log = top.xmlBlasterWindow.Log;
+
+            if ((typeof svgFrame) == "undefined" || svgFrame == null) {
+               Log.error("ERROR: parent.svgFrame=undefined, your update of " + value + " is lost!");
+               return null;
+            }
+            Log.trace("OK svgFrame=" + svgFrame); // northFrame.html: OK svgFrame=[xpconnect wrapped Window]   
+
+            if ((typeof svgFrame.document) == "undefined" || svgFrame.document == null ) {
+               Log.error("SVG PLUGIN ERROR: svgFrame.document=undefined, your update of " + value + " is lost!");
+               return null;
+            }
+            Log.trace("OK svgFrame.document=" + svgFrame.document);
+
+            var embedWindow = svgFrame.document.embeds[pluginName];
+            if ((typeof embedWindow) == "undefined" || embedWindow == null) {
+               Log.error("SVG PLUGIN ERROR: document.embeds['systemInfoSVGPlugin']=undefined, your update of " + value + " is lost!");
+               return null;
+            }
+            Log.trace("OK embedWindow=" + embedWindow);
+
+            if ((typeof embedWindow.getSVGDocument) == "undefined") {
+               Log.error("SVG PLUGIN ERROR: embedWindow.getSVGDocument()=undefined, your update of " + value + " is lost!");
+               return null;
+            }
+
+            var svgdoc = embedWindow.getSVGDocument();
+            Log.trace("Success, svgdoc=" + svgdoc);
+            return svgdoc;
          }
       </script>
    </head>
