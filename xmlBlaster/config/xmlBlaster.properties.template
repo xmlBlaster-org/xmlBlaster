@@ -91,9 +91,10 @@ EmailDriver.from=xmlblast@localhost
 #------------------------------------------------------------------------------
 # List of all jdbc drivers to initalize for the XmlDBAdapter
 # Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
-JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html 
+JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver
 #JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
-#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver,sun.jdbc.odbc.JdbcOdbcDriver,com.sybase.jdbc2.jdbc.SybDriver
+#JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver,oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver,com.sybase.jdbc2.jdbc.SybDriver
 #------------------------------------------------------------------------------
 
 
