@@ -19,6 +19,8 @@ PLS
    xmlBlaster is suitable for a typical client/server or message based application<br>
    where the clients need instant notification about changes in the system.<p>
 
+   xmlBlaster gets its name from <i>blasting XML out in the world</i>.
+
    Access control list can be achived through QOS tags.
 
    <h2>Which CORBA POA Policy is used?</h2>
@@ -29,7 +31,7 @@ PLS
    Therefore the <i>One Thread per Client</i> policy wasn't used.<br>
    Many operating systems doesn't handle thousands of threads very well.<p>
 
-   The problem to recognize a client again was resolved using a unique
+   The problem to recognize a client again is resolved using a unique
    server IOR for every client, allowing the server to determine the client
    thru its calling IOR.<br>
    These unique IORs are mapped to the same POA servant with the use of
