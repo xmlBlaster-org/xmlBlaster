@@ -23,7 +23,7 @@ import org.xmlBlaster.engine.mime.Query;
  *   QuerySpecPlugin[QueueQuery][1.0]=org.xmlBlaster.engine.query.demo.QuerySpec
  * </pre>
  *
- * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/query.plugin.html">QuerySpec plugin framework</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.html">QuerySpec plugin framework</a>
  */
 public class QuerySpecQos extends QueryRefinementQos {
 
