@@ -42,8 +42,10 @@ public interface I_XmlBlasterConnection extends I_Plugin
     * Calling this method multiple times will do noting if a low level connection is available.
     * @param  address Contains the remote address,
     *         e.g. the host and port where the remote server listens
-    * @exception XmlBlasterException ErrorCode.COMMUNICATION* if the server is not reachable.<br />
-    *            Other errors if for example a malformed address is passed
+    * @exception XmlBlasterException ErrorCode.COMMUNICATION* if the server is not reachable,
+    *            in this case we can poll for the server.<br />
+    *            Other errors if for example a malformed address is passed, in this case we stop
+    *            and give up.
     */
    public void connectLowlevel(Address address) throws XmlBlasterException;
 
