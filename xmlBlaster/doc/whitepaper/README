@@ -1,0 +1,41 @@
+To generate a HTML version from the xml file download from
+
+   http://www.nwalsh.com/docbook/xsl/index.html
+
+   dbx106.zip
+
+Unzip it and correct the path below from /www/docbook to
+your installation path.
+
+
+Generate HTML output:
+=====================
+
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver whitepaper.xml /www/docbook/html/docbook.xsl whitepaper.html
+
+
+Generate XHTML output:
+======================
+
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver whitepaper.xml /www/docbook/xhtml/docbook.xsl whitepaper.xhtml
+
+
+Generate fo output:
+===================
+
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver whitepaper.xml /www/docbook/fo/docbook.xsl whitepaper.fo
+
+
+Generate pdf output:
+====================
+   First create the fo output (previous step).
+
+   Download the fo tools from apache: http://xml.apache.org/fop/running.html
+
+   FOP is the world's first print formatter driven by XSL formatting objects
+
+      fop_bin_0_12_0.jar
+
+   export CLASSPATH=$CLASSPATH:/www/fop_bin_0_12_0.jar
+
+	java -Dorg.xml.sax.parser=com.sun.xml.parser.Parser org.apache.fop.apps.CommandLine whitepaper.fo whitepaper.pdf
