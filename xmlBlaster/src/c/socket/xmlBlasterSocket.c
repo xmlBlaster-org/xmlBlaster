@@ -9,6 +9,11 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <string.h>
 #include <socket/xmlBlasterSocket.h>
 
+#ifdef _WINDOWS
+#  define ssize_t signed int
+#endif
+
+
 /**
  * Read the given amount of bytes
  * This method blocks until data arrives.

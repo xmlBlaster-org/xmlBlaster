@@ -15,6 +15,7 @@ Compile:   gcc -g -Wall -DUSE_MAIN -I.. -o CallbackServerUnparsed CallbackServer
 
 #ifdef _WINDOWS
 #  define socklen_t int
+#  define ssize_t signed int
 #endif
 
 static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse);
@@ -279,7 +280,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception)
 {
    ssize_t numSent;
-   int currpos = 0;
+   size_t currpos = 0;
    char *rawMsg;
    size_t rawMsgLen;
    size_t dataLen;

@@ -21,6 +21,9 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterAccessUnparsed.h>
 
+#ifdef _WINDOWS
+#  define ssize_t signed int
+#endif
 
 static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv);
 static bool getResponse(XmlBlasterAccessUnparsed *xb, SocketDataHolder *responseHolder, XmlBlasterException *exception);
