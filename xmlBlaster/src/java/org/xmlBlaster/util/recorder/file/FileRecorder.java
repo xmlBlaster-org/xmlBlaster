@@ -290,7 +290,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     * The messages are retrieved with the given rate per second
     * <p />
     * This method is thread save, even for undo on exceptions.
-    * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds
+    * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds<br />
+    *                  With -1.0 we deliver as fast as possible
     */
    public void pullback(float msgPerSec) throws XmlBlasterException {
 
@@ -348,6 +349,9 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
                   throw new XmlBlasterException(ME, text);
                }
             }
+
+            if (msgPerSec <= 0.)
+               continue;
 
             if (numSent >= msgPerSec)
                break;     // the desired rate per second is reached
