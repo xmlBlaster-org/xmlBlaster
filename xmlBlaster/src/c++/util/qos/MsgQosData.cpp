@@ -468,6 +468,10 @@ string MsgQosData::toXml(bool clearText, const string& extraOffset) const
       ret +=  "'/>";
    }
 
+   if (forceDestroy_.isModified()) {
+      ret += offset + " <forceDestroy>" + Global::getBoolAsString(forceDestroy_.getValue()) + "</forceDestroy>";
+   }
+
    if (getRcvTimestamp() != 0)
       ret += TimestampFactory::toXml(getRcvTimestamp(), extraOffset1, false);
    if(getQueueSize() > 0)
