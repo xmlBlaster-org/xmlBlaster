@@ -151,11 +151,14 @@ TODO
    <property name="cp.jmx" value="lib/jmxri.jar:lib/jmxtools.jar"/>
    <property name="cp.javacup" value="lib/java_cup.jar"/>
 
+   <!--
    <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
    <property name="soapdeploy.dir" value="./demo/soap"/>
    <property name="soaplib.dir" value="lib/soap"/>
    <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
+   -->
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
    <property name="svnversion.exe" value="svnversion"/>  <!-- On UNIX: /usr/bin/svnversion -->
@@ -619,7 +622,6 @@ TODO
             <exclude name="**/servlet/Req*.java"/>
             <exclude name="**/client/protocol/http/j2me/UrlConnectionMicro.java"/> <!-- We need Base64.java -->
             <exclude name="**/client/protocol/http/j2me/XmlBlasterAccessJ2ME.java"/>
-            <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver (IS NOT IMPLEMENTED) -->
             <!-- Activate excludes to compile with JDK 1.2 -->
             <patternset id="jdk12.notcompatible.sources">
                <!-- 
@@ -644,7 +646,6 @@ TODO
       <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties" filtering="true"/>
-      <copy verbose="true" file="${soap.dir}/service.xml" tofile="${build.dest}/service.xml"/>
 
       <switch value="${need.JDK.14}">
          <case value="true"> <!-- compiles/runs with JDK >= 1.4 only -->
@@ -681,11 +682,11 @@ TODO
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
 
-      <echo message="Creating ${soapdeploy.dir}/webservices/${name}.sar"/>
+      <!-- echo message="Creating ${soapdeploy.dir}/webservices/${name}.sar"/>
       <mkdir dir="${soapdeploy.dir}/webservices"/>
       <jar destfile="${soapdeploy.dir}/webservices/${name}.sar" manifest="${build.dest}/manifest.xmlBlaster"
            basedir="${build.dest}"
-           includes="org/**/soap/*,service.xml"/>
+           includes="org/**/soap/*,service.xml"/ -->
    </target>
 
    <!-- =================================================================== -->
@@ -1214,7 +1215,7 @@ TODO
       <mkdir dir="${javadoc.dir}"/>
       <javadoc packagenames="org.xmlBlaster.*,javaclients,http.*,html.*"
                sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.java.dir}:${demo.dir}"
-               excludepackagenames="org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap,org.xmlBlaster.client.protocol.http.j2me"
+               excludepackagenames="org.xmlBlaster.client.protocol.http.j2me"
                classpath="${cp}"
                destdir="${javadoc.dir}"
                maxmemory="256m"
@@ -1238,7 +1239,7 @@ TODO
       <javadoc packagenames="org.xmlBlaster.client.*,org.xmlBlaster.util.*,javaclients,http.*,html.*"
                sourcefiles="${demo.dir}/HelloWorld.java"
                sourcepath="${src.java.dir}:${demo.dir}"
-               excludepackagenames="org.xmlBlaster.util.servlet,org.xmlBlaster.util.recorder.*,org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap"
+               excludepackagenames="org.xmlBlaster.util.servlet,org.xmlBlaster.util.recorder.*"
                classpath="${cp}"
                maxmemory="256m"
                destdir="${javadoc.client.dir}"
