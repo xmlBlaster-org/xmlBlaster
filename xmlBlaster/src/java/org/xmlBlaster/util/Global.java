@@ -1402,7 +1402,8 @@ public class Global implements Cloneable
 
 
    public synchronized void detachJdbcManagerCommonTable(String managerName) {
-      this.jdbcQueueManagersCommonTable.remove(managerName);
+      if (this.jdbcQueueManagerCommonTable != null) 
+         this.jdbcQueueManagersCommonTable.remove(managerName);
    }
 
    /**
