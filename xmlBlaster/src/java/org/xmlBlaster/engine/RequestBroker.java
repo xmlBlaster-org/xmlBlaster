@@ -52,7 +52,6 @@ import java.io.*;
  * This is the central message broker, all requests are routed through this singleton.
  * <p>
  * The interface I_ClientListener informs about Client login/logout<br />
- * The interface MessageEraseListener informs when a MessageUnit is erased<br />
  * <p>
  * Most events are fired from the RequestBroker
  * <p>
@@ -61,7 +60,7 @@ import java.io.*;
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public final class RequestBroker implements I_ClientListener, MessageEraseListener, I_AdminNode, I_RunlevelListener
+public final class RequestBroker implements I_ClientListener, I_AdminNode, I_RunlevelListener
 {
    private String ME = "RequestBroker";
    private final Global glob;
@@ -212,7 +211,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
       authenticate.addClientListener(this);
-      addMessageEraseListener(this);
    }
 
    /**
@@ -554,7 +552,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   xmlKeyExact = xmlKey;
                SubscriptionInfo subs = null;
                if (sessionInfo.getConnectQos().duplicateUpdates() == false) {
-                  Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKeyExact.getUniqueKey());
+                  Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKeyExact.getUniqueKey(), true);
                   if (vec != null) {
                      if (vec.size() > 0) {
                         subs = (SubscriptionInfo)vec.firstElement();
@@ -931,7 +929,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             if (subs != null) {
                Vector childs = subs.getChildrenSubscriptions();
                if (childs != null) {
-                  log.info(ME, "unSubscribe() Traversing " + childs.size() + " childs");
+                  if (log.TRACE) log.trace(ME, "unSubscribe() Traversing " + childs.size() + " childs");
                   for (int ii=0; ii<childs.size(); ii++) {
                      SubscriptionInfo so = (SubscriptionInfo)childs.elementAt(ii);
                      fireUnSubscribeEvent(so);
@@ -1107,10 +1105,10 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             {
                if (log.TRACE) log.trace(ME, "Handle the new arrived Pub/Sub message ...");
                boolean messageExisted = true; // to shorten the synchronize block
+               MessageUnitWrapper msgUnitWrapper = null;
 
                synchronized(messageContainerMap) {
                   Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
-                  MessageUnitWrapper msgUnitWrapper = null;
                   if (obj == null) {
                      messageExisted = false;
                      msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
@@ -1183,7 +1181,10 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
                boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
 
                if (messageExisted) {
-                  contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQos);
+                  if (msgUnitWrapper == null)
+                     msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
+
+                  contentChanged = msgUnitHandler.setContent(xmlKey, msgUnitWrapper, publishQos);
                }
 
                if (!messageExisted || isYetUnpublished) {
@@ -1295,9 +1296,11 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
    public void eraseVolatile(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Published message is marked as volatile, erasing it");
-      fireMessageEraseEvent(sessionInfo, msgUnitHandler);
-      msgUnitHandler.erase(sessionInfo, null); // no erase event for volatile messages
-      msgUnitHandler = null;
+      try {
+         fireMessageEraseEvent(sessionInfo, msgUnitHandler, null); // null: no erase event for volatile messages
+      } catch (XmlBlasterException e) {
+         if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
+      }
    }
 
    /**
@@ -1419,12 +1422,10 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
 
             oidSet.add(msgUnitHandler.getUniqueKey());
             try {
-               fireMessageEraseEvent(sessionInfo, msgUnitHandler);
+               fireMessageEraseEvent(sessionInfo, msgUnitHandler, Constants.STATE_ERASED);
             } catch (XmlBlasterException e) {
                if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
             }
-            msgUnitHandler.erase(sessionInfo, Constants.STATE_ERASED);
-            msgUnitHandler = null;
          }
          //log.info(ME, "AFTER ERASE: " + toXml());
 
@@ -1453,13 +1454,11 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
 
 
    /**
-    * Event invoked on message erase() invocation (interface MessageEraseListener).
+    * Event invoked on message erase() invocation. 
     */
-   public void messageErase(MessageEraseEvent e) throws XmlBlasterException
+   public void messageErase(MessageUnitHandler msgUnitHandler) throws XmlBlasterException
    {
-      //SessionInfo sessionInfo = e.getSessionInfo();
-      MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
-      if (msgUnitHandler.hasSubscribers()) {
+      if (msgUnitHandler.hasExactSubscribers()) {
          if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + msgUnitHandler.getUniqueKey() + ", not removing messageUnitHandler skeleton since " + msgUnitHandler.numSubscribers() + " subscribers exist ...");
          // MessageUnitHandler will call 
       }
@@ -1614,55 +1613,65 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
       }
    }
 
-
-   /**
-    * Adds the specified messageErase listener to receive subscribe/unSubscribe events.
-    */
-   public void addMessageEraseListener(MessageEraseListener l) {
-      if (l == null) {
-         return;
-      }
-      synchronized (messageEraseListenerSet) {
-         messageEraseListenerSet.add(l);
-      }
-   }
-
-
-   /**
-    * Removes the specified listener.
-    */
-   public void removeMessageEraseListener(MessageEraseListener l) {
-      if (l == null) {
-         return;
-      }
-      synchronized (messageEraseListenerSet) {
-         messageEraseListenerSet.remove(l);
-      }
-   }
-
-
    /**
     * Notify all Listeners that a message is erased.
     *
     * @param sessionInfo
     * @param msgUnitHandler
+    * @param state Constants.STATE_ERASED or null (no erase event for volatile messages)
     */
-   final void fireMessageEraseEvent(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
+   final void fireMessageEraseEvent(SessionInfo sessionInfo, MessageUnitHandler msgUnitHandler, String state) throws XmlBlasterException
    {
-      synchronized (messageEraseListenerSet) {
-         if (messageEraseListenerSet.size() == 0)
-            return;
-
-         MessageEraseEvent event = new MessageEraseEvent(sessionInfo, msgUnitHandler);
-         Iterator iterator = messageEraseListenerSet.iterator();
-
-         while (iterator.hasNext()) {
-            MessageEraseListener erLi = (MessageEraseListener)iterator.next();
-            erLi.messageErase(event);
-         }
-
-         event = null;
+      // 1. Remove Node in big xml dom
+      try {
+         bigXmlKeyDOM.messageErase(msgUnitHandler);
       }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Received exception on message erase event, we ignore it: " + e.toString());
+         e.printStackTrace();
+      }
+
+      // 2. Send erase event
+      if (state != null) {
+         if (log.TRACE) log.trace(ME, "Sending client notification about message erase() event");
+         try {
+            msgUnitHandler.invokeCallback(sessionInfo, state);
+         }
+         catch (XmlBlasterException e) {
+            // The access plugin or client may throw an exception. The behavior is not coded yet
+            log.error(ME, "Received exception for message erase event (callback to client), we ignore it: " + e.toString());
+         }
+      }
+
+      // 3. Remove from subscription set
+      try {
+         clientSubscriptions.messageErase(sessionInfo, msgUnitHandler);
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Received exception on message erase event, we ignore it: " + e.toString());
+         e.printStackTrace();
+      }
+
+      // 4. Remove from my message map
+      try {
+         messageErase(msgUnitHandler);
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Received exception on message erase event, we ignore it: " + e.toString());
+         e.printStackTrace();
+      }
+
+      // 5. Cleanup message handler
+      try {
+         msgUnitHandler.erase(sessionInfo);
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Received exception on message erase event, we ignore it: " + e.toString());
+         e.printStackTrace();
+      }
+
+      // 6. give gc() a hint
+      msgUnitHandler = null;
    }
 
 
