@@ -133,7 +133,7 @@ static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
    for (;;) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-      n = vsprintf (p, fmt, ap);
+      n = VSNPRINTF(p, size, fmt, ap); /* UNIX: vsnprint() WINDOWS: _vsnprintf() */
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
