@@ -88,16 +88,6 @@ only the SNMP subagent module jax.jar is GPL only!
 
    Download http://www.jacorb.org
 
-   jacorb.jar is stripped with:
-      org.omg.CosCollection
-      org.omg.CosTrading
-      org.omg.CosTradingDynamic
-      org.omg.CosTradingRepos
-      org.omg.CosEvent*
-      org.omg.Messaging
-      org.jacorb.events
-      org.jacorb.trading
-
 
 7) xmlBlaster/bin/code2html
 ===========================

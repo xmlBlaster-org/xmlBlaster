@@ -91,13 +91,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    # Even funnier things for graphics with xmlBlaster ...
    CLASSPATH=${XMLBLASTER_HOME}/lib/jhotdraw.jar:${CLASSPATH}
 
-   # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
-   # using Xindice 1.0rc1 (DarkHorse); cvs from http://www.dbxml.org
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xmldb.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xalan-2.0.1.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xindice.jar:${CLASSPATH}
-
-
    #a2Blaster - authentication and authorisation service
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 

@@ -1,11 +1,11 @@
-		Deploying in JBoss
-		==================
+                Deploying in JBoss
+                ==================
 
 Here are some notes about how to deploy in JBoss.
 
 1. Copy xmlBlaster.jar into lib/ext
 
-2. Copy jacorb.jar into lib/ext
+2. Copy jacorb.jar, logkit-1.2.jar, avalon-framework-4.1.5.jar into lib/ext
 
 3. Edit the ra.xml file. An example is found in ra.xml. This is the one in
 the xmlBlasterK2.rar 

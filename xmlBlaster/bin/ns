@@ -9,6 +9,6 @@
 echo "Running naming service on port 7608:  jaco -DOAPort=7608 org.jacorb.naming.NameServer"
 
 # Try some path to find jacorb.jar, we add xmlBlaster.jar to find the jacorb.properties file
-CP=$CLASSPATH:../lib/jacorb.jar:../lib/xmlBlaster.jar:$XMLBLASTER_HOME/lib/jacorb.jar:$XMLBLASTER_HOME/lib/xmlBlaster.jar
+CP=$CLASSPATH:../lib/jacorb/jacorb.jar:../lib/jacorb/logkit-1.2.jar:../lib/jacorb/avalon-framework-4.1.5.jar:../lib/xmlBlaster.jar:$XMLBLASTER_HOME/lib/jacorb.jar:$XMLBLASTER_HOME/lib/xmlBlaster.jar
 
 jaco -cp $CP -DOAPort=7608 org.jacorb.naming.NameServer "$@"
