@@ -200,8 +200,8 @@ TODO
    <property name="OMNIORB_LIBS" value="omniORB4,omnithread" /> <!-- The necessary libs for omniORB C++ clients -->
    <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
-   <property name="CFLAGS" value=""/> <!-- Add your own in build.properties -->
-   <property name="LDFLAGS" value="${CFLAGS}"/> <!-- Add your own in build.properties -->
+   <!-- property name="CFLAGS" value="-m32"/> Add your own in build.properties -->
+   <!-- property name="LDFLAGS" value="${CLFAGS}"/> Add your own in build.properties -->
    <property name="C_LINK" value="shared"/>  <!-- link a shared/static (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
    <property name="src.c.dir" value="./src/c"/>
    <property name="build.src.c.dir" value="${build.src}/c"/>
@@ -214,7 +214,7 @@ TODO
    <property name="zlib.lib.name" value="z"/>                  <!-- On Windows set to 'zlib1' for zlib1.dll, defaults to 'z' for libz.so -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
-      <compilerarg value="${CFLAGS}" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />
       <defineset><define name="_WINDOWS" value="1" /></defineset>
       <!-- <compilerarg value="/GX" /> -->
       <compilerarg value="/Gm" if="is-debug"/>
@@ -252,7 +252,7 @@ TODO
    </compiler>
 
    <compiler id="bcc" name="bcc" if="use-bcc">
-      <compilerarg value="${CFLAGS}" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />
       <!--  target Pentium Pro   -->
       <compilerarg value="-6"/>
       <!--  zero length empty class member functions -->
@@ -273,7 +273,7 @@ TODO
 
    <!-- Compile C/C++ -->
    <compiler id="gcc" name="gcc" if="use-gcc">
-      <compilerarg value="${CFLAGS}" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />
       <compilerarg value="-Wall" />
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to suppress warning: ANSI C does not support `long long', C99 supports it -->
@@ -293,7 +293,7 @@ TODO
 
    <!-- Compile Intel C++ -->
    <compiler id="icc" name="icc" if="use-icc">
-      <compilerarg value="${CFLAGS}" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />
       <compilerarg value="-Wall" />
       <compilerarg value="-wd810" />
       <compilerarg value="-wd981" />
@@ -308,7 +308,7 @@ TODO
    </compiler>
 
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 and 5.5 -->
-    <compilerarg value="${CFLAGS}" />
+    <compilerarg value="${CFLAGS}" if="CFLAGS" />
     <!-- compilerarg value="-Kpic"/ -->  <!-- defaults to -KPIC (-xcode=pic32) for CC -->
     <!-- compilerarg value="-Bdynamic"/ --> <!-- is default for CC -->
   </compiler>
@@ -2463,11 +2463,11 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
 
          <linker name="icc"  if="use-icc">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
@@ -2507,11 +2507,11 @@ TODO
          </linker>
 
          <linker name="bcc"  if="use-bcc">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
 
          <linker name="CC"  if="use-CC">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
          </linker>
@@ -2656,7 +2656,7 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
@@ -2711,7 +2711,7 @@ TODO
          </linker>
 
          <linker name="icc"  if="use-icc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
 
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
@@ -2765,7 +2765,7 @@ TODO
          </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />
@@ -2792,15 +2792,15 @@ TODO
          </linker>
 
          <linker name="icc"  if="use-icc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
 
          <linker name="bcc"  if="use-bcc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
 
          <linker name="CC"> <!-- SunOS -->
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <!-- build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp -->
             <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
             <syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" /> <!-- ORBIX only? -->
@@ -2888,19 +2888,19 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc" unless="XMLBLASTER_C_COMPILE_AS_CPP">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
          <linker name="icc"  if="use-icc">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
            <syslibset libs="ws2_32" />
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
@@ -2908,13 +2908,13 @@ TODO
          </linker>
 
          <linker name="bcc"  if="use-bcc">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
          <linker name="CC"  if="use-CC">
-           <linkerarg value="${LDFLAGS}"/>
+           <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
            <linkerarg value="-mt"/>
@@ -2998,7 +2998,7 @@ TODO
          </defineset>
 
          <linker name="gcc" if="use-gcc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}" if="linux"/>
             <libset dir="${lib.dir}" libs="${c.lib.name}" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
@@ -3010,7 +3010,7 @@ TODO
          </linker>
 
          <linker name="icc" if="use-icc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}:${ICC_HOME}/lib" />
             <libset dir="${lib.dir}" libs="${c.lib.name}" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
@@ -3021,7 +3021,7 @@ TODO
          </linker>
 
          <linker name="msvc" if="use-msvc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}.dll" />  <!-- xmlBlasterClientC.dll -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
@@ -3033,11 +3033,11 @@ TODO
          </linker>
 
          <linker name="bcc" if="use-bcc">
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
 
          <linker name="CC" if="use-CC"> <!-- SunOS -->
-            <linkerarg value="${LDFLAGS}"/>
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <syslibset dir="/lib" libs="socket,posix4,nsl"/>
             <libset dir="${lib.dir}" libs="${c.lib.name}" /> <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
