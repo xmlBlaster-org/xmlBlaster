@@ -2664,14 +2664,14 @@ TODO
           <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar,xmlBlaster-ear.sar"/>
           <!-- fileset dir="${req.dir}" includes="*.class"/ -->
        </delete>
-       <delete file="${demo.dir}/j2me/SystemInfo.jar"/>
-       <delete file="${demo.dir}/j2me/SystemInfo.jad"/>
     </target>
 
     <target name="java-delete" depends="java-clean,docs-delete" description="Remove all generated ditribution Java and documentation files">
        <delete dir="${dist-classes.dir}"/>
        <delete dir="${dist.dir}"/>
        <delete dir="${dist-client.dir}"/>
+       <delete file="${demo.dir}/j2me/SystemInfo.jar"/>
+       <delete file="${demo.dir}/j2me/SystemInfo.jad"/>
    </target>
 
     <target name="clean" depends="cpp-clean,c-clean,java-clean" description="Remove generated Java, C and C++ files">
