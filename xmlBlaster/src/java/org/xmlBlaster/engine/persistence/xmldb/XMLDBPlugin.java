@@ -3,7 +3,7 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.8 2002/08/26 11:04:20 ruff Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.9 2002/09/29 23:54:22 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -74,6 +74,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("persistence");
+      if (log.CALL) log.call(ME, "Entering init()");
 
       driverPath = glob.getProperty().get("Persistence.Path", "xmldb:xindice:///db");
       colName = glob.getProperty().get("Persistence.Collection", "xmlBlaster");
@@ -95,8 +96,8 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
 
    /**
-   * Closes the Xindice-Collection
-   */
+    * Closes the Xindice-Collection
+    */
    public final void shutdown() throws XmlBlasterException {
 
       if (log.CALL) log.call(ME, "shutdown");
