@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.9 2002/05/15 16:54:13 ruff Exp $
+Version:   $Id: Global.java,v 1.10 2002/05/16 15:38:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -178,13 +178,26 @@ public final class Global extends org.xmlBlaster.util.Global
    }
 
    /**
-    * The instance which manages myself in a cluster environment. 
+    * Access instance which manages myself in a cluster environment. 
     */
    public final ClusterManager getClusterManager() throws XmlBlasterException {
       if (this.clusterManager == null) {
+         log.error(ME, "Internal problem: please intialize ClusterManager first");
+         Thread.currentThread().dumpStack();
+         throw new XmlBlasterException(ME, "Internal problem: please intialize ClusterManager first - Please ask on mailing list for support");
+      }
+      return this.clusterManager;
+   }
+
+   /**
+    * Initialize the instance which manages myself in a cluster environment. 
+    * Only the first call will set the sessionInfo
+    */
+   public final ClusterManager getClusterManager(org.xmlBlaster.authentication.SessionInfo sessionInfo) throws XmlBlasterException {
+      if (this.clusterManager == null) {
          synchronized(this) {
             if (this.clusterManager == null)
-               this.clusterManager = new ClusterManager(this);
+               this.clusterManager = new ClusterManager(this, sessionInfo);
          }
       }
       return this.clusterManager;

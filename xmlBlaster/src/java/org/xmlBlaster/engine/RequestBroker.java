@@ -142,13 +142,15 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       myselfLoginName = "__RequestBroker_internal[" + glob.getId() + "]";
       unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
 
+      useCluster = glob.getProperty().get("cluster", true);
+      if (useCluster)
+         glob.getClusterManager(this.unsecureSessionInfo); // Initialize ClusterManager
+
       accessPluginManager = new AccessPluginManager(glob);
 
       publishPluginManager = new PublishPluginManager(glob);
 
       pluginManager = new PersistencePluginManager(glob);
-
-      useCluster = glob.getProperty().get("cluster", true);
 
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
@@ -179,6 +181,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
+   }
+
+   public void postInit() throws XmlBlasterException
+   {
+      if (useCluster)
+         glob.getClusterManager().postInit();
 
       loadPersistentMessages();
    }
@@ -188,14 +196,26 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * Access the global handle. 
     * @return The Global instance of this xmlBlaster server
     */
-   public final Global getGlobal()
-   {
+   public final Global getGlobal() {
       return this.glob;
    }
 
    public final AccessPluginManager getAccessPluginManager() {
       return this.accessPluginManager;
    }
+
+   /**
+    * The cluster may access an internal session to publish its received messages. 
+    * AWARE: The clusterManager is responsible for the security as it call directly
+    * into RequestBroker.
+    * See ClusterNode.java update() where we check the cbSessionId
+    * TODO: Security audit.
+    */
+    /*
+   public final SessionInfo getClusterSessionInfo() {
+      this.unsecureSessionInfo;
+   }
+      */
 
    /**
     * Publish dead letters, expired letters should be filtered away before. 
@@ -462,6 +482,23 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             }
          }
 
+         if (useCluster) { // cluster support - forward message to master
+            try {
+               String ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
+               //Thread.currentThread().dumpStack();
+               //if (ret != null) return ret;
+            }
+            catch (XmlBlasterException e) {
+               if (e.id.equals("ClusterManager.PluginFailed")) {
+                  useCluster = false;
+               }
+               else {
+                  e.printStackTrace();
+                  throw e;
+               }
+            }
+         }
+
          return returnOid[0];  //!!! Only index 0 supported
       }
       catch (XmlBlasterException e) {
@@ -527,6 +564,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
                AccessFilterQos[] filterQos = qos.getFilterQos();
                if (filterQos != null) {
+                  if (Log.TRACE) Log.trace(ME, "Checking " + filterQos.length + " filters");
                   for (int jj=0; jj<filterQos.length; jj++) {
                      XmlKey key = msgUnitHandler.getXmlKey(); // This key is DOM parsed
                      I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
@@ -887,6 +925,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * <p />
     * See <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl">xmlBlaster.idl</a>,
     * the CORBA access interface on how clients can access xmlBlaster.
+    * <p />
+    * TODO: Allow XML formatted returns which exactly match the update() return syntax (for clustering ClusterNode.java:update())
     *
     * @param sessionInfo  The SessionInfo object, describing the publishing client
     * @param msgUnit The MessageUnit struct
@@ -898,7 +938,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *
     * @see org.xmlBlaster.engine.xml2java.PublishQos
     */
-   String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   public String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
       try {
          if (msgUnit == null || publishQos==null || xmlKey==null) {
