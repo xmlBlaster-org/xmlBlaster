@@ -7,34 +7,7 @@ if [ ${JAVA_HOME:=""} = "" ] ; then
    exit
 fi
 
-CLASSPATH=lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:$CLASSPATH
-
-CLASSPATH=lib/connector.jar:$CLASSPATH
-CLASSPATH=lib/jaas.jar:$CLASSPATH
-CLASSPATH=lib/jta-spec1_0_1.jar:$CLASSPATH
-CLASSPATH=lib/jms.jar:$CLASSPATH
-CLASSPATH=lib/ejb2.0.jar:$CLASSPATH
-CLASSPATH=lib/jndi-jdk1_3_1.jar:$CLASSPATH
-
-CLASSPATH=lib/parser.jar:lib/jaxp.jar:$CLASSPATH
-CLASSPATH=lib/idl.jar:lib/jacorb.jar:$CLASSPATH
-CLASSPATH=lib/concurrent.jar:$CLASSPATH
-CLASSPATH=lib/remotecons.jar:$CLASSPATH
-CLASSPATH=lib/omquery.jar:lib/xtdash.jar:lib/servlet.jar:lib/junit.jar:$CLASSPATH
-CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:$CLASSPATH
-CLASSPATH=lib/mail.jar:lib/activation.jar:lib/cpptasks.jar:$CLASSPATH
-CLASSPATH=lib/gnu-regexp.jar:$CLASSPATH
-
-CLASSPATH=lib/batik/batik.jar:$CLASSPATH
-CLASSPATH=lib/batik/js.jar:$CLASSPATH
-
-CLASSPATH=lib/Xindice/xalan-2.0.1.jar:$CLASSPATH
-CLASSPATH=lib/Xindice/xindice.jar:$CLASSPATH
-CLASSPATH=lib/Xindice/xmldb.jar:$CLASSPATH
-
-CLASSPATH=testsuite/org/xmlBlaster:$CLASSPATH
-
-CLASSPATH=$CLASSPATH:lib/ant/xerces.jar
+CLASSPATH=lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:$CLASSPATH:lib/ant/xerces.jar
 
 ALL_ENV=`env`
 MY_DEF=""
