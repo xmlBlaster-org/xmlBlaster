@@ -252,6 +252,7 @@ java javaclients.HelloWorldSubscribe -oid __sys__deadMessage
    <see type="REQ">engine.qos.update.rcvTimestamp</see>
    <see type="REQ">engine.qos.update.sender</see>
    <see type="REQ">engine.qos.update.subscriptionId</see>
+   <see type="REQ">admin.errorHandling</see>
 
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
 
