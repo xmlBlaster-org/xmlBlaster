@@ -565,7 +565,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
-   <target name="docs" depends="xmlBlaster,javadocs,html,requirements" description="Creates the complete documentation (javadoc, source-html, requirements>">
+   <target name="docs" depends="xmlBlaster,javadocs,html,requirements,whitepaper" description="Creates the complete documentation (javadoc, source-html, requirements>">
    </target>
    <target name="docs-delete" depends="javadocs-delete,html-delete,requirements-delete" description="Remoces all documentation (javadoc, source-html, requirements>">
    </target>
@@ -674,6 +674,28 @@ TODO
       </delete>
    </target>
  
+   <!-- =================================================================== -->
+   <!-- Creates html whitepaper with docbook                                -->
+   <!-- =================================================================== -->
+   <target name="whitepaper" description="Creates html whitepaper doc/whitepaper XML file">
+      <property name="docbook.dir" value="/opt/docbook"/>
+      <!-- html -->
+      <echo message="Creating whitepaper html variant (excepting docbook under ${docbook.dir})"/>
+      <java classname="com.jclark.xsl.sax.Driver" classpath="${cp}" dir="${doc.dir}/whitepaper" failonerror="false" fork="true">
+         <sysproperty key="com.jclark.xsl.sax.parser" value="com.jclark.xsl.dom.SunXMLProcessorImpl"/>
+         <arg line="whitepaper.xml ${docbook.dir}/html/docbook.xsl whitepaper.html"/>
+      </java>
+      <!-- pdf -->
+      <java classname="com.jclark.xsl.sax.Driver" classpath="${cp}" dir="${doc.dir}/whitepaper" failonerror="false" fork="true">
+         <sysproperty key="com.jclark.xsl.sax.parser" value="com.jclark.xsl.dom.SunXMLProcessorImpl"/>
+         <arg line="whitepaper.xml ${docbook.dir}/fo/docbook.xsl whitepaper.fo"/>
+      </java>
+      <java classname="org.apache.fop.apps.CommandLine" classpath="${cp}" dir="${doc.dir}/whitepaper" failonerror="false" fork="true">
+         <sysproperty key="org.xml.sax.parser" value="com.sun.xml.parser.Parser"/>
+         <arg line="whitepaper.fo whitepaper.pdf"/>
+      </java>
+   </target>
+
    <!-- =================================================================== -->
    <!-- Creates the distribution                                            -->
    <!-- =================================================================== -->
