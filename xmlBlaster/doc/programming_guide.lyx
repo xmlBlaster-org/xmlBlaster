@@ -1,0 +1,76 @@
+#This file was created by <prog> Fri Nov 19 14:34:54 1999
+#LyX 1.0 (C) 1995-1999 Matthias Ettrich and the LyX Team
+\lyxformat 2.15
+\textclass article
+\language default
+\inputencoding default
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+xmlBlaster 1.0 Programming Guide
+\layout Author
+
+Manuel Kron, Marcel Ruff
+\layout Date
+
+November 18, 1999
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Section
+
+Introduction
+\layout Section
+
+Installing xmlBlaster
+\layout Section
+
+Getting Started
+\layout Section
+
+xmlBlaster and JacORB
+\layout Section
+
+Architektur
+\layout Subsection
+
+IDL
+\layout Section
+
+Programming a plugin for xmlBlaster
+\layout Subsection
+
+XML-Plugin
+\layout Section
+
+Programming a Client-Application
+\layout Section
+
+Standards
+\layout Section
+
+LInks
+\the_end
