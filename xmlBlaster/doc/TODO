@@ -3,6 +3,9 @@
     This is nonsense, the minimal DOM tree couldn't be parsed by XPath
   * Normalizing the DOM tree
 
+- Integrate with Java API for XML Parsing 1.0 
+  http://developer.java.sun.com/developer/earlyAccess/xml/   
+
 - Testing implementation of unsubscribe() XPath oid
 
 - Testing implementation of erase() with XPath
