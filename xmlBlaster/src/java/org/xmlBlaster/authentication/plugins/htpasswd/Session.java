@@ -177,7 +177,7 @@ public class Session implements I_Session, I_Subject {
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     * @see #importMessage(MsgUnitRaw)
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation
       return msg;
    }

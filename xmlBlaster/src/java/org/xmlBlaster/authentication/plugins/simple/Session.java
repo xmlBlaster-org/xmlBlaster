@@ -7,9 +7,10 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
- * @author  $Author: ruff $ ($Name:  $)
+ * @author  $Author: atigh $ ($Name:  $)
  *
  * @author Wolfgang Kleinertz
  */
@@ -133,7 +134,7 @@ public class Session implements I_Session {
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     * @see #importMessage(MsgUnitRaw)
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
       // dummy implementation
       return msg;
    }
@@ -145,6 +146,9 @@ public class Session implements I_Session {
    public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
+
+
+
 
    /**
     * encrypt, sign, seal ... an outgoing message

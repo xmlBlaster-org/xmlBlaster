@@ -1954,7 +1954,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       MsgUnitRaw mu[] = new MsgUnitRaw[msgUnitArr.length];
       for(int i=0; i<msgUnitArr.length; i++) {
-        mu[i]=secPlgn.importMessage(msgUnitArr[i]);
+        mu[i]=secPlgn.importMessage(msgUnitArr[i], MethodName.UNKNOWN);
       }
       return mu;
    }

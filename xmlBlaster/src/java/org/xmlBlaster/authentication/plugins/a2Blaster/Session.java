@@ -208,7 +208,7 @@ public class Session implements I_Session, I_Subject {
     * @see #importMessage(MsgUnitRaw)
     * implements: I_Session.importMessage(MsgUnitRaw);<br>
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
       // dummy implementation
       if (log.CALL) log.call(ME+".importMessage(...)", "-------START-----\n");
       if (log.DUMP) log.dump(ME+".importMessage(...)", "in: "+msg.toXml());

@@ -9,6 +9,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 //import org.xmlBlaster.authentication.plugins.ReversibleCrypt;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * @author Wolfgang Kleinertz
@@ -134,7 +135,7 @@ public class Session implements I_Session {
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     * @see #importMessage(MsgUnitRaw)
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
       // dummy implementation
       msg = new MsgUnitRaw(msg.getMsgUnit(),
                            importMessage(msg.getKey()),

@@ -358,7 +358,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       }
 
       // check the message, if it was treated with confidentiality and integrity
-      msgUnit = sessionSecCtx.importMessage(msgUnit);
+      msgUnit = sessionSecCtx.importMessage(msgUnit, action);
+      
       /*
       msgUnit = new MsgUnitRaw(
                (msgUnit.getKey().size() > 0) ? sessionSecCtx.importMessage(msgUnit.getKey()) : msgUnit.getKey(), 

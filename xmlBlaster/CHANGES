@@ -16,6 +16,9 @@ Changes for 0.xxx [xx, xxx 2003]
    on partial messages (needed for C SOCKET client).
    This change is backward compatible.
 
+ o Added MethodName argument to I_MsgSecurityInterceptor.importMessage
+   to allow for creation of MsgUnit from MsgUnitRaw within security plugins
+
 Changes for 0.847 [12, May 2003]
 ================================
 

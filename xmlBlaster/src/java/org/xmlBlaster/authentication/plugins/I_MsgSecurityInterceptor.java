@@ -2,6 +2,8 @@ package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.engine.Global;
 
 /**
  * Interface declaring methods to intercept messages in the security layer
@@ -31,7 +33,8 @@ public interface I_MsgSecurityInterceptor {
    /** Use this to import (decrypt) the content */
    public byte[] importMessage(byte[] content) throws XmlBlasterException;
    /** Use this to import (decrypt) separately the xmlKey,content,qos of MsgUnitRaw */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException;
+   /** @param MethodName The name of the method which is intercepted */
+   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException;
 
    /**
     * encrypt, sign, seal ... an outgoing message. 

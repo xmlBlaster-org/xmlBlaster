@@ -111,17 +111,17 @@
             <code>I_MsgSecurityInterceptor</code> hides the implementation of message encryption and decryption.
             The follow methods have to be implemented:</p>
             <ul>
-               <li><pre>public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException</pre>
+               <li><pre>public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException</pre>
                    <pre>public String importMessage(String xmlMsg) throws XmlBlasterException</pre>
                    <pre>public byte[] importMessage(byte[] content) throws XmlBlasterException</pre>
-                   The job of both methods is the import of messages. Therefore all incomming messages and 
+                   The job of these methods is the import of messages. Therefore all incomming messages and 
                    message components (like qos without key and content) will be routed through one of these methods.
                    In an implementation, they can be used to decrypt the information, verify a signature, log some
                    information, and so on.</li>
                <li><pre>public MsgUnitRaw exportMessage(MsgUnitRaw msg) throws XmlBlasterException</pre>
                    <pre>public String exportMessage(String xmlMsg) throws XmlBlasterException</pre>
                    <pre>public byte[] exportMessage(byte[] content) throws XmlBlasterException</pre>
-                   These are the counterparts of of <code>MsgUnitRaw importMessage(MsgUnitRaw msg)</code> and
+                   These are the counterparts of of <code>MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action)</code> and
                    <code>String importMessage(String xmlMsg)</code>. Thus, they are the right location to encrypt,
                    sign, log, etc. outgoing messages.</li>
             </ul>

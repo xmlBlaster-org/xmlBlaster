@@ -317,7 +317,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       if (getEntry.wantReturnObj()) {
          for (int ii=0; ii<rawReturnValArr.length; ii++) {
             if (this.securityInterceptor != null) { // decrypt return value ...
-               rawReturnValArr[ii] = this.securityInterceptor.importMessage(rawReturnValArr[ii]);
+               rawReturnValArr[ii] = this.securityInterceptor.importMessage(rawReturnValArr[ii], MethodName.PUBLISH);
             }
             // NOTE: We use PUBLISH here instead of GET_RETURN to have the whole MsgUnit stored
             msgUnitArr[ii] = new MsgUnit(glob, rawReturnValArr[ii], MethodName.PUBLISH);

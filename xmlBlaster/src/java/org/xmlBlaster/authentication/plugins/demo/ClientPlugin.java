@@ -6,6 +6,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.util.enum.MethodName;
 //import org.jutils.JUtilsException;
 
 /**
@@ -57,11 +58,12 @@ public class ClientPlugin implements I_ClientPlugin {
     * decrypt, check, unseal ... an incomming message
     * <p/>
     * @param MsgUnitRaw The the received message
+    * @param MethodName The name of the method which is intercepted
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     * @see #importMessage(String)
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg) throws XmlBlasterException {
+   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation
       msg = new MsgUnitRaw(msg.getMsgUnit(),
                            importMessage(msg.getKey()),
