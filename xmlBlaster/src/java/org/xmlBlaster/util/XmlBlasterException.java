@@ -47,6 +47,7 @@ import org.jutils.JUtilsException;
  *  {8} = embeddedMessage
  *  {9} = transactionInfo
  *  {10} = errorCode.getDescription()
+ *  {11} = isServerSide     // exception thrown from server or from client?
  * </pre>
  * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @since 0.8+ with extended attributes
@@ -65,13 +66,14 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    transient private Timestamp timestamp;
    private final long timestampNanos;
    private final String stackTrace;
+   private final boolean isServerSide;
 
    transient private final Throwable cause; // Since JDK 1.4 this is available in Throwable, we keep it here to support older JDK versions
    private String embeddedMessage;
    private final String transactionInfo;
 
-   private final static String DEFAULT_LOGFORMAT = "XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]";
-   private final static String DEFAULT_LOGFORMAT_INTERNAL = "XmlBlasterException node=[{1}] location=[{2}]\n" +
+   private final static String DEFAULT_LOGFORMAT = "XmlBlasterException errorCode=[{0}] serverSideException={11} node=[{1}] location=[{2}] message=[{4} : {8}]";
+   private final static String DEFAULT_LOGFORMAT_INTERNAL = "XmlBlasterException serverSideException={11} node=[{1}] location=[{2}]\n" +
                                                             "{8}\n" +
                                                             "stackTrace={7}\n" +
                                                             "versionInfo={5}\n" +
@@ -97,7 +99,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String location, String message, Throwable cause) {
       this(glob, errorCodeEnum, (String)null, location, (String)null, message, (String)null, (Timestamp)null,
-           (String)null, (String)null, (String)null, cause);
+           (String)null, (String)null, (String)null, (glob==null)?true:glob.isServerSide(), cause);
    }
 
    /**
@@ -105,14 +107,16 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     */
    public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String node, String location, 
                                String lang, String message, String versionInfo, Timestamp timestamp,
-                               String stackTrace, String embeddedMessage, String transcationInfo) {
+                               String stackTrace, String embeddedMessage, String transcationInfo,
+                               boolean isServerSide) {
       this(glob, errorCodeEnum, node, location, lang, message, versionInfo, timestamp,
-           stackTrace, embeddedMessage, transcationInfo, (Throwable)null);
+           stackTrace, embeddedMessage, transcationInfo, isServerSide, (Throwable)null);
    }
 
    private XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String node, String location, 
                                String lang, String message, String versionInfo, Timestamp timestamp,
-                               String stackTrace, String embeddedMessage, String transcationInfo, Throwable cause) {
+                               String stackTrace, String embeddedMessage, String transcationInfo,
+                               boolean isServerSide, Throwable cause) {
       //super(message, cause); // JDK 1.4 only
       super((message == null || message.length() < 1) ? errorCodeEnum.getDescription() : message);
       this.glob = (glob == null) ? Global.instance() : glob;
@@ -138,6 +142,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       this.embeddedMessage = (embeddedMessage == null) ?
                                 ((this.cause == null) ? "" : this.cause.toString()) : embeddedMessage; // cause.toString() is <classname>:getMessage()
       this.transactionInfo = (transcationInfo == null) ? "<transaction/>" : transcationInfo;
+      this.isServerSide = isServerSide;
    }
 
    public final void changeErrorCode(ErrorCode errorCodeEnum) {
@@ -204,7 +209,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                               (stackTrace==null) ? "" : stackTrace,           // {7}
                               (embeddedMessage==null) ? "" : embeddedMessage, // {8}
                               (transactionInfo==null) ? "" : transactionInfo, // {9}
-                              (errorCodeEnum==null) ? "" : errorCodeEnum.getDescription() }; // {10}
+                              (errorCodeEnum==null) ? "" : errorCodeEnum.getDescription(), // {10}
+                              new Boolean(isServerSide()) }; // {11}
 
       boolean handleAsInternal = this.cause != null &&
               (
@@ -321,6 +327,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     */
    public final String getTransactionInfo() {
       return this.transactionInfo;
+   }
+
+   /**
+    * @return true if the exception occured on server side, false if happened on client side
+    */
+   public final boolean isServerSide() {
+      return this.isServerSide;
    }
 
    public boolean isInternal() {
@@ -445,6 +458,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
       sb.append(offset).append("<exception errorCode='").append(getErrorCodeStr()).append("'>");
       sb.append(offset).append(" <class>").append(getClass().getName()).append("</class>");
+      sb.append(offset).append(" <isServerSide>").append(isServerSide()).append("</isServerSide>");
       sb.append(offset).append(" <node>").append(getNode()).append("</node>");
       sb.append(offset).append(" <location>").append(getLocation()).append("</location>");
       sb.append(offset).append(" <lang>").append(getLang()).append("</lang>");
@@ -483,6 +497,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       out.write(getEmbeddedMessage());
       out.write(0);
       out.write(getTransactionInfo());
+      out.write(0);
+      out.write(""+isServerSide());
       out.write(0);
       out.flush();
       byte[] result = byteOut.toByteArray();
@@ -557,9 +573,15 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
             break;
       String transactionInfo = new String(data, start, end-start);
 
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      Boolean exceptionFromServer = new Boolean(new String(data, start, end-start));
+
       return new XmlBlasterException(glob, ErrorCode.toErrorCode(errorCodeStr),
                                node, location, lang, message, versionInfo, Timestamp.valueOf(timestampStr),
-                               stackTrace, embeddedMessage, transactionInfo);
+                               stackTrace, embeddedMessage, transactionInfo, exceptionFromServer.booleanValue());
    }
 
    /**
