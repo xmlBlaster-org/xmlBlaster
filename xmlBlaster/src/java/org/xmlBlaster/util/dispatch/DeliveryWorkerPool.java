@@ -58,10 +58,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
       //glob.getRunlevelManager().addRunlevelListener(this);
    }
 
-   private void initialize() {
-      if (pool != null && isShutdown == false)
-         return;
-
+   private synchronized void initialize() {
       this.pool = new PooledExecutor(new LinkedQueue());
       this.pool.setThreadFactory(new DeamonThreadFactory(glob.getId()));
       
@@ -77,21 +74,25 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
       if (log.TRACE) log.trace(ME, "maximumPoolSize=" + this.maximumPoolSize.getValue() + " minimumPoolSize=" +
                     this.minimumPoolSize.getValue() + " createThreads=" + this.createThreads.getValue());
 
-      pool.setMaximumPoolSize(this.maximumPoolSize.getValue());
-      pool.setMinimumPoolSize(this.minimumPoolSize.getValue());
-      pool.createThreads(this.createThreads.getValue());
-      pool.setKeepAliveTime(-1); // Threads live forever
-      pool.waitWhenBlocked();
+      this.pool.setMaximumPoolSize(this.maximumPoolSize.getValue());
+      this.pool.setMinimumPoolSize(this.minimumPoolSize.getValue());
+      this.pool.createThreads(this.createThreads.getValue());
+      this.pool.setKeepAliveTime(-1); // Threads live forever
+      this.pool.waitWhenBlocked();
    }
 
    public boolean isShutdown() {
       return this.isShutdown;
    }
 
-   public final void execute(DeliveryManager deliveryManager, java.lang.Runnable command) throws XmlBlasterException {
+   public final synchronized void execute(DeliveryManager deliveryManager, java.lang.Runnable command) throws XmlBlasterException {
       try {
          //deliveryManager.setDeliveryWorkerIsActive(true); // Done in DeliveryManager already
-         pool.execute(command);
+         if (this.isShutdown) {
+            log.trace(ME, "The pool is shudown, ignoring execute()");
+            return;
+         }
+         this.pool.execute(command);
       }
       catch (Throwable e) {
          deliveryManager.setDeliveryWorkerIsActive(false);
@@ -101,25 +102,25 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    }
 
    public String getStatistic() {
-      return "Active threads=" + pool.getPoolSize() + " of max=" + pool.getMaximumPoolSize();
+      return "Active threads=" + this.pool.getPoolSize() + " of max=" + this.pool.getMaximumPoolSize();
    }
 
    /**
     * A shut down pool cannot be restarted
     */
    public void shutdownAfterProcessingCurrentlyQueuedTasks() {
-      pool.shutdownAfterProcessingCurrentlyQueuedTasks();
+      this.pool.shutdownAfterProcessingCurrentlyQueuedTasks();
    }
 
    public synchronized void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
-      if (!isShutdown) {
-         isShutdown = true;
-         pool.shutdownNow();
+      if (!this.isShutdown) {
+         this.isShutdown = true;
+         this.pool.shutdownNow();
       }
-      this.pool = null;
-      this.glob = null;
-      this.log = null;
+      //this.pool = null;
+      //this.glob = null;
+      //this.log = null;
    }
 
    /**
@@ -130,38 +131,5 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    public String getName() {
       return ME;
    }
-
-   /*
-    * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
-    * <p />
-    * Enforced by I_RunlevelListener
-   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
-      if (to == from)
-         return;
-
-      if (to > from) { // startup
-         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-         }
-         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
-            if (isShutdown)
-               initialize(); // create a new pool
-         }
-         if (to == RunlevelManager.RUNLEVEL_RUNNING) {
-         }
-      }
-      else if (to < from) { // shutdown
-         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
-         }
-         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            shutdownAfterProcessingCurrentlyQueuedTasks();
-            isShutdown = true;
-         }
-         if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            shutdown();
-         }
-      }
-   }
-    */
 }
 
