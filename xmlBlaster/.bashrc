@@ -82,6 +82,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "${BLACK_LTGREEN}Welcome to xmlBlaster.org   ${ESC}"
    ${ECHO} "${BLACK_LTGREEN}   XMLBLASTER_HOME=${XMLBLASTER_HOME}  ${ESC}"
 
+   # Funny stuff for speech synthetizer ...
+   CLASSPATH=${XMLBLASTER_HOME}/lib/speech.jar:${CLASSPATH}
+
    # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
    # using Xindice 1.0rc1 (DarkHorse); cvs from http://www.dbxml.org
    CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xmldb.jar:${CLASSPATH}
