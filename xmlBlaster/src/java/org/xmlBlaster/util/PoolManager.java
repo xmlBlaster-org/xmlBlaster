@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.9 2000/06/03 12:50:52 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.10 2000/06/03 15:38:29 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -264,7 +264,7 @@ public class PoolManager
    {
       ResourceWrapper rw = null;
       if (instanceId != null && instanceId.length() > 0) {
-         rw = findSilent(instanceId);
+         rw = findBusySilent(instanceId);
          if (rw != null) {
             if (Log.TRACE) Log.trace(ME, "Reconnected to busy resource '" + instanceId + "' ...");
             return rw;
@@ -378,10 +378,29 @@ public class PoolManager
     * @param instanceId The unique resource ID
     * @return The handle containing the resource.
     */
-   private ResourceWrapper findSilent(String instanceId)
+   private ResourceWrapper findBusySilent(String instanceId)
    {
       if (instanceId == null) return null;
       return (ResourceWrapper)busy.get(instanceId);
+   }
+
+
+   /**
+    * Find a resource in idle list. 
+    * <p />
+    * Note that this is currently a linear search (not high performing).
+    * @param instanceId The unique resource ID
+    * @return The handle containing the resource.
+    */
+   private ResourceWrapper findIdleSilent(String instanceId)
+   {
+      if (instanceId == null) return null;
+      for (int ii=0; ii<idle.size(); ii++) {
+         ResourceWrapper rw = (ResourceWrapper)idle.elementAt(ii);
+         if (rw.getInstanceId().equals(instanceId))
+            return rw;
+      }
+      return null;
    }
 
 
@@ -398,7 +417,7 @@ public class PoolManager
          Log.error(ME, text);
          throw new XmlBlasterException("ResourceNotFound", text);
       }
-      ResourceWrapper rw = findSilent(instanceId);
+      ResourceWrapper rw = findBusySilent(instanceId);
       if (rw == null) {
          String text = "Resource '" + instanceId + "' is invalid, timed out?";
          Log.error(ME, text);
@@ -417,7 +436,7 @@ public class PoolManager
     */
    public boolean isBusy(String instanceId)
    {
-      ResourceWrapper rw = findSilent(instanceId);
+      ResourceWrapper rw = findBusySilent(instanceId);
       return (rw != null);
    }
 
@@ -581,25 +600,36 @@ public class PoolManager
 
 
    /**
-    * Explicitly remove a resource.
+    * Explicitly remove a resource. 
+    * <p />
+    * It is erased if it is found in the idle list or even when it is busy.
     * @param instanceId The unique resource ID
     */
    public void erase(String instanceId)
    {
-      ResourceWrapper rw = findSilent(instanceId);
+      ResourceWrapper rw = findBusySilent(instanceId);
+      if (rw == null) {
+         rw = findIdleSilent(instanceId);
+      }
       erase(rw);
    }
 
 
    /**
-    * Remove a resource.
+    * Remove a resource. 
+    * <p />
+    * Remove it from the 'idle' or the 'busy' list.
     * @param rw The resource wrapper object
     */
    private void erase(ResourceWrapper rw)
    {
+      if (Log.CALLS) Log.calls(ME, "Entering erase() ...");
       if (rw == null) return;
+      if (Log.TRACE) Log.trace(ME, "Entering erase(" + rw.getInstanceId() + ")");
+      busy.remove(rw.getInstanceId());
       idle.remove(rw);
       callback.toErased(rw.getResource());
+      rw.destroy();
       dumpState(rw.getInstanceId());
    }
 
@@ -773,14 +803,17 @@ public class PoolManager
          TestPool testPool = new TestPool(2000, 3000); // erase resource after 3 sec in idle state
          TestResource r0 = testPool.reserve("ID-0");
          TestResource r1 = testPool.reserve("ID-1");
+         TestResource r2 = testPool.reserve("ID-2");
+         testPool.poolManager.erase("ID-2"); // erase from busy list
          Log.plain(ME, testPool.poolManager.toXml());
          if (testPool.poolManager.getNumBusy() != 2 || testPool.poolManager.getNumIdle() != 0)
             Log.panic(ME, "TEST 3.1 FAILED: Wrong number of busy/idle resources");
 
          // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
          try { Thread.currentThread().sleep(3000); } catch( InterruptedException i) {}
+         testPool.poolManager.erase("ID-1"); // erase from idle list
          Log.plain(ME, testPool.poolManager.toXml());
-         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 2)
+         if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 1)
             Log.panic(ME, "TEST 3.2 FAILED: Wrong number of busy/idle resources");
 
          // The resources are erased after 3 seconds in idle state, lets wait 4 seconds ...
