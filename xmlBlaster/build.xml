@@ -1340,7 +1340,8 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates the distribution for java clients                           -->
    <!-- =================================================================== -->
-   <target name="dist-client" depends="java-delete,all,dist-client-only" description="Create a java client distribution"/>
+   <target name="dist-client" depends="java-delete,dist-client-fast" description="Create a java client distribution"/>
+   <target name="dist-client-fast" depends="all,dist-client-only" description="Create a java client distribution"/>
    <target name="dist-client-only" depends="" description="">
       <mkdir dir="${dist-client.dir}"/>
       <mkdir dir="${dist-client.dir}/lib"/>
@@ -1521,12 +1522,12 @@ TODO
          <arg line="-clsid {${CLSID}} -out ${JRE_HOME}\axbridge\bin -reg ${build.dir}/xmlBlasterActiveX.jar org.xmlBlaster.client.activex.XmlScriptAccess" />
       </exec>
 
-      <!-- TODO: copy only what needed: -->
-      <!-- copy todir="${JRE_HOME}/axbridge/lib" filtering="false">
+      <!-- Due to CLASSLOADER problem we copy the JDBC driver to JRE_HOME\lib\ext -->
+      <copy todir="${JRE_HOME}/lib/ext" filtering="false">
          <fileset dir="lib">
-            <include name="*.jar"/>
+            <include name="hsqldb.jar"/>
          </fileset>
-      </copy -->
+      </copy>
       <echo message="activex done: See results under ${JRE_HOME}\axbridge"/>
    </target>
 
