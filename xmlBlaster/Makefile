@@ -34,6 +34,8 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.email \
 			org.xmlBlaster.protocol.http \
 			org.xmlBlaster.protocol.jdbc \
+			org.xmlBlaster.protocol.rmi \
+			org.xmlBlaster.protocol.xmlrpc \
 			org.xmlBlaster.util \
 			org.xmlBlaster.util.pool.jdbc
 
