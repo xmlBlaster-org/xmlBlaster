@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.41 2002/03/13 16:41:07 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.42 2002/04/18 15:18:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -15,6 +15,8 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.engine.xml2java.GetQoS;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -50,6 +52,14 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    private Button hideButton;
    private Button clearLogButton;
    private Button dumpButton;
+
+   /**
+    * This client is only for internal use, it is un secure to pass it outside because
+    * there is no authentication.<br />
+    * The login name "__sys__GuiQuery" is reserved!<br />
+    * TODO: security discussion
+    */
+   private final SessionInfo unsecureSessionInfo = null;
 
    /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
@@ -700,10 +710,15 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       {
          this.xmlBlasterImpl = xmlBlasterImpl;
          this.authenticate = authenticate;
+         /*
          String loginName = XmlBlasterProperty.get("__sys__GuiQuery.loginName", "__sys__GuiQuery");
          String passwd = XmlBlasterProperty.get("__sys__GuiQuery.password", "secret");
+         ConnectQos con = new ConnectQos();
+         con.setSecurityPluginData("simple", "1.0", loginName, passwd);
          sessionId = authenticate.login(loginName, passwd, null, null); // synchronous access only, no callback.
-         Log.info(ME, "login for '" + loginName + "' successful.");
+         */
+         unsecureSessionInfo = authenticate.unsecureCreateSession("__sys__GuiQuery");
+         Log.info(ME, "login for '__sys__GuiQuery' successful.");
       }
 
       /**
@@ -712,12 +727,9 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       MessageUnit[] get(String queryString)
       {
          try {
-            String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
-                                queryString + "\n" +
-                            "</key>";
-            String qos = "<qos>\n</qos>";
+            XmlKey kk = new XmlKey("<key oid='' queryType='" + queryType + "'>" + queryString + "</key>");
             stop.restart();
-            MessageUnit[] msgArr = xmlBlasterImpl.get(sessionId, xmlKey, qos);
+            MessageUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(unsecureSessionInfo, kk, new GetQoS(null));
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
