@@ -37,6 +37,11 @@ void SocketDriver::freeResources(bool deleteConnection)
    }
 }
 
+/*
+ Note on exception handling:
+ If we throw an exception, our master ConnectionsHandler.cpp will
+ catch it and to a shutdown() on us. This will cleanup the resources.
+ */
 #define catch_MACRO(methodName, deleteConnection)                     \
    catch(XmlBlasterException &ex) {                                   \
       freeResources(deleteConnection);                                \
@@ -336,11 +341,6 @@ bool SocketDriver::shutdown()
    return true;
 }
 
-void SocketDriver::resetConnection()
-{
-   log_.error(ME, "'SocketDriver::resetConnection' not implemented");
-}
-
 string SocketDriver::getLoginName()
 {
    return loginName_;
@@ -356,11 +356,13 @@ string SocketDriver::ping(const string& qos)
    ::XmlBlasterException socketException;
    Lock lock(mutex_);
    try {
-      const char *retQosP = connection_->ping(connection_, qos.c_str(), &socketException);
+      char *retQosP = connection_->ping(connection_, qos.c_str(), &socketException);
       if (retQosP == 0 || *socketException.errorCode != 0) {
          throw socketException; // Is converted to util::XmlBlasterException in catch_MACRO
       }
-      return retQosP;
+      string retQos(retQosP);
+      xmlBlasterFree(retQosP);
+      return retQos;
    } catch_MACRO("::ping", false)
 }
 

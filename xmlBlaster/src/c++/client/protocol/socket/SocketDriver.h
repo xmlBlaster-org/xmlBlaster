@@ -98,7 +98,6 @@ namespace org {
       bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
       std::string getProtocol();
       bool shutdown();
-      void resetConnection();
       std::string getLoginName();
       bool isLoggedIn();
 
