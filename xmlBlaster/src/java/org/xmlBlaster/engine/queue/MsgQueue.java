@@ -3,12 +3,12 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.13 2002/05/17 19:02:48 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.14 2002/05/26 16:30:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
@@ -36,7 +36,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    protected final Global glob;
    private final CbWorkerPool cbWorkerPool;
    protected CbInfo cbInfo = null;
-   protected final Log log;
+   protected final LogChannel log;
    private final Timeout burstModeTimer;
    private Timestamp timerKey = null;
    private boolean cbWorkerIsActive = false;
@@ -53,7 +53,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    {
       super(prop.getMaxMsg(), new MsgComparator());
       this.glob = glob;
-      this.log = glob.getLog();
+      this.log = glob.getLog("cb");
       this.ME = "MsgQueue:" + queueName;
       this.name = queueName;
       this.cbWorkerPool = glob.getCbWorkerPool();
@@ -103,8 +103,13 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    {
       if (property != null) {
          if (property.onFailureDeadLetter()) {
-            if (msg == null) msg = takeMsgs();
-            glob.getRequestBroker().deadLetter(msg);
+            if (msg == null) {
+               msg = takeMsgs();
+               glob.getRequestBroker().deadLetter(msg);
+               checkForVolatileErase(msg);
+            }
+            else
+               glob.getRequestBroker().deadLetter(msg);
             return true;
          }
          else {
@@ -115,6 +120,32 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       else {
          log.error(ME, "PANIC: onFailure='deadLetter' failed, " + msg.length + " messages are lost.");
          return false;
+      }
+   }
+
+   /**
+    * Delete volatile messages if there are in no queue anymore
+    */
+   public void checkForVolatileErase(MsgQueueEntry[] msgs)
+   {
+      if (msgs == null || msgs.length < 1)
+         return;
+      for (int ii=0; ii<msgs.length; ii++) {
+         //msgs[ii].getMessageUnitWrapper().addEnqueueCounter(-1);
+         if (log.TRACE) log.trace(ME, "oid=" + msgs[ii].getMessageUnitWrapper().getUniqueKey() + " EnqueueCounter=" + msgs[ii].getMessageUnitWrapper().getEnqueueCounter() + " isVolatile=" + msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile());
+         if (msgs[ii].getMessageUnitWrapper().getEnqueueCounter() == 0 &&
+               msgs[ii].getMessageUnitWrapper().getPublishQos().isVolatile()) {
+            if (this instanceof SessionMsgQueue) {
+               SessionMsgQueue q = (SessionMsgQueue)this;
+               try {
+                  glob.getRequestBroker().eraseVolatile(q.getSessionInfo(), msgs[ii].getMessageUnitWrapper().getMessageUnitHandler());
+               }
+               catch (XmlBlasterException ex) {
+                  ex.printStackTrace();
+                  log.error(ME, "Erasing of volatile message failed");
+               }
+            }
+         }
       }
    }
 
@@ -239,6 +270,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       for (int jj=0; jj<size; jj++) {
          try {
             MsgQueueEntry entry = (MsgQueueEntry)super.take();
+            entry.getMessageUnitWrapper().addEnqueueCounter(-1);
             if (entry.isExpired() == true) {
                log.warn(ME, "Removed expired message " + entries[ii].getUniqueKey());
             }
