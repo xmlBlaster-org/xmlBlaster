@@ -1,0 +1,33 @@
+#------------------------------------------------------------------------------
+#STATE: The email plugin is a pre alpha release.
+#
+#TODO:  Specify a requirement and define the email behavior with xmlBlaster
+#
+#AUTHOR: ruff@swand.lake.de
+#------------------------------------------------------------------------------
+
+Steps to setup email updates from xmlBlaster
+
+1. Configure xmlBlaster.properties
+
+    EmailDriver.smtpHost=mail.provider.com
+    EmailDriver.from=joe@provider.com
+   
+   The line
+      
+    Protocol.CallbackDrivers=...,EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver,...
+
+   must contain the email plugin
+
+
+2. Start xmlBlaster:
+
+   java -jar lib/xmlBlaster.jar
+
+
+3. Subscribe to a message and publish a message
+   The update is sent by email
+
+   java javaclients.email.Demo -email.receiver joe@provider.com
+
+
