@@ -7,10 +7,10 @@ echo -e "\nStarting xmlBlaster server (without jit) ...\n"
 
 sleep ${DELAY_TIME}
 sleep ${DELAY_TIME}
-bin/RamTest -ior `java org.jutils.cpp.HttpIorForCpp`
+bin/RamTest -ior `java org.xmlBlaster.util.cpp.HttpIorForCpp`
 sleep ${DELAY_TIME}
-bin/TestGet -ior `java org.jutils.cpp.HttpIorForCpp`
+bin/TestGet -ior `java org.xmlBlaster.util.cpp.HttpIorForCpp`
 sleep ${DELAY_TIME}
-bin/TestLogin -ior `java org.jutils.cpp.HttpIorForCpp`
+bin/TestLogin -ior `java org.xmlBlaster.util.cpp.HttpIorForCpp`
 sleep ${DELAY_TIME}
-bin/TestSub -ior `java org.jutils.cpp.HttpIorForCpp`
+bin/TestSub -ior `java org.xmlBlaster.util.cpp.HttpIorForCpp`

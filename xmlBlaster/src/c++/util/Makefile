@@ -8,7 +8,7 @@ all: CompatibleCorba.o Log.o
 test: all
 
 PropertyDef.h:
-	java org.jutils.cpp.SetCCProperties > PropertyDef.h
+	java org.xmlBlaster.util.cpp.SetCCProperties > PropertyDef.h
 
 CompatibleCorba.o: CompatibleCorba.cc PropertyDef.h
 
