@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.29 2002/08/23 21:26:16 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.30 2002/09/07 22:14:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -196,7 +196,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
          String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
          //log.error(ME+".constructor", e.toString());
-         throw new XmlBlasterException(ME, str);
+         throw new ConnectionException(ME, str);
       }
    }
 
