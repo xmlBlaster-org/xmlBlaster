@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.43 2000/01/07 20:39:51 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.44 2000/01/15 15:33:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.44 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -256,19 +256,19 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Refresh internal informations about the xmlBlaster state. 
+    * Refresh internal informations about the xmlBlaster state.
     * <p />
     * Sets for example the totally allocated memory in the JVM.
     * <br />
     * This is the internal representation:
     * <pre>
     *    &lt;xmlBlaster>                   &lt;!-- Deliver informations about internal state of xmlBlaster -->
-    *    
+    *
     *       &lt;key oid='__sys__TotalMem'> &lt;!-- Amount of totally allocated RAM [bytes] -->
     *          &lt;__sys__internal>
     *          &lt;/__sys__internal>
     *       &lt;/key>
-    *    
+    *
     *       &lt;key oid='__sys__FreeMem'>  &lt;!-- Amount of free RAM in virtual machine, before new Ram must be allocated [bytes] -->
     *          &lt;__sys__internal>
     *          &lt;/__sys__internal>
@@ -556,10 +556,43 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
 
          //----- 1. set new value or create the new message:
-         MessageUnitHandler messageUnitHandler = setMessageUnit(xmlKey, messageUnit, publishQoS, clientInfo.getLoginName());
+         MessageUnitHandler messageUnitHandler = null;
+         String publisherName = clientInfo.getLoginName();
+         boolean contentChanged = true;
+         {
+            if (Log.TRACE) Log.trace(ME, "Store the new arrived message ...");
+            boolean messageExisted = false; // to shorten the synchronize block
+
+            synchronized(messageContainerMap) {
+               Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
+               if (obj == null) {
+                  messageUnitHandler = new MessageUnitHandler(requestBroker, new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, publisherName));
+                  messageContainerMap.put(xmlKey.getUniqueKey(), messageUnitHandler);
+               }
+               else {
+                  messageUnitHandler = (MessageUnitHandler)obj;
+                  messageExisted = true;
+               }
+            }
+
+            if (messageExisted) {
+               contentChanged = messageUnitHandler.setContent(xmlKey, messageUnit, publishQoS, publisherName);
+            }
+            else {
+               try {
+                  xmlKey.mergeRootNode(bigXmlKeyDOM);                    // merge the message DOM tree into the big xmlBlaster DOM tree
+               } catch (XmlBlasterException e) {
+                  synchronized(messageContainerMap) {
+                     messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
+                  }
+                  throw new XmlBlasterException(e.id, e.reason);
+               }
+            }
+         }
 
          //----- 2. now we can send updates to all interested clients:
-         messageUnitHandler.invokeCallback();
+         if (contentChanged || publishQoS.forceUpdate()) // if the content changed of the publisher forces updates ...
+            messageUnitHandler.invokeCallback();
 
          // this gap is not 100% thread save
 
@@ -592,8 +625,10 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * This helper method check for a published message which didn't exist before if
-    * there are any XPath subscriptions pending which match
+    * This helper method checks for a published message which didn't exist before if
+    * there are any XPath subscriptions pending which match. 
+    * <p />
+    * PRECOND: The new message is already merged in the big DOM tree
     */
    private final void checkExistingSubscriptions(ClientInfo clientInfo, XmlKey xmlKey,
                                   MessageUnitHandler messageUnitHandler, PublishQoS xmlQoS)
@@ -610,16 +645,18 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          Vector matchingSubsVec = new Vector();
          synchronized (set) {
             Iterator iterator = set.iterator();
+            // for every XPath subscription ...
             while (iterator.hasNext()) {
 
                SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
                XmlKey queryXmlKey = existingQuerySubscription.getXmlKey();
 
+               // ... check if the new message matches ...
                if (queryXmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
 
                   Vector matchVec = bigXmlKeyDOM.parseKeyOid(clientInfo, queryXmlKey, xmlQoS);
 
-                  if (matchVec != null && matchVec.size() == 1 && matchVec.elementAt(0) != null) {
+                  if (matchVec != null && matchVec.size() >= 1 && matchVec.elementAt(0) != null) {
                      if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
                      SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription.getClientInfo(),
                                                                   xmlKey,
@@ -676,54 +713,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
 
       return returnArr;
-   }
-
-
-   /**
-    * Store or update a new arrived message.
-    * <p />
-    * This is used only for publish/subscribe style.<br />
-    * PTP messages are not stored in xmlBlaster
-    *
-    * @param xmlKey        So the messageUnit.xmlKey_literal is not parsed twice
-    * @param messageUnit   Containing the new, published data
-    * @param qos           The quality of service of this publish() message
-    * @param publisherName The source of the data (unique login name)
-    * @return messageUnitHandler MessageUnitHandler object, holding the new MessageUnit
-    */
-   private MessageUnitHandler setMessageUnit(XmlKey xmlKey, MessageUnit messageUnit,
-                                             PublishQoS publishQoS, String publisherName) throws XmlBlasterException
-   {
-      if (Log.TRACE) Log.trace(ME, "Store the new arrived message ...");
-      boolean messageExisted = false; // to shorten the synchronize block
-      MessageUnitHandler messageUnitHandler=null;
-
-      synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
-         if (obj == null) {
-            messageUnitHandler = new MessageUnitHandler(requestBroker, new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, publisherName));
-            messageContainerMap.put(xmlKey.getUniqueKey(), messageUnitHandler);
-         }
-         else {
-            messageUnitHandler = (MessageUnitHandler)obj;
-            messageExisted = true;
-         }
-      }
-
-      if (messageExisted) {
-         messageUnitHandler.setContent(xmlKey, messageUnit, publishQoS, publisherName);
-      }
-      else {
-         try {
-            xmlKey.mergeRootNode(bigXmlKeyDOM);                    // merge the message DOM tree into the big xmlBlaster DOM tree
-         } catch (XmlBlasterException e) {
-            synchronized(messageContainerMap) {
-               messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
-            }
-            throw new XmlBlasterException(e.id, e.reason);
-         }
-      }
-      return messageUnitHandler;
    }
 
 
