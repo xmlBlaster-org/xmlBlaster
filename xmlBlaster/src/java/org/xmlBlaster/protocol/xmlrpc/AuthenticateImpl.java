@@ -49,6 +49,7 @@ public class AuthenticateImpl
    /**
     * Do login to xmlBlaster.
     * @see org.xmlBlaster.authentication.Authenticate#connect(ConnectQos,String)
+    * @deprecated Use connect() instead
     */
    public String login(String loginName, String passwd,
                        String qos_literal, String sessionId)
@@ -66,12 +67,14 @@ public class AuthenticateImpl
 
       ConnectQos connectQos = new ConnectQos(glob, qos_literal);
       I_SecurityQos securityQos = connectQos.getSecurityQos();
+
+
       if (securityQos == null)
          connectQos.setSecurityPluginData(null, null, loginName, passwd);
       else {
-         loginName = securityQos.getUserId();
-         passwd = "";
-         if (log.TRACE) log.trace(ME, "login() method uses security plugin from qos instead of supplied loginName/password");
+         securityQos.setUserId(loginName);
+         securityQos.setCredential(passwd);
+         if (log.TRACE) log.trace(ME, "login() method uses supplied loginName=" + loginName + " and password");
       }
          
 
