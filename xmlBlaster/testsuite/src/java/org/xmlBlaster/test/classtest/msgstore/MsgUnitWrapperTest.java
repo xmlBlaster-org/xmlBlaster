@@ -77,7 +77,6 @@ public class MsgUnitWrapperTest extends TestCase {
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
-            "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +

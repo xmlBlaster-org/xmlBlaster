@@ -73,7 +73,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   </sender>\n" +
             "   <priority>MIN</priority>\n" +
             //"   <expiration lifeTime='2400' remainingLife='12000'/>\n" + // uncomment as it is in concurrence to isVolatile
-            "   <isVolatile>true</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
@@ -89,7 +88,6 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
          assertEquals("", true, qos.isPtp());
-         assertEquals("", true, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
          assertEquals("", false, qos.isForceUpdate());
          assertEquals("", false, qos.isReadonly());
@@ -156,7 +154,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>MIN</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000' forceDestroy='true'/>\n" +
             "   <rcvTimestamp nanos='1234'/>\n" +
-            "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
@@ -270,7 +267,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   </sender>\n" +
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
-            "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
@@ -343,7 +339,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
-            "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
@@ -408,7 +403,6 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>7</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
-            "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
