@@ -226,6 +226,11 @@ Persistence.Path=${user.home}${file.separator}tmp
 # at the moment 'nothing'.
 #------------------------------------------------------------------------------
 
+#
+# JAXP parsers. Currently only crimson is actually possible to use. 
+#
+javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
+javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
 
 #------------------------------------------------------------------------------
 # Any other custom properties can be added here. 
