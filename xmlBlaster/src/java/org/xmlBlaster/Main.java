@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.46 2000/06/26 12:59:35 ruff Exp $
+Version:   $Id: Main.java,v 1.47 2000/06/26 17:18:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -97,17 +97,17 @@ public class Main
          usage();
          Log.panic(ME, e.toString());
       }
-      if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
-         loadDrivers();
-         usage();
-         return;
-      }
 
       try {
          authenticate = new Authenticate();
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
          loadDrivers();
+
+         if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true || Args.getArg(args, "-help") == true || Args.getArg(args, "--help") == true) {
+            usage();  // Now we can display the complete usage of all loaded drivers
+            Log.exit(ME, "Good bye.");
+         }
 
          Log.info(ME, Memory.getStatistic());
 
@@ -170,7 +170,7 @@ public class Main
 
 
    /**
-    * Load a protocol driver. 
+    * Load a protocol driver.
     * <p />
     * Usually invoked by entries in xmlBlaster.properties, but for example MainGUI.java
     * uses this directly.
@@ -337,6 +337,7 @@ public class Main
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "jaco org.xmlBlaster.Main <options>");
       Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "   -h                  Show the complete usage.");
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
          Log.plain(ME, driver.usage());
