@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.28 2000/02/25 14:39:59 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.29 2000/02/25 16:25:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -51,7 +51,7 @@ import java.util.Properties;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -200,6 +200,15 @@ public class CorbaConnection implements ServerOperations
       this.retryInterval = retryInterval;
       this.retries = retries;
       this.recorder = new InvocationRecorder(maxInvocations, this, null);
+   }
+
+
+   /**
+    * Is fail save mode switched on?
+    */
+   public final boolean isInFailSaveMode()
+   {
+      return recorder != null;
    }
 
 
@@ -354,22 +363,27 @@ public class CorbaConnection implements ServerOperations
             return authServer;
          }
          catch(Exception e) {
-            if (!isReconnectPolling)
+            if (!isReconnectPolling) {
                Log.error(ME, "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" + e.toString());
-            String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
+            }
+            if (!isInFailSaveMode()) {
+               String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
                           " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
                           " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
                           " - or contact your system administrator to start a naming service";
 
-            throw new XmlBlasterException(ME + ".NoAuthService", text);
+               throw new XmlBlasterException(ME + ".NoAuthService", text);
+            }
          }
       }
 
-      String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
-                     " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
-                     " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
-                     " - or contact your system administrator to start a naming service";
-      throw new XmlBlasterException(ME + ".NoAuthService", text);
+      //if (!isInFailSaveMode()) {
+         String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
+                        " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
+                        " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
+                        " - or contact your system administrator to start a naming service";
+         throw new XmlBlasterException(ME + ".NoAuthService", text);
+      //}
    }
 
 
@@ -433,7 +447,7 @@ public class CorbaConnection implements ServerOperations
          if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName);
          throw e;
       }
-      if (isReconnectPolling)
+      if (isReconnectPolling && numLogins > 0)
          clientCallback.reConnected();
    }
 
@@ -472,9 +486,7 @@ public class CorbaConnection implements ServerOperations
       if (noConnect) // LoginThread tried already and gave up
          throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
 
-      if (recorder == null)
-         throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
-      else {
+      if (isInFailSaveMode()) {
          if (xmlBlaster != null) {
             // the first time a org.omg.CORBA.COMM_FAILURE Exception is thrown
             // then NullPointerExceptions (because of xmlBlaster==null)
@@ -489,6 +501,9 @@ public class CorbaConnection implements ServerOperations
             doLoginPolling(true);
             throw new XmlBlasterException("TryingConnect", "Trying to find xmlBlaster ...");
          }
+      }
+      else {
+         throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
       }
 
    }
@@ -540,7 +555,7 @@ public class CorbaConnection implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "logout() ...");
 
       if (xmlBlaster == null) {
-         if (recorder == null || recorder.size() == 0)
+         if (!isInFailSaveMode() || recorder.size() == 0)
             Log.warning(ME, "No logout, you are not logged in");
          else
             Log.warning(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
@@ -812,7 +827,7 @@ public class CorbaConnection implements ServerOperations
                corbaConnection.isReconnectPolling = false;
                return;
             } catch(Exception e) {
-               Log.warning(ME, "No connection was established, the xmlBlaster server still seems to be down");
+               Log.warning(ME, "No connection established, the xmlBlaster server still seems to be down");
                try {
                   Thread.currentThread().sleep(RETRY_INTERVAL);
                } catch (InterruptedException i) { }

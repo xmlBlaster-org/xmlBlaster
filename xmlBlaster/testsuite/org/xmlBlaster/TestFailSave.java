@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.4 2000/02/25 14:39:59 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.5 2000/02/25 16:25:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -33,12 +33,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private boolean messageArrived = false;
 
    private String subscribeOid;
-   private String publishOid = "AMessage";
    private CorbaConnection corbaConnection;
    private String senderName;
    private String receiverName;         // sender/receiver is here the same client
 
    private int numReceived = 0;         // error checking
+   private int numPublish = 6;
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
 
@@ -92,7 +92,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    protected void tearDown()
    {
       Log.info(ME, "Entering tearDown(), test is finished");
-      String xmlKey = "<key oid='" + publishOid + "' queryType='XPATH'>\n" + 
+      String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
@@ -100,7 +100,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       try {
          strArr = corbaConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+      if (strArr.length != numPublish) Log.error(ME, "Erased " + strArr.length + " messages:");
 
       Util.delay(1000L);    // Wait some time
 
@@ -117,7 +117,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       if (Log.TRACE) Log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
-      String xmlKey = "<key oid='" + publishOid + "' queryType='XPATH'>\n" + 
+      String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
@@ -138,14 +138,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    /**
     * TEST: Construct a message and publish it.
     * <p />
-    * The returned publishOid is checked
     */
    public void testPublish(int counter) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
 
-      numReceived = 0;
-      String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "'>\n" + 
+      String xmlKey = "<key oid='Message" + "-" + counter + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestFailSave-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestFailSave-AGENT>" +
                       "</key>";
@@ -153,11 +151,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
 
-      publishOid = corbaConnection.publish(msgUnit, qosWrapper.toXml());
-      Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
-
-      assert("returned publishOid == null", publishOid != null);
-      assertNotEquals("returned publishOid", 0, publishOid.length());
+      corbaConnection.publish(msgUnit, qosWrapper.toXml());
+      Log.info(ME, "Success: Publishing done");
    }
 
 
@@ -167,11 +162,11 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    public void testFailSave()
    {
       testSubscribe();
-      for (int ii=0; ii<10; ii++) {
+      for (int ii=0; ii<numPublish; ii++) {
          try {
             testPublish(ii);
             waitOnUpdate(5000L);
-            assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
+            assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
          }
          catch(XmlBlasterException e) {
             if (e.id.equals("TryingReconnect"))
@@ -181,8 +176,10 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             else
                assert("Publishing problems id=" + e.id + ": " + e.reason, false);
          }
-         // Util.delay(1000L);    // Wait some time
+         //Util.delay(3000L);    // Wait some time
       }
+
+      assertEquals("numReceived is wrong", numPublish, numReceived);
    }
 
 
@@ -237,7 +234,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
       assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
       messageArrived = true;
