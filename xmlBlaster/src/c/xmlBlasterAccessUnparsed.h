@@ -43,7 +43,7 @@ struct XmlBlasterAccessUnparsedStruct {
       int socketToXmlBlaster;
 #  endif
    long requestId;
-   unsigned char secretSessionId[MAX_SECRETSESSIONID_LEN];
+   char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
    XmlBlasterConnect connect;   
    XmlBlasterDisconnect disconnect;   

@@ -38,7 +38,7 @@ typedef struct ResponseHolderStruct {
    char secretSessionId[MAX_SESSIONID_LEN];
    size_t dataLenUncompressed;
    size_t dataLen;
-   unsigned char *data; // allocated with malloc, you need to free() it yourself, is compressed if marked as such
+   char *data; // allocated with malloc, you need to free() it yourself, is compressed if marked as such
 } ResponseHolder;
 
 #define MSG_LEN_FIELD_LEN 10

@@ -51,7 +51,7 @@ void initCallbackServer(callbackData *cbArgs)
    int ns;
 #  endif
    int keyLen, qosLen;
-   int cli_len;
+   socklen_t cli_len;
    char *pp;
    char *rawData = NULL;
    struct hostent *hostP = NULL;
@@ -108,7 +108,7 @@ void initCallbackServer(callbackData *cbArgs)
     * will be connected to the client.  cli_addr will
     * contain the address of the client.
     */
-   cli_len = (int)sizeof(cli_addr);
+   cli_len = (socklen_t)sizeof(cli_addr);
    if ((ns = accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
        perror("callbackServer: accept");
        return;

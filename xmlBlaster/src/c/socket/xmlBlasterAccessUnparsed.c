@@ -183,17 +183,17 @@ void shutdownConnection(XmlBlasterAccessUnparsed *xb)
  */
 bool sendData(XmlBlasterAccessUnparsed *xb, 
               const char * const methodName,
-              const unsigned char *data,
+              const char *data,
               size_t dataLen,
               ResponseHolder *responseHolder,
               XmlBlasterException *exception)
 {
    size_t numSent;
    size_t rawMsgLen = 0;
-   unsigned char *rawMsg = (unsigned char *)0;
+   char *rawMsg = (char *)0;
    char *rawMsgStr;
    size_t currpos = 0;
-   unsigned char tmp[256];
+   char tmp[256];
    size_t lenUnzipped = dataLen;
    char lenFormatStr[56]; // = "%10.d";
    char lenStr[MSG_LEN_FIELD_LEN+1];
@@ -221,7 +221,7 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
 
    xb->requestId++;
 
-   rawMsg = calloc(500 + dataLen, sizeof(unsigned char));
+   rawMsg = (char *)calloc(500 + dataLen, sizeof(char));
 
    *(rawMsg+MSG_FLAG_POS_TYPE) = MSG_TYPE_INVOKE;
    *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_VERSION;
@@ -298,7 +298,7 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
 {
    char msgLenPtr[MSG_LEN_FIELD_LEN+1];
    char ptr[MSG_LEN_FIELD_LEN+1];
-   unsigned char *rawMsg;
+   char *rawMsg;
    char tmpPtr[256];
    size_t numRead;
    size_t currPos = 0;
@@ -322,7 +322,7 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    sscanf(ptr, "%u", &responseHolder->msgLen);
 
    // read the complete message
-   rawMsg = calloc(responseHolder->msgLen, sizeof(unsigned char));
+   rawMsg = (char *)calloc(responseHolder->msgLen, sizeof(char));
    memcpy(rawMsg, msgLenPtr, MSG_LEN_FIELD_LEN);
    numRead = recv(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN, 0);
    if (numRead != (responseHolder->msgLen-MSG_LEN_FIELD_LEN)) {
@@ -372,7 +372,7 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
 
    // Read the payload
    responseHolder->dataLen = responseHolder->msgLen - currPos;
-   responseHolder->data = malloc(responseHolder->dataLen * sizeof(unsigned char));
+   responseHolder->data = (char *)malloc(responseHolder->dataLen * sizeof(char));
    memcpy(responseHolder->data, rawMsg+currPos, responseHolder->dataLen);
 
    free(rawMsg);
@@ -413,7 +413,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xb, const char * const 
       return (char *)0;
    }
 
-   if (sendData(xb, XMLBLASTER_CONNECT, (const unsigned char *)qos,
+   if (sendData(xb, XMLBLASTER_CONNECT, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseHolder, exception) == false) {
       return (char *)0;
@@ -464,7 +464,7 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xb, const char * cons
       return false;
    }
 
-   if (sendData(xb, XMLBLASTER_DISCONNECT, (const unsigned char *)qos, 
+   if (sendData(xb, XMLBLASTER_DISCONNECT, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 0, exception) == false) {
       return false;
@@ -483,7 +483,7 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xb, const char * cons
 static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
-   unsigned char *data;
+   char *data;
    char contentLenStr[126];
    size_t currpos = 0;
    ResponseHolder responseHolder;
@@ -501,7 +501,7 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, X
 
    totalLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
 
-   data = (unsigned char *)malloc(totalLen);
+   data = (char *)malloc(totalLen);
 
    memcpy(data+currpos, msgUnit->qos, qosLen+1); // inclusive '\0'
    currpos += qosLen+1;
@@ -536,7 +536,7 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, X
 static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
-   unsigned char *data;
+   char *data;
    size_t currpos = 0;
    ResponseHolder responseHolder;
    char *response;
@@ -556,7 +556,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * cons
 
    totalLen = qosLen + 1 + keyLen + 1;
 
-   data = (unsigned char *)malloc(totalLen);
+   data = (char *)malloc(totalLen);
 
    memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
    currpos += qosLen+1;
@@ -587,7 +587,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * cons
 static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
-   unsigned char *data;
+   char *data;
    size_t currpos = 0;
    ResponseHolder responseHolder;
    char *response;
@@ -607,7 +607,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * co
 
    totalLen = qosLen + 1 + keyLen + 1;
 
-   data = (unsigned char *)malloc(totalLen);
+   data = (char *)malloc(totalLen);
 
    memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
    currpos += qosLen+1;
@@ -638,7 +638,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * co
 static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
-   unsigned char *data;
+   char *data;
    size_t currpos = 0;
    ResponseHolder responseHolder;
    char *response;
@@ -658,7 +658,7 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const ke
 
    totalLen = qosLen + 1 + keyLen + 1;
 
-   data = (unsigned char *)malloc(totalLen);
+   data = (char *)malloc(totalLen);
 
    memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
    currpos += qosLen+1;
@@ -695,7 +695,7 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xb, const char * const qos
 
    if (!xb->isInitialized || !xb->isConnected(xb)) return (char *)0;
    
-   if (sendData(xb, XMLBLASTER_PING, (const unsigned char *)qos,
+   if (sendData(xb, XMLBLASTER_PING, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseHolder, &exception) == false) {
       return (char *)0;
@@ -716,11 +716,11 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xb, const char * const qos
 static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
 {
    size_t qosLen, keyLen, totalLen;
-   unsigned char *data;
+   char *data;
    size_t currpos = 0;
    size_t currIndex;
    ResponseHolder responseHolder;
-   MsgUnitArr *msgUnitArr = malloc(sizeof(MsgUnitArr));
+   MsgUnitArr *msgUnitArr = (MsgUnitArr *)malloc(sizeof(MsgUnitArr));
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -735,7 +735,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
 
    totalLen = qosLen + 1 + keyLen + 1;
 
-   data = (unsigned char *)malloc(totalLen);
+   data = (char *)malloc(totalLen);
 
    memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
    currpos += qosLen+1;
@@ -759,7 +759,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
 
       if (currIndex >= msgUnitArr->len) {
          msgUnitArr->len += 10;
-         msgUnitArr->msgUnitArr = realloc(msgUnitArr->msgUnitArr, msgUnitArr->len * sizeof(MsgUnit));
+         msgUnitArr->msgUnitArr = (MsgUnit *)realloc(msgUnitArr->msgUnitArr, msgUnitArr->len * sizeof(MsgUnit));
       }
 
       {
@@ -782,7 +782,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
             trim(ptr);
             sscanf(ptr, "%u", &msgUnit->contentLen);
         
-            msgUnit->content = malloc(msgUnit->contentLen * sizeof(unsigned char));
+            msgUnit->content = (char *)malloc(msgUnit->contentLen * sizeof(char));
             memcpy(msgUnit->content, responseHolder.data+currpos, msgUnit->contentLen);
             currpos += msgUnit->contentLen;
          }
@@ -794,7 +794,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
       msgUnitArr->len = 0;
    }
    else if (currIndex < msgUnitArr->len) {
-      msgUnitArr->msgUnitArr = realloc(msgUnitArr->msgUnitArr, currIndex * sizeof(MsgUnit));
+      msgUnitArr->msgUnitArr = (MsgUnit *)realloc(msgUnitArr->msgUnitArr, currIndex * sizeof(MsgUnit));
       msgUnitArr->len = currIndex; 
    }
 

@@ -58,7 +58,7 @@ void freeMsgUnit(MsgUnit *msgUnit)
 char *messageUnitToXml(MsgUnit *msg)
 {
    //char content[msg->contentLen+1];
-   char *content = malloc(msg->contentLen+1);
+   char *content = (char *)malloc(msg->contentLen+1);
    size_t len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
    char *xml = (char *)malloc(len*sizeof(char));
    sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
@@ -110,7 +110,7 @@ int strcpy_alloc(char **dest, const char *src)
  * @return The string, never null.
  *         You need to free it with free()
  */
-char *strFromBlobAlloc(const unsigned char *blob, const size_t len)
+char *strFromBlobAlloc(const char *blob, const size_t len)
 {
    char *dest;
    size_t i;
@@ -155,13 +155,13 @@ char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 /**
  * strip leading and trailing spaces of the given string
  */
-void trim(unsigned char *s)
+void trim(char *s)
 {
    size_t first=0;
    size_t len;
    size_t i;
    
-   if (s == (unsigned char *)0) return;
+   if (s == (char *)0) return;
 
    len = strlen((char *) s);
 
@@ -194,11 +194,11 @@ void trim(unsigned char *s)
  * @param len The length of the binary data
  * @return readable is returned, it must be free()'d
  */
-unsigned char *toReadableDump(unsigned char *data, size_t len)
+char *toReadableDump(char *data, size_t len)
 {
-   unsigned char *readable;
+   char *readable;
    size_t i;
-   readable = (unsigned char *)malloc((len+1) * sizeof(unsigned char));
+   readable = (char *)malloc((len+1) * sizeof(char));
    for (i=0; i<len; i++) {
       if (data[i] == 0)
          readable[i] = '*';

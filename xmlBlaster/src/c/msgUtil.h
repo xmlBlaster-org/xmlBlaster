@@ -18,7 +18,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 typedef struct MsgUnitStruct {
    char *key;               // XML formatted ASCII string of message key
    size_t contentLen;
-   unsigned char *content;  // Raw data
+   char *content;  // Raw data
    char *qos;               // XML formatted ASCII string of Quality of Service
 } MsgUnit;
 
@@ -53,12 +53,12 @@ extern void freeMsgUnit(MsgUnit *msgUnit);
 extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
 extern char *messageUnitToXml(MsgUnit *msg);
 extern char *contentToString(char *content, MsgUnit *msg);
-extern char *strFromBlobAlloc(const unsigned char *blob, const size_t len);
+extern char *strFromBlobAlloc(const char *blob, const size_t len);
 extern char *strcpyAlloc(const char *src);
 extern int strcpy_alloc(char **into_string, const char *from_string);
 extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
-extern void trim(unsigned char *s);
-extern unsigned char *toReadableDump(unsigned char *data, size_t len);
+extern void trim(char *s);
+extern char *toReadableDump(char *data, size_t len);
 
 
 #endif // XMLBLASTER_MSGUTIL_H
