@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.31 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.32 2002/05/11 10:39:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -294,8 +294,6 @@ public class LoadTestSub extends TestCase implements I_Callback
    static void usage()
    {
       Log.plain("\nAvailable options:");
-      Log.plain("   -name               The login name [Tim].");
-      Log.plain("   -passwd             The login name [secret].");
       Log.plain("   -numPublish         Number of messages to send [5000].");
       Log.plain("   -publish.burstMode  Collect given number of messages when publishing [1].");
       Log.plain("   -publish.oneway     Send messages oneway (publish does not receive return value) [false].");
