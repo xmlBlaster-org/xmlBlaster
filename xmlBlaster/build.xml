@@ -309,20 +309,19 @@ Else add it manually.
           includes="*.*,systemInfo/*.html,systemInfo/colors/*.*,javascript/**,persistentWindow/**,WEB-INF/**/*.*"/>
 
      <copy file="${lib.dir}/${name}.jar" tofile="${WWW_ROOT}/../lib/xmlBlaster.jar"/>
-     <!-- delete>
-       <fileset dir="${WWW_ROOT}/xmlBlaster"/>
-     </delete -->
+     <delete dir="${WWW_ROOT}/xmlBlaster"/>
      <delete file="${WWW_ROOT}/xmlBlaster.war"/>
      <copy file="${build.dir}/xmlBlaster.war" tofile="${WWW_ROOT}/xmlBlaster.war"/>
      <!-- unjar src="${WWW_ROOT}/xmlBlaster.war" dest="${WWW_ROOT}" /-->
 
      <echo message=""/>
      <echo message="   Start xmlBlaster and a demo data publisher:"/>
-     <echo message="      java org.xmlBlaster.Main"/>
+     <echo message="      java org.xmlBlaster.Main -xmlrpc.port 8089    (we switch port to allow tomcat on 8080)"/>
      <echo message="      java html.systemInfo.SystemInfoPublisher"/>
      <echo message=""/>
      <echo message="   Start tomcat and invoke the demo with:"/>
-     <echo message="      http://HOSTNAME/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
+     <echo message="      tomcat.sh start"/>
+     <echo message="      http://HOSTNAME:8080/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
      <echo message=""/>
      <echo message="   WARNING: The tomcat integration is not finished!!!"/>
   </target>
