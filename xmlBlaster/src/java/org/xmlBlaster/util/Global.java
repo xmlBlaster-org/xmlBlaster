@@ -752,6 +752,7 @@ public class Global implements Cloneable
     */
    public static final String getStrippedString(String text) {
       String strippedId = StringHelper.replaceAll(text, "/", "");
+      strippedId = StringHelper.replaceAll(strippedId, " ", "_");
       strippedId = StringHelper.replaceAll(strippedId, ".", "_");
       strippedId = StringHelper.replaceAll(strippedId, ":", "_");
       strippedId = StringHelper.replaceAll(strippedId, "[", "_");
