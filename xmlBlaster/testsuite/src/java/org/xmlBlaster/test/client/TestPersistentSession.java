@@ -8,30 +8,27 @@ package org.xmlBlaster.test.client;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.*;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.MsgInterceptor;
+
 import junit.framework.*;
 
 
@@ -57,6 +54,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private static final boolean PERSISTENT = true;
    
    private Global glob;
+   private Global origGlobal;
    private Global serverGlobal;
    private LogChannel log;
 
@@ -86,7 +84,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
 
    public TestPersistentSession(Global glob, String testName) {
       super(testName);
-      this.glob = glob;
+      this.origGlobal = glob;
       this.senderName = testName;
       this.updateInterceptors = new MsgInterceptor[this.numSubscribers];
    }
@@ -97,24 +95,34 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     * Connect to xmlBlaster and login
     */
    protected void setUp() {
-      this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("test");
-      glob.init(Util.getOtherServerPorts(serverPort));
-
-      String[] args = new String[] {"-persistence/session/maxEntriesCache", "1",
-                                    "-persistence/session/maxEntries","2",
-                                    "-persistence/subscribe/maxEntriesCache", "2",
-                                    "-persistence/subscribe/maxEntries","3",
-                                   };
-      this.serverGlobal = this.glob.getClone(args);
+      setup(false);
+   }
+   
+   
+   private void setup(boolean restrictedEntries) {
+      this.origGlobal = (this.origGlobal == null) ? Global.instance() : this.origGlobal;
+      this.log = this.origGlobal.getLog("test");
       
+      this.origGlobal.init(Util.getOtherServerPorts(serverPort));
+      this.glob = this.origGlobal.getClone(null);
+
+      String[] args = null;
+      if (restrictedEntries) {
+         args = new String[] {"-persistence/session/maxEntriesCache", "1",
+                       "-persistence/session/maxEntries","2",
+                       "-persistence/subscribe/maxEntriesCache", "2",
+                       "-persistence/subscribe/maxEntries","3",
+                      };
+      }
+      this.serverGlobal = this.origGlobal.getClone(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
       log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
-         con = glob.getXmlBlasterAccess(); // Find orb
+         this.con = this.glob.getXmlBlasterAccess(); // Find orb
 
          String passwd = "secret";
-         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd); // == "<qos>...</qos>";
+         ConnectQos connectQos = new ConnectQos(this.glob, senderName, passwd); // == "<qos>...</qos>";
+         connectQos.setSessionName(new SessionName(this.glob, "general/1"));
          // set the persistent connection 
          connectQos.setPersistent(this.persistent);
          // Setup fail save handling for connection ...
@@ -175,7 +183,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          this.serverThread = null;
          // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
          Util.resetPorts(this.serverGlobal);
-         Util.resetPorts(glob);
+         Util.resetPorts(this.glob);
+         Util.resetPorts(this.origGlobal);
          this.glob = null;
          this.con = null;
          Global.instance().shutdown();
@@ -185,7 +194,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void doSubscribe(int num, boolean isExact, boolean isPersistent) {
+   private void doSubscribe(int num, boolean isExact, boolean isPersistent) {
       try {
          SubscribeKey key = null;
          if (isExact)  key = new SubscribeKey(this.glob, "Message-1");
@@ -203,6 +212,21 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
+      }
+   }
+ 
+   private void doUnSubscribe(int num, boolean isExact, boolean isPersistent) {
+      try {
+         UnSubscribeKey key = null;
+         if (isExact)  key = new UnSubscribeKey(this.glob, "Message-1");
+         else key = new UnSubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
+
+         UnSubscribeQos qos = new UnSubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
+         con.unSubscribe(key, qos);
+      } 
+      catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
@@ -293,6 +317,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                assertTrue("Publishing problems: " + e.getMessage(), false);
          }
       }
+      doSubscribe(0, this.exactSubscription, TRANSIENT);
+      doSubscribe(1, this.exactSubscription, PERSISTENT);
    }
 
    /**
@@ -390,19 +416,37 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     *
     */
    public void testOverflow() {
+/*
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
+      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
+      Util.resetPorts(this.serverGlobal);
+      Util.resetPorts(glob);
+
+      this.glob.init(Util.getOtherServerPorts(serverPort));
+      String[] args = new String[] {"-persistence/session/maxEntriesCache", "1",
+                                    "-persistence/session/maxEntries","2",
+                                    "-persistence/subscribe/maxEntriesCache", "2",
+                                    "-persistence/subscribe/maxEntries","3",
+                                   };
+      this.serverGlobal = this.glob.getClone(args);
+      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
+      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+*/
+      tearDown();
+      setup(true);
+
       Global[] globals = new Global[5];
-      globals[0] = createConnection(this.glob, "bjoern/1", true , false);
-      globals[1] = createConnection(this.glob, "fritz/2", false, false);
-      globals[2] = createConnection(this.glob, "dimitri/3", true , true); // <-- exception (since main connection also persistent)
-      globals[4] = createConnection(this.glob, "pandora/4", false , false); // OK since transient
-      globals[3] = createConnection(this.glob, "jonny/5", true, true);
+      globals[0] = createConnection(this.origGlobal, "bjoern/1", true , false);
+      globals[1] = createConnection(this.origGlobal, "fritz/2", false, false);
+      globals[3] = createConnection(this.origGlobal, "dimitri/3", true , true); // <-- exception (since main connection also persistent)
+      globals[2] = createConnection(this.origGlobal, "pandora/4", false , false); // OK since transient
+      globals[4] = createConnection(this.origGlobal, "jonny/5", true, true);
 
       for (int i=0; i < 3; i++) {
          globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
       }
    }
-
-
 
    /**
     * Invoke: java org.xmlBlaster.test.client.TestPersistentSession
@@ -419,8 +463,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       }
 
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
-      
-      /*
+
       testSub.setUp();
       testSub.testXPathInitialStop();
       testSub.tearDown();
@@ -432,7 +475,6 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       testSub.setUp();
       testSub.testXPathInitialRunlevelChange();
       testSub.tearDown();
-      */
 
       testSub.setUp();
       testSub.testOverflow();
