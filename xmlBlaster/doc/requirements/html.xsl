@@ -4,7 +4,9 @@ Name:      html.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
-Version:   $Id: html.xsl,v 1.13 2000/03/23 10:05:46 ruff Exp $
+           This is the old version, displaying everything on one page
+           Use overview.xsl instead
+Version:   $Id: html.xsl,v 1.14 2000/04/17 20:48:55 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -28,7 +30,7 @@ Author:    ruff@swand.lake.de
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2000/03/23 10:05:46 $ $Author: ruff $
+       Last updated $Date: 2000/04/17 20:48:55 $ $Author: ruff $
    </p>
    <p class="sitetitel">XmlBlaster Programmers Reference Overview</p>
 
