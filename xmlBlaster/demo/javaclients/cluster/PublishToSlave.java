@@ -40,6 +40,8 @@ public class PublishToSlave implements I_Callback
       try {
          con = new XmlBlasterConnection(glob);
 
+         Log.info("", "Usage example: java javaclients.cluster.PublishToSlave -port 7601 -numPublish 1000 -interactivePublish false");
+
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
          String content = glob.getProperty().get("content", "We win");
          int numPublish = glob.getProperty().get("numPublish", 1);
@@ -59,7 +61,7 @@ public class PublishToSlave implements I_Callback
             }
             MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
             PublishRetQos retQos = con.publish(msgUnit);
-            Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+            Log.info("PublishToSlave", "Published #" + (i+1) + " message of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos.getOid());
          }
