@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.11 2002/05/19 12:55:42 ruff Exp $
+Version:   $Id: Global.java,v 1.12 2002/05/30 16:25:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,9 +15,13 @@ import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.authentication.Authenticate;
 
 import java.util.Vector;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Collection;
 
 
 /**
@@ -36,11 +40,15 @@ public final class Global extends org.xmlBlaster.util.Global
    private NodeId nodeId = null;
    private ClusterManager clusterManager;
    private Timeout burstModeTimer;
+   private Timeout cbPingTimer;
    private Timeout sessionTimer;
    private Timeout messageTimer;
 
    /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
    private Vector protocols = new Vector();
+
+   /** Vector holding all callback protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
+   private Hashtable cbProtocols = new Hashtable();
 
    private CbWorkerPool cbWorkerPool;
 
@@ -179,6 +187,69 @@ public final class Global extends org.xmlBlaster.util.Global
    }
 
    /**
+    * Access all I_CallbackDriver instances which have a public available address. 
+    * NOTE: Please don't manipulate the returned drivers
+    * @return CbProtocol drivers, to be handled as immutable objects.
+    */
+    /*
+   public final I_CallbackDriver[] getCbProtocolDrivers() {
+      return (I_CallbackDriver[])cbProtocols.values().toArray(new I_CallbackDriver[cbProtocols.size()]);
+   }  */
+
+   /**
+    * @param driverType e.g. "RMI" or "IOR"
+    */
+   public final void addCbProtocolDriverClass(String driverType, Class driver) {
+      cbProtocols.put(driverType, driver);
+   }
+
+   public final Class getCbProtocolDriverClass(String driverType) {
+      return (Class)cbProtocols.get(driverType);
+   }
+
+   /**
+    * Creates a new instance of the given protocol driver type. 
+    * <p />
+    * You need to call cbDriver.init(glob, cbAddress) on it.
+    * @return The uninitialized driver, never null
+    * @exception XmlBlasterException on problems
+    */
+   public final I_CallbackDriver getCbProtocolDriver(String driverType) throws XmlBlasterException {
+      Class cl = getCbProtocolDriverClass(driverType);
+      String err = null;
+      try {
+         I_CallbackDriver cbDriver = (I_CallbackDriver)cl.newInstance();
+         if (log.TRACE) log.trace(ME, "Created callback driver for protocol '" + driverType + "'");
+         return cbDriver;
+      }
+      catch (IllegalAccessException e) {
+         err = "The protocol driver class '" + driverType + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver";
+      }
+      catch (SecurityException e) {
+         err = "No right to access the protocol driver class or initializer '" + driverType + "'";
+      }
+      catch (Throwable e) {
+         err = "The protocol driver class or initializer '" + driverType + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString();
+      }
+      log.error(ME, err);
+      throw new XmlBlasterException(ME, err);
+   }
+
+   public final void shutdownCbProtocolDrivers() {
+      Iterator iterator = cbProtocols.values().iterator();
+      while (iterator.hasNext()) {
+         I_CallbackDriver driver = (I_CallbackDriver)iterator.next();
+         try {
+            driver.shutdown();
+         }
+         catch (Throwable e) {
+            log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
+         }
+      }
+      cbProtocols.clear();
+   }
+
+   /**
     * Access instance which manages myself in a cluster environment. 
     */
    public final ClusterManager getClusterManager() throws XmlBlasterException {
@@ -230,6 +301,20 @@ public final class Global extends org.xmlBlaster.util.Global
          }
       }
       return this.burstModeTimer;
+   }
+
+   /**
+    * Access the handle of the callback ping timer thread. 
+    * @return The Timeout instance
+    */
+   public final Timeout getCbPingTimer() {
+      if (this.cbPingTimer == null) {
+         synchronized(this) {
+            if (this.cbPingTimer == null)
+               this.cbPingTimer = new Timeout("CbPingTimer");
+         }
+      }
+      return this.cbPingTimer;
    }
 
    /**
