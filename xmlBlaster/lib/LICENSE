@@ -225,7 +225,5 @@ All packages allow free use for both commercial and non-commercial applications.
 21) remotecons.jar
 ==================
    Is under LGPL, see http://wttools.sourceforge.net/, Mai, 09 2002
-	Version 1.0
-	Allows to access xmlBlaster with telnet
-
-			     	
+   Version 1.0
+   Allows to access xmlBlaster with telnet.
