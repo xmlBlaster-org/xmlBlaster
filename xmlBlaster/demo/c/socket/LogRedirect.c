@@ -6,7 +6,8 @@ Comment:   Tests redirect of logging
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
   Linux with libxmlBlasterC.so:
-           gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c  -L../../../lib -lxmlBlasterClientC -Wl,-rpath=../../../lib -lpthread
+           gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c
+                -L../../../lib -lxmlBlasterClientC -Wl,-rpath=../../../lib -lpthread
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -137,7 +138,8 @@ static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
          if (level == LOG_TRACE)
             printf("%s %s\n", getLogLevelStr(level), p);
          else
-            printf("{%s-%s-%s} [%s] %s\n", __DATE__, __TIME__, getLogLevelStr(level), location, p);
+            printf("{%s-%s-%s} [%s] %s\n",
+                   __DATE__, __TIME__, getLogLevelStr(level), location, p);
          free(p);
          return;
       }
