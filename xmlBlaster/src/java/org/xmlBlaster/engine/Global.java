@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.4 2002/04/19 11:04:16 ruff Exp $
+Version:   $Id: Global.java,v 1.5 2002/04/21 10:35:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -80,8 +80,18 @@ public final class Global extends org.xmlBlaster.util.Global
     * The unique name of this xmlBlaster server instance. 
     * @return Can be null during startup
     */
-   public NodeId getNodeId() {
+   public final NodeId getNodeId() {
       return nodeId;
+   }
+
+   /**
+    * Access the unique cluster node id (as a String). 
+    * @return The name of this xmlBlaster instance, e.g. "heron.mycompany.com"
+    *         Can be null during startup
+    */
+   public final String getId() {
+      if (getNodeId() == null) return null;
+      return getNodeId().getId();
    }
 
    public void addProtocolDriver(I_Driver driver) {
@@ -122,6 +132,28 @@ public final class Global extends org.xmlBlaster.util.Global
     */
    public Vector getProtocolDrivers() {
       return protocols;
+   }
+
+   /**
+    * Access all I_Driver instances which have a public available address. 
+    * NOTE: Please don't manipulate the returned drivers
+    * @return Protocol drivers, to be handled as immutable objects.
+    */
+   public I_Driver[] getPublicProtocolDrivers() {
+      int num = 0;
+      for (int ii=0; ii<protocols.size(); ii++) {
+         I_Driver driver = (I_Driver)protocols.elementAt(ii);
+         if (driver.getRawAddress() != null)
+            num++;
+      }
+      I_Driver[] drivers = new I_Driver[num];
+      int count = 0;
+      for (int ii=0; ii<protocols.size(); ii++) {
+         I_Driver driver = (I_Driver)protocols.elementAt(ii);
+         if (driver.getRawAddress() != null)
+            drivers[count++] = driver;
+      }
+      return drivers;
    }
 
    /**
