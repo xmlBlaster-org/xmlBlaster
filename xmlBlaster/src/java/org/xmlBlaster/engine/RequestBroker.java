@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.95 2002/01/07 13:39:22 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.96 2002/01/13 22:13:35 goetzger Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -21,6 +21,7 @@ import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 
+
 import java.util.*;
 import java.io.*;
 
@@ -32,7 +33,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.95 $
+ * @version $Revision: 1.96 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -107,7 +108,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
       unsecureClientInfo = new ClientInfo("__RequestBroker_internal__");
-      
+
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
 
@@ -189,7 +190,9 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (usePersistence == false) return (I_PersistenceDriver)null;
 
       if (persistenceDriver == null) {
+
          String driverClass = XmlBlasterProperty.get("Persistence.Driver", "org.xmlBlaster.engine.persistence.filestore.FileDriver");
+
          if (driverClass == null) {
             Log.warn(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
             usePersistence = false;
@@ -199,14 +202,19 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          try {
             Class cl = java.lang.Class.forName(driverClass);
             persistenceDriver = (I_PersistenceDriver)cl.newInstance();
+            //persistenceDriver.initialize(driverPath);   // TODO shutdown's missing
             usePersistence = true;
-         }
-         catch (Exception e) {
+         } catch (Exception e) {
             Log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate " + driverClass + ": " + e.toString());
             usePersistence = false;
             return (I_PersistenceDriver)null;
+         } catch (NoClassDefFoundError e1) {
+            // Log.info(ME, "java.class.path: " +  System.getProperty("java.class.path") );
+            Log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate " + driverClass + ": " + e1.toString());
+            usePersistence = false;
+            return (I_PersistenceDriver)null;
          }
-         Log.info(ME, "Loaded persistence driver " + driverClass);
+         Log.info(ME, "Loaded persistence driver '" + driverClass + "'");
       }
       return persistenceDriver;
    }

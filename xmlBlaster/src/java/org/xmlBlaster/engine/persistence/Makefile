@@ -2,6 +2,7 @@
 #Name:      Makefile
 #Project:   xmlBlaster
 #Comment:   Makefile for Java code
+# $Id: Makefile,v 1.5 2002/01/13 22:13:35 goetzger Exp $
 #------------------------------------------------------------------------------
 
 
@@ -13,7 +14,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine/persistence
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = mudb filestore
+SUB_DIRS = filestore mudb xmldb
 LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
