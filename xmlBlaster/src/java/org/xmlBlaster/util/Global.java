@@ -274,7 +274,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * If you have a util.Global and need a shallow copy.
+    * @deprecated Please use glob.getClone(String[]) instead
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
       counter++;
@@ -803,6 +803,12 @@ public class Global implements Cloneable
     *    Global glob = Global.instance();
     *    ...
     * </pre>
+    * <p>
+    * Note that you should avoid to use Global.instance() and preferably
+    * use the global which describes your current context, e.g. the specific
+    * client connection like xmlBlasterAccess.getGlobal().
+    * Use global.getClone(String[]) to create a new Global instance.
+    * </p>
     */
    public static Global instance() {
       if (firstInstance == null) {
@@ -817,9 +823,16 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get a cloned instance.
-    * Note that instance() will return the original instance
+    * Get a cloned instance. 
+    * <p>
+    * This is the preferred way to create a new and independent
+    * Global instance for example for another client connection.
+    * </p>
+    * <p>
+    * Note that Global.instance() will return the original instance
     * even if called on the cloned object (it's a static variable).
+    * You should avoid to use Global.instance()
+    * </p>
     *
     * @param args Additional configuration parameters
     */
