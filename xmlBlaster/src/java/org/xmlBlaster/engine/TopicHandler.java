@@ -15,6 +15,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
+import org.xmlBlaster.engine.queuemsg.TopicEntry;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -24,6 +25,7 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
@@ -75,6 +77,8 @@ public final class TopicHandler implements I_Timeout
 
    private MsgUnitWrapper tmpVolatileMsgUnitWrapper;
 
+   private TopicEntry topicEntry; // persistence storage entry
+
    // Default is that a single client can subscribe the same message multiple times
    // private boolean allowMultiSubscriptionPerClient = glob.getProperty().get("Engine.allowMultiSubscriptionPerClient", true);
 
@@ -114,7 +118,7 @@ public final class TopicHandler implements I_Timeout
    /** This holds the quick parsed key information, if you need the DOM use xmlKey instead */
    private MsgKeyData msgKeyData;
 
-   private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MsgUnit is new created
+   private boolean handlerIsNewCreated=true;  // a little helper showing if topic is new created
 
    private boolean isRegisteredInBigXmlDom = false;
 
@@ -156,7 +160,7 @@ public final class TopicHandler implements I_Timeout
       this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
 
       toUnconfigured();
-      TopicHandler t = requestBroker.addTopicHandler(this);
+      TopicHandler t = this.requestBroker.addTopicHandler(this);
       if (t != null) {
          log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
          Thread.currentThread().dumpStack();
@@ -173,22 +177,21 @@ public final class TopicHandler implements I_Timeout
     * @param requestBroker
     * @param a MsgUnitWrapper containing the CORBA MsgUnit data container
     */
-   public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, MsgUnit msgUnit) throws XmlBlasterException {
+   public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, String keyOid) throws XmlBlasterException {
       this.glob = requestBroker.getGlobal();
-      if (msgUnit == null)
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
+      if (keyOid == null)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters, keyOid=null");
 
       this.log = glob.getLog("core");
       this.requestBroker = requestBroker;
-      this.msgKeyData = (MsgKeyData)msgUnit.getKeyData();
-      this.id = this.glob.getNodeId() + "/msg/" + msgUnit.getKeyOid();
-      this.ME += this.glob.getLogPrefixDashed() + "/msg/" + msgUnit.getKeyOid();
-      this.uniqueKey = msgUnit.getKeyOid();
+      this.uniqueKey = keyOid;
+      this.id = this.glob.getNodeId() + "/msg/" + keyOid;
+      this.ME += this.glob.getLogPrefixDashed() + "/msg/" + keyOid;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
       this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
       
       //Happens automatically on first publish
-      //administrativeInitialize((MsgQosData)msgUnit.getQosData());
+      //administrativeInitialize((MsgKeyData)msgUnit.getKeyData(), (MsgQosData)msgUnit.getQosData());
 
       toUnconfigured();
       TopicHandler t = requestBroker.addTopicHandler(this);
@@ -209,9 +212,15 @@ public final class TopicHandler implements I_Timeout
    /**
     * Initialize the messageUnit cache and the history queue for this topic
     */
-   private synchronized void administrativeInitialize(MsgQosData publishQos) throws XmlBlasterException {
-      if (!isUnconfigured())
+   private synchronized void administrativeInitialize(MsgKeyData msgKeyData, MsgQosData publishQos) throws XmlBlasterException {
+      if (!isUnconfigured()) {
+         log.error(ME, "Sorry, reconfiguring TopicHandler is not yet supported, we ignore the request");
          return;
+      }
+
+      if (this.msgKeyData == null) {
+         this.msgKeyData = msgKeyData;
+      }
 
       if (log.DUMP) log.dump(ME, "administrativeInitialize()" + publishQos.toXml());
 
@@ -223,8 +232,13 @@ public final class TopicHandler implements I_Timeout
       // Todo: this needs to be done after TopicHandler is created
       startupHistoryQueue();
 
-      if (!isAlive()) {
-         toAlive();
+      if (isUnconfigured()) { // Startup of topic
+         if (!hasCacheEntries() && !hasSubscribers()) {
+            toUnreferenced();
+         }
+         else {
+            toAlive();
+         }
       }
    }
 
@@ -331,6 +345,69 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
+    * Create or access the cached persistence storage entry of this topic. 
+    * @return null If no PublishQos is available to create persistent information
+    */
+   private TopicEntry persistTopicEntry() throws XmlBlasterException {
+      if (this.topicEntry == null) {
+         boolean isNew = false;
+         synchronized (this) {
+            if (this.topicEntry == null) {
+               if (log.TRACE) log.trace(ME, "Creating TopicEntry to make topic persistent");
+               if (this.topicProperty==null || this.msgKeyData==null) {
+                  log.error(ME, "Can't create useful TopicEntry in state=" + getStateStr() + " no QoS is available");
+                  return null;
+               }
+               MsgQosData msgQosData = new MsgQosData(glob);
+               msgQosData.setTopicProperty(this.topicProperty);
+               msgQosData.setAdministrative(true);
+               msgQosData.touchRcvTimestamp();
+               msgQosData.setDurable(true);
+               msgQosData.setSender(creatorSessionName);
+               MsgUnit msgUnit = new MsgUnit(glob, this.msgKeyData, null, msgQosData);
+               this.topicEntry = new TopicEntry(glob, msgUnit);
+               isNew = true;
+               if (log.TRACE) log.trace(ME, "Created persistent topicEntry '" + this.topicEntry.getUniqueId() + "'"); //: " + this.topicEntry.toXml());
+            }
+         }
+
+         if (isNew) {
+            persistTopic(this.topicEntry);
+         }
+      }
+      return this.topicEntry;
+   }
+
+   /**
+    * @return true if this topicEntry was made persistent
+    */
+   private boolean persistTopic(TopicEntry entry) {
+      try {
+         if (log.TRACE) log.trace(ME, "Making topicHandler persistent, topicEntry=" + topicEntry.getUniqueId());
+         int numAdded = this.requestBroker.addPersistentTopicHandler(entry);
+         //log.error(ME, "DEBUG ONLY: Persisted " + numAdded + " TopicHandler: " + toXml());
+         //Thread.currentThread().dumpStack();
+         if (log.TRACE) log.trace(ME, "Persisted " + numAdded + " TopicHandler");
+         return numAdded>0;
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
+      }
+      return false;
+   }
+
+   /**
+    * Triggered by persistent store, administrative message to configure this topic
+    *
+   public PublishReturnQos publish(SessionInfo publisherSessionInfo, MsgUnit msgUnit, PublishQosServer publishQosServer) throws XmlBlasterException
+      this.topicEntry = topicEntry;
+      MsgUnit msgUnit = topicEntry.getMsgUnit();
+      log.info(ME, "Restoring topic '" + msgUnit.getKeyOid() + "' from persistency.");
+      publish(publisherSessionInfo, msgUnit, publishQosServer);
+   }
+   */
+   
+   /**
     * A new publish event (PubSub or PtP) arrives. 
     * <br />
     * Publish filter plugin checks are done already<br />
@@ -354,14 +431,37 @@ public final class TopicHandler implements I_Timeout
       }
       */
 
-      if (this.msgKeyData == null) { // If TopicHandler existed because of a subscription: remember on first publish
-         this.msgKeyData = msgKeyData;
-      }
+      //if (this.msgKeyData == null) { // If TopicHandler existed because of a subscription: remember on first publish
+      //   this.msgKeyData = msgKeyData;
+      //}
 
-      if (isUnconfigured()/* || msgQosData.isAdministrative() */) {
-         administrativeInitialize(msgQosData);
-         //if (msgQosData.isAdministrative())
-         //   return new PublishRetQos(glob, Constants.STATE_OK, "Administrative configuration request handled");
+      if (isUnconfigured() || msgQosData.isAdministrative()) {
+         if (publishQosServer.getTopicEntry() != null) {
+            this.topicEntry = publishQosServer.getTopicEntry(); // Call from persistent layer, reuse the TopicEntry
+            if (log.TRACE) log.trace(ME, "Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
+         }
+
+         administrativeInitialize(msgKeyData, msgQosData);
+         if (msgQosData.isAdministrative()) {
+            if (this.handlerIsNewCreated) {
+               // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
+               glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
+               this.handlerIsNewCreated = false;
+            }
+            if (msgQosData.isFromPersistenceStore()) {
+               log.info(ME, "Topic is successfully recovered from persistency" + 
+                       //((requestBroker.getTopicStore()!=null) ? (" '" + requestBroker.getTopicStore().getStorageId() + "'") : "") +
+                       " with " + getNumOfHistoryEntries() + " history entries (" + getNumOfCacheEntries() + " currently referenced msgUnits are loaded).");
+            }
+            else {
+               log.info(ME, "Topic is successfully configured by administrative message.");
+            }
+            StatusQosData qos = new StatusQosData(glob);
+            qos.setKeyOid(this.uniqueKey);
+            qos.setState(Constants.STATE_OK);
+            qos.setStateInfo("Administrative configuration request handled");
+            return new PublishReturnQos(glob, qos);
+         }
       }
 
       if (this.topicProperty.isReadonly() && isAlive() && hasHistoryEntries()) {
@@ -412,6 +512,14 @@ public final class TopicHandler implements I_Timeout
          this.msgUnitCache.put(msgUnitWrapper);
 
          try {
+            if (publishQosServer.isPtp()) {
+               publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+               if (!publishQosServer.isSubscribeable()) {
+                  return publishReturnQos;
+               }
+            }
+
+
             if (this.historyQueue != null && msgUnitWrapper.isAlive()) { // no volatile messages
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), false);
@@ -422,25 +530,18 @@ public final class TopicHandler implements I_Timeout
             }
 
 
-            if (publishQosServer.isPtp()) {
-               publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
-               if (!publishQosServer.isSubscribeable()) {
-                  return publishReturnQos;
-               }
-            }
-
-
             //----- 2. now we can send updates to all interested clients:
             if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
             if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
                invokeCallback(publisherSessionInfo, msgUnitWrapper);
             }
 
-            if (isNewCreated()) {
+            if (this.handlerIsNewCreated) {
                // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
                this.tmpVolatileMsgUnitWrapper = msgUnitWrapper;
                glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
                this.tmpVolatileMsgUnitWrapper = null;
+               this.handlerIsNewCreated = false;
             }
          }
          finally {
@@ -600,17 +701,6 @@ public final class TopicHandler implements I_Timeout
          }
       }
       msgUnitWrapper = null;
-   }
-
-   /**
-    * A little helper for RequestBroker, showing if MsgUnit is new created
-    */
-   public final boolean isNewCreated() {
-      return this.handlerIsNewCreated;
-   }
-
-   public final void setNewCreatedFalse() {
-      this.handlerIsNewCreated = false;
    }
 
    /*
@@ -961,14 +1051,12 @@ public final class TopicHandler implements I_Timeout
     * Get the number of history message references we contain. 
     */
    public long getNumOfHistoryEntries() {
-      //if (isUnconfigured()) {
-      //   return 0L;
-      //}
       if (this.historyQueue == null) {
          return 0L;
       }
       long num = this.historyQueue.getNumOfEntries();
-      if (num > 0L && !isAlive()) { // assert
+      if (num > 0L && !isAlive() && !isUnconfigured()) { // assert
+         // isUnconfigured is possible on administrative startup with persistent messages
          log.error(ME, "Internal problem: we have messages but are not alive: " + toXml());
          Thread.currentThread().dumpStack();
       }
@@ -986,12 +1074,13 @@ public final class TopicHandler implements I_Timeout
     * The number of entries in the msgCache. 
     */
    public long getNumOfCacheEntries() {
-      if (isUnconfigured()) {
+      if (this.msgUnitCache == null) { // on startup
          return 0L;
       }
       synchronized (this) { // REMOVE SYNC and assert below after code is stable!!! TODO
          long num = this.msgUnitCache.getNumOfEntries();
-         if (num > 0L && !isAlive() && !isSoftErased()) { // assert
+         if (num > 0L && !isAlive() && !isSoftErased() && !isUnconfigured()) { // assert
+            // isUnconfigured is possible on administrative startup with persistent messages
             log.error(ME, "Internal problem: we have unexpected cache messages: " + toXml());
             Thread.currentThread().dumpStack();
          }
@@ -1137,8 +1226,25 @@ public final class TopicHandler implements I_Timeout
                throw e;
             }
          }
+
+         persistTopicEntry();
+
          this.state = ALIVE;
       }
+   }
+
+   private boolean removeTopicPersistence() {
+      try {
+         if (this.topicEntry != null) {
+            int num = this.requestBroker.removePersistentTopicHandler(this.topicEntry);
+            if (log.TRACE) log.trace(ME, "" + num + " TopicHandler removed from persistency");
+            return num>0;
+         }
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
+      }
+      return false;
    }
 
    private void toUnreferenced() throws XmlBlasterException {
@@ -1147,6 +1253,8 @@ public final class TopicHandler implements I_Timeout
          if (isUnreferenced() || isDead()) {
             return;
          }
+         int oldState = this.state;
+
          if (hasHistoryEntries()) {
             if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
@@ -1166,6 +1274,8 @@ public final class TopicHandler implements I_Timeout
          if (!isRegisteredInBigXmlDom) {
             addToBigDom();
          }
+
+         persistTopicEntry();
       }
    }
 
@@ -1204,6 +1314,11 @@ public final class TopicHandler implements I_Timeout
          if (isDead()) {
             return;
          }
+
+         if (this.topicEntry != null) {
+            removeTopicPersistence();
+         }
+
          if (isAlive()) {
             if (numSubscribers() > 0 || hasCacheEntries() || hasHistoryEntries())
                log.info(ME, "Forced state transition ALIVE -> DEAD with " + numSubscribers() + " subscribers, " +
@@ -1469,12 +1584,16 @@ public final class TopicHandler implements I_Timeout
     * @return XML state of TopicHandler
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(2000);
+      StringBuffer sb = new StringBuffer(4000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<TopicHandler id='").append(getId()).append("' state='").append(getStateStr()).append("'>");
       sb.append(offset).append(" <uniqueKey>").append(getUniqueKey()).append("</uniqueKey>");
+ 
+      if (this.topicEntry != null) {
+         sb.append(offset).append(" <topicEntry>").append(this.topicEntry.getLogId()).append("</topicEntry>");
+      }
    
       if (this.topicProperty != null)
          sb.append(this.topicProperty.toXml(extraOffset+Constants.INDENT));
@@ -1514,7 +1633,7 @@ public final class TopicHandler implements I_Timeout
          sb.append(offset + " <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
       }
 
-      sb.append(offset).append(" <handlerIsNewCreated>").append(handlerIsNewCreated).append("</handlerIsNewCreated>");
+      sb.append(offset).append(" <newCreated>").append(this.handlerIsNewCreated).append("</newCreated>");
       sb.append(offset).append("</TopicHandler>\n");
       return sb.toString();
    }
