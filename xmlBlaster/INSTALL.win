@@ -34,6 +34,26 @@ But, if you are lazy, just use and enjoy xmlBlaster as delivered!
 	You can use Ant.  See the build.xml file for more details.
 
 
++----------------------------+
+| INSTALLATION IN 20 SECONDS |
++----------------------------+
+
+Start the server without environment settings:
+
+Change to the installed xmlBlaster directory and type:
+
+  copy config\orb.properties %JAVA_HOME%\jre\lib\orb.properties
+
+  java -jar lib/xmlBlaster.jar
+
+Congratulations, now the server is running and ready!
+(orb.properties switches off the outdated, SUN delivered CORBA lib)
+
+But - you may want to adjust some properties
+and start a demo client, please read the following section
+how to do it.
+
+
 +--------------------+
 | INSTALLATION       |
 +--------------------+
