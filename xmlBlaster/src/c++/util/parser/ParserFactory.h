@@ -16,18 +16,44 @@ Comment:   The abstraction parser for xml literals
 namespace org { namespace xmlBlaster { namespace util { namespace parser {
     
 /**
- * Abstraction for the xml handling<p />
+ * Abstraction for the xml handling. 
+ * <p />
  * You may use this as the interface to extend in your specific XML handling (example SAX2).
+ * <p />
+ * It is a singleton class and has for
+ * that reason private constructors, destructor and assignment operator. 
+ * To get a reference to the singleton instance you must invoke getFactory(...).
  */
 class Dll_Export ParserFactory {
 
-public:
+   private:
+   const std::string ME;
+   org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Log& log_;
+
+   static ParserFactory* factory_;
    
+   ParserFactory(org::xmlBlaster::util::Global& global);
+   ParserFactory(const ParserFactory& factory);
+   ParserFactory& operator =(const ParserFactory& factory);
+
+   public:
+   ~ParserFactory();
+
    /**
-    * Creates a parser implementation. It is the responsability of the user to delete the I_Parser
-    * object once it is not needed anymore.
+    * Static access to the factory. 
+    * @exception XmlBlasterException
     */
-   static I_Parser* createParser(org::xmlBlaster::util::Global &global, XmlHandlerBase *handler);
+   static ParserFactory& getFactory(org::xmlBlaster::util::Global& global);
+
+   /**
+    * Creates a parser implementation. 
+    * <p />
+    * It is the responsibility of the user to delete the I_Parser
+    * object once it is not needed anymore.
+    * @exception XmlBlasterException
+    */
+   I_Parser* createParser(XmlHandlerBase *handler);
 };
 
 }}}} // namespace
