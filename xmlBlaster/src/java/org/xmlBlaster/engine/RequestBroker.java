@@ -989,6 +989,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       return publish(sessionInfo, key, msgUnit, qos, true);
    }
 
+   /**
+    * @param isClusterUpdate true if it is a update() callback message from another cluster node
+    */
    private final String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos, boolean isClusterUpdate) throws XmlBlasterException
    {
       try {
@@ -1019,6 +1022,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             }
          }
 
+         publishedMessages++;
+
          if (publishQos.isPubSubStyle()) {
             if (log.TRACE) log.trace(ME, "Doing publish() in Pub/Sub style");
 
@@ -1035,7 +1040,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
 
                      if (useCluster) { // cluster support - forward message to master
-                        if (!isClusterUpdate) {
+                        if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
                            try {
                               String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
                               //Thread.currentThread().dumpStack();
@@ -1154,7 +1159,6 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
          }
 
-         publishedMessages++;
          return retVal;
       }
       catch (XmlBlasterException e) {
