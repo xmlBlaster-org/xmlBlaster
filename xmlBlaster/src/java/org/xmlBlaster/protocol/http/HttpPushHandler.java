@@ -426,9 +426,9 @@ public class HttpPushHandler
    public void update( String updateKey, String content, String updateQos )
    {
       try {
-         String codedKey     = Global.encode( updateKey, BlasterHttpProxyServlet.ENCODING );
+         String codedKey     = Global.encode( updateKey.trim(), BlasterHttpProxyServlet.ENCODING );
          String codedContent = Global.encode( content, BlasterHttpProxyServlet.ENCODING );
-         String codedQos     = Global.encode( updateQos, BlasterHttpProxyServlet.ENCODING );
+         String codedQos     = Global.encode( updateQos.trim(), BlasterHttpProxyServlet.ENCODING );
 
          if (log.TRACE) log.trace(ME,"update dump: " + ((updateKey.length() < 50) ? updateKey : updateKey.substring(0,50)) + " ...");
          /*
