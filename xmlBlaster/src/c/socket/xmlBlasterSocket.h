@@ -29,8 +29,11 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 */
 #  define ssize_t signed int
 #else
+#  if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__hpux__)
+#    include <netinet/in.h>
+#    include <sys/types.h>   /* Needed for __FreeBSD__ */
+#  endif
 #  include <sys/socket.h>
-#  include <netinet/in.h>
 #  include <netdb.h>
 #  include <arpa/inet.h>   /* inet_addr() */
 #endif

@@ -55,7 +55,15 @@ Note:      The gcc and icc (>=8) both define __GNUC__
   typedef __int16 int16_t;
 #else
 
-# include<stdint.h>  /*-> C99:  uint64_t etc. */
+/* FreeBSD uses inttypes.h, not stdint.h.  Boost's lib suggests
+   this should read  defined(__FreeBSD__) || defined(__IBMCPP__)
+*/
+# if defined(__FreeBSD__) 
+#   include <inttypes.h>
+# else
+#   include <stdint.h>  /*-> C99:  uint64_t etc. */
+# endif
+
 # define PRINTF_PREFIX_INT64_T "%lld"
 #endif
 /*#define INT64_DIGITLEN_MAX 19  Size of a max int64_t dumped to a string: LLONG_MAX from limits.h 9223372036854775807 */
