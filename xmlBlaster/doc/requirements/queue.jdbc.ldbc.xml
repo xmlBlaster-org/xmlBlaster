@@ -1,80 +1,43 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='queue.jdbc.mysql' type='NEW' prio='LOW' status='INWORK'>
+
+<requirement id='queue.jdbc.ldbc' type='NEW' prio='LOW' status='INWORK'>
    <topic>
-        XmlBlaster has an advanced queuing facility.
-		  Among others, one tested persistence layer is offered by
-        communicating with a MySQL database.
-		  Warning MySQL integration is still under development.
-		  Use at your own risk
-    </topic>
-    <description>
-       <p>A new plugin for jdbc based queues has been added and uses the Liberty Database 
-       abstraction layer to communicate with a MySQL Server. The plugin is based on the generic jdbc queue
-       plugin by Michele Laghi with modifications by Peter Bennett.</p>
-        <p>MySQL Server is available from <a href='http://www.mysql.org/' target='others'>http://www.mysql.org/</a>
-        where you can find all necessary information and instructions on how to make MySQL Server run.
-        </p>
-        <p>Once you have a running database you can configure xmlBlaster to make it run against it.
-        First you need to download the jdbc driver.
-		  <a href='http://www.mysql.com/downloads/api-jdbc.html' target='others'>http://www.mysql.com/downloads/api-jdbc.html</a>
-		  You must put these files in the CLASSPATH (for example you can put them into $XMLBLASTER_HOME/lib 
-		  and add them to the CLASSPATH or in your runtime library directory jre/lib/ext/.
-        </p>
-        <h3>Setup MySQL Server</h3>
-		  <ol>
-		  <li>Note some default installs disable MySQL Networking. See /etc/mysql/my.cnf [mysqld] skip-networking</li>
-		  <li>Also increase the Maximum Packet Size. [mysqld] max_allowed_packet MySQL Default on Debian Woody is 1M (meg) xmlBlaster will fail some tests with a setting below 2M</li>
-		  <li>Create the database to be used. mysql; create database xmlb;</li>
-        <li>Setup xmlBlaster.properties as described in the example section below</li>
-		  </ol>
-    </description>
-    <example lang="Java" type="HTML">
-    <p>This is a configuration example from xmlBlaster.properties:
-    </p>
-    <p>Typical configuration for the ldbc plugin is as follows.
-    </p>
+     JDBC Plugin which stores all queues in a common table using Liberty Database Connectivity Abstraction.
+   </topic>
+
+   <description>
+      <p>The Liberty data base connectivity package <a href="http://ldbc.sourceforge.net/">http://ldbc.sourceforge.net/</a>
+      provides vendor-independant database access. The <i>org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin</i>
+      is based on <i>JdbcQueueCommonTablePlugin</i> with changes to accomodate syntax and functionality differences only.
+      <b>This code is currently beta and has only been tested with MySQL, Postgres and Hsqldb. Hsqldb is known NOT to work 
+      at present.</b>
+      </p>
+      <p><a href="queue.jdbc.commontable.html">See queue.jdbc.commontable</a> for a description of the common table architecture.
+      </p>
+   </description>
+   
+   <example lang="Java" type="HTML">
+      <p>This is a configuration example from xmlBlaster.properties:
+      </p>
+      Configuration for the ldbc plugin in debug mode.
       <pre>
 JdbcStorage[MySQL]=org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin,\
-                    url=jdbc:ldbc:mysql://localhost/xmlb,\
-                    user=xmlb,\
-                    password=secret,\
-                    connectionPoolSize=1,\
-                    connectionBusyTimeout=90000,\
-                    maxWaitingThreads=300,\
-                    tableNamePrefix=XB_,\
-                    nodesTableName=NODES,\
-                    queuesTableName=QUEUES,\
-                    entriesTableName=ENTRIES,\
-                    dbAdmin=true
-
-StoragePlugin[JDBC][1.0]=${JdbcStorage[MySQL]}
-StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
-StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,\
-persistentQueue=JDBC,transientQueue=RAM
-
-persistence/topicStore/defaultPlugin=JDBC,1.0
-persistence/msgUnitStore/defaultPlugin=CACHE,1.0
-
-QueuePlugin[JDBC][1.0]=${JdbcStorage[MySQL]}
-QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
-QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,\
-persistentQueue=JDBC,transientQueue=RAM
-
-
-queue/subject/defaultPlugin=CACHE,1.0
-queue/history/defaultPlugin=CACHE,1.0
-queue/callback/defaultPlugin=CACHE,1.0
-useTopicStore=true
-
-JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
+           url=jdbc:ldbc:mysql://localhost/xmlb[ldbc.trace=detailed],\
       </pre>
+      <p>It is not possible to use the ldbc trace to file functionality as the parameter format
+      to pass the file name to ldbc will break xmlBlasters parameter parsing.
+      </p>
+      <p>[ldbc.trace=on] Method calls, parameters, exceptions and statements.</p>
+      <p>[ldbc.trace=detailed] All of On plus prepared statement and result set calls.</p>
+      <p>[ldbc.trace=off] Default is off.</p>
+      <p><a href="queue.jdbc.mysql.html">See queue.jdbc.mysql</a> for a full configuration example.
+      </p>
    </example>
    <configuration where="server">
-   <p>These parameters allow you to configure a cache queue running with MySQL Server
-   </p>
-     To activate persistence please add the following to your properties file:
+     <p>To activate persistence please add the following to your properties file:
+     </p>
      <pre>
 persistence/topicStore/defaultPlugin=JDBC,1.0
 persistence/msgUnitStore/defaultPlugin=CACHE,1.0
@@ -232,9 +195,8 @@ JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
           <td>Use the topic store.</td>
         </tr>
      </table>
-      <p>Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
-      </p>
    </configuration>
+
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
    <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</see>
    <see type="API">org.xmlBlaster.util.queue.jdbc.LdbcQueueCommonTablePlugin</see>
@@ -244,16 +206,16 @@ JdbcDriver.drivers=org.ldbc.jdbc.jdbcDriver
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
    <see type="API">org.xmlBlaster.util.Global</see>
    <see type="REQ">queue</see>
+   <see type="REQ">queue.jdbc.mysql</see>
 
    <author>Peter Bennett</author>
-   <date>2003 07 11</date>
-   <revision>$Revision: 1.2 $</revision>
+   <date>2003 11 05</date>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
       <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
       <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
-      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.CacheQueueTest</test>
    </testcase>
 </requirement>
 
