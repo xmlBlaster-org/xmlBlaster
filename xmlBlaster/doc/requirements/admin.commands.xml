@@ -495,12 +495,12 @@
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>client/joe/1/?activateManager</td>
+            <td>client/joe/1/?dispatcherActive</td>
             <td>tells if the DispatchManager of the specified session is active for asynchronous dispatch</td>
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>client/joe/1/?activateManager=true</td>
+            <td>client/joe/1/?dispatcherActive=true</td>
             <td>tells the DispatchManager of the specified session to become active</td>
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
@@ -634,6 +634,36 @@ UserInfo: joe:mypasswd
       The problem is that the <i>UserInfo</i> is cut away from the browser,
       we need to pass it somewhere in the path.
       </p>
+   </example>
+
+   <example lang="any" type="HTML">
+   <h2 id="dispatcherActive">Example for activating or prohibiting message delivery to a subscriber</h2>
+   <p>Here is a command line example of controlling message delivery to a subscriber
+    <tt>joe/1</tt>, open three console windows and start the server, a publisher
+    and a subscriber:</p>
+<pre>
+java org.xmlBlaster.Main
+
+java javaclients.HelloWorldSubscribe -session.name joe/1
+ (hit a key to subscribe ...)
+
+java javaclients.HelloWorldPublish -numPublish 100
+</pre>
+   <p>Publish some messages to see them arriving at the subscriber, now we deactivate
+   the delivery of messages using <tt>telnet</tt>:</p>
+<pre>
+telnet localhost 2702
+127.0.0.1 : eecchhoo  ooffff
+127.0.0.1 : connect jack secret
+127.0.0.1 : set client/joe/1/?dispatcherActive=false
+</pre>
+   <p>If you now publish more messsages they won't arrive at the subscriber,
+   now activate delivery again:
+   </p>
+<pre>
+127.0.0.1 : set client/joe/1/?dispatcherActive=true
+</pre>
+   <p>and all missing messages will arrive.</p>
    </example>
 
    <configuration where="server">
