@@ -12,6 +12,9 @@ TODO for release 0.79
 (9) Documentation (some samll HOWTO'S)                                [--]
 (10) Integrate JacOrb 1.2.1                                           [ok]
 (11) SOAP  ?                                                          [--]
+(12) Configure the xmlBlaster by xmlBlaster.xml                       [--]
+(13) CLASSPATH is to long!!                                           [--] 
+(14) xmlBlaster HP support for all browsers                           [ok] 
  
 
 Some small TODO's for the next release
@@ -20,6 +23,7 @@ Some small TODO's for the next release
 (2) Journaled Communication (History) 
     For auditing/logging and play back of events (error recovery).
 (3) Allowing compound messages.
+(4) Online demos'
 
 --------------------------- TODO for the future ------------------------
 
