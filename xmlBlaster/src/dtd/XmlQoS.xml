@@ -118,7 +118,7 @@
    <!-- QoS when deleting messages -->
    <erase>
       <qos>
-         <noNotify />     <!-- The subscribers shall not be notified when this message is destroyed -->
+         <notify>false</notify>     <!-- The subscribers shall not be notified when this message is destroyed -->
       </qos>
    </erase>
 
