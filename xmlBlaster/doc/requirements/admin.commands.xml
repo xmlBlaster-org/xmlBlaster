@@ -42,6 +42,9 @@
                <uptime>10050</uptime>
                <cb.queue.numMsgs>37</cb.queue.numMsgs>
                <cb.queue.maxMsg>1000</cb.queue.maxMsg>
+               <cb.queue.threshold>80</cb.queue.threshold> <!-- 80% -->
+               <cb.queue.thresholdOverflow>numMsg=199,
+                 maxMsg=203</cb.queue.thresholdOverflow> <!-- a trap -->
             </ses17>
 
             <ses32>
@@ -113,7 +116,7 @@
             <td>telnet</td>
             <td>SNMP</td>
             <td>JMX</td>
-            <td>Implemented</td>
+            <td>Impl</td>
          </tr>
          <tr>
             <td>GET</td>
@@ -164,6 +167,7 @@
          </tr>
       </table>
 
+      <p>The column <i>Impl</i> states if the feature is implemented.</p>
       <p>For JMX the DynamicMBean and Notification interface is used.</p>
 
       <h3>
@@ -293,7 +297,8 @@
          <tr>
             <td>/node/heron/?clientList</td>
             <td><pre>
-/node/heron/?clientList=joe,jack,averell,william
+/node/heron/?clientList=joe,jack,
+   averell,william
             </pre></td>
             <td>The clientList is one attribute, containing the list of known clients
             </td>
@@ -303,9 +308,9 @@
             <td>
                <pre><![CDATA[
 <xmlBlaster>
-   <key oid='Hello' contentMime='text/plain'/>
-   <content>How are you</content>
-   <qos><rcvTimestamp nanos='129595811'/></qos>
+  <key oid='Hello' contentMime='text/plain'/>
+  <content>How are you</content>
+  <qos><rcvTimestamp nanos='1291'/></qos>
 </xmlBlaster>
                ]]></pre>
             </td>
@@ -327,7 +332,9 @@
             <td>client/joe/ses17/?cb.queue.maxMsg=30000</td>
             <td>
                <pre><![CDATA[
-<qos><state id='OK' info='Blah'/></qos>
+<qos>
+   <state id='OK' info='Blah'/>
+</qos>
                ]]></pre>
             </td>
             <td>The returned string is XML encoded
@@ -347,13 +354,17 @@
             <td>Protocol</td>
             <td>Example</td>
             <td>Description</td>
-            <td>Implemented</td>
+            <td>Impl</td>
          </tr>
 
          <tr>
             <td>MoM clients</td>
-            <td><pre>con.get("&lt;key oid='__cmd:/node/heron/?freeMem'/>","&lt;qos/>")</pre></td>
-            <td>The token <i>__cmd:</i> marks the oid to be used as a command
+            <td><pre>con.get(
+"&lt;key oid='__cmd:?freeMem'/>",
+"&lt;qos/>")</pre></td>
+            <td>The token <i>__cmd:</i> marks the oid to be used as a command.<br />
+            Here we have used relative addressing, absolute <i>__cmd:/node/heron/?freeMem</i>
+            would be identical.
             </td>
             <td>no</td>
          </tr>
@@ -368,14 +379,16 @@
 
          <tr>
             <td>SNMP</td>
-            <td><pre>snmpget -v 1 -c public 192.168.1.4 
-                     1.3.6.1.4.1.11662.1.2.1.3</pre></td>
-            <td>-c is community password, usually 'public', IP where master agent runs
+            <td><pre>snmpget -v 1 -c public
+  192.168.1.4 
+  1.3.6.1.4.1.11662.1.2.1.3</pre></td>
+            <td>-c is community password, usually 'public', the IP is where the master agent runs
             <pre>
-1.3.6.1.4.1.11662   is xmlBlaster
-1.3.6.1.4.1.11662.1 is objects of xmlBlaster
-1.3.6.1.4.1.11662.2 is traps of xmlBlaster
-1.3.6.1.4.1.11662.1.2.1.3 momTable momEntry uptime
+1.3.6.1.4.1.11662   xmlBlaster
+1.3.6.1.4.1.11662.1 objects
+1.3.6.1.4.1.11662.2 traps
+1.3.6.1.4.1.11662.1.2.1.3 
+ objects momTable momEntry uptime
             </pre>
             </td>
             <td>no</td>
@@ -383,7 +396,8 @@
 
          <tr>
             <td>JMX</td>
-            <td><pre>getAttribute("/node/heron/?freeMem")</pre></td>
+            <td><pre>getAttribute(
+"/node/heron/?freeMem")</pre></td>
             <td>This is a method of DynamicMBean</td>
             <td>no</td>
          </tr>
@@ -407,16 +421,16 @@
          not to break this syntax with our query language:
       </p>
       <pre> <!-- class="BORDER" -->
-http://joe:mypassword@server.xmlBlaster.org:3412/myPath/?key.oid=MyMessage#myFragment
+http://joe:mypasswd@www.xmlBlaster.org:3412/myPath/?key.oid=MyMessage#myFragment
 
 Protocol: http
-Host:     server.xmlBlaster.org
+Host:     www.xmlBlaster.org
 Port:     3412
 File:     /myPath/?key.oid=MyMessage
 Path:     /myPath/
 Query:    key.oid=MyMessage
 Ref:      myFragment
-UserInfo: joe:mypassword
+UserInfo: joe:mypasswd
       </pre>
    </example>
 
@@ -475,7 +489,7 @@ UserInfo: joe:mypassword
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
