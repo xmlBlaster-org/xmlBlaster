@@ -25,6 +25,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.util.property.PropString;
 
 import java.util.ArrayList;
 
@@ -88,19 +89,21 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       this.deliveryConnectionsHandler = glob.createDeliveryConnectionsHandler(this, addrArr);
 
       /*
-       * Check i a plugin is configured. 
+       * Check i a plugin is configured ("DispatchPlugin/defaultPlugin")
        * If configured, the plugin instance is searched in the Global scope
        * and if none is found one is created (see DispatcherPluginManager)
        * Default server setting is to use no dispatcher plugin
        */
-      String tmp = glob.getProperty().get("DispatchPlugin.defaultPlugin", PluginManagerBase.NO_PLUGIN_TYPE);
+      PropString propString = new PropString(PluginManagerBase.NO_PLUGIN_TYPE); // "undef";
       if (addrArr != null && addrArr.length > 0) // Check if client wishes a specific plugin
-         tmp = addrArr[0].getDispatchPlugin(); // TODO: Change code so that plugin is specific to each address/DeliveryConnection instance
-      this.typeVersion = tmp;
+         propString.setValue(addrArr[0].getDispatchPlugin());
+      this.typeVersion = propString.getValue();
       this.msgInterceptor = glob.getDispatchPluginManager().getPlugin(this.typeVersion); // usually from cache
-      if (this.msgInterceptor != null)
+      if (log.TRACE) log.trace(ME, "DispatchPlugin/defaultPlugin=" + propString.getValue() + " this.msgInterceptor="  + this.msgInterceptor);
+      if (this.msgInterceptor != null) {
          this.msgInterceptor.addDeliveryManager(this);
-      if (log.TRACE && this.msgInterceptor != null) log.trace(ME, "Activated dispatcher plugin '" + this.typeVersion + "'");
+         if (log.TRACE) log.trace(ME, "Activated dispatcher plugin '" + this.typeVersion + "'");
+      }
 
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
    }
