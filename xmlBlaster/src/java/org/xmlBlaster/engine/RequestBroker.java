@@ -1392,8 +1392,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
          MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
 
+
          if (log.CALL) log.call(ME, "Entering " + (publishQos.isClusterUpdate()?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
-         if (log.DUMP) log.dump(ME, "Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgKeyData.toXml() + "\n" + publishQos.toXml());
+         if (log.DUMP) log.dump(ME, "Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80) + "\n" + publishQos.toXml());
 
          PublishReturnQos publishReturnQos = null;
 
