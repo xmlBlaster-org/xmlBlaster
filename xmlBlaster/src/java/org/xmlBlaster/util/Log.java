@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.50 2000/09/18 05:00:56 ruff Exp $
+Version:   $Id: Log.java,v 1.51 2000/09/18 06:17:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -18,6 +18,8 @@ import org.jutils.runtime.Memory;
 
 /**
  * Logging output.
+ * <p />
+ * This wraps the jutils logging framework to xmlBlaster specific logging.
  * <p />
  * Note that the layout of this class is for optimum performance and ease of use.<br />
  * To increase performance of jutils you may choose to add final qualifiers<br />
