@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.13 2003/02/07 11:49:08 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.14 2003/02/13 14:00:32 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -72,7 +72,9 @@ public:
    ~TestConnect() {
       cout << "Destructor for TestConnect invoked" << endl;
       delete conn2_;
+      conn2_ = 0;
       delete msgUnit_;
+      msgUnit_ = 0;
    }
 
 
