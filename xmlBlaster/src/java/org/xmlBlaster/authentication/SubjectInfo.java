@@ -565,4 +565,23 @@ public class SubjectInfo implements I_AdminSubject
       }
       return sb.toString();
    }
+
+   /**
+    * Access a list of public session identifier e.g. "1,5,7,12"
+    * @return An empty string if no sessions available
+    */
+   public final String getKillClient() throws XmlBlasterException {
+      int numSessions = getNumSessions();
+      if (numSessions < 1)
+         return "";
+      String sessionList = getSessionList();
+      while (true) {
+         Iterator iterator = sessionMap.values().iterator();
+         if (!iterator.hasNext())
+            break;
+         SessionInfo sessionInfo = (SessionInfo)iterator.next();
+         sessionInfo.getKillSession();
+      }
+      return getUniqueKey() + " Sessions " + sessionList + " killed";
+   }
 }

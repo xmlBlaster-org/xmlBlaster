@@ -6,6 +6,8 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.util.XmlBlasterException;
+
 /**
  * Declares available methods of a client for administration. 
  * <p />
@@ -22,4 +24,5 @@ public interface I_AdminSubject {
    public int getNumSessions();
    public int getMaxSessions();
    public String getSessionList();
+   public String getKillClient() throws XmlBlasterException;
 }
