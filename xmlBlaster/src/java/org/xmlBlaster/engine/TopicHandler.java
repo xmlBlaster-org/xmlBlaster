@@ -1359,7 +1359,12 @@ public final class TopicHandler implements I_Timeout
             if (this.topicEntry != null) {
                removeTopicPersistence();
             }
-            else log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
+            else {
+               if (!isUnconfigured()) {
+                  log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
+                  Thread.currentThread().dumpStack();
+               }
+            }
 
             if (isAlive()) {
                if (numSubscribers() > 0 || hasCacheEntries() || hasHistoryEntries())
