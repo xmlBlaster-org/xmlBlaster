@@ -4,8 +4,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
- o changed jacorb to ver. 2.1. This to eliminate a nasty bug causing an implicit redelivery of 
+ o Added an 'AvailabilityChecker' to protect xmlBlaster in the different run levels.
+   This is another step for enhanced maintenance modes.
+
+ o Changed delivered Postgres SQL driver from jdbc7.2dev-1.2.jar to pg74.213.jdbc2.jar
+   (renamed to postgresql.jar) wich supports PostgreSQL 7.4
+
+ o Changed jacorb to ver. 2.1. This to eliminate a nasty bug causing an implicit redelivery of 
    messages. Moved jacorb jar files to xmlBlaster/lib/jacorb
+   NOTE: The name of the property jacorb.verbosity has changed to jacorb.log.default.verbosity
 
  o Fixed release generation to remove build.tmp and
    keep the 'build' script.
