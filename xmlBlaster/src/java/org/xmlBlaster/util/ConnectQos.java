@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.23 2002/06/10 22:28:32 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.24 2002/06/11 14:23:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -71,6 +71,11 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * </pre>
     */
    protected boolean ptpAllowed = true;
+
+   /**
+    * Allows to mark that we are an xmlBlaster cluster node.
+    */
+   protected boolean isClusterNode = false;
 
    /** Default session span of life is one day, given in millis "-session.timeout 86400000" */
    protected long sessionTimeout = Constants.DAY_IN_MILLIS;
@@ -298,6 +303,14 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          this.subjectCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, nodeId);
       }
       return this.subjectCbQueueProperty;
+   }
+
+   public void setSubjectCbQueueProperty(CbQueueProperty subjectCbQueueProperty) {
+      this.subjectCbQueueProperty = subjectCbQueueProperty;
+   }
+
+   public boolean subjectCbQueuePropertyIsInitialized() {
+      return (this.subjectCbQueueProperty != null);
    }
 
    /**
@@ -590,6 +603,20 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
+    * @param Set if we are a cluster node. 
+    */
+   public final void setIsClusterNode(boolean isClusterNode) {
+      this.isClusterNode = isClusterNode;
+   }
+
+   /**
+    * @return Are we a cluster?
+    */
+   public final boolean isClusterNode() {
+      return this.isClusterNode;
+   }
+
+   /**
     * Add an address to which we want to connect, with all the configured parameters. 
     * <p />
     * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
@@ -817,6 +844,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("isClusterNode")) {
+         setIsClusterNode(true);
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("sessionId")) {
          if (!inSession)
             return;
@@ -880,6 +913,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             setPtpAllowed(new Boolean(tmp).booleanValue());
+         return;
+      }
+
+      if (name.equalsIgnoreCase("isClusterNode")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            setIsClusterNode(new Boolean(tmp).booleanValue());
          return;
       }
 
@@ -971,6 +1011,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if(securityQos!=null) sb.append(securityQos.toXml(extraOffset)); // includes the qos of the ClientSecurityHelper
 
       sb.append(offset).append("<ptp>").append(ptpAllowed).append("</ptp>");
+   
+      if (isClusterNode())
+         sb.append(offset).append("<isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
 
       sb.append(offset).append("<session timeout='").append(sessionTimeout);
       sb.append("' maxSessions='").append(maxSessions);
@@ -1045,6 +1088,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   </securityService>\n" +
             */
             "   <ptp>true</ptp>\n" +
+            "   <isClusterNode>true</isClusterNode>\n" +
             "   <session timeout='3600000' maxSessions='20' clearSessions='false'>\n" +
             "      <sessionId>anId</sessionId>\n" +
             "   </session>\n" +
