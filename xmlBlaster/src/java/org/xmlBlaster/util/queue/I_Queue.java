@@ -459,25 +459,23 @@ public interface I_Queue extends I_StorageProblemNotifier
     * <p />
     * You can use this for example to add a threshold warning system.
     * @param listener the listener to be added.
-    * @exception IllegalArgumentException If one is already registered or if you pass null
+    * @exception IllegalArgumentException if you pass null
     */
    public void addQueueSizeListener(I_QueueSizeListener listener);
    
    /**
     * Removes the specified listener from the queue.
     * 
-    * @param listener the listener to be removed. Currently only one
-    *        listener is allowed. If you pass null, all 
-    *        queueSizeListeners are removed.
-    *  
+    * @param listener the listener to be removed. Currently only one.
+    *        If you pass null, all queueSizeListeners are removed.
+    * @exception IllegalArgumentException if the listener was not found
     */
    public void removeQueueSizeListener(I_QueueSizeListener listener);
    
    /**
-    * Checks wether the specified listener is registered. Currenly only
-    * max. one listener is allowed to be registered.
+    * Checks wether the specified listener is registered.
     * @param listener the listener to check against. If you pass null
-    *        it checks if one listener exists.
+    *        it checks if at least one listener exists.
     * @return true if the specified listener exists, false otherwise. If
     *         you passed null in the argument list it returns true if a
     *         listener exists.
