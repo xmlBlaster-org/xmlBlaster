@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.16 2000/01/07 20:39:51 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.17 2000/02/01 12:08:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -40,6 +40,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    private final String ME = "MainGUI";
 
    private Button exitButton;
+   private Button hideButton;
+   private Button clearLogButton;
 
    /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
@@ -92,6 +94,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    public MainGUI()
    {
       setTitle("XmlBlaster Control Panel");
+      
       init();
 
       // Poll xmlBlaster internal states
@@ -222,6 +225,18 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       gbc.weightx = gbc.weighty = 0.0;
       add(exitButton, gbc);
 
+      // Hide Button
+      hideButton = new Button("Hide Window");
+      class HideListener implements ActionListener {
+         public void actionPerformed(ActionEvent e) {
+            hideWindow();
+         }
+      }
+      hideButton.addActionListener(new HideListener());
+      gbc.gridx=1; gbc.gridy=0; gbc.gridwidth=1; gbc.gridheight=1;
+      gbc.weightx = gbc.weighty = 0.0;
+      add(hideButton, gbc);
+
       // Statistic display with fill level bars
       int offset = 0;
       gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
@@ -270,6 +285,19 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       add(createLogLevelBoxes(), gbc);
 
 
+      // Clear logging output - Button
+      clearLogButton = new Button("Clear Log Window");
+      class ClearListener implements ActionListener {
+         public void actionPerformed(ActionEvent e) {
+            logOutput.setText("");
+         }
+      }
+      clearLogButton.addActionListener(new ClearListener());
+      gbc.gridx=4; gbc.gridy=2; gbc.gridwidth=1; gbc.gridheight=1;
+      gbc.weightx = gbc.weighty = 0.0;
+      add(clearLogButton, gbc);
+
+
       // TextArea for log outputs
       gbc.gridx=0; gbc.gridy=3; gbc.gridwidth=6; gbc.gridheight=6;
       gbc.weightx = gbc.weighty = 1.0;
@@ -280,6 +308,34 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       pack();
 
       startupTime = System.currentTimeMillis();
+   }
+
+
+   /**
+    * Hide the window.
+    * Note that all the resources are still busy, only logging is directed to console
+    */
+   private void hideWindow()
+   {
+      if (isShowing()) {
+         Log.addLogListener(null);
+         Log.info(ME, "Press <g> and <Enter> to popup the GUI again (press ? for other options).");
+         hide();     // dispose(); would clean up all resources
+      }
+   }
+
+
+   /**
+    * Hide the window.
+    * Note that all the resources are still busy, only logging is directed to console
+    */
+   void showWindow()
+   {
+      if (!isShowing()) {
+         if (Log.TRACE) Log.trace(ME, "Show window again ...");
+         Log.addLogListener(this);
+         show();
+      }
    }
 
 
@@ -296,7 +352,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
             Log.addLogLevel(logLevel);
          else
             Log.removeLogLevel(logLevel);
-         System.out.println("New log level is: " + Log.bitToLogLevel(Log.getLogLevel()));
+         System.out.println(ME + ": New log level is: " + Log.bitToLogLevel(Log.getLogLevel()));
       }
    }
 
@@ -444,8 +500,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    static public void main(String[] args)
    {
-      MainGUI mg = new MainGUI();
-      mg.run();
+      Main.controlPanel = new MainGUI();
+      Main.controlPanel.run();
 
       new org.xmlBlaster.Main(args);
    }
@@ -477,7 +533,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       public void run()
       {
          try {
-            System.out.println("Starting poller");
+            if (Log.TRACE) Log.trace(ME, "Starting poller");
             while (true) {
                sleep(POLLING_FREQUENCY);
                mainGUI.pollEvent(POLLING_FREQUENCY);  // Todo: calculate the exact sleeping period
@@ -516,7 +572,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
                      updateKey.init(msgArr[ii].xmlKey);
                      queryOutput.append("### UpdateKey:\n" + updateKey.printOn().toString());
                      */
-                     queryOutput.append("### UpdateKey:\n" + msgArr[ii].messageUnit.xmlKey);
+                     queryOutput.append("### XmlKey:\n" + msgArr[ii].messageUnit.xmlKey);
                      queryOutput.append("\n");
                      queryOutput.append("### Content:\n" + new String(msgArr[ii].messageUnit.content) + "\n");
                      queryOutput.append("======================================================\n");

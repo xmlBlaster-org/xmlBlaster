@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.18 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: Main.java,v 1.19 2000/02/01 12:08:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.authenticateIdl.*;
+import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.HttpIORServer;
 import java.io.*;
 import org.omg.CosNaming.*;
@@ -45,7 +46,18 @@ public class Main
    private org.omg.CORBA.ORB orb;
    private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
 
-   public Main( String[] args )
+   /**
+    * true: If instance created by control panel<br />
+    * false: running without GUI
+    */
+   static MainGUI controlPanel = null;
+
+
+   /**
+    * Start xmlBlaster. 
+    * @param args The command line parameters
+    */
+   public Main(String[] args)
    {
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
@@ -58,8 +70,10 @@ public class Main
          org.omg.PortableServer.POA rootPOA =
          org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
+         AuthServerImpl authServer = new AuthServerImpl(orb);
+
          // USING TIE:
-         org.omg.PortableServer.Servant authServant = new AuthServerPOATie(new AuthServerImpl(orb));
+         org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
          org.omg.CORBA.Object authRef = new AuthServerPOATie(new AuthServerImpl(orb))._this(orb);
          // NOT TIE:
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
@@ -105,15 +119,72 @@ public class Main
 
          Log.info(ME, Memory.getStatistic());
 
-         Log.info(ME, "####################################");
-         Log.info(ME, "# xmlBlaster is ready for requests #");
-         Log.info(ME, "####################################");
+         if (controlPanel == null) {
+            Log.info(ME, "########################################################################");
+            Log.info(ME, "# xmlBlaster is ready for requests (press <?> and <enter> for options) #");
+            Log.info(ME, "########################################################################");
+         }
+         else
+            Log.info(ME, "xmlBlaster is ready for requests");
       } catch (Exception e) {
          e.printStackTrace();
          Log.panic(ME, e.toString());
       }
 
-      orb.run();
+      checkForKeyboardInput();
+      // orb.run();
+   }
+
+
+   /**
+    * Check for keyboard entries from console. 
+    * <p />
+    * Supported input is:
+    * &lt;ul>
+    *    &lt;li>'g' to pop up the control panel GUI&lt;/li>
+    *    &lt;li>'d' to dump the internal state of xmlBlaster&lt;/li>
+    *    &lt;li>'q' to quit xmlBlaster&lt;/li>
+    * &lt;/ul>
+    * <p />
+    * NOTE: This method never returns, only on exit for 'q'
+    */
+   private void checkForKeyboardInput()
+   {
+      InputStreamReader in = new InputStreamReader(System.in);
+      while (true) {
+         try {
+            int key = in.read();
+            char keyChar = new Character((char)key).charValue();
+            if (Character.toLowerCase(keyChar) == 'g') {
+               if (controlPanel == null) {
+                  Log.info(ME, "Invoking control panel GUI ...");
+                  controlPanel = new MainGUI(); // the constructor sets the variable controlPanel
+                  controlPanel.run();
+               }
+               else
+                  controlPanel.showWindow();
+            }
+            else if (Character.toLowerCase(keyChar) == 'd') {
+               try {
+                  Authenticate auth = Authenticate.getInstance();
+                  Log.dump(ME, auth.printOn().toString());
+                  Log.dump(ME, RequestBroker.getInstance(auth).printOn().toString());
+                  Log.error(ME, "Dump done");
+               }
+               catch(XmlBlasterException e) {
+                  Log.error(ME, "Sorry, dump failed: " + e.reason);
+               }
+            }
+            else if (Character.toLowerCase(keyChar) == 'q') {
+               Log.exit(ME, "Good bye");
+            }
+            else if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))
+               keyboardUsage();
+         }
+         catch (IOException e) {
+            Log.warning(ME, e.toString());
+         }
+      }
    }
 
 
@@ -157,6 +228,21 @@ public class Main
          Log.warning(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
+   }
+
+
+   /**
+    * Keyboard input usage. 
+    */
+   private void keyboardUsage()
+   {
+      Log.plain(ME, "----------------------------------------------------------");
+      Log.plain(ME, "Following interactive keyboard input is recognized:");
+      Log.plain(ME, "Key:");
+      Log.plain(ME, "   -g             Popup the control panel GUI.");
+      Log.plain(ME, "   -d <file name> Dump internal state of xmlBlaster to file.");
+      Log.plain(ME, "   -q             Quit xmlBlaster.");
+      Log.plain(ME, "----------------------------------------------------------");
    }
 
 
