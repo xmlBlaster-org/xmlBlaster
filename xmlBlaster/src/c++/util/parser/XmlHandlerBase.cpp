@@ -25,8 +25,13 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
 
-XmlHandlerBase::XmlHandlerBase(Global& global) : ME("XmlHandlerBase"), global_(global), log_(global.getLog("util"))
+XmlHandlerBase::XmlHandlerBase(Global& global) :
+            ME("XmlHandlerBase"),
+            global_(global),
+            log_(global.getLog("util")),
+            invocationMutex_()
 {
    doTrimStrings_ = true;
    if (log_.call()) log_.trace(ME, "Creating new XmlHandlerBase");
@@ -55,6 +60,7 @@ void XmlHandlerBase::parse(const string &xmlData)
    try {
       log_.trace(ME, "parse entrering try/catch block");
       parser = ParserFactory::getFactory(global_).createParser(this);
+      Lock lock(invocationMutex_);
       parser->parse(xmlData);
       delete parser;
       parser = NULL;

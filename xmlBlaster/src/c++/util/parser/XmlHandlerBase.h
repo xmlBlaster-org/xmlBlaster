@@ -15,6 +15,7 @@ Comment:   Default handling of Sax callbacks
 #include <string>
 #include <map>
 #include <util/StringTrim.h>
+#include <util/thread/ThreadImpl.h>
 //#include <framework/MemBufInputSource.hpp>
 //#include <util/Log.h>
 
@@ -51,6 +52,8 @@ protected:
    std::string  xmlLiteral_;
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::Log&    log_;
+
+   org::xmlBlaster::util::thread::Mutex invocationMutex_;
 
 public:
    /**
