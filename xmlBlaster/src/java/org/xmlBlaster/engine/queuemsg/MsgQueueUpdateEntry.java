@@ -7,14 +7,9 @@ package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.TopicHandler;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.queue.StorageId;
@@ -89,8 +84,6 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
 
    /**
     * Dump state of this object into XML.
-    * <br>
-    * @return XML state of TopicHandler
     */
    public final String toXml() {
       return toXml((String)null);
@@ -98,9 +91,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
 
    /**
     * Dump state of this object into XML.
-    * <br>
     * @param extraOffset indenting of tags
-    * @return XML state of TopicHandler
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(1000);
