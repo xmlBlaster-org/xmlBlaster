@@ -393,7 +393,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       log.info(ME, "Entering testUnreferencedAlive ...");
       this.updateInterceptor.clear();
 
-      {  // topic transition from START -> [2] -> ALIVE (3 sec)
+      {  log.info(ME, "topic transition from START -> [2] -> ALIVE (3 sec)");
          long topicDestroyDelay = 6000L;
          long msgLifeTime = 3000L;
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
@@ -407,7 +407,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
       }
 
-      {  // topic transition from ALIVE -> [6] -> UNREFERENCED (3 sec)
+      {  log.info(ME, "topic transition from ALIVE -> [6] -> UNREFERENCED (3 sec)");
          try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
@@ -417,7 +417,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNREFERENCED'") != -1);
       }
 
-      {  // topic transition from UNREFERENCED -> [5] -> ALIVE (3 sec)
+      {  log.info(ME, "topic transition from UNREFERENCED -> [5] -> ALIVE (3 sec)");
          long msgLifeTime = 3000L;
          sendExpiringMsg(true, 0L, msgLifeTime); 
          assertEquals("numReceived after sending", 0, this.updateInterceptor.waitOnUpdate(1000L, 0)); // no message arrived?
@@ -429,10 +429,11 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
          //System.out.println(dump);
-         assertXpathEvaluatesTo(publishOid, "//uniqueKey", dump);
+         // This assert could find "__sys__UserList" instead of the wanted "TestTopicLifeCycleMsg"
+         //assertXpathEvaluatesTo(publishOid, "//uniqueKey", dump);
       }
 
-      {  // topic transition from ALIVE -> [10] -> DEAD
+      {  log.info(ME, "topic transition from ALIVE -> [10] -> DEAD");
          boolean forceDestroy = true;
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
@@ -440,7 +441,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
 
-      {  // topic transition from ALIVE -> [10] -> DEAD with XPath subscription
+      {  log.info(ME, "topic transition from ALIVE -> [10] -> DEAD with XPath subscription");
          subscribeXPathMsg();
          long topicDestroyDelay = 0L;
          long msgLifeTime = 0L;
@@ -449,7 +450,8 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          assertEquals("", 1, this.updateInterceptor.getMsgs().length);
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+oid+"</uniqueKey>") == -1);
-         assertXpathNotExists("//uniqueKey", dump);
+         // assert does not work because of other internal topics:
+         //assertXpathNotExists("//uniqueKey", dump);
          unSubscribeMsg();
       }
 
@@ -792,8 +794,9 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       try {
          TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
          testSub.setUp();
-         testSub.testExpiry();
+         //testSub.testExpiry();
          testSub.testUnreferencedAlive();
+         /*
          testSub.testVolatile();
          testSub.testSubscribeVolatile();
          testSub.testUnconfiguredSubscribeSubscribe();
@@ -801,6 +804,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          testSub.testForcedErased();
          testSub.testUnconfiguredErased();
          testSub.testUnconfiguredUnSubscribe();
+         */
          testSub.tearDown();
       }
       catch(Exception e) {
