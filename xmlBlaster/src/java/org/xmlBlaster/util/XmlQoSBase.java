@@ -3,7 +3,7 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.20 2004/01/25 19:08:50 laghi Exp $
+Version:   $Id: XmlQoSBase.java,v 1.21 2004/09/28 15:09:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -102,7 +102,7 @@ public class XmlQoSBase extends SaxHandlerBase
     * <p />
     * Default implementation, knows how to parse &lt;qos> but knows nothing about the tags inside of qos
     */
-   public void startElement(String uri, String localName, String name, Attributes attrs)
+   public void startElement(String uri, String localName, String name, Attributes attrs) throws org.xml.sax.SAXException
    {
       startElementBase(uri, localName, name, attrs);
    }
@@ -142,7 +142,7 @@ public class XmlQoSBase extends SaxHandlerBase
     * <p />
     * Default implementation, knows how to parse &lt;qos> but knows nothing about the tags inside of qos
     */
-   public void endElement(String uri, String localName, String name)
+   public void endElement(String uri, String localName, String name) throws org.xml.sax.SAXException
    {
       endElementBase(uri, localName, name);
    }
