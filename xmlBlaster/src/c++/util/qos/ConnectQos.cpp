@@ -38,8 +38,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
    clusterNode_      = false;
    duplicateUpdates_ = false;
    persistent_       = false;
-   getAddress();      // Force creation, to read environment
-   getCbAddress();    // Force creation, to read environment
+   getAddress();      // Force creation, to read environment, Note: The CB address is only read if a callback server is created
 }
 
 ConnectQosData::ConnectQosData(const ConnectQosData& data)
