@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.20 2002/03/20 16:34:00 ruff Exp $
+Version:   $Id: Parser.java,v 1.21 2002/03/31 13:21:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -299,7 +299,7 @@ public class Parser
    public final void addKeyAndQos(String key, String qos) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addKeyAndQos() may only be invoked once");
-      MessageUnit msg = new MessageUnit(key, null, qos);
+      MessageUnit msg = new MessageUnit(key, (byte[])null, qos);
       msgVec.add(msg);
    }
 
@@ -312,7 +312,7 @@ public class Parser
    public final void addException(XmlBlasterException e) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addException() may only be invoked once");
-      MessageUnit msg = new MessageUnit(e.reason, null, e.id);
+      MessageUnit msg = new MessageUnit(e.reason, (byte[])null, e.id);
       msgVec.add(msg);
    }
 
@@ -348,7 +348,7 @@ public class Parser
    public final void addMessage(String qos) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
-      MessageUnit msg = new MessageUnit(null, null, qos);
+      MessageUnit msg = new MessageUnit(null, (byte[])null, qos);
       msgVec.add(msg);
    }
 
@@ -367,7 +367,7 @@ public class Parser
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
       for (int ii=0; ii<qos.length; ii++) {
-         MessageUnit msg = new MessageUnit(null, null, qos[ii]);
+         MessageUnit msg = new MessageUnit(null, (byte[])null, qos[ii]);
          msgVec.add(msg);
       }
    }
@@ -548,7 +548,7 @@ public class Parser
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
          qos = toString(buf);
-         MessageUnit msgUnit = new MessageUnit(null, null, qos);
+         MessageUnit msgUnit = new MessageUnit(null, (byte[])null, qos);
          addMessage(msgUnit);
          if (buf.offset >= buf.buf.length) break;
 
