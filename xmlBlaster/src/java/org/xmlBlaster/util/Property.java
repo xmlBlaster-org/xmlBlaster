@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.5 2000/03/13 16:17:03 ruff Exp $
+Version:   $Id: Property.java,v 1.6 2000/03/13 17:04:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -111,6 +111,18 @@ public class Property
       } catch (Exception e) {
          return defaultVal;
       }
+   }
+
+
+   /**
+    * Remove the given property. 
+    * <p />
+    * This method does nothing if the key is not in the property hashtable.
+    * @param key the key to remove
+    */
+   public final static Object removeProperty(String key)
+   {
+      return xmlBlasterProperties.remove(key);
    }
 
 
@@ -318,6 +330,15 @@ public class Property
       String fullName = FileUtil.concatPath(path, fileName);
       Log.info(ME, "Using file '" + fullName + "'");
       return fullName;
+   }
+
+
+   /**
+    * @see #addArgs2Props(Properties, args)
+    */
+   public static void addArgs2Props(String[] args)
+   {
+      addArgs2Props(getProps(), args);
    }
 
 
