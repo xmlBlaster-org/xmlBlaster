@@ -114,7 +114,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    {
       if (this.isDown) {
 
-  	 java.util.Properties pluginProperties = null;
+         java.util.Properties pluginProperties = null;
          if (this.pluginInfo != null) pluginProperties = this.pluginInfo.getParameters();
 
          if (pluginProperties == null) 
@@ -471,7 +471,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       throws XmlBlasterException {
       ArrayList list = null;
       synchronized (this.swappingPutMonitor) {
-         if (this.persistentQueue.getNumOfPersistentEntries() != this.persistentQueue.getNumOfEntries()) {
+         if (this.persistentQueue != null && this.persistentQueue.getNumOfPersistentEntries() != this.persistentQueue.getNumOfEntries()) {
             // swapping
             list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
             if (this.notifiedAboutAddOrRemove) {
