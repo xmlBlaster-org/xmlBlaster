@@ -51,7 +51,7 @@ namespace org {
       // methods inherited from I_XmlBlasterConnection
       ConnectReturnQos connect(const ConnectQos& qos);
 //      string connect(const string& qos);
-      bool disconnect(const string& qos);
+      bool disconnect(const string& qos="");
       string getProtocol();
       string loginRaw();
       bool shutdown();
@@ -66,6 +66,10 @@ namespace org {
       void publishOneway(const vector<MessageUnit> &msgUnitArr);
       vector<string> publishArr(vector<MessageUnit> msgUnitArr);
       vector<string> erase(const string& xmlKey, const string& qos);
+
+      // following methods are not defined in any parent class
+      static void usage();
+
    };
 
 }}}}} // namespaces

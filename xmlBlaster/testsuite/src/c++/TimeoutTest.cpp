@@ -73,8 +73,8 @@ public:
    void tearDown() {
       cout << ME << " tearDown(): will delete now" << endl;
       timeoutObject->shutdown();
-      delete TimestampFactory::getInstance()
-	  cout << ME << " tearDown(): has deleted now" << endl;
+      // delete TimestampFactory::getInstance();
+      cout << ME << " tearDown(): has deleted now" << endl;
    }
 };
    

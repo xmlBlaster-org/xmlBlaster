@@ -81,6 +81,7 @@ int main(int args, char *argc[]) {
    test->setUp(args, argc);
    test->testTimestamp();
    test->tearDown();
+   delete test;
    return 0;
 }
 

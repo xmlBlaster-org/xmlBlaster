@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.2 2002/12/03 14:08:31 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.3 2002/12/04 13:29:08 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -23,7 +23,8 @@ Version:   $Id: TestConnect.cpp,v 1.2 2002/12/03 14:08:31 laghi Exp $
 
 #include <string>
 #include <util/Log.h>
-#include <client/protocol/corba/CorbaConnection.h>
+// #include <client/protocol/corba/CorbaConnection.h>
+#include <client/protocol/corba/CorbaDriver.h>
 #include <util/qos/ConnectQos.h>
 #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
@@ -31,7 +32,7 @@ Version:   $Id: TestConnect.cpp,v 1.2 2002/12/03 14:08:31 laghi Exp $
 #include <util/StopWatch.h>
 
 using namespace std;
-using org::xmlBlaster::client::protocol::corba::CorbaConnection;
+using org::xmlBlaster::client::protocol::corba::CorbaDriver;
 using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster {
@@ -47,7 +48,7 @@ private:
    string                 oid_;
    string                 qos1_, qos2_;
    string                 senderContent_;
-   CorbaConnection        *conn1_, *conn2_;
+   CorbaDriver            *conn1_, *conn2_;
    serverIdl::MessageUnit *msgUnit_;     // a message to play with
 
    int       numReceived_; // error checking
@@ -126,7 +127,7 @@ public:
       try {
          if (!log_) log_   = new util::Log(args, argc);
          if (conn1_) delete conn1_;
-         conn1_ = new CorbaConnection(args, argc); // Find orb
+         conn1_ = new CorbaDriver(args, argc); // Find orb
          ConnectQosFactory factory(args, argc);
          ConnectQos connectQos1 = factory.readObject(qos1_);
          conn1_->connect(connectQos1);
@@ -134,7 +135,7 @@ public:
          // Login to xmlBlaster
          if (conn2_) delete conn2_;
          ConnectQos connectQos2 = factory.readObject(qos2_);
-         conn2_ = new CorbaConnection(args, argc); // Find orb
+         conn2_ = new CorbaDriver(args, argc); // Find orb
          conn2_->connect(connectQos2);
 
       }
@@ -163,7 +164,7 @@ private:
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
       log_.plain(me(), "Usage:");
-      CorbaConnection::usage();
+      CorbaDriver::usage();
       log_.usage();
       log_.plain(me(), "Example:");
       log_.plain(me(), "   TestLogin -ior.file /tmp/ior.dat -trace true");

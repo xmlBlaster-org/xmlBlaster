@@ -140,7 +140,9 @@ void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int len
 void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& attrs) {
    log_.call(ME, "startElement");
    if (log_.TRACE) {
-      log_.trace(ME, string("startElement. name:'") + string(XMLString::transcode(name)) + string("' character: '") + character_ + string("'"));
+      char *help = XMLString::transcode(name);
+      log_.trace(ME, string("startElement. name:'") + string(help) + string("' character: '") + character_ + string("'"));
+      delete help;
    }
 
    if (util::XmlQoSBase::startElementBase(name, attrs)) return;

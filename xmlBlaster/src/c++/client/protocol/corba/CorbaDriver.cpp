@@ -18,7 +18,7 @@ namespace org {
 
 CorbaDriver::CorbaDriver(int args, const char * const argc[],
     bool connectionOwner) : connection_(args, argc, connectionOwner),
-    defaultCallback_(NULL)
+    defaultCallback_("default", NULL)
 {
 }
 
@@ -128,6 +128,12 @@ vector<string> CorbaDriver::erase(const string& xmlKey, const string& qos)
 {
    return connection_.erase(xmlKey, qos);
 }
+
+void CorbaDriver::usage()
+{
+   CorbaConnection::usage();
+}
+
 
 }}}}} // namespaces
 
