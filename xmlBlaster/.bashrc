@@ -9,7 +9,6 @@
 #
 #   These are optional:
 #   export JacORB_HOME=/opt/local/JacORB
-#   export CORBACPP_HOME=/opt/local/mico
 #   export JIKES_HOME=/opt/local/jikes
 #   export USE_ANT=true
 #
@@ -244,117 +243,10 @@ else
    return 1
 fi
 
-
-# !!! Why don't we add jacorb.sh and orbacus.sh and mico.sh as procedures to this shell? It would be less complicated IMHO
-if [ ${#} -eq 0 ]; then
-  if [ "${CORBA_CPP}" != "orbacus" ]; then
-    . ${XMLBLASTER_HOME}/config/jacorb.sh
-  else
-    . ${XMLBLASTER_HOME}/config/orbacus.sh
-  fi
-else
-  ORB=${1}
-  if [ "${ORB}" = "orbacus" ]; then
-    . ${XMLBLASTER_HOME}/config/orbacus.sh
-    ${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
-    ${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
-  else
-#   ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
-    . ${XMLBLASTER_HOME}/config/jacorb.sh
-    ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
-    . ${XMLBLASTER_HOME}/config/mico.sh
-    ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
-  fi
-fi # end of if [ ${#} -eq 0 ]
-
 # tinySQL, a simple DBase JDBC driver.
 # Conflicts with JacORBs idl.jar because both use java_cup
 # (tinySQL has modified parser.java)
 #CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
-
-
-# stuff fot the c++ classes
-if [ "${USE_CPP}" = "" ] ; then
-  ${ECHO} "$BLACK_LTGREEN   C++ classes not activated. To activate set USE_CPP=true$ESC"
-  export USE_CPP=false
-else
-  if [ "${USE_CPP}" = "true" ] ; then
-    ${ECHO} "$BLACK_LTGREEN   USE_CPP        =true  C++ classes activated    $ESC"
-  else
-    ${ECHO} "$BLACK_LTGREEN   USE_CPP is not set to true. C++ not activated  $ESC"
-    export USE_CPP=false
-  fi
-fi
-
-if [ "${USE_CPP}" = "true" ] ; then
-  CPP_ERROR=false
-  export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/src/c++/bin
-  #check if xerces is installed and version of xerces is set
-  if [ "${XMLCPP_VER}" = "" ] ; then
-      ${ECHO} "$BLACK_YELLOW   XMLCPP_VER is not set. I will set it to 1_7_0 $ESC"
-      export XMLCPP_VER="1_7_0"
-      CPP_ERROR=true
-  else
-      ${ECHO} "$BLACK_LTGREEN   XMLCPP_VER     =${XMLCPP_VER} $ESC"
-      export LD_LIBRARY_PATH=$XMLCPP_HOME/lib:$LD_LIBRARY_PATH
-  fi
-  if [ "${XMLCPP_HOME}" = "" ] ; then
-    if [ -d /opt/local/xerces-c-src${XMLCPP_VER} ] ; then
-       export XMLCPP_HOME=/opt/local/xerces-c-src${XMLCPP_VER}
-       ${ECHO} "${BLACK_YELLOW}   XMLCPP_HOME is not set. I will set it to ${XMLCPP_HOME}${ESC}"
-       CPP_ERROR=true
-    else
-       ${ECHO} "${BLACK_RED}   Set XMLCPP_HOME to the directory where the c++ XML is installed $ESC"
-    fi
-  else
-    if [ ! -d ${XMLCPP_HOME} ] ; then
-      ${ECHO} "$BLACK_RED   XMLCPP_HOME: ${XMLCPP_HOME} is not a valid directory $ESC"
-    else
-      ${ECHO} "$BLACK_LTGREEN   XMLCPP_HOME set to ${XMLCPP_HOME} $ESC"
-    fi
-  fi
-
-  #check if the correct corba is installed
-  if [ "${CORBA_CPP}" = "" ] ; then
-    export CORBA_CPP=mico
-    ${ECHO} "$BLACK_YELLOW   CORBA_CPP is not set. I will set it to ${CORBA_CPP} ('orbacus' is valid as well) $ESC"
-    CPP_ERROR=true
-  fi
-  if [ "${CORBACPP_VER}" = "" ] ; then
-    export CORBACPP_VER="2.3.7"
-    ${ECHO} "$BLACK_YELLOW   CORBACPP_VER is not set. I will set it to ${CORBACPP_VER} $ESC"
-    CPP_ERROR=true
-  fi
-  #home directory of the corba implementation
-  if [ "${CORBACPP_HOME}" = "" ] ; then
-    if [ -d /opt/local/mico ] ; then
-       export CORBACPP_HOME=/opt/local/mico
-       ${ECHO} "$BLACK_YELLOW   CORBACPP_HOME is not set. I will set it to ${CORBACPP_HOME}. $ESC"
-    else
-       if [ -d /opt/mico ] ; then
-          export CORBACPP_HOME=/opt/mico
-          ${ECHO} "$BLACK_YELLOW   CORBACPP_HOME is not set. I will set it to ${CORBACPP_HOME}. $ESC"
-       else
-          ${ECHO} "$BLACK_RED   CORBACPP_HOME is not set. Please set it to the directory where corba is installed. $ESC"
-          CPP_ERROR=true
-       fi
-    fi
-  fi
-  if [ ! -d ${CORBACPP_HOME} ] ; then
-    ${ECHO} "$BLACK_RED CORBACPP_HOME: ${CORBACPP_HOME} is not a valid directory. $ESC"
-    CPP_ERROR=true
-  fi
-
-  if [ "${CPP_ERROR}" = "true" ] ; then
-    ${ECHO} "${BLACK_LTGREEN}   Please read the file ${XMLBLASTER_HOME}/src/c++/README $ESC"
-  fi
-
-  if [ "${CORBA_CPP}" = "mico" ] ; then
-     . ${XMLBLASTER_HOME}/config/mico.sh
-  fi
-
-fi
-# end of stuff for the c++ classes
 
 #-------- Checkin for preset Buildcompiler -
 # if you want to switch, set in your own .profile
