@@ -121,7 +121,7 @@ bool EmbeddedServer::start(bool blockUntilUp)
       }
       if (!isConnected) {
          log_.error(ME, "maximum number of retrials to establish a connection failed ");
-         throw new XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, " start: could not establish a connection to the embedded server");
+         throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, " start: could not establish a connection to the embedded server");
       }
 
    }
