@@ -55,7 +55,7 @@ struct I_QueueStruct;
 typedef struct I_QueueStruct I_Queue;
 
 /** Declare function pointers to use in struct to simulate object oriented access */
-typedef void  ( * I_QueueInitialize)(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
+typedef bool  ( * I_QueueInitialize)(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
 typedef void  ( * I_QueueShutdown)(I_Queue *queueP, ExceptionStruct *exception);
 typedef const QueueProperties *( * I_QueueGetProperties)(I_Queue *queueP);
 typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
@@ -63,7 +63,6 @@ typedef QueueEntryArr *( * I_QueuePeekWithSamePriority)(I_Queue *queueP, int32_t
 typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
 typedef bool  ( * I_QueueClear)(I_Queue *queueP, ExceptionStruct *exception);
 typedef bool  ( * I_QueueEmpty)(I_Queue *queueP);
-/*typedef void  ( * I_QueueLogging)(I_Queue *queueP, const char *location, const char *fmt, ...);*/
 typedef int32_t ( * I_QueueNumOfEntries)(I_Queue *queueP);
 typedef int32_t ( * I_QueueMaxNumOfEntries)(I_Queue *queueP);
 typedef int64_t ( * I_QueueNumOfBytes)(I_Queue *queueP);
@@ -126,13 +125,13 @@ struct I_QueueStruct {
 
    /**
     * Access the current number of entries. 
-    * @return The number of entries in the queue
+    * @return The number of entries in the queue, returns -1 on error
     */                                  
    I_QueueNumOfEntries getNumOfEntries;
 
    /**
     * Access the configured maximum number of elements for this queue. 
-    * @return The maximum number of elements in the queue
+    * @return The maximum number of elements in the queue, returns -1 when passing a NULL pointer
     */
    I_QueueMaxNumOfEntries getMaxNumOfEntries;
 
@@ -141,13 +140,13 @@ struct I_QueueStruct {
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return The amount of bytes currently in the queue
+    * @return The amount of bytes currently in the queue, returns -1 on error
     */
    I_QueueNumOfBytes getNumOfBytes;
 
    /**
     * Access the configured capacity (maximum bytes) for this queue
-    * @return The maximum capacity for the queue in bytes
+    * @return The maximum capacity for the queue in bytes, returns -1 when passing a NULL pointer
     */
    I_QueueMaxNumOfBytes getMaxNumOfBytes;
 
@@ -167,9 +166,14 @@ struct I_QueueStruct {
    XmlBlasterLogging log;
 
   /* private: */
+
+   /**
+    * For internal use only. 
+    * @return false on error
+    */
    I_QueueInitialize initialize;
-   bool isInitialized;
-   void *privateObject; /* Usually holds a pointer on the internal data structure (like a DB handle or a hashtable) */
+   bool isInitialized;  /** Hold current state of I_QueueStruct */
+   void *privateObject; /** Usually holds a pointer on the internal data structure (like a DB handle or a hashtable) */
 };
 
 /**

@@ -34,7 +34,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 #include "util/queue/I_Queue.h"
 #include "sqlite.h"
 
-static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
+static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
 static const QueueProperties *getProperties(I_Queue *queueP);
 static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
 static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception);
@@ -69,7 +69,7 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
    is
     LOG __FILE__, "Persistent queue is created");
 */
-#define LOG if (queueP->log) queueP->log(queueP, queueP->logLevel, LOG_TRACE, 
+#define LOG if (queueP && queueP->log) queueP->log(queueP, queueP->logLevel, LOG_TRACE, 
 
 #define DBNAME_MAX 128
 #define ID_MAX 256
@@ -112,11 +112,13 @@ static char * const int64Str = int64Str_;   /* to make the pointer address const
  * @param logLevel Set to LOG_TRACE to receive any logging
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  *         usually by calling freeQueue().
+ * @throws exception
  */
 Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
                                 XmlBlasterLogging logFp, XMLBLASTER_LOG_LEVEL logLevel,
                                 ExceptionStruct *exception)
 {
+   bool stateOk = true;
    I_Queue *queueP = (I_Queue *)calloc(1, sizeof(I_Queue));
    if (queueP == 0) return queueP;
    queueP->isInitialized = false;
@@ -140,8 +142,14 @@ Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
       dbInfo->numOfEntries = -1;
       dbInfo->numOfBytes = -1;
    }
-   LOG __FILE__, "Persistent queue is created");
-   queueP->initialize(queueP, queueProperties, exception);
+   stateOk = queueP->initialize(queueP, queueProperties, exception);
+   if (stateOk) {
+      LOG __FILE__, "Persistent queue is created");
+   }
+   else {
+      freeQueue(queueP);
+      queueP = 0;
+   }
    return queueP;
 }
 
@@ -181,7 +189,7 @@ static const QueueProperties *getProperties(I_Queue *queueP)
 Dll_Export void freeQueue(I_Queue *queueP)
 {
    if (queueP == 0) {
-      fprintf(stderr, "[%s:%d] Please provide a valid I_Queue pointer to freeQueue()", __FILE__, __LINE__);
+      fprintf(stderr, "[%s:%d] Please provide a valid I_Queue pointer to freeQueue()\n", __FILE__, __LINE__);
       return;
    }
 
@@ -203,7 +211,7 @@ Dll_Export void freeQueue(I_Queue *queueP)
 /**
  * Called internally by createQueue(). 
  */
-static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception)
+static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception)
 {
    char *errMsg = 0;
    bool retOk;
@@ -211,12 +219,24 @@ static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
    sqlite *db;
    DbInfo *dbInfo;
 
-   if (checkArgs(queueP, "initialize", false, exception) == false ) return;
+   if (checkArgs(queueP, "initialize", false, exception) == false ) return false;
    if (queueProperties == 0) {
       strncpy0(exception->errorCode, "resource.db.unavailable", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] Please provide a valid QueueProperties pointer to initialize()", __FILE__, __LINE__);
       LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
+      return false;
+   }
+   if (*queueProperties->dbName == 0 || *queueProperties->queueName == 0 ||
+       queueProperties->maxNumOfEntries == 0 || queueProperties->maxNumOfBytes == 0) {
+      strncpy0(exception->errorCode, "resource.db.unavailable", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Please provide a proper initialized QueueProperties pointer to initialize(): dbName='%s', queueName='%s',"
+               " maxNumOfEntries=%ld, maxNumOfBytes=%ld", __FILE__, __LINE__,
+               queueProperties->dbName, queueProperties->queueName,
+               (long)queueProperties->maxNumOfEntries, (long)queueProperties->maxNumOfBytes);
+      LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
+      return false;
    }
 
    dbInfo = getDbInfo(queueP);
@@ -245,7 +265,7 @@ static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] Creating SQLiteQueue '%s' failed: %s", __FILE__, __LINE__, queueProperties->dbName, (errMsg==0)?"":errMsg);
       if (errMsg != 0) sqlite_freemem(errMsg);
-      return;
+      return false;
    }
 
    queueP->isInitialized = true;
@@ -271,6 +291,7 @@ static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
    fillCache(queueP, exception);
 
    LOG __FILE__, "initialize(%s) %s", queueProperties->dbName, retOk?"successful":"failed");
+   return true;
 }
 
 /**
@@ -375,6 +396,30 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, Exceptio
    DbInfo *dbInfo;
 
    if (checkArgs(queueP, "put", true, exception) == false ) return;
+   if (queueEntry == 0) {
+      strncpy0(exception->errorCode, "user.illegalArgument", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Please provide a valid queueEntry pointer to function put()", __FILE__, __LINE__);
+      return;
+   }
+   if (queueEntry->uniqueId == 0) {
+      strncpy0(exception->errorCode, "user.illegalArgument", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Please provide a valid queueEntry->uniqueId to function put()", __FILE__, __LINE__);
+      return;
+   }
+   if (*queueEntry->embeddedType == 0) {
+      strncpy0(exception->errorCode, "user.illegalArgument", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Please provide a valid queueEntry->embeddedType to function put()", __FILE__, __LINE__);
+      return;
+   }
+   if (queueEntry->embeddedBlob.dataLen > 0 && queueEntry->embeddedBlob.data == 0) {
+      strncpy0(exception->errorCode, "user.illegalArgument", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Please provide a valid queueEntry->embeddedBlob to function put()", __FILE__, __LINE__);
+      return;
+   }
 
    dbInfo = getDbInfo(queueP);
 
@@ -746,13 +791,19 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
                         dbInfo->pVm_peekWithSamePriority, parseQueueEntryArr,
                         &helper, false, exception);
       stateOk = currIndex >= 0;
-      if (!stateOk || currIndex == 0) {
-         free(queueEntryArr->queueEntryArr);
-         queueEntryArr->len = 0;
+      if (!stateOk) {
+         if (queueEntryArr) {
+            free(queueEntryArr->queueEntryArr);
+            queueEntryArr->len = 0;
+         }
       }
-      else if ((size_t)currIndex < queueEntryArr->len) {
-         queueEntryArr->queueEntryArr = (QueueEntry *)realloc(queueEntryArr->queueEntryArr, currIndex * sizeof(QueueEntry));
-         queueEntryArr->len = currIndex; 
+      else {
+         if (!queueEntryArr)
+            queueEntryArr = (QueueEntryArr *)calloc(1, sizeof(QueueEntryArr));
+         else if ((size_t)currIndex < queueEntryArr->len) {
+            queueEntryArr->queueEntryArr = (QueueEntry *)realloc(queueEntryArr->queueEntryArr, currIndex * sizeof(QueueEntry));
+            queueEntryArr->len = currIndex; 
+         }
       }
    }
 
@@ -883,12 +934,22 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
    return true;
 }
 
+/**
+ * Reload cached information from database. 
+ * @param queueP The this pointer
+ * @param exception Returns error
+ * @return false on error
+ */
 static bool fillCache(I_Queue *queueP, ExceptionStruct *exception)
 {
    bool stateOk = true;
-   DbInfo *dbInfo = getDbInfo(queueP);
+   DbInfo *dbInfo = 0;
 
    char queryString[512]; /* "SELECT count(dataId) FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415'" */
+
+   if (checkArgs(queueP, "fillCache", true, exception) == false ) return true;
+   dbInfo = getDbInfo(queueP);
+
    sprintf(queryString, 
             "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s' and nodeId='%s'",
             dbInfo->prop.tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId);
@@ -916,7 +977,7 @@ static int32_t getNumOfEntries(I_Queue *queueP)
    DbInfo *dbInfo;
    bool stateOk = true;
    ExceptionStruct exception;
-   if (checkArgs(queueP, "getNumOfEntries", true, &exception) == false ) return true;
+   if (checkArgs(queueP, "getNumOfEntries", false, &exception) == false ) return -1;
    dbInfo = getDbInfo(queueP);
    if (dbInfo->numOfEntries == -1) {
       stateOk = fillCache(queueP, &exception);
@@ -928,7 +989,7 @@ static int32_t getMaxNumOfEntries(I_Queue *queueP)
 {
    DbInfo *dbInfo;
    ExceptionStruct exception;
-   if (checkArgs(queueP, "getMaxNumOfEntries", false, &exception) == false ) return true;
+   if (checkArgs(queueP, "getMaxNumOfEntries", false, &exception) == false ) return -1;
    dbInfo = getDbInfo(queueP);
    return dbInfo->prop.maxNumOfEntries;
 }
@@ -938,7 +999,7 @@ static int64_t getNumOfBytes(I_Queue *queueP)
    DbInfo *dbInfo;
    ExceptionStruct exception;
    bool stateOk = true;
-   if (checkArgs(queueP, "getNumOfBytes", true, &exception) == false ) return true;
+   if (checkArgs(queueP, "getNumOfBytes", false, &exception) == false ) return -1;
    dbInfo = getDbInfo(queueP);
    if (dbInfo->numOfBytes == -1) {
       stateOk = fillCache(queueP, &exception);
@@ -950,7 +1011,7 @@ static int64_t getMaxNumOfBytes(I_Queue *queueP)
 {
    DbInfo *dbInfo;
    ExceptionStruct exception;
-   if (checkArgs(queueP, "getMaxNumOfBytes", false, &exception) == false ) return true;
+   if (checkArgs(queueP, "getMaxNumOfBytes", false, &exception) == false ) return -1;
    dbInfo = getDbInfo(queueP);
    return dbInfo->prop.maxNumOfBytes;
 }
@@ -1099,7 +1160,7 @@ static bool checkArgs(I_Queue *queueP, const char *methodName,
 {
    if (queueP == 0) {
       if (exception == 0) {
-         printf("[%s:%d] Please provide a valid I_Queue pointer to %s()",
+         printf("[%s:%d] Please provide a valid I_Queue pointer to %s()\n",
                   __FILE__, __LINE__, methodName);
       }
       else {
