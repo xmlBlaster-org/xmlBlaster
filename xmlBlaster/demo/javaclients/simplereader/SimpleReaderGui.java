@@ -114,7 +114,15 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
      jList1.setMaximumSize(new Dimension(1000, 1000));
      jList1.setMinimumSize(new Dimension(100, 10));
      jList1.setCellRenderer(new MyCellRenderer());
+
+     /*
      this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+     EXIT_ON_CLOSE is not working with JDK 1.2.2.
+     EXIT_ON_CLOSE should be defined in the interface javax.swing.WindowConstants
+     but it isn't.
+     The value is set to 3, therefore we set it hard here.
+     */
+     this.setDefaultCloseOperation(3);
      jList1.addListSelectionListener(new ListSelectionListener() {
          public void valueChanged(ListSelectionEvent evt) {
             JList source = (JList) evt.getSource();
