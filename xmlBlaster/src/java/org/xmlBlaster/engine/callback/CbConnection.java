@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.5 2002/06/27 11:11:40 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.6 2002/08/04 17:10:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -57,6 +57,13 @@ public class CbConnection implements I_Timeout
       this.msgQueue = msgQueue;
       this.cbPingTimer = glob.getCbPingTimer();
       initialize(cbAddress);
+   }
+
+   /**
+    * @return A nice name for logging
+    */
+   public final String getName() {
+      return ME;
    }
 
    /** Load the appropriate protocol driver */
