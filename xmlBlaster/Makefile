@@ -20,6 +20,8 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
 			org.xmlBlaster.engine.xml2java \
 			org.xmlBlaster.engine.persistence \
+			org.xmlBlaster.engine.persistence.xmldb \
+			org.xmlBlaster.engine.persistence.xmldb.xindice \
 			org.xmlBlaster.engine.persistence.filestore \
 			org.xmlBlaster.engine.persistence.mudb \
 			org.xmlBlaster.j2ee.k2 \
@@ -96,7 +98,7 @@ javadoc:
 # Indexing of jar file only since JDK 1.3:  jar -i  ${JAR_DIR}/xmlBlaster.jar
 jar:
 	(	\
-	   cd ${CLASS_TOP_DIR}; \
+		cd ${CLASS_TOP_DIR}; \
 		$(CP) ${XMLBLASTER_HOME}/config/jacorb.properties.template ${CLASS_TOP_DIR}/jacorb.properties; \
 		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties; \
 	)
