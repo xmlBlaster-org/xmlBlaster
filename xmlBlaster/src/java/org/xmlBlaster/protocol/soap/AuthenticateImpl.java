@@ -49,7 +49,7 @@ public class AuthenticateImpl
 
    /**
     * Login to xmlBlaster.
-    * @parameter qos_literal See ConnectQos.java
+    * @param qos_literal See ConnectQos.java
     * @return The xml string from ConnectReturnQos.java<br />
     * @see org.xmlBlaster.util.ConnectQos
     * @see org.xmlBlaster.util.ConnectReturnQos

@@ -361,7 +361,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
    }
 
    /**
-    * @see I_Map#remove(long)
+    * @see I_Map#remove(I_MapEntry)
     */
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
       synchronized (this) {

@@ -8,7 +8,6 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 
 /**
- * @testcase test.org.xmlBlaster.util.queuemsg.TestDummyEntry 
  */
 public class DummyEntry extends MsgQueueEntry {
 

@@ -173,7 +173,6 @@ public class PluginGUI extends JFrame {
     * to log in.
     * <br />
     * @param e An ActionEvent
-    * @see #allowButton_actionPerformed(ActionEvent)
     **************************************************************************/
    void denyButton_actionPerformed(ActionEvent e) {
       allowed = false;
@@ -190,7 +189,6 @@ public class PluginGUI extends JFrame {
     * Call as result of a pressed allow-button to grant a subject to log in.
     * <br />
     * @param e An ActionEvent
-    * @see #denyButton_actionPerformed(ActionEvent)
     **************************************************************************/
    void allowButton_actionPerformed(ActionEvent e) {
       allowed = true;
@@ -207,8 +205,6 @@ public class PluginGUI extends JFrame {
     * Returns the result of decision process. Access granted or rejected.
     * <br />
     * @param true: access granted; otherwise false
-    * @see #denyButton_actionPerformed(ActionEvent)
-    * @see #allowButton_actionPerformed(ActionEvent)
     **************************************************************************/
    public synchronized boolean getAccessDecision() {
       try {

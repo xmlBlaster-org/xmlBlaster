@@ -73,7 +73,7 @@ import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
  * createdb test
  * postmaster -i -D /tmp/postgres
  * </pre>
- * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(MsgQueueEntry)
+ * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  * @see org.xmlBlaster.util.queue.I_Queue
  * @see org.xmlBlaster.util.queue.ram.RamQueuePlugin
  * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin

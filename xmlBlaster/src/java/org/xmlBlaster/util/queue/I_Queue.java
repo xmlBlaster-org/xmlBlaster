@@ -4,7 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for the queues (persistent and cache)
 ------------------------------------------------------------------------------*/
-
 package org.xmlBlaster.util.queue;
 
 import org.xmlBlaster.util.Global;
@@ -30,7 +29,7 @@ import java.util.ArrayList;
  * unexpected and undesired results in case the queues store part of the
  * information on cache.
  * <p>
- * As an example for sorting see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(MsgQueueEntry)
+ * As an example for sorting see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  * </p>
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info

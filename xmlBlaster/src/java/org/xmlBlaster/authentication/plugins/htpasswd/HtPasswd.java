@@ -57,10 +57,7 @@ public class HtPasswd {
    /**
     * Check password
     * 16/11/01 19:36 mad@ktaland.com
-    * @param password The clear text password
-    * @return true The password is valid
     */
-
    public HtPasswd(Global glob) throws XmlBlasterException {
       log = glob.getLog("auth");
       htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", "NONE" );

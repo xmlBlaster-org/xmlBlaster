@@ -55,15 +55,16 @@ public class Constants
     * The xmlBlaster SNMP node 11662 registered at IANA. 
     * <p />
     * XmlBlaster has a registered SNMP number under iso.org.dod.internet.private.enterprise (1.3.6.1.4.1),
-    * our tree leaf is 1.3.6.1.4.1.11662
-    * @return 11662
+    * our tree leaf is 1.3.6.1.4.1.11662<br />
+    * Returns 11662
     * @see <a href="http://www.iana.org/assignments/enterprise-numbers" target="others">PRIVATE ENTERPRISE NUMBERS</a>
     */
    public static final int XMLBLASTER_SNMP = 11662;
 
    /**
     * The xmlBlaster SNMP node 1.3.6.1.4.1.11662 as registered at IANA. 
-    * @return a long array containing the SNMP hierarchy to xmlBlaster
+    * <br />
+    * Returns a long array containing the SNMP hierarchy to xmlBlaster
     */
    public static final long[] XMLBLASTER_OID_ROOT = { 1, 3, 6, 1, 4, 1, Constants.XMLBLASTER_SNMP }; // 11662
 

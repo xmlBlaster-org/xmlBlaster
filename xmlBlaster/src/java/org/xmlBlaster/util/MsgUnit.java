@@ -140,11 +140,11 @@ public final class MsgUnit implements java.io.Serializable
     * byte[] content = msgUnit.getContent();
     * content[6] = (byte)'A';  // NOT ALLOWED !
     * </pre> 
-    * @parameter old      The MsgUnit to clone
-    * @parameter key      The new key to use, if you pass 'null' the old is shallow cloned
-    * @parameter content  If you pass null note that the byte[] is a reference
+    * @param old      The MsgUnit to clone
+    * @param key      The new key to use, if you pass 'null' the old is shallow cloned
+    * @param content  If you pass null note that the byte[] is a reference
     *                     to the original and you should not manipulate it
-    * @parameter qos      The new qos to use, if you pass 'null' the old is shallow cloned
+    * @param qos      The new qos to use, if you pass 'null' the old is shallow cloned
     */
    public MsgUnit(MsgUnit old, KeyData key, byte[] content, QosData qos) {
       glob = old.getGlobal();

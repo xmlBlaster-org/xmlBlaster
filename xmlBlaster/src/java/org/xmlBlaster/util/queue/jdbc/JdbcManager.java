@@ -216,7 +216,7 @@ public class JdbcManager implements I_ConnectionListener {
 
 
    /**
-    * @see handleSQLException(String, SQLException)
+    * @see #handleSQLException(String, SQLException, String)
     */
    protected final boolean handleSQLException(String location, SQLException ex) {
       return handleSQLException(location, ex, null);
@@ -855,7 +855,7 @@ public class JdbcManager implements I_ConnectionListener {
    /**
     * Under the same transaction it gets and deletes all the entries which fit
     * into the constrains specified in the argument list.
-    * @see I_Queue#takeLowest(int, long, int, long)
+    * @see org.xmlBlaster.util.queue.I_Queue#takeLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)
     */
    public ReturnDataHolder getAndDeleteLowest(String tableName, StorageId storageId, int numOfEntries, long numOfBytes,
       int maxPriority, long minUniqueId, boolean leaveOne) throws XmlBlasterException, SQLException {
@@ -1417,7 +1417,7 @@ public class JdbcManager implements I_ConnectionListener {
     * other users who have created tables with the name starting with the
     * string XMLBLASTER.
     *  @param queueName the name of the queue to clean up (the storageId with stripped special characters).
-    *  @force the flag telling if removing everything anyway
+    *  @param force the flag telling if removing everything anyway
     * @return the number of queues still remaining to be cleaned up
     */
    public final int cleanUp(String queueName, boolean force)

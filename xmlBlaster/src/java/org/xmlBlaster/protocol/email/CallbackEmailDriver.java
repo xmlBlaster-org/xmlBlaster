@@ -30,8 +30,8 @@ import javax.mail.internet.*;
  *    EmailDriver.smtpHost=192.1.1.1
  *    EmailDriver.from=xmlblast@localhost
  * </pre>
+ * see javaclients.ClientSubEmail
  * @author xmlBlaster@marcelruff.info
- * @see javaclients.ClientSubEmail
  */
 public class CallbackEmailDriver implements I_CallbackDriver
 {

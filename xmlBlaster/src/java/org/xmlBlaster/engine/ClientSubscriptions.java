@@ -26,7 +26,6 @@ import java.io.*;
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.32 2002/12/18 11:27:00 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener

@@ -137,7 +137,7 @@ public final class NodeDomainInfo implements Comparable
 
    /**
     * Set a key based rule
-    * @parameter QueryKeyData, e.g.<pre>
+    * @param keyArr e.g.<pre>
     *            &lt;key domain='rugby'/>
     */
    public void setKeyMappings(QueryKeyData[] keyArr){

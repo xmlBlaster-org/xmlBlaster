@@ -12,6 +12,7 @@ import org.a2Blaster.engine.A2BlasterException;
 import org.a2Blaster.client.api.CorbaConnection;
 
 /**
+ * @author wolfgang.kleinertz@epost.de
  */
 public class Session implements I_Session, I_Subject {
    private static final String                    ME = "Session";
@@ -180,7 +181,6 @@ public class Session implements I_Session, I_Subject {
    /**
     * decrypt, check, unseal ... an incomming message
     * <p/>
-    * @author wolfgang.kleinertz@epost.de
     * @param MsgUnitRaw The the received message
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified

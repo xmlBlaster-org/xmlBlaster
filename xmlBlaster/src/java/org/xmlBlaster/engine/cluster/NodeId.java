@@ -12,7 +12,7 @@ package org.xmlBlaster.engine.cluster;
  * Holds the unique name of an xmlBlaster server instance (= cluster node)
  * @author xmlBlaster@marcelruff.info 
  * @since 0.79e
- * @url http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html">cluster requirement</a>
  */
 public final class NodeId implements Comparable, java.io.Serializable
 {

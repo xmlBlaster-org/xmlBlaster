@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.20 2002/12/18 12:39:11 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.21 2002/12/18 16:15:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -38,7 +38,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     * One instance implements an authentication server.
     * <p />
     * This server delegates all requests to xmlBlaster.authenticate package
-    * @parma authenticate The authentication service
+    * @param authenticate The authentication service
     * @param blasterNative The interface to access xmlBlaster
     */
    public AuthServerImpl(Global glob, I_Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException {
@@ -82,7 +82,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
 
    /**
     * Login to xmlBlaster.
-    * @parameter qos_literal See ConnectQos.java
+    * @param qos_literal See ConnectQos.java
     * @return The xml string from ConnectReturnQos.java<br />
     *         We could return the ConnectReturnQos object as well, but adding
     *         attributes to this object would force clients to install the new class

@@ -49,7 +49,7 @@ public class QueuePluginManager extends PluginManagerBase
    }
 
    /**
-    * @see #getPlugin(String, String, String, QueuePropertyBase)
+    * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
    public I_Queue getPlugin(String typeVersion, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
       if (typeVersion == null)

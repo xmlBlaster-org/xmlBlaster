@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.23 2002/12/18 12:39:08 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.24 2002/12/18 16:15:19 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -66,7 +66,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     * - Only a few threads are enough to serve many clients
     *
     * @param The orb
-    * @parma authenticate The authentication service
+    * @param authenticate The authentication service
     * @param blaster The interface to access xmlBlaster
     */
    public AuthServerImpl(Global glob, org.omg.CORBA.ORB orb, I_Authenticate authenticate, I_XmlBlaster blaster)

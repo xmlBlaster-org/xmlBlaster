@@ -234,13 +234,15 @@ public class ClassLoaderFactory {
     * Prints the absolute pathname of the class file
     * containing the specified class name, as prescribed
     * by the current classpath.
+    * <pre>
+    * author <a href="mailto:mike@clarkware.com">Mike Clark</a>
+    * author <a href="http://www.clarkware.com">Clarkware Consulting</a>
+    * </pre>
     *
     * @param caller
     * @param className Name of the class, e.g. "org.xmlBlaster.protocol.corba.CorbaDriver"
     * @return Url of resource of className.
     *   e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
-    * @author <a href="mailto:mike@clarkware.com">Mike Clark</a>
-    * @author <a href="http://www.clarkware.com">Clarkware Consulting</a>
     */
    public static String which(Object caller, String className) {
 

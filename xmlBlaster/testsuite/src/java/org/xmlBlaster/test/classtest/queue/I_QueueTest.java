@@ -46,7 +46,7 @@ import junit.framework.*;
  * <p>
  * Invoke: java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.classtest.queue.I_QueueTest
  * </p>
- * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(MsgQueueEntry)
+ * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  * @see org.xmlBlaster.util.queue.I_Queue
  * @see org.xmlBlaster.util.queue.ram.RamQueuePlugin
  * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin

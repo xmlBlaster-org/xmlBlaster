@@ -154,7 +154,6 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    /**
     * Gets a copy of the entries (the messages) in the queue. If the queue
     * is modified, this copy will not be affected. This method is useful for client browsing.
-    * @see I_Queue#getEntry()
     */
    public final ArrayList getEntries() throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries() is not implemented");
@@ -260,7 +259,6 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
 
 
    /**
-    * @see I_Queue#remove(long, long, int, int)
     */
    public final long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
@@ -429,7 +427,7 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    }
 
    /**
-    * @see I_Queue#removeRandom(I_QueueEntry)
+    * @see I_Queue#removeRandom(I_Entry)
     */
    public int removeRandom(I_Entry entry) throws XmlBlasterException {
       I_Entry[] arr = new I_Entry[1];
@@ -438,7 +436,7 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    }
 
    /**
-    * @see I_Queue#removeRandom(I_QueueEntry[])
+    * @see I_Queue#removeRandom(I_Entry[])
     */
    public long removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
       long ret = 0L;
@@ -487,7 +485,6 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
    }
 
    /**
-    * @see I_Queue#takeSamePriority(int, long)
     */
    public ArrayList takeSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       return takeWithPriority(numOfEntries, numOfBytes, -1, -1);
@@ -524,7 +521,7 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
 
 
    /**
-    * @see I_Queue#takeLowest(int, long, I_QueueEntry)
+    * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
     */
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
@@ -750,7 +747,7 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
  *   <li>Priority</li>
  *   <li>Timestamp</li>
  * </ol>
- * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(MsgQueueEntry)
+ * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  */
 class MsgComparator implements Comparator
 {

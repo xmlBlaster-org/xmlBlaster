@@ -703,7 +703,7 @@ TODO
       <echo message="Creating javadoc documentation"/>
       <mkdir dir="${javadoc.dir}"/>
       <javadoc packagenames="org.xmlBlaster.*,javaclients"
-               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}"
+               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.java.dir}"
                classpath="${cp}"
                destdir="${javadoc.dir}"
                author="true"
@@ -712,6 +712,7 @@ TODO
                windowtitle="xmlBlaster ${version} API"
                doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;"
                bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
+      <!-- javadoc does not like missing package names in demo.dir:  sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}" -->
    </target>
    <target name="javadocs-delete" description="Removes the javadoc documentation">
       <delete dir="${javadoc.dir}" failonerror="false"/>

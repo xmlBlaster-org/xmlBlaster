@@ -56,7 +56,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    /**
     * Is called after the instance is created.
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
-    * @see I_Queue#initialize(Global, String, Object)
+    * @see I_Queue#initialize(StorageId, Object)
     */
    public void initialize(StorageId uniqueQueueId, Object userData)
       throws XmlBlasterException
@@ -172,7 +172,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
    /**
     * @return null (other implementations may return some ACK object)
-    * @see I_Queue#put(I_QueueEntry)
+    * @see I_Queue#put(I_QueueEntry, boolean)
     */
    public Object put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
       throws XmlBlasterException
@@ -222,7 +222,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    }
 
    /**
-    * @see I_Queue#put(I_QueueEntry[])
+    * @see I_Queue#put(I_QueueEntry[], boolean)
     */
    public Object[] put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
       throws XmlBlasterException {
@@ -336,7 +336,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /**
-    * @see I_Queue#takeLowest(int, long, I_QueueEntry)
+    * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
     */
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
@@ -417,7 +417,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    }
 
    /**
-    * @see I_Queue#peek(int, long, int, int)
+    * @see I_Queue#peekWithPriority(int, long, int, int)
     */
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
@@ -533,7 +533,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
 
    /**
-    * @see I_Queue#removeRandom(I_QueueEntry)
+    * @see I_Queue#removeRandom(I_Entry)
     */
    public int removeRandom(I_Entry entry) throws XmlBlasterException {
       if (entry == null) return 0;
@@ -543,7 +543,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
    }
 
    /**
-    * @see I_Queue#removeRandom(I_QueueEntry[])
+    * @see I_Queue#removeRandom(I_Entry[])
     */
    public long removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
       if (queueEntries == null) return 0;
