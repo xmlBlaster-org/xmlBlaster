@@ -3,7 +3,6 @@ Name:      QosWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS message
-Version:   $Id: QosWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_QOSWRAPPER_H
@@ -32,7 +31,7 @@ namespace org { namespace xmlBlaster {
    private:
 
       string me() const {
-	 return "QosWrapper";
+         return "QosWrapper";
       }
 
    public:
@@ -51,7 +50,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toString() const {
-	 return "<qos>\n</qos>";
+         return "<qos>\n</qos>";
       }
    }; // class
 }} // namespace

@@ -4,7 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version 
            without caching and without failsave mode.
-Version:   $Id: CorbaConnection.h,v 1.5 2001/12/03 16:31:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -210,7 +209,7 @@ namespace org { namespace xmlBlaster {
        * Access the login name.
        * @return your login name or null if you are not logged in
        */
-      string getLoginName() {
+      const string &getLoginName() const {
          return loginName_;
       }
       

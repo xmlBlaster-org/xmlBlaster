@@ -3,7 +3,6 @@ Name:      I_Callback.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.h,v 1.4 2001/11/27 15:44:31 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_ICALLBACK_H
@@ -23,7 +22,7 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.4 $
+    * @version $Revision: 1.5 $
     * @author $Author: ruff $
     */
    class I_Callback {
@@ -47,8 +46,8 @@ namespace org { namespace xmlBlaster {
       
    public:
       virtual void update(const string &loginName, UpdateKey &updateKey, 
-			  void *content, long contentSize, 
-			  UpdateQoS &updateQoS) = 0;
+                          void *content, long contentSize, 
+                          UpdateQoS &updateQoS) = 0;
    };
 }} // namespace
 

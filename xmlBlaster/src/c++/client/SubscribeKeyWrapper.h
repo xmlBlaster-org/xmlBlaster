@@ -3,7 +3,6 @@ Name:      SubscribeKeyWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 //  package org.xmlBlaster.client;
@@ -41,7 +40,7 @@ namespace org { namespace xmlBlaster {
    private:
 
       string me() {
-	 return "SubscribeKeyWrapper";
+         return "SubscribeKeyWrapper";
       }
 
       string queryString_;
@@ -55,8 +54,8 @@ namespace org { namespace xmlBlaster {
        * @param oid Subscribe to a well known oid.
        */
       SubscribeKeyWrapper(const string &oid) : KeyWrapper(oid) {
-	 queryString_ = "";
-	 queryType_   = "EXACT";
+         queryString_ = "";
+         queryType_   = "EXACT";
       }
 
 
@@ -66,17 +65,17 @@ namespace org { namespace xmlBlaster {
        * @param queryType    The query syntax, only "XPATH" for the moment
        */
       SubscribeKeyWrapper(const string &queryString, 
-			  const string &queryType) : KeyWrapper("") {
-	 queryType_ = queryType;
-	 if (queryType_ == "EXACT") oid_ = queryString;
-	 else {
-	    if (queryType_ == "XPATH") queryString_ = queryString;
-	    else {
-	       string msg = "Your queryType=";
-	       msg += queryType_+" is invalid,use one of \"EXACT\",\"XPATH\"";
-	       throw serverIdl::XmlBlasterException(me().c_str(),msg.c_str());
-	    }
-	 }
+                          const string &queryType) : KeyWrapper("") {
+         queryType_ = queryType;
+         if (queryType_ == "EXACT") oid_ = queryString;
+         else {
+            if (queryType_ == "XPATH") queryString_ = queryString;
+            else {
+               string msg = "Your queryType=";
+               msg += queryType_+" is invalid,use one of \"EXACT\",\"XPATH\"";
+               throw serverIdl::XmlBlasterException(me().c_str(),msg.c_str());
+            }
+         }
       }
 
       
@@ -85,7 +84,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toString() {
-	 return toXml();
+         return toXml();
       }
 
       
@@ -94,7 +93,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toXml() {
-	 return wrap(queryString_);
+         return wrap(queryString_);
       }
 
 
@@ -105,11 +104,11 @@ namespace org { namespace xmlBlaster {
        * @param str Your tags in ASCII XML syntax
        */
       string wrap(const string &str) {
-	 queryString_ = str;
-	 string ret = "<key oid='";
-	 ret += oid_ + "'" + " queryType='" + queryType_ + "'>\n";
-	 ret += queryString_ + "\n</key>";
-	 return ret;
+         queryString_ = str;
+         string ret = "<key oid='";
+         ret += oid_ + "'" + " queryType='" + queryType_ + "'>\n";
+         ret += queryString_ + "\n</key>";
+         return ret;
       }
    };
 }} // namespace

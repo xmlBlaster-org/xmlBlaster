@@ -3,7 +3,6 @@
   Project:   xmlBlaster.org
   Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
   Comment:   Handling one xmlQoS
-  Version:   $Id: PublishQosWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
   ---------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_PUBLISHQOSWRAPPER_H
@@ -43,7 +42,7 @@ namespace org { namespace xmlBlaster {
       
    private:
       string me() {
-	 return "PublishQosWrapper";
+         return "PublishQosWrapper";
       }
       
       Vector destVec_; 
@@ -54,11 +53,11 @@ namespace org { namespace xmlBlaster {
       long   erase_;
       
       void init() {
-	 isDurable_   = false;
-	 forceUpdate_ = false;
-	 readonly_    = false;
-	 expires_     = -99;
-	 erase_       = -99;
+         isDurable_   = false;
+         forceUpdate_ = false;
+         readonly_    = false;
+         expires_     = -99;
+         erase_       = -99;
       }
       
    public:
@@ -66,7 +65,7 @@ namespace org { namespace xmlBlaster {
        * Default constructor for transient messages.
        */
       PublishQosWrapper() : QosWrapper(), destVec_() {
-	 init();
+         init();
       }
       
       
@@ -80,9 +79,9 @@ namespace org { namespace xmlBlaster {
        */
       
       PublishQosWrapper(const util::Destination &destination) : 
-	 QosWrapper(), destVec_() {
-	 init();
-	 addDestination(destination);
+         QosWrapper(), destVec_() {
+         init();
+         addDestination(destination);
       }
       
       
@@ -90,8 +89,8 @@ namespace org { namespace xmlBlaster {
        * @param isDurable Store the message persistently
        */
       PublishQosWrapper(bool isDurable) : QosWrapper(), destVec_() {
-	 init();
-	 isDurable_ = isDurable;
+         init();
+         isDurable_ = isDurable;
       }
       
       
@@ -102,7 +101,7 @@ namespace org { namespace xmlBlaster {
        * clients, if the message didn't change.
        */
       void setForceUpdate() {
-	 forceUpdate_ = true;
+         forceUpdate_ = true;
       }
 
       
@@ -112,7 +111,7 @@ namespace org { namespace xmlBlaster {
        * Only the first publish() will be accepted, followers are denied.
        */
       void setReadonly() {
-	 readonly_ = true;
+         readonly_ = true;
       }
 
       
@@ -120,7 +119,7 @@ namespace org { namespace xmlBlaster {
        * Mark a message to be persistent.
        */
       void setDurable() {
-	 isDurable_ = true;
+         isDurable_ = true;
       }
 
 
@@ -133,7 +132,7 @@ namespace org { namespace xmlBlaster {
        * XPath query
        */
       void addDestination(const util::Destination &destination) {
-	 destVec_.insert(destVec_.end(), destination);
+         destVec_.insert(destVec_.end(), destination);
       }
       
       
@@ -142,7 +141,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toString() {
-	 return toXml();
+         return toXml();
       }
 
 
@@ -151,24 +150,24 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toXml() {
-	 string ret = "<qos>\n";
-	 int nmax = destVec_.size();
-	 
-	 for (int i=0; i<nmax; i++) ret += destVec_[i].toXml("    ") + "\n";
-	 
-	 char buffer[512];
-	 ostrstream out(buffer, 511);
-	 if (expires_ >= 0) 
-	    out << "   <expires>\n      " << expires_ << "\n   </expires>\n";
-	 if (erase_ >= 0) 
-	    out << "   <erase>\n      " << erase_ << "\n   </erase>\n";
-	 out << (char)0;
-	 ret += buffer;
-	 if (isDurable_  ) ret += "   <isDurable />\n";
-	 if (forceUpdate_) ret += "   <forceUpdate />\n";
-	 if (readonly_   ) ret += "   <readonly />\n";
-	 ret += "</qos>"; 
-	 return ret;
+         string ret = "<qos>\n";
+         int nmax = destVec_.size();
+         
+         for (int i=0; i<nmax; i++) ret += destVec_[i].toXml("    ") + "\n";
+         
+         char buffer[512];
+         ostrstream out(buffer, 511);
+         if (expires_ >= 0) 
+            out << "   <expires>\n      " << expires_ << "\n   </expires>\n";
+         if (erase_ >= 0) 
+            out << "   <erase>\n      " << erase_ << "\n   </erase>\n";
+         out << (char)0;
+         ret += buffer;
+         if (isDurable_  ) ret += "   <isDurable />\n";
+         if (forceUpdate_) ret += "   <forceUpdate />\n";
+         if (readonly_   ) ret += "   <readonly />\n";
+         ret += "</qos>"; 
+         return ret;
       }
    };
 }} // namespace

@@ -3,7 +3,6 @@ Name:      LoginQosWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_LOGINQOSWRAPPER_H
@@ -34,25 +33,25 @@ Version:   $Id: LoginQosWrapper.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 namespace org { namespace xmlBlaster {
    
    class LoginQosWrapper : public QosWrapper {
-	 
+         
       typedef vector<util::CallbackAddress> CallbackVector;
       
    private:
       string me() const {
-	 return "LoginQosWrapper";
+         return "LoginQosWrapper";
       }
 
    protected:
       // <callback type="IOR>IOR:000122200..."</callback>
-	 CallbackVector addressVec_; //  = new Vector();
+         CallbackVector addressVec_; //  = new Vector();
       
       /** PtP messages wanted? */
       bool usePtP_; // <noPtP />  
       // <!-- Don't send me any PtP messages (prevents spamming) -->
 
       void init(const LoginQosWrapper &el) {
-	 addressVec_ = el.addressVec_;
-	 usePtP_     = el.usePtP_;
+         addressVec_ = el.addressVec_;
+         usePtP_     = el.usePtP_;
       }
       
    public:
@@ -60,17 +59,17 @@ namespace org { namespace xmlBlaster {
        * Default constructor for clients without asynchronous callbacks.
        */
       LoginQosWrapper() : addressVec_() {
-	 usePtP_ = true;
+         usePtP_ = true;
       }
       
 
       LoginQosWrapper(const LoginQosWrapper &el) {
-	 init(el);
+         init(el);
       }
 
       LoginQosWrapper& operator =(const LoginQosWrapper &el) {
-	 init(el);
-	 return *this;
+         init(el);
+         return *this;
       }
       
       /**
@@ -81,9 +80,9 @@ namespace org { namespace xmlBlaster {
        *        To add more callbacks, us the addCallbackAddress() method.
        */
       LoginQosWrapper(const util::CallbackAddress &callback) 
-	 : addressVec_() {
-	 addCallbackAddress(callback);
-	 usePtP_ = true;
+         : addressVec_() {
+         addCallbackAddress(callback);
+         usePtP_ = true;
       }
       
       
@@ -91,7 +90,7 @@ namespace org { namespace xmlBlaster {
        * @param noPtP You are allowing to receive PtP messages?
        */
       LoginQosWrapper(bool usePtP) : addressVec_() {
-	 usePtP_ = usePtP;
+         usePtP_ = usePtP;
       }
       
       
@@ -99,7 +98,7 @@ namespace org { namespace xmlBlaster {
        * Allow to receive Point to Point messages (default).
        */
       void allowPtP() {
-	 usePtP_ = true;
+         usePtP_ = true;
       }
       
       
@@ -107,7 +106,7 @@ namespace org { namespace xmlBlaster {
        * I don't want to receive any PtP messages.
        */
       void disallowPtP() {
-	 usePtP_ = false;
+         usePtP_ = false;
       }
       
       
@@ -120,7 +119,7 @@ namespace org { namespace xmlBlaster {
        * and the address (e.g. hugo@welfare.org)
        */
       void addCallbackAddress(const util::CallbackAddress &callback) {
-	 addressVec_.insert(addressVec_.end(), callback);
+         addressVec_.insert(addressVec_.end(), callback);
       }
       
       
@@ -129,7 +128,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toString() const {
-	 return toXml();
+         return toXml();
       }
       
       
@@ -139,7 +138,7 @@ namespace org { namespace xmlBlaster {
        * @return internal state of the RequestBroker as a XML ASCII string
        */
       string toXml() const {
-	 return toXml("");
+         return toXml("");
       }
       
       
@@ -150,14 +149,14 @@ namespace org { namespace xmlBlaster {
        * @return internal state of the RequestBroker as a XML ASCII string
        */
       string toXml(const string &extraOffset) const {
-	 string offset = "\n   " + extraOffset, sb = "<qos>\n";
-	 if (!usePtP_) sb += offset + "   <noPtP />";
-	 for (string::size_type i=0; i<addressVec_.size(); i++) {
-	    util::CallbackAddress ad = addressVec_[i];
-	    sb += ad.toXml("   ") + "\n";
-	 }
-	 sb += "</qos>";
-	 return sb;
+         string offset = "\n   " + extraOffset, sb = "<qos>\n";
+         if (!usePtP_) sb += offset + "   <noPtP />";
+         for (string::size_type i=0; i<addressVec_.size(); i++) {
+            util::CallbackAddress ad = addressVec_[i];
+            sb += ad.toXml("   ") + "\n";
+         }
+         sb += "</qos>";
+         return sb;
       }
    }; // class
 }} // namespace

@@ -3,7 +3,6 @@ Name:      KeyWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: KeyWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_KEYWRAPPER_H
@@ -33,7 +32,7 @@ namespace org { namespace xmlBlaster {
    private:
 
       string me() {
-	 return "KeyWrapper";
+         return "KeyWrapper";
       }
  
       /** 
@@ -43,8 +42,8 @@ namespace org { namespace xmlBlaster {
    protected:
 
       string oid_;
-	
-	
+        
+        
       /**
        * Constructor.
        */
@@ -60,9 +59,9 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toString() const {
-	 string ret = "<key oid='";
-	 ret += oid_ + "'>\n </key>";
-	 return ret;
+         string ret = "<key oid='";
+         ret += oid_ + "'>\n </key>";
+         return ret;
       }
    };
 }} // namespace

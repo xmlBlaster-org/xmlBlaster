@@ -3,7 +3,6 @@ Name:      PublishKeyWrapper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_PUBLISHKEYWRAPPER_H
@@ -44,7 +43,7 @@ namespace org { namespace xmlBlaster {
       
    private:
       string me() {
-	 return "PublishKeyWrapper";
+         return "PublishKeyWrapper";
       }
       
       /** value from attribute <key oid="" contentMime="..."> */
@@ -65,12 +64,12 @@ namespace org { namespace xmlBlaster {
        *        set to null if not needed
        */
       PublishKeyWrapper(const string &oid="", const string &contentMime="", 
-			const string &contentMimeExtended="") : 
-	 KeyWrapper(oid) {
-	 if (contentMime != "") contentMime_ = contentMime;
-	 else                   contentMime_ = "text/plain";
-	 contentMimeExtended_ = contentMimeExtended;
-	 clientTags_ = "";
+                        const string &contentMimeExtended="") : 
+         KeyWrapper(oid) {
+         if (contentMime != "") contentMime_ = contentMime;
+         else                   contentMime_ = "text/plain";
+         contentMimeExtended_ = contentMimeExtended;
+         clientTags_ = "";
       }
       
       /**
@@ -78,7 +77,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toString() {
-	 return toXml();
+         return toXml();
       }
       
       
@@ -87,7 +86,7 @@ namespace org { namespace xmlBlaster {
        * @return An XML ASCII string
        */
       string toXml() {
-	 return wrap(clientTags_);
+         return wrap(clientTags_);
       }
       
       
@@ -97,13 +96,13 @@ namespace org { namespace xmlBlaster {
        * @param str Your tags in ASCII XML syntax
        */
       string wrap(const string &str) {
-	 clientTags_ = str;
-	 string ret = "<key oid='";
-	 ret += oid_ + "' contentMime='" + contentMime_ + "'";
-	 if (contentMimeExtended_ != "")
-	    ret += " contentMimeExtended='" + contentMimeExtended_ + "'";
-	 ret += ">\n" + clientTags_ + "\n</key>";
-	 return ret;
+         clientTags_ = str;
+         string ret = "<key oid='";
+         ret += oid_ + "' contentMime='" + contentMime_ + "'";
+         if (contentMimeExtended_ != "")
+            ret += " contentMimeExtended='" + contentMimeExtended_ + "'";
+         ret += ">\n" + clientTags_ + "\n</key>";
+         return ret;
       }
    };
 }} // namespace
