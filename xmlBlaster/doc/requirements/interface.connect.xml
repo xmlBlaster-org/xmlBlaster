@@ -59,21 +59,29 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
 
    &lt;duplicateUpdates>false&lt;/duplicateUpdates>
 
+   &lt;!-- Setting to control client side behavior, used for cluster configuration -->
+   &lt;queue relating='connection' maxEntries='10000000' maxEntriesCache='1000'>
+      &lt;address type='IOR' bootstrapPort='7600' dispatchPlugin='undef'/>
+   &lt;/queue>
+
+   &lt;!-- Configure the server side subject queue (one for each login name) -->
    &lt;queue relating='subject' type='CACHE' version='1.0'
              maxEntries='5000' maxBytes='1000000'
              maxEntriesCache='100' maxBytesCache='100000'
              onOverflow='deadMessage'>\n" +
 
+   &lt;!-- Configure the server side callback queue (one for each login session) -->
    &lt;queue relating='callback' maxEntries='1000' maxBytes='4000000'
                                                    onOverflow='deadMessage'>
       &lt;callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='10000'
           retries='-1' delay='10000' oneway='false' dispatchPlugin='undef'>
          IOR:10000010033200000099000010....
          &lt;burstMode collectTime='400' maxEntries='20' maxBytes='-1L' />
-         &lt;compress type='gzip' minSize='3000'/> <!-- not implemented -->
+         &lt;compress type='gzip' minSize='3000'/> &lt;!-- only implemented for SOCKET protocol -->
          &lt;ptp>true&lt;/ptp>
       &lt;/callback>
    &lt;/queue>
+
    &lt;!-- a client specific property: here it could be the bean to invoke on updates -->
    &lt;clientProperty name='onMessageDefault'>beanName&lt;/clientProperty>
 
@@ -249,7 +257,7 @@ ConnectReturnQos retQos = con.connect(qos, new I_Callback() {
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This uses the Disconnect but does not test it yet</comment>
