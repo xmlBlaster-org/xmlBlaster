@@ -1,11 +1,17 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for 1.0.1 [2005-02-08] #13220 "Xmas release patched"
-============================================================
+Changes for 1.x
+===============
+
+ o #13233 Added I_Map.remove(long uniqueId)
 
  o #13230 Removed bug on persistent subscriptions. Recovered persistent subscriptions where
    not removed when unsubscribing or disconnecting.
+
+
+Changes for 1.0.1 [2005-02-08] #13220 "Xmas release patched"
+============================================================
 
  o #13215 Passing AddressServer from each protocol plugin into the core to be able
    to do protocol specific decisions.
