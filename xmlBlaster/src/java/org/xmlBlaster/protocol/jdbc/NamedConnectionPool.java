@@ -77,8 +77,8 @@ import java.sql.DriverManager;
 public class NamedConnectionPool
 {
    private static final String ME = "NamedConnectionPool";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private Hashtable namedPools = new Hashtable();
 
    private final Object meetingPoint = new Object();

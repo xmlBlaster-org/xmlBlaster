@@ -40,7 +40,7 @@ public class HttpPushHandler
 {
    boolean isApplet = false;
    private String ME  = "HttpPushHandler";
-   private final LogChannel log;
+   private LogChannel log;
 
    /**
     * Ping the browser every 10 seconds.
