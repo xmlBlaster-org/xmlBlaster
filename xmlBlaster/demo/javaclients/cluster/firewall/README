@@ -1,0 +1,90 @@
+Example of a slave xmlBlaster cluster node 'frodo' running behind
+a firewall which allows outbound socket connection only.
+
+On the outside we have a master xmlBlaster cluster node 'heron':
+
+
+ clientA -+                                          +- clientX
+          |                                          |
+  ...     +-> frodo ---SOCKET---|firewall|--> heron -+- ...
+          |                                          |
+ clientN -+                                          +- clientY
+
+
+We have configured frodo to use the SOCKET protocl to connect
+to heron. This allows to tunnel back update() messages using
+the same outbound socket connection.
+It is important that we configure heron to be the master of all
+messages (see frodo.properties).
+
+Note that heron does NOT connect to frodo (the firewall would
+not allow it).
+
+Current drawback: frodo can't be master of some message topics
+as heron would in this case try to establish a connection,
+this issue would need some coding in xmlBlaster (if heron is
+connected by frodo already try to reuse the socket connection).
+
+
+Try the example:
+================
+
+First we do this on the same machine.
+Open 4 xterm (DOS boxes) and change to directory
+
+  xmlBlaster/demo/javaclients/cluster/firewall
+
+Start heron (the master):
+
+  java org.xmlBlaster.Main -propertyFile heron.properties
+
+  Note that heron is configured with xmlBlasterPluginsSimple.xml
+  (see heron.properties) to be very simple to avoid too much
+  logging output and to avoid port conflicts as we run on the
+  same machine as frodo.
+  
+Start frodo (the slave): 
+
+  java org.xmlBlaster.Main -propertyFile frodo.properties
+
+  Note that frodo runs in default mode with all protocol drivers
+  switched on. Look at the logging output and see how frodo
+  connects to heron with the SOCKET protocol.
+
+Start a publisher (which connects to frodo):
+
+  java javaclients.HelloWorldPublish -numPublish 100 -oid ClusterTest -session.name publisherToFrodo/1
+
+  This publisher connects to frodo and each time you press the enter key
+  a message is published to frodo and forwarded to heron
+
+Start a subscriber (which connects to frodo):
+
+  java javaclients.HelloWorldSubscribe -oid ClusterTest
+
+Start a subscriber (which connects to heron):
+
+  java javaclients.HelloWorldSubscribe -oid ClusterTest -protocol SOCKET -dispatch/connection/plugin/socket/port 8900 -session.name subscriberAtHeron
+
+
+Try the example behind a firewall:
+==================================
+
+You need to edit frodo.properties and replace the socket address
+with the IP (or DNS hostname) where heron is running on,
+for example change
+
+   socket://:8900\
+   
+to
+
+   socket://myServer.myCompany.com:8900\
+
+and start the second subscriber with this address as well:
+
+   java javaclients.HelloWorldSubscribe
+         -oid ClusterTest
+         -protocol SOCKET 
+         -dispatch/connection/plugin/socket/hostname socket://myServer.myCompany.com:8900
+         -dispatch/connection/plugin/socket/port 8900
+         -session.name subscriberAtHeron
