@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+COMMENT:
+   This frame listens on message updates and draws with the
+   received data a cpuinfo and meminfo frame 
+-->
+<html>
+   <head>
+      <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <script language="Javascript1.2">
+         /**
+          * The callback from xmlBlaster.
+          * The Javascript objects are defined in callback.js
+          * @param messageQueue array with MessageWrapperDom objects (key, content, qos)
+          *        key     = UpdateKey object
+          *        content = The content (a string with the message data)
+          *        qos     = UpdateQos object
+          */
+         function update( messageQueue ) {
+            top.xmlBlasterWindow.Log.trace("northFrame is receiving " + messageQueue.length + " updates");
+            for( var i = 0; i < messageQueue.length; i++ ) {
+               top.xmlBlasterWindow.setReady( self, false );
+               var keyOid = messageQueue[i].key.oid;
+               var frameName = keyOid + "Frame";  // Frame name is for example "cpuinfoFrame"
+               var content = messageQueue[i].content;
+               updateFrame(frameName, content);
+            }
+         }
+
+         /**
+          * Tell the callbackFrame that i am interested in message updates
+          */
+         function initialize() {
+            top.xmlBlasterWindow.Log.trace("Registering '" + self.name + "' for updates in initialize()");
+            top.xmlBlasterWindow.addUpdateListener( self );
+            top.xmlBlasterWindow.setReady( self, true );
+            // updateFrame("cpuinfo", 0);
+            // updateFrame("meminfo", 0);
+         }
+
+         /**
+          * Draw the cpuinfo/meminfo frame with the received new data
+          */
+         function updateFrame(frameName, content)
+         {
+            top.xmlBlasterWindow.Log.trace("Drawing to frame " + frameName + ": " + content);
+            var doc = parent.frames[frameName].document;
+            doc.open();
+            var str = 
+               "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>\n" +
+               "<html>\n" +
+               "   <head>\n" +
+               "      <title>XmlBlaster Persistent HTTP Demo</title>\n" +
+               "      <meta http-equiv='Content-Type' CONTENT='text/html; charset=ISO-8859-1'>\n" +
+               "   </head>\n" +
+               "<body>\n" +
+               "   <center>\n" +
+               "   <table class='SystemLoad' border='1' width='400' cellpadding='2' cellspacing='2' bgcolor='#EEEEEE'>\n" +
+               "      <tr>\n" +
+               "         <td width='50'>\n" +
+               "            <font size='+1'>CPU</font>\n" +
+               "         </td>\n" +
+               "         <td width='50'>\n" +
+               "            <font size='-1'>" + content + "%</font>\n" +
+               "         </td>\n" +
+               "         <td width='300' valign='center'>\n" +
+               "            <img name='" + frameName + "' width='" + content + "%' height='10' src='colors/" + frameName + ".gif' alt='83'>\n" +
+               "         </td>\n" +
+               "      </tr>\n" +
+               "   </table>\n" +
+               "   </center>\n" +
+               "\n" +
+               "</body>\n";
+            doc.write(str);
+            doc.close();
+            top.xmlBlasterWindow.setReady( self, true );
+         }
+      </script>
+   </head>
+
+   <body onLoad="initialize();">
+   <center>
+      <h2>
+         System load on www.xmlBlaster.org
+      </h2>
+      XmlBlaster Apache/Jserv web server (Linux) on Intel 486 with 133 MHz
+      <br />
+      <script language="Javascript1.2">
+         /*  top.xmlBlasterWindow is not yet valid if systemInfo.html is the persistentWindow creater
+         var info = top.xmlBlasterWindow.getBrowserInfo();
+         document.writeln('<font size="-2">' + info + '</font>');
+         */
+      </script>
+   </center>
+   </body>
+</html>
+
