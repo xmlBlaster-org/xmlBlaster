@@ -21,7 +21,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 /**
  * A pool of mappings from user to pseudo users top allow
- * for more that one "session" per user.
+ * for more that one "callback" per user.
  
  If an application server instantiates more than one
  ManagedConnectionFactory for XmlBlaster, this will brake.
