@@ -72,6 +72,9 @@ public class Constants
    public final static String STATE_OK = "OK";
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
    
+   public final static String STATE_WARN = "WARNING";
+   public final static String RET_WARN = "<qos><state id='" + Constants.STATE_WARN + "'/></qos>";
+
    /** The returned message status if message is stale (that is old but not erased yet) */
    //public final static String STATE_STALE = "STALE"; // needs to be implemented as another message timer TODO!!!
    //public final static String RET_STALE = "<qos><state id='" + Constants.STATE_STALE + "'/></qos>";
