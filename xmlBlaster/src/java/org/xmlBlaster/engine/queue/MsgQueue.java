@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.2 2002/03/13 16:41:19 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.3 2002/03/13 19:21:14 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -42,6 +42,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    private boolean cbWorkerIsActive = false;
    /** Contains how many callbacks failed */
    private int errorCounter = 0;
+   private boolean isShutdown = false;
 
 
    /**
@@ -73,6 +74,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 
    public void shutdown()
    {
+      isShutdown = true;
       if (Log.CALL) Log.call(ME, "shutdown() of queue " + this.name);
       if (timerKey != null) {
          this.burstModeTimer.removeTimeoutListener(timerKey);
@@ -187,6 +189,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
     */
    public final MsgQueueEntry[] takeMsgs()
    {
+      if (isShutdown) {
+         Log.error(ME, "The queue is shutdown, no message access is possible.");
+         Thread.currentThread().dumpStack();
+         return new MsgQueueEntry[0];
+      }
       //synchronized (this) {
          int size = super.size();
          if (log.TRACE) log.trace(ME, "Accessing " + size + " messages from queue");
@@ -242,6 +249,16 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public final void putMsgs(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       //if (Log.CALL) Log.call(ME, "Entering putMsgs(" + msg.length + ")");
+      if (msg == null) {
+         Log.error(ME, "msg==null");
+         Thread.currentThread().dumpStack();
+         throw new XmlBlasterException(ME, "Illegal null argument fir putMsgs()");
+      }
+      if (isShutdown) {
+         Log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed");
+         Thread.currentThread().dumpStack();
+         return;
+      }
       try {
          //synchronized (this) {
             if (msg.length + size() > property.getMaxMsg()) {
@@ -274,6 +291,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
     */
    public final void activateCallbackWorker() throws XmlBlasterException
    {
+      if (isShutdown) {
+         Log.error(ME, "The queue is shutdown, can't activate callback worker thread.");
+         Thread.currentThread().dumpStack();
+         return;
+      }
       if (Log.CALL) Log.call(ME, "Entering activateCallbackWorker()  cbWorkerIsActive=" + cbWorkerIsActive);
       CallbackAddress addr = property.getCurrentCallbackAddress();
       if (addr != null) {
