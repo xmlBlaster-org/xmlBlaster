@@ -166,7 +166,8 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 
    /**
     * If Pub/Sub style update: contains the subscribe ID which caused this update
-    * @return subscribeId or null if PtP message
+    * @return null
+    * @deprecated This is not supported anymore, use client.qos.UpdateQos instead
     */
    public String getSubscriptionId()
    {
