@@ -3,7 +3,7 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.14 2002/05/06 07:26:53 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.15 2002/05/16 15:34:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -299,7 +299,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<").append(ME).append(">");
+      sb.append(offset).append("<").append("qos").append("> <!-- SubscribeQos -->");
       if (!meta)
          sb.append(offset).append("   <meta>false</meta>");
       if (!content)
@@ -315,7 +315,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          CbQueueProperty ad = (CbQueueProperty)queuePropertyVec.elementAt(ii);
          sb.append(ad.toXml(extraOffset+"   "));
       }
-      sb.append(offset).append("</").append(ME).append(">");
+      sb.append(offset).append("</").append("qos").append(">");
 
       return sb.toString();
    }
