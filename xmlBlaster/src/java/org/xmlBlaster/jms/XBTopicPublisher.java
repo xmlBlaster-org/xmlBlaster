@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.jms;
 
 import javax.jms.DeliveryMode;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Topic;
@@ -176,6 +177,27 @@ public class XBTopicPublisher implements TopicPublisher {
     */
    public void setTimeToLive(long arg0) throws JMSException {
       // TODO Auto-generated method stub
+   }
+
+
+   public void send(Message message, int deliveryMode, int priority, long timeToLive)  
+      throws JMSException {
+   }
+
+   public void send(Message message) throws JMSException {
+   }
+
+   public void send(Destination dest, Message message)
+      throws JMSException {
+   }
+
+   public void send(Destination dest, Message message, int deliveryMode, int priority, long timeToLive)
+      throws JMSException {
+   }
+
+   // TODO
+   public Destination getDestination() {
+      return null;
    }
 
 }

@@ -7,12 +7,14 @@ package org.xmlBlaster.jms;
 
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.ServerSessionPool;
+import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
@@ -75,7 +77,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public ConnectionConsumer createConnectionConsumer(
-      Queue arg0,
+      Destination arg0,
       String arg1,
       ServerSessionPool arg2,
       int arg3)
@@ -85,19 +87,24 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
    }
 
    /* (non-Javadoc)
-    * @see javax.jms.QueueConnection#createQueueSession(boolean, int)
-    */
-   public QueueSession createQueueSession(boolean arg0, int arg1)
-      throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + " 'createQueueSession' not implemented yet");
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicConnection#createConnectionConsumer(javax.jms.Topic, java.lang.String, javax.jms.ServerSessionPool, int)
+    * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public ConnectionConsumer createConnectionConsumer(
       Topic arg0,
+      String arg1,
+      ServerSessionPool arg2,
+      int arg3)
+      throws JMSException {
+      // TODO Auto-generated method stub
+      throw new JMSException(ME + " 'createConnectionConsumer' not implemented yet");
+   }
+
+
+   /* (non-Javadoc)
+    * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
+    */
+   public ConnectionConsumer createConnectionConsumer(
+      Queue arg0,
       String arg1,
       ServerSessionPool arg2,
       int arg3)
@@ -120,13 +127,23 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
       throw new JMSException(ME + " 'createDurableConnectionConsumer' not implemented yet");
    }
 
-   public TopicSession createTopicSession(boolean transacted, int ackMode)
+   public Session createSession(boolean transacted, int ackMode)
       throws JMSException {
       if (transacted) 
          throw new JMSException(ME + " 'createTopicSession' in transacted mode not implemented yet");
-      return new XBTopicSession(this, ackMode);      
-      
+      return new XBSession(this, ackMode);      
    }
+
+   public TopicSession createTopicSession(boolean transacted, int ackMode)
+      throws JMSException {
+      return (TopicSession)createSession(transacted, ackMode);
+   }
+
+   public QueueSession createQueueSession(boolean transacted, int ackMode)
+      throws JMSException {
+         return (QueueSession)createSession(transacted, ackMode);
+   }
+
 
    /* (non-Javadoc)
     * @see javax.jms.Connection#close()
@@ -197,9 +214,9 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
     * @see javax.jms.Connection#stop()
     */
    public void stop() throws JMSException {
-         DisconnectQos disconnectQos = new DisconnectQos(this.global);
-         this.access.disconnect(disconnectQos);
-      }
+      DisconnectQos disconnectQos = new DisconnectQos(this.global);
+      this.access.disconnect(disconnectQos);
+   }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       // this should actually never be invoked since the subscribers have own I_Callback 

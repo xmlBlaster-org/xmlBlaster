@@ -48,7 +48,7 @@ public class XBMessage implements Message {
    protected byte[] content;
    protected int type;
    protected boolean deliveryModeSet, prioritySet, timeToLiveSet, destinationSet;
-   protected Object subscriberToNotify;
+   protected boolean acknowledged;
    
    XBMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
       this.global = global;
@@ -62,18 +62,20 @@ public class XBMessage implements Message {
       this.qos.setClientProperty("jmsMessageType", "" + this.type);
    }
 
-   synchronized void setSubscriberToNotify(Object subscriberToNotify) {
-      this.subscriberToNotify = subscriberToNotify;
+   boolean isAcknowledged() {
+      return this.acknowledged;
    }
 
+   void setAcknowledged(boolean acknowledged) {
+      this.acknowledged = acknowledged;
+   }
 
    /* (non-Javadoc)
     * @see javax.jms.Message#acknowledge()
     */
    synchronized public void acknowledge() throws JMSException {
-      if (this.subscriberToNotify != null) 
-         this.subscriberToNotify.notify();
-         this.subscriberToNotify = null;
+      this.acknowledged = true;
+      this.notify();
    }
 
    public void clearBody() throws JMSException {

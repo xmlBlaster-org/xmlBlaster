@@ -6,10 +6,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.jms;
 
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnection;
+import javax.jms.Connection;
 import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueConnection;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -21,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBConnectionFactory implements QueueConnectionFactory, TopicConnectionFactory {
+public class XBConnectionFactory implements TopicConnectionFactory, QueueConnectionFactory {
 
    private final static String ME = "XBConnectionFactory";
    private Global global;
@@ -45,22 +46,30 @@ public class XBConnectionFactory implements QueueConnectionFactory, TopicConnect
       return new JMSException(txt, ex.getErrorCodeStr()); 
    }
 
-   public QueueConnection createQueueConnection() throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createQueueConnection");
+   public Connection createConnection() throws JMSException {
+      if (this.log.CALL) this.log.call(ME, "createConnection");
       try {
          return new XBConnection(this.global); 
       }
       catch (XmlBlasterException ex) {
          throw convert(ex, null);
       }
+   }
+
+   public TopicConnection createTopicConnection() throws JMSException {
+      return (TopicConnection)createConnection();
+   }
+
+   public QueueConnection createQueueConnection() throws JMSException {
+      return (QueueConnection)createConnection();
    }
 
    /* (non-Javadoc)
     * @see javax.jms.QueueConnectionFactory#createQueueConnection(java.lang.String, java.lang.String)
     */
-   public QueueConnection createQueueConnection(String userName, String password)
+   public Connection createConnection(String userName, String password)
       throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createQueueConnection");
+      if (this.log.CALL) this.log.call(ME, "createConnection");
       try {
          return new XBConnection(this.global, userName, password); 
       }
@@ -69,31 +78,14 @@ public class XBConnectionFactory implements QueueConnectionFactory, TopicConnect
       }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.TopicConnectionFactory#createTopicConnection()
-    */
-   public TopicConnection createTopicConnection() throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createTopicConnection");
-      try {
-         return new XBConnection(this.global); 
-      }
-      catch (XmlBlasterException ex) {
-         throw convert(ex, null);
-      }
+   public TopicConnection createTopicConnection(String userName, String password) 
+      throws JMSException {
+      return (TopicConnection)createConnection(userName, password);
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.TopicConnectionFactory#createTopicConnection(java.lang.String, java.lang.String)
-    */
-   public TopicConnection createTopicConnection(String userName, String password)
+   public QueueConnection createQueueConnection(String userName, String password) 
       throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createTopicConnection");
-      try {
-         return new XBConnection(this.global, userName, password); 
-      }
-      catch (XmlBlasterException ex) {
-         throw convert(ex, null);
-      }
+      return (QueueConnection)createConnection(userName, password);
    }
 
 }

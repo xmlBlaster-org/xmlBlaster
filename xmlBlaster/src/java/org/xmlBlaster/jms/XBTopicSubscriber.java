@@ -12,6 +12,7 @@ import javax.jms.Topic;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -35,29 +36,30 @@ public class XBTopicSubscriber implements TopicSubscriber, I_Callback {
 
    private class UpdateThread extends Thread {
       
+      private XBMessage msg;
       private XBTopicSubscriber parent;
-      private int ackMode;
-      private Message msg;
       
-      
-      UpdateThread(XBTopicSubscriber parent, int ackMode, Message msg) {
+      UpdateThread(XBTopicSubscriber parent, XBMessage msg) {
+         super("update-thread");
+         // setDaemon(true);
          this.parent = parent;
-         this.ackMode = ackMode;
          this.msg = msg;
       }
       
       public void run() {
-         this.parent.isAck = true;
-         if (msg != null) this.parent.msgListener.onMessage(msg);
-         this.parent.isAck = false;
-         
+         if (this.msg != null) {
+            // synchronized(this.msg) {
+               if (this.parent.log.CALL) this.parent.log.call("UpdateThread.run()", "start");
+               this.parent.msgListener.onMessage(this.msg);
+               if (this.parent.log.CALL) this.parent.log.call("UpdateThread.run()", "end");
+            // }
+         }
       }
-      
    }
 
-   private boolean isAck;
    private final static String ME = "XBTopicSubscriber";
    private Global global;
+   private LogChannel log;
    private I_XmlBlasterAccess access;
    private Topic topic;
    private boolean noLocal;
@@ -69,6 +71,7 @@ public class XBTopicSubscriber implements TopicSubscriber, I_Callback {
    XBTopicSubscriber(I_XmlBlasterAccess access, Topic topic, String msgSelector, boolean noLocal, int ackMode) {
       this.access = access;
       this.global = access.getGlobal();
+      this.log = this.global.getLog("jms");
       this.topic = topic;
       this.noLocal = noLocal;
       this.msgSelector = msgSelector;
@@ -80,6 +83,7 @@ public class XBTopicSubscriber implements TopicSubscriber, I_Callback {
       String oid = this.topic.getTopicName();
       SubscribeKey key = new SubscribeKey(this.global, oid); 
       SubscribeQos qos = new SubscribeQos(this.global);
+      qos.setWantInitialUpdate(false);
       qos.setWantLocal(!this.noLocal);
       try {
          this.subscribeReturnQos = this.access.subscribe(key, qos, this);
@@ -89,8 +93,8 @@ public class XBTopicSubscriber implements TopicSubscriber, I_Callback {
       }
    }
 
-
    synchronized public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
       try {
          if (this.msgListener != null) {
             int type = XBMessage.STREAM;
@@ -110,23 +114,42 @@ public class XBTopicSubscriber implements TopicSubscriber, I_Callback {
                default: msg = new XBStreamMessage(this.global, updateKey.getData(), content, updateQos.getData());
             }
             
-            if (ackMode == TopicSession.AUTO_ACKNOWLEDGE) {
-               if (msg != null) this.msgListener.onMessage(msg);
-               return "OK";
+            if (msg != null) {
+               if (ackMode == TopicSession.AUTO_ACKNOWLEDGE) {
+                  if (this.log.TRACE) this.log.trace(ME, "update: ack mode: AUTO");
+                  this.msgListener.onMessage(msg);
+                  if (this.log.CALL) this.log.call(ME, "update stop");
+                  return "OK";
+               }
+               else { // start an own thread
+                  if (this.log.TRACE) {
+                     if (ackMode == TopicSession.CLIENT_ACKNOWLEDGE) this.log.trace(ME, "update: ack mode: CLIENT");
+                     else this.log.trace(ME, "update: ack mode: DUPL");
+                  } 
+                  UpdateThread thread = new UpdateThread(this, msg);
+                  synchronized (msg) {
+                     if (this.log.TRACE) this.log.trace(ME, "update: starting the thread");
+                     thread.start();
+                     if (this.log.TRACE) this.log.trace(ME, "update: thread started");
+                     msg.wait(); // should it wait until a given timeout ?
+                     if (this.ackMode == TopicSession.DUPS_OK_ACKNOWLEDGE || msg.isAcknowledged()) {
+                        if (this.log.CALL) this.log.call(ME, "update stop");
+                        return "OK";
+                     } 
+                     throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the acknowledge mode has not been invoked");         
+                  }
+               }
             }
-            else { // start an own thread
-               throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the acknowledge mode has not been implemented yet");         
+            else {
+               throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message was null");         
             }
-/*
-               case TopicSession.CLIENT_ACKNOWLEDGE  : ex = new JMSException("client acknowledge not implemented yet"); break;
-               case TopicSession.DUPS_OK_ACKNOWLEDGE : ex = new JMSException("dups ok acknowledge not implemented yet"); break;
-*/
          }
          else {
             throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message listener has not been assigned yet");         
          }
       }
       catch (Throwable ex) {
+         ex.printStackTrace();
          throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update");         
       }
    }
