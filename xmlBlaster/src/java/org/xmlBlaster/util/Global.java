@@ -1190,11 +1190,12 @@ public class Global implements Cloneable
          addr = getBootstrapAddress();
       }
 
-      if (logDefault.TRACE) logDefault.trace(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
       try {
          if (urlPath != null && urlPath.startsWith("/") == false)
             urlPath = "/" + urlPath;
 
+         if (logDefault.TRACE) logDefault.trace(ME, "Trying internal http server on " + 
+                               addr.getHostname() + ":" + addr.getPort() + "" + urlPath);
          java.net.URL nsURL = new java.net.URL("http", addr.getHostname(), addr.getPort(), urlPath);
          java.io.InputStream nsis = nsURL.openStream();
          byte[] bytes = new byte[4096];

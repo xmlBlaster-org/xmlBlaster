@@ -352,7 +352,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             catch (XmlBlasterException e) {
                deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, e));
             }
-            if (log.TRACE) log.trace(ME, "Removing holdback message " + entry.getLogId() + " from callback queue");
+            if (log.TRACE) log.trace(ME, "Removing from callback queue " + entry.getLogId() + " (is now a holdback message)");
             try {
                deliveryManager.getQueue().removeRandom(entry);
                if (log.TRACE) log.trace(ME, "Callback queue size is now " + deliveryManager.getQueue().getNumOfEntries());
@@ -406,7 +406,8 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          }
       }
       queue.put(entry, true);
-      if (log.TRACE) log.trace(ME, "Filled to holdback queue '" + queue.getStorageId() + "' one entry, it has now " + queue.getNumOfEntries() + " entries");
+      if (log.TRACE) log.trace(ME, "Filled to holdback queue '" + queue.getStorageId() + "' one entry '" + entry.getLogId() +
+                               "', it has now " + queue.getNumOfEntries() + " entries");
    }
 
    /**
