@@ -9,6 +9,7 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -88,6 +89,7 @@ public class HelloWorldPublish
          boolean readonly = glob.getProperty().get("readonly", false);
          long destroyDelay = glob.getProperty().get("destroyDelay", 60000L);
          boolean createDomEntry = glob.getProperty().get("createDomEntry", true);
+         long historyMaxMsg = glob.getProperty().get("queue/history/maxMsg", -1L);
          boolean forceQueuing = glob.getProperty().get("forceQueuing", true);
          boolean subscribeable = glob.getProperty().get("subscribeable", true);
          String destination = glob.getProperty().get("destination", (String)null);
@@ -118,6 +120,7 @@ public class HelloWorldPublish
          log.info(ME, "   -readonly       " + readonly);
          log.info(ME, "   -destroyDelay   " + destroyDelay);
          log.info(ME, "   -createDomEntry " + createDomEntry);
+         log.info(ME, "   -queue/history/maxMsg " + historyMaxMsg);
          log.info(ME, " PtP settings");
          log.info(ME, "   -subscribeable  " + subscribeable);
          log.info(ME, "   -forceQueuing   " + forceQueuing);
@@ -160,6 +163,11 @@ public class HelloWorldPublish
                topicProperty.setDestroyDelay(destroyDelay);
                topicProperty.setCreateDomEntry(createDomEntry);
                topicProperty.setReadonly(readonly);
+               if (historyMaxMsg >= 0L) {
+                  HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
+                  prop.setMaxMsg(historyMaxMsg);
+                  topicProperty.setHistoryQueueProperty(prop);
+               }
                pq.setTopicProperty(topicProperty);
                log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
             }
