@@ -128,7 +128,7 @@ javadoc:
 # Indexing of jar file only since JDK 1.3:  jar -i  ${JAR_DIR}/xmlBlaster.jar
 jar:
 	(	\
-		mkdir ${CLASS_TOP_DIR}; \
+		${MKDIR_RECURSIVE} ${CLASS_TOP_DIR}; \
 		cd ${CLASS_TOP_DIR}; \
 		$(CP) ${XMLBLASTER_HOME}/config/jacorb.properties.template ${CLASS_TOP_DIR}/jacorb.properties; \
 		$(CP) ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${CLASS_TOP_DIR}/xmlBlaster.properties; \
