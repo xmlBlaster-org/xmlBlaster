@@ -293,7 +293,7 @@ static const char * test_overflow()
          queueP->put(queueP, &queueEntry, &exception);
          if (i < 2) { /* (index 0 and 1): 2 entries * 20 bytes = 40 bytes */
             mu_assert_checkException("put()", exception);
-            lenPut += queueEntry.sizeInBytes;
+            lenPut += (int)queueEntry.sizeInBytes;
          }
          else {
             mu_assert_checkWantException("put() numOfBytes overflow", exception);
