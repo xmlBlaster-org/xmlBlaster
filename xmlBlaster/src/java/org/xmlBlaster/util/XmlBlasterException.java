@@ -194,17 +194,17 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     * @return e.g. errorCode + ": " + getMessage() + ": " + getEmbeddedMessage()
     */
    public String getMessage() {
-      Object[] arguments = {  errorCodeStr,  // {0}
-                              node,          // {1}
-                              location,      // {2}
-                              lang,          // {3}
-                              getRawMessage(), // {4}
-                              versionInfo,   // {5}
+      Object[] arguments = {  (errorCodeStr==null) ? "" : errorCodeStr,  // {0}
+                              (node==null) ? "" : node,                  // {1}
+                              (location==null) ? "" : location,          // {2}
+                              (lang==null) ? "" : lang,                  // {3}
+                              getRawMessage(),                           // {4}
+                              (versionInfo==null) ? "" : versionInfo,         // {5}
                               (timestamp==null) ? "" : timestamp.toString(),  // {6}
-                              stackTrace,    // {7}
-                              embeddedMessage, // {8}
-                              transactionInfo, // {9}
-                              errorCodeEnum.getDescription() }; // {10}
+                              (stackTrace==null) ? "" : stackTrace,           // {7}
+                              (embeddedMessage==null) ? "" : embeddedMessage, // {8}
+                              (transactionInfo==null) ? "" : transactionInfo, // {9}
+                              (errorCodeEnum==null) ? "" : errorCodeEnum.getDescription() }; // {10}
 
       boolean handleAsInternal = this.cause != null &&
               (
@@ -262,10 +262,10 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    }
 
    /**
-    * @return The original message text
+    * @return The original message text, never null
     */
    public final String getRawMessage() {
-      return super.getMessage();
+      return (super.getMessage()==null) ? "" : super.getMessage();
    }
 
    /**
