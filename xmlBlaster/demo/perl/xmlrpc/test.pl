@@ -18,11 +18,11 @@ print "\nLogin success with sessionId=$sessionId \n";
 
 my $c=0;
 while ($c++ < 100) {
-	$message = $server->call('xmlBlaster.publish', $sessionId,
+        $message = $server->call('xmlBlaster.publish', $sessionId,
 "<key oid='' contentMime='text/xml'><service>post</service><type>request</type><id>123</id></key>",
-"<tag>Hello World</tag>", "<qos><isVolatile>true</isVolatile><isDurable>false</isDurable></qos>");
-	print "published... $c\n";
-	sleep(2);
+"<tag>Hello World</tag>", "<qos><expiration lifeTime='0'/><isDurable>false</isDurable></qos>");
+        print "published... $c\n";
+        sleep(2);
 }
 
 
