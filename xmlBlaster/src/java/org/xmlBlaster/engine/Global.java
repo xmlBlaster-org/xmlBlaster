@@ -100,15 +100,9 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       removeTelnetSessionTimer();
    }
 
-   /**
-    * One instance of this represents one xmlBlaster server.
-    */
-   public Global() {
-      super();
-      initThis();
-      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
-      //Thread.currentThread().dumpStack();
-   }
+    public Global() {
+       this(null, true);
+    }
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -117,45 +111,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public Global(String[] args) {
       init(args);
       addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
-      //Thread.currentThread().dumpStack();
    }
 
-   public Global(Properties p) {
-      super(p);
+   public Global(Properties p, boolean loadPropFile) {
+      super(Property.propsToArgs(p), loadPropFile, false);
       initThis();
       addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
       // The util.Global base class can't initiliaze it, as this class is initialized later and overwrites with null
    }
-
-   /**
-    * If you have a util.Global and need a engine.Global.
-    * <p />
-    * Note: The cluster node id of utilGlob is overwritten
-    * @param utilGlobal the util.Global to convert to engine.Global
-    */
-   public Global(org.xmlBlaster.util.Global utilGlob) {
-      super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
-      initThis();
-      utilGlob.setId(getId()); // Inherit backwards the cluster node id
-      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
-      //Thread.currentThread().dumpStack();
-   }
-
-
-   /**
-    * If you have a util.Global and need a engine.Global.
-    * <p />
-    * Note: The cluster node id of utilGlob is overwritten
-    * @param utilGlobal the util.Global to convert to engine.Global
-    */
-   public Global(org.xmlBlaster.util.Global utilGlob, boolean propertyOnly) {
-      super(Property.propsToArgs(utilGlob.getProperty().getProperties()), true, false);
-      initThis();
-      utilGlob.setId(getId()); // Inherit backwards the cluster node id
-      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
-      //Thread.currentThread().dumpStack();
-   }
-
 
    /**
     * Calls super.init and checks the environment for "cluster.node.id"
