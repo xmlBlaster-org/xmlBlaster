@@ -136,20 +136,6 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          while (iterator.hasNext()) {
             Map subMap = (Map)iterator.next();
             synchronized(subMap) {
-               /*
-               {
-                  Iterator i = subMap.keySet().iterator();
-                  while (i.hasNext()) {
-                     String key = (String)i.next();
-                     SubscriptionInfo sub = (SubscriptionInfo)subMap.get(key);
-                     try {
-                        log.info(ME, "Checking key="+key+" value='" + sub.getSubscriptionId() + "'");
-                     }
-                     catch (XmlBlasterException e) {
-                     }
-                  }
-               }
-               */
                Object obj = subMap.get(subscriptionInfoUniqueKey); 
                if (obj != null) {
                   return (SubscriptionInfo)obj;
@@ -194,12 +180,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
                   SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
                   if (sb.length() > 0)
                      sb.append(",");
-                  try {
-                     sb.append(sub.getSubscriptionId());
-                  }
-                  catch (XmlBlasterException e) {
-                     log.error(ME, "Ignoring unexpected exception in getSubscriptionList(): " + e.getMessage());
-                  }
+                  sb.append(sub.getSubscriptionId());
                }
             }
          }

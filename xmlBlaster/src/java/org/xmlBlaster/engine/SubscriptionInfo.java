@@ -28,7 +28,7 @@ import java.util.Vector;
  * concerning a subscription of exactly one MsgUnit of exactly one Client. 
  * <p />
  */
-public class SubscriptionInfo implements I_AdminSubscription /* implements Comparable see SORT_PROBLEM */
+public final class SubscriptionInfo implements I_AdminSubscription /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
@@ -97,7 +97,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
          }
       }
 
-      getSubscriptionId(); // initialize the unique id this.uniqueKey
+      initSubscriptionId(); // initialize the unique id this.uniqueKey
       ME += "-" + this.uniqueKey ;
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
@@ -128,7 +128,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
    /**
     * The session info of the client who initiated this subscription
     */
-   public final SessionInfo getSessionInfo()
+   public SessionInfo getSessionInfo()
    {
       return this.sessionInfo;
    }
@@ -136,14 +136,14 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
    /**
     * My destination queue. 
     */
-   public final I_Queue getMsgQueue() {
+   public I_Queue getMsgQueue() {
       return this.sessionInfo.getSessionQueue();
    }
 
    /**
     * For this query subscription remember all resulted child subscriptions
     */
-   public final void addSubscription(SubscriptionInfo subs)
+   public void addSubscription(SubscriptionInfo subs)
    {
       if (childrenVec == null) childrenVec = new Vector();
       childrenVec.addElement(subs);
@@ -152,7 +152,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
    /**
     * For this query subscription remember all resulted subscriptions
     */
-   public final void removeChildSubscription(SubscriptionInfo subs)
+   public void removeChildSubscription(SubscriptionInfo subs)
    {
       if (childrenVec == null) return;
 
@@ -171,7 +171,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * For this query subscription return all resulted subscriptions
     * @return null if not a query subscription with children
     */
-   public final Vector getChildrenSubscriptions() {
+   public Vector getChildrenSubscriptions() {
       return childrenVec;
    }
 
@@ -187,7 +187,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
       if (log.TRACE) log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
 
-   public final AccessFilterQos[] getAccessFilterArr() {
+   public AccessFilterQos[] getAccessFilterArr() {
       return subscribeQos.getAccessFilterArr();
    }
 
@@ -205,7 +205,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * This must be called as soon as my TopicHandler handles me.
     * @param topicHandler I'm handled (lifetime) by this handler
     */
-   public final void addTopicHandler(TopicHandler topicHandler) {
+   public void addTopicHandler(TopicHandler topicHandler) {
       if (topicHandler == null) {
          Thread.currentThread().dumpStack();
          log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
@@ -218,7 +218,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
       }
    }
 
-   public final TopicHandler getTopicHandler() {
+   public TopicHandler getTopicHandler() {
       if (topicHandler == null) {
          Thread.currentThread().dumpStack();
          log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
@@ -230,23 +230,21 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * Time when this Subscription is invoked.
     * @return the creation time of this subscription (in millis)
     */
-   public final long getCreationTime() {
+   public long getCreationTime() {
       return this.creationTime;
    }
 
    /**
     * Telling my container that i am not subscribing any more.
     */
-   final void removeSubscribe() {
-      try {
-         if (topicHandler == null) {
-            if (!isQuery()) {
-               log.warn(ME, "The id=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
-               Thread.dumpStack();
-            }
-            return;
+   void removeSubscribe() {
+      if (topicHandler == null) {
+         if (!isQuery()) {
+            log.warn(ME, "The id=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
+            Thread.dumpStack();
          }
-      } catch(XmlBlasterException e) {}
+         return;
+      }
       topicHandler.removeSubscriber(uniqueKey);
       erase();
    }
@@ -254,7 +252,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
    /**
     * @return The message wrapper object
     * @exception If no MsgUnitWrapper available
-   public final MsgUnitWrapper getMsgUnitWrapper() throws XmlBlasterException {
+   public MsgUnitWrapper getMsgUnitWrapper() throws XmlBlasterException {
       if (topicHandler == null) {
          if (!isQuery()) {
             log.warn(ME, "Key oid=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
@@ -291,14 +289,14 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * Access on KeyData object
     * @return KeyData object
     */
-   public final KeyData getKeyData() {
+   public KeyData getKeyData() {
       return keyData;
    }
 
    /**
     * The oid of the message we belong to
     */
-   public final String getKeyOid() {
+   public String getKeyOid() {
       if (keyData != null) {
          return keyData.getOid();
       }
@@ -309,7 +307,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * Access on SubscribeQosServer object
     * @return SubscribeQosServer object
     */
-   public final QueryQosData getQueryQosData() {
+   public QueryQosData getQueryQosData() {
       return subscribeQos;
    }
 
@@ -319,7 +317,13 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * The key will be generated on first invocation
     * @return A unique key for this particular subscription
     */
-   public final String getSubscriptionId() throws XmlBlasterException {
+   public String getSubscriptionId() {
+      if (this.uniqueKey == null)
+         throw new IllegalArgumentException(ME+".getSubscriptionId() is not initialized");
+      return this.uniqueKey;
+   }
+
+   private void initSubscriptionId() throws XmlBlasterException {
       if (this.uniqueKey == null) {
          if (querySub != null) {
             StringBuffer buf = new StringBuffer(126);
@@ -336,14 +340,13 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
             if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
          }
       }
-      return this.uniqueKey;
    }
 
    /**
     * Accessing the unique subscription id from method subscribe(), which was the reason for this SubscriptionInfo
     * @return The subscription id which is used in updateQos - $lt;subscritpionId>
     */
-   public final String getSubSourceSubscriptionId() throws XmlBlasterException
+   public String getSubSourceSubscriptionId() throws XmlBlasterException
    {
       if (querySub != null) {
          return querySub.getSubscriptionId();
@@ -354,7 +357,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
    /**
     * Cleanup subscription. 
     */
-   public final void shutdown() throws XmlBlasterException
+   public void shutdown() throws XmlBlasterException
    {
       if (querySub != null) {
          querySub.removeChildSubscription(this);
@@ -377,7 +380,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>53</code>
     */
-   private static final String generateUniqueKey(KeyData keyData, QueryQosData xmlQos) throws XmlBlasterException {
+   private static String generateUniqueKey(KeyData keyData, QueryQosData xmlQos) throws XmlBlasterException {
       if (xmlQos.getSubscriptionId() != null && xmlQos.getSubscriptionId().length() > 0) {
          return xmlQos.getSubscriptionId(); // Client forced his own key
       }
@@ -397,7 +400,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * <br>
     * @return XML state of SubscriptionInfo
     */
-   public final String toXml() throws XmlBlasterException {
+   public String toXml() {
       return toXml((String)null);
    }
 
@@ -407,7 +410,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * @param extraOffset indenting of tags
     * @return XML state of SubscriptionInfo
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
+   public String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(2048);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -437,7 +440,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     * @param extraOffset indenting of tags
     * @return XML state of SubscriptionInfo
     */
-   public final String toXmlSmall(String extraOffset) throws XmlBlasterException {
+   public String toXmlSmall(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -460,12 +463,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
 
 //++++++++++ Enforced by I_AdminSubscription ++++++++++++++++
    public String getId() {
-      try {
-         return getSubscriptionId();
-      }
-      catch (XmlBlasterException e) {
-         return "";
-      }
+      return getSubscriptionId();
    }
    public String getSessionName() {
       if (this.sessionInfo == null) return "";
@@ -477,12 +475,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
    }
    public String getParentSubscription() {
       if (this.querySub == null) return "";
-      try {
-         return this.querySub.getSubscriptionId();
-      }
-      catch (XmlBlasterException e) {
-         return "";
-      }
+      return this.querySub.getSubscriptionId();
    }
    public String getCreationTimestamp() {
       return org.jutils.time.TimeHelper.getDateTimeDump(this.creationTime);
