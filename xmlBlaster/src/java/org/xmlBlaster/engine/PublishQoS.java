@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.11 2000/01/30 20:19:56 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.12 2000/01/31 12:00:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -210,8 +210,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
       if (name.equalsIgnoreCase("Readonly")) {
          if (!inQos)
             return;
-         Log.error(ME, "Sorry, Readonly is not yet supported");
-         readonly = false; // !!!
+         readonly = true;
          return;
       }
    }

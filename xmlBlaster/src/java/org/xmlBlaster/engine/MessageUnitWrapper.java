@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.11 2000/01/30 20:19:56 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.12 2000/01/31 12:00:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -99,6 +99,11 @@ public class MessageUnitWrapper
    {
       // if (Log.TRACE) Log.trace(ME, "Updating xmlKey " + uniqueKey + " from " + publisherName + ", new newContent=" + new String(newContent));
 
+      if (publishQoS.readonly()) {
+         Log.warning(ME+".Readonly", "Sorry, new published message rejected, message is readonly.");
+         throw new XmlBlasterException(ME+".Readonly", "Sorry, new published message rejected, message is readonly.");
+      }
+
       if (newContent == null)
          newContent = new byte[0];
 
@@ -129,7 +134,7 @@ public class MessageUnitWrapper
    }
 
    /**
-    * If the message was durable, erase it from the persistent store. 
+    * If the message was durable, erase it from the persistent store.
     */
    final void erase() throws XmlBlasterException
    {

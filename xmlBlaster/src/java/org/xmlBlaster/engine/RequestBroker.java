@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.50 2000/01/30 20:19:57 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.51 2000/01/31 12:00:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -31,7 +31,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.50 $
+ * @version $Revision: 1.51 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -256,6 +256,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
 
@@ -303,6 +305,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public MessageUnitContainer[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
 
@@ -407,8 +411,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          if (Log.TRACE) Log.trace(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
          xmlKeyVec = new Vector();
-         if (xmlKeyExact != null)
-            xmlKeyVec.addElement(xmlKeyExact);
+         /* if (xmlKeyExact != null) */
+         xmlKeyVec.addElement(xmlKeyExact); // if (xmlKeyExact == null) add nevertheless!
       }
 
       else {
@@ -459,6 +463,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Low level subscribe, is called when the <key oid='...' queryType='EXACT'> to subscribe is exactly known.
     * <p>
+    * If the message is yet unknown, an empty is created to hold the subscription.
     * @param uniqueKey from XmlKey - oid
     * @param subs
     */
@@ -510,13 +515,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe() ...");
+      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
       String suppliedXmlKey = xmlKey.getUniqueKey().substring(0); // remember (clone) supplied oid, another oid may be generated later
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
 
-      if (xmlKeyVec.size() == 0 && xmlKey.isExact()) {
+      if ((xmlKeyVec.size() == 0 || xmlKeyVec.size() == 1 && xmlKeyVec.elementAt(0) == null) && xmlKey.isExact()) {
          // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
          SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
          if (subs != null && subs.getXmlKey().isQuery()) { // now do the query again ...
@@ -638,6 +643,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       XmlKey xmlKey = new XmlKey(messageUnit.xmlKey, true);
 
+      if (Log.CALLS) Log.calls(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "') ...");
+
       String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
       if (publishQoS.isPubSubStyle()) {
@@ -663,10 +670,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
                }
             }
 
+            boolean isYetUnpublished = !messageUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
+
             if (messageExisted) {
                contentChanged = messageUnitHandler.setContent(xmlKey, messageUnit, publishQoS, publisherName);
             }
-            else {
+
+            if (!messageExisted || isYetUnpublished) {
                try {
                   xmlKey.mergeRootNode(bigXmlKeyDOM);                   // merge the message DOM tree into the big xmlBlaster DOM tree
                } catch (XmlBlasterException e) {
@@ -787,7 +797,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public String[] publish(ClientInfo clientInfo, MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish(array) ...");
+      if (Log.CALLS) Log.calls(ME, "Entering publish(array.length='" + messageUnitArr.length + "') ...");
 
       if (messageUnitArr == null || qos_literal_Arr==null || messageUnitArr.length != qos_literal_Arr.length) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
@@ -817,6 +827,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
       String[] oidArr = new String[xmlKeyVec.size()];
 

@@ -4,7 +4,14 @@
 Changes for 0.72 [Feb. 2000]
 ==============================
 
-   - Added logging redirection to file, use on command line "-?" to query possible parameters.
+   - Bug fixed for subscribe with oid and later publish of this message.
+	  The BigXmlDom was not updated properly.
+
+   - Added support for <qos><Readonly /></qos>,
+	  where only the first publish is accepted.
+
+   - Added logging redirection to file,
+	  use on command line "-?" to query possible parameters.
 
    - Bug fixed for multiple login (without logout) and PtP messages.
 
