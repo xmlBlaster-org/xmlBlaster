@@ -1,3 +1,10 @@
+<!--
+# Name:      xmlBlasterPlugins.xml
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+-->
 <xmlBlaster>
    <!-- A typical plugin which is loaded by client request -->
 
@@ -129,7 +136,7 @@
          <attribute id='password'>secret</attribute>
          <attribute id='connectionBusyTimeout'>90000</attribute>
          <attribute id='maxWaitingThreads'>300</attribute>
-	 <attribute id='tableNamePrefix'>AVALON_</attribute>
+         <attribute id='tableNamePrefix'>AVALON_</attribute>
       </plugin>
 
     </node>
