@@ -246,7 +246,7 @@ public:
       /**
        * @deprecated Please use the STL std::vector variant
        */
-      serverIdl::XmlTypeArr* CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
+      serverIdl::XmlTypeArr* publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
 
       /**
        * Publish a bulk of messages without ACK. 
@@ -257,7 +257,7 @@ public:
        * @param The org::xmlBlaster::util::MessageUnit array as a STL std::vector
        * @see xmlBlaster.idl
        */
-      void CorbaConnection::publishOneway(const std::vector<util::MessageUnit>& msgVec);
+      void publishOneway(const std::vector<util::MessageUnit>& msgVec);
 
       /**
        * Enforced by ServerOperations interface.
