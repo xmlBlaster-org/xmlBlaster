@@ -299,7 +299,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * @see #handleSQLException(String, SQLException, String)
+    * @see #handleSQLException(Connection, String, SQLException, String)
     */
    protected final boolean handleSQLException(Connection conn, String location, SQLException ex) {
       return handleSQLException(conn, location, ex, null);
