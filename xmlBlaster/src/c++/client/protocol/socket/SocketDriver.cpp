@@ -219,6 +219,13 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
    if (log_.call()) log_.call("SocketDriver", string("getInstance for ") + instanceName);
 
    argsStructP_ = new ArgsStruct_T;
+   if (!global_.getProperty().propertyExists("logLevel")) {
+      if (log_.trace() || log_.call())
+         global_.getProperty().setProperty("logLevel", "TRACE");
+      else if (log_.dump())
+         global_.getProperty().setProperty("logLevel", "DUMP");
+   }
+
    global_.fillArgs(*argsStructP_);
    try {
       connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
@@ -261,6 +268,8 @@ void SocketDriver::reconnectOnIpLevel(void)
    try {
       connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
+      connection_->log = myLogger;    // Register our own logging function
+      connection_->logUserP = this;   // Pass ourself to myLogger()
    } catch_MACRO("::Constructor", true)
    
    try {
@@ -359,6 +368,10 @@ void SocketDriver::initialize(const string& name, I_Callback &client)
    if (log_.call()) log_.call(ME, "initialize() callback server");
    callbackClient_ = &client;
    Lock lock(mutex_);
+   if (connection_ == 0) {
+      throw org::xmlBlaster::util::XmlBlasterException(INTERNAL_UNKNOWN, name, ME + ".initialize", "en",
+                       global_.getVersion() + " " + global_.getBuildTimestamp() + " The connection_ handle is NULL");
+   }
    try {
       if (log_.trace()) log_.trace(ME, "Before createCallbackServer");
       if (connection_->initialize(connection_, myUpdate, &socketException) == false) {
@@ -377,6 +390,7 @@ string SocketDriver::getCbProtocol()
 
 string SocketDriver::getCbAddress()
 {
+   Lock lock(mutex_);
    if (connection_ == 0 || connection_->callbackP == 0) {
       return string("socket://:");
    }
@@ -388,6 +402,7 @@ string SocketDriver::getCbAddress()
 
 bool SocketDriver::shutdownCb()
 {
+   Lock lock(mutex_);
    if (connection_ == 0 || connection_->callbackP == 0) return false;
    connection_->callbackP->shutdown(connection_->callbackP);
    return true;
@@ -460,13 +475,18 @@ string SocketDriver::getLoginName()
 
 bool SocketDriver::isLoggedIn()
 {
-   return connection_->isConnected(connection_);
+   Lock lock(mutex_);
+   return connection_ != 0 && connection_->isConnected(connection_);
 }
 
 string SocketDriver::ping(const string& qos)
 {
    ::ExceptionStruct socketException;
    Lock lock(mutex_);
+   if (connection_ == 0) {
+      throw org::xmlBlaster::util::XmlBlasterException(INTERNAL_UNKNOWN, "", ME + ".ping", "en",
+                       global_.getVersion() + " " + global_.getBuildTimestamp() + " The connection_ handle is NULL");
+   }
    try {
       char *retQosP = connection_->ping(connection_, qos.c_str(), &socketException);
       if (retQosP == 0 || *socketException.errorCode != 0) {
@@ -480,11 +500,11 @@ string SocketDriver::ping(const string& qos)
 
 SubscribeReturnQos SocketDriver::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
       char *response = connection_->subscribe(connection_, key.toXml().c_str(), qos.toXml().c_str(), &socketException);
       if (*socketException.errorCode != 0) {
@@ -498,11 +518,11 @@ SubscribeReturnQos SocketDriver::subscribe(const SubscribeKey& key, const Subscr
 
 vector<MessageUnit> SocketDriver::get(const GetKey& getKey, const GetQos& getQos)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
       MsgUnitArr *msgUnitArr;  // The returned C struct array
       string key = getKey.toXml();
@@ -532,11 +552,11 @@ vector<MessageUnit> SocketDriver::get(const GetKey& getKey, const GetQos& getQos
 vector<UnSubscribeReturnQos>
 SocketDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
       QosArr* retC = connection_->unSubscribe(connection_, key.toXml().c_str(), qos.toXml().c_str(), &socketException);
       if (*socketException.errorCode != 0) {
@@ -554,11 +574,11 @@ SocketDriver::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 
 PublishReturnQos SocketDriver::publish(const MessageUnit& msgUnit)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
       if (log_.call()) log_.call(ME, "publish");
       ::MsgUnit msgUnitC;
@@ -585,11 +605,11 @@ PublishReturnQos SocketDriver::publish(const MessageUnit& msgUnit)
 
 void SocketDriver::publishOneway(const vector<MessageUnit> &msgUnitArr)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
 
       // Copy C++ MessageUnit to C MsgUnit
@@ -626,11 +646,11 @@ void SocketDriver::publishOneway(const vector<MessageUnit> &msgUnitArr)
 
 vector<PublishReturnQos> SocketDriver::publishArr(const vector<MessageUnit> &msgUnitArr)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
 
       // Copy C++ MessageUnit to C MsgUnit
@@ -674,11 +694,11 @@ vector<PublishReturnQos> SocketDriver::publishArr(const vector<MessageUnit> &msg
 
 vector<EraseReturnQos> SocketDriver::erase(const EraseKey& key, const EraseQos& qos)
 {
+   ::ExceptionStruct socketException;
+   Lock lock(mutex_);
    if (connection_ == 0) {
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
-   ::ExceptionStruct socketException;
-   Lock lock(mutex_);
    try {
       QosArr* retC = connection_->erase(connection_, key.toXml().c_str(), qos.toXml().c_str(), &socketException);
       if (*socketException.errorCode != 0) {
