@@ -41,7 +41,7 @@ namespace org {
 
    using namespace org::xmlBlaster::util::qos;
 
-   class CorbaDriver 
+   class Dll_Export CorbaDriver 
       : public virtual I_CallbackServer, 
         public virtual I_XmlBlasterConnection, 
         public Thread

@@ -18,7 +18,7 @@ namespace util {
      * Usually thrown in startElement() or endElement() if
      * you are not interested in the following tags anymore.<br />
      */
-    class StopParseException {
+    class Dll_Export StopParseException {
 
       public:
        StopParseException() {

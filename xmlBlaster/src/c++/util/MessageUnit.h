@@ -33,7 +33,7 @@ namespace org { namespace xmlBlaster { namespace util {
     * @author xmlBlaster@marcelruff.info
     * @author laghi@swissinfo.org
     */
-   class MessageUnit 
+   class Dll_Export MessageUnit 
    {
 
    private:

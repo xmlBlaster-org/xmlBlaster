@@ -8,6 +8,7 @@ Comment:   Handling the Client data
 #ifndef _UTIL_STOPWATCH_H
 #define _UTIL_STOPWATCH_H
 
+#include <util/XmlBCfg.h>
 #include <sys/timeb.h>
 #include <string>
 #include <boost/lexical_cast.hpp>
@@ -24,7 +25,7 @@ namespace util {
  * fragment. If you specify (a positive) time in the argument list, it is the
  * time in milliseconds which the stop watch should wait.
  */
-   class StopWatch {
+   class Dll_Export StopWatch {
 
    private:
       struct timeb *startTime_, *currentTime_;

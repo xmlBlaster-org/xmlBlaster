@@ -28,7 +28,7 @@ using namespace org::xmlBlaster::client::key;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-class EmbeddedServer : public Thread
+class Dll_Export EmbeddedServer : public Thread
 {
 private:
    string            ME;

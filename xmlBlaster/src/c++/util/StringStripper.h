@@ -11,6 +11,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 
 #include <string>
 #include <vector>
+#include <util/XmlBCfg.h>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ namespace util {
  * vector<String> vec = stripper->strip(name);
  * </pre>
  */
-   class StringStripper {
+   class Dll_Export StringStripper {
       
    private:
       string separator_;

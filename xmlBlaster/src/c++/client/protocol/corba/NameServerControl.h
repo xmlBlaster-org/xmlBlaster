@@ -100,7 +100,7 @@ namespace client { namespace protocol { namespace corba {
  * makes such accesses easier (and less exceptions to take care of).
  */   
 
-      class NameServerControl {
+      class Dll_Export NameServerControl {
 
       private:
          

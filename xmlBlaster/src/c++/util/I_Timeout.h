@@ -7,6 +7,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #ifndef _UTIL_I_TIMEOUT_H
 #define _UTIL_I_TIMEOUT_H
 
+#include <util/XmlBCfg.h>
+
 namespace org { namespace xmlBlaster { namespace util {
 
 /**
@@ -16,7 +18,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-class I_Timeout {
+class  Dll_Export I_Timeout {
    public:
       /**
       * You will be notified about the timeout through this method.

@@ -3,7 +3,7 @@ Name:      Prop.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding data for a property
-Version:   $Id: Prop.h,v 1.2 2002/12/31 11:55:23 ruff Exp $
+Version:   $Id: Prop.h,v 1.3 2003/02/09 21:23:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -34,7 +34,7 @@ enum prop_enum {
 
 typedef enum prop_enum PropEnum;
 
-template <class T> class Prop
+template <class T> class Dll_Export Prop
 {
 private:
    T        value_;

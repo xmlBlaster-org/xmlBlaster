@@ -34,7 +34,7 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-class MsgQosFactory : public SaxHandlerBase
+class Dll_Export MsgQosFactory : public SaxHandlerBase
 {
 private:
    string               ME;

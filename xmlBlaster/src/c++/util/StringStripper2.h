@@ -36,7 +36,7 @@ using namespace std;
 namespace org { namespace xmlBlaster {
 namespace util {
    
-   class StringStripper2 {
+   class Dll_Export StringStripper2 {
       
    private:
       StringStripper mainStrip_, minorStrip_;

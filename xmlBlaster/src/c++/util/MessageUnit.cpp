@@ -21,6 +21,8 @@ using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::qos;
+
+namespace org { namespace xmlBlaster { namespace util {
    
 /**
  * Holding a message. 
@@ -187,4 +189,5 @@ string MessageUnit::toXml(const string &extraOffset) const
    return ret;
 }
 
+}}} // namespace
 #endif

@@ -9,6 +9,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifndef _UTIL_STRINGTRIM_H
 #define _UTIL_STRINGTRIM_H
 
+#include <util/XmlBCfg.h>
+
 using namespace std;
 
 namespace org { namespace xmlBlaster {
@@ -21,7 +23,7 @@ namespace util {
     * This class is part of the package because the XMLString::trim(...) 
     * method in the xerces package does not fullfill our requirements.
     */
-   template <class CharT> class StringTrim
+   template <class CharT> class Dll_Export StringTrim
    {
       
    public:

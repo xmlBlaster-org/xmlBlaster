@@ -3,14 +3,14 @@ Name:      I_ConnectionProblems.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_ConnectionProblems.h,v 1.5 2003/01/17 18:38:54 laghi Exp $
+Version:   $Id: I_ConnectionProblems.h,v 1.6 2003/02/09 21:24:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Callback the client from XmlBlasterConnection if the connection to xmlBlaster is lost
  * or was reestablished (fail save mode).
  * <p>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
 Author:    xmlBlaster@marcelruff.info
  * @author <a href='xmlBlaster@marcelruff.info'>Marcel Ruff</a>
  * @author <a href='laghi@swissinfo.org'>Michele Laghi</a>
@@ -27,7 +27,7 @@ namespace org { namespace xmlBlaster { namespace client {
 
 typedef enum States StatesEnum;
 
-class I_ConnectionProblems
+class Dll_Export I_ConnectionProblems
 {
 public:
 

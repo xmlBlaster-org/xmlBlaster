@@ -14,10 +14,11 @@
 
 #include <sstream>
 #include <typeinfo>
+#include <util/XmlBCfg.h>
 
 namespace org { namespace xmlBlaster { namespace util {
 
-    class bad_lexical_cast : public std::bad_cast
+    class Dll_Export bad_lexical_cast : public std::bad_cast
     {
     public:
         // constructors, destructors, and assignment operator defaulted

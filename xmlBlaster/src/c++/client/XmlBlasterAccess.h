@@ -35,7 +35,7 @@ namespace org { namespace xmlBlaster { namespace client {
  * </p>
  */
 
-class XmlBlasterAccess : public I_Callback
+class Dll_Export XmlBlasterAccess : public I_Callback
 {
 private:
    string ME;
