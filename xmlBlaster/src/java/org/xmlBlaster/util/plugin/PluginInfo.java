@@ -289,7 +289,7 @@ org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC
 
    /** @return for example "ProtocolPlugin[IOR][1.0]" */
    public String toString() {
-      return propertyKey;
+      return (this.propertyKey == null) ? this.propertyName+"["+getType()+"]["+getVersion()+"]" : this.propertyKey;
    }
 }
 
