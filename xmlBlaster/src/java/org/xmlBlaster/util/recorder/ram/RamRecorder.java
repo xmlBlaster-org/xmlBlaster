@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.1 2002/05/27 20:52:25 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.2 2002/05/28 10:17:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -73,12 +73,16 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @param clientCallback You need to implement I_CallbackRaw to receive the invocations on playback
     *                       null if you are not interested in those
     */
-   public void initialize(Global glob, int maxEntries, I_XmlBlaster serverCallback,
+   public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback,
                              I_CallbackRaw clientCallback)
    {
       this.log = glob.getLog("recorder");
       if (log.CALL) log.call(ME, "Initializing new RamRecorder(" + maxEntries + ") ...");
-      this.queue = new Queue(ME, maxEntries);
+      if (maxEntries >= Integer.MAX_VALUE) {
+         log.warn(ME, "Stripping queue size to Integer.MAX_VALUE");
+         maxEntries = Integer.MAX_VALUE;
+      }
+      this.queue = new Queue(ME, (int)maxEntries);
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
       log.info(ME, "Invocation recorder is initialized to queue max=" + maxEntries + " tail back messages on failure");
@@ -290,7 +294,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    /**
     * @return dummy to match I_XmlBlaster interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
-    * @exception XmlBlasterException if queue is full
+    * @exception XmlBlasterException if queue is full with id="<driverName>.MaxSize"
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -439,7 +443,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String[] update(String cbSessionId, MessageUnit [] msgUnitArr)
+   public String[] update(String cbSessionId, MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "update";
@@ -448,7 +452,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       try {
          queue.push(cont);
       } catch (JUtilsException e) {
-         log.error(ME, "Can't push update(): " + e.reason);
+         throw new XmlBlasterException(e);
       }
       String[] ret=new String[msgUnitArr.length];
       for (int i=0; i<ret.length; i++) ret[i] = "";
