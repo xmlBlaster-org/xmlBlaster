@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-Name:      Thread.cpp
+Name:      ThreadImplBoost.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Encapsulates (and hides) threads
