@@ -398,6 +398,9 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     */
    public final SessionInfo getSessionInfo(SessionName sessionName) {
       SubjectInfo subjectInfo = getSubjectInfoByName(sessionName);
+      if (subjectInfo == null) {
+         return null;
+      }
       return subjectInfo.getSessionInfo(sessionName);
    }
 
