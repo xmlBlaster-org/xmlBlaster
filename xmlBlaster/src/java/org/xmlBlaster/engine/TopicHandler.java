@@ -805,6 +805,9 @@ public final class TopicHandler implements I_Timeout
       }
 
       QueryQosData queryQos = sub.getQueryQosData();
+      if (queryQos == null) {
+         return;
+      }
 
       if (queryQos.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
@@ -936,10 +939,13 @@ public final class TopicHandler implements I_Timeout
       Set removeSet = null;
       for (int ii=0; ii<subInfoArr.length; ii++) {
          SubscriptionInfo sub = subInfoArr[ii];
-         if (!sub.getQueryQosData().getWantLocal() && 
+         if (sub == null) continue;
+         QueryQosData qos = sub.getQueryQosData();
+         if (qos == null) continue;
+         if (!qos.getWantLocal() && 
               sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender()))
             continue;
-         if (!sub.getQueryQosData().getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) {
+         if (!qos.getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) {
             continue;
          }
          MsgUnitWrapper[] msgUnitWrapperArr = { msgUnitWrapper };
