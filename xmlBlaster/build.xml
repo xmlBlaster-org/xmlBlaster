@@ -473,6 +473,7 @@ TODO
             <exclude name="org/jutils"/>
             <exclude name="README"/>
             <exclude name="**/servlet/Req*.java"/>
+            <exclude name="**/client/protocol/http/j2me/**"/>
             <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver (IS NOT IMPLEMENTED) -->
             <!-- Activate excludes to compile with JDK 1.2 -->
             <patternset id="jdk12.notcompatible.sources">
@@ -930,7 +931,7 @@ TODO
       <mkdir dir="${javadoc.dir}"/>
       <javadoc packagenames="org.xmlBlaster.*,javaclients,http.*,html.*"
                sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.java.dir}:${demo.dir}"
-               excludepackagenames="org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap"
+               excludepackagenames="org.xmlBlaster.protocol.soap,org.xmlBlaster.client.protocol.soap,org.xmlBlaster.client.protocol.http.j2me"
                classpath="${cp}"
                destdir="${javadoc.dir}"
                maxmemory="256m"
