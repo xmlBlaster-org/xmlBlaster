@@ -3,12 +3,13 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.10 2002/03/28 10:00:48 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.11 2002/04/26 21:31:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -27,6 +28,8 @@ import java.util.Vector;
 public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 {
    private static String ME = "SubscribeQoS";
+
+   private final Global glob;
 
    // helper flags for SAX parsing
 
@@ -53,8 +56,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Constructs the specialized quality of service object for a publish() call.
     */
-   public SubscribeQoS(String xmlQoS_literal) throws XmlBlasterException
+   public SubscribeQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
+      this.glob = glob;
       if (Log.TRACE) Log.trace(ME, "Creating SubscribeQoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
    }
@@ -81,7 +85,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          return queuePropertyArr;
 
       if (queuePropertyVec.size() < 1)
-         queuePropertyVec.addElement(new QueueProperty(Constants.RELATING_SESSION)); // defaults to session queue
+         queuePropertyVec.addElement(new QueueProperty(glob, Constants.RELATING_SESSION)); // defaults to session queue
 
       queuePropertyArr = new QueueProperty[queuePropertyVec.size()];
       queuePropertyVec.toArray(queuePropertyArr);
@@ -158,7 +162,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
          if (!inQueue) {
-            tmpProp = new QueueProperty(null); // Use default queue properties for this callback address
+            tmpProp = new QueueProperty(glob, null); // Use default queue properties for this callback address
             queuePropertyVec.addElement(tmpProp);
          }
          tmpAddr = new CallbackAddress();
@@ -169,7 +173,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if (name.equalsIgnoreCase("queue")) {
          inQueue = true;
-         tmpProp = new QueueProperty(null);
+         tmpProp = new QueueProperty(glob, null);
          queuePropertyVec.addElement(tmpProp);
          tmpProp.startElement(uri, localName, name, attrs);
          return;
@@ -318,7 +322,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
             "</qos>\n";
          System.out.println("=====Original XML========\n");
          System.out.println(xml);
-         qos = new SubscribeQoS(xml);
+         qos = new SubscribeQoS(new Global(args), xml);
          System.out.println("=====Parsed and dumped===\n");
          System.out.println(qos.toXml());
       }

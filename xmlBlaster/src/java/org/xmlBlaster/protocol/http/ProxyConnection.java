@@ -3,13 +3,13 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.28 2002/03/18 00:29:32 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.29 2002/04/26 21:31:55 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -34,24 +34,26 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  * @author laghi@swissinfo.org
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
 {
-   private String ME                 = "ProxyConnection";
+   private String ME = "ProxyConnection";
+   private final Global glob;
    private final String loginName;
    private final String passwd;
    private XmlBlasterConnection xmlBlasterConnection = null;
-   private Hashtable httpConnections       = new Hashtable(); // must be always != null
-   private I_ProxyInterceptor interceptor  = null;
+   private Hashtable httpConnections = new Hashtable(); // must be always != null
+   private I_ProxyInterceptor interceptor = null;
 
 
    /**
     */
-   public ProxyConnection(String loginName, String passwd) throws XmlBlasterException
+   public ProxyConnection(Global glob, String loginName, String passwd) throws XmlBlasterException
    {
+      this.glob = glob;
       this.loginName = loginName;
       this.passwd = passwd; // remember it to allow multiple browser logins for the same user
       this.ME = "ProxyConnection-" + loginName;
@@ -66,7 +68,7 @@ public class ProxyConnection implements I_Callback
 
       // initFailSave() ???
 
-      xmlBlasterConnection.login(loginName, passwd, new ConnectQos(), this);
+      xmlBlasterConnection.login(loginName, passwd, new ConnectQos(glob), this);
    }
 
    /**

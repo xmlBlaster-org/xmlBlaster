@@ -33,6 +33,9 @@ import java.util.Iterator;
  * of this class to manage its behavior in the cluster. 
  * <p />
  * Note: Our own node id is available via glob.getNodeId()
+ * <p />
+ * See the <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html">cluster requirement</a>
+ * for a detailed description.
  * @author ruff@swand.lake.de
  * @since 0.79e
  */

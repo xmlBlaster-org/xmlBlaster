@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.3 2002/04/19 11:02:02 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.4 2002/04/26 21:31:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -577,7 +577,8 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid stratum =" + tmp); };
             }
             else {
-               Log.warn(ME, "QoS <route><node> misses stratum attribute, setting to 0");
+               Log.warn(ME, "QoS <route><node> misses stratum attribute, setting to 0: " + xmlLiteral);
+               Thread.currentThread().dumpStack();
             }
 
             Timestamp timestamp = null;
@@ -602,7 +603,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (!inDestination)
             return;
          destination.forceQueuing(true);
-         Log.warn(ME, "forceQuening is an attribute of destination - change your code");
+         Log.warn(ME, "forceQueuing is an attribute of destination - change your code");
          return;
       }
 
@@ -792,9 +793,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          }
       }
       if (sender != null) {
-         sb.append(offset).append("   <sender>");
-         sb.append(offset).append("      ").append(sender);
-         sb.append(offset).append("   </sender>");
+         sb.append(offset).append("   <sender>").append(sender).append("</sender>");
       }
 
       if (Constants.NORM_PRIORITY != priority)
@@ -825,8 +824,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          sb.append(offset).append("   </route>");
       }
 
-      sb.append(offset).append("</qos>\n");
-
+      sb.append(offset).append("</qos>");
       return sb.toString();
    }
 

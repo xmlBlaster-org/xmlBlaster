@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.19 2002/04/15 13:10:32 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.20 2002/04/26 21:31:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,12 +50,13 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
 {
    private String ME = "RmiConnection";
+   private final Global glob;
 
    private I_AuthServer authServer = null;
    private I_XmlBlaster blasterServer = null;
@@ -76,6 +77,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    public RmiConnection(Global glob) throws XmlBlasterException
    {
+      this.glob = glob;
       XmlBlasterSecurityManager.createSecurityManager();
    }
 
@@ -85,8 +87,9 @@ public class RmiConnection implements I_XmlBlasterConnection
     * <p />
     * @param ap  Applet handle
     */
-   public RmiConnection(Applet ap) throws XmlBlasterException
+   public RmiConnection(Global glob, Applet ap) throws XmlBlasterException
    {
+      this.glob = glob;
       XmlBlasterSecurityManager.createSecurityManager();
    }
 
@@ -237,7 +240,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       this.loginName = loginName;
       this.passwd = passwd;
       if (qos == null)
-         this.loginQos = new ConnectQos();
+         this.loginQos = new ConnectQos(glob);
       else
          this.loginQos = qos;
 
@@ -259,7 +262,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          initRmiClient();
          if (passwd == null) {
             String tmp = authServer.connect(loginQos.toXml());
-            this.connectReturnQos = new ConnectReturnQos(tmp);
+            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
             this.sessionId = this.connectReturnQos.getSessionId();
          }
          else {

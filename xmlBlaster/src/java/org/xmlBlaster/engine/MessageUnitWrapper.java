@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.34 2002/04/16 12:12:36 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.35 2002/04/26 21:31:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -440,9 +440,9 @@ public class MessageUnitWrapper implements I_Timeout
          sb.append(publishQos.toXml(extraOffset + "   "));
       sb.append(offset).append("   <content>").append((msgUnit.content==null ? "null" : msgUnit.content.toString())).append("</content>");
 
-      sb.append(offset).append("   ").append(getXmlRcvTimestamp());
+      //sb.append(offset).append("   ").append(getXmlRcvTimestamp()); // is dumped in publishQos already
 
-      sb.append(offset).append("</MessageUnitWrapper>\n");
+      sb.append(offset).append("</MessageUnitWrapper>");
       return sb.toString();
    }
 }

@@ -73,6 +73,7 @@ import java.io.IOException;
 public class CorbaConnection implements I_XmlBlasterConnection
 {
    private String ME = "CorbaConnection";
+   private final Global glob;
 
    // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
    // Thread leak from JacORB 1.2.2, the threads
@@ -110,6 +111,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     */
    public CorbaConnection(Global glob)
    {
+      this.glob = glob;
       if (orb == null) { // Thread leak !!!
          CorbaDriver.initializeOrbEnv(glob);
          orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
@@ -142,8 +144,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *  </pre>
     * @param ap  Applet handle
     */
-   public CorbaConnection(Applet ap)
+   public CorbaConnection(Global glob, Applet ap)
    {
+      this.glob = glob;
       // try to force to use JacORB instead of builtin CORBA:
       String orbClassName = "org.jacorb.orb.ORB";
       String orbSingleton = "org.jacorb.orb.ORBSingleton";
@@ -400,7 +403,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       this.passwd=passwd;
 
       if (qos == null)
-         this.loginQos = new ConnectQos();
+         this.loginQos = new ConnectQos(glob);
       else
          this.loginQos = qos;
 
@@ -459,7 +462,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          }
          else {
             String tmp = authServer.connect(loginQos.toXml());
-            this.connectReturnQos = new ConnectReturnQos(tmp);
+            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
             sessionId = this.connectReturnQos.getSessionId();
             String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
 

@@ -1,6 +1,7 @@
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -37,13 +38,16 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public class ConnectReturnQos {
    public static final String ME = "ConnectReturnQos";
+   private Global glob;
    private ConnectQos connectQos;
 
-   public ConnectReturnQos(ConnectQos connectQos) throws XmlBlasterException {
+   public ConnectReturnQos(Global glob, ConnectQos connectQos) throws XmlBlasterException {
+      this.glob = glob;
       this.connectQos = connectQos;
    }
-   public ConnectReturnQos(String xmlQos_literal) throws XmlBlasterException {
-      connectQos = new ConnectQos(xmlQos_literal);
+   public ConnectReturnQos(Global glob, String xmlQos_literal) throws XmlBlasterException {
+      this.glob = glob;
+      connectQos = new ConnectQos(glob, xmlQos_literal);
    }
    public final String toXml() {
       return connectQos.toXml();

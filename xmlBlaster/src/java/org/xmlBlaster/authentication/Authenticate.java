@@ -37,14 +37,14 @@ final public class Authenticate implements I_Authenticate
    public static final String DEFAULT_SECURITYPLUGIN_TYPE = "simple";
    public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
 
-   private PluginManager plgnLdr = null;
+   private final PluginManager plgnLdr;
 
 //   private Hashtable sessions = new Hashtable();
 
    /** Unique counter to generate IDs */
    private long counter = 1;
 
-   private Global glob;
+   private final Global glob;
 
    /**
     * With this map you can find a client using a sessionId.
@@ -109,8 +109,8 @@ final public class Authenticate implements I_Authenticate
       org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(loginName, "");
       session.init(securityQos);
       I_Subject subject = session.getSubject();
-      SubjectInfo subjectInfo = new SubjectInfo(subject, new QueueProperty(Constants.RELATING_SUBJECT), getGlobal());
-      ConnectQos connectQos = new ConnectQos();
+      SubjectInfo subjectInfo = new SubjectInfo(subject, new QueueProperty(getGlobal(), Constants.RELATING_SUBJECT), getGlobal());
+      ConnectQos connectQos = new ConnectQos(glob);
       connectQos.setSessionTimeout(0L);  // Lasts forever
       return new SessionInfo(subjectInfo, session, connectQos, getGlobal());
    }
@@ -158,7 +158,7 @@ final public class Authenticate implements I_Authenticate
          else {
             SessionInfo info = (SessionInfo)sessionInfoMap.get(sessionId);
             if (info != null) {
-               ConnectReturnQos returnQos = new ConnectReturnQos(connectQos);
+               ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
                returnQos.setSessionId(sessionId);
                Log.info(ME, "Reconnecting with given sessionId, using QoS from first login");
                return returnQos;
@@ -217,7 +217,7 @@ final public class Authenticate implements I_Authenticate
          fireClientEvent(sessionInfo, true);
 
          // --- compose an answer -----------------------------------------------
-         ConnectReturnQos returnQos = new ConnectReturnQos(connectQos);
+         ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
          returnQos.setSessionId(sessionId); // securityInfo is not coded yet !
 
          Log.info(ME, "Successful login for client " + subjectCtx.getName());

@@ -428,13 +428,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public XmlBlasterConnection(Applet ap, String driverType) throws XmlBlasterException
    {
       if (driverType.equalsIgnoreCase("SOCKET"))
-         driver = new SocketConnection(ap);
+         driver = new SocketConnection(glob, ap);
       else if (driverType.equalsIgnoreCase("IOR") || driverType.equalsIgnoreCase("IIOP"))
-         driver = new CorbaConnection(ap);
+         driver = new CorbaConnection(glob, ap);
       else if (driverType.equalsIgnoreCase("RMI"))
-         driver = new RmiConnection(ap);
+         driver = new RmiConnection(glob, ap);
       else if (driverType.equalsIgnoreCase("XML-RPC"))
-         driver = new XmlRpcConnection(ap);
+         driver = new XmlRpcConnection(glob, ap);
       else {
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI or XML-RPC.";
          Log.error(ME, text);
@@ -549,7 +549,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (Log.CALL) Log.call(ME, "login() ...");
 
       if (qos == null)
-         qos = new ConnectQos();
+         qos = new ConnectQos(glob);
 
       I_SecurityQos securityQos = qos.getSecurityQos();
       if(securityQos == null) {
@@ -670,7 +670,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          QueueProperty prop = givenProp; // Use user supplied property if != null
          if (prop == null)
-            prop = new QueueProperty(Constants.RELATING_SESSION);
+            prop = qos.getQueueProperty(); // Creates a default property for us if none is available
+         else
+            qos.addQueueProperty(prop);
 
          prop.setOnOverflow(XmlBlasterProperty.get("cb.queue.onOverflow", QueueProperty.DEFAULT_onOverflow));
          prop.setOnFailure(XmlBlasterProperty.get("cb.queue.onFailure", QueueProperty.DEFAULT_onFailure));
@@ -684,31 +686,18 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          }
          else if (prop.getCurrentCallbackAddress() != null) { // add the callback data to the user supplied callback attributes
             addr = prop.getCurrentCallbackAddress();
-            addr.setType(this.cbServer.getCbProtocol());     // "IOR" "RMI" etc.
-            addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
+            addr.setType(this.cbServer.getCbProtocol());
+            addr.setAddress(this.cbServer.getCbAddress());
          }
          else {
-            addr = new CallbackAddress(this.cbServer.getCbProtocol()); // "IOR" "RMI" etc.
-            addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
-
-            addr.setCollectTime(XmlBlasterProperty.get("cb.burstMode.collectTime", CallbackAddress.DEFAULT_collectTime));
-            if (cbSessionId != null)
-               addr.setSessionId(cbSessionId);
-            else
-               addr.setSessionId(XmlBlasterProperty.get("cb.sessionId", CallbackAddress.DEFAULT_sessionId));
-            addr.setPingInterval(XmlBlasterProperty.get("cb.pingInterval", CallbackAddress.DEFAULT_pingInterval));
-            addr.setRetries(XmlBlasterProperty.get("cb.retries", CallbackAddress.DEFAULT_retries));
-            addr.setDelay(XmlBlasterProperty.get("cb.delay", CallbackAddress.DEFAULT_delay));
-            addr.setCompressType(XmlBlasterProperty.get("cb.compressType", CallbackAddress.DEFAULT_compressType));
-            addr.setMinSize(XmlBlasterProperty.get("cb.minSize", CallbackAddress.DEFAULT_minSize));
-            addr.setPtpAllowed(XmlBlasterProperty.get("cb.ptpAllowed", CallbackAddress.DEFAULT_ptpAllowed));
-            addr.setOneway(XmlBlasterProperty.get("cb.oneway", CallbackAddress.DEFAULT_oneway));
+            addr = new CallbackAddress(this.cbServer.getCbProtocol());
+            addr.setAddress(this.cbServer.getCbAddress());
          }
+         if (cbSessionId != null)
+            addr.setSessionId(cbSessionId);
 
          prop.setCallbackAddress(addr);
          Log.info(ME, "Callback settings: " + prop.getSettings());
-         
-         qos.addQueueProperty(prop);
       } // Callback server configured and running
 
       //Log.info(ME, "DUMP of ConnectQos\n"  + qos.toXml());
@@ -1241,7 +1230,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             driver.unSubscribe(xmlKey, qos);
          }
          synchronized (callbackMap) {
-            XmlKeyBase key = new XmlKeyBase(xmlKey);
+            XmlKeyBase key = new XmlKeyBase(glob, xmlKey);
             callbackMap.remove(key.getUniqueKey());
          }
       } catch(XmlBlasterException e) {
@@ -1723,8 +1712,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -cb.pingInterval    Pinging every given milliseconds [" + CallbackAddress.DEFAULT_pingInterval + "]\n";
       text += "   -cb.retries         How often to retry if callback fails [" + CallbackAddress.DEFAULT_retries + "]\n";
       text += "   -cb.delay           Delay between callback retires in milliseconds [" + CallbackAddress.DEFAULT_delay + "]\n";
-      text += "   -cb.compressType    With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
-      text += "   -cb.minSize         Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
+      text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
+      text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
       text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
       text += "\n";
       text += "Security features:\n";

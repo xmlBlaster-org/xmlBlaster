@@ -2,17 +2,18 @@
 Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding callback address string and protocol string
-Version:   $Id: QueueProperty.java,v 1.4 2002/03/18 00:26:52 ruff Exp $
+Comment:   Holding callback queue properties
+Version:   $Id: QueueProperty.java,v 1.5 2002/04/26 21:31:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xml.sax.Attributes;
 
 /**
- * Helper class holding callback address string and protocol string.
+ * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML sysntax.
  * @see org.xmlBlaster.util.ConnectQos
@@ -20,25 +21,26 @@ import org.xml.sax.Attributes;
 public class QueueProperty
 {
    private static final String ME = "QueueProperty";
+   private final Global glob;
 
    /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
    public static final int DEFAULT_maxMsgDefault = 1000;
-   private static final int maxMsgDefault = XmlBlasterProperty.get("queue.maxMsg", DEFAULT_maxMsgDefault);
+   private int maxMsgDefault;
    
    /** The max setting allowed for queue maxSize in kBytes is adjustable with property "queue.maxSize=4000" (4 MBytes is default) */
    public static final int DEFAULT_sizeDefault = 2000;
-   private static final int maxSizeDefault = XmlBlasterProperty.get("queue.maxSize", DEFAULT_sizeDefault);
+   private int maxSizeDefault;
 
    /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
    public static final long DEFAULT_minExpires = 1000L;
-   private static final long minExpires = XmlBlasterProperty.get("queue.expires.min", DEFAULT_minExpires);
+   private long minExpires;
 
    /** The max span of life of a queue is currently forever (=0), changeable with property e.g. "queue.expires.max=3600000" milliseconds */
    public static final long DEFAULT_maxExpires = 0L;
-   private static final long maxExpires = XmlBlasterProperty.get("queue.expires.max", DEFAULT_maxExpires); // Long.MAX_VALUE);
+   private long maxExpires;
 
    /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
-   public static final long DEFAULT_expires = XmlBlasterProperty.get("queue.expires", DEFAULT_maxExpires);
+   public long DEFAULT_expires;
 
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
    private String cbSessionId = null;
@@ -47,17 +49,17 @@ public class QueueProperty
    /** Span of life of this queue in milliseconds */
    private long expires = DEFAULT_expires;
    /** The max. capacity of the queue in number of entries */
-   private int maxMsg = maxMsgDefault;
+   private int maxMsg;
    /** The max. capacity of the queue in kBytes */
-   private int maxSize = maxSizeDefault;
+   private int maxSize;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_BLOCK | Constants.ONOVERFLOW_DEADLETTER | Constants.ONOVERFLOW_DISCARDOLDEST */
    public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_BLOCK;
-   private String onOverflow = XmlBlasterProperty.get("queue.onOverflow", DEFAULT_onOverflow);
+   private String onOverflow;
 
    /** Error handling when callback failed (after all retries etc.): Constants.ONOVERFLOW_DEADLETTER */
    public static final String DEFAULT_onFailure = Constants.ONOVERFLOW_DEADLETTER;
-   private String onFailure = XmlBlasterProperty.get("queue.onFailure", DEFAULT_onFailure);
+   private String onFailure;
 
    /** The corresponding callback address */
    private CallbackAddress[] addressArr = new CallbackAddress[0];
@@ -65,8 +67,15 @@ public class QueueProperty
    /**
     * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_UNRELATED
     */
-   public QueueProperty(String relating)
+   public QueueProperty(Global glob, String relating)
    {
+      if (glob == null) {
+         Thread.currentThread().dumpStack();
+         this.glob = new Global();
+      }
+      else
+         this.glob = glob;
+      initialize();
       setRelating(relating);
    }
 
@@ -80,6 +89,20 @@ public class QueueProperty
       if (getCurrentCallbackAddress() != null)
          buf.append(" ").append(getCurrentCallbackAddress().getSettings());
       return buf.toString();
+   }
+
+   /**
+    * Configure property settings
+    */
+   private void initialize()
+   {
+      maxMsg = maxMsgDefault = glob.getProperty().get("queue.maxMsg", DEFAULT_maxMsgDefault);
+      maxSize = maxSizeDefault = glob.getProperty().get("queue.maxSize", DEFAULT_sizeDefault);
+      minExpires = glob.getProperty().get("queue.expires.min", DEFAULT_minExpires);
+      maxExpires = glob.getProperty().get("queue.expires.max", DEFAULT_maxExpires); // Long.MAX_VALUE);
+      DEFAULT_expires = glob.getProperty().get("queue.expires", DEFAULT_maxExpires);
+      onOverflow = glob.getProperty().get("queue.onOverflow", DEFAULT_onOverflow);
+      onFailure = glob.getProperty().get("queue.onFailure", DEFAULT_onFailure);
    }
 
    /**
@@ -430,7 +453,7 @@ public class QueueProperty
    /** For testing: java org.xmlBlaster.engine.helper.QueueProperty */
    public static void main(String[] args)
    {
-      QueueProperty prop = new QueueProperty(null);
+      QueueProperty prop = new QueueProperty(new Global(args), null);
       System.out.println(prop.toXml());
       CallbackAddress adr = new CallbackAddress("EMAIL");
       adr.setAddress("et@mars.sun");

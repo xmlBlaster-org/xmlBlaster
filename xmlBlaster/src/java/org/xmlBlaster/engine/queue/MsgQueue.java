@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.10 2002/04/24 06:51:29 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.11 2002/04/26 21:31:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -32,12 +32,12 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 {
    private String ME = "MsgQueue";
    private String name;
-   protected QueueProperty property = new QueueProperty(null);
-   protected Global glob;
-   private CbWorkerPool cbWorkerPool;
+   protected QueueProperty property;
+   protected final Global glob;
+   private final CbWorkerPool cbWorkerPool;
    protected CbInfo cbInfo = null;
-   protected Log log;
-   private Timeout burstModeTimer;
+   protected final Log log;
+   private final Timeout burstModeTimer;
    private Timestamp timerKey = null;
    private boolean cbWorkerIsActive = false;
    /** Contains how many callbacks failed */
@@ -52,9 +52,9 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public MsgQueue(String queueName, QueueProperty prop, Global glob) throws XmlBlasterException
    {
       super(prop.getMaxMsg(), new MsgComparator());
-      this.ME = "MsgQueue:" + queueName;
-      this.log = glob.getLog();
       this.glob = glob;
+      this.log = glob.getLog();
+      this.ME = "MsgQueue:" + queueName;
       this.name = queueName;
       this.cbWorkerPool = glob.getCbWorkerPool();
       this.burstModeTimer = glob.getBurstModeTimer();
@@ -87,9 +87,9 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          this.burstModeTimer.removeTimeoutListener(timerKey);
          timerKey = null;
       }
-      this.log = null;
-      this.cbWorkerPool = null;
-      this.burstModeTimer = null;
+      // this.log = null;
+      // this.cbWorkerPool = null;
+      // this.burstModeTimer = null;
       // this.name = null; We need it in finalize()
       // this.glob = null;     We need glob for dead letter recovery
       // this.property = null; We need the props for dead letter recovery

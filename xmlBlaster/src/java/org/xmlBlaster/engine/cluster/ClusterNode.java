@@ -144,7 +144,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          String cbSessionId = glob.getProperty().get("security.cbSessionId["+getId()+"]", glob.getId());
          cbProps.setSessionId(cbSessionId);
 
-         ConnectQos qos = new ConnectQos(type, version, name, passwd);
+         // new Global(args) !!!!!!!
+         ConnectQos qos = new ConnectQos(glob, type, version, name, passwd);
          qos.setSessionTimeout(0L); // session lasts forever
 
          // Login to other xmlBlaster cluster node, register for updates

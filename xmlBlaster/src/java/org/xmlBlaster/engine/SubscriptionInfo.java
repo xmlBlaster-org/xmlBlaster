@@ -25,7 +25,7 @@ import java.util.Vector;
 
 /**
  * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MessageUnit of exactly one Client.
+ * concerning a subscription of exactly one MessageUnit of exactly one Client. 
  * <p />
  */
 public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
@@ -135,6 +135,16 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public final Vector getChildrenSubscriptions()
    {
       return childrenVec;
+   }
+
+   public boolean isQuery() throws XmlBlasterException
+   {
+      return getXmlKey().isQuery();
+   }
+
+   public boolean isCreatedByQuerySubscription()
+   {
+      return querySub != null;
    }
 
    protected void finalize()
@@ -303,6 +313,14 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
+    * Test if this id is a subscribeId (starts with "__subId:")
+    */
+   static boolean isSubscribeId(String id)
+   {
+      return id.startsWith(Constants.SUBSCRIPTIONID_PRAEFIX) ? true : false;
+   }
+
+   /**
     * This static method may be used from external objects to get the unique key
     * of a subscription. The key is only unique for this xmlBlaster instance. 
     * <p />
@@ -311,22 +329,15 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    private static final String generateUniqueKey(MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
    {
-      /*
       StringBuffer buf = new StringBuffer(126);
-
-      buf.append(Constants.SUBSCRIPTIONID_PRAEFIX).append(msgQueue.getName());
-
-      buf.append("-").append(xmlKey.getUniqueKey());
-
-      return buf.toString();
-      */
-
-      String buf;
       synchronized (SubscriptionInfo.class) {
          uniqueCounter++;
-         buf = "" + uniqueCounter;
+         if (xmlKey.isQuery())
+            buf.append(Constants.SUBSCRIPTIONID_PRAEFIX).append(xmlKey.getQueryTypeStr()).append(uniqueCounter);
+         else
+            buf.append(Constants.SUBSCRIPTIONID_PRAEFIX).append(uniqueCounter);
       }
-      return buf;
+      return buf.toString();
    }
 
    /**
@@ -354,7 +365,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
       sb.append(offset + "<SubscriptionInfo id='" + getUniqueKey() + "'>");
       sb.append(offset + "   <msgQueue id='" + (msgQueue==null ? "null" : msgQueue.getName()) + "'/>");
-      sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
+      //sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
+      if (xmlKey != null)
+         sb.append(xmlKey.printOn(extraOffset + "   ").toString());
       if (subscribeQos != null)
          sb.append(subscribeQos.toXml(extraOffset + "   ").toString());
       else

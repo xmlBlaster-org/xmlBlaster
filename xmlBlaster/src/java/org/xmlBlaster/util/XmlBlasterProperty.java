@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.15 2002/04/25 08:04:44 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.16 2002/04/26 21:32:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -229,7 +229,7 @@ public class XmlBlasterProperty
    public final static boolean init(String[] args) throws JUtilsException
    {
       property = new Property("xmlBlaster.properties", true, args, true);  // initialize
-      Log.setLogLevel(property);  // Initialize logging as well.
+      Log.initialize(property);  // Initialize logging as well.
       // System.out.println(toXml());
       return property.wantsHelp();
    }

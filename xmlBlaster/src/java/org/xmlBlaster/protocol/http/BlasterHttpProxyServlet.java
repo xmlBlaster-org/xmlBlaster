@@ -3,11 +3,12 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.57 2002/04/25 10:43:38 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.58 2002/04/26 21:31:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.runtime.Memory;
 import org.jutils.time.TimeHelper;
 
@@ -46,6 +47,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 {
    private static boolean propertyRead = false;
    private final String header = "<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'>";
+   private Global glob = null;
 
    /**
     * This method is invoked only once when the servlet is startet.
@@ -57,33 +59,34 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
       if (!propertyRead) {
          propertyRead = true;
-         try { 
-            // Add the web.xml parameters to our environment settings:
-            Enumeration enum = conf.getInitParameterNames();
-            int count = 0;
-            while(enum.hasMoreElements()) {
-               if (enum.nextElement() == null)
-                  continue;
-               count++;
-            }
-            String[] args = new String[2*count];
+         // Add the web.xml parameters to our environment settings:
+         Enumeration enum = conf.getInitParameterNames();
+         int count = 0;
+         while(enum.hasMoreElements()) {
+            if (enum.nextElement() == null)
+               continue;
+            count++;
+         }
+         String[] args = new String[2*count];
 
-            count = 0;
-            enum = conf.getInitParameterNames();
-            while(enum.hasMoreElements()) {
-               String name = (String)enum.nextElement();
-               if (name == null)
-                  continue;
-               if (!name.startsWith("-"))
-                  args[count++] = "-" + name;
-               else
-                  args[count++] = name;
-               args[count++] = (String)conf.getInitParameter(name);
-               Log.info("", "Reading web.xml property " + args[count-2] + "=" + args[count-1]);
-            }
-            org.xmlBlaster.util.XmlBlasterProperty.init(args);
-         } catch(org.jutils.JUtilsException e) {
-            Log.error("BlasterHttpProxyServlet", e.toString());
+         count = 0;
+         enum = conf.getInitParameterNames();
+         while(enum.hasMoreElements()) {
+            String name = (String)enum.nextElement();
+            if (name == null)
+               continue;
+            if (!name.startsWith("-"))
+               args[count++] = "-" + name;
+            else
+               args[count++] = name;
+            args[count++] = (String)conf.getInitParameter(name);
+            Log.info("", "Reading web.xml property " + args[count-2] + "=" + args[count-1]);
+         }
+
+         glob = new Global();
+         int ret = glob.init(args);
+         if (ret != 0) {
+            // init problems
          }
       }
 
@@ -166,7 +169,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
             HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId, loginName);
 
-            ProxyConnection proxyConnection = BlasterHttpProxy.getNewProxyConnection(loginName, passwd);
+            ProxyConnection proxyConnection = BlasterHttpProxy.getNewProxyConnection(glob, loginName, passwd);
             pushHandler.startPing();
 
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );

@@ -41,6 +41,7 @@ import java.util.Collections;
 public class SubjectInfo
 {
    private String ME = "SubjectInfo";
+   private Global glob;
    /** The unique client identifier */
    private String loginName = null; 
    /** The partner class from the security framework */
@@ -101,9 +102,10 @@ public class SubjectInfo
          instanceId = instanceCounter;
          instanceCounter++;
       }
+      this.glob = glob;
       this.loginName = loginName;
       this.securityCtx = securityCtx;
-      if (prop == null) prop = new QueueProperty(Constants.RELATING_SUBJECT);
+      if (prop == null) prop = new QueueProperty(glob, Constants.RELATING_SUBJECT);
       this.subjectQueue = new SubjectMsgQueue("subject:"+loginName, prop, glob);
       if (Log.CALL) Log.trace(ME, "Created new SubjectInfo " + loginName);
    }

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.23 2000/10/18 20:45:43 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.24 2002/04/26 21:31:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -12,7 +12,7 @@ import java.io.*;
 import java.util.*;
 
 import org.xmlBlaster.util.Log;
-
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
@@ -27,11 +27,11 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class BlasterHttpProxy
 {
-   private static final String ME            = "BlasterHttpProxy";
+   private static final String ME = "BlasterHttpProxy";
 
    /** Mapping the sessionId to a ProxyConnection instance.
     * <p />
@@ -84,12 +84,12 @@ public class BlasterHttpProxy
     * @return valid proxyConnection for valid HTTP sessionId (is never null).
     * @exception XmlBlasterException if login fails
     */
-   public static ProxyConnection getNewProxyConnection(String loginName, String passwd) throws XmlBlasterException
+   public static ProxyConnection getNewProxyConnection(Global glob, String loginName, String passwd) throws XmlBlasterException
    {
       synchronized(proxyConnections) {
          ProxyConnection pc = (ProxyConnection)proxyConnections.get(loginName);
          if(pc==null) {
-            pc = new ProxyConnection( loginName, passwd );
+            pc = new ProxyConnection(glob, loginName, passwd);
             proxyConnections.put(loginName, pc);
             return pc;
          }
@@ -145,11 +145,11 @@ public class BlasterHttpProxy
     *
     * @param loginName
     */
-   public static XmlBlasterConnection getXmlBlasterConnection( String loginName, String passwd ) throws XmlBlasterException
+   public static XmlBlasterConnection getXmlBlasterConnection(Global glob, String loginName, String passwd ) throws XmlBlasterException
    {
       synchronized( proxyConnections ) {
          Log.plain(ME,"proxyConnections="+proxyConnections);
-         ProxyConnection pc = getNewProxyConnection(loginName, passwd);
+         ProxyConnection pc = getNewProxyConnection(glob, loginName, passwd);
          return pc.getXmlBlasterConnection();
       }
    }

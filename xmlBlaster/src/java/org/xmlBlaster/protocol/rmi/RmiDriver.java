@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.19 2002/04/08 17:09:27 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.20 2002/04/26 21:31:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -138,7 +138,7 @@ public class RmiDriver implements I_Driver
       XmlBlasterSecurityManager.createSecurityManager();
 
       try {
-         authRmiServer = new AuthServerImpl(authenticate, xmlBlasterImpl);
+         authRmiServer = new AuthServerImpl(glob, authenticate, xmlBlasterImpl);
          xmlBlasterRmiServer = new XmlBlasterImpl(xmlBlasterImpl);
       }
       catch (RemoteException e) {

@@ -7,6 +7,7 @@ Comment:   Handling one xmlKey, knows how to parse it with SAX
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.Constants;
 
 import org.xml.sax.InputSource;
@@ -72,7 +73,7 @@ import java.util.StringTokenizer;
 public class XmlKeyBase
 {
    private String ME = "XmlKeyBase";
-
+   private Global glob;
    private XmlToDom xmlToDom = null;
 
    private static long uniqueCounter = 1L;
@@ -125,9 +126,23 @@ public class XmlKeyBase
     * @param The original key in XML syntax, for example:<br>
     *        <pre><key oid="This is the unique attribute"></key></pre>
     */
+    /*
    public XmlKeyBase(String xmlKey_literal) throws XmlBlasterException
    {
       init(xmlKey_literal, false);
+   }
+      */
+
+   /**
+    * Parses given xml string
+    * DON'T use this constructor for publish() Messages
+    *
+    * @param The original key in XML syntax, for example:<br>
+    *        <pre><key oid="This is the unique attribute"></key></pre>
+    */
+   public XmlKeyBase(Global glob, String xmlKey_literal) throws XmlBlasterException
+   {
+      init(glob, xmlKey_literal, false);
    }
 
 
@@ -140,16 +155,23 @@ public class XmlKeyBase
     * @param isPublish true:  when invoked by publish()
     *                  false: all the other cases
     */
-   public XmlKeyBase(String xmlKey_literal, boolean isPublish) throws XmlBlasterException
+   public XmlKeyBase(Global glob, String xmlKey_literal, boolean isPublish) throws XmlBlasterException
    {
-      init(xmlKey_literal, isPublish);
+      init(glob, xmlKey_literal, isPublish);
    }
 
 
    /**
     */
-   private void init(String xmlKey_literal, boolean isPublish) throws XmlBlasterException
+   private void init(Global glob, String xmlKey_literal, boolean isPublish) throws XmlBlasterException
    {
+      if (glob == null) {
+         this.glob = new Global();
+         glob.getLog().warn(ME, "Created new Global");
+      }
+      else
+         this.glob = glob;
+
       this.isPublish = isPublish;
 
       if (Log.CALL) Log.trace(ME, "Creating new XmlKey for isPublish=" + isPublish);
@@ -745,16 +767,16 @@ public class XmlKeyBase
             sb.append(" domain='").append(domain).append("'");
          if (queryType != PUBLISH)
             sb.append(" queryType='").append(getQueryTypeStr()).append("'");
-         sb.append(">\n");
+         sb.append(">");
 
          if (queryString.length() > 0)
-            sb.append(offset).append("   <queryString>").append(queryString).append("</queryString>\n");
-         sb.append(offset).append("   <keyType>").append(keyType).append("</keyType>\n");
-         sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid()).append("</isGeneratedOid>\n");
-         sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>\n");
-         sb.append(offset).append("   <isInternalStateQuery>").append(isInternalStateQuery()).append("</isInternalStateQuery>\n");
+            sb.append(offset).append("   <queryString>").append(queryString).append("</queryString>");
+         sb.append(offset).append("   <keyType>").append(keyType).append("</keyType>");
+         sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid()).append("</isGeneratedOid>");
+         sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>");
+         sb.append(offset).append("   <isInternalStateQuery>").append(isInternalStateQuery()).append("</isInternalStateQuery>");
          sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
-         sb.append(offset).append("</XmlKeyBase>\n");
+         sb.append(offset).append("</XmlKeyBase>");
       } catch (XmlBlasterException e) {
          Log.warn(ME, "Caught exception in printOn()");
       }

@@ -111,10 +111,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    private boolean usePersistence = true;
 
    /** The messageUnit for a login event */
-   private MessageUnit msgUnitLoginEvent = null;
+   private MessageUnitWrapper msgUnitLoginEvent = null;
 
-   /** The messageUnit for a logout event */
-   private MessageUnit msgUnitLogoutEvent = null;
+   /** Initialize a messageUnit for a logout event */
+   private MessageUnitWrapper msgUnitLogoutEvent = null;
 
    Hashtable loggedIn = null;
 
@@ -150,15 +150,27 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       this.loggedIn = new Hashtable();
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
 
-      // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
-      String xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
-      String publishQosLoginEvent = "<qos>\n   <forceUpdate/>\n</qos>";
-      this.msgUnitLoginEvent = new MessageUnit(xmlKeyLoginEvent, new byte[0], publishQosLoginEvent);
+      {
+         // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
+         // We store all necessary data in a MessageUnitWrapper, to reuse the static and already parsed data ...
+         String xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
+         String publishQosLoginEvent = "<qos>\n   <forceUpdate/>\n</qos>";
+         XmlKey key = new XmlKey(getGlobal(), xmlKeyLoginEvent, true);
+         PublishQos qos = new PublishQos(publishQosLoginEvent);
+         qos.setRemainingLife(0L);
+         this.msgUnitLoginEvent = new MessageUnitWrapper(this, key, new MessageUnit(xmlKeyLoginEvent, new byte[0], publishQosLoginEvent), qos);
+      }
 
-      // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
-      String xmlKeyLogoutEvent = "<key oid='__sys__Logout' contentMime='text/plain'>\n</key>";
-      String publishQosLogoutEvent = "<qos>\n   <forceUpdate/>\n</qos>";
-      this.msgUnitLogoutEvent = new MessageUnit(xmlKeyLogoutEvent, new byte[0], publishQosLogoutEvent);
+      {
+         // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
+         // We store all necessary data in a MessageUnitWrapper, to reuse the static and already parsed data ...
+         String xmlKeyLogoutEvent = "<key oid='__sys__Logout' contentMime='text/plain'>\n</key>";
+         String publishQosLogoutEvent = "<qos>\n   <forceUpdate/>\n</qos>";
+         XmlKey key = new XmlKey(getGlobal(), xmlKeyLogoutEvent, true);
+         PublishQos qos = new PublishQos(publishQosLogoutEvent);
+         qos.setRemainingLife(0L);
+         this.msgUnitLogoutEvent = new MessageUnitWrapper(this, key, new MessageUnit(xmlKeyLogoutEvent, new byte[0], publishQosLogoutEvent), qos);
+      }
 
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
@@ -423,13 +435,13 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             else if (props[ii].isSubjectRelated())
                msgQueue = sessionInfo.getSubjectInfo().getSubjectQueue();
             else
-               msgQueue = new MsgQueue("unrelated:"+props[ii].getCallbackAddresses()[0], new QueueProperty(Constants.RELATING_UNRELATED), getGlobal());
+               msgQueue = new MsgQueue("unrelated:"+props[ii].getCallbackAddresses()[0], new QueueProperty(getGlobal(), Constants.RELATING_UNRELATED), getGlobal());
 
             SubscriptionInfo subsQuery = null;
             if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
                subsQuery = new SubscriptionInfo(getGlobal(), sessionInfo, msgQueue, xmlKey, subscribeQos);
                returnOid[ii] = subsQuery.getUniqueKey();
-               fireSubscriptionEvent(subsQuery, true);
+               fireSubscribeEvent(subsQuery);
             }
 
             Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, subscribeQos);
@@ -753,7 +765,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       if (!newSubscribed) return;         // client had already subscribed
 
-      fireSubscriptionEvent(subs, true);  // inform all listeners about this new subscription
+      fireSubscribeEvent(subs);  // inform all listeners about this new subscription
    }
 
 
@@ -781,56 +793,64 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       try {
          if (Log.CALL) Log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
-         SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getUniqueKey());
-         if (subs != null) {
-            Vector childs = subs.getChildrenSubscriptions();
-            if (childs != null) {
-               Log.info(ME, "unSubscribe() Traversing " + childs.size() + " childs");
-               for (int ii=0; ii<childs.size(); ii++) {
-                  SubscriptionInfo so = (SubscriptionInfo)childs.elementAt(ii);
-                  fireSubscriptionEvent(so, false);
-                  so = null;
+         String id = xmlKey.getUniqueKey();
+
+         if (SubscriptionInfo.isSubscribeId(id)) {
+            SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getUniqueKey());
+            if (subs != null) {
+               Vector childs = subs.getChildrenSubscriptions();
+               if (childs != null) {
+                  Log.info(ME, "unSubscribe() Traversing " + childs.size() + " childs");
+                  for (int ii=0; ii<childs.size(); ii++) {
+                     SubscriptionInfo so = (SubscriptionInfo)childs.elementAt(ii);
+                     fireUnSubscribeEvent(so);
+                     so = null;
+                  }
+               }
+               fireUnSubscribeEvent(subs);
+               subs = null;
+            }
+            else {
+               Log.warn(ME, "UnSubscribe of " + xmlKey.getUniqueKey() + " failed");
+               Log.plain(ME, toXml());
+            }
+         }
+         else { // Try to unssubscribe with message oid instead of subscribe id:
+            String suppliedXmlKey = xmlKey.getUniqueKey(); // remember supplied oid, another oid may be generated later
+
+            Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, unSubscribeQos);
+
+            if ((xmlKeyVec.size() == 0 || xmlKeyVec.size() == 1 && xmlKeyVec.elementAt(0) == null) && xmlKey.isExact()) {
+               // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
+               SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
+               if (subs != null && subs.getXmlKey().isQuery()) { // now do the query again ...
+                  xmlKeyVec = parseKeyOid(sessionInfo, subs.getXmlKey(), unSubscribeQos);
+                  fireUnSubscribeEvent(subs);    // Remove the object containing the XPath query
                }
             }
-            fireSubscriptionEvent(subs, false);
-            subs = null;
-         }
-         else
-            Log.warn(ME, "UnSubscribe of " + xmlKey.getUniqueKey() + " failed");
 
-         /*
-         String suppliedXmlKey = xmlKey.getUniqueKey(); // remember (clone) supplied oid, another oid may be generated later
+            for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+               XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+               if (xmlKeyExact == null) {
+                  Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + sessionInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+                  throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
+               }
+               MessageUnitHandler handler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+               Vector subs = handler.findSubscriber(sessionInfo);
+               for (int jj=0; subs != null && jj<subs.size(); jj++) {
+                  SubscriptionInfo sub = (SubscriptionInfo)subs.elementAt(jj);
+                  if (sub != null)
+                     fireUnSubscribeEvent(sub);
+                  else
+                     Log.warn(ME, "UnSubscribe of " + xmlKeyExact.getUniqueKey() + " failed");
+               }
+            }
 
-         Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, unSubscribeQos);
-
-         if ((xmlKeyVec.size() == 0 || xmlKeyVec.size() == 1 && xmlKeyVec.elementAt(0) == null) && xmlKey.isExact()) {
-            // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
-            SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
-            if (subs != null && subs.getXmlKey().isQuery()) { // now do the query again ...
-               xmlKeyVec = parseKeyOid(sessionInfo, subs.getXmlKey(), unSubscribeQos);
-               fireSubscriptionEvent(subs, false);    // Remove the object containing the XPath query
+            if (xmlKeyVec.size() < 1) {
+               Log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
+               throw new XmlBlasterException(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
             }
          }
-
-         for (int ii=0; ii<xmlKeyVec.size(); ii++) {
-            XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-            if (xmlKeyExact == null) {
-               Log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + sessionInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-               throw new XmlBlasterException(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-
-            }
-            SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKeyExact.getUniqueKey());
-            if (subs != null)
-               fireSubscriptionEvent(subs, false);
-            else
-               Log.warn(ME, "UnSubscribe of " + xmlKeyExact.getUniqueKey() + " failed");
-         }
-
-         if (xmlKeyVec.size() < 1) {
-            Log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
-            throw new XmlBlasterException(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
-         }
-         */
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -1110,9 +1130,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    {
       try {
          if (Log.CALL) Log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
+         //Log.info(ME, "BEFORE ERASE: " + toXml());
 
          Vector xmlKeyVec = parseKeyOid(sessionInfo, xmlKey, qoS);
-         Set oidSet = new HashSet(xmlKeyVec.size());
+         Set oidSet = new HashSet(xmlKeyVec.size());  // for return values
 
          for (int ii=0; ii<xmlKeyVec.size(); ii++) {
             XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
@@ -1122,6 +1143,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                // !!! how to delete XPath subscriptions, still MISSING ???
                continue;
             }
+
+            if (Log.TRACE) Log.trace(ME, "erase oid='" + xmlKeyExact.getUniqueKey() + "' of total " + xmlKeyVec.size() + " ...");
 
             MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
             //Log.info(ME, "Erasing " + msgUnitHandler.toXml());
@@ -1134,6 +1157,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             msgUnitHandler.erase();
             msgUnitHandler = null;
          }
+         //Log.info(ME, "AFTER ERASE: " + toXml());
 
          String[] oidArr = new String[oidSet.size()];
          oidSet.toArray(oidArr);
@@ -1154,10 +1178,11 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     */
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Erase event occured ...");
 
+      //SessionInfo sessionInfo = e.getSessionInfo();
       MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
       String uniqueKey = msgUnitHandler.getUniqueKey();
+      if (Log.TRACE) Log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.remove(uniqueKey);
          if (obj == null) {
@@ -1181,9 +1206,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    {
       SessionInfo sessionInfo = e.getSessionInfo();
       if (Log.TRACE) Log.trace(ME, "Login event for client " + sessionInfo.toString());
-      synchronized (msgUnitLoginEvent.content) {
-         msgUnitLoginEvent.content = sessionInfo.getLoginName().getBytes();
-         publish(sessionInfo, msgUnitLoginEvent); // publish that this client logged in
+      synchronized (msgUnitLoginEvent) {
+         msgUnitLoginEvent.setContentRaw(sessionInfo.getLoginName().getBytes());
+         publish(sessionInfo, msgUnitLoginEvent.getXmlKey(), msgUnitLoginEvent.getMessageUnit(), msgUnitLoginEvent.getPublishQos()); // publish that this client logged in
       }
 
       if (Log.TRACE) Log.trace(ME, " client added:"+sessionInfo.getLoginName());
@@ -1210,9 +1235,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    {
       SessionInfo sessionInfo = e.getSessionInfo();
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + sessionInfo.toString());
-      synchronized (msgUnitLogoutEvent.content) {
-         msgUnitLogoutEvent.content = sessionInfo.getLoginName().getBytes();
-         publish(sessionInfo, msgUnitLogoutEvent); // publish that this client logged out
+      synchronized (msgUnitLogoutEvent) {
+         msgUnitLogoutEvent.setContentRaw(sessionInfo.getLoginName().getBytes());
+         publish(sessionInfo, msgUnitLogoutEvent.getXmlKey(), msgUnitLogoutEvent.getMessageUnit(), msgUnitLogoutEvent.getPublishQos()); // publish that this client logged out
       }
       if (Log.TRACE) Log.trace(ME, " client removed:"+sessionInfo.getLoginName());
       synchronized (loggedIn) {
@@ -1267,13 +1292,21 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       }
    }
 
+   final void fireUnSubscribeEvent(SubscriptionInfo subscriptionInfo) throws XmlBlasterException  {
+      fireSubscriptionEvent(subscriptionInfo, false);
+   }
+
+   final void fireSubscribeEvent(SubscriptionInfo subscriptionInfo) throws XmlBlasterException  {
+      fireSubscriptionEvent(subscriptionInfo, true);
+   }
 
    /**
-    * Is fired on unSubscribe() and several times on erase().
+    * Is fired on subscribe(), unSubscribe() and several times on erase().
+    * @param subscribe true: on subscribe, false: on unSubscribe
     */
-   final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
+   private final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Going to fire fireSubscriptionEvent() ...");
+      if (Log.TRACE) Log.trace(ME, "Going to fire fireSubscriptionEvent(" + subscribe + ") ...");
 
       synchronized (subscriptionListenerSet) {
          if (subscriptionListenerSet.size() == 0)
@@ -1378,7 +1411,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          sb.append(msgUnitHandler.toXml(extraOffset + "   "));
       }
       sb.append(bigXmlKeyDOM.printOn(extraOffset + "   ").toString());
-      sb.append(clientSubscriptions.printOn(extraOffset + "   ").toString());
+      sb.append(clientSubscriptions.toXml(extraOffset + "   "));
       sb.append(offset + "</RequestBroker>\n");
 
       return sb.toString();

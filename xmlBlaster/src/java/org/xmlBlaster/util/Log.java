@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.61 2002/02/07 13:12:00 ruff Exp $
+Version:   $Id: Log.java,v 1.62 2002/04/26 21:32:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -64,14 +64,27 @@ public class Log
 {
    private static final String ME = "Log";
    private static LogChannel lc = null;
+   private static boolean first = true;
 
     /**
      * Counter for occurred warnings/errors
      */
    private static int numWarnInvocations = 0;
    private static int numErrorInvocations = 0;
-
+/*
    static {
+      try { XmlBlasterProperty.init(new String [0]); } catch(Throwable e) { System.out.println(e.toString()); }
+      initialize(new String[0]);
+   }
+*/
+   public static void initialize(Property property) {
+   /*
+      if (args != null && args.length > 0) {
+         try { XmlBlasterProperty.addArgs2Props(args); } catch(Throwable e) { System.out.println(e.toString()); }
+      }
+   */
+      setLogLevel(property);
+        
       lc = new LogChannel(XmlBlasterProperty.getProperty());
       boolean bVal = XmlBlasterProperty.get("logConsole", true);
       if (bVal == true) {
@@ -84,9 +97,11 @@ public class Log
          LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
          lc.addLogDevice(ldf);
       }
-      Log.info(ME, "XmlBlaster logging subsystem configured");
+
+      init();
+
       Log.setLogChannel(lc);
-      Log.info(ME, "XmlBlaster logging switched");
+      Log.info(ME, "XmlBlaster logging configured");
    }
 
    /**
@@ -106,23 +121,23 @@ public class Log
     * <p />
     * The same applies for TIME, TRACE, DUMP and PLAIN
     */
-   public /*final*/ static boolean CALL = true;  // trace method calls
+   public /*final*/ static boolean CALL = false;  // trace method calls
    /**
     * Performance logging output true/false
     */
-   public /*final*/ static boolean TIME  = true;  // trace performance
+   public /*final*/ static boolean TIME  = false;  // trace performance
    /**
     * Fine grained code logging output true/false
     */
-   public /*final*/ static boolean TRACE = true;  // trace application flow
+   public /*final*/ static boolean TRACE = false;  // trace application flow
    /**
     * Dump internal state in xml format, true/false
     */
-   public /*final*/ static boolean DUMP  = true;  // dump internal state
+   public /*final*/ static boolean DUMP  = false;  // dump internal state
    /**
     * Plain output without formatting
     */
-   public /*final*/ static boolean PLAIN  = true;  // dump internal state
+   public /*final*/ static boolean PLAIN  = false;  // dump internal state
 
 
    /**
@@ -398,6 +413,7 @@ public class Log
     */
    public static final void dump(String instance, String text)
    {
+      System.out.println("Log.dump: EEEEEENTERING");
       if (lc == null) return;
       lc.dump(instance, text);
       lc.dump(instance, Memory.getStatistic());

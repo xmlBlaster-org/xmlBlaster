@@ -25,7 +25,7 @@ import java.util.*;
 
 
 /**
- * Handles a MessageUnit and its subscribers.
+ * Handles a MessageUnit and its subscribers. 
  */
 public class MessageUnitHandler
 {
@@ -131,6 +131,13 @@ public class MessageUnitHandler
       return msgUnitWrapper != null;
    }
 
+   private final void setIsNotPublishedWithData()
+   {
+      this.xmlKey = null;
+      this.msgUnitWrapper = null;
+   }
+
+
    /**
     * Accessing the wrapper object of the MessageUnit
     * @return MessageUnitWrapper object
@@ -173,6 +180,9 @@ public class MessageUnitHandler
    {
       if (Log.TRACE) Log.trace(ME, "Entering erase()");
 
+      Log.warn(ME, "No subscribed client notification about message erase() yet implemented");
+
+      /*
       SubscriptionInfo[] arr = null; // to avoid deadlock in subscriberMap, copy subs into this array
       synchronized(subscriberMap) {
          arr = new SubscriptionInfo[subscriberMap.size()];
@@ -180,20 +190,25 @@ public class MessageUnitHandler
          int jj=0;
          while (iterator.hasNext()) {
             SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-            arr[jj] = subs;
-            jj++;
+            arr[jj++] = subs;
          }
       }
 
-      for (int ii=0; ii<arr.length; ii++)
-         requestBroker.fireSubscriptionEvent(arr[ii], false);
 
-      Log.warn(ME, "No subscribed client notification about message erase() yet implemented");
-
-      synchronized(subscriberMap) {
-         subscriberMap.clear();
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii].isQuery()) {
+            Log.info(ME, "Query subscription is not deleted when messages is erased");
+         }
+         else {
+            // !!!! Keep subscriptions ruff 2002-04-26
+            //   TODO: check behavior
+            //requestBroker.fireUnSubscribeEvent(arr[ii]);
+            synchronized(subscriberMap) {
+               subscriberMap.remove(arr[ii].getUniqueKey());
+            }
+         }
       }
-      // subscriberMap = null;    is final, can't assign null
+      */
 
       try {
          getMessageUnitWrapper().erase();
@@ -202,8 +217,14 @@ public class MessageUnitHandler
          Log.error(ME, "Problems erasing message: " + e.reason);
       }
 
-      msgUnitWrapper = null;
-      uniqueKey = null;
+      setIsNotPublishedWithData();
+
+      synchronized(subscriberMap) {
+         if (subscriberMap.size() == 0) { // No subscription reservation is existing?
+            this.uniqueKey = null;
+         }
+         //subscriberMap.clear();
+      }
    }
 
    /**
@@ -307,7 +328,7 @@ public class MessageUnitHandler
     */
    SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey)
    {
-      if (Log.TRACE) Log.trace(ME, "Size of subscriberMap = " + subscriberMap.size());
+      if (Log.TRACE) Log.trace(ME, "Before size of subscriberMap = " + subscriberMap.size());
 
       SubscriptionInfo subs = null;
       synchronized(subscriberMap) {
@@ -316,6 +337,7 @@ public class MessageUnitHandler
       if (subs == null)
          Log.warn(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
 
+      if (Log.TRACE) Log.trace(ME, "After size of subscriberMap = " + subscriberMap.size());
       return subs;
    }
 
@@ -368,8 +390,6 @@ public class MessageUnitHandler
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
       Set removeSet = null;
-      // PERFORMANCE: All updates for each client should be collected !!!
-      //              This "Burst mode" code increases performance if the messages are small
       synchronized(subscriberMap) {
          Iterator iterator = subscriberMap.values().iterator();
 
@@ -425,6 +445,26 @@ public class MessageUnitHandler
       }
       return true;
    }
+
+   /**
+    * Returns a Vector with SubscriptionInfo instances of this session
+    * (a session may subscribe the same message multiple times)
+    */
+   final Vector findSubscriber(SessionInfo sessionInfo) {
+      Vector vec = null;
+      synchronized(subscriberMap) {
+         Iterator iterator = subscriberMap.values().iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            if (sub.getSessionInfo().getUniqueKey().equals(sessionInfo.getUniqueKey())) {
+               if (vec == null) vec = new Vector();
+               vec.addElement(sub);
+            }
+         }
+      }
+      return vec;
+   }
+
 
    /**
     * This class determines the sorting order, by which the
@@ -486,7 +526,8 @@ public class MessageUnitHandler
             Iterator iterator = subscriberMap.values().iterator();
             while (iterator.hasNext()) {
                SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-               sb.append(subs.toXml(extraOffset + "   "));
+               sb.append(offset + "   <SubscriptionInfo id='").append(subs.getUniqueKey()).append("/>");
+               //sb.append(subs.toXml(extraOffset + "   "));
             }
          }
       }

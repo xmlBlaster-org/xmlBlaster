@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.13 2002/04/23 15:09:07 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.14 2002/04/26 21:31:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -84,7 +84,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
     */
    public XmlKey(Global glob, String xmlKey_literal) throws XmlBlasterException
    {
-      super(xmlKey_literal);
+      super(glob, xmlKey_literal);
       this.xmlKey_literal=xmlKey_literal;
    }
 
@@ -96,7 +96,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
     */
    public XmlKey(Global glob, String xmlKey_literal, boolean isPublish) throws XmlBlasterException
    {
-      super(xmlKey_literal, isPublish);
+      super(glob, xmlKey_literal, isPublish);
       this.xmlKey_literal=xmlKey_literal;
    }
 

@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.21 2002/04/15 13:10:32 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.22 2002/04/26 21:31:48 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -48,6 +48,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 {
    private String ME = "XmlRpcConnection";
    public static final int DEFAULT_SERVER_PORT = 8080; // port of xmlBlaster server
+   private final Global glob;
    private String url = "http://localhost:" + DEFAULT_SERVER_PORT;
    private XmlRpcClient xmlRpcClient = null; // xml-rpc client to send method calls.
    private String sessionId = null;
@@ -61,13 +62,15 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     */
    public XmlRpcConnection(Global glob) throws XmlBlasterException
    {
+      this.glob = glob;
    }
 
    /**
     * Connect to xmlBlaster using XML-RPC.
     */
-   public XmlRpcConnection(Applet ap) throws XmlBlasterException
+   public XmlRpcConnection(Global glob, Applet ap) throws XmlBlasterException
    {
+      this.glob = glob;
    }
 
    /**
@@ -155,7 +158,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       this.loginName = loginName;
       this.passwd = passwd;
       if (qos == null)
-         this.loginQos = new ConnectQos();
+         this.loginQos = new ConnectQos(glob);
       else
          this.loginQos = qos;
 
@@ -210,7 +213,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             args.addElement(qosStripped);
             sessionId = null;
             String tmp = (String)getXmlRpcClient().execute("authenticate.connect", args);
-            this.connectReturnQos = new ConnectReturnQos(tmp);
+            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
             this.sessionId = connectReturnQos.getSessionId();
          }
          else

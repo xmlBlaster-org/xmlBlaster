@@ -118,7 +118,7 @@ public class Constants
 
    /** Praefix to create a sessionId */
    public final static String SESSIONID_PRAEFIX = "sessionId:";
-   public final static String SUBSCRIPTIONID_PRAEFIX = "subscriptionId:";
+   public final static String SUBSCRIPTIONID_PRAEFIX = "__subId:";
 
    public final static String INTERNAL_OID_PRAEFIX = "__sys__";
 

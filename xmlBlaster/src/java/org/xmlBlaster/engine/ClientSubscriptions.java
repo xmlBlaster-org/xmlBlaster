@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.23 2002/03/13 19:23:42 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.24 2002/04/26 21:31:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -22,10 +22,13 @@ import java.io.*;
 
 
 /**
- * Handling subscriptions, collected for each Client.
+ * Handling subscriptions, collected for each Client. 
+ * <p />
+ * There exists exactly one instance of this class for each xmlBlaster server,
+ * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.23 2002/03/13 19:23:42 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.24 2002/04/26 21:31:48 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -46,7 +49,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * Used for performing logout.
     * <p>
     * key   = client.getUniqueKey()
-    * value = aboMap (Collections.synchronizedMap(new HashMap());)
+    * value = subMap (Collections.synchronizedMap(new HashMap());)
     *         with SubscriptionInfo objects
     */
    final private Map clientSubscriptionMap = Collections.synchronizedMap(new HashMap());
@@ -104,15 +107,15 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    public SubscriptionInfo getSubscription(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
       Object obj;
-      Map aboMap;
+      Map subMap;
       synchronized(clientSubscriptionMap) {
          obj = clientSubscriptionMap.get(sessionInfo.getUniqueKey());
          if (obj == null)
             return null;
-         aboMap = (Map)obj;
+         subMap = (Map)obj;
       }
 
-      SubscriptionInfo subs = (SubscriptionInfo)aboMap.get(subscriptionInfoUniqueKey);
+      SubscriptionInfo subs = (SubscriptionInfo)subMap.get(subscriptionInfoUniqueKey);
       if (Log.TRACE) Log.trace(ME, "Looking for subscriptionId=" + subscriptionInfoUniqueKey + " found " + subs);
       return subs;
    }
@@ -143,7 +146,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       }
 
       try {
-         removeFromSubscribeRequestsSet(sessionInfo, null);
+         removeFromQuerySubscribeRequestsSet(sessionInfo, null);
       } catch (XmlBlasterException e2) {
       }
 
@@ -175,9 +178,10 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
       SessionInfo sessionInfo = e.getSessionInfo();
-      if (Log.TRACE) Log.trace(ME, "Erase event for client " + sessionInfo.toString());
       MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
       String uniqueKey = msgUnitHandler.getUniqueKey();
+      if (Log.TRACE) Log.trace(ME, "Erase event for oid=" + uniqueKey + "', client=" + sessionInfo.toString() + ", we do nothing here");
+      // The subscription reservation remains even on deleted messages
    }
 
 
@@ -194,17 +198,17 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
 
       // Insert into first map:
       Object obj;
-      Map aboMap;
+      Map subMap;
       synchronized(clientSubscriptionMap) {
          obj = clientSubscriptionMap.get(uniqueKey);
          if (obj == null) {
-            aboMap = Collections.synchronizedMap(new HashMap());
-            clientSubscriptionMap.put(uniqueKey, aboMap);
+            subMap = Collections.synchronizedMap(new HashMap());
+            clientSubscriptionMap.put(uniqueKey, subMap);
          }
          else {
-            aboMap = (Map)obj;
+            subMap = (Map)obj;
          }
-         aboMap.put(subscriptionInfo.getUniqueKey(), subscriptionInfo);
+         subMap.put(subscriptionInfo.getUniqueKey(), subscriptionInfo);
          if (Log.TRACE) Log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getUniqueKey() + " to abomap");
       }
 
@@ -243,7 +247,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       String subscriptionInfoUniqueKey = e.getSubscriptionInfo().getUniqueKey();
       SessionInfo sessionInfo = e.getSubscriptionInfo().getSessionInfo();
 
-      if (Log.TRACE) Log.trace(ME, "Subscription remove event for client " + sessionInfo.toString());
+      if (Log.TRACE) Log.trace(ME, "Subscription remove event for client " + sessionInfo.toString() + " for subscriptionId=" + subscriptionInfoUniqueKey);
 
       try {
          removeFromClientSubscriptionMap(sessionInfo, subscriptionInfoUniqueKey);
@@ -252,9 +256,9 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       }
 
       try {
-         removeFromSubscribeRequestsSet(sessionInfo, subscriptionInfoUniqueKey);
+         removeFromQuerySubscribeRequestsSet(sessionInfo, subscriptionInfoUniqueKey);
       } catch (XmlBlasterException e2) {
-         Log.error(ME+".subscriptionRemove", "removeFromSubscribeRequestsSet: " + e2.toString());
+         Log.error(ME+".subscriptionRemove", "removeFromQuerySubscribeRequestsSet: " + e2.toString());
       }
    }
 
@@ -283,12 +287,13 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          return;
       }
 
-      // Now we have a map of all subsrciptions of this client
+      // Now we have a map of all subscriptions of this client
 
-      Map aboMap = (Map)obj;
+      Map subMap = (Map)obj;
+      if (Log.TRACE) Log.trace(ME, "Subscription=" + subscriptionInfoUniqueKey + " client=" + sessionInfo.toString() + " subMap.size=" + subMap.size());
       if (subscriptionInfoUniqueKey == null) {  // client does logout(), remove everything:
-         synchronized (aboMap) {
-            Iterator iterator = aboMap.values().iterator();
+         synchronized (subMap) {
+            Iterator iterator = subMap.values().iterator();
             while (iterator.hasNext()) {
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
                if (isAQuery(sub.getXmlKey()))
@@ -297,16 +302,18 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
                sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
             }
          }
-         aboMap.clear();
-         aboMap = null;
+         subMap.clear();
+         subMap = null;
       }
       else {                                    // client does a single unSubscribe():
          SubscriptionInfo sub = null;
-         synchronized (aboMap) {
-            sub = (SubscriptionInfo)aboMap.remove(subscriptionInfoUniqueKey);
+         synchronized (subMap) {
+            sub = (SubscriptionInfo)subMap.remove(subscriptionInfoUniqueKey);
          }
          if (sub == null) {
-            Log.error(ME + ".Internal", "Sorry, can't remove client subscription " + subscriptionInfoUniqueKey + " for " + sessionInfo.toString() + ", not found");
+            Log.error(ME + ".Internal", "Sorry, can't remove client subscriptionId=" + subscriptionInfoUniqueKey + " for " + sessionInfo.toString() + ", not found, subMap size=" + subMap.size());
+            Log.plain(ME, toXml());
+            Thread.currentThread().dumpStack();
             return;
          }
          sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
@@ -318,9 +325,9 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * @param subscriptionInfoUniqueKey ==null: Remove client with all its subscriptions<br>
     *                                  !=null: Remove only the given subscription
     */
-   private void removeFromSubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
+   private void removeFromQuerySubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "removing client " + sessionInfo.toString() + " from querySubscribeRequestsSet ...");
+      if (Log.TRACE) Log.trace(ME, "removing client " + sessionInfo.toString() + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
       String uniqueKey = sessionInfo.getUniqueKey();
 
       Vector vec = new Vector(querySubscribeRequestsSet.size());
@@ -350,9 +357,9 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * <br>
     * @return XML state of ClientSubscriptions
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -362,40 +369,41 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * @param extraOffset indenting of tags
     * @return XML state of ClientSubscriptions
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(1024);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<ClientSubscriptions>");
-      sb.append(offset + "   <ExactSubscriptions>");
+      sb.append(offset).append("<ClientSubscriptions>");
+      sb.append(offset).append("   <ExactSubscriptions>");
       synchronized(clientSubscriptionMap) {
          Iterator iterator = clientSubscriptionMap.values().iterator();
          while (iterator.hasNext()) {
-            Map aboMap = (Map)iterator.next();
-            synchronized(aboMap) {
-               Iterator iterator2 = aboMap.values().iterator();
+            Map subMap = (Map)iterator.next();
+            synchronized(subMap) {
+               Iterator iterator2 = subMap.values().iterator();
                while (iterator2.hasNext()) {
                   SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
                   if (sub.getXmlKey().isExact())
-                     sb.append(offset).append("      <").append(sub.getUniqueKey()).append(" />");
+                     sb.append(offset).append("      <id>").append(sub.getUniqueKey()).append("</id>");
                }
             }
          }
       }
-      sb.append(offset + "   </ExactSubscriptions>");
-      sb.append(offset + "   <XPathSubscriptions>");
+      sb.append(offset).append("   </ExactSubscriptions>");
+      sb.append(offset).append("   <XPathSubscriptions>");
       synchronized(querySubscribeRequestsSet) {
          Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            sb.append(offset).append("      <").append(sub.getUniqueKey()).append(" />");
+            //sb.append(offset).append("      <id>").append(sub.getUniqueKey()).append("</id>");
+            sb.append(offset).append(sub.toXml(extraOffset + "      "));
          }
       }
       sb.append(offset + "   </XPathSubscriptions>");
       sb.append(offset + "</ClientSubscriptions>\n");
-      return sb;
+      return sb.toString();
    }
 }

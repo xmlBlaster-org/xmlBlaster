@@ -7,6 +7,7 @@ Comment:   Implementing the xmlBlaster interface for xml-rpc.
 package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -26,16 +27,18 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 public class AuthenticateImpl
 {
    private final String ME = "XmlRpc.AuthenticateImpl";
-   private I_Authenticate authenticate;
+   private final Global glob;
+   private final I_Authenticate authenticate;
 
 
    /**
     * Constructor.
     */
-   public AuthenticateImpl(I_Authenticate authenticate)
+   public AuthenticateImpl(Global glob, I_Authenticate authenticate)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering constructor ...");
+      this.glob = glob;
       this.authenticate = authenticate;
    }
 
@@ -58,7 +61,7 @@ public class AuthenticateImpl
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      ConnectQos connectQos = new ConnectQos(qos_literal);
+      ConnectQos connectQos = new ConnectQos(glob, qos_literal);
       I_SecurityQos securityQos = connectQos.getSecurityQos();
       if (securityQos == null)
          connectQos.setSecurityPluginData(null, null, loginName, passwd);
@@ -103,7 +106,7 @@ public class AuthenticateImpl
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         ConnectQos connectQos = new ConnectQos(qos_literal);
+         ConnectQos connectQos = new ConnectQos(glob, qos_literal);
          ConnectReturnQos returnQos = authenticate.connect(connectQos);
          returnValue = returnQos.toXml();
 

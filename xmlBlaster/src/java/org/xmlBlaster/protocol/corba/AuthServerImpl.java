@@ -3,12 +3,13 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.19 2002/03/17 17:10:31 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.20 2002/04/26 21:31:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -34,8 +35,9 @@ import org.omg.PortableServer.*;
 public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
    private final static String ME = "AuthServerImpl";
-   private org.omg.CORBA.ORB orb;
-   private I_Authenticate authenticate;
+   private final Global glob;
+   private final org.omg.CORBA.ORB orb;
+   private final I_Authenticate authenticate;
    /**  This specialized POA controlles the xmlBlaster server */
    private final String xmlBlasterPOA_name = "xmlBlaster-POA";
    /** We use our own, customized POA */
@@ -65,9 +67,10 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     * @parma authenticate The authentication service
     * @param blaster The interface to access xmlBlaster
     */
-   public AuthServerImpl(org.omg.CORBA.ORB orb, I_Authenticate authenticate, I_XmlBlaster blaster)
+   public AuthServerImpl(Global glob, org.omg.CORBA.ORB orb, I_Authenticate authenticate, I_XmlBlaster blaster)
    {
       if (Log.CALL) Log.call(ME, "Entering constructor with ORB argument");
+      this.glob = glob;
       this.orb = orb;
       this.authenticate = authenticate;
 
@@ -141,7 +144,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
       try {
          // Extend qos to contain security credentials ...
-         ConnectQos loginQos = new ConnectQos(qos_literal);
+         ConnectQos loginQos = new ConnectQos(glob, qos_literal);
          loginQos.setSecurityPluginData(null, null, loginName, passwd);
 
          // No login using the connect() method ...
@@ -168,7 +171,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public String connect(String qos_literal) throws XmlBlasterException
    {
       try {
-         return connect(new ConnectQos(qos_literal)).toXml();
+         return connect(new ConnectQos(glob, qos_literal)).toXml();
       } catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }

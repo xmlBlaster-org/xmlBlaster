@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.77 2002/04/24 06:51:56 ruff Exp $
+Version:   $Id: Main.java,v 1.78 2002/04/26 21:31:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -156,7 +156,7 @@ public class Main
          Log.panic(ME, e.toString());
       }
 
-      if (Log.DUMP) ThreadLister.listAllThreads(System.out);
+      if (Log.DUMP) { ThreadLister.listAllThreads(System.out); }
 
       boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
       if (!useKeyboard) {

@@ -3,11 +3,12 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.15 2002/03/18 00:29:35 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.16 2002/04/26 21:31:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.jutils.time.StopWatch;
 
@@ -28,7 +29,8 @@ import java.rmi.server.UnicastRemoteObject;
 public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_AuthServer
 {
    private String ME = "AuthServerImpl";
-   private I_Authenticate authenticate;
+   private final Global glob;
+   private final I_Authenticate authenticate;
 
 
    /**
@@ -38,9 +40,10 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     * @parma authenticate The authentication service
     * @param blasterNative The interface to access xmlBlaster
     */
-   public AuthServerImpl(I_Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException
+   public AuthServerImpl(Global glob, I_Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException
    {
       if (Log.CALL) Log.call(ME, "Entering constructor ...");
+      this.glob = glob;
       this.authenticate = authenticate;
    }
 
@@ -66,7 +69,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
          // Extend qos to contain security credentials ...
-         ConnectQos connectQos = new ConnectQos(qos_literal);
+         ConnectQos connectQos = new ConnectQos(glob, qos_literal);
          connectQos.setSecurityPluginData(null, null, loginName, passwd);
 
          ConnectReturnQos returnQos = authenticate.connect(connectQos);
@@ -92,7 +95,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       String returnValue = null;
-      ConnectQos connectQos = new ConnectQos(qos_literal);
+      ConnectQos connectQos = new ConnectQos(glob, qos_literal);
       if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();

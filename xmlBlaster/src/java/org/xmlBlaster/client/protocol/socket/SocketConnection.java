@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.19 2002/04/15 13:10:32 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.20 2002/04/26 21:31:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -62,6 +62,7 @@ import org.xmlBlaster.protocol.socket.Parser;
 public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 {
    private String ME = "SocketConnection";
+   private final Global glob;
    /** The port for the socket server */
    private int port = DEFAULT_SERVER_PORT;
    /** The port for our client side */
@@ -96,15 +97,17 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public SocketConnection(Global glob) throws XmlBlasterException
    {
-      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
+      this.glob = glob;
+      SOCKET_DEBUG = glob.getProperty().get("socket.debug", 0);
    }
 
    /**
     * Connect to xmlBlaster using plain socket messaging.
     */
-   public SocketConnection(java.applet.Applet ap) throws XmlBlasterException
+   public SocketConnection(Global glob, java.applet.Applet ap) throws XmlBlasterException
    {
-      SOCKET_DEBUG = XmlBlasterProperty.get("socket.debug", 0);
+      this.glob = glob;
+      SOCKET_DEBUG = glob.getProperty().get("socket.debug", 0);
    }
 
    /**
@@ -128,14 +131,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return;
 
       try {
-         port = XmlBlasterProperty.get("socket.port", DEFAULT_SERVER_PORT);
+         port = glob.getProperty().get("socket.port", DEFAULT_SERVER_PORT);
          if (port < 1) {
             String str = "Option socket.port set to " + port + ", socket client not started";
             Log.info(ME, str);
             throw new XmlBlasterException(ME, str);
          }
 
-         hostname = XmlBlasterProperty.get("socket.hostname", (String)null);
+         hostname = glob.getProperty().get("socket.hostname", (String)null);
          if (hostname == null) {
             try  {
                java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -152,8 +155,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          }
 
 
-         localPort = XmlBlasterProperty.get("socket.localPort", -1);
-         localHostname = XmlBlasterProperty.get("socket.localHostname", (String)null);
+         localPort = glob.getProperty().get("socket.localPort", -1);
+         localHostname = glob.getProperty().get("socket.localHostname", (String)null);
          if (localHostname == null) {
             try  {
                java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -251,7 +254,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       this.loginName = loginName;
       this.passwd = passwd;
       if (qos == null)
-         this.loginQos = new ConnectQos();
+         this.loginQos = new ConnectQos(glob);
       else
          this.loginQos = qos;
 
@@ -295,7 +298,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
             parser.addQos(loginQos.toXml());
             String resp = (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
-            this.connectReturnQos = new ConnectReturnQos(resp);
+            this.connectReturnQos = new ConnectReturnQos(glob, resp);
             this.sessionId = this.connectReturnQos.getSessionId();
          }
          else {
