@@ -2,6 +2,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Bugfix for broken returned subscriptionID
+
  o Added configuration option to delay deletion of a topic.
    As a default a topic is deleted 60 sec delayed after reaching
    state UNREFERENCED. This is for better performance (e.g. not reparsing
