@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.9 2000/01/21 08:19:04 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.10 2000/01/21 19:34:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -52,6 +52,7 @@ public class MessageUnitWrapper
          Log.error(ME, "Invalid constructor parameter");
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
+      this.requestBroker = requestBroker;
       this.messageUnit = messageUnit;
       this.xmlKey = xmlKey;
       this.uniqueKey = this.xmlKey.getUniqueKey();

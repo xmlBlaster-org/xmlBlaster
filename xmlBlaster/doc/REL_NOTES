@@ -4,6 +4,14 @@
 Changes for 0.71 [Jan. 2000]
 ============================
 
+   - Added MOM slide show, see http://www.xmlBlaster.org
+
+   - Added SubscribeKeyWrapper.java SubscribeQosWrapper.java as client helper
+	  to help to hide raw XML ASCII strings
+
+   - Added simple persistent store (file based)
+	  Needs to be configured in $HOME/xmlBlaster.properties
+
    - Added a xmlBlaster.properties file (should be placed into $HOME).
 
 	- Renamed file names from ...QoS... to ...Qos...
