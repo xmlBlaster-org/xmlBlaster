@@ -15,6 +15,7 @@ import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
@@ -72,6 +73,7 @@ public final class ClusterManager implements I_RunlevelListener
     * The entries are sorted to contain the local node as first entry.
     */
    private Map clusterNodeMap;
+   private ClusterNode[] clusterNodesCache = new ClusterNode[0];
 
    /** Info about myself */
    private ClusterNode myClusterNode = null;
@@ -255,6 +257,61 @@ public final class ClusterManager implements I_RunlevelListener
     *         NodeDomainInfo instance.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
+   public PublishReturnQos forwardPtpPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper, Destination destination) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering forwardPtpPublish(" + msgWrapper.getUniqueKey() + ", " + destination.getDestination() + ")");
+
+      ClusterNode clusterNode = getClusterNode(destination.getDestination().getNodeId());
+      log.info(ME, "PtP message " + msgWrapper.getUniqueKey() + " destination " + destination.getDestination() +
+                   " trying node " + ((clusterNode==null)?"null":clusterNode.getId()));
+
+      if (clusterNode == null) {
+         ClusterNode[] clusterNodes = getClusterNodes();
+         // Not very intelligent routing algorithm:
+         // We just take an arbitrary node to forward the PtP message
+         // Need to be redesigned with plugin interface (TODO !!!)
+         // Should work for clusters with less than three nodes
+         for(int i=0; i<clusterNodes.length; i++) {
+            if (clusterNodes[i].isLocalNode()) {
+               continue;
+            }
+            clusterNode = clusterNodes[i];
+            break;
+         }
+         if (clusterNode == null) {
+            String text = "Cluster node '" + destination.getDestination() + "' is not known, message '" + msgWrapper.getUniqueKey() + "' is lost";
+            log.warn(ME, text);
+            throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, text);
+         }
+      }
+
+      if (clusterNode.isLocalNode()) {
+         return null;
+      }
+
+      XmlBlasterConnection con = clusterNode.getXmlBlasterConnection();
+      if (con == null) {
+         String text = "Cluster node '" + destination.getDestination() + "' is known but not reachable, message '" + msgWrapper.getUniqueKey() + "' is lost";
+         log.warn(ME, text);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, text);
+      }
+
+      PublishQosServer publishQos = msgWrapper.getPublishQos();
+      
+      // Set the new qos ...
+      MessageUnit msgUnitShallowClone = new MessageUnit(msgWrapper.getMessageUnit(), null, null, publishQos.toXml());
+
+      return con.publish(msgUnitShallowClone);
+   }
+
+   /**
+    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
+    *         tailed back because cluster node is temporary not available. The message will
+    *         be flushed on reconnect.<br />
+    *         Otherwise the normal publish return value of the remote cluster node and the responsible
+    *         NodeDomainInfo instance.  
+    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
+    */
    public PublishRetQosWrapper forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardPublish(" + msgWrapper.getUniqueKey() + ")");
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
@@ -371,6 +428,7 @@ public final class ClusterManager implements I_RunlevelListener
          log.error(ME, "Illegal argument in addClusterNode()");
          throw new IllegalArgumentException("Illegal argument in addClusterNode()");
       }
+      this.clusterNodesCache = null; // reset cache
       this.clusterNodeMap.put(clusterNode.getId(), clusterNode);
    }
 
@@ -380,6 +438,21 @@ public final class ClusterManager implements I_RunlevelListener
     */
    public Map getClusterNodeMap() {
       return this.clusterNodeMap;
+   }
+
+   /**
+    * @return ClusterNode[] which is a snapshot copy of our map
+    */
+   public ClusterNode[] getClusterNodes() {
+      if (this.clusterNodesCache == null) {
+         if (this.clusterNodeMap == null) {
+            this.clusterNodesCache = new ClusterNode[0];
+         }
+         else {
+            this.clusterNodesCache = (ClusterNode[])this.clusterNodeMap.values().toArray(new ClusterNode[this.clusterNodeMap.size()]);
+         }
+      }
+      return this.clusterNodesCache;
    }
 
    public int getNumNodes() {
@@ -396,12 +469,11 @@ public final class ClusterManager implements I_RunlevelListener
       if (numNodes <= 1)
          return glob.getId();
       StringBuffer sb = new StringBuffer(numNodes * 30);
-      Iterator iterator = clusterNodeMap.values().iterator();
-      while (iterator.hasNext()) {
+      ClusterNode[] clusterNodes = getClusterNodes();
+      for(int i=0; i<clusterNodes.length; i++) {
          if (sb.length() > 0)
             sb.append(",");
-         ClusterNode node = (ClusterNode)iterator.next();
-         sb.append(node.getId());
+         sb.append(clusterNodes[i].getId());
       }
       return sb.toString();
    }
@@ -579,12 +651,13 @@ public final class ClusterManager implements I_RunlevelListener
    }
 
    public void shutdown(boolean force) {
-      if (clusterNodeMap != null && clusterNodeMap.size() > 0) {
-         Iterator it = clusterNodeMap.values().iterator();
-         while (it.hasNext()) {
-            ClusterNode info = (ClusterNode)it.next();
-            info.shutdown(force);
+      if (this.clusterNodeMap != null && this.clusterNodeMap.size() > 0) {
+         ClusterNode[] clusterNodes = getClusterNodes();
+         for(int i=0; i<clusterNodes.length; i++) {
+            clusterNodes[i].shutdown(force);
          }
+         this.clusterNodesCache = null;
+         this.clusterNodeMap.clear();
       }
    }
 
@@ -607,10 +680,9 @@ public final class ClusterManager implements I_RunlevelListener
 
       sb.append(offset).append("<clusterManager>");
       if (clusterNodeMap != null && clusterNodeMap.size() > 0) {
-         Iterator it = clusterNodeMap.values().iterator();
-         while (it.hasNext()) {
-            ClusterNode info = (ClusterNode)it.next();
-            sb.append(info.toXml(extraOffset + "   "));
+         ClusterNode[] clusterNodes = getClusterNodes();
+         for(int i=0; i<clusterNodes.length; i++) {
+            sb.append(clusterNodes[i].toXml(extraOffset + "   "));
          }
       }
       sb.append(offset).append("</clusterManager>");
