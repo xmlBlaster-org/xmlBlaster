@@ -168,12 +168,17 @@ namespace util {
        * The syntax for passing properties is the same as in java if the 
        * switch javaStyle is true (default). That is "-Dprop1=val1" is 
        * then equivalent as prop1=val1 in a property file. If the switch 
-       * javaStyle is false, then the Corba style is choosen, i.e. the 
+       * javaStyle is false, then the Corba style is chosen, i.e. the 
        * following is correct syntax: "-ORBNameService whatever" (so no
        * equality sign between name and value).
-       * Errors in syntax are silenty ignored (the property just isn't load).
+       * Errors in syntax are silently ignored (the property just isn't load).
+       *
+       * @param args The length of argv[]
+       * @param argv The command line arguments, argv[0] is the executable name,
+       *             for example { "HelloWorld2" "-trace" "true" }
+       * @param sep The property praefix, for example "-" for "-trace true"
        */
-      int loadCommandLineProps(int args, const char * const argc[], const std::string &sep="-D", 
+      int loadCommandLineProps(int args, const char * const argv[], const std::string &sep="-D", 
                     bool javaStyle=true);
       
 
@@ -189,6 +194,7 @@ namespace util {
          return -1;
       }
       
+      std::string toXml(const std::string& extraOffset="");
 
    }; // class Property
 

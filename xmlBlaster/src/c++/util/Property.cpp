@@ -7,41 +7,41 @@
 #include <fstream>
 #include <util/lexical_cast.h>
 #include <util/PropertyDef.h>
+#include <util/Constants.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
 
 /**
- * Loads the properties read from the command line (or another array).
- * The syntax for passing properties is the same as in java if the 
- * switch javaStyle is true (default). That is "-Dprop1=val1" is 
- * then equivalent as prop1=val1 in a property file. If the switch 
- * javaStyle is false, then the Corba style is choosen, i.e. the 
- * following is correct syntax: "-ORBNameService whatever" (so no
- * equality sign between name and value).
- * Errors in syntax are silenty ignored (the property just isn't load).
+ * @see Property.h#loadCommandLineProps
  */
 int 
 Property::loadCommandLineProps(int args,
-                               const char * const argc[],
-                               const string &sep, 
+                               const char * const argv[],
+                               const string &prefix, 
                                bool javaStyle) 
 {
 
    int    count = 1, ret=0, nmax = args;
    string name, value;
-   if (!javaStyle) nmax--; // they come in separated pairs
+   //if (!javaStyle) nmax--; // they come in separated pairs
    while (count < nmax) {
-      string name = argc[count];
-      if (name.find(sep) == 0) { // it is a property
-         name = name.substr(sep.length()); // remove separator e.g. "-trace" -> "trace"
+      string name = argv[count];
+      if (name.find(prefix) == 0) { // it is a property
+         name = name.substr(prefix.length()); // remove separator e.g. "-trace" -> "trace"
          if (!javaStyle) { // Corba style (or other non-java styles)
-            count++;
-            value = argc[count];
-            //std::cout << "readPropertyCommandLine: " << name << "=" << value << std::endl;
-            if (setProperty(name, value)) ret++;
+            //if (name == "h" || name == "help" || name == "?" ) {
+            value = (count < nmax-1) ? argv[count+1] : "";
+            if (value == ""/* || value.find(prefix) == 0*/) { // A property without a value -> we set it to true, for example --help
+               if (setProperty(name, "true")) ret++;
+            }
+            else {
+               count++;
+               //std::cout << "readPropertyCommandLine: " << name << "=" << value << std::endl;
+               if (setProperty(name, value)) ret++;
+            }
          }
-         else { // java style
+         else { // java style: prop1=val1
             pair<const string, string> propPair(getPair(name));
             if (setProperty(propPair.first, propPair.second)) ret++;
          }
@@ -312,4 +312,21 @@ bool Property::getTypedProperty(const string& name, Timestamp& value, bool env)
    return true;
 }
   
+std::string Property::toXml(const std::string& extraOffset)
+{
+   string offset = Constants::OFFSET + extraOffset;
+   string sb;
+   MapType::const_iterator it;
+   sb += offset;
+   sb += "<Property>";
+   for (it=properties_.begin(); it!=properties_.end(); ++it) {
+      const string& key = (*it).first;
+      const string& value = (*it).second;
+      sb += offset + Constants::INDENT;
+      sb += "<" + key + ">" + value + "</" + key + ">";
+   }
+   sb += offset;
+   sb += "</Property>";
+   return sb;
+}
 #endif 
