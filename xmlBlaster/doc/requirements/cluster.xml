@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='cluster' type='NEW' prio='MEDIUM' status="OPEN">
-   <topic>Multiple xmlBlaster instances can build a cluster following the master/slave ticket paradigm</topic>
+<requirement id='cluster' type='NEW' prio='HIGH' status="OPEN">
+   <topic>Multiple xmlBlaster instances can build a cluster following the master/slave paradigm</topic>
    <description>
       <p>
       We define a cluster as a configuration where more than one xmlBlaster
@@ -49,7 +49,7 @@
       An xmlBlaster server instance allows to have any number of slave xmlBlaster server instances
       for specific message types. These slaves can have further slaves again.
       This allows distributing messages to an almost unlimited number of clients.
-      Not that one xmlBlaster node can be a master for some messages and a slave for
+      Note that one xmlBlaster node can be a master for some messages and a slave for
       other message types simultaneously.
       <p>
       <img src="cluster.scalability.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
@@ -75,7 +75,7 @@
       <li><h4>Logical separation based on cluster topics:</h4><br />
       One xmlBlaster instance can be the master for selective messages (e.g. for
       stock exchange messages) and be slave for other messages (e.g. for 
-      air traffic radar tracks) simultaneously. Consequently a client interested
+      air traffic radar tracks or rugby news) simultaneously. Consequently a client interested
       in all informations only needs to connect to one xmlBlaster server instance.
       <p>
       <img src="cluster.topic.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
@@ -114,7 +114,7 @@
    </description>
    <author>ruff@swand.lake.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
