@@ -46,7 +46,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.j2ee.k2.client.BlasterConnection;
 
@@ -78,7 +78,7 @@ public class BlasterManagedConnection implements ManagedConnection {
    BlasterManagedConnectionFactory mcf;
    String user;
    String pwd;
-   XmlBlasterConnection physicalPipe;
+   I_XmlBlasterAccess physicalPipe;
    PrintWriter logWriter;
    boolean isDestroyed = false;
    boolean closed = false;
@@ -94,7 +94,6 @@ public class BlasterManagedConnection implements ManagedConnection {
         this.mcf = mcf;
         this.user = user;
         this.pwd = pwd;
-        try {
             /*
               Some params:
               -client.protocol RMI | IOR | XML-RPC
@@ -130,14 +129,10 @@ public class BlasterManagedConnection implements ManagedConnection {
             */
             
         // Set up physical pipe
-            // physicalPipe = new XmlBlasterConnection(orbEnv);
-            physicalPipe = new XmlBlasterConnection(mcf.getConfig() );
+            // physicalPipe = new I_XmlBlasterAccess(orbEnv);
+            physicalPipe = mcf.getConfig().getXmlBlasterAccess();
             System.out.println("Physical pipe: " + physicalPipe + " set up");
             doLogin();
-        }catch(XmlBlasterException ex) {
-            throw new CommException("Could not create connection: " + ex);
-        }
-        
     }
 
    public String toString() {
@@ -297,19 +292,19 @@ public class BlasterManagedConnection implements ManagedConnection {
     }
 
 
-    XmlBlasterConnection getBlasterConnection() throws  XmlBlasterException{
+    I_XmlBlasterAccess getBlasterConnection() throws  XmlBlasterException{
         return physicalPipe;
     }
     /**
      * This is used both internaly and by handles. We do  lot of sanity checks
      * here (failover ;-) Move to failoverGetConnection
      */
-    XmlBlasterConnection getFailoverBlasterConnection()throws XmlBlasterException {
+    I_XmlBlasterAccess getFailoverBlasterConnection()throws XmlBlasterException {
         // Do some checks first
         /* These are not needed here, keep for the sake of memmory ;-)
         boolean doLogin = false;
         if (pysicalPipe == null) {
-            pysicalPipe = new XmlBlasterConnection();
+            pysicalPipe = new I_XmlBlasterAccess();
             
         }
         if(!pysicalPipe.isLoggedIn()) {
