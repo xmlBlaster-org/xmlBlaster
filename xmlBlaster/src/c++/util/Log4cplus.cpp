@@ -12,6 +12,7 @@ Comment:   Embed logging library log4cpp http://log4cplus.sourceforge.net/
 #include <log4cplus/configurator.h>
 #include <log4cplus/helpers/loglog.h>
 #include <fstream>
+#include <util/PropertyDef.h>
 
 using namespace std;
 using namespace log4cplus;
@@ -48,7 +49,9 @@ namespace util {
             BasicConfigurator config;
             config.configure();
             Logger logger = Logger::getInstance("client");
-            LOG4CPLUS_WARN(logger, "Couldn't find file logging configuration file \"-xmlBlaster/logging/configFileName " + configFileName + "\", logging is default configured");
+            LOG4CPLUS_WARN(logger, "Couldn't find file logging configuration file \"-xmlBlaster/logging/configFileName " + configFileName + "\", you can use the example in xmlBlaster" +
+                                   FILE_SEP + "config" + FILE_SEP + configFileName);
+            LOG4CPLUS_INFO(logger, "We continue with default logging configuration.");
       }
       else {
          PropertyConfigurator::doConfigure(configFileName);
@@ -161,6 +164,7 @@ namespace util {
       str += "\n   -xmlBlaster/logging/configFileName [log4cplus.properties]";
       str += "\n                       Path to the log4cplus configuration file, for";
       str += "\n                       configuration see http://logging.apache.org/log4j/docs/manual.html";
+      str += string("\n                       We provide an example file in xmlBlaster")+FILE_SEP+"config"+FILE_SEP+"log4cplus.properties";
       return str;
    }
 }}} // end of namespace
