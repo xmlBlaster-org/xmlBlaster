@@ -20,7 +20,7 @@
       track 5000 airplanes you have 1000 message/second. Performance is a real challenge here.
       </p>
       <p>
-      Air traffic controllers want to zoom into a special geographic areas and need to subscribe
+      Air traffic controllers want to zoom into special geographic areas and need to subscribe
       to only those airplanes which are in their latitude and longitude range.
       </p>
       <p>
@@ -32,7 +32,7 @@
       As a plugin coder, you have to implement two interfaces
       <ul>
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
-         <li>I_SubscribeFilter: Which force you to implement the match() method</li>
+         <li>I_SubscribeFilter: Which forces you to implement the match() method</li>
       </ul>
       This is simple and straight forward (see requirement mime.plugin.subscribe.howto).
       </p>
@@ -82,7 +82,7 @@ These is an example key and QoS of a subscribe() invocation:
 
 
    <qos>
-      <filter type='ContentLength'>
+      <filter type='ContentLenFilter'>
          8000
       </filter>
       <filter type='ContainsChecker' version='7.1'>
@@ -110,7 +110,7 @@ have a content shorter then 8 kBytes.
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -51,9 +51,10 @@
       </li>
       <li>You can pass optional parameters to your plugin<br />
       This entry registers the plugin ContentLenFilter in xmlBlaster.properties and
-      add some options.
+      adds some options (needs to be on one line).
          <pre>
-         MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=10000,DEFAULT_MIN_LEN=10
+         MimeSubscribePlugin[ContentLenFilter][1.0]=
+                org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=10000,DEFAULT_MIN_LEN=10
          </pre>
       The plugin can access these options in its init() call:
          <pre>
@@ -86,7 +87,7 @@ For an example look at the code of ContentLenFilter.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
