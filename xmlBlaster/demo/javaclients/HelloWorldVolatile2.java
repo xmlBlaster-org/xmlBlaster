@@ -76,6 +76,7 @@ public class HelloWorldVolatile2 implements I_Callback
          // Configure the topic to our needs
          TopicProperty topicProperty = new TopicProperty(glob);
          topicProperty.setDestroyDelay(4000L);
+         topicProperty.setCreateDomEntry(false);
          pq.setTopicProperty(topicProperty);
          MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
          con.publish(msgUnit);
