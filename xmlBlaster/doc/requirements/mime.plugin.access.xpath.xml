@@ -81,7 +81,9 @@
 
    GetQos qos = new GetQos(glob);
 
-   qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
+   qos.addAccessFilter(
+       new AccessFilterQos(glob, "XPathFilter",
+                           "1.0", "/news[@type='sport']"));
 
    MsgUnit[] msgUnits = con.get(
             "<key oid='News'/>",
@@ -133,7 +135,7 @@
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
    <date>2002 09 27</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
