@@ -2,9 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o Changed build.xml for C and C++ compilation
    Now the source files are copied to a separate destination
+   To build C or C++ do a cleanup first (before you checkout the new code):
+     build c-delete
+     build cpp-delete
+   or remove the outdated msgUtil_CopyByAnt.c and Global_CopyByAnt.cpp files manually
 
  o C++ client library (Incompatible API change):
-   The update() method argument 'content' changed from
+   The update() method argument 'content' has changed from
    'void *' to 'const unsigned char *'
 
  o C++ client library:
