@@ -11,7 +11,7 @@ Compile:   JacORB:
              /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            Mico:
              /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.16 1999/11/16 19:00:00 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.17 1999/11/16 19:14:05 ruff Exp $
 ================================================================================
 */
 
@@ -57,7 +57,9 @@ module serverIdl
 
 
 /**
- * Decration of the client Callback interface.
+ * Decration of the client Callback interface. 
+ * <p>
+ * This interface must be implmented by the client.
  *
  * Declared before the server, so that the server declaration
  * can use the BlasterCallback interface
@@ -105,7 +107,7 @@ module serverIdl
     */
    exception XmlBlasterException
    {
-      ExceptionIdType id;  // unique error code
+      ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
       string reason;       // in english
    };
 
