@@ -9,6 +9,7 @@ package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
@@ -30,6 +31,7 @@ public final class NodeInfo
 
    private NodeId nodeId;
 
+   private String defaultType;
    private Address tmpAddress = null; // Helper for SAX parsing
    private Map addressMap = null;
 
@@ -82,6 +84,23 @@ public final class NodeInfo
     */
    public Address getAddress() {
       if (addressMap == null) return null;
+
+      // Try to find a protocol address as configured for clients
+      if (this.defaultType == null) {
+         Address def = new Address(glob);
+         this.defaultType = def.getType();
+      }
+      if (this.defaultType != null) {
+         Iterator it = addressMap.values().iterator();
+         while (it.hasNext()) {
+            Address tmp = (Address)it.next();
+            if (this.defaultType.equals(tmp.getType())) {
+               return tmp;
+            }
+         }
+      }
+
+      // Use the default address
       return (Address)addressMap.values().iterator().next();
    }
 
