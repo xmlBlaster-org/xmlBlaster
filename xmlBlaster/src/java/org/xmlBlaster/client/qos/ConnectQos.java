@@ -243,6 +243,14 @@ public final class ConnectQos
    }
 
    /**
+    * The configuration of the local client side queue. 
+    * @param Your hardcoded configuration
+    */
+   public void addClientQueueProperty(ClientQueueProperty clientQueueProperty) {
+      this.connectQosData.addClientQueueProperty(clientQueueProperty);
+   }
+
+   /**
     * Set the address to which we want to connect, with all the configured parameters. 
     * <p />
     * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
