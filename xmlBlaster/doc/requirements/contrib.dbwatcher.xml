@@ -1,0 +1,705 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='contrib.dbwatcher' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>
+      DbWatcher polls a database for changes and publishes those to xmlBlaster.
+   </topic>
+
+   <description>
+   <h2>DbWatcher overview</h2>
+   <p>
+   DbWatcher is a little framework of plugins which detects changes on a database table,
+   queries the changes, formats them as a XML message and publishes them to xmBlaster.
+   DbWatcher is ready to go, you only set some configuration variables in <tt>xmlBlasterPlugins.xml</tt>
+   and on next xmlBlaster startup the configured database table is observed.<br />
+   DbWatcher is extendable through a set of plugin interfaces. For standard
+   cases we provide useful plugins.
+   </p>
+   <p>
+   DbWatcher may be useful when running xmlBlaster to integrate legacy applications
+   where often many code segments update a database and other code segments or
+   foreign applications need to know about the changes.
+   </p>
+   <p>
+   With the delivered JDBC ResultSet to XML converter plugin a typical
+   database change message looks like this:
+   </p>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>INSERT&lt;/command>
+  &lt;ident>EDDI&lt;/ident>
+  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>CPU&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
+  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='DATUM'>2005-01-05 15:52:06.0&lt;/col>
+  &lt;col name='CPU'>238333&lt;/col>
+  &lt;col name='COL1'>&lt;![CDATA[&lt;Bla]]&gt;&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+  &lt;attr name='LR'>SRANIL&lt;/attr>
+  &lt;attr name='SUBNET_ID'>TCP&lt;/attr>
+ &lt;/row>
+ &lt;row num='1'>
+  &lt;col name='DATUM'>2005-01-05 15:52:07.0&lt;/col>
+  &lt;col name='CPU'>238340&lt;/col>
+  &lt;col name='COL1' encoding='base64'>QmxdXT5CbA==&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+ &lt;/row>
+&lt;/sql>
+</pre>
+  <p>
+  The generated message has a header tag &lt;desc> which contains the meta information
+  of the delivered data. This is self explaining, the &lt;ident> tag delivers the changed
+  value of the database table column <tt>ICAO_ID</tt> which caused the change message.<br />
+  The &lt;col> tags deliver the current columns value of a database table row. If
+  they contain characters which harm XML wellformedness they are enclosed with a CDATA
+  section. On seldom cases where this protection is not sufficient the column is BASE64 encoded.<br />
+  Additionally, you can configure a transformer which does some use case specific
+  transformations on the data an delivers the result with &lt;attr> tags.
+  </p>
+  <p>
+  Now that you know what DbWatcher can do for you we should look into its design.
+  </p>
+
+
+  <h2>DbWatcher design</h2>
+  <p>
+  DbWatcher consists of a set of Interfaces which allows any thinkable customization.
+  It is easily possible to run DbWatcher outside from xmlBlaster as a standalone
+  program or even without any dependency on xmlBlaster.
+  </p>
+  <ol>
+   <li><tt>I_ChangePublisher</tt><quote>Into which data sink to send the data?</quote><br />
+   This is the MoM interface and we provide a <tt>XmlBlasterPublisher</tt> plugin.
+   You can easily write a JMS plugin to send the changes to a JMS provider
+   or a file system plugin to dump the message on harddisk.
+   </li>
+
+   <li><tt>I_DataConverter</tt><quote>How shall the message be formatted?</quote><br />
+   We provide a <tt>ResultSetToXmlConverter</tt> plugin which produces the above shown XML message.
+   </li>
+
+   <li><tt>I_AttributeTransformer</tt><quote>Are there any additional attributes to be added to the XML dump?</quote><br />
+   Here we provide nothing, you can add one yourself if you need to add specific &lt;attr> tags.
+   This possibility is offered by our <tt>ResultSetToXmlConverter</tt> to extend the XML message.
+   </li>
+
+   <li><tt>I_ChangeDetector</tt><quote>How do we detect changes on the databse</quote><br />
+   We provide two plugins here.<br />
+   The MD5 checksum plugin <tt>MD5ChangeDetector.java</tt>
+   queries the database and remembers the MD5 checksum of the ResultSet. On next query the MD5
+   is compared to the last one and if it has changed a message is published.
+   This detection works only satisfying if the table does not contain too much data.<br />
+   The timestamp based plugin <tt>TimestampChangeDetector.java</tt> accesses on each
+   poll all newer database rows and publishes them. This is only possible if the
+   database table contains a column (or compound columns) which contains for example a DATE or TIMESTAMP
+   information or any other column which is known to change.<br />
+   For more details consult the Javadoc description of the plugins.
+   </li>
+
+   <li><tt>I_DbPool</tt><quote>How to access the database?</quote><br />
+   We provide a pooled database access plugin <tt>DbPool.java</tt> for performant DB access,
+   it is based on xmlBlasters db-pool implementation. Again, you can
+   replace this by your own existing implementation if needed.
+   </li>
+
+   <li><tt>I_Info</tt><quote>How to pass the configuration to DbWatcher?</quote><br />
+   We provide a simple plugin based on <tt>java.utils.prefs</tt>, with this you
+   can run DbWatcher as a standalone program, totally independent from xmlBlaster.<br />
+   Further we provide a wrapper to the xmlBlaster configuration framework <tt>Global</tt>
+   which allows us to run DbWatcher as a native plugin of xmlBlaster.
+   </li>
+  </ol>
+
+  <p>
+  The javadoc of each interface contains enough information to assist you
+  writing your own customized plugin.
+  </p>
+
+
+  <h2>Database change detection</h2>
+  <p>The most difficult point is how to get a change event when a foreign application changes
+  data on the database.</p>
+  <p>There are following ways to detect DB changes, in future we could add such additional
+  detection plugins:</p>
+<ol>
+<li>
+   <h3>Changes are delivered by a MOM</h3>
+   No DbWatcher is needed: This is the proper approach.
+   As legacy systems have various channels which manipulate
+   the DB directly it is no solution for older systems.
+</li>
+
+<li>
+   <h3>Modify/Creation timestamp column</h3>
+   A trigger adds the timestamp to each table<br />
+   -> This changes the DB schema<br />
+   This is supported by our <tt>TimestampChangeDetector.java</tt> plugin.
+</li>
+
+<li>
+   <h3>Sequence of primary key</h3>
+   Tables which contain a growing sequence of keys may
+   use this to detect inserts<br />
+   -> Failes for 'update'
+</li>
+
+<li>
+   <h3>Using a LogMiner</h3>
+   -> Is database specific
+</li>
+
+<li>
+   <h3>Audit tables (with trigger)</h3>
+   Need to start database in audit mode
+   -> How does it work in a portable way?
+</li>
+
+<li>
+   <h3>Having a trigger for each table</h3>
+   The trigger notifies a stored procedure which sends a notify message over xmlBlaster
+   to DbWatcher to poll again.<br />
+   -> This needs to change the DB
+   -> What if foreign database?
+   http://www.oracle.com/technology/oramag/oracle/03-jan/o13java.html
+   <br />
+   This is supported by our <tt>XmlBlasterPublisher.java</tt> plugin.
+</li>
+
+<li>
+   <h3>Flashback queries</h3>
+   -> What is this?
+</li>
+
+<li>
+   <h3>Use ora_rowscan (since Oracle 10g, similar for MS-SQLServer)</h3>
+   Example for Oracle (http://www.remote-dba.net/10g_26.htm):<br />
+   <tt>select scn_to_timestamp(ora_rowscn) FROM A where ora_rowscn IS NOT null;</tt><br />
+   Allows to retrieve the rowchange timestamps, but is of limited use
+   as it is a timestamp of the table and not for each row. Like this
+   we know the table has changed but we don't know which row.<br />
+   SQLServer uses the column type <tt>rowVersion</tt>.<br />
+   -> Missing for Oracle 9 and other DBs, Oracle 10g and MSQLServer support it.
+</li>
+   
+<li>
+   <h3>Using a customized select with MD5</h3>
+   Query everything and remember the last state with MD5.
+   On change send the complete data again.
+   This is supported by our <tt>MD5ChangeDetector.java</tt> plugin.
+</li>
+</ol>       
+   </description>
+
+   <configuration where="server">
+      <p>
+         The plugin is configured in the xmlBlasterPlugins.xml configuration file. Here an example where
+         all properties are used:
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
+
+     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
+        <attribute id='directoryName'>/tmp/filePoller</attribute>
+        <attribute id='topicName'>poller.test</attribute>
+        <attribute id='publishKey'><key oid='poller.test'><poller><test/></poller></key></attribute>
+        <attribute id='publishQos'><qos><expiration lifeTime='4000'/></qos></attribute>
+        <attribute id='connectQos'></attribute>
+        <attribute id='maximumFileSize'>10000000</attribute>
+        <attribute id='delaySinceLastFileChange'>10000</attribute>
+        <attribute id='pollInterval'>2000</attribute>
+
+        <attribute id='loginName'>fritz</attribute>
+        <attribute id='password'>secret</attribute>
+        <attribute id='sent'>Sent</attribute>
+        <attribute id='discarded'>Discarded</attribute>
+        <attribute id='fileFilter'></attribute>
+        <attribute id='lockExtention'>*.lck</attribute>
+
+        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+     </plugin>
+   ...
+
+ </xmlBlaster>
+]]>
+</pre>
+and here a minimalistic one:
+
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
+
+     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
+        <attribute id='directoryName'>/tmp/filePoller</attribute>
+        <attribute id='topicName'>poller.test</attribute>
+        <!-- determines on which level to start/shutdown the plugin and what to do in case of an exception -->
+        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+     </plugin>
+   ...
+
+ </xmlBlaster>
+]]>
+</pre>
+ </p>
+ and here a more detailed description about each attribute:
+
+    <table border="1">
+       <tr>
+         <th>Id (name)</th>
+         <th>Type</th>
+         <th>Manda
+         tory</th>
+         <th>Default value</th>
+         <th>Comment</th>
+       </tr>
+
+       <tr>
+         <td>converter.class</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>org.xmlBlaster.contrib.dbwatcher. convert.ResultSetToXmlConverter</td>
+         <td>
+         Configures your implementation of interface <tt>I_DataConverter</tt>.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.class</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>org.xmlBlaster.contrib.dbwatcher. mom.XmlBlasterPublisher</td>
+         <td>
+         Configures your implementation of interface <tt>I_ChangePublisher</tt>
+         </td>
+       </tr>
+       <tr>
+         <td>changeDetector.class</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>org.xmlBlaster.contrib.dbwatcher. detector.MD5ChangeDetector</td>
+         <td>
+         Configures your implementation of interface <tt>I_ChangeDetector</tt>
+         </td>
+       </tr>
+       <tr>
+         <td>alertProducer.class</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>org.xmlBlaster.contrib.dbwatcher. detector.AlertScheduler</td>
+         <td>
+         Configures your implementation of interface <tt>I_AlertProducer</tt>
+         Here you can configure multiple classes with a comma separated list.
+         Each of them can trigger an new check in parallel, for example
+         <tt>alertProducer.class= org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher, org.xmlBlaster.contrib.dbwatcher.detector.AlertSchedulery</tt> will check regularly via
+         the AlertScheduler and on message via XmlBlasterPublisher.
+         </td>
+       </tr>
+       <tr>
+         <td>transformer.class</td>
+         <td>String</td>
+         <td>no</td>
+         <td>yes</td>
+         <td>
+         If not empty or null the specified plugin implementing
+         <tt>I_AttributeTransformer</tt> is loaded. 
+         This plugin is called once for each xml dump and adds <tt>&lt;attr></tt> tags as returned by the plugin.
+         This feature is available when using <tt>ResultSetToXmlConverter</tt>.
+         </td>
+       </tr>
+
+       <tr>
+         <td>jdbc.drivers</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>null</td>
+         <td>
+         For example <tt>oracle.jdbc.driver.OracleDriver</tt>,
+         the database specific driver jar file which contains the above
+         class must be in the class path.
+         </td>
+       </tr>
+       <tr>
+         <td>db.url</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>null</td>
+         <td>
+         For example <tt>jdbc:oracle:thin:@localhost:1521:orcl</tt>.
+         </td>
+       </tr>
+       <tr>
+         <td>db.user</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>null</td>
+         <td>
+         The database user login name.
+         </td>
+       </tr>
+       <tr>
+         <td>db.password</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>null</td>
+         <td>
+         The database password.
+         </td>
+       </tr>
+
+       <tr>
+         <td>mom.connectQos</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>If you need to specify more complex 
+         <a href="interface.connect.html">connection behavior</a> you can do it here. Note however that
+         this is a plugin which per default uses the <a href="protocol.local.html">local protocol</a>.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.loginName</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>'_' + id of plugin</td>
+         <td>If the id of the plugin is <i>DbWatcher1</i>, then the default <i>loginName</i>
+         is <i>_DbWatcher1</i>. If you specify a <i>connectQos</i>, then this attribute is ignored.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.password</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>null</td>
+         <td>This is the password to be used to authenticate the <i>loginName</i>.
+         If you specify a <i>connectQos</i>, then this attribute is ignored.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.topicName</td>
+         <td>String</td>
+         <td>(yes)</td>
+         <td>db.change.event.${groupColValue}</td>
+         <td>Mandatory unless <i>publishKey</i> defined. If both are specified this attribute is
+         ignored and a warning is logged. This is the name of the topic on which to publish (the oid).<br />
+         If you have specified a <tt>groupColName</tt> a message for every change of this column
+         in the result set triggers a message, the ${} token is replaced by the current columns value.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.publishKey</td>
+         <td>String</td>
+         <td>(no)</td>
+         <td>null</td>
+         <td>Optional unless <tt>topicName</tt> has not been specified in which case it is mandatory.
+         If you need to specify a more complex <a href="interface.publish.html">key</a> for the publishing 
+         (for example to make it searcheable)
+         of the messages you can specify it here. Note that you can only specify one single key which will
+         be used for all messages published by this plugin. If you need to differentiate you can use
+         more plugins.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.publishQos</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         If you need to specify a more complex <a href="interface.publish.html">qos</a> for the publishing 
+         you can specify it here. Note that you can only specify one single qos which will
+         be used for all messages published by this plugin. If you need to differentiate you can use
+         more plugins.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.eraseOnDrop</td>
+         <td>String</td>
+         <td>no</td>
+         <td>false</td>
+         <td>When a table drop is detected, shall we erase the topic in xmlBlaster or shall we just send
+         a message containing the <tt>DROP</tt> command?
+         </td>
+       </tr>
+       <tr>
+         <td>mom.alertSubscribeKey</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         The <tt>XmlBlasterPubliser</tt> plugin implements <tt>I_AlertProducer.java</tt>
+         as well and can be configured to listen on a topic.
+         When a message arrives there we trigger a new database poll.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.alertSubscribeQos</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         QoS for the subscription.
+         </td>
+       </tr>
+
+       <tr>
+         <td>alertScheduler.pollInterval</td>
+         <td>long</td>
+         <td>no</td>
+         <td>2000</td>
+         <td>The time in milliseconds the <tt>AlertScheduler</tt> plugin sleeps between each poll sweep.
+         </td>
+       </tr>
+
+
+
+       <tr>
+         <td>db.queryMeatStatement</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         If given this statement is used to gather the information which is places into the message.<br />
+         The statement needs to be ordered by the configured <tt>changeDetector.groupColName</tt>
+         to be able to send a message on each columns change. If <tt>changeDetector.groupColName</tt>
+         is null, any statement is possible.
+         </td>
+       </tr>
+       <tr>
+         <td>changeDetector.groupColName</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         This is null or a valid column name of the database table observed.
+         If configured the query statemts should be order by the same table column
+         so that on each change in the result set a message is sent.
+         </td>
+       </tr>
+       <tr>
+         <td>changeDetector.detectStatement</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>null</td>
+         <td>
+         Depending on the <tt>changeDetector.class</tt> configured
+         you have to provide a useful SQL statement which detects changes
+         on the observed database. For the MD5 checksum plugin it should
+         contain all columns which are observed. For the Timestamp plugin
+         you need to query the max timestamp of the observed table.
+         </td>
+       </tr>
+       <tr>
+         <td>changeDetector.timestampColNum</td>
+         <td>String</td>
+         <td>no</td>
+         <td>1</td>
+         <td>
+         For <tt>TimestampChangeDetector</tt> plugin only:
+         The JDBC index (starts with 1) of the column containing the max(timestamp) column
+         of the <tt>changeDetector.detectStatement</tt>. This usually is always 1 and
+         you don't need to configure anything here.
+         </td>
+       </tr>
+       <tr>
+         <td>converter.rootName</td>
+         <td>String</td>
+         <td>no</td>
+         <td>sql</td>
+         <td>
+         For <tt>ResultSetToXmlConverter</tt> plugin only:
+         Name of the XML root tag.
+         </td>
+       </tr>
+       <tr>
+         <td>converter.addMeta</td>
+         <td>String</td>
+         <td>no</td>
+         <td>true</td>
+         <td>
+         For <tt>ResultSetToXmlConverter</tt> plugin only:
+         If <tt>false</tt> suppress meta information, the CREATE statement however will
+         always transport the meta tags.
+         </td>
+       </tr>
+       <tr>
+         <td>charSet</td>
+         <td>String</td>
+         <td>no</td>
+         <td>UTF-8</td>
+         <td>
+         The charset used.
+         </td>
+       </tr>
+     </table>   
+
+   </configuration>
+
+   <example lang="any" type="HTML">
+   <h2>Timestamp based polling example</h2>
+
+   <p>
+      Lets create a database table <tt>TEST_POLL</tt> which contains
+      a <tt>TIMESTAMP</tt> column <tt>TS</tt> (tested on Oracle):
+   </p>
+   <pre>
+set autocommit on;
+
+CREATE TABLE TEST_POLL (COLOR VARCHAR(10), TS TIMESTAMP, CAR VARCHAR(10));
+
+INSERT INTO TEST_POLL VALUES ('green', CURRENT_TIMESTAMP, 'Fiat');
+INSERT INTO TEST_POLL VALUES ('red', CURRENT_TIMESTAMP, 'Lada');
+INSERT INTO TEST_POLL VALUES ('blue', CURRENT_TIMESTAMP, 'BMW');
+INSERT INTO TEST_POLL VALUES ('pink', CURRENT_TIMESTAMP, 'Fiat');
+INSERT INTO TEST_POLL VALUES ('white', CURRENT_TIMESTAMP, 'Fiat');
+
+SELECT * FROM TEST_POLL ORDER BY CAR;
+
+UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
+   </pre>
+
+   <p>
+   Now we configure a xmlBlaster native DbWatcher plugin in <tt>xmlBlasterPlugins.xml</tt>
+   </p>
+
+  <pre>
+&lt;plugin id='DbWatcherPlugin.testPoll' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
+   &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
+   &lt;attribute id='db.user'>system&lt;/attribute>
+   &lt;attribute id='db.password'>frifra20&lt;/attribute>
+   &lt;attribute id='db.queryMeatStatement'>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR&lt;/attribute>
+   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
+   &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
+   &lt;attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector&lt;/attribute>
+   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
+   &lt;attribute id='changeDetector.detectStatement'>SELECT MAX(TS) from TEST_POLL&lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+&lt;/plugin>
+  </pre>
+
+  <p>These are the messages you receive:</p>
+   <pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>UPDATE&lt;/command>
+  &lt;ident>BMW&lt;/ident>
+  &lt;colname type='VARCHAR2' precision='10'>COLOR&lt;/colname>
+  &lt;colname type='TIMESTAMP' scale='1'>TS&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>CAR&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='COLOR'>orange&lt;/col>
+  &lt;col name='TS'>2005-1-11.11.42. 47. 250152000&lt;/col>
+  &lt;col name='CAR'>BMW&lt;/col>
+ &lt;/row>
+&lt;/sql>
+   </pre>
+
+   </example>
+
+   <example lang="any" type="HTML">
+
+   <h2>Example for table creation change event message</h2>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>CREATE&lt;/command>
+  &lt;colname type='NUMBER' precision='10' scale='3'>COLKEY&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20'>COL1&lt;/colname>
+  &lt;colname type='NUMBER' precision='12'>COL2&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+ &lt;/desc>
+&lt;/sql>
+</pre>
+
+
+   <h2>Example for change event message</h2>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>INSERT&lt;/command>
+  &lt;ident>EDDI&lt;/ident>
+  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>CPU&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
+  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='DATUM'>2005-01-05 15:52:06.0&lt;/col>
+  &lt;col name='CPU'>238333&lt;/col>
+  &lt;col name='COL1'>&lt;![CDATA[&lt;Bla]]&gt;&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+  &lt;attr name='LR'>SRANIL&lt;/attr>
+  &lt;attr name='SUBNET_ID'>TCP&lt;/attr>
+ &lt;/row>
+ &lt;row num='1'>
+  &lt;col name='DATUM'>2005-01-05 15:52:07.0&lt;/col>
+  &lt;col name='CPU'>238340&lt;/col>
+  &lt;col name='COL1' encoding='base64'>QmxdXT5CbA==&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+ &lt;/row>
+ &lt;row num='2'>
+  &lt;col name='DATUM'>2005-01-05 15:52:08.0&lt;/col>
+  &lt;col name='CPU'>238343&lt;/col>
+  &lt;col name='COL1'>BOO&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+  &lt;attr name='SUBNET_ID'>X25&lt;/attr>
+ &lt;/row>
+&lt;/sql>
+</pre>
+  <p>Data which would break the xml of being well-formed are enclosed with a CDATA section,
+     data which contains a CDATA end-token is delivered base64 encoded.
+  </p>
+
+   <h2>Example for a deleted entry message</h2>
+   <p>The topic name specifies the entry, for example <tt>'db.change.event.EDDI'</tt>, the content
+   contains a <tt>DELETE</tt> command:
+   </p>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+   &lt;desc>
+   &lt;command>DELETE&lt;/command>
+   &lt;ident>EDDI&lt;/ident>
+   &lt;/desc>
+&lt;/sql>
+</pre>
+
+   <h2>Example for a drop entry message</h2>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>DROP&lt;/command>
+  &lt;ident>EDDI&lt;/ident>
+ &lt;/desc>
+&lt;/sql>
+</pre>
+
+   </example>
+
+   <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
+   <see type="REQ">engine.runlevel</see>
+   <author>xmlblast@marcelruff.info</author>
+   <hacker>xmlblast@marcelruff.info</hacker>
+   <date>2005 01 02</date>
+   <revision>$Revision: 1.7 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.contrib.dbwatcher.TestTimestamp</test>
+      <test tool="SUITE">org.xmlBlaster.test.contrib.dbwatcher.TestResultSetToXmlConverter</test>
+   </testcase>
+</requirement>
+
