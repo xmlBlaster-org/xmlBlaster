@@ -72,6 +72,9 @@
       in analogy to the network time protocol (NTP). A stratum of 0 is the master itself,
       1 is the first slave and stratum=2 would be bilbo in the above picture.
       </p>
+      <b>
+      This feature is fully implemented and ready for production use.
+      </b>
       </li>
       <li><h4>Availability (Failover):</h4><br />
       An xmlBlaster slave may adopt the master role for selective message types
@@ -114,6 +117,9 @@
       As we can see the node <i>heron</i> is master of messages of the domain "RUGBY_NEWS" but
       caches "STOCK_EXCHANGE" as well.
       </p>
+      <b>
+      This feature is fully implemented and ready for production use.
+      </b>
       </li>
       <li><h4>Load balancing:</h4><br />
       An xmlBlaster cluster allows to have more than one master server for
@@ -705,7 +711,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.31 $</revision>
+   <revision>$Revision: 1.32 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
