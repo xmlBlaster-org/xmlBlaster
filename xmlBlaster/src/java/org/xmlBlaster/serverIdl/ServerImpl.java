@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.13 1999/11/17 23:38:56 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.14 1999/11/18 16:59:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.RequestBroker;
+import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.XmlKey;
 import org.xmlBlaster.engine.XmlQoS;
 import org.xmlBlaster.authentication.Authenticate;
@@ -56,14 +57,14 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering subscribe()");
+      if (Log.CALLS) Log.calls(ME, "Entering subscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      authenticate.check();
+      ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.subscribe(authenticate.check(), xmlKey, xmlQoS);
+      requestBroker.subscribe(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
    }
@@ -74,14 +75,14 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal + ")"*/);
+      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      authenticate.check();
+      ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.unSubscribe(authenticate.check(), xmlKey, xmlQoS);
+      requestBroker.unSubscribe(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
    }
@@ -90,13 +91,16 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see xmlBlaster.idl
     */
-   public int publish(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
+   public String[] publish(MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
-      authenticate.check();
+      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+      ClientInfo clientInfo = authenticate.check();
+
+      String[] returnArr = new String[0];
 
       if (messageUnitArr.length < 1) {
          if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero messageUnits sent");
-         return 0;
+         return returnArr;
       }
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + messageUnitArr.length + " Messages");
       return requestBroker.publish(messageUnitArr, qos_literal_Arr);
@@ -108,7 +112,8 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public int erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      authenticate.check();
+      if (Log.CALLS) Log.calls(ME, "Entering erase(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
@@ -123,11 +128,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     * @return content
     * @see xmlBlaster.idl
     */
-   public MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
+   public MessageUnit[] get(String xmlKey_literal, String qos) throws XmlBlasterException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      authenticate.check();
+      ClientInfo clientInfo = authenticate.check();
 
       MessageUnit[] messageUnitArr = new MessageUnit[0];
        // IMPLEMENT: Operation

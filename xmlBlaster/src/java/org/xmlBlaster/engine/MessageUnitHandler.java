@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.7 1999/11/17 23:38:53 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.8 1999/11/18 16:59:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -34,6 +34,9 @@ public class MessageUnitHandler
     *
     * It is a TreeMap, that means it keeps order information.
     * TODO: express order attribute so that the first client will be served first.
+    *
+    * key   = a unique key identifying the subscription
+    * value = SubscriptionInfo object
     */
    final private Map subscriberMap = Collections.synchronizedMap(new TreeMap(/*new Comparator()*/));
 
@@ -42,29 +45,27 @@ public class MessageUnitHandler
     * This is the Message itself
     */
    private MessageUnit messageUnit;
-   private XmlKey xmlKey;
-   //private QoSKey qosPublish; // the flags from the publisher
-   private String uniqueKey;  // Attribute oid of key tag: <key oid="..."> </key>
+   private XmlKey xmlKey = null;     // may be null until the first publish() arrives
+   //private QoSKey qosPublish;      // the flags from the publisher
+   private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
 
 
    /**
     * Constructor if a subscription is made on a yet unknown object
     */
-   public MessageUnitHandler(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
+   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey) throws XmlBlasterException
    {
-      if (requestBroker == null || sub == null) {
-         Log.error(ME, "Invalid constructor parameters (sub)");
-         throw new XmlBlasterException(ME, "Invalid constructor parameters (sub)");
+      if (requestBroker == null || xmlKey == null) {
+         Log.error(ME, "Invalid constructor parameter");
+         throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
 
       this.requestBroker = requestBroker;
-      this.xmlKey = sub.getXmlKey();
-      this.messageUnit = new MessageUnit(sub.getXmlKey().toString(), new byte[0]);
       this.uniqueKey = xmlKey.getUniqueKey();
+      // this.xmlKey = xmlKey; this is not the real xmlKey from a publish, its only the subscription syntax
+      this.messageUnit = new MessageUnit(xmlKey.literal(), new byte[0]);
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
-
-      addSubscriber(sub);
 
       // mimeType and content remains unknown until first data is fed
    }
@@ -82,7 +83,7 @@ public class MessageUnitHandler
 
       if (messageUnit.content == null)
          messageUnit.content = new byte[0];
-      
+
       this.requestBroker = requestBroker;
       this.messageUnit = messageUnit;
       this.xmlKey = new XmlKey(messageUnit.xmlKey);
@@ -98,9 +99,14 @@ public class MessageUnitHandler
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(byte[] content)
+   public boolean setContent(XmlKey xmlKey, byte[] content)
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
+
+      if (this.xmlKey == null) {
+         this.xmlKey = xmlKey; // storing the key from the first publish() invokation
+         this.messageUnit.xmlKey = xmlKey.literal();
+      }
 
       if (content == null)
          content = new byte[0];
@@ -127,21 +133,37 @@ public class MessageUnitHandler
    }
 
 
+   /*
+    * The root node of the xmlBlaster DOM tree
+    */
+   public org.w3c.dom.Node getRootNode() throws XmlBlasterException
+   {
+      return xmlKey.getRootNode();
+   }
+
+
+   /**
+    * A client subscribed to this message
+    */
    public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
-      sub.addMessageUnitHandler(this);
-
       Object oldOne;
       synchronized(subscriberMap) {
          oldOne = subscriberMap.put(sub.getUniqueKey(), sub);
       }
+
       if (oldOne != null) {
-         Log.warning(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
-         throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
+         Log.warning(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
+         throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
       }
+
+      sub.addMessageUnitHandler(this);
    }
 
 
+   /**
+    * A client unsubscribed to this message
+    */
    public int removeSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
       Object removedIt;
@@ -166,6 +188,8 @@ public class MessageUnitHandler
    }
 
 
+   /**
+    */
    public String getMimeType() throws XmlBlasterException
    {
       if (messageUnit.xmlKey == null) {

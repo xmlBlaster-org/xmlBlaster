@@ -16,6 +16,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine
 LOCAL_FILES = \
 			$(CLASS_DIR)/ClientInfo.class \
 			$(CLASS_DIR)/RequestBroker.class \
+			$(CLASS_DIR)/ClientSubscriptions.class \
 			$(CLASS_DIR)/MessageUnitHandler.class \
 			$(CLASS_DIR)/XmlKey.class \
 			$(CLASS_DIR)/XmlQoS.class

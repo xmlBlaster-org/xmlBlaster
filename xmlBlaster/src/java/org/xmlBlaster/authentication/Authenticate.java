@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.10 1999/11/17 23:38:47 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.11 1999/11/18 16:59:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -31,7 +31,7 @@ import jacorb.poa.util.POAUtil;
  */
 public class Authenticate
 {
-   final private String ME = "Authenticate";
+   final private static String ME = "Authenticate";
 
    private static Authenticate authenticate = null; // Singleton pattern
 
@@ -66,6 +66,20 @@ public class Authenticate
       {
          if (authenticate == null) {
             authenticate = new Authenticate(authServerImpl);
+         }
+      }
+      return authenticate;
+   }
+
+
+   /**
+    * Access to Authenticate singleton
+    */
+   public static Authenticate getInstance()
+   {
+      synchronized (Authenticate.class) {
+         if (authenticate == null) {
+            Log.panic(ME, "Use other getInstance first");
          }
       }
       return authenticate;
@@ -156,7 +170,7 @@ public class Authenticate
          uniqueClientKey = new String(oid);
 
          // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
-         Log.info(ME, "Login for " + loginName + " oid=<" + uniqueClientKey + ">");
+         Log.info(ME, "Login for " + loginName + " oid=<" + POAUtil.convert(oid, true) + ">");
       } catch ( Exception e ) {
          e.printStackTrace();
          Log.error(ME, e.toString());
@@ -168,9 +182,9 @@ public class Authenticate
       synchronized(clientInfoMap) {
          clientInfoMap.put(uniqueClientKey, clientInfo);
       }
-      
+
       fireClientEvent(clientInfo, true);
-      
+
       return org.xmlBlaster.serverIdl.ServerHelper.narrow(certificatedServerRef);
    }
 
@@ -211,11 +225,11 @@ public class Authenticate
       }
 
       ClientInfo clientInfo = (ClientInfo)obj;
-      
+
       fireClientEvent(clientInfo, false);
 
       Log.info(ME, "Successfull logout for client " + clientInfo.toString());
-      
+
       clientInfo = null;
    }
 
@@ -306,5 +320,5 @@ public class Authenticate
       }
    }
 
- 
+
 }

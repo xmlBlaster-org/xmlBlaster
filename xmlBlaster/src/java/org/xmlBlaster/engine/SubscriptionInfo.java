@@ -3,11 +3,12 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.6 1999/11/17 23:38:53 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.7 1999/11/18 16:59:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 
@@ -15,7 +16,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 /**
  * SubscriptionInfo
  * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MessageUnitHandler of exactly one Client
+ * concerning a subscription of exactly one MessageUnit of exactly one Client
  */
 public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 {
@@ -24,6 +25,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    private ClientInfo clientInfo;   // reference on ClientInfo
    private XmlKey xmlKey;           // reference to xmlKey
    private XmlQoS xmlQoS;           // reference to 'Quality of Service' of subscription
+   private String uniqueKey=null;
 
    private MessageUnitHandler myHandler;  // reference to my managing container
 
@@ -87,7 +89,6 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
    */
 
-
    public ClientInfo getClientInfo()
    {
       return clientInfo;
@@ -108,14 +109,18 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    public String getUniqueKey() throws XmlBlasterException
    {
-      return "Subscription-" + clientInfo.getUniqueKey() + "-" + xmlKey.getUniqueKey() + "-" + xmlQoS.toString(); // !!!hack?
-   }
-   /*
-   public final BlasterCallback getCB() throws XmlBlasterException
-   {
-      return clientInfo.getCB();
-   }
-   */
+      if (uniqueKey == null) {
+         StringBuffer buf = new StringBuffer(80);
 
+         buf.append("Subscription-").append(clientInfo.getUniqueKey());
+
+         buf.append("-").append(xmlKey.getUniqueKey());
+
+         buf.append("-").append(xmlQoS.toString()); // !!!hack?
+         
+         uniqueKey = buf.toString();
+      }
+      return uniqueKey;
+   }
 
 }

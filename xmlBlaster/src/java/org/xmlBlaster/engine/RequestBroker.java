@@ -3,11 +3,12 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.13 1999/11/17 23:38:53 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.14 1999/11/18 16:59:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.ServerImpl;
 import org.xmlBlaster.serverIdl.MessageUnit;
@@ -37,49 +38,32 @@ public class RequestBroker implements ClientListener
     */
    final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
 
-   /**
-    * All Subscriptions of a Client are in this map
-    * A multimap would be appropriate, but since this is not supported
-    * by the Collections API, a map with a set as value is used. 
-    * <br>
-    * Used for performant logout.
-    * <p>
-    * key   = client.getUniqueKey()
-    * value = clientSubscriptionSet with SubscriptionInfo objects
-    */
-   final private Set clientSubscriptionSet = Collections.synchronizedSet(new HashSet());
-   final private Map clientSubscriptionMap = Collections.synchronizedMap(new HashMap());
+   final private ClientSubscriptions clientSubscriptions;
 
    /**
-    * All generic subscriptions are collected here. 
-    * Generic are all subscriptions who don't subscribe a precise key-oid,
-    * but rather subscribe all MessageUnits matching a XPath query match.
-    * <br>
-    * If new MessageUnits are published, this set is consulted to check
-    * if some older subscriptions would match as well
-    * <p>
-    * value = SubscriptionInfo objects with generic subscriptions, but not
-    *         those, who subscribed a MessageUnit exactly by a known oid
+    * For listeners who want to be informed about subscribe/unsubscribe events
     */
-   final private Set subscribeRequestSet = Collections.synchronizedSet(new HashSet());
+   final private Set subscriptionListenerSet = Collections.synchronizedSet(new HashSet());
 
    final private ServerImpl serverImpl;
 
    private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
+   private com.fujitsu.xml.omquery.DomQueryMgr queryMgr;
 
    private com.sun.xml.tree.XmlDocument xmlKeyDoc = null;// Sun's DOM extensions, no portable
    //private org.w3c.dom.Document xmlKeyDoc = null;     // Document with the root node
    private org.w3c.dom.Node xmlKeyRootNode = null;    // Root node <xmlBlaster></xmlBlaster>
+
 
    /**
     * Access to RequestBroker singleton
     */
    public static RequestBroker getInstance(ServerImpl serverImpl) throws XmlBlasterException
    {
-      synchronized (RequestBroker.class)
-      {
-         if (requestBroker == null)
+      synchronized (RequestBroker.class) {
+         if (requestBroker == null) {
             requestBroker = new RequestBroker(serverImpl);
+         }
       }
       return requestBroker;
    }
@@ -90,8 +74,7 @@ public class RequestBroker implements ClientListener
     */
    public static RequestBroker getInstance()
    {
-      synchronized (RequestBroker.class)
-      {
+      synchronized (RequestBroker.class) {
          if (requestBroker == null) {
             Log.panic(ME, "Use other getInstance first");
          }
@@ -106,6 +89,9 @@ public class RequestBroker implements ClientListener
    private RequestBroker(ServerImpl serverImpl) throws XmlBlasterException
    {
       this.serverImpl = serverImpl;
+
+      this.clientSubscriptions = ClientSubscriptions.getInstance(this, serverImpl.getAuthenticate());
+
       this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
 
       /*
@@ -151,14 +137,26 @@ public class RequestBroker implements ClientListener
     */
    public org.w3c.dom.Node addKeyNode(org.w3c.dom.Node node) throws XmlBlasterException
    {
-      try {
+      try {     // !!! synchronize is missing !!!
          Log.info(ME, "addKeyNode=" + node.toString());
+         
          xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
+         
          xmlKeyRootNode.appendChild(node);
+         
          Log.info(ME, "New tree=" + xmlKeyRootNode.toString());
-         Writer          out = new OutputStreamWriter (System.out);
-         xmlKeyDoc.write(out);
+         
+         if (Log.DUMP) {  // dump the whole tree
+            Writer out = new OutputStreamWriter (System.out);
+            xmlKeyDoc.write(out);
+         }
+   
+         // !!! not performant, should be instantiated only just before needed
+         //     whith stale check
+         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);             
+
          return node;
+
       } catch (Exception e) {
          Log.error(ME+".addKeyNode", "Problems adding new key tree: " + e.toString());
          e.printStackTrace();
@@ -178,30 +176,116 @@ public class RequestBroker implements ClientListener
 
 
    /**
+    * Invoked by a client, to subscribe to one/many MessageUnit
     */
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      String uniqueKey = xmlKey.getUniqueKey();
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
 
-      /*
-      if (xmlKey.isGeneratedOid()) { // subscription without a given oid
-         subscriptionMultiMap.put();
+      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // subscription without a given oid
+         
+         fireSubscriptionEvent(subs, true);              // fires event for query subscription
+
+         Enumeration nodeIter;
+         try {
+            nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
+         } catch (Exception e) {
+            throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't subscribe, query snytax is wrong");
+         }
+         int n = 0;
+         while (nodeIter.hasMoreElements()) {
+            n++;
+            Object obj = nodeIter.nextElement();
+            com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
+            try {
+               String uniqueKey = getKeyOid(node);
+               Log.info(ME, "Client " + clientInfo.toString() + " is subscribing message oid=\"" + xmlKey.getUniqueKey() + "\" after successfull query");
+               subscribeToOid(xmlKey.getUniqueKey(), subs); // fires event for unique oid subscription
+            } catch (Exception e) {
+               Log.error(ME, e.toString());
+            }
+         }
+         Log.info(ME, n + " MessageUnits matched to subscription " + xmlKey.literal());
       }
+
+      else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
+         Log.info(ME, "Client " + clientInfo.toString() + " is subscribing message with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
+         subscribeToOid(xmlKey.getUniqueKey(), subs); // fires event
+      }
+
+      else {
+         Log.warning(ME + ".UnsupportedQueryType", "Sorry, can't subscribe, query snytax is unknown: " + xmlKey.getQueryType());
+         throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't subscribe, query snytax is unknown: " + xmlKey.getQueryType());
+      }
+   }
+
+
+   private String getKeyOid(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws XmlBlasterException
+   {
+      if (node == null) {
+         Log.warning(ME+".NoParentNode", "no parent node found");
+         throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
+      }
+
+      String nodeName = node.getNodeName();      // com.sun.xml.tree.ElementNode: getLocalName();
+
+      if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specialy handled
+         Log.warning(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
+         throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
+      }
+
+      if (!nodeName.equals("key")) {
+         return getKeyOid(node.getParentNode()); // w3c: getParentNode() sun: getParentImpl()
+      }
+
+      /* com.sun.xml.tree.ElementNode:
+      org.w3c.dom.Attr keyOIDAttr = node.getAttributeNode("oid");
+      if (keyOIDAttr != null)
+         return keyOIDAttr.getValue();
       */
 
+      // w3c conforming code:
+      org.w3c.dom.NamedNodeMap attributes = node.getAttributes();
+      if (attributes != null && attributes.getLength() > 0) {
+         int attributeCount = attributes.getLength();
+         for (int i = 0; i < attributeCount; i++) {
+            org.w3c.dom.Attr attribute = (org.w3c.dom.Attr)attributes.item(i);
+            if (attribute.getNodeName().equals("oid")) {
+               String val = attribute.getNodeValue();
+               // Log.trace(ME, "Found key oid=\"" + val + "\"");
+               return val;
+            }
+         }
+      }
+
+      Log.warning(ME+".InternalKeyOid", "Internal getKeyOid() error");
+      throw new XmlBlasterException(ME+".InternalKeyOid", "Internal getKeyOid() error");
+   }
+
+
+   /**
+    * Low level subscribe, is called when the <key oid="..."> to subscribe is exactly known
+    */
+   private void subscribeToOid(String uniqueKey, SubscriptionInfo subs) throws XmlBlasterException
+   {
+      MessageUnitHandler msg;
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
-         MessageUnitHandler msg;
          if (obj == null) {
-            msg = new MessageUnitHandler(this, subs);
+            // This is a new Message, yet unknown ...
+            msg = new MessageUnitHandler(this, subs.getXmlKey());
             messageContainerMap.put(uniqueKey, msg);
          }
          else {
+            // This message was known before ...
             msg = (MessageUnitHandler)obj;
          }
-         msg.addSubscriber(subs);
       }
+
+      // Now the MessageUnit exists, subscribe to it
+      msg.addSubscriber(subs);
+
+      fireSubscriptionEvent(subs, true);
    }
 
 
@@ -220,28 +304,41 @@ public class RequestBroker implements ClientListener
          throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
       }
       MessageUnitHandler msg = (MessageUnitHandler)obj;
-      SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS);
+ /* !!!!!!! */    SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS);
       int numRemoved = msg.removeSubscriber(subs);
       if (numRemoved < 1) {
          Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
          throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
       }
+      fireSubscriptionEvent(subs, false);
    }
 
 
    /**
+    * if MessageUnit is created from subscribe or MessageUnit is new, we need to add the
+    * DOM here once; XmlKeyBase takes care of that
+    *
+    * @see xmlBlaster.idl for comments
     */
-   public int publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
+   public String[] publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
       // !!! TODO: handling of qos
 
-      int retVal = 0;
+      String[] returnArr = new String[messageUnitArr.length];
+      for (int kk=0; kk<returnArr.length; kk++)
+         returnArr[kk] = "";
 
       for (int ii=0; ii<messageUnitArr.length; ii++) {
 
          MessageUnit messageUnit = messageUnitArr[ii];
-         XmlKey xmlKey = new XmlKey(messageUnit.xmlKey);
+         XmlKey xmlKey = new XmlKey(messageUnit.xmlKey, true);
          MessageUnitHandler msgHandler;
+
+         returnArr[ii] = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
+
+         // 1. set new value or create the new message:
+
+         boolean existed = false; // to shorten the synchronize block
 
          synchronized(messageContainerMap) {
             Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
@@ -251,9 +348,20 @@ public class RequestBroker implements ClientListener
             }
             else {
                msgHandler = (MessageUnitHandler)obj;
-               msgHandler.setContent(messageUnit.content);
+               existed = true;
             }
          }
+         if (existed)
+            msgHandler.setContent(xmlKey, messageUnit.content);
+
+         
+         // 2. check all known query subscriptions if the new message fits as well
+         if (!existed) {
+            Log.error(ME, "Checking existing query subscriptions is still missing"); // !!!
+         }
+
+         
+         // 3. now we can send updates to all interested clients:
 
          Map subscriberMap = msgHandler.getSubscriberMap();
          if (Log.TRACE) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
@@ -276,11 +384,9 @@ public class RequestBroker implements ClientListener
                cb.update(marr, qarr);
             }
          }
-
-         retVal++;
       }
 
-      return retVal;
+      return returnArr;
    }
 
 
@@ -297,6 +403,8 @@ public class RequestBroker implements ClientListener
             // throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
          }
          else {
+            MessageUnitHandler msg = (MessageUnitHandler)obj;
+            org.w3c.dom.Node node = RequestBroker.getInstance().removeKeyNode(msg.getRootNode());
             obj = null;
             return 1;
          }
@@ -320,40 +428,48 @@ public class RequestBroker implements ClientListener
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
       ClientInfo clientInfo = e.getClientInfo();
-      String name = clientInfo.toString();
-      if (Log.TRACE) Log.trace(ME, "Logout event for client " + name);
+      if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString());
+   }
 
-      String uniqueKey = clientInfo.getUniqueKey();
 
-      {
-         Object obj;
-         synchronized(clientSubscriptionMap) {
-            obj = clientSubscriptionMap.remove(uniqueKey);
-         }
-         if (obj == null) {
-            Log.warning(ME + ".ClientDoesntExist", "Sorry, can't logout, client " + name + " doesn't exist");
-            throw new XmlBlasterException(ME + ".ClientDoesntExist", "Sorry, can't logout, client " + name + " doesn't exist");
-         }
-         Set subscriptionSet = (Set)obj;
-         synchronized (subscriptionSet) {
-            Iterator iterator = subscriptionSet.iterator();
-            while (iterator.hasNext()) {
-               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
-            }
-         }
+   /**
+    * Adds the specified subscription listener to receive subscribe/unsubscribe events
+    */
+   public void addSubscriptionListener(SubscriptionListener l) {
+      if (l == null) {
+         return;
       }
+      synchronized (subscriptionListenerSet) {
+         subscriptionListenerSet.add(l);
+      }
+   }
 
-      {  // Slow linear search!!!!
-         synchronized(subscribeRequestSet) {
-            Iterator iterator = subscribeRequestSet.iterator();
-            while (iterator.hasNext()) {
-               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               if (sub.getClientInfo().getUniqueKey().equals(uniqueKey)) {
-                  // !!! is this allowed?? or is it killing the iterator?????????
-                  subscribeRequestSet.remove(sub);
-               }
-            }
+
+   /**
+    * Removes the specified listener
+    */
+   public void removeSubscriptionListener(SubscriptionListener l) {
+      if (l == null) {
+         return;
+      }
+      synchronized (subscriptionListenerSet) {
+         subscriptionListenerSet.remove(l);
+      }
+   }
+
+
+   /**
+    */
+   private final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
+   {
+      synchronized (subscriptionListenerSet) {
+         Iterator iterator = subscriptionListenerSet.iterator();
+         while (iterator.hasNext()) {
+            SubscriptionListener subli = (SubscriptionListener)iterator.next();
+            if (subscribe)
+               subli.subscriptionAdd(new SubscriptionEvent(subscriptionInfo));
+            else
+               subli.subscriptionRemove(new SubscriptionEvent(subscriptionInfo));
          }
       }
    }

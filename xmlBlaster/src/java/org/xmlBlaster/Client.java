@@ -3,7 +3,7 @@ Name:      Client.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: Client.java,v 1.15 1999/11/17 13:51:25 ruff Exp $
+Version:   $Id: Client.java,v 1.16 1999/11/18 16:59:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -129,9 +129,13 @@ public class Client
          Log.info(ME, "Unsubscribe done" + stop.nice());
 
 
+         Log.trace(ME, "Trying publish ...");
          try {
             marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
-            xmlServer.publish(marr, qarr);
+            String[] returnArr = xmlServer.publish(marr, qarr);
+            for (int ii=0; ii<returnArr.length; ii++) {
+               Log.info(ME, "   Returned oid=" + returnArr[ii]);
+            }
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
