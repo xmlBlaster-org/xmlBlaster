@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.14 2004/02/08 23:10:18 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.15 2004/04/30 08:57:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -121,6 +121,7 @@ protected:
    /** To allow specific configuration parameters for specific cluster nodes */
    std::string nodeId_; // = null;
 
+   /** Relating "connection", "history", "callback" etc. */
    std::string propertyPrefix_;
 
    std::string rootTagName_;
@@ -184,8 +185,6 @@ public:
     * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
    QueuePropertyBase(org::xmlBlaster::util::Global& global, const std::string& nodeId);
-
-   QueuePropertyBase(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::I_Log& log, const std::string& nodeId);
 
    QueuePropertyBase(const QueuePropertyBase& prop);
 
@@ -417,6 +416,7 @@ public:
 
 //   void cleanupAddresses();
 
+   /** Relating "connection", "history", "callback" etc. */
    std::string getPropertyPrefix() const;
    void setpropertyPrefix(const std::string& prefix);
 

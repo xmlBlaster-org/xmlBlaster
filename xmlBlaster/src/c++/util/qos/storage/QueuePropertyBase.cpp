@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.22 2004/02/09 10:08:04 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.23 2004/04/30 08:57:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -50,7 +50,7 @@ long DEFAULT_expires;
 
 /**
  * Configure property settings, add your own defaults in the derived class
- * @param propertyPrefix e.g. "history" or "callback" or ""
+ * @param propertyPrefix e.g. "history" or "callback" or "connection" or ""
  */
 void QueuePropertyBase::initialize(const string& propertyPrefix)
 {
@@ -131,20 +131,30 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
 
    QueuePropertyBase::QueuePropertyBase(Global& global, const string& nodeId)
-      : ME("QueuePropertyBase"), global_(global), log_(global.getLog("org.xmlBlaster.util.qos")),
-        addressArr_()
+      : ME("QueuePropertyBase"),
+        global_(global),
+        log_(global.getLog("org.xmlBlaster.util.qos")),
+        type_(DEFAULT_type),
+        version_(DEFAULT_version),
+        minExpires_(DEFAULT_minExpires),
+        maxExpires_(DEFAULT_minExpires),
+        relating_(Constants::RELATING_CALLBACK),
+        expires_(DEFAULT_expires),
+        maxEntries_(DEFAULT_maxEntriesDefault),
+        maxBytes_(DEFAULT_bytesDefault),
+        maxEntriesCache_(DEFAULT_maxEntriesCacheDefault),
+        storeSwapLevel_(0),
+        storeSwapBytes_(0),
+        reloadSwapLevel_(0),
+        reloadSwapBytes_(0),
+        maxBytesCache_(DEFAULT_bytesCacheDefault),
+        onOverflow_(Constants::ONOVERFLOW_DEADMESSAGE),
+        onFailure_(Constants::ONOVERFLOW_DEADMESSAGE),
+        addressArr_(),
+        nodeId_(nodeId),
+        propertyPrefix_(""),
+        rootTagName_("queue")
    {
-      nodeId_ = nodeId;
-      propertyPrefix_ = "";
-      rootTagName_ = "queue";
-   }
-
-   QueuePropertyBase::QueuePropertyBase(Global& global, I_Log& log, const string& nodeId)
-      : ME("QueuePropertyBase"), global_(global), log_(log), addressArr_()
-   {
-      nodeId_ = nodeId;
-      propertyPrefix_ = "";
-      rootTagName_ = "queue";
    }
 
    QueuePropertyBase::QueuePropertyBase(const QueuePropertyBase& prop)
