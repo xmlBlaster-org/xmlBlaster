@@ -6,13 +6,13 @@
   /___________)                                              (__________\
 
 
-The XmlBlaster is the only XML based MOM (message-oriented
+The XmlBlaster is an XML based MOM (message-oriented
 Middleware) which comes with LGPL. XmlBlaster is a pure Java
 publish/subscribe MOM server which exchanges XML-encoded
 messages between publishers and subscribers.
 
-Communication with the server is based on CORBA, RMI or XML-RPC and
-subscribers can use XPath expressions to filter the messages
+Communication with the server is based on CORBA, RMI, XML-RPC or SOCKET
+and subscribers can use XPath expressions to filter the messages
 they wish to receive.
 
 Examples for C++, Java, Perl and Python clients are provided.
@@ -43,7 +43,7 @@ Examples of Java-clients accessing xmlBlaster you find in directory:
 
   xmlBlaster/demo/javaclients
 and
-  xmlBlaster/testsuite/src/java/org/xmlBlaster
+  xmlBlaster/testsuite/src/java/org/xmlBlaster/test
 
 
 Examples of C++/Perl/Tcl/Python/Java clients accessing xmlBlaster
@@ -60,4 +60,6 @@ this guide:
 
 
 ---------------------------------
-xmlBlaster@marcelruff.info  (Marcel Ruff)
+The xmlBlaster.org maintainers
+http://www.xmlBlaster.org
+http://www.xmlBlaster.net
