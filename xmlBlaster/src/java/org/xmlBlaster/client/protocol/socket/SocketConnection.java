@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: SocketConnection.java,v 1.6 2002/02/15 22:44:49 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.7 2002/02/15 23:41:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -49,10 +49,11 @@ import org.xmlBlaster.protocol.socket.Parser;
  * <p />
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
- // Does use some attributes from Executor, not more.
-public class SocketConnection extends Executor implements I_XmlBlasterConnection
+public class SocketConnection implements I_XmlBlasterConnection
 {
    private String ME = "SocketConnection";
+   /** Default port of xmlBlaster socket server is 7607 */
+   public static final int DEFAULT_SERVER_PORT = 7607;
    /** The port for the socket server */
    private int port = DEFAULT_SERVER_PORT;
    /** The port for our client side */
@@ -65,6 +66,12 @@ public class SocketConnection extends Executor implements I_XmlBlasterConnection
    private java.net.InetAddress inetAddr = null;
    /** our client side host */
    private java.net.InetAddress localInetAddr = null;
+   /** The socket connection to/from one client */
+   protected Socket sock;
+   /** Reading from socket */
+   protected InputStream iStream;
+   /** Writing to socket */
+   protected OutputStream oStream;
    /** SocketCallbackImpl listens on socket to receive callbacks */
    protected SocketCallbackImpl cbReceiver = null;
    /** The client code which wants the callback messages */
@@ -72,6 +79,12 @@ public class SocketConnection extends Executor implements I_XmlBlasterConnection
    private String passwd = null;
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos returnQos = null;
+   /** Praefix for requestId */
+   protected String praefix = null;
+   /** The unique client sessionId */
+   protected String sessionId = null;
+   /** The client login name */
+   protected String loginName = "";
 
    /**
     * Connect to xmlBlaster using plain socket with native message format.
@@ -85,6 +98,15 @@ public class SocketConnection extends Executor implements I_XmlBlasterConnection
     */
    public SocketConnection(java.applet.Applet ap) throws XmlBlasterException
    {
+   }
+
+   public Socket getSocket() throws ConnectionException
+   {
+      if (this.sock == null) {
+         if (Log.TRACE) Log.trace(ME, "No socket connection available.");
+         throw new ConnectionException(ME+".init", "No plain socket connection available.");
+      }
+      return this.sock;
    }
 
    /**
@@ -261,7 +283,7 @@ public class SocketConnection extends Executor implements I_XmlBlasterConnection
 
          if (client != null) {
             // start the socket callback thread here (to receive callbacks)
-            this.cbReceiver = new SocketCallbackImpl(this, iStream, client);
+            this.cbReceiver = new SocketCallbackImpl(this, client);
              // We set our IP:port just for information, it is not actively used by xmlBlaster:
             loginQos.addCallbackAddress(new CallbackAddress("SOCKET", getLocalAddress()));
          }

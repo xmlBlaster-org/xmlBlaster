@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Executor class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: Executor.java,v 1.2 2002/02/15 22:45:54 ruff Exp $
+Version:   $Id: Executor.java,v 1.3 2002/02/15 23:41:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -23,6 +23,7 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.protocol.ConnectionException; // Move java file to server package!
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -61,6 +62,10 @@ public abstract class Executor
    protected String loginName = "";
    /** How long to block on remote call */
    protected long responseWaitTime = 0;
+   /** This is the client side */
+   protected I_CallbackExtended callback = null;
+   /** The singleton handle for this xmlBlaster server (the server side) */
+   protected I_XmlBlaster xmlBlasterImpl = null;
 
    /**
     * For listeners who want to be informed about return messages or exceptions
@@ -76,13 +81,21 @@ public abstract class Executor
    }
 
    /**
-    * Constructor for client specific code:<br />
-    * SocketCallbackImpl on client side
-    * HandleClient on server side
+    * Used by SocketCallbackImpl on client side, uses I_CallbackExtended to invoke client classes
+    * <p />
+    * Used by HandleClient on server side, uses I_XmlBlaster to invoke xmlBlaster core 
+    * <p />
+    * This executor has mixed client and server specific code for two reasons:<br />
+    * - Possibly we can use the same socket between two xmlBlaster server (load balance)<br />
+    * - Everything is together<br />
     * @param sock The open socket to/from a specific client
+    * @param xmlBlasterImpl Handle for the server implementation
+    * @param callback Handle for the client implementation
     */
-   protected Executor(Socket sock) throws IOException {
+   protected Executor(Socket sock, I_XmlBlaster xmlBlasterImpl, I_CallbackExtended callback) throws IOException {
       this.sock = sock;
+      this.xmlBlasterImpl = xmlBlasterImpl;
+      this.callback = callback; 
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
       this.responseWaitTime = XmlBlasterProperty.get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS);
@@ -134,6 +147,109 @@ public abstract class Executor
          if (o == null) Log.error(ME, "removeResponseListener(" + requestId + ") entry not found");
       }
    }
+
+
+   /**
+    * Handle common messages
+    * @return false: for connect() and disconnect() which must be handled by the base class
+    */
+   protected boolean receive(Parser receiver) throws XmlBlasterException, IOException {
+
+      if (receiver.isInvoke()) {
+         // handling invocations ...
+
+         if (Constants.PUBLISH.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length < 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+            String[] response = xmlBlasterImpl.publishArr(receiver.getSessionId(), arr);
+            executeResponse(receiver, response);
+         }
+         else if (Constants.GET.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length != 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+            MessageUnit[] response = xmlBlasterImpl.get(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            executeResponse(receiver, response);
+         }
+         else if (Constants.PING.equals(receiver.getMethodName())) {
+            executeResponse(receiver, "<qos><state>OK</state></qos>");
+         }
+         else if (Constants.SUBSCRIBE.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length != 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+            String response = xmlBlasterImpl.subscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            executeResponse(receiver, response);
+         }
+         else if (Constants.UNSUBSCRIBE.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length != 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+            xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            // !!! TODO better return value?
+            executeResponse(receiver, "<qos><state>OK</state></qos>");
+         }
+         else if (Constants.UPDATE.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length < 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+            /*String[] response = */callback.update(receiver.getSessionId(), arr);
+            String[] response = new String[arr.length];      // !!! TODO response from update
+            for (int ii=0; ii<arr.length; ii++)
+               response[ii] = "<qos><state>OK</state></qos>";
+            executeResponse(receiver, response);
+         }
+         else if (Constants.ERASE.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length != 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+            String[] response = xmlBlasterImpl.erase(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            executeResponse(receiver, response);
+         }
+         else if (Constants.CONNECT.equals(receiver.getMethodName())) {
+            return false;
+         }
+         else if (Constants.DISCONNECT.equals(receiver.getMethodName())) {
+            return false;
+         }
+         else {
+            Log.info(ME, "Ignoring received message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it");
+            if (Log.DUMP) Log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+         }
+         return true;
+      }
+
+      // Handling response or exception ...
+      I_ResponseListener listener = (I_ResponseListener)responseListenerMap.get(receiver.getRequestId());
+      if (listener == null) {
+         // logging should not dump whole message:!!!
+         Log.warn(ME, "Ignoring received message, nobody is interested in it: >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+         return true;
+      }
+
+      if (receiver.isResponse()) {
+         if (Constants.GET.equals(receiver.getMethodName())) {
+            listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
+         }
+         else if (Constants.ERASE.equals(receiver.getMethodName()) || Constants.PUBLISH.equals(receiver.getMethodName())) {
+            listener.responseEvent(receiver.getRequestId(), receiver.getQosArr());
+         }
+         else {
+            listener.responseEvent(receiver.getRequestId(), receiver.getQos());
+         }
+      }
+      else if (receiver.isException()) { // XmlBlasterException
+         listener.responseEvent(receiver.getRequestId(), receiver.getException());
+      }
+      else {
+         Log.error(ME, "Invalid response message");
+         listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(ME, "Invalid response message '" + receiver.getMethodName()));
+      }
+
+      return true;
+   }
+
 
    /**
     * Send a message and block until the response arrives. 

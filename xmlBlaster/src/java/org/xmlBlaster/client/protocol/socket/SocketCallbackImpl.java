@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: SocketCallbackImpl.java,v 1.4 2002/02/15 22:44:49 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.5 2002/02/15 23:41:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -40,8 +40,6 @@ public class SocketCallbackImpl extends Executor implements Runnable
 {
    private final String ME;
    private final SocketConnection sockCon;
-   private final InputStream inputStream;
-   private final I_CallbackExtended callback;
    /** A unique name for this client socket */
    private String callbackAddressStr = null;
 
@@ -53,12 +51,11 @@ public class SocketCallbackImpl extends Executor implements Runnable
     * @param sockCon    The socket driver main code
     * @param callback   Our implementation of I_CallbackExtended.
     */
-   SocketCallbackImpl(SocketConnection sockCon, InputStream inputStream, I_CallbackExtended callback) throws XmlBlasterException, IOException
+   SocketCallbackImpl(SocketConnection sockCon, I_CallbackExtended callback) throws XmlBlasterException, IOException
    {
-      super(sockCon.getSocket());
+      super(sockCon.getSocket(), null, callback);
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
-      this.inputStream = inputStream;
       this.callback = callback;
       this.callbackAddressStr = sockCon.getLocalAddress();
       Thread t = new Thread(this);
@@ -75,61 +72,11 @@ public class SocketCallbackImpl extends Executor implements Runnable
 
          Parser receiver = new Parser();
          try {
-            receiver.parse(inputStream);
+            receiver.parse(iStream);
             if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
-            // Handling callbacks ...
-            if (receiver.isInvoke()) {
-               // update()
-               if (Constants.UPDATE.equals(receiver.getMethodName())) {
-                  try {
-                     /*String response =*/ callback.update(sockCon.getLoginName(), receiver.getMessageArr());
-                     Log.error(ME, "!!!!! send response with 'requestId' is missing");
-                  }
-                  catch (XmlBlasterException e) {
-                     Log.error(ME, "!!!!! send exception with 'requestId' is missing: " + e);
-                  }
-                  catch (Throwable e) {
-                     Log.error(ME, "!!!!! send exception with 'requestId' is missing: " + e);
-                  }
-               }
-               // ping()
-               else if (Constants.PING.equals(receiver.getMethodName())) {
-                  Log.error(ME, "!!!!! send response for ping with 'requestId' is missing: " + receiver.getRequestId());
-               }
-               else {
-                  Log.info(ME, "Ignoring received message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it");
-                  if (Log.DUMP) Log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-               }
-               continue;
-            }
+            receive(receiver);
 
-            // Handling response or exception ...
-            I_ResponseListener listener = (I_ResponseListener)responseListenerMap.get(receiver.getRequestId());
-            if (listener == null) {
-               // logging should not dump whole message:!!!
-               Log.info(ME, "Ignoring received message, nobody is interested in it: >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-               continue;
-            }
-
-            if (receiver.isResponse()) {
-               if (Constants.GET.equals(receiver.getMethodName())) {
-                  listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
-               }
-               else if (Constants.ERASE.equals(receiver.getMethodName()) || Constants.PUBLISH.equals(receiver.getMethodName())) {
-                  listener.responseEvent(receiver.getRequestId(), receiver.getQosArr());
-               }
-               else {
-                  listener.responseEvent(receiver.getRequestId(), receiver.getQos());
-               }
-            }
-            else if (receiver.isException()) { // XmlBlasterException
-               listener.responseEvent(receiver.getRequestId(), receiver.getException());
-            }
-            else {
-               Log.error(ME, "Invalid response message");
-               listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(ME, "Invalid response message '" + receiver.getMethodName()));
-            }
 
          }
          catch(XmlBlasterException e) {
@@ -163,7 +110,7 @@ public class SocketCallbackImpl extends Executor implements Runnable
     */
    public void shutdown() {
       running = false;
-      try { inputStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
+      try { iStream.close(); } catch(IOException e) { Log.warn(ME, e.toString()); }
       Log.info(ME, "There are " + responseListenerMap.size() + " messages pending (no response arrived yet");
    }
 } // class SocketCallbackImpl
