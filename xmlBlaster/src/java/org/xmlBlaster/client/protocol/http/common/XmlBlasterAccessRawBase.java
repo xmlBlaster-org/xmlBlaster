@@ -107,6 +107,30 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       return this.isConnected;
    }
 
+   private String startPersistentHttpConnection() throws Exception {
+      this.persistentHttpConnection.start();
+      log("DEBUG", "Waiting for connect() to establish ...");
+
+      int num = 100;
+      int i;
+      for (i=0; i<num; i++) {
+         if (this.isConnected) {
+            break;
+         }
+         try {
+            Thread.sleep(500);
+         } catch(java.lang.InterruptedException e){
+            log("WARN", e.toString());
+         }
+      }
+      if (i >= num) {
+         log("ERROR", "Can't login to xmlBlaster, timed out.");
+         throw new Exception("Can't login to xmlBlaster, timed out.");
+      }
+      log("INFO", "Successfully connected to xmlBlaster");
+      return this.persistentHttpConnection.getConnectReturnQos();
+   }
+
    /**
     * @see I_XmlBlasterAccessRaw#connect(String, I_CallbackRaw)
     */
@@ -130,27 +154,15 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          this.persistentHttpConnection = new PersistentRequest(this, this.xmlBlasterServletUrl, qos);
       }
 
-      this.persistentHttpConnection.start();
-      log("DEBUG", "Waiting for connect() to establish ...");
+      return startPersistentHttpConnection();
+   }
 
-      int num = 100;
-      int i;
-      for (i=0; i<num; i++) {
-         if (this.isConnected) {
-            break;
-         }
-         try {
-            Thread.sleep(500);
-         } catch(java.lang.InterruptedException e){
-            log("WARN", e.toString());
-         }
-      }
-      if (i >= num) {
-         log("ERROR", "Can't login to xmlBlaster, timed out.");
-         throw new Exception("Can't login to xmlBlaster, timed out.");
-      }
-      log("INFO", "Successfully connected to xmlBlaster");
-      return this.persistentHttpConnection.getConnectReturnQos();
+   /**
+    * @see I_XmlBlasterAccessRaw#connect(String, I_CallbackRaw)
+    */
+   public String sendXmlScript(String xmlRequest) throws Exception {
+      log("DEBUG", "xmlScript(xmlRequest="+xmlRequest+")");
+      return (String)postRequest("xmlScript", xmlRequest, null, null, !ONEWAY);
    }
 
    public Hashtable subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
@@ -232,9 +244,14 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          // applet.getAppletContext().showDocument(URL url, String target);
          //String url = (doPost) ? this.xmlBlasterServletUrl : this.xmlBlasterServletUrl + request;
 
-         if (key != null) request += "&key=" + encode(key, "UTF-8");
-         if (qos != null) request += "&qos=" + encode(qos, "UTF-8");
-         if (content != null) request += "&content=" + encode(new String(content), "UTF-8");
+         if ("xmlScript".equals(actionType)) {
+            if (key != null) request += "&xmlRequest=" + encode(key, "UTF-8");
+         }
+         else {
+            if (key != null) request += "&key=" + encode(key, "UTF-8");
+            if (qos != null) request += "&qos=" + encode(qos, "UTF-8");
+            if (content != null) request += "&content=" + encode(new String(content), "UTF-8");
+         }
 
          String url = (doPost) ? this.xmlBlasterServletUrl + "?" + request : this.xmlBlasterServletUrl + request;
       
@@ -289,6 +306,9 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
                else if (ERASE_NAME.equals(method)) {
                   Hashtable[] returnQos = (Hashtable[])ois.readObject();
                   returnObject = returnQos;
+               }
+               else if ("xmlScript".equals(method)) {
+                  returnObject = (String)ois.readObject();
                }
                else if (DISCONNECT_NAME.equals(method)) {
                   returnObject = ois.readObject();

@@ -35,16 +35,30 @@ public interface I_XmlBlasterAccessRaw
    public final static String UPDATE_NAME = "update";
 
    
+   /**
+    * Send a xml script request to xmlBlaster. 
+    * You need to call connect() first!
+    * @return xml script returned
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">client.script requirement</a>
+    */
+   public String sendXmlScript(String xmlRequest) throws Exception;
 
    /**
     * Connect to xmlBlaster. 
     * @param qos If your qos is null the APPLET PARAMs will be checked for"xmlBlaster/loginName" and "xmlBlaster/passwd"<br />
     *            If your qos is "<qos/>" the servlet will choose its configured connectQoS (take care on security issues!)<br />
     *            If qos is not null and pre-filled with authentication informations it will be used to authenticate at xmlBlaster<br />
+    * @param callback Where to send asynchronous callback messages. 
     *             
     * @return never null TODO!!!: return JXPath Hashtable for easier parameter access
+    *         Currently the ConnectQos.toXml() is returned
     */
    public String connect(String qos, I_CallbackRaw callback) throws Exception;
+
+   /**
+    * Check wether we are connected
+    */
+   public boolean isConnected();
 
    /**
     * @return never null, contains QoS in XJPath format
