@@ -90,31 +90,6 @@ EmailDriver.from=xmlblast@localhost
 
 
 #------------------------------------------------------------------------------
-# Customize queue properties
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
-
-# The property with appended 'Cache' is in RAM, the second property is swap space on harddisk
-
-# How many history messages of same key oid (topic) to hold in xmlBlaster (holds references only)
-history.queue.maxMsgCache = 10
-history.queue.maxMsg = ${history.queue.maxMsgCache}
-
-# How big is a callback queue for each client (holds references only)
-cb.queue.maxMsgCache = 1000
-cb.queue.maxMsg = ${cb.queue.maxMsgCache}
-
-# How big is the topic cache for messages of same oid (here your message content occupies the memory)
-msgUnitStore.maxMsgCache = 10000
-msgUnitStore.maxMsg = 100000000
-
-
-# Tail back queue on client side (contains the real data of all message types)
-cb.queue.maxMsgCache = 1000
-cb.queue.maxMsg = 10000000
-#------------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------------
 # Customize dispatcher plugin
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html
 DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
@@ -161,6 +136,31 @@ QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlu
 
 # Choose the plugin (each client can overwrite this in its connect/publish QoS)
 #queue/defaultPlugin=CACHE,1.0
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Customize queue and persistence properties
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
+
+# The property with appended 'Cache' is in RAM, the second property is swap space on harddisk
+
+# How many history messages of same key oid (topic) to hold in xmlBlaster (holds references only)
+queue/history/maxMsgCache = 10
+queue/history/maxMsg = ${queue/history/maxMsgCache}
+
+# How big is a callback queue for each client (holds references only)
+queue/callback/maxMsgCache = 1000
+queue/callback/maxMsg = ${queue/callback/maxMsgCache}
+
+# How big is the topic cache for messages of same oid (here your message content occupies the memory)
+persistence/msgUnitStore/maxMsgCache = 10000
+persistence/msgUnitStore/maxMsg = 100000000
+
+
+# Tail back queue on client side (contains the real data of all message types)
+queue/client/maxMsgCache = 1000
+queue/client/maxMsg = 10000000
 #------------------------------------------------------------------------------
 
 
