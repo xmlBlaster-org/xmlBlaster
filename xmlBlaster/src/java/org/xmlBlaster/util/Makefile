@@ -12,7 +12,8 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/util
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = pool servlet
+# directory 'servlet' not compiled in standard distribution, see servlet/README
+SUB_DIRS = pool
 LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 

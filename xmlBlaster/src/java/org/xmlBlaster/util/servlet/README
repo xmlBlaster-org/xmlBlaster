@@ -1,5 +1,10 @@
 Servlet which generates the requirement html overview page on the fly from xml/xsl
 
+NOTE:
+To compile you need 
+   xmlBlaster/lib/xt.jar
+   xmlBlaster/lib/xp.jar
+from James Clark as well. They a not in the standard xmlBlaster distribution!
 
 please put the following lines in your zone.properties(Apache) (servlet.properties):
 
