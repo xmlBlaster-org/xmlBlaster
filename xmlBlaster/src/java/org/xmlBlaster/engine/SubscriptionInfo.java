@@ -366,6 +366,7 @@ public class SubscriptionInfo implements I_AdminSubscription /* implements Compa
     */
    static boolean isSubscribeId(String id)
    {
+      if (id == null) return false;
       return id.startsWith(Constants.SUBSCRIPTIONID_PREFIX) ? true : false;
    }
 
