@@ -26,14 +26,14 @@ public class NodeStateInfo {
    private static final String ME = "NodeStateInfo";
    private final Global glob;
 
-   /** Free RAM memory in kBytes */
-   private int freeRam;
+   /** Free RAM memory in kBytes, -1 if not known */
+   private int freeRam = - 1;
 
    /** Holds Cpu info objects */
    private Map cpuMap = new TreeMap();
 
-   /** Average idle of all CPUs of the node */
-   private int avgCpuIdle = 0;
+   /** Average idle of all CPUs of the node, -1 if not known */
+   private int avgCpuIdle = -1;
 
    public NodeStateInfo(Global glob) {
       this.glob = glob;
@@ -148,7 +148,8 @@ public class NodeStateInfo {
          Cpu cpu = (Cpu)it.next();
          sb.append(offset).append("   <cpu id='").append(cpu.id).append("' idle='").append(cpu.idle).append("'/>");
       }
-      sb.append(offset).append("   <ram free='").append(getFreeRam()).append("'/>");
+      if (getFreeRam() >= 0)
+         sb.append(offset).append("   <ram free='").append(getFreeRam()).append("'/>");
       sb.append(offset).append("</state>");
       return sb.toString();
    }

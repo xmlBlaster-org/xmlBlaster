@@ -144,9 +144,7 @@ public final class NodeInfo
     */
    public void addBackupnode(NodeId backupId) {
       if (backupnodeMap == null) backupnodeMap = new TreeMap();
-      glob.getLog().info(ME, "Adding backupId=" +  backupId);
       backupnodeMap.put(backupId.getId(), backupId);
-      glob.getLog().info(ME, "Added backupId=" +  backupId);
    }
 
    /**
@@ -154,7 +152,8 @@ public final class NodeInfo
     * @return true if ok, false on error
     */
    public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
-      glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
+      // glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
+
       if (name.equalsIgnoreCase("info")) {
          return true;
       }

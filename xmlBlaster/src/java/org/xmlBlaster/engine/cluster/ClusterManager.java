@@ -22,6 +22,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.Iterator;
 
 /**
  * The manager instance for a cluster node. 
@@ -55,7 +56,7 @@ public final class ClusterManager
    /** Info about myself */
    private ClusterNode myClusterNode = null;
 
-   public ClusterManager(Global glob) {
+   public ClusterManager(Global glob) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog();
 
@@ -71,6 +72,30 @@ public final class ClusterManager
          this.log.error(ME, "Node ID is still unknown");
       else
          initClusterNode();
+
+      // Look for environment settings to configure startup clustering
+      String[] env = { "cluster.node", "cluster.node.info", "cluster.node.master" };
+      for (int ii=0; ii<env.length; ii++) {
+         Map nodeMap = glob.getProperty().get(env[ii], (Map)null);
+         if (nodeMap != null) {
+            Iterator iter = nodeMap.keySet().iterator();
+            log.info(ME, "Found -" + env[ii] + " with " + nodeMap.size() + " array size, ii=" + ii);
+            while (iter.hasNext()) {
+               String nodeIdName = (String)iter.next();       // e.g. "heron" from "cluster.node.master[heron]=..."
+               String xml = (String)nodeMap.get(nodeIdName);  // The "<clusternode>..." xml ASCII string for heron
+               if (xml == null || xml.length() < 1) {
+                  log.info(ME, "Ignoring envrionment setting -" + env[ii]);
+                  continue;
+               }
+               log.info(ME, "Parsing envrionment -" + env[ii] + " ...");
+               NodeParser nodeParser = new NodeParser(glob, this, xml); // fills the info to ClusterManager
+            }
+         }
+      }
+
+      // !!! subscribe !!!
+
+      if (log.DUMP) log.dump(ME, toXml());
       this.log.info(ME, "Initialized and ready");
    }
 
@@ -223,5 +248,35 @@ public final class ClusterManager
       ClusterNode clusterNode = getClusterNode(nodeId);
       return (XmlBlasterConnection)connectionMap.get(nodeId.getId());
       */
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * @param extraOffset indenting of tags for nice output
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(1024);
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset).append("<clusterManager>");
+      if (clusterNodeMap != null && clusterNodeMap.size() > 0) {
+         Iterator it = clusterNodeMap.values().iterator();
+         while (it.hasNext()) {
+            ClusterNode info = (ClusterNode)it.next();
+            sb.append(info.toXml(extraOffset + "   "));
+         }
+      }
+      sb.append(offset).append("</clusterManager>");
+
+      return sb.toString();
    }
 }

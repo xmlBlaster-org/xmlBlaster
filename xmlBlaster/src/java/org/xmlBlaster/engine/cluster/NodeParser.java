@@ -71,6 +71,7 @@ public class NodeParser extends SaxHandlerBase
    private String ME = "NodeParser";
 
    private final Global glob;
+   private final ClusterManager clusterManager;
 
    /** The unique node id */
    private String id = null;
@@ -95,9 +96,10 @@ public class NodeParser extends SaxHandlerBase
     * Constructs the specialized quality of service object for a publish() call.
     * @param xml  The XML based ASCII string
     */
-   public NodeParser(Global glob, String xml) throws XmlBlasterException {
+   public NodeParser(Global glob, ClusterManager clusterManager, String xml) throws XmlBlasterException {
       // if (Log.TRACE) Log.trace(ME, "\n"+xml);
       this.glob = glob;
+      this.clusterManager = clusterManager;
       init(xml);  // use SAX parser to parse it (is slow)
    }
 
@@ -121,7 +123,7 @@ public class NodeParser extends SaxHandlerBase
     */
    public final void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
+      // glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
 
       if (name.equalsIgnoreCase("clusternode")) {
          inClusternode++;
@@ -133,10 +135,10 @@ public class NodeParser extends SaxHandlerBase
                   throw new RuntimeException("NodeParser: <clusternode> attribute 'id' is missing, ignoring message");
                }
                id = id.trim();
-               tmpClusterNode = glob.getClusterManager().getClusterNode(id);
+               tmpClusterNode = clusterManager.getClusterNode(id);
                if (tmpClusterNode == null) {
                   tmpClusterNode = new ClusterNode(glob, new NodeId(id));
-                  glob.getClusterManager().addClusterNode(tmpClusterNode);
+                  clusterManager.addClusterNode(tmpClusterNode);
                }
             }
             return;
@@ -208,7 +210,7 @@ public class NodeParser extends SaxHandlerBase
     */
    public void endElement(String uri, String localName, String name)
    {
-      glob.getLog().info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
+      // glob.getLog().info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
 
       if (name.equalsIgnoreCase("clusternode")) {
          inClusternode--;
@@ -271,7 +273,7 @@ public class NodeParser extends SaxHandlerBase
             "        <clusternode id='aragon.mycomp.com'/>\n" +
             "     </backupnode>\n" +
             "   </info>\n" +
-            "   <master type='DOMAIN'>\n" +
+            "   <master type='DomainToMaster' version='0.9'>\n" +
             "     <![CDATA[\n" +
             "     <key domain='RUGBY'/>\n" +
             "     <key type='XPATH'>//STOCK</key>\n" +
@@ -286,7 +288,7 @@ public class NodeParser extends SaxHandlerBase
 
          {
             System.out.println("\nFull Message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, xml);
+            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
  
@@ -296,23 +298,23 @@ public class NodeParser extends SaxHandlerBase
             "     My own rule\n" +
             "   </master>\n" +
             "   <state>\n" +
-            "     <cpu id='0' idle='40'/>\n" +
-            "     <cpu id='1' idle='44'/>\n" +
-            "     <ram free='12000'/>\n" +
+            "     <cpu id='0' idle='60'/>\n" +
+            "     <cpu id='1' idle='58'/>\n" +
+            "     <ram free='10657'/>\n" +
             "   </state>\n" +
             "</clusternode>\n";
          
          
          {
             System.out.println("\nFull Message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, xml);
+            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
          /*
          xml = "<clusternode></clusternode>";
          {
             System.out.println("\nEmpty message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, xml);
+            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
          */
