@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.8x [xxx, xx 200x]
+Changes for 0.84 [Jan, 22 2003]
 ===============================
  o Renamed <isClusterNode/> to <clusterNode/> in connect Qos
 

@@ -4,7 +4,7 @@
 
 
 # Todo: use a global VERSION file for java, C++ and all other languages
-VERSION = 0.80
+VERSION = 0.84
 SRC_DIR =$(XMLBLASTER_HOME)/src/c++
 include $(SRC_DIR)/$(CORBA_CPP).def
 IDL_DIR    =$(XMLBLASTER_HOME)/src/java/org/xmlBlaster/protocol/corba
