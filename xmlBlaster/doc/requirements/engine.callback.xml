@@ -18,6 +18,7 @@
       A callback is invoked by a thread from a thread pool. Retrieving a thread
       from the pool consumes approximately 180 micro seconds compared to approximately
       800 micro seconds creating a thread natively.
+      It is guaranteed that a maximum of one thread is occupied per queue/callback.
       </li>
       <li>Zero or once delivery (transient message)<br />
       A message is usually delivered exactly once. Under certain failure circumstances
@@ -28,7 +29,8 @@
          message, xmlBlaster will redeliver the message. Such messages are marked with
          a QoS tag &lt;redeliver>12&lt;/redeliver> whereby 12 is the current attempt. xmlBlaster retries
          until the queue span of life expires and in this case the lost messages are published as <i>dead letters</i>.
-         Redelivering can be switched off, resulting in immediate <i>dead letters</i>.
+         Redelivering can be switched off, resulting in immediate <i>dead letters</i> and
+         garbage collection of resources.
          </li>
          <li>For PtP messages it could be reasonable to inform the sender of the message about
          this situation [needs to be specified]</li>
@@ -67,6 +69,41 @@
       callback and send unauthorized messages. Therefore the first argument in update()
       sends a sessionId, which must be passed to xmlBlaster initially on callback construction.
       </li>
+      <li>Message compression<br />
+      Messages can be compressed with the zip format. The zip applies for the content of
+      the message only. Zipping happens before sending a message to a callback server which
+      requested this service.
+      Zipping is applied only to contents bigger a configurable value, typically contents
+      bigger 1.2 kBytes.
+      </li>
+      <li><br />
+      </li>
+      </ul>
+      <p>
+      Open issues
+      </p>
+      <ul>
+      <li>Oneway updates<br />
+      Oneway updates are callbacks without a return value, e.g.<br />
+      <code>
+      oneway void update(...);  // not blocking invocation
+      String update(...);       // blocking method invocation
+      </code>
+      It is not yet decided if we need this feature.
+      </li>
+      <li>Blocking publisher<br />
+      XmlBlaster blocks a publish() invocation of a client until it has
+      securely accepted the message.
+      Is it necessary to support a blocking until e.g. a PtP message is delivered
+      to their destination (like a blocking RPC call)?
+      </li>
+      <li>Connection errors versus client failures<br />
+      Do we need to distinguish recovery procedures for callback connection problems
+      and for blocking clients or for clients sending NAK?
+      </li>
+      <li>Transactional context<br />
+      Transaction support (probably based on Jini) and failure recovery needs to be specified.
+      </li>
       </ul>
       <p>
       </p>
@@ -81,7 +118,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
