@@ -46,7 +46,7 @@ import java.io.IOException;
  * <p />
  * <code>   java org.xmlBlaster.Main -?</code>
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" target="others">admin.telnet</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>
  */
@@ -205,16 +205,14 @@ public class Main implements I_RunlevelListener, I_Main
    /**
     * Access the authentication singleton.
     */
-   public Authenticate getAuthenticate()
-   {
+   public Authenticate getAuthenticate() {
       return glob.getAuthenticate();
    }
 
    /**
     * Access the xmlBlaster singleton.
     */
-   public I_XmlBlaster getXmlBlaster()
-   {
+   public I_XmlBlaster getXmlBlaster() {
       return getAuthenticate().getXmlBlaster();
    }
 
@@ -230,8 +228,7 @@ public class Main implements I_RunlevelListener, I_Main
     * <p />
     * NOTE: This method never returns, only on exit for 'q'
     */
-   private void checkForKeyboardInput()
-   {
+   private void checkForKeyboardInput() {
       BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
       while (true) {
          // orbacus needs this !!! Michele?
@@ -456,6 +453,7 @@ public class Main implements I_RunlevelListener, I_Main
       log.plain(ME, "   java org.xmlBlaster.Main -ior.file /tmp/XmlBlaster_Ref");
       log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
       log.plain(ME, "   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
+      log.plain(ME, "   java org.xmlBlaster.Main -logFile /tmp/test.log -logDevice file,console");
       log.plain(ME, "   java org.xmlBlaster.Main -xmlrpc.hostname 102.24.64.60 -xmlrpc.port 8081");
       log.plain(ME, "   java org.xmlBlaster.Main -?");
       log.plain(ME, "See xmlBlaster.properties for more options");
