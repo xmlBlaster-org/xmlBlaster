@@ -7,6 +7,10 @@ Changes for 0.78 [???     2000]
     You need to set the environment variable JUTILS_HOME to:
       export JUTILS_HOME=${XMLBLASTER_HOME}
 
+  - Compiled successfully xmlBlaster with TowerJ native compiler.
+    Performance enhancment for CORBA access ~ 30%
+    See .bashrc for used settings
+
   - Added protocol plugin possibility in xmlBlaster.properties
     Default settings are Corba drivers:
       #------------------------------------------------------------------------------
