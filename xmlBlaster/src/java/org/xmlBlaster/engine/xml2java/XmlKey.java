@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.15 2002/05/01 21:40:09 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.16 2002/05/02 19:19:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -230,7 +230,7 @@ public class XmlKey
     * @see #literal()
     */
    public String toXml() {
-      Log.error(ME, "Accessing raw xml key string");
+      Log.warn(ME, "Accessing raw xml key string");
       Thread.currentThread().dumpStack();
       return xmlKey_literal;
    }

@@ -125,7 +125,7 @@ public class FileDriver implements I_PersistenceDriver
       String oid = xmlKey.getKeyOid(); // The file name
 
       try {
-         FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml());
+         FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.literal());
          FileUtil.writeFile(path, oid, content);
          FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
       } catch (JUtilsException e) {
