@@ -16,6 +16,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.jutils.time.TimeHelper;
 import java.util.Vector;
@@ -55,8 +56,6 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    /** If duplicateUpdates=false is set we can check here how often this message is
        subscribed from the same client */
    private int subscribeCounter = 0; // is incr/decr by fireSubscribeEvent() and fireUnSubscribeEvent()
-
-   private static long uniqueCounter = 1L;
 
    private long creationTime = System.currentTimeMillis();
 
@@ -367,13 +366,11 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
 
    private void initSubscriptionId() throws XmlBlasterException {
       if (this.uniqueKey == null) {
-         if (querySub != null) {
+         if (this.querySub != null) {
             StringBuffer buf = new StringBuffer(126);
-            synchronized (SubscriptionInfo.class) {
-               uniqueCounter++;
-               // Using prefix of my parent XPATH subscription object:
-               buf.append(querySub.getSubscriptionId()).append(":").append(uniqueCounter);
-            }
+            Timestamp tt = new Timestamp();
+            // Using prefix of my parent XPATH subscription object:
+            buf.append(this.querySub.getSubscriptionId()).append(":").append(String.valueOf(tt.getTimestamp()));
             this.uniqueKey = buf.toString();
             if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
          }
@@ -429,15 +426,13 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
          return xmlQos.getSubscriptionId(); // Client forced his own key
       }
       StringBuffer buf = new StringBuffer(126);
-      synchronized (SubscriptionInfo.class) {
-         uniqueCounter++;
-         buf.append(Constants.SUBSCRIPTIONID_PREFIX);
-         if (clusterWideUnique)
-            buf.append(keyData.getGlobal().getNodeId().getId()).append("-");
-         if (keyData.isQuery())
-            buf.append(keyData.getQueryType());
-         buf.append(uniqueCounter);
-      }
+      buf.append(Constants.SUBSCRIPTIONID_PREFIX);
+      if (clusterWideUnique)
+         buf.append(keyData.getGlobal().getNodeId().getId()).append("-");
+      if (keyData.isQuery())
+         buf.append(keyData.getQueryType());
+      Timestamp tt = new Timestamp();
+      buf.append(String.valueOf(tt.getTimestamp()));
       return buf.toString();
    }
 
