@@ -145,9 +145,10 @@ public final class TopicHandler implements I_Timeout
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
-      TopicHandler t = requestBroker.addTopicHandler(this);
+      this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
 
       toUnconfigured();
+      TopicHandler t = requestBroker.addTopicHandler(this);
       if (t != null) {
          log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
          Thread.currentThread().dumpStack();
@@ -176,9 +177,12 @@ public final class TopicHandler implements I_Timeout
       this.ME += this.glob.getLogPrefixDashed() + "/msg/" + msgUnit.getKeyOid();
       this.uniqueKey = msgUnit.getKeyOid();
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
+      this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
       
-      administrativeInitialize((MsgQosData)msgUnit.getQosData());
+      //Happens automatically on first publish
+      //administrativeInitialize((MsgQosData)msgUnit.getQosData());
 
+      toUnconfigured();
       TopicHandler t = requestBroker.addTopicHandler(this);
       if (t != null) {
          log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
@@ -199,28 +203,36 @@ public final class TopicHandler implements I_Timeout
     */
    private void administrativeInitialize(MsgQosData publishQos) throws XmlBlasterException {
       if (log.DUMP) log.dump(ME, "administrativeInitialize()" + publishQos.toXml());
-      this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
 
       this.topicProperty =publishQos.getTopicProperty();
 
-      {
-         // This cache store the 'real meat' (the MsgUnit data struct)
-         TopicCacheProperty topicCacheProperty = this.topicProperty.getTopicCacheProperty();
-         String type = topicCacheProperty.getType();
-         String version = topicCacheProperty.getVersion();
-         StorageId msgstoreId = new StorageId("topic", glob.getNodeId()+"/"+getUniqueKey());
-         this.msgUnitCache = glob.getMsgStorePluginManager().getPlugin(type, version, msgstoreId, topicCacheProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
-      }
+      startupMsgstore();
 
-      {
-         // This history queue entries hold weak references to the msgUnitCache entries
-         QueuePropertyBase prop = topicProperty.getHistoryQueueProperty();
-         String type = prop.getType();
-         String version = prop.getVersion();
-         StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
-         this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
-         this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
-      }
+      // Todo: this needs to be done after TopicHandler is created
+      startupHistoryQueue();
+   }
+
+   private void startupMsgstore() throws XmlBlasterException   {
+      // This cache store the 'real meat' (the MsgUnit data struct)
+      TopicCacheProperty topicCacheProperty = this.topicProperty.getTopicCacheProperty();
+      String type = topicCacheProperty.getType();
+      String version = topicCacheProperty.getVersion();
+      StorageId msgstoreId = new StorageId("topic", glob.getNodeId()+"/"+getUniqueKey());
+      this.msgUnitCache = glob.getMsgStorePluginManager().getPlugin(type, version, msgstoreId, topicCacheProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+   }
+
+   /**
+    * Should be invoked delayed as soon as TopicHandler instance is created an registered everywhere
+    * as we ask the msgstore for the real messages if some history entries existed. 
+    */
+   private void startupHistoryQueue() throws XmlBlasterException {
+      // This history queue entries hold weak references to the msgUnitCache entries
+      QueuePropertyBase prop = this.topicProperty.getHistoryQueueProperty();
+      String type = prop.getType();
+      String version = prop.getVersion();
+      StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
+      this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
+      this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
    }
 
    public void finalize() {
