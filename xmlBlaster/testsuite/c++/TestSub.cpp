@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.11 2002/06/27 19:42:41 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.12 2002/08/10 13:46:54 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -28,6 +28,12 @@ class TestSub: public I_Callback {
 private:
    string me() {
       return "Tim";
+         log_.info(me(), string("Success: Publishing done, returned oid=") +
+                   publishOid_);
+         log_.info(me(), string("Success: Publishing done, returned oid=") +
+                   publishOid_);
+         log_.info(me(), string("Success: Publishing done, returned oid=") +
+                   publishOid_);
    }
 
    bool            messageArrived_; // = false;
@@ -173,13 +179,25 @@ private:
       msgUnit.content = content;
       try {
          msgUnit.qos = "<qos></qos>";
-         string tmp = senderConnection_->publish(msgUnit);
-         if (tmp.find(publishOid_) == string::npos) {
-            log_.error(me(), "Wrong publishOid: " + tmp);
-            assert(0);
+         bool testOneway = false;
+
+         if (testOneway) {
+            serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
+            msgUnitArr->length(1);
+            msgUnitArr[0] = msgUnit;
+            senderConnection_->publishOneway(msgUnitArr);
+            //delete msgUnitArr;
+            log_.info(me(), string("Success: Publishing oneway done"));
          }
-         log_.info(me(), string("Success: Publishing done, returned oid=") +
-                   publishOid_);
+         else {
+            string tmp = senderConnection_->publish(msgUnit);
+            if (tmp.find(publishOid_) == string::npos) {
+               log_.error(me(), "Wrong publishOid: " + tmp);
+               assert(0);
+            }
+            log_.info(me(), string("Success: Publishing done, returned oid=") +
+                      publishOid_);
+         }
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_.warn(me(), string("XmlBlasterException: ")+string(e.reason));
