@@ -10,7 +10,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import java.sql.Connection;
 import java.sql.SQLException;
-//import java.sql.PreparedStatement; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
 import java.sql.Statement;
 import java.sql.ResultSet;
 import org.xmlBlaster.client.qos.ConnectQos;
