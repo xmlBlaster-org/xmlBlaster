@@ -55,7 +55,7 @@ Changes for 0.8x [xxx, xx 200x]
    org.xmlBlaster.engine.helper.HistoryQueueProperty -> org.xmlBlaster.util.qos.storage.HistoryQueueProperty
    org.xmlBlaster.engine.helper.QueueProperty -> org.xmlBlaster.util.qos.storage.QueueProperty
    org.xmlBlaster.engine.helper.QueuePropertyBase -> org.xmlBlaster.util.qos.storage.QueuePropertyBase
-   org.xmlBlaster.engine.helper.TopicCacheProperty -> org.xmlBlaster.util.qos.storage.TopicCacheProperty
+   org.xmlBlaster.engine.helper.TopicCahceProperty -> org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty
    org.xmlBlaster.engine.helper.AccessFilterQos -> org.xmlBlaster.util.qos.storage.AccessFilterQos
 
  o Perl: Renamed MessageUnit to MsgUnit (to be similar to Java)
