@@ -32,24 +32,31 @@
 2. If you use sh, ksh or bash, you may chose to source the
    $XMLBLASTER_HOME/.bashrc into your environment.
 
-      source  $XMLBLASTER_HOME/.bashrc
+      source  ${XMLBLASTER_HOME}/.bashrc
 
-   or you must set for bash-shell:
+	This is the recommended way, since you will automatically
+	source all enhancements of new xmlBlaster releases.
 
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
+   Otherwise you must set for csh/tcsh-shell (NOT recommended
+	because you have to check the INSTALL file for changes with each new
+	xmlBlaster release):
 
-   Or you can do this automatically from your startup shell script.
-   After a new login type 'make all' in the XMLBLASTER_HOME directory.
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/classes
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/src/java
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/test.jar
+
+   You can do this automatically from your startup shell script.
+   After a new login you are ready to start the xmlBlaster (see below).
 
 
 related links:
 --------------
 JacORB1_0-beta13 : http://www.inf.fu-berlin.de/~brose/jacorb/
 xml-tr2.zip      : http://developer.java.sun.com/developer/products/xml/
+                   This zip file is included in the xmlBlaster distribution
 
 
 
