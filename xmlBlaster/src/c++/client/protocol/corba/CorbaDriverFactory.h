@@ -16,16 +16,14 @@ Comment:   The Factory for the client driver for the corba protocol
 
 // for managed objects
 #include <util/objman.h>
-class Object_Lifetime_Manager;
-class CorbaDriver;
-
 
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
 
-//using namespace org::xmlBlaster::client::protocol::corba;
+class Object_Lifetime_Manager;
+template <class TYPE> class ManagedObject;
 
 
 namespace org {
@@ -61,7 +59,7 @@ friend CorbaDriverFactory& getFactory(Global& global, CORBA::ORB_ptr orb=NULL);
 
 // required for the managed objects
 friend class Object_Lifetime_Manager;
-template <class TYPE> friend class ManagedObject;
+friend class ManagedObject;
 
 private:
    const string   ME;
