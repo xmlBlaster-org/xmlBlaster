@@ -2,8 +2,8 @@
 Name:      XmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Store MessageUnits in a File-database or holds in a Cache
-Version:   $Id: XmlDb.java,v 1.5 2000/08/26 14:48:50 kron Exp $
+Comment:   Store MessageUnits in a file-database or holds in a Cache.
+Version:   $Id: XmlDb.java,v 1.6 2000/08/29 11:17:38 kron Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb;
@@ -35,16 +35,40 @@ import com.sun.xml.tree.ElementNode;
 
 import gnu.regexp.*;
 
-public class XmlDb
+/**
+ * This XmlDb is a persistence for the xmlBlaster. 
+ * <p />
+ * You can store MessageUnits (Key,Content,QoS) durable controlled by
+ * the isDurable-Flag in the Xml-QoS. @see org.xmlBlaster.client.PublishQosWrapper
+ * <br />
+ * Example: <br />
+ * <pre>
+ *    XmlDb xmldb = new XmlDb();        // Get a xmldb-instance 
+ *    xmldb.setMaxCacheSize(2000000L);  // The max. cachesize in Byte
+ *
+ *    PublishQosWrapper qos = new PublishQosWrapper(true); // <qos><isDurable /></qos>
+ *    MessageUnit       mu = new MessageUnit(key,content,qos);
+ *
+ *    xmldb.insert(mu);   // Insert the MessageUnit to xmldb.
+ *    xmldb.get(oid);     // Get the MessageUnit by oid.
+ *
+ *    Enummeration muIter xmldb.query("//key[@oid="100"); // Query by XPATH
+ *
+ *    xmldb.delete(oid);     // Delete MessageUnit from db by oid.
+ *   
+ *    xmldb.showCacheState() // Shows you the current state of the cache.
+ *
+ * </pre>
+ */
+public class XmlDb 
 {
     private static final String ME = "XmlDb";
 
-    private static long _cacheSize = 0L;
     private static Cache _cache;
     private static PDOM _pdomInstance;
-    
+
     /**
-    * This class store MessageUnits in a File-database or holds in a Cache 
+    * This class store MessageUnits in a File-database or holds in a Cache
     * <p />
     * Configure the XmlDb through xmlBlaster.properties
     * The xmldb consists of a LRU-Cache and a File-Database
@@ -55,9 +79,10 @@ public class XmlDb
        _cache = new Cache();
     }
 
+
     public final void recover()
     {
-    } 
+    }
 
     /**
     * Insert a MessageUnit to xmldb.
@@ -65,7 +90,7 @@ public class XmlDb
     * @param mu        The MesageUnit
     * @param isDurable The durable-flag makes the MessageUnit persistent
     * @return 0  : insert was ok
-    *         oid: MessageUnit exists 
+    *         oid: MessageUnit exists
     */
     public final String insert(MessageUnit mu)
     {
@@ -84,7 +109,7 @@ public class XmlDb
 
       PMessageUnit pmu = new PMessageUnit(mu,isDurable);
 
-      // Check if Xmlkey exists in DOM 
+      // Check if Xmlkey exists in DOM
       if(_pdomInstance.keyExists(pmu.oid)){
          return pmu.oid;
       }
@@ -99,7 +124,7 @@ public class XmlDb
     }
 
     /**
-    * Delete a MessageUnit by from Cache and File-database by OID.
+    * Delete a MessageUnit from Cache and File-database by OID.
     * <br>
     * @param oid The oid of the MessageUnit
     */
@@ -112,7 +137,7 @@ public class XmlDb
     /**
     * Delete a stored MessageUnit by XmlKey from Cache and File-database by OID.
     * <br>
-    * @param xmlkey The XmlKey for deleted MessageUnits 
+    * @param xmlkey The XmlKey for deleted MessageUnits
     */
     public final void delete(XmlKey xmlkey)
     {
@@ -127,9 +152,9 @@ public class XmlDb
     {
     }
 
-     
+
     /**
-    * Query by XPath 
+    * Query by XPath
     * <br>
     * @param queryString The Query-String formed by XPath
     */
@@ -146,7 +171,7 @@ public class XmlDb
           if(pmu != null){
             v.addElement(pmu);
           }
-          
+
        }
        return v.elements();
     }
@@ -166,7 +191,7 @@ public class XmlDb
    * Set the max Cachesize.
    * <br>
    * @param size The Cachesize in Byte
-   */ 
+   */
    public void setMaxCacheSize(long size)
    {
       _cache.setMaxCacheSize(size);
@@ -181,6 +206,24 @@ public class XmlDb
    {
       _cache.setMaxMsgSize(size);
    }
+
+   /**
+   * Reset all cache parameters.
+   */
+   public void resetCache()
+   {
+      _cache.reset();
+   }
+
+   /**
+   * Shows all cache parameters.
+   * <br />
+   * Max. CacheSize, Max. MessageSize, Cacheoverflow, Number of Messages in Cache,
+   * Number of Messages isDurable, Number of Messages swapped, current cachesize 
+   */
+   public void showCacheState()
+   {
+      _cache.statistic();
+   }
+
 }
-
-
