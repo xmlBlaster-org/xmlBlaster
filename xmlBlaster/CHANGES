@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o Bugfix in persistence layer for huge messages.
+   Reported by pikaiyuan
+
  o The jmxgui now uses only one XmlBlasterAccess to communicate with xmlBlaster
 
  o fix in JdbcQueueManager to avoid batch mode invocations if the DB does not 
@@ -563,7 +566,7 @@ Changes for 0.84 [Jan, 22 2003]
    Use <subscribeable>false</subscribeable> to make PtP messages invisible for subscribers.
 
  o Renamed
-      org.xmlBlaster.engine.MessageUnit
+      org.xmlBlaster.engine.helper.MessageUnit
    to
       org.xmlBlaster.util.MsgUnit
 
