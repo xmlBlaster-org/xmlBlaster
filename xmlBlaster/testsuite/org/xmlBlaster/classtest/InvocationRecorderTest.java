@@ -18,7 +18,8 @@ import junit.framework.*;
  * Test RamRecorder. 
  * <p />
  * Invoke: java -Djava.compiler= junit.textui.TestRunner classtest.InvocationRecorderTest
- * @see org.xmlBlaster.util.InvocationRecorder
+ * @see org.xmlBlaster.util.recorder.ram.RamRecorder
+ * @see org.xmlBlaster.util.recorder.file.FileRecorder
  */
 public class InvocationRecorderTest extends TestCase {
    private String ME = "InvocationRecorderTest";

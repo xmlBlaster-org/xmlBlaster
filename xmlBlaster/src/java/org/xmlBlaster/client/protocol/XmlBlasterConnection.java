@@ -444,7 +444,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param maxInvocations How many messages shall we queue max (using the InvocationRecorder)
     * @param pingInterval How many milli seconds sleeping between the pings<br />
     *                     < 1 switches pinging off
-    * @see org.xmlBlaster.util.recorder.RamRecorder
+    * @see org.xmlBlaster.util.recorder.ram.RamRecorder
     * @deprecated Use explicit Address settings, e.g.:
     * <pre>
     *  // Setup fail save handling ...

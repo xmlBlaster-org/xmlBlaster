@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface
-Version:   $Id: I_XmlBlaster.java,v 1.1 2002/05/27 16:26:13 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.2 2002/05/28 07:32:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 /**
  * Interface for XmlBlaster, the supported methods on java client side.
  * <p />
- * @see XmlBlaster
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
  */
 public interface I_XmlBlaster
 {
