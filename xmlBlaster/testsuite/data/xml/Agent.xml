@@ -5,7 +5,7 @@
 <!-- This could be one way to store the available keys in the xmlBlaster: -->
 
 
-<!-- Examples how to subscribe to MessageUnits (see xmlBlaster/demo/queryXML/DomQueryTest.java): -->
+<!-- Examples how to subscribe to MsgUnits (see xmlBlaster/demo/queryXML/DomQueryTest.java): -->
 
 <!-- Accessing key with oid=2
         java DomQueryTest Agent.xml xmlBlaster/key[@oid='2'] -->

@@ -4,7 +4,7 @@
 <!-- Example how to query internal state of xmlBlaster -->
 
 
-<!-- Exapmples how to subscribe to MessageUnits: -->
+<!-- Exapmples how to subscribe to MsgUnits: -->
 
 <!-- Accessing the current xmlBlaster allocated memory
         java DomQueryTest Internal.xml "xmlBlaster/key[@oid='__sys__Login']" -->
