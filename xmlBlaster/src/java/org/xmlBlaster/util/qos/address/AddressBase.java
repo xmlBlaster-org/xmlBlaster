@@ -305,7 +305,8 @@ public abstract class AddressBase
     * @param address The callback address, e.g. "et@mars.univers"
     */
    public final void setAddress(String address) {
-      if (address == null) { Thread.currentThread().dumpStack(); throw new IllegalArgumentException("AddressBase.setAddress(null) null argument is not allowed"); }
+      //if (address == null) { Thread.currentThread().dumpStack(); throw new IllegalArgumentException("AddressBase.setAddress(null) null argument is not allowed"); }
+      if (address == null) return;
       this.address.setValue(address);
    }
 
