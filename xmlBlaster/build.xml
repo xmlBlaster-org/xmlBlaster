@@ -157,7 +157,7 @@ TODO
    <property name="chmod.fail" value="true" />
 
    <property name="COMPILE_CORBA_PLUGIN" value="1" />   <!-- Add the Corba protocol plugin -->
-   <property name="COMPILE_SOCKET_PLUGIN" value="1" />  <!-- Add the C socket library wrapper plugin? -->
+   <property name="COMPILE_SOCKET_PLUGIN" value="0" />  <!-- Add the C socket library wrapper plugin? -->
 
    <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
@@ -1769,7 +1769,8 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
-         <sysincludepath location="${src.c.dir}" />   <!-- Using the C SOCKET client library -->
+         <includepath location="${src.c.dir}" />   <!-- Using the C SOCKET client library -->
+         <includepath location="${src.c.dir}/pthreads" if="windows" />
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
@@ -1833,6 +1834,9 @@ TODO
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
+
+            <!-- xmlBlasterClientC.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
          </linker>
 
          <linker name="bcc"  if="use-bcc" />
