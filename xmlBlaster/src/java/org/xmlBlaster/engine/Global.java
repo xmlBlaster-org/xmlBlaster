@@ -70,6 +70,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private PluginHolder pluginHolder;
 
+   public void finalize() {
+      if (log.TRACE) log.trace(ME, "Entering finalize");
+      shutdown();
+   }
 
    public void shutdown() {
       super.shutdown();
@@ -82,10 +86,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          topicTimer.shutdown();
          topicTimer = null;
       }
-      if (telnetSessionTimer != null) {
-         telnetSessionTimer.shutdown();
-         telnetSessionTimer = null;
-      }
+      removeTelnetSessionTimer();
    }
 
    /**
@@ -569,7 +570,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
          }
-         if (to == RunlevelManager.RUNLEVEL_HALTED) {
+         if (to <= RunlevelManager.RUNLEVEL_HALTED) {
             shutdownHttpServer(); // should be an own Plugin ?
             shutdown();
          }
