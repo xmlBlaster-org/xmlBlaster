@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackServer.java,v 1.2 2000/10/22 16:42:36 ruff Exp $
+Version:   $Id: XmlRpcCallbackServer.java,v 1.3 2000/10/24 12:02:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -106,7 +106,7 @@ class XmlRpcCallbackServer extends AbstractCallbackExtended
          if (callbackPort > 0) {
             // Start an 'xmlrpc webserver' if desired
             webServer = new WebServer(callbackPort); // !!! missing: we can't pass the hostname
-            webServer.addHandler("$default", this); // register update() method in this class
+            webServer.addHandler("$default", new XmlRpcCallbackImpl(this)); // register update() method
             callbackServerUrl = "http://" + hostname + ":" + callbackPort + "/";
             Log.info(ME, "Created XmlRpc callback web server " + callbackServerUrl);
          }
