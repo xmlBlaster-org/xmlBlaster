@@ -533,6 +533,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
+    * @return is null if not yet supplied
+    */
+   public ConnectQos getConnectQos() {
+      return this.connectQos;
+   }
+
+
+   /**
     * Login to the server, specify your own callback in the qos if desired.
     * <p />
     * Note that no asynchronous subscribe() method is available if you don't
