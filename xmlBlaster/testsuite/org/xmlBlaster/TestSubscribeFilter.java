@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.1 2002/03/15 13:11:05 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.2 2002/03/16 08:46:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -80,7 +80,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       args[0] = "-iorPort";
       args[1] = "" + serverPort;
       args[2] = "-MimeSubscribePlugin[ContentLenFilter][1.0]";
-      args[3] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200";
+      args[3] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
       serverThread = ServerThread.startXmlBlaster(args);
       try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
@@ -163,6 +163,14 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
       waitOnUpdate(2000L, 0); // message should be filtered as it is longer 10 bytes
+
+      try {   // Test what happens if the plugin throws an exception (see THROW_EXCEPTION_FOR_LEN=3)
+         con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
+         assert("publish forced the plugin to throw an XmlBlasterException, but it didn't happen", false);
+      } catch(XmlBlasterException e) {
+         Log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
+      }
+      waitOnUpdate(2000L, 0); // no message expected on exception
 
       Log.info(ME, "Success in testFilter()");
    }
