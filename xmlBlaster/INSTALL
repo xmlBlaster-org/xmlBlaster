@@ -6,17 +6,19 @@
 #                                                               #  
 #################################################################
 
-                        Required
------------------------------------------------------------------
++--------------------+
+| REQUIRED           |
++--------------------+
 
    - JDK 1.2 or later
-   - a 'make' utility recommended.
+   - a GNU 'make' utility recommended (if you want to rebuild xmlBlaster).
      For DOS/Windows, e.g. cygwin's make.
      Note that Windows nmake will not work properly with xmlBlaster Makefiles
 
 
-                        Environment
------------------------------------------------------------------
++--------------------+
+| ENVIRONMENT        |
++--------------------+
 
 1. Extend your CLASSPATH and PATH environment variable. 
 
@@ -70,14 +72,19 @@
       export JIKES_HOME=/usr/local/jikes         (to use your jikes instead of javac)
 
 
-related links:
---------------
++--------------------+
+| RELATED LINKS      |
++--------------------+
+
    See ${XMLBLASTER_HOME}/lib/README
+   See ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README
 
 
 
-                      Start xmlBlaster
--------------------------------------------------------------------
++--------------------+
+| START XMLBLASTER   |
++--------------------+
+
 You have three options to start the xmlBlaster-Server.
 See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instructions.
 
@@ -123,8 +130,10 @@ See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instruct
 
 
 
-                      A demo chat client
--------------------------------------------------------------------------
++--------------------+
+| A DEMO CHAT CLIENT |
++--------------------+
+
 Have a look at xmlBlaster/demo/javaclients/chat/SimpleChat.java
 It´s a pretty basic kind of chat-application but worth a try.
 
@@ -137,8 +146,10 @@ Don´t forget to start the server (jaco org.xmlBlaster.Main) first.
 
 
 
-                             Testsuite
--------------------------------------------------------------------------
++--------------------+
+| USING THE TESTSUITE|
++--------------------+
+
 In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
 a number of Java based test clients to automatically test xmlBlaster.
    
@@ -159,8 +170,10 @@ file for more informations.
 You may also use the provided test clients to study the usage of xmlBlaster.
 
 
-                         Compile 
-------------------------------------------------------------------
++--------------------+
+| HOW TO COMPILE     |
++--------------------+
+
 After you have set environment variables do a new login and type
 
    make all
@@ -182,7 +195,7 @@ Usage :
 
 #################################################################
 #                                                               #
-#                     xmlBlaster client                         #
+#                     xmlBlaster clients                        #
 #                                                               #
 #################################################################
 
