@@ -1734,7 +1734,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
             if (this.log.TRACE)
-               this.log.trace(getLogId(queueName, nodeId, "deleteEntries"), "'delete from " + req + "'");
+               this.log.trace(getLogId(queueName, nodeId, "deleteEntries"), "' " + req + "'");
             count +=  update(req, conn);
          }
          if (count != uniqueIds.length) conn.rollback();

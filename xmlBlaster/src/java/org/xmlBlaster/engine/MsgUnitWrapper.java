@@ -5,7 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.xmlBlaster.engine.Global;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -20,9 +22,10 @@ import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.qos.PublishQosServer; // for main only
 import org.xmlBlaster.client.key.PublishKey;       // for main only
+
+
 
 
 /**
@@ -189,9 +192,17 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          this.referenceCounter += count;
       }
       // TODO: Remove the logging
-      if (glob.getLog("core").TRACE && !isInternal()) glob.getLog("core").trace(ME, "Reference count of '" + getLogId() + "' changed from " +
-                         (this.referenceCounter-((isHistoryReference)?2*count:count)) + " to " + this.referenceCounter + 
-                         ", new historyEntries=" + this.historyReferenceCounter);
+      if (glob.getLog("core").TRACE && !isInternal()) {
+         // this is just to send the stack trace to the log file (stderr does not go there)
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         PrintStream pstr = new PrintStream(baos);
+         new Exception().printStackTrace(pstr);
+         
+         glob.getLog("core").trace(ME, "Reference count of '" + getLogId() + "' changed from " +
+         (this.referenceCounter-((isHistoryReference)?2*count:count)) + " to " + this.referenceCounter + 
+         ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "' stack=" + new String(baos.toByteArray()));
+         
+      }
       if (this.referenceCounter <= 0L) {
          toDestroyed();
       }

@@ -56,6 +56,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private I_QueueEntry referenceEntry;
    private I_QueueSizeListener queueSizeListener;
    private Object queueSizeListenerSync = new Object();
+   
+   /** this is the sync between the peaks and the swapping: no peak should be allowed while swapping */
+   private Object peekSync = new Object();
 
    public boolean isTransient() {
       return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
@@ -460,46 +463,49 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
          }
         
-         // put all messages on transient queue
-         this.transientQueue.put(queueEntries, ignorePutInterceptor);
+        
+         synchronized(this.peekSync) {        
+            // put all messages on transient queue
+            this.transientQueue.put(queueEntries, ignorePutInterceptor);
 
-         if (isPersistenceAvailable()) { // if no persistence available let RAM overflow one time
+            if (isPersistenceAvailable()) { // if no persistence available let RAM overflow one time
 
-            // handle swapping (if any)
-            long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false, "");
-            long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "");
-            if ( (exceedingSize >= 0L && this.persistentQueue.getMaxNumOfBytes() > this.transientQueue.getMaxNumOfBytes()) || 
-                 (exceedingEntries >= 0L && this.persistentQueue.getMaxNumOfEntries() > this.transientQueue.getMaxNumOfEntries())) {
-               if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
+               // handle swapping (if any)
+               long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false, "");
+               long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "");
+               if ( (exceedingSize >= 0L && this.persistentQueue.getMaxNumOfBytes() > this.transientQueue.getMaxNumOfBytes()) || 
+                    (exceedingEntries >= 0L && this.persistentQueue.getMaxNumOfEntries() > this.transientQueue.getMaxNumOfEntries())) {
+                  if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
             
-               ArrayList transients = null;
-               try {
-                  ArrayList swaps = this.transientQueue.peekLowest((int)exceedingEntries, exceedingSize, null, true);
-                  if (this.log.TRACE) {
-                     this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
-                  }
-                  // get the transients
-                  transients = new ArrayList();
-                  for (int i=0; i < swaps.size(); i++) {
-                     I_QueueEntry entry = (I_QueueEntry)swaps.get(i);
-                     if (!entry.isPersistent()) {
-                        transients.add(entry);
+                  ArrayList transients = null;
+                  try {
+                     ArrayList swaps = this.transientQueue.peekLowest((int)exceedingEntries, exceedingSize, null, true);
+                     if (this.log.TRACE) {
+                        this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
                      }
+                     // get the transients
+                     transients = new ArrayList();
+                     for (int i=0; i < swaps.size(); i++) {
+                        I_QueueEntry entry = (I_QueueEntry)swaps.get(i);
+                        if (!entry.isPersistent()) {
+                           transients.add(entry);
+                        }
+                     }
+                     if (transients.size() > 0)
+                        this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
+                     this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
                   }
-                  if (transients.size() > 0)
-                     this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
-                  this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
-               }
-               catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
-                  ex.printStackTrace();
-               }
-               catch (Throwable ex) {
-                  this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.toString());
-                  ex.printStackTrace();
+                  catch (XmlBlasterException ex) {
+                     this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+                     ex.printStackTrace();
+                  }
+                  catch (Throwable ex) {
+                     this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.toString());
+                     ex.printStackTrace();
+                  }
                }
             }
-         } 
+         } // end of peekSync here ...
       } // end of synchronized here ...
 
       // these must be outside the synchronized ...
@@ -633,28 +639,36 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#peek()
     */
    public I_QueueEntry peek() throws XmlBlasterException {
-      return this.transientQueue.peek();
+      synchronized(this.peekSync) {
+         return this.transientQueue.peek();
+      }
    }
 
    /**
     * @see I_Queue#peek(int,long)
     */
    public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
-      return this.transientQueue.peek(numOfEntries, numOfBytes);
+      synchronized(this.peekSync) {
+         return this.transientQueue.peek(numOfEntries, numOfBytes);
+      }
    }
 
    /**
     * @see I_Queue#peekSamePriority(int, long)
     */
    public ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
-      return this.transientQueue.peekSamePriority(numOfEntries, numOfBytes);
+      synchronized(this.peekSync) {
+         return this.transientQueue.peekSamePriority(numOfEntries, numOfBytes);
+      }
    }
 
    /**
     * @see I_Queue#peekWithPriority(int, long, int, int)
     */
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
-      return this.transientQueue.peekWithPriority(numOfEntries, numOfBytes, minPriority, maxPriority);
+      synchronized(this.peekSync) {
+         return this.transientQueue.peekWithPriority(numOfEntries, numOfBytes, minPriority, maxPriority);
+      }
    }
 
    /**
@@ -662,7 +676,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
-      return this.transientQueue.peekWithLimitEntry(limitEntry);
+      synchronized(this.peekSync) {
+         return this.transientQueue.peekWithLimitEntry(limitEntry);
+      }
    }
 
 
