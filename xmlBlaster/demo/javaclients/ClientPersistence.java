@@ -22,7 +22,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * This client tests the persistence driver, the $lt;isDurable> flag.
- * Subscribes to a Message wich is tagged $lt;isDurable> and will be set by the modultest of Xindice.
+ * Subscribes to a Message which is tagged $lt;isDurable> and will be set by the modultest of Xindice.
  * <p>
  * Invoke examples:<br />
  * <pre>
