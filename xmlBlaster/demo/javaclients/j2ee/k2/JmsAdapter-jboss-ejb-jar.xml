@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="Cp1252"?>
+
+<jboss>
+    <resource-managers>
+        <resource-manager>
+          <res-name>xmlBlaster</res-name>
+          <res-jndi-name>java:/XmlBlasterDS</res-jndi-name>
+    </resource-manager>
+    </resource-managers>
+     <enterprise-beans>
+       <message-driven>
+         <ejb-name>JmsAdapter</ejb-name>
+	 <configuration-name>Default MesageDriven Bean</configuration-name>
+
+	 <!-- Put in your JNDI name for topic or queue -->
+         <destination-jndi-name>topic/testTopic</destination-jndi-name>
+          <resource-ref>
+           <res-ref-name>xmlBlaster</res-ref-name>
+           <resource-name>xmlBlaster</resource-name>
+         </resource-ref>
+       </message-driven>
+        <secure>false</secure>
+     </enterprise-beans>
+     <container-configurations>
+        <container-configuration configuration-class="org.jboss.ejb.deployment.StatelessSessionContainerConfiguration">
+	 <container-name>Default MesageDriven Bean</container-name>
+	 <container-invoker>org.jboss.ejb.plugins.jms.JMSContainerInvoker</container-invoker>
+         <container-interceptors>
+                <interceptor>org.jboss.ejb.plugins.LogInterceptor</interceptor>
+                <interceptor>org.jboss.ejb.plugins.SecurityInterceptor</interceptor>
+                <!-- CMT -->
+                <interceptor transaction="Container">org.jboss.ejb.plugins.TxInterceptorCMT</interceptor>
+                <interceptor transaction="Container" metricsEnabled="true">org.jboss.ejb.plugins.MetricsInterceptor</interceptor>
+                <interceptor transaction="Container">org.jboss.ejb.plugins.MessageDrivenInstanceInterceptor</interceptor>
+                <!-- BMT -->
+                <interceptor transaction="Bean">org.jboss.ejb.plugins.MessageDrivenInstanceInterceptor</interceptor>
+                <interceptor transaction="Bean">org.jboss.ejb.plugins.MessageDrivenTxInterceptorBMT</interceptor>
+                <interceptor transaction="Bean" metricsEnabled="true">org.jboss.ejb.plugins.MetricsInterceptor</interceptor>
+         </container-interceptors>
+	 <instance-pool>org.jboss.ejb.plugins.MessageDrivenInstancePool</instance-pool>
+	 <instance-cache></instance-cache>
+	 <persistence-manager></persistence-manager>
+	 <transaction-manager>org.jboss.tm.TxManager</transaction-manager>
+	 <container-invoker-conf>
+	   <Optimized>False</Optimized>
+           <JMSProviderAdapterJNDI>DefaultJMSProvider</JMSProviderAdapterJNDI>
+           <ServerSessionPoolFactoryJNDI>StdJMSPool</ServerSessionPoolFactoryJNDI>
+           <MaximumSize>15</MaximumSize>
+           <MaxMessages>1</MaxMessages>
+	 </container-invoker-conf>
+	 <container-pool-conf>
+	   <MaximumSize>100</MaximumSize>
+	   <MinimumSize>10</MinimumSize>
+	 </container-pool-conf>
+       </container-configuration>
+     </container-configurations>
+</jboss>
+

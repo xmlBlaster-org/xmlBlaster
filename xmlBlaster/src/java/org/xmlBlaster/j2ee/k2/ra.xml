@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE connector PUBLIC '-//Sun Microsystems, Inc.//DTD Connector 1.0//EN' 'http://java.sun.com/j2ee/dtds/connector_1_0.dtd'>
+
+<connector>
+    <display-name>xmlBlaster Adapter</display-name>
+    <vendor-name>xmlBlaster org</vendor-name>
+    <spec-version>1.0</spec-version>
+    <version>1.0</version>
+    <eis-type>XML MOM</eis-type>
+    <resourceadapter>
+        <managedconnectionfactory-class>org.xmlBlaster.j2ee.k2.BlasterManagedConnectionFactory</managedconnectionfactory-class>
+        <connectionfactory-interface>org.xmlBlaster.j2ee.k2.client.BlasterConnectionFactory</connectionfactory-interface>
+        <connectionfactory-impl-class>org.xmlBlaster.j2ee.k2.BlasterConnectionFactoryImp</connectionfactory-impl-class>
+        <connection-interface>org.xmlBlaster.j2ee.k2.client.BlasterConnection</connection-interface>
+        <connection-impl-class>org.xmlBlaster.j2ee.k2.BlasterConnectionImpl</connection-impl-class>
+        <transaction-support>no_transaction</transaction-support>
+        <config-property>
+            <config-property-name>ClientProtocol</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>IOR</config-property-value>
+        </config-property>
+       <config-property>
+            <config-property-name>IorHost</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>151.177.109.74</config-property-value>
+        </config-property>
+         <config-property>
+            <config-property-name>Logging</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>true</config-property-value>
+        </config-property>
+        <auth-mechanism>
+            <auth-mech-type>basic-password</auth-mech-type>
+            <credential-interface>javax.resource.security.PasswordCredential</credential-interface>
+        </auth-mechanism>
+        <reauthentication-support>false</reauthentication-support>
+    </resourceadapter>
+</connector>

@@ -1,0 +1,84 @@
+		Deploying in JBoss
+		==================
+
+Here are some notes about how to deploy in JBoss.
+
+1. Copy xmlBlaster.jar into lib/ext
+
+2. Copy jacorb.jar into lib/ext
+
+3. Edit the ra.xml file. An example is found in ra.xml. This is the one in
+the xmlBlasterK2.rar 
+
+Here you may configure a client protocol, logging and so on. See 
+BlasterManagesConnectionFactory doc.
+
+5. Edit conf/default/jboss.jcml, ad the following two entries:
+
+   <!-- Minerva no transaction connection manager factory.
+  
+       Use this for resource adapters that support "local"
+       transactions. -->
+  <mbean code="org.jboss.resource.ConnectionManagerFactoryLoader"
+         name="JCA:service=ConnectionManagerFactoryLoader,name=MinervaNoTransCMFactory">
+    <attribute name="FactoryName">MinervaNoTransCMFactory</attribute>
+    <attribute name="FactoryClass">org.opentools.minerva.connector.jboss.MinervaNoTransCMFactory</attribute>
+    <attribute name="Properties"></attribute>
+  </mbean>
+
+
+  <mbean code="org.jboss.resource.ConnectionFactoryLoader"
+         name="JCA:service=ConnectionFactoryLoader,name=XmlBlasterDS">
+    <attribute name="FactoryName">XmlBlasterDS</attribute>
+    <attribute name="RARDeployerName">JCA:service=RARDeployer</attribute>
+    <attribute name="ResourceAdapterName">xmlBlaster Adapter</attribute>
+<!-- These seems pooible to use to overide the ones in the ra.xml, but I
+     have not verifyed that -->
+    <attribute name="Properties">
+      ClientProtocol=IOR
+    </attribute>
+    <attribute name="Properties">
+      IorHost=151.177.109.74
+    </attribute>
+<!-- Use this one for now and set trans-attribute to NotSupported in your
+     beans deployment descriptor. This is on the way of beeing fixed -->
+    <attribute name="ConnectionManagerFactoryName">MinervaNoTransCMFactory</attribute>
+    <!-- See the documentation for the specific connection manager
+         implementation you are using for the properties you can set -->
+    <attribute name="ConnectionManagerProperties">
+      # Pool type - uncomment to force, otherwise it is the default
+      #PoolConfiguration=per-factory
+
+      # Connection pooling properties - see
+      # org.opentools.minerva.pool.PoolParameters
+      MinSize=0
+      MaxSize=10
+      Blocking=true
+      GCEnabled=false
+      IdleTimeoutEnabled=false
+      InvalidateOnError=false
+      TrackLastUsed=false
+      GCIntervalMillis=120000
+      GCMinIdleMillis=1200000
+      IdleTimeoutMillis=1800000
+      MaxIdleTimeoutPercent=1.0
+    </attribute>
+
+    <!-- Principal mapping configuration -->
+    <attribute name="PrincipalMappingClass">org.jboss.resource.security.ManyToOnePrincipalMapping</attribute>
+    <attribute name="PrincipalMappingProperties">
+      userName=pra
+      password=test
+    </attribute>
+  </mbean>
+
+6. Deploy the xmlBlasterK2.rar by using the RAR deployer in JBoss. Go to
+http://localhost:8082 (or whatever host your JBoss server is on). Lookup
+the RARDeployer among the MBeans, click on the link and use the form deploy by
+pointing the jarfile out, eg
+
+file:/home/bert/src/xmlBlaster/lib/xmlBlasterK2.rar
+
+//Peter
+
+

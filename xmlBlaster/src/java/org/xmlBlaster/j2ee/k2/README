@@ -1,0 +1,35 @@
+		Notes about J2EE connector for XmlBlaster
+                =========================================
+
+In here is a resource adapter that follows the J2EE connector
+specification. With this it is possible to access XmlBlaster for publishing
+from any J2EE runtime environment that supports the Connector spec. One
+such runtime that already do that is JBoss (see README.JBoss). The
+compiled adapter will be found in lib/xmlBlasterK2.rar.
+
+If you are familiar with EJB you will feel at home. One uses the XmlBlaster
+resource adapter the same way you would use a database connectio. You
+define it as a resource and look it up with JNDI.
+
+Deployment of the adapter is runtime specific. You will probably have to edit
+the META-INF/ra.xml to suit your needs. The possible configurations options
+is vissable in the javadoc (or source code) for BlasterManagedConnectionFactory.
+
+The interface to access XmlBlaster is familiar, but you will have to access
+it through the interface org.xmlBlaster.j2ee.k2.client.BlasterConnection.
+
+To build the connector you use the ant build script with the argument k2.
+
+There are two examples of how to use the adapter in demo/javaclientent/j2ee/k2.
+
+1. One is a Message Driven Bean with deployment descriptor for JBoss. In it,
+and in the deployment descriptors you will find a typical way to use the
+adapter.
+
+This you may build with build.sh jms-adapter
+
+2. The other is a standalone TestClient, wich mostly makes it somewhat easier
+to debug the adapter and proves that it is spec compliant (an adapter must
+support standalone usage).
+
+//Peter

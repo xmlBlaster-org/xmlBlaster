@@ -90,7 +90,7 @@ Else add it manually.
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -111,6 +111,8 @@ Else add it manually.
     <echo message="   dist        --> generates the xmlBlaster distribution"/>
     <echo message="   clean       --> cleans up the directory"/>
     <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat)"/>
+    <echo message="   k2  --> create the J2EE connector"/>
+    <echo message="   jms-adapter  --> create the J2EE connector example bean"/>
     <echo message=""/>
     <echo message=" See the comments inside the build.xml file for more details."/>
     <echo message="-------------------------------------------------------------"/>
@@ -224,6 +226,56 @@ Else add it manually.
   </target>
 
   <!-- =================================================================== -->
+  <!-- Builds the J2EE XmlBlaster resource adapter, with example bean      -->
+  <!-- =================================================================== -->
+  <target name="k2" depends="xmlBlaster">
+   <!-- Pack rar archive -->
+   <!-- create tmp dir to build it up -->
+   <mkdir dir="${build.dir}/ra"/>
+   <mkdir dir="${build.dir}/ra/META-INF"/>
+   <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
+   <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
+   <copy file="${src.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
+   
+    <jar jarfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
+    <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
+    <!-- I know it is deprecated, but how else to remove dirs -->
+    <deltree dir="${build.dir}/ra"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
+  <!-- =================================================================== -->
+  <target name="jms-adapter" depends="k2">
+   <!-- Pack rar archive -->
+   <!-- create tmp dir to build it up -->
+   <mkdir dir="${build.dir}/jms"/>
+   <mkdir dir="${build.dir}/jms/META-INF"/>
+    <mkdir dir="${build.dir}/jms/javaclients/j2ee/k2/"/>
+   <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
+   <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
+  <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
+
+     
+   <javac srcdir="${build.src}/javaclients/j2ee/k2/"
+           destdir="${build.dest}"
+           classpath="${classpath}:${lib.dir}/${name}.jar"
+           debug="${debug}"/>
+
+
+
+    <jar jarfile="${build.dir}/JmsAdapter.jar">
+        <fileset dir="${build.dest}"
+             includes="**/JmsAdapter.class"/>
+        <fileset dir="${build.dir}/jms"/> 
+   </jar>
+
+    <copy overwrite="yes" file="${build.dir}/JmsAdapter.jar" tofile="${lib.dir}/JmsAdapter.jar"/>
+    <!-- I know it is deprecated, but how else to remove dirs -->
+    <deltree dir="${build.dir}/jms"/>
+  </target>
+
+  <!-- =================================================================== -->
   <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
   <!-- =================================================================== -->
   <target name="deploy_war">
@@ -334,7 +386,7 @@ Else add it manually.
    <target name="clean">
       <delete>
          <fileset dir="${build.dir}"/>
-         <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar"/>
+         <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
       </delete>
    </target>
 
