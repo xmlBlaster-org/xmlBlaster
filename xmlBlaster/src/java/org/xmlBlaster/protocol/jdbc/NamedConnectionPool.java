@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.3 2000/07/08 12:40:16 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.4 2000/07/08 16:10:34 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -28,6 +28,25 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
+ * This is a specialized JDBC connection pool for xmlBlaster. 
+ * <p />
+ * It allows accessing any number of different databases with
+ * arbitrary login users.<br />
+ * Every database user is separately pooled for maximum performance.<br />
+ * Every DB request needs to pass the DB-url, login name and password,
+ * since the clients are not permanently connected.<br />
+ * Unused connection pools are freed after some time.
+ * <p />
+ * The timeout parameters and pool size is adjustable.
+ * <p />
+ * The connections are established on demand (lazy allocation).
+ * Pre-allocation is currently not implemented.
+ * The first SQL request (for example with Oracle) consumes about
+ * 1 second to establish the connection, the following requests
+ * get this connection from the pool, which is below 1 millisecond.
+ * If more than one SQL requests are done simultaneously, the pool
+ * increases the number of parallel connections.
+ * <p />
  * Load the drivers before using this pool, e.g.<br />
  * <pre>
  *    java -Djdbc.drivers=foo.bah.Driver:wombat.sql.Driver:bad.taste.ourDriver ...
@@ -35,6 +54,22 @@ import java.sql.DriverManager;
  * or in xmlBlaster.properties, e.g.<br />
  * <pre>
  *    JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver,de.sag.jdbc.adabasd.ADriver,sun.jdbc.odbc.JdbcOdbcDriver,com.sybase.jdbc2.jdbc.SybDriver
+ * </pre>
+ * You use reserve() to get a connection and need to call release() after using it,
+ * note that the connection parameters are optional:
+ * <pre>
+ *    String dbStmt = "select * from user_table";
+ *    java.sql.Connection con = namedPool.reserve(dbUrl, dbUser, dbPasswd, 60*60*1000L, 100, 10*60*1000L, 10*60*1000L);
+ *    java.sql.Statement stmt = null;
+ *    java.sql.ResultSet rs = null;
+ *    try {
+ *       stmt = con.createStatement();
+ *       rs = stmt.executeQuery(dbStmt);
+ *    } finally {
+ *       if (rs!=null) rs.close();
+ *       if (stmt!=null) stmt.close();
+ *       if (con!=null) namedPool.release(dbUrl, user, pw, con);
+ *    }
  * </pre>
  */
 public class NamedConnectionPool
@@ -44,32 +79,18 @@ public class NamedConnectionPool
 
    private final Object meetingPoint = new Object();
 
-   public NamedConnectionPool()
-   {
-   }
 
    /**
-    * Use this method to get a JDBC connection.
-    * You only need to pass the password the first time using the other resrve() method
-    */
-   Connection reserve(String dbUrl, String dbUser) throws XmlBlasterException
-   {
-      return reserve(dbUrl, dbUser, null);
-   }
-
-   /**
-    * Use this method to get a JDBC connection.
+    * Use this method to get a JDBC connection. 
     * <br />
     * The pooling properties are set to default values.
-    * @param dbUrl For example "jdbc:oracle:thin:@localhost:1521:mydb
+    * @param dbUrl    For example "jdbc:oracle:thin:@localhost:1521:mydb
+    * @param dbUser   The database user
+    * @param dbPasswd The database password
     */
    Connection reserve(String dbUrl, String dbUser, String dbPasswd) throws XmlBlasterException
    {
-      long eraseUnusedPoolTimeout = XmlBlasterProperty.get("JdbcPool.eraseUnusedPoolTimeout", 60*60*1000L); // If a user disappers for one hour, delete his pool
-      int maxInstances = XmlBlasterProperty.get("JdbcPool.maxInstances", 20);
-      long busyToIdle = XmlBlasterProperty.get("JdbcPool.busyToIdleTimeout", 0); // How long may a query last
-      long idleToErase = XmlBlasterProperty.get("JdbcPool.idleToEraseTimeout", 10*60*1000L); // How long does an unused connection survive (10 min)
-      return reserve(dbUrl, dbUser, dbPasswd, eraseUnusedPoolTimeout, maxInstances, busyToIdle, idleToErase);
+      return reserve(dbUrl, dbUser, dbPasswd, -1, -1, -1, -1);
    }
 
 
@@ -79,19 +100,24 @@ public class NamedConnectionPool
     * Usually only the first time for a user, to specify all parameters.
     * @param dbUrl For example "jdbc:oracle:thin:@localhost:1521:mydb
     * @param eraseUnusedPoolTimeout Remove pool of a user if not in use, in ms
-    *          0 switches it off
+    *          0 switches it off, -1 uses default setting 1 hour (from xmlBlaster.properties)
+    * @param maxInstances Default is max. 20 connections (from xmlBlaster.properties)
+    * @param busyToIdle   in msec
+    *          0 switches it off, -1 uses default setting which switches it off (from xmlBlaster.properties)
+    * @param idleToErase  in msec
+    *          0 switches it off, -1 uses default setting 10 min. (from xmlBlaster.properties)
     */
    Connection reserve(String dbUrl, String dbUser, String dbPasswd, long eraseUnusedPoolTimeout,
                       int maxInstances, long busyToIdle, long idleToErase) throws XmlBlasterException
    {
-      UnnamedConnectionPool pool = getPool(dbUrl, dbUser);
-      if (pool == null) {
+      UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
+      if (pool == null) { // check before as well to increase performance
          synchronized(meetingPoint) {
-            pool = getPool(dbUrl, dbUser);
+            pool = getPool(dbUrl, dbUser, dbPasswd);
             if (pool == null) {
                if (dbPasswd == null) throw new XmlBlasterException(ME+".MissingPasswd", "Please give a password for '" + dbUser + "' when creating a JDBC pool");
                pool = new UnnamedConnectionPool(this, dbUrl, dbUser, dbPasswd, eraseUnusedPoolTimeout, maxInstances, busyToIdle, idleToErase);
-               namedPools.put(getKey(dbUrl, dbUser), pool);
+               namedPools.put(getKey(dbUrl, dbUser, dbPasswd), pool);
             }
          }
       }
@@ -102,19 +128,20 @@ public class NamedConnectionPool
       }
       catch(Exception e) {
          Log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
-         throw new XmlBlasterException(ME, "Couldn't open database connection: " + e.toString());
+         throw new XmlBlasterException(ME+".NoOpen", "Couldn't open database connection: " + e.toString());
       }
    }
 
    /**
     * Use this method to release a JDBC connection.
     */
-   void release(String dbUrl, String dbUser, Connection con) throws XmlBlasterException
+   void release(String dbUrl, String dbUser, String dbPasswd, Connection con) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "release(" + dbUrl + ", " + dbUser + ") con=" + con);
-      UnnamedConnectionPool pool = getPool(dbUrl, dbUser);
-      if (pool != null)
+      UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
+      if (pool != null) {
          pool.release(con);
+         if (Log.TRACE) Log.trace(ME, "release(" + dbUrl + ", " + dbUser + ") con=" + con);
+      }
    }
 
    /**
@@ -122,11 +149,11 @@ public class NamedConnectionPool
     * The driver remains.
     * @param The UnnamedConnectionPool object
     */
-   void destroy(String dbUrl, String dbUser) throws XmlBlasterException
+   void destroy(String dbUrl, String dbUser, String dbPasswd) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Entering destroy() ...");
       try {
-         String key = getKey(dbUrl, dbUser);
+         String key = getKey(dbUrl, dbUser, dbPasswd);
          UnnamedConnectionPool pool = (UnnamedConnectionPool)namedPools.remove(key);
          if (pool != null)
             pool.destroy();
@@ -139,7 +166,10 @@ public class NamedConnectionPool
    }
 
 
-   /** Destroy the complete named pool of all users.  */
+   /**
+    * Destroy the complete named pool of all users. 
+    * This object is still valid for further use.
+    */
    void destroy()
    {
       for (Enumeration e = namedPools.elements() ; e.hasMoreElements() ;) {
@@ -149,14 +179,17 @@ public class NamedConnectionPool
       namedPools.clear();
    }
 
-   private String getKey(String dbUrl, String dbUser)
+   /**
+    * @return instanceId <db_url>^<username>/<passwd>, e.g.  "jdbc:oracle:thin:@localhost:1521:mydb^jack/secret"
+    */
+   private String getKey(String dbUrl, String dbUser, String dbPasswd)
    {
       StringBuffer buf = new StringBuffer(80);
-      return buf.append(dbUrl).append("^").append(dbUser).toString();
+      return buf.append(dbUrl).append("^").append(dbUser).append("/").append(dbPasswd).toString();
    }
-   private UnnamedConnectionPool getPool(String dbUrl, String dbUser)
+   private UnnamedConnectionPool getPool(String dbUrl, String dbUser, String dbPasswd)
    {
-      String key = getKey(dbUrl, dbUser);
+      String key = getKey(dbUrl, dbUser, dbPasswd);
       return (UnnamedConnectionPool)namedPools.get(key);
    }
 
@@ -200,16 +233,19 @@ public class NamedConnectionPool
        * @param eraseUnusedPoolTimeout This pool is erased after given millis without activity of the owning user<br />
        *                       0 switches it off
        * @param maxInstances   Max. number of resources in this pool.
+       *                       -1 uses default of 20 (xmlBlaster.properties)<br />
        * @param busyToIdleTimeout Max. busy time of this resource in milli seconds<br />
        *                       On timeout it changes state from 'busy' to 'idle'.<br />
        *                       You can overwrite this value for each resource instance<br />
        *                       0 switches it off<br />
+       *                       -1 uses default (switched off)<br />
        *                       You get called back through I_PoolManager.busyToIdle() on timeout
        *                       allowing you to code some specific handling.
        * @param idleToEraseTimeout Max. idle time span of this resource in milli seconds<br />
        *                     On timeout it changes state from 'idle' to 'undef' (it is deleted).<br />
        *                     You can overwrite this value for each resource instance<br />
        *                     0 switches it off<br />
+       *                     -1 uses default (10 min) (xmlBlaster.properties)<br />
        *                     You get called back through I_PoolManager.toErased() on timeout
        *                     allowing you to code some specific handling.
        */
@@ -221,6 +257,16 @@ public class NamedConnectionPool
          this.dbUser = dbUser;
          this.dbPasswd = dbPasswd;
          this.eraseUnusedPoolTimeout = eraseUnusedPoolTimeout;
+
+         if (eraseUnusedPoolTimeout == -1)
+            eraseUnusedPoolTimeout = XmlBlasterProperty.get("JdbcPool.eraseUnusedPoolTimeout", 60*60*1000L); // If a user disapears for one hour, delete his pool
+         if (maxInstances == -1)
+            maxInstances = XmlBlasterProperty.get("JdbcPool.maxInstances", 20); // Max. number of connections
+         if (busyToIdle == -1)
+            busyToIdle = XmlBlasterProperty.get("JdbcPool.busyToIdleTimeout", 0); // How long may a query last
+         if (idleToErase == -1)
+            idleToErase = XmlBlasterProperty.get("JdbcPool.idleToEraseTimeout", 10*60*1000L); // How long does an unused connection survive (10 min)
+
          poolManager = new PoolManager(ME, this, maxInstances, busyToIdle, idleToErase);
          if (eraseUnusedPoolTimeout > 10L)
             synchronized(timeoutHandle) {
@@ -228,21 +274,20 @@ public class NamedConnectionPool
             }
       }
 
-      /** This callback does nothing */
+      /** This callback does nothing (enforced by interface I_PoolManager) */
       public void idleToBusy(Object resource) {
          if (Log.TRACE) Log.trace(ME, "Entering idleToBusy() ...");
-         Connection con = (Connection)resource;
+         // Connection con = (Connection)resource;
       }
 
-      /** This callback does nothing */
+      /** This callback does nothing (enforced by interface I_PoolManager */
       public void busyToIdle(Object resource) {
          if (Log.TRACE) Log.trace(ME, "Entering busyToIdle() ...");
-         Connection con = (Connection)resource;
+         // Connection con = (Connection)resource;
       }
 
       /**
-       * Create a new JDBC connection, the driver must be registered already.
-       * @param instanceId <db_url>^<username>/<passwd>, e.g.  "jdbc:oracle:thin:@localhost:1521:mydb^jack/secret"
+       * Create a new JDBC connection, the driver must be registered already. 
        */
       public Object toCreate(String instanceId) throws JUtilsException {
          if (Log.TRACE) Log.trace(ME, "Entering toCreate() ...");
@@ -332,7 +377,7 @@ public class NamedConnectionPool
                return;
             }
             try {
-               boss.destroy(dbUrl, dbUser);
+               boss.destroy(dbUrl, dbUser, dbPasswd);
             } catch(XmlBlasterException e) {
                Log.error(ME, "timeout: " + e.toString());
             }
@@ -341,11 +386,11 @@ public class NamedConnectionPool
 
       /** Destroy the complete unnamed pool */
       void destroy() {
-         if (poolManager != null) {
-            synchronized(meetingPoint) {
+         synchronized(meetingPoint) {
+            if (poolManager != null) {
                poolManager.destroy();
+               poolManager = null;
             }
-            poolManager = null;
          }
          NamedConnectionPool boss = null;
          dbUrl = null;
@@ -413,7 +458,7 @@ public class NamedConnectionPool
             }
             public void run() {
                try {
-                  for (int ii=0; ii<500; ii++) {
+                  for (int ii=0; ii<50; ii++) {
                      Log.info(ME, " query run=" + ii + "\n");
                      org.jutils.time.StopWatch watch = new org.jutils.time.StopWatch();
                      Connection con = np.reserve(dbUrl, user, pw, timeToDeath, 100, 60*1000L, 40*1000L);
@@ -428,7 +473,7 @@ public class NamedConnectionPool
                         if (rs!=null) rs.close();
                         if (stmt!=null) stmt.close();
                         watch = new org.jutils.time.StopWatch();
-                        if (con!=null) np.release(dbUrl, user, con);
+                        if (con!=null) np.release(dbUrl, user, pw, con);
                         Log.info(ME, "Query successful done, connection released" + watch.toString());
                         //Log.info(ME, np.toXml());
                      }
@@ -439,7 +484,7 @@ public class NamedConnectionPool
                }
                catch(Throwable e) {
                   e.printStackTrace();
-                  np.destroy();
+                  if (np!=null) { np.destroy(); np = null; } // this error handling is not thread save
                   Log.panic(ME, "TEST FAILED" + e.toString());
                }
             }
@@ -467,7 +512,7 @@ public class NamedConnectionPool
             Test p = (Test)vec.elementAt(ii);
             p.join();
          }
-         
+
          Log.info(ME, "All done, destroying ...");
 
          namedPool.destroy();
