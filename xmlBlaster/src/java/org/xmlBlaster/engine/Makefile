@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = helper xml2java callback persistence queue
+SUB_DIRS = helper xml2java callback persistence queue mime
 LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
