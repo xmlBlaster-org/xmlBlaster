@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.11 2002/08/15 16:23:26 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.12 2002/08/21 08:00:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -99,7 +99,7 @@ public:
     */
    string update(const string &/*sessionId*/,
                UpdateKey &/*updateKey*/,
-               void */*content*/, long /*contentSize*/,
+               void * /*content*/, long /*contentSize*/,
                UpdateQos &/*updateQos*/) {
       if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
       numReceived_++;

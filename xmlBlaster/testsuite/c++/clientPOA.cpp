@@ -56,7 +56,7 @@ public:
     }
   };
 
-  char *ping(const char */*qos*/) {
+  char *ping(const char * /*qos*/) {
    return CORBA::string_dup("");
   };
 };
