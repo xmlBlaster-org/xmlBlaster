@@ -1,0 +1,49 @@
+Howto run the html examples with persistent http connection:
+============================================================
+
+1. Run 'build.bat deploy_war' or copy manually:
+   cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
+   cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
+   cp -r  ../../doc/howto/xmlBlaster.css  xmlBlaster.css
+
+
+4. Start xmlBlaster
+
+   java org.xmlBlaster.Main
+
+
+5. Start a publisher, so that we have some dynamic data:
+
+   java html.systemInfo.SystemInfoPublisher
+
+
+6. Start you browser
+
+   http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
+
+
+Start it in the background on Linux:
+====================================
+
+   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
+
+   # start tomcat with xmlBlaster.war
+
+   java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
+
+
+Using tomcat 3.2.3 serlvet enginge (http://jakarta.apache.org):
+===============================================================
+
+- tomcat/conf/server.xml:
+        <Context path="/xmlBlaster"
+                 docBase="webapps/xmlBlaster"
+                 debug="9"
+                 reloadable="true" >
+        </Context>
+
+Add xmlBlaster CLASSPATH
+
+For deployment see WEB-INF/web.xml
+
+http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
