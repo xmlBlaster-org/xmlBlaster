@@ -41,6 +41,21 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define XMLBLASTER_UNSUBSCRIBE "unSubscribe"
 #define XMLBLASTER_ERASE "erase"
 
+typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
+   LOG_NOLOG=0,/* don't use */
+   LOG_ERROR,  /* supported, use for programming errors */
+   LOG_WARN,   /* supported, use for user errors and wrong configurations */
+   LOG_INFO,   /* don't use */
+   LOG_CALL,   /* don't use */
+   LOG_TIME,   /* don't use */
+   LOG_TRACE,  /* supported, use for debugging purposes */
+   LOG_DUMP,   /* don't use */
+   LOG_PLAIN   /* don't use */
+} XMLBLASTER_LOG_LEVEL;
+extern void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
+                              XMLBLASTER_LOG_LEVEL level,
+                              const char *location, const char *fmt, ...);
+
 /**
  * Holds arbitrary raw data and its length
  */

@@ -44,12 +44,15 @@ typedef char *( * XmlBlasterAccessUnparsedErase)(XmlBlasterAccessUnparsed *xb, c
 typedef MsgUnitArr *( * XmlBlasterAccessUnparsedGet)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterAccessUnparsedPing)(XmlBlasterAccessUnparsed *xb, const char * const qos);
 typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(XmlBlasterAccessUnparsed *xb);
+typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
+
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
  */
 struct XmlBlasterAccessUnparsedStruct {
    int argc;
+   const char * ME;
    char **argv;
    XmlBlasterConnectionUnparsed *connectionP;
    CallbackServerUnparsed *callbackP;
@@ -64,6 +67,8 @@ struct XmlBlasterAccessUnparsedStruct {
    XmlBlasterAccessUnparsedGet get;
    XmlBlasterAccessUnparsedPing ping;
    XmlBlasterAccessUnparsedIsConnected isConnected;
+   XMLBLASTER_LOG_LEVEL logLevel;
+   XmlBlasterLogging log;
    bool debug;
    long responseTimeout;
    XmlBlasterBlob responseBlob;

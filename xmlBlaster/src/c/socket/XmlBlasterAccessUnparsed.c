@@ -61,6 +61,7 @@ static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *absti
 XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    int iarg;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
+   xa->ME = "XmlBlasterAccessUnparsed";
    xa->argc = argc;
    xa->argv = argv;
    xa->isInitialized = false;
@@ -74,6 +75,8 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->get = xmlBlasterGet;
    xa->ping = xmlBlasterPing;
    xa->isConnected = isConnected;
+   xa->logLevel = LOG_WARN;
+   xa->log = xmlBlasterDefaultLogging;
    xa->debug = false;
    xa->responseTimeout = 60000; /* One minute (given in millis) */
    memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
@@ -104,7 +107,7 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
          xa->debug = !strcmp(argv[++iarg], "true");
       else if (strcmp(argv[iarg], "-plugin/socket/responseTimeout") == 0) {
          if (sscanf(argv[++iarg], "%ld", &xa->responseTimeout) != 1)
-            printf("[XmlBlasterAccessUnparsed] WARN '-plugin/socket/responseTimeout %s' is invalid\n", argv[iarg]);
+            xa->log(xa->logLevel, LOG_WARN, "XmlBlasterAccessUnparsed", "Your configuration '-plugin/socket/responseTimeout %s' is invalid\n", argv[iarg]);
       }
    }
    for (iarg=0; iarg < argc-1; iarg++) {

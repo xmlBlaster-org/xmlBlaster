@@ -4,13 +4,16 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains helper functions for string and message manipulation
 Compile:   gcc -Wall -g -c msgUtil.c
+           gcc -Wall -g -o msgUtil msgUtil.c -DMSG_UTIL_MAIN
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <time.h>
 #include "msgUtil.h"
 
 #ifdef _ENABLE_STACK_TRACE_
@@ -572,6 +575,74 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
 #endif /* _WINDOWS */
 }
 
+/**
+ * Default logging output is handled by this method: 
+ * All logging is appended a time, the loglevel and the location string.
+ * The logging output is to console.
+ * <p>
+ * If you have your own logging device you need to implement this method
+ * yourself and register it with 
+ * </p>
+ * <pre>
+ * xa->log = myXmlBlasterLoggingHandler;
+ * </pre>
+ */
+void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
+                              XMLBLASTER_LOG_LEVEL level,
+                              const char *location, const char *fmt, ...)
+{
+   /* Guess we need no more than 100 bytes. */
+   int n, size = 100;
+   char *p;
+   va_list ap;
+   static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
+
+   if (level > currLevel) {
+      return;
+   }
+   if ((p = (char *)malloc (size)) == NULL)
+      return;
+   for (;;) {
+      /* Try to print in the allocated space. */
+      va_start(ap, fmt);
+      n = vsnprintf (p, size, fmt, ap);
+      va_end(ap);
+      /* If that worked, print the string to console. */
+      if (n > -1 && n < size) {
+         time_t t1;
+         char timeStr[128];
+         (void) time(&t1);
+#        ifdef __sun
+         ctime_r(&t1, (char *)timeStr, 126);
+#        else
+         ctime_r(&t1, (char *)timeStr);
+#        endif
+         *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
+         printf("[%s %s %s] %s", timeStr, LOG_TEXT[level], location, p);
+         free(p);
+         return;
+      }
+      /* Else try again with more space. */
+      if (n > -1)    /* glibc 2.1 */
+         size = n+1; /* precisely what is needed */
+      else           /* glibc 2.0 */
+         size *= 2;  /* twice the old size */
+      if ((p = (char *)realloc (p, size)) == NULL)
+         return;
+   }
+}
+
+# ifdef MSG_UTIL_MAIN
+int main()
+{
+   const int currLevel = 3;
+   const char *location = "TEST";
+   const char *p = "OOOO";
+   int i = 3;
+   xmlBlasterDefaultLogging(currLevel, LOG_WARN, location, "%s i=%d\n", p, i);
+   return 0;
+}
+# endif
 
 /*
 #include <sys/types.h>
