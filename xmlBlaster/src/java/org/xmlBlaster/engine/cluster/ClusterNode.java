@@ -86,14 +86,14 @@ public final class ClusterNode
    }
 
    /**
-    * Access the current nodeInfo of the node, like current CPU and memory informations. 
+    * Access the current nodeInfo of the node. 
     */
    public NodeInfo getNodeInfo() {
       return nodeInfo;
    }
 
    /**
-    * Access the current nodeInfo of the node, like current CPU and memory informations. 
+    * Overwrite the current nodeInfo of the node. 
     */
    public void setNodeInfo(NodeInfo nodeInfo) {
       this.nodeInfo = nodeInfo;
