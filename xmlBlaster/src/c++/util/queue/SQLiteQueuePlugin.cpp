@@ -14,6 +14,8 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util::qos::storage;
 
+static ::XmlBlasterLogging loggingFp = ::xmlBlasterDefaultLogging;
+
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& property)
@@ -24,6 +26,18 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
      queueP_(0), 
      accessMutex_()
 {
+   const std::string dbName = "xmlBlasterClientCpp.db";
+   ::ExceptionStruct exception;
+   ::QueueProperties queueProperties;
+
+   strncpy0(queueProperties.dbName, dbName.c_str(), QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 4L;
+   queueProperties.maxNumOfBytes = 25LL;
+
+   queueP_ = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
 }
 
 SQLiteQueuePlugin::SQLiteQueuePlugin(const SQLiteQueuePlugin& queue)
@@ -48,11 +62,10 @@ SQLiteQueuePlugin& SQLiteQueuePlugin::operator =(const SQLiteQueuePlugin& queue)
 SQLiteQueuePlugin::~SQLiteQueuePlugin()
 {
    if (log_.call()) log_.call(ME, "destructor");
-   if (!queueP_->empty(queueP_)) {
+   if (queueP_) {
       Lock lock(accessMutex_);
-      /*
-      queueP_->erase(queueP_->begin(), queueP_->end());
-      */
+      ::ExceptionStruct exception;
+      queueP_->shutdown(&queueP_, &exception); // NULLs the queueP_
    }
 } 
 
@@ -63,6 +76,23 @@ void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
 
    Lock lock(accessMutex_);
    /*
+   ::ExceptionStruct exception;
+   ::QueueEntry queueEntry;
+
+   queueEntry.priority = entry.getPriority();
+   queueEntry.isPersistent = entry.isPersistent();
+   queueEntry.uniqueId = entry.getUniqueId();
+   strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+   queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
+
+   --> TODO: dump MsgUnit with SOCKET protocol int data
+
+   queueEntry.embeddedBlob.data = (char *)data;
+   queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
+
+   queueP_->put(queueP_, &queueEntry, &exception);
+
+
    try {
       const EntryType help(*entry.getClone());
       queueP_->insert(help);
@@ -127,7 +157,7 @@ long SQLiteQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &st
 void SQLiteQueuePlugin::clear()
 {
    Lock lock(accessMutex_);
-   ExceptionStruct exception;
+   ::ExceptionStruct exception;
    queueP_->clear(queueP_, &exception);
 }
 
