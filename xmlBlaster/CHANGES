@@ -24,6 +24,11 @@ BUGS:
 
 
 DONE:
+  - Incompatible changes:
+    publish() returns now XML string instead of the plain oid
+	 Introduced PublishRetQos, see
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html
+
   - Added support to ping the callback client side server, see
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.callback.html
 
