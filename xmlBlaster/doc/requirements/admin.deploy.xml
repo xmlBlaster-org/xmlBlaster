@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.deploy' type='NEW' prio='LOW' status="CLOSED">
+   <topic>You can generate an xmlBlaster server distribution when you are ready to deploy your application</topic>
+   <description>
+    <p>
+    When you have coded your application the time comes where you want to deploy an xmlBlaster
+    <b>server instance</b> to the destination hardware.
+    This task can be done automatically with ant (build.xml).
+    </p>
+   </description>
+
+   <example lang="Java" type="HTML">
+    <p>
+    Lets build a distribution (on Windows replace build.sh to build.bat):
+    </p>
+    <pre class="BORDER" width="80">
+
+cd xmlBlaster
+
+build.sh  dist
+    </pre>
+
+    <p> The result is:</p>
+    <pre class="BORDER" width="80">
+
+  xmlBlasterDist.jar :
+
+
+and
+
+  xmlBlasterDist-0.79e.zip
+    </pre>
+
+    <p>
+    The above jar file you can use directly to start xmlBlaster:
+    </p>
+    <pre class="BORDER" width="80">
+
+/opt/jdk/bin/java   -jar  xmlBlasterDist.jar
+    </pre>
+
+    <p>
+    The zip file contains the above jar file already with some additional
+    files:
+    </p>
+    <pre class="BORDER" width="80">
+
+xmlBlaster/bin/ns       
+xmlBlaster/bin/xmlBlaster.sh  
+
+xmlBlaster/lib/xmlBlaster.jar  
+
+xmlBlaster/config/xmlBlaster.properties.template  
+xmlBlaster/config/xmlBlaster.policy  
+xmlBlaster/config/jacorb.properties.template  
+
+xmlBlaster/.bashrc      
+xmlBlaster/LICENSE      
+xmlBlaster/README       
+xmlBlaster/INSTALL      
+    </pre>
+    <p>
+    You can choose to use the jar file or to use the zip file,
+    whatever suits you needs better.
+    </p>
+    <br />
+
+      <p>
+      Now one problem remains, how can you customize the included jar file
+      and probably using an own property file.
+      Imagine you only want to use the CORBA driver and customize the MoM 
+      behavior to your needs:
+      </p>
+      <pre class="BORDER" width="80">
+
+build.sh -DADD_EMAIL=false -DADD_XMLRPC=false -DADD_PROP=my.properties  dist
+      </pre>
+
+      <p>
+      This won't add EMAIL and XML-RPC support to the distribution and will
+      package your <code>my.properties</code> configuration file into
+      xmlBlasterDist.jar instead of the default <code>xmlBlaster.properties</code>
+      </p>
+      <p>
+      Here is a sample <code>my.properties</code>:
+      </p>
+
+      <pre class="BORDER" width="80">
+
+# We use the CORBA protocol driver only:
+Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
+Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+
+# We allow a user to login up to one hundred times
+session.maxSessions=100
+      </pre>
+
+   </example>
+
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>DIST_PATH</td>
+            <td>local directory</td>
+            <td>Choose a PATH where to put the distribution files xmlBlasterDist.jar and xmlBlasterDist-0.79e.zip</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_EMAIL</td>
+            <td>true</td>
+            <td>Switch on/off email protocol driver support. If set to true,
+             it copies the email supporting jar files as well.</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_CORBA</td>
+            <td>true</td>
+            <td>Switch on/off corba support. If set to true,
+             it copies the IIOP supporting jar files as well.</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_XMLRPC</td>
+            <td>true</td>
+            <td>Switch on/off XML-RPC support. If set to true,
+             it copies the XML-RPC supporting jar files as well.</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_J2EE</td>
+            <td>false</td>
+            <td>Switch on/off J2EE/JMS bean support. If set to true,
+             it copies the EJB/J2EE supporting jar files as well.<br />
+             Note: This feature only supports JBOSS with version smaller 2.0</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_PROP</td>
+            <td>default</td>
+            <td>We use the default xmlBlaster.properties. It is possible to use an own
+             customized property file like: <code>-DADD_PROP=/home/heidi/my.properties</code>
+             </td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_POLICY</td>
+            <td>default</td>
+            <td>Allows to use a customized RMI security setting. This is only of interest
+             if your clients RMI to communicate to xmlBlaster.
+             We use the default xmlBlaster.policy file which has switched off all security checks.
+             It is possible to use an own
+             customized policy file like: <code>-DADD_PROP=/home/heidi/my.policy</code>
+             </td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>ADD_DIRECTORY</td>
+            <td>false</td>
+            <td>You can add your own class files to be added to xmlBlasterDist.jar. Typically
+             this would be plugins you have written. Note that you can deploy such classes
+             separate in your own jar file as well.
+             Example: <code>-DADD_PROP=/home/heidi/myproject/classes</code><br />
+             This assumes that your Java classes (top of the package) are in the given directory.
+             </td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
+   <author>ruff@swand.lake.de</author>
+   
+   <date>2002 06 04</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Currently not tested</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
