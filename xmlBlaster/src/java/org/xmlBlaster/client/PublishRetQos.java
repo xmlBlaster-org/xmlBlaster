@@ -55,7 +55,7 @@ public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ impl
 
       if (xmlQos_literal != null && xmlQos_literal.length() > 0) {
          setStateId(parseOurself(xmlQos_literal, "<state id="));
-         stateInfo = parseOurself(xmlQos_literal, "info=");
+         setStateInfo(parseOurself(xmlQos_literal, "info="));
          oid = parseOurself(xmlQos_literal, "<key oid=");
       }
    }
@@ -92,7 +92,7 @@ public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ impl
       return stateId;
    }
 
-   public final void setStateId(String id) {
+   private final void setStateId(String id) {
       if (id == null)
          this.stateId = Constants.STATE_OK;
       else
@@ -108,7 +108,7 @@ public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ impl
       return this.stateInfo;
    }
 
-   public final void setStateInfo(String stateInfo) {
+   private final void setStateInfo(String stateInfo) {
       this.stateInfo = stateInfo;
    }
 
@@ -198,7 +198,7 @@ public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ impl
     * @return The XML representation
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(180);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
