@@ -33,6 +33,7 @@ import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
 import org.xmlBlaster.util.XmlProcessor;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
@@ -1240,6 +1241,7 @@ public class Global implements Cloneable
    /**
     * Access the xmlBlaster Classloader.
     * Every Global instance may have an own factory instance.
+    * Set classLoaderFactory property to not use default StandaloneClassLoaderFactory.
     * @return null if switched off with "useXmlBlasterClassloader=false"
     */
    public ClassLoaderFactory getClassLoaderFactory() {
@@ -1247,8 +1249,24 @@ public class Global implements Cloneable
       if (useXmlBlasterClassloader == false) return null;
 
       synchronized (ClassLoaderFactory.class) {
-         if (classLoaderFactory == null)
-            classLoaderFactory = new ClassLoaderFactory(this);
+         if (classLoaderFactory == null) {
+            String clf = getProperty().get("classLoaderFactory",(String)null);
+            if ( clf != null) {
+               try {
+                  Class clfc = Thread.currentThread().getContextClassLoader().loadClass(clf);
+                  
+                  
+                  classLoaderFactory = (ClassLoaderFactory)clfc.newInstance();
+                  classLoaderFactory.init(this);
+                  return classLoaderFactory;
+                  
+               } catch (Exception e) {
+                  log.warn(ME,"Could not load custom classLoaderFactory " + clf + " using StandaloneClassLoaderFactory");
+               } // end of try-catch
+            } // end of if ()
+            
+            classLoaderFactory = new StandaloneClassLoaderFactory(this);
+         }
       }
       return classLoaderFactory;
    }
