@@ -18,6 +18,7 @@ public class AllTests {
       TestSuite suite= new TestSuite("All xmlBlaster cluster tests");
       suite.addTest(new TestSuite(clustertest.PublishTest.class));
       suite.addTest(new TestSuite(clustertest.SubscribeTest.class));
+      suite.addTest(new TestSuite(clustertest.SubscribeXPathTest.class));
       suite.addTest(new TestSuite(clustertest.DirtyReadTest.class));
       return suite;
    }
