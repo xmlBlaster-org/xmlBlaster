@@ -68,6 +68,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private boolean inAliveTransition = false;
    private final Object ALIVE_TRANSITION_MONITOR = new Object();
 
+   private int burstModeMaxEntries = -1;
+   private long burstModeMaxBytes = -1L;
+
+
    /**
     * @param msgQueue The message queue which i use (!!! TODO: this changes, we should pass it on every method where needed)
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
@@ -172,6 +176,22 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
+    * How many messages maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver in one bulk. 
+    */
+   public final int getBurstModeMaxEntries() {
+      return this.burstModeMaxEntries;
+   }
+
+   /**
+    * How many bytes maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver in one bulk. 
+    */
+   public final long getBurstModeMaxBytes() {
+      return this.burstModeMaxBytes;
+   }
+
+   /**
     * Call by DispatchConnectionsHandler on state transition
     * NOTE: toAlive is called initially when a protocol plugin is successfully loaded
     * but we don't know yet if it ever is able to connect
@@ -189,6 +209,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       try {
          this.inAliveTransition = true;
+
+         this.burstModeMaxEntries = addr.getBurstModeMaxEntries();
+         this.burstModeMaxBytes = addr.getBurstModeMaxBytes();
 
          synchronized (this.ALIVE_TRANSITION_MONITOR) {
             // 1. We allow a client to intercept and for example destroy all entries in the queue

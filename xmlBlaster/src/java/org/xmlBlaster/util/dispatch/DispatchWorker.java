@@ -148,7 +148,7 @@ public final class DispatchWorker implements Runnable
             synchronized (this.msgQueue) {
                //entryList = (MsgQueueEntry[])this.msgQueue.take(-1); --> get()
                // not blocking and only all of the same priority:
-               entryList = this.msgQueue.peekSamePriority(-1, -1L);
+               entryList = this.msgQueue.peekSamePriority(dispatchManager.getBurstModeMaxEntries(), dispatchManager.getBurstModeMaxBytes()); // -1, -1L -> get all entries in cache
                entryListChecked = dispatchManager.prepareMsgsFromQueue(entryList);
             }
          }
