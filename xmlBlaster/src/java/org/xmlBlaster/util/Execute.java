@@ -26,6 +26,7 @@ public class Execute
    private String[] commandArr;
    private String[] envArr;
    private String errorText;
+   private I_ExecuteListener outListener;
 
    private int BUFFERED_READER_SIZE = 200000; // 200 kBytes, must be big enough to collect stdout/stderr
    /** Thread to collect stdout of a process */
@@ -48,6 +49,13 @@ public class Execute
       if (this.commandArr == null || this.commandArr.length < 1) {
          throw new IllegalArgumentException("Please provide the process to start");
       }
+   }
+
+   /**
+    * Not thread safe, don't set to null during operation
+    */
+   public void setExecuteListener(I_ExecuteListener l) {
+      this.outListener = l;
    }
 
    /**
@@ -175,6 +183,12 @@ public class Execute
                if (br.ready()) { // some data here?
                   while ((str = br.readLine()) != null) {
                      result.append(str).append("\n");
+                     if (outListener != null) {
+                        if (this == stdoutThread)
+                           outListener.stdout(str);
+                        else
+                           outListener.stderr(str);
+                     }
                      if (!br.ready())
                         break;      // no more data, would possibly block
                   }
