@@ -195,7 +195,7 @@ Else add it manually.
     <!-- include content of jutils.jar in xmlBlaster.jar -->
     <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
+    <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
 
     <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
   </target>
@@ -215,7 +215,7 @@ Else add it manually.
            destdir="${build.dest}"
            classpath="${classpath}:${lib.dir}/${name}.jar"
            debug="${debug}"/>
-    <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class"/>
+    <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class"/>
     <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
   </target>
 
@@ -227,7 +227,7 @@ Else add it manually.
     <delete file="${lib.dir}/demo.jar"/>
     <delete file="${lib.dir}/testsuite.jar"/>
     <delete file="${build.dir}/${name}.jar"/>
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
+    <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
     <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
   </target>
 
@@ -245,7 +245,7 @@ Else add it manually.
            destdir="${build.dest}"
            classpath="${classpath}:${lib.dir}/${name}.jar"
            debug="${debug}"/>
-    <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
+    <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**"/>
     <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
   </target>
 
@@ -261,7 +261,7 @@ Else add it manually.
    <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
    <copy file="${src.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
 
-    <jar jarfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
+    <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
     <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
     <!-- I know it is deprecated, but how else to remove dirs -->
     <deltree dir="${build.dir}/ra"/>
@@ -286,7 +286,7 @@ Else add it manually.
           classpath="${classpath}:${lib.dir}/${name}.jar"
           debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/JmsAdapter.jar">
+    <jar destfile="${build.dir}/JmsAdapter.jar">
         <fileset dir="${build.dest}"
              includes="**/JmsAdapter.class"/>
         <fileset dir="${build.dir}/jms"/>
@@ -333,7 +333,7 @@ Else add it manually.
        <fileset dir="${demo.http.dir}/svg"/>
      </copy>
 
-     <jar jarfile="${build.dir}/xmlBlaster.war"
+     <jar destfile="${build.dir}/xmlBlaster.war"
           basedir="${build.war}/"
           includes="**"/>
 
@@ -413,7 +413,7 @@ Else add it manually.
     <copy file="config/xmlBlaster.policy" tofile="${dist.dir}/config/xmlBlaster.policy"/>
     <copy file=".bashrc" tofile="${dist.dir}/.bashrc"/>
     <copy file="build.xml" tofile="${dist.dir}/build.xml"/>
-    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}"/>
+    <jar destfile="${name}-${version}.jar" basedir="${dist.dir}"/>
   </target>
 
 
