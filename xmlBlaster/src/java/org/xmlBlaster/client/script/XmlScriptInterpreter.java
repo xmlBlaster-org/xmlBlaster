@@ -101,13 +101,14 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    private StringBuffer qos = new StringBuffer();
    private StringBuffer key = new StringBuffer();
    private StringBuffer content = new StringBuffer();
+   private StringBuffer cdata = new StringBuffer();
 
    private boolean isConnected;
 
    /** Encapsulates the content of the current message (useful for encoding) */
    private EncodableData contentData;
    // private boolean inQos, inKey, inContent;
-   private int inQos, inKey, inContent;
+   private int inQos, inKey, inContent, inCDATA;
    private String link;
 
    private I_MsgUnitCb msgUnitCb;
@@ -229,6 +230,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       this.inQos = 0;
       this.inKey = 0;
       this.inContent = 0;
+      this.inCDATA = 0;
       try {
          this.out.flush();
       }
@@ -240,6 +242,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
    public void characters(char[] ch, int start, int length) {
       // append on the corresponding buffer
+      if (this.inCDATA > 0) this.cdata.append(ch, start, length);
       if (this.inQos > 0) this.qos.append(ch, start, length);
       else if (this.inKey > 0) this.key.append(ch, start, length);
       else if (this.inContent > 0) this.content.append(ch, start, length);
@@ -543,16 +546,17 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       return msgUnit;
    }
 
-
    private void checkNestedTags() {
       int sum = 0;
       if (this.inContent > 0 ) sum++;
       if (this.inKey > 0) sum++;
       if (this.inQos > 0) sum++;
+      /*
       if (sum > 1) {
          Thread.dumpStack();
          this.log.error(ME, "check: there is an internal error!! Mismatch with the nested tags ...");
-      }    
+      } 
+      */
    }
 
    public void endElement(String namespaceURI, String localName, String qName) {
@@ -603,11 +607,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
    public void startCDATA() {
       if (this.log.CALL) this.log.call(ME, "startCDATA");
-      // append on the corresponding buffer
-      if (this.inQos > 0) this.qos.append("<![CDATA[");
-      else if (this.inKey > 0) this.key.append("<![CDATA[");
-      else if (this.inContent > 0) this.content.append("<![CDATA[");
-      else super.character.append("<![CDATA[");
+      this.inCDATA++;
+      this.cdata.append("<![CDATA[");
    }
    
    public void endCDATA() {
@@ -616,11 +617,16 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          if (this.qos != null) this.qos.toString();
          this.log.call(ME, "endCDATA: " + txt);
       }
-      // append on the corresponding buffer
-      if (this.inQos > 0) this.qos.append("]]>");
-      else if (this.inKey > 0) this.key.append("]]>");
-      else if (this.inContent > 0) this.content.append("]]>");
-      else super.character.append("]]>");
+      this.inCDATA--;
+      this.cdata.append("]]>");
+      if (this.inCDATA == 0) {
+         // append on the corresponding buffer
+         if (this.inQos > 0) this.qos.append(this.cdata);
+         else if (this.inKey > 0) this.key.append(this.cdata);
+         else if (this.inContent > 0) this.content.append(this.cdata);
+         else super.character.append(this.cdata);
+         this.cdata = new StringBuffer();
+      }
    }
    
    public static void main(String[] args) {
