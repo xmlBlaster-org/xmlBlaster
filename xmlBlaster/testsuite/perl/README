@@ -228,5 +228,44 @@ sub CallMe ($$) {
 
 
 1;              
+#========================================================
 
+
+
+
+
+
+
+
+========================================================
+Subject: 
+       RE: Howto realize a Callback to Perl
+Date: 
+       Wed, 1 Dec 1999 11:54:08 -0000
+From: 
+       "Giles Atkinson (UK)" <Giles.Atkinson@eu.citrix.com>
+To: 
+       "'Marcel Ruff'" <ruff@swand.lake.de>, cope@lunatech.com
+
+
+
+Marcel,
+
+Once a COPE client makes a request, it is blocked
+waiting to receive the reply and will not respond to
+the callback.  This is an old problem.
+
+I plan to fix it by using the BOA's select code to
+read the reply if the client is also a server, but
+it will take me some time.
+
+Another way would be to use Perl threads
+and give each client invocation its own thread.
+Has anyone ever tried COPE with a threaded Perl? 
+
+Either way, this is not a task I would recomment
+to a Perl beginner!
+
+Giles
+========================================================
 
