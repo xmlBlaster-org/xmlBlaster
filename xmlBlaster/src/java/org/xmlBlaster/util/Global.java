@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.37 2002/06/25 07:39:42 ruff Exp $
+Version:   $Id: Global.java,v 1.38 2002/06/25 17:39:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -187,6 +187,7 @@ public class Global implements Cloneable
       this.args = utilGlob.args;
       this.property = utilGlob.property;
       this.errorText = utilGlob.errorText;
+      this.cbHostname =  utilGlob.cbHostname;
       this.nativeCallbackDriverMap = utilGlob.nativeCallbackDriverMap;
       this.objectMap = utilGlob.objectMap;
       this.bootstrapAddress = utilGlob.bootstrapAddress;
@@ -757,8 +758,9 @@ public class Global implements Cloneable
          }
          catch (java.io.IOException e) {
             log.trace(ME, "Can't find default cb hostname: " + e.toString());
-            this.cbHostname = getLocalIP();
          }
+         if (this.cbHostname == null)
+            this.cbHostname = getLocalIP();
          this.cbHostname = getProperty().get("hostnameCB", this.cbHostname);
       }
       return this.cbHostname;
