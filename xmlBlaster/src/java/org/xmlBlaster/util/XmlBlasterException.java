@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.17 2003/03/05 11:33:16 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.18 2003/03/08 00:30:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -543,6 +543,12 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       }
       else if (throwable instanceof IllegalArgumentException) {
          return new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, location, message, throwable);
+      }
+      else if (throwable instanceof ArrayIndexOutOfBoundsException) {
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
+      }
+      else if (throwable instanceof StringIndexOutOfBoundsException) {
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
       }
       else if (throwable instanceof OutOfMemoryError) {
          return new XmlBlasterException(glob, ErrorCode.RESOURCE_OUTOFMEMORY, location, message, throwable);
