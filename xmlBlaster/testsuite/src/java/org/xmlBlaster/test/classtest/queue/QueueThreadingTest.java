@@ -37,6 +37,8 @@ import org.xmlBlaster.util.queue.I_Queue;
 import java.lang.reflect.Constructor;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * Test RamQueuePlugin.
@@ -90,10 +92,8 @@ public class QueueThreadingTest extends TestCase {
    private int sizeOfMsg = 100;
 
    private I_Queue[] queues = null;
-
    public ArrayList queueList = null;
-   public static int NUM_IMPL = 3;
-   public Constructor[] constructor = new Constructor[NUM_IMPL];
+   public static String[] PLUGIN_TYPES = { new String("RAM"), new String("JDBC"), new String("CACHE") };
    public int count = 0;
 
    /** Constructor for junit 
@@ -104,30 +104,18 @@ public class QueueThreadingTest extends TestCase {
 
    public QueueThreadingTest(Global glob, String name, int currImpl) {
       super(name);
-      this.glob = glob;
+      this.glob        = glob;
       this.numOfQueues = glob.getProperty().get("queues", 2);
-      this.numOfMsg = glob.getProperty().get("entries", 100);
-      this.sizeOfMsg = glob.getProperty().get("sizes", 10);
-      this.count = currImpl;
-
-      try {
-         Class clazz = RamQueuePlugin.class;
-         this.constructor[0] = clazz.getConstructor(null);
-         clazz = JdbcQueuePlugin.class;
-         this.constructor[1] = clazz.getConstructor(null);
-         clazz = CacheQueueInterceptorPlugin.class;
-         this.constructor[2] = clazz.getConstructor(null);
-      }
-      catch (Exception ex) {
-         fail(ME + "exception occured in constructor: " + ex.getMessage());
-      }
+      this.numOfMsg    = glob.getProperty().get("entries", 100);
+      this.sizeOfMsg   = glob.getProperty().get("sizes", 10);
+      this.count       = currImpl;
    }
 
    protected void setUp() {
       log = glob.getLog("test");
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
-         ME = "QueueThreadingTest with class: " + this.constructor[this.count].getName();
+         ME = "QueueThreadingTest with class: " + PLUGIN_TYPES[this.count];
       }
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
@@ -139,15 +127,23 @@ public class QueueThreadingTest extends TestCase {
       try {
          // test initialize()
 
-         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
+//         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+//         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
+         QueuePluginManager pluginManager = new QueuePluginManager(glob);
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         java.util.Properties pluginProp = (java.util.Properties)pluginInfo.getParameters();
+         pluginProp.put("tableNamePrefix", "TEST");
+         pluginProp.put("nodesTableName", "_nodes");
+         pluginProp.put("queuesTableName", "_queues");
+         pluginProp.put("entriesTableName", "_entries");
+         this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
+/*
          I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
          jdbcQueue.initialize(queueId, prop);
          jdbcQueue.clear();
-
          jdbcQueue.destroy();
-
+*/
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
@@ -157,16 +153,13 @@ public class QueueThreadingTest extends TestCase {
 
 
    public void tearDown() {
-
-      try {
-         if (queues != null) {
-            for (int i=0; i < queues.length; i++) {
-               this.queues[i].destroy();
-            }
+      for (int i=0; i < this.queues.length; i++) {
+         try {
+            this.queues[i].destroy();
          }
-      }
-      catch (Exception ex) {
-         this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+         catch (Exception ex) {
+            this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+         }
       }
    }
 
@@ -188,7 +181,7 @@ public class QueueThreadingTest extends TestCase {
    public void performancePutMultiThread(int numOfQueues, int numOfMsg, int sizeOfMsg)
       throws XmlBlasterException {
 
-      // set up the queues ....
+      // set up the queue ....
       this.queues = new I_Queue[numOfQueues];
       int threadsPerQueue = 5;
       QueueThread[] queueThreads = new QueueThread[numOfQueues*threadsPerQueue];
@@ -200,14 +193,13 @@ public class QueueThreadingTest extends TestCase {
 
       for (int i=0; i < numOfQueues; i++) {
          try {
-            queues[i] = (I_Queue)this.constructor[this.count].newInstance(null);
+            StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
+            this.queues[i] = this.glob.getQueuePluginManager().getPlugin(PLUGIN_TYPES[i], "1.0", queueId, prop);
+            queues[i].clear();
          }
          catch (Exception ex) {
             fail(ME + " exception when constructing the queue object. " + ex.getMessage());
          }
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
-         queues[i].initialize(queueId, prop);
-         queues[i].clear();
          try {
             for (int j=0; j < threadsPerQueue; j++) 
                queueThreads[i*threadsPerQueue+j] = new QueueThread(glob, "queue"+i, queues[i], this.log, numOfMsg, sizeOfMsg);
@@ -242,7 +234,7 @@ public class QueueThreadingTest extends TestCase {
    public static Test suite() {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new QueueThreadingTest(glob, "testPerfomancePutMultiThread", i));
       }
       return suite;
@@ -257,7 +249,7 @@ public class QueueThreadingTest extends TestCase {
 
       Global glob = new Global(args);
 
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          QueueThreadingTest testSub = new QueueThreadingTest(glob, "QueueThreadingTest", i);
          long startTime = System.currentTimeMillis();
 

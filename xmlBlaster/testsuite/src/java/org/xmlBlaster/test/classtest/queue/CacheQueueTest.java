@@ -32,6 +32,8 @@ import java.util.Hashtable;
 
 import junit.framework.*;
 import java.util.Enumeration;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * Test CacheQueueInterceptorPlugin.
@@ -80,7 +82,8 @@ public class CacheQueueTest extends TestCase {
    protected LogChannel log;
    private StopWatch stopWatch = new StopWatch();
 
-   private I_Queue[] queues = null;
+//   private I_Queue[] queues = null;
+   private CacheQueueInterceptorPlugin queue = null;
 
 //   public ArrayList queueList = null;
    public ArrayList queueList = null;
@@ -97,26 +100,27 @@ public class CacheQueueTest extends TestCase {
    protected void setUp() {
       glob = Global.instance();
       log = glob.getLog(null);
+      QueuePropertyBase cbProp = null;
+
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
-      }
-      catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST': " + ex.getMessage());
-      }
 
-      // cleaning up the database from previous runs ...
-
-      QueuePropertyBase prop = null;
-      try {
-         // test initialize()
-
-         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-
+         cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
 
-         CacheQueueInterceptorPlugin queue = new CacheQueueInterceptorPlugin();
-         queue.initialize(queueId, prop);
-         queue.destroy();
+         this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         QueuePluginManager pluginManager = new QueuePluginManager(glob);
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
+         prop.put("tableNamePrefix", "TEST");
+         prop.put("nodesTableName", "_nodes");
+         prop.put("queuesTableName", "_queues");
+         prop.put("entriesTableName", "_entries");
+         this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
+
+         pluginInfo = new PluginInfo(glob, pluginManager, "CACHE", "1.0");
+         this.queue = (CacheQueueInterceptorPlugin)pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         this.queue.shutdown(false); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
@@ -126,13 +130,8 @@ public class CacheQueueTest extends TestCase {
 
 
    public void tearDown() {
-
       try {
-         if (queues != null) {
-            for (int i=0; i < queues.length; i++) {
-               this.queues[i].destroy();
-            }
-         }
+         this.queue.destroy();
       }
       catch (Exception ex) {
          this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp");
@@ -156,7 +155,6 @@ public class CacheQueueTest extends TestCase {
       throws XmlBlasterException {
 
       // set up the queues ....
-      this.queues = new I_Queue[1];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       prop.setMaxMsg(20L);
       prop.setMaxMsgCache(10L);
@@ -165,20 +163,19 @@ public class CacheQueueTest extends TestCase {
 
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/config");
 
-      CacheQueueInterceptorPlugin queue = new CacheQueueInterceptorPlugin();
-      this.queues[0] = queue;
-      queue.initialize(queueId, prop);
+      // this.queue = new CacheQueueInterceptorPlugin();
+      this.queue.initialize(queueId, prop);
 
-      long persistentSize = queue.getPersistentQueue().getMaxNumOfBytes();
-      long persistentMsg  = queue.getPersistentQueue().getMaxNumOfEntries();
-      long transientSize  = queue.getTransientQueue().getMaxNumOfBytes();
-      long transientMsg   = queue.getTransientQueue().getMaxNumOfEntries();
+      long persistentSize = this.queue.getPersistentQueue().getMaxNumOfBytes();
+      long persistentMsg  = this.queue.getPersistentQueue().getMaxNumOfEntries();
+      long transientSize  = this.queue.getTransientQueue().getMaxNumOfBytes();
+      long transientMsg   = this.queue.getTransientQueue().getMaxNumOfEntries();
 
       assertEquals("Wrong persistent size", 500L, persistentSize);
       assertEquals("Wrong persistent num of msg", 20L, persistentMsg);
       if (200L != transientSize)
-         log.error(ME, "ERROR: Wrong transient size"+queue.getTransientQueue().toXml(""));
-      assertEquals("Wrong transient size"+queue.getTransientQueue().toXml(""), 200L, transientSize);
+         log.error(ME, "ERROR: Wrong transient size" + this.queue.getTransientQueue().toXml(""));
+      assertEquals("Wrong transient size" + this.queue.getTransientQueue().toXml(""), 200L, transientSize);
       assertEquals("Wrong num of transient msg", 10L, transientMsg);
 
    }
@@ -211,7 +208,6 @@ public class CacheQueueTest extends TestCase {
    public void putPeekRemove() throws XmlBlasterException {
 
       // set up the queues ....
-      this.queues = new I_Queue[1];
 
       // every content is 80 bytes which gives an entry size of 100 bytes (80+20)
 
@@ -234,9 +230,9 @@ public class CacheQueueTest extends TestCase {
                prop.setMaxBytesCache(maxNumOfBytesCache[ic]);
                StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
 
-               CacheQueueInterceptorPlugin queue = new CacheQueueInterceptorPlugin();
-               this.queues[0] = queue;
-               queue.initialize(queueId, prop);
+//               this.queue = new CacheQueueInterceptorPlugin();
+               this.queue.destroy();
+               this.queue.initialize(queueId, prop);
 
                for (int it=0; it < numOfTransientEntries.length; it++) {
                   // entry.setPrio(4+(it%3));
@@ -244,9 +240,9 @@ public class CacheQueueTest extends TestCase {
 
                      log.info(ME, "**** SUB-TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is] +
                                    " -> numOfTransientEntries["+it+"]=" + numOfTransientEntries[it] + " numOfPersistentEntries["+id+"]=" + numOfPersistentEntries[id]);
-                     if (!queue.isShutdown()) queue.shutdown(true);
-                     queue.initialize(queueId, prop);
-                     queue.clear();
+                     if (!this.queue.isShutdown()) this.queue.shutdown(true);
+                     this.queue.initialize(queueId, prop);
+                     this.queue.clear();
 
                      long maxPersistentNumOfBytes = maxNumOfBytes[is];
                      long maxTransientNumOfBytes = maxNumOfBytesCache[ic];
@@ -262,7 +258,7 @@ public class CacheQueueTest extends TestCase {
 
                      try {
 
-                        queue.clear();
+                        this.queue.clear();
                         transientNumOfBytes = 100 * numOfTransientEntries[it];
                         persistentNumOfBytes =100 * numOfPersistentEntries[id];
                         // prepare the inputs .
@@ -278,7 +274,7 @@ public class CacheQueueTest extends TestCase {
                         for (int i=0; i < transients.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, queue.getStorageId(), 80, persistent);
+                           DummyEntry entry = new DummyEntry(glob, enum, this.queue.getStorageId(), 80, persistent);
                            transients[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
@@ -286,21 +282,21 @@ public class CacheQueueTest extends TestCase {
                         for (int i=0; i < persistentEntries.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, queue.getStorageId(), 80, persistent);
+                           DummyEntry entry = new DummyEntry(glob, enum, this.queue.getStorageId(), 80, persistent);
                            persistentEntries[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
 
                         // do the test here ....
-                        assertEquals(ME + " number of persistent entries is wrong ", 0L, queue.getNumOfPersistentEntries());
-                        assertEquals(ME + " number of entries is wrong ", 0L, queue.getNumOfEntries());
+                        assertEquals(ME + " number of persistent entries is wrong ", 0L, this.queue.getNumOfPersistentEntries());
+                        assertEquals(ME + " number of entries is wrong ", 0L, this.queue.getNumOfEntries());
 //                        queue.put(transients, false);
                         for (int i=0; i < transients.length; i++)
-                           queue.put(transients[i], false);
+                           this.queue.put(transients[i], false);
                         assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, queue.getNumOfEntries());
 //                        queue.put(persistent, false);
                         for (int i=0; i < persistentEntries.length; i++) {
-                           queue.put(persistentEntries[i], false);
+                           this.queue.put(persistentEntries[i], false);
                         }
                         assertEquals(ME + " number of entries after putting transients is wrong ", persistentEntries.length + transients.length, queue.getNumOfEntries());
                         long nPersistents  = queue.getNumOfPersistentEntries();
@@ -311,12 +307,12 @@ public class CacheQueueTest extends TestCase {
 
                         ArrayList total = new ArrayList();
                         ArrayList ret = queue.peekSamePriority(-1, -1L);
-                        queue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
+                        this.queue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
                         while (ret.size() > 0) {
                            total.addAll(ret);
-                           ret = queue.peekSamePriority(-1, -1L);
+                           ret = this.queue.peekSamePriority(-1, -1L);
                            if (ret.size() > 0)
-                              queue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
+                              this.queue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
                         }
                         int mustEntries = inputTable[0].size() + inputTable[1].size() + inputTable[2].size();
 
@@ -355,9 +351,6 @@ public class CacheQueueTest extends TestCase {
    }
 
 
-
-
-
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.queue.CacheQueueTest
@@ -368,11 +361,12 @@ public class CacheQueueTest extends TestCase {
       Global glob = new Global(args);
       CacheQueueTest testSub = new CacheQueueTest(glob, "CacheQueueTest");
 
+      long startTime = System.currentTimeMillis();
+
+/*
       testSub.setUp();
       testSub.tearDown();
 
-      long startTime = System.currentTimeMillis();
-/*
       testSub.setUp();
       testSub.testConfig();
       testSub.tearDown();
@@ -383,7 +377,6 @@ public class CacheQueueTest extends TestCase {
 
       long usedTime = System.currentTimeMillis() - startTime;
       testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
-
    }
 }
 

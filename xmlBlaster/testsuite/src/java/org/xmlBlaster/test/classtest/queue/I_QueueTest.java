@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import junit.framework.*;
+import org.xmlBlaster.util.queue.QueuePluginManager;
 
 /**
  * Test RamQueuePlugin.
@@ -59,27 +60,51 @@ public class I_QueueTest extends TestCase {
    private StopWatch stopWatch = new StopWatch();
 
    private I_Queue queue;
+   static String[] PLUGIN_TYPES = {
+                   new String("RAM"),
+                   new String("JDBC"),
+                   new String("CACHE")
+                 };
+
+/*
    static I_Queue[] IMPL = {
                    new org.xmlBlaster.util.queue.ram.RamQueuePlugin(),
                    new org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin(),
                    new org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin()
                  };
+*/
 
    public I_QueueTest(String name, int currImpl) {
       super(name);
-      this.queue = IMPL[currImpl];
+//      this.queue = IMPL[currImpl];
       //this.ME = "I_QueueTest[" + this.queue.getClass().getName() + "]";
-   }
 
-   protected void setUp() {
-      glob = Global.instance();
-      log = glob.getLog(null);
+      this.glob = Global.instance();
+      this.log = glob.getLog(null);
       try {
-         glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         String type = PLUGIN_TYPES[currImpl];
+         this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         QueuePluginManager pluginManager = new QueuePluginManager(glob);
+
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
+         prop.put("tableNamePrefix", "TEST");
+         prop.put("nodesTableName", "_nodes");
+         prop.put("queuesTableName", "_queues");
+         prop.put("entriesTableName", "_entries");
+         this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
+
+         pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
+         this.queue = pluginManager.getPlugin(pluginInfo, queueId, new CbQueueProperty(this.glob, queueId.getStrippedId(), this.glob.getStrippedId()));
+         this.queue.shutdown(false); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
       }
+   }
+
+   protected void setUp() {
 
       // cleaning up the database from previous runs ...
 /*
@@ -1283,7 +1308,7 @@ public class I_QueueTest extends TestCase {
    {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
-      for (int i=0; i<IMPL.length; i++) {
+      for (int i=0; i<PLUGIN_TYPES.length; i++) {
          suite.addTest(new I_QueueTest("testConfig", i));
          suite.addTest(new I_QueueTest("testSize1", i));
          suite.addTest(new I_QueueTest("testPutMsg", i));
@@ -1310,7 +1335,7 @@ public class I_QueueTest extends TestCase {
 
       Global glob = new Global(args);
 
-      for (int i=0; i < IMPL.length; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          I_QueueTest testSub = new I_QueueTest("I_QueueTest", i);
 
          long startTime = System.currentTimeMillis();
@@ -1318,7 +1343,7 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testSize1();
          testSub.tearDown();
-         /*
+
          testSub.setUp();
          testSub.testConfig();
          testSub.tearDown();
@@ -1354,6 +1379,7 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testSizesCheck();
          testSub.tearDown();
+         /*
          */
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");

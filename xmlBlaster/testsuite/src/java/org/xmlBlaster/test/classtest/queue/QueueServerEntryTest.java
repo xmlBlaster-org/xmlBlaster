@@ -39,9 +39,11 @@ import java.lang.reflect.Constructor;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
- * Test persistent of Queue entries. 
+ * Test persistence of Queue entries. 
  * <p>
  * Invoke: java -Djava.compiler= org.xmlBlaster.test.classtest.queue.QueueServerEntryTest
  * </p>
@@ -61,11 +63,10 @@ public class QueueServerEntryTest extends TestCase {
    private int numOfMsg = 10000;
    private int sizeOfMsg = 100;
 
-   private I_Queue[] queues = null;
+   private I_Queue queue = null;
 
    public ArrayList queueList = null;
-   public static int NUM_IMPL = 3;
-   public Constructor[] constructor = new Constructor[NUM_IMPL];
+   public static String[] PLUGIN_TYPES = { new String("RAM"), new String("JDBC"), new String("CACHE") };
    public int count = 0;
 
    /** Constructor for junit
@@ -76,66 +77,49 @@ public class QueueServerEntryTest extends TestCase {
 
    public QueueServerEntryTest(Global glob, String name, int currImpl) {
       super(name);
-      this.glob = glob;
-      this.numOfQueues = glob.getProperty().get("queues", 2);
-      this.numOfMsg = glob.getProperty().get("entries", 100);
-      this.sizeOfMsg = glob.getProperty().get("sizes", 10);
-      this.count = currImpl;
-
-      try {
-         Class clazz = RamQueuePlugin.class;
-         this.constructor[0] = clazz.getConstructor(null);
-         clazz = JdbcQueuePlugin.class;
-         this.constructor[1] = clazz.getConstructor(null);
-         clazz = CacheQueueInterceptorPlugin.class;
-         this.constructor[2] = clazz.getConstructor(null);
-      }
-      catch (Exception ex) {
-         fail(ME + "exception occured in constructor: " + ex.getMessage());
-      }
-   }
-
-   protected void setUp() {
+      this.glob        = glob;
+      ME = "QueueServerEntryTest with class: " + PLUGIN_TYPES[this.count];
       log = glob.getLog("test");
+      this.numOfQueues = glob.getProperty().get("queues", 2);
+      this.numOfMsg    = glob.getProperty().get("entries", 100);
+      this.sizeOfMsg   = glob.getProperty().get("sizes", 10);
+      this.count       = currImpl;
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
-         ME = "QueueServerEntryTest with class: " + this.constructor[this.count].getName();
-      }
-      catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
-      }
+         QueuePluginManager pluginManager = this.glob.getQueuePluginManager();
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         java.util.Properties pluginProp = (java.util.Properties)pluginInfo.getParameters();
+         pluginProp.put("tableNamePrefix", "TEST");
+         pluginProp.put("nodesTableName", "_nodes");
+         pluginProp.put("queuesTableName", "_queues");
+         pluginProp.put("entriesTableName", "_entries");
+         this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
 
-      // cleaning up the database from previous runs ...
-
-      QueuePropertyBase prop = null;
-      try {
-         // test initialize()
-
-         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
-
-         I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
-         jdbcQueue.initialize(queueId, prop);
-         jdbcQueue.clear();
-
-         jdbcQueue.destroy();
-
+         QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
+         this.queue = pluginManager.getPlugin(PLUGIN_TYPES[currImpl], "1.0", queueId, cbProp);
+         this.queue.shutdown(false); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
       }
+   }
 
+   protected void setUp() {
+      try {
+         glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         ME = "QueueServerEntryTest with class: " + PLUGIN_TYPES[this.count];
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
+      }
+      this.queue.shutdown(false);
    }
 
 
    public void tearDown() {
-
       try {
-         if (queues != null) {
-            for (int i=0; i < queues.length; i++) {
-               this.queues[i].destroy();
-            }
-         }
+         this.queue.destroy();
       }
       catch (Exception ex) {
          this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
@@ -160,22 +144,13 @@ public class QueueServerEntryTest extends TestCase {
    public void updateEntry() throws XmlBlasterException {
 
       // set up the queues ....
-      this.queues = new I_Queue[1];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "************ Starting updateEntry Test");
       long t0 = System.currentTimeMillis();
 
-      I_Queue queue = null;
-      try {
-         queue = (I_Queue)this.constructor[this.count].newInstance(null);
-      }
-      catch (Exception ex) {
-         fail(ME + " exception when constructing the queue object. " + ex.getMessage());
-      }
-      queues[0] = queue;
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
-      queue.initialize(queueId, prop);
-      queue.clear();
+      this.queue.initialize(queueId, prop);
+      this.queue.clear();
 
       long t1 = System.currentTimeMillis() - t0;
 
@@ -305,25 +280,15 @@ public class QueueServerEntryTest extends TestCase {
    public void historyEntry() throws XmlBlasterException {
 
       // set up the queues ....
-      this.queues = new I_Queue[1];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "********* Starting historyEntry Test");
       long t0 = System.currentTimeMillis();
 
-      I_Queue queue = null;
-      try {
-         queue = (I_Queue)this.constructor[this.count].newInstance(null);
-      }
-      catch (Exception ex) {
-         fail(ME + " exception when constructing the queue object. " + ex.getMessage());
-      }
-      queues[0] = queue;
       StorageId queueId = new StorageId(Constants.RELATING_HISTORY, "historyEntry");
-      queue.initialize(queueId, prop);
-      queue.clear();
+      this.queue.initialize(queueId, prop);
+      this.queue.clear();
 
       long t1 = System.currentTimeMillis() - t0;
-
       t0 = System.currentTimeMillis();
 
       try {
@@ -423,7 +388,7 @@ public class QueueServerEntryTest extends TestCase {
    public static Test suite() {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new QueueServerEntryTest(glob, "testUpdateEntry", i));
          suite.addTest(new QueueServerEntryTest(glob, "testHistoryEntry", i));
       }
@@ -439,7 +404,7 @@ public class QueueServerEntryTest extends TestCase {
 
       Global glob = new Global(args);
 
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
 
          QueueServerEntryTest testSub = new QueueServerEntryTest(glob, "QueueServerEntryTest", i);
          long startTime = System.currentTimeMillis();

@@ -37,6 +37,8 @@ import org.xmlBlaster.util.queue.I_Queue;
 import java.lang.reflect.Constructor;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * Test JdbcQueuePlugin failover when persistent store disappears. 
@@ -62,16 +64,13 @@ public class JdbcQueueTest extends TestCase {
    private StopWatch stopWatch = new StopWatch();
 
    private int numOfQueues = 10;
-   private int numOfMsg = 10000;
-   private long sizeOfMsg = 100L;
-
-   private I_Queue[] queues = null;
+   private int numOfMsg    = 10000;
+   private long sizeOfMsg  = 100L;
+   private I_Queue queue   = null;
 
    public ArrayList queueList = null;
-   public static int NUM_IMPL = 2;
-   public Constructor[] constructor = new Constructor[NUM_IMPL];
+   public static String[] PLUGIN_TYPES = { new String("JDBC"), new String("CACHE") };
    public int count = 0;
-
    boolean suppressTest = false;
 
    /** Constructor for junit not possible since we need to run it 3 times
@@ -88,22 +87,34 @@ public class JdbcQueueTest extends TestCase {
    }
 
    private void initialize(Global glob, String name, int currImpl) {
-      this.glob = (glob == null) ? new Global() : glob;
+      this.glob = Global.instance();
+      this.log = glob.getLog(null);
+
       this.numOfQueues = glob.getProperty().get("queues", 2);
       this.numOfMsg = glob.getProperty().get("entries", 100);
       this.sizeOfMsg = glob.getProperty().get("sizes", 10L);
       this.suppressTest = false;
       this.count = currImpl;
+
       try {
-         int i=0;
-         Class clazz;
-         clazz = JdbcQueuePlugin.class;
-         this.constructor[i++] = clazz.getConstructor(null);
-         clazz = CacheQueueInterceptorPlugin.class;
-         this.constructor[i++] = clazz.getConstructor(null);
+         String type = PLUGIN_TYPES[currImpl];
+         this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         QueuePluginManager pluginManager = new QueuePluginManager(glob);
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
+         java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
+         prop.put("tableNamePrefix", "TEST");
+         prop.put("nodesTableName", "_nodes");
+         prop.put("queuesTableName", "_queues");
+         prop.put("entriesTableName", "_entries");
+
+         CbQueueProperty cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
+
+         this.queue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         this.queue.shutdown(false); // to allow to initialize again
       }
       catch (Exception ex) {
-         fail(ME + "exception occured in constructor: " + ex.getMessage());
+         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
       }
    }
 
@@ -111,7 +122,7 @@ public class JdbcQueueTest extends TestCase {
       log = glob.getLog("test");
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
-         ME = "JdbcQueueTest with class: " + this.constructor[this.count].getName();
+         ME = "JdbcQueueTest with class: " + PLUGIN_TYPES[this.count];
       }
       catch (Exception ex) {
          this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
@@ -122,16 +133,7 @@ public class JdbcQueueTest extends TestCase {
       QueuePropertyBase prop = null;
       try {
          // test initialize()
-
-         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
-
-         I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
-         jdbcQueue.initialize(queueId, prop);
-         jdbcQueue.clear();
-
-         jdbcQueue.destroy();
-
+         this.queue.destroy();
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
@@ -141,11 +143,7 @@ public class JdbcQueueTest extends TestCase {
 
    public void tearDown() {
       try {
-         if (queues != null) {
-            for (int i=0; i < queues.length; i++) {
-               this.queues[i].destroy();
-            }
-         }
+         this.queue.destroy();
       }
       catch (Exception ex) {
          this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
@@ -170,26 +168,18 @@ public class JdbcQueueTest extends TestCase {
    public void putWithBreak()
       throws XmlBlasterException {
       // set up the queues ....
-      this.queues = new I_Queue[1];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-
       prop.setMaxMsg(10000);
-      try {
-         queues[0] = (I_Queue)this.constructor[this.count].newInstance(null);
-      }
-      catch (Exception ex) {
-         fail(ME + " exception when constructing the queue object. " + ex.getMessage());
-      }
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "putWithBreak");
-      queues[0].initialize(queueId, prop);
-      queues[0].clear();
+      queue.initialize(queueId, prop);
+      queue.clear();
 
       int num = 5;
       for (int i=0; i < num; i++) {
          try {
             this.log.info(ME, "put with break entry " + i + "/" + num + " please kill the DB manually to test reconnect");
-            DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queues[0].getStorageId(), sizeOfMsg, true);
-            queues[0].put(entry, false);
+            DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), sizeOfMsg, true);
+            queue.put(entry, false);
          }
          catch (Exception ex) {
             this.log.error(ME, ex.getMessage());
@@ -211,7 +201,7 @@ public class JdbcQueueTest extends TestCase {
    public static Test suite() {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new JdbcQueueTest(glob, "testPutWithBreak", i));
       }
       return suite;
@@ -225,7 +215,7 @@ public class JdbcQueueTest extends TestCase {
    public static void main(String args[]) {
       Global glob = new Global(args);
 
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          long startTime = System.currentTimeMillis();
 
          JdbcQueueTest testSub = new JdbcQueueTest(glob, "JdbcQueueTest", i);

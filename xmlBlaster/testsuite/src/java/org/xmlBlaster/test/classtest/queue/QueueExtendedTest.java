@@ -33,9 +33,10 @@ import java.util.StringTokenizer;
 import junit.framework.*;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_Queue;
-import java.lang.reflect.Constructor;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * Test RamQueuePlugin.
@@ -91,8 +92,7 @@ public class QueueExtendedTest extends TestCase {
    private I_Queue[] queues = null;
 
    public ArrayList queueList = null;
-   public static int NUM_IMPL = 3;
-   public Constructor[] constructor = new Constructor[NUM_IMPL];
+   public static String[] PLUGIN_TYPES = { new String("RAM"), new String("JDBC"), new String("CACHE") };
    public int count = 0;
 
    /** Constructor for junit
@@ -104,68 +104,45 @@ public class QueueExtendedTest extends TestCase {
    public QueueExtendedTest(Global glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
-      this.numOfQueues = glob.getProperty().get("queues", 2);
-      this.numOfMsg = glob.getProperty().get("entries", 100);
-      this.sizeOfMsg = glob.getProperty().get("sizes", 10);
-      this.count = currImpl;
-
-      try {
-         Class clazz = RamQueuePlugin.class;
-         this.constructor[0] = clazz.getConstructor(null);
-         clazz = JdbcQueuePlugin.class;
-         this.constructor[1] = clazz.getConstructor(null);
-         clazz = CacheQueueInterceptorPlugin.class;
-         this.constructor[2] = clazz.getConstructor(null);
-      }
-      catch (Exception ex) {
-         fail(ME + "exception occured in constructor: " + ex.getMessage());
-      }
-   }
-
-   protected void setUp() {
       log = glob.getLog("test");
+      ME = "QueueExtendedTest with class: " + PLUGIN_TYPES[currImpl];
+
+      this.numOfQueues = glob.getProperty().get("queues", 2);
+      this.numOfMsg    = glob.getProperty().get("entries", 100);
+      this.sizeOfMsg   = glob.getProperty().get("sizes", 10);
+      this.count       = currImpl;
+
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
-         ME = "QueueExtendedTest with class: " + this.constructor[this.count].getName();
-      }
-      catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
-      }
-
-      // cleaning up the database from previous runs ...
-
-      QueuePropertyBase prop = null;
-      try {
-         // test initialize()
-
-         prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
-
-         I_Queue jdbcQueue = (I_Queue)this.constructor[this.count].newInstance(null);
-         jdbcQueue.initialize(queueId, prop);
-         jdbcQueue.clear();
-
-         jdbcQueue.destroy();
-
+         QueuePluginManager pluginManager = this.glob.getQueuePluginManager();
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         java.util.Properties pluginProp = (java.util.Properties)pluginInfo.getParameters();
+         pluginProp.put("tableNamePrefix", "TEST");
+         pluginProp.put("nodesTableName", "_nodes");
+         pluginProp.put("queuesTableName", "_queues");
+         pluginProp.put("entriesTableName", "_entries");
+         this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
       }
+   }
 
+   protected void setUp() {
+      // cleaning up the database from previous runs ...
    }
 
 
    public void tearDown() {
-
-      try {
-         if (queues != null) {
-            for (int i=0; i < queues.length; i++) {
+      if (queues != null) {
+         for (int i=0; i < queues.length; i++) {
+            try {
                this.queues[i].destroy();
             }
+            catch (Exception ex) {
+               this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+            }
          }
-      }
-      catch (Exception ex) {
-         this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
       }
    }
 
@@ -198,16 +175,9 @@ public class QueueExtendedTest extends TestCase {
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
-         try {
-            queues[i] = (I_Queue)this.constructor[this.count].newInstance(null);
-         }
-         catch (Exception ex) {
-            fail(ME + " exception when constructing the queue object. " + ex.getMessage());
-         }
-
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
-         queues[i].initialize(queueId, prop);
-         queues[i].clear();
+         this.queues[i] = this.glob.getQueuePluginManager().getPlugin(PLUGIN_TYPES[this.count], "1.0", queueId, prop);
+         this.queues[i].clear();
       }
 
       long t1 = System.currentTimeMillis() - t0;
@@ -273,15 +243,9 @@ public class QueueExtendedTest extends TestCase {
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
-         try {
-            queues[i] = (I_Queue)this.constructor[this.count].newInstance(null);
-         }
-         catch (Exception ex) {
-            fail(ME + " exception when constructing the queue object. " + ex.getMessage());
-         }
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/MultiPut_" + i);
-         queues[i].initialize(queueId, prop);
-         queues[i].clear();
+         this.queues[i] = this.glob.getQueuePluginManager().getPlugin(PLUGIN_TYPES[this.count], "1.0", queueId, prop);
+         this.queues[i].clear();
       }
 
       long t1 = System.currentTimeMillis() - t0;
@@ -329,7 +293,7 @@ public class QueueExtendedTest extends TestCase {
    public static Test suite() {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new QueueExtendedTest(glob, "testPerfomancePut", i));
          suite.addTest(new QueueExtendedTest(glob, "testPerfomanceMultiPut", i));
       }
@@ -345,7 +309,7 @@ public class QueueExtendedTest extends TestCase {
 
       Global glob = new Global(args);
 
-      for (int i=0; i < NUM_IMPL; i++) {
+      for (int i=0; i < PLUGIN_TYPES.length; i++) {
 
          QueueExtendedTest testSub = new QueueExtendedTest(glob, "QueueExtendedTest", i);
          long startTime = System.currentTimeMillis();
