@@ -181,19 +181,8 @@
                </address>
             </dispatch>
 
-            <subscribeList>__subId:3,__subId:XPATH2</subscribeList>
+            <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
             
-            <subscribe id='__subId:3' oid='hello'
-                       creationTime='Mar 7, 2003 6:33:14 PM'/>
-            
-            <subscribe id='__subId:XPATH2' oid='//key//sport'
-                       creationTime='Mar 12, 2003 10:53:27 AM'>
-               <subscribe id='__subId:XPATH2:3' oid='soccer'/>
-               <subscribe id='__subId:XPATH2:4' oid='tennis'/>
-               <subscribe id='__subId:XPATH2:5' oid='admiral cup'/>
-            <subscribe>
-
-
             <!-- The settings used on the client side -->
             <dispatch id='clientSide'>
                <queue>
@@ -320,14 +309,28 @@ Old style:
                </topic>
             </entry>
          </queue>
-         <subscribe id='__subId:3' sessionName='/node/heron/client/joe/-3'
-                    creationTime='1047058394074000000'/>
+         <subscriptionList id='__subId:3'/> 
       </topic>
 
       <topic id='radar.track'>
          <state>UNREFERENCED</state>
             ...
       </topic>
+
+      <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
+      <subscription id='__subId:3'
+                  sessionName='/node/heron/client/joe/-3'
+                  topicId='hello'
+                  creationTime='Mar 7, 2003 6:33:14 PM'/>
+      
+      <subscription id='__subId:XPATH2' oid='//key//sport'
+                  creationTime='Mar 12, 2003 10:53:27 AM'>
+         <subscription id='__subId:XPATH2:3' topicId='soccer'/>
+         <subscription id='__subId:XPATH2:4' topicId='tennis'/>
+         <subscription id='__subId:XPATH2:5' topicId='admiral cup'/>
+      <subscription>
+
+
    </node> <!-- heron -->
 
    <node id='avalon'>
@@ -745,7 +748,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.45 $</revision>
+   <revision>$Revision: 1.46 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
