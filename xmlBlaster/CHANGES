@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o Completed ANSI-C client library for sync and async xmlBlaster access:
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
+
  o Added support for OmniORB 4.0.1 (C++ client library)
 
  o BUGFIX C++ object cleanup by Martin Johnson
