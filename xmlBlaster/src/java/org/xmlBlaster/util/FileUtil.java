@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.12 2000/06/13 13:04:02 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.13 2000/06/15 07:20:18 kron Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -307,6 +307,56 @@ public class FileUtil
       return ret;
    }
 
+   /**
+    * Reads a file and gives the content back as string 
+    * @param fileName for example "/tmp/publishKey.xml"
+    * @return filen-content as a string
+    */
+   public static String fileToString(String fileName)
+   {
+      InputStreamReader isr = null;
+      int c = 0;
+      StringWriter sr = new StringWriter();
+
+      //Open template file
+
+      try
+      {
+         isr = new InputStreamReader(new FileInputStream(fileName),"UTF8");
+         while ((c = isr.read()) != -1) {
+            sr.write(c);
+         }
+      } catch (FileNotFoundException e) {}
+        catch (IOException e) {}
+        finally {
+            try {
+                isr.close();
+            } catch (IOException e) {}
+      }
+
+        // return the template string
+        return sr.toString();
+    }
+
+    /**
+    * Creates a filepath of your file (UNIX/WINDOWS) 
+    * @param path for example "publishKey.xml"
+    * @return filepath 
+    */
+    public static String createURL(String path)
+    {
+       File f = new File(path);
+       String uri = f.getAbsolutePath();
+
+       char sep = System.getProperty("file.separator").charAt(0);
+       uri = uri.replace(sep, '/');
+       if (uri.charAt(0) != '/')
+          uri = '/' + uri;
+
+       uri = "file://" + uri;
+
+       return uri;
+    }
 
    /**
     * Invoke for testing: jaco org.xmlBlaster.util.FileUtil
@@ -334,6 +384,7 @@ public class FileUtil
       name = File.separator + File.separator + File.separator;
       Log.info(ME, name + " -> <"  + FileUtil.getBody(name) + "> and <" + FileUtil.getExtension(name) + ">");
    }
+
 }
 
 
