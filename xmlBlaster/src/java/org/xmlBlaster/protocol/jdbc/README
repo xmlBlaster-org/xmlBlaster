@@ -1,5 +1,7 @@
 Ok, so this is a quick and dirty 'HOWTO' for the DB adapter.
 
+See http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+
 ================================================================
 Add the following line to your xmlBlaster.properties file:
 
