@@ -219,6 +219,18 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       this.sessionNameModified = true;
    }
 
+   /**
+    * Set our unique SessionName. 
+    * @param sessionName
+    * @param markAsModified false if you are setting a default sessionName, true if the user set the sessionName
+    */
+   void setSessionName(SessionName sessionName, boolean markAsModified) {
+      this.sessionName = sessionName;
+      if (markAsModified) {
+         this.sessionNameModified = markAsModified;
+      }
+   }
+
    public boolean isSessionNameModified() {
       return sessionNameModified;
    }
