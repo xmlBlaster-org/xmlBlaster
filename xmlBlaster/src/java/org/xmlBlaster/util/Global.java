@@ -20,6 +20,9 @@ import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.authentication.HttpIORServer;
+import org.xmlBlaster.util.log.LogDevicePluginManager;
+import org.xmlBlaster.util.log.I_LogDeviceFactory;
+import org.jutils.log.LogableDevice;
 
 import java.util.Properties;
 
@@ -96,7 +99,11 @@ public class Global implements Cloneable
    protected DocumentBuilderFactory docBuilderFactory = null;
    protected TransformerFactory transformerFactory = null;
 
+   protected LogDevicePluginManager logDevicePluginManager = null;
    protected int counter = 0;
+
+   /** used to guard agains log device plugin loading making cirkular calls*/
+   private boolean creatingLogInstance = false;
 
    /**
     * Constructs an initial Global object.
@@ -115,6 +122,7 @@ public class Global implements Cloneable
       this.args = new String[0];
       initProps(this.args);
       initId();
+      logDevicePluginManager = new LogDevicePluginManager(this);
       logDefault = new LogChannel(null, getProperty());
       log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
@@ -174,6 +182,7 @@ public class Global implements Cloneable
       }
       initProps(args,loadPropFile);
       initId();
+      logDevicePluginManager = new LogDevicePluginManager(this);
       logDefault = new LogChannel(null, getProperty());
       log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
@@ -250,10 +259,15 @@ public class Global implements Cloneable
       this.recorderPluginManager = utilGlob.recorderPluginManager;
       this.logChannels = utilGlob.logChannels;
       this.logDefault = utilGlob.logDefault;
+      this.logDevicePluginManager = utilGlob.logDevicePluginManager;
    }
 
    /**
-    * Initialize logging with environment variables.
+    * Initialize logging.
+    * 
+    * <p>The pluggable loggers is tested first, see {@link org.xmlBlaster.util.log.LogDevicePluginManager}.
+    * <p>If no pluggable loggers is configured the logging is initialized
+    * with environment variables.</p>
     * <pre>
     *   -logFile  output.txt
     *   -logFile[cluster] cluster-output.txt
@@ -263,23 +277,73 @@ public class Global implements Cloneable
     */
    private void initLog(LogChannel lc) {
       String key = lc.getChannelKey();
-
+      boolean useOld = true;//Used to guarante some logging
+      
+      // There are situations where the manager is actually not there beacuse
+      // its parent sets up logging
+      if (logDevicePluginManager != null) {
+         // We have to protect this part, if the plugin bootstrapping makes us
+         // call this stuff
+         synchronized(this) {
+            if (creatingLogInstance) {
+               // We simply use an oldtimer ;-)
+               lc.addLogDevice(new LogDeviceConsole(lc) );
+               return;// Get out if here quick!
+            }
+            creatingLogInstance=true;
+               
+            // Get the plugins for the lc.key, first try with key, then globaly
+            String[] devices = null;
+            if (key != null)
+               devices = getProperty().get("logDevice[" + key + "]", new String[0], ",");
+            if (devices == null  ||  devices.length == 0)
+               devices = getProperty().get("logDevice", new String[0], ",");
+            
+            if (devices != null && devices.length > 0) {
+               for(int i = 0;i<devices.length;i++) {
+                  try {
+                     I_LogDeviceFactory fac = logDevicePluginManager.getFactory(devices[i],"1.0");
+                     LogableDevice dev = fac.getLogDevice(lc);
+                     log.info(ME,"Setting logDevice " +key+"[" + devices[i]+"]="+dev.getClass().getName());
+                     if (dev != null)
+                        lc.addLogDevice(dev);
+                  }catch(XmlBlasterException ex) {
+                     log.error(ME,"Global: error in getting LogDeviceFactory for " + key);
+                     continue;
+                  }
+                  //If we ever reach here, we have some logging device set up
+                  useOld=false;
+               }
+               
+               
+            }
+            creatingLogInstance = false;
+         }
+      }
+      
+      if (useOld) {
+         log.info(ME,"Using old logging behaviour");
+         //System.err.println("Using old logging behaviour");
+         //Old behaviour
+         boolean bVal = getProperty().get("logConsole", true);
+         if (key != null) getProperty().get("logConsole[" + key + "]", bVal);
+         if (bVal == true) {
+            LogDeviceConsole ldc = new LogDeviceConsole(lc);
+            lc.addLogDevice(ldc);
+         }
+         
+         String strFilename = getProperty().get("logFile", (String)null);
+         if (key != null) strFilename = getProperty().get("logFile[" + key + "]", strFilename);
+         if (strFilename != null) {
+            LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
+            lc.addLogDevice(ldf);
+            System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
+         }
+      }
+      
       //lc.setDefaultLogLevel();
+      
 
-      boolean bVal = getProperty().get("logConsole", true);
-      if (key != null) getProperty().get("logConsole[" + key + "]", bVal);
-      if (bVal == true) {
-         LogDeviceConsole ldc = new LogDeviceConsole(lc);
-         lc.addLogDevice(ldc);
-      }
-
-      String strFilename = getProperty().get("logFile", (String)null);
-      if (key != null) strFilename = getProperty().get("logFile[" + key + "]", strFilename);
-      if (strFilename != null) {
-         LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
-         lc.addLogDevice(ldf);
-         System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
-      }
 
       // Old logging style:
       log.initialize(this);
