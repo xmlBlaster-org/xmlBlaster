@@ -3,7 +3,7 @@ Name:      SubjectMsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: SubjectMsgQueue.java,v 1.3 2002/03/17 07:22:43 ruff Exp $
+Version:   $Id: SubjectMsgQueue.java,v 1.4 2002/03/22 08:17:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -40,7 +40,8 @@ public class SubjectMsgQueue extends MsgQueue
       if (prop != null) {
          this.property = prop;
          CallbackAddress[] addr = this.property.getCallbackAddresses();
-         log.info(ME, "Using for subject " + addr.length + " callback addresses");
+         if (addr.length > 0)
+            log.error(ME, "Using for subject " + addr.length + " callback addresses");
          cbInfo = new CbInfo(glob, addr);
       }
    }
