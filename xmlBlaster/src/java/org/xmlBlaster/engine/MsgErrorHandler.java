@@ -39,9 +39,10 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    private /*final -> shutdown*/ SessionInfo sessionInfo;
 
    /**
+    * @param sessionInfo Can be null (e.g. for Subject errors)
     */
    public MsgErrorHandler(Global glob, SessionInfo sessionInfo) {
-      this.ME = "MsgErrorHandler-" + sessionInfo.getId();
+      this.ME = "MsgErrorHandler-" + ((sessionInfo==null) ? "" : sessionInfo.getId());
       this.glob = glob;
       this.log = glob.getLog("core");
       this.sessionInfo = sessionInfo;
@@ -82,7 +83,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       ErrorCode errorCode = xmlBlasterException.getErrorCode();
       String message = xmlBlasterException.getMessage();
       MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
-      DeliveryManager deliveryManager = sessionInfo.getDeliveryManager();
+      DeliveryManager deliveryManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDeliveryManager();
       I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
 
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
@@ -167,7 +168,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                   try {
                      DisconnectQos disconnectQos = new DisconnectQos(glob);
                      disconnectQos.deleteSubjectQueue(false);
-                     glob.getAuthenticate().disconnect(sessionInfo.getSecretSessionId(), disconnectQos.toXml());
+                     glob.getAuthenticate().disconnect(this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
                   }
                   catch (Throwable e) {
                      log.error(ME, "PANIC: givingUpDelivery error handling failed, " +
@@ -251,8 +252,8 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
     * the client shall handle it himself
     */
    public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
-      log.error(ME, "Unexpected error handling invocation, we try our best");
-      Thread.currentThread().dumpStack();
+      if (log.TRACE) log.trace(ME, "Unexpected sync error handling invocation, we try our best");
+      //Thread.currentThread().dumpStack();
       handleError(msgErrorInfo);
    }
 
