@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.25 1999/11/23 09:02:20 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.26 1999/11/30 09:30:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -83,7 +83,7 @@ module serverIdl
 module clientIdl
 {
    /**
-    * This interface needs to be implemented by the clients. 
+    * This interface needs to be implemented by the clients.
     * <p>
     * The IOR of this BlasterCallback has to be passed initially to the
     * xmlBlaster using the login() method
@@ -274,7 +274,22 @@ module serverIdl
        */
       StringArr erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
-   };
+
+
+      /**
+       * Setting attributes for a client. 
+       * <p>
+       *
+       * @param clientName  The client which shall be administered
+       * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
+       *                    They are later queryable with XPath syntax
+       * @param qos         Quality of Service, flags for additional informations to control administration
+       */
+      void setClientAttributes(in string clientName, in string xmlAttr,
+                               in serverIdl::XmlType qos)
+                      raises (serverIdl::XmlBlasterException);
+
+   }; // interface server
 
 }; // org::xmlBlaster::serverIdl
 
@@ -294,7 +309,7 @@ module authenticateIdl
        * <p>
        * This is a factory for server interfaces
        *
-       * @param loginName A unique name - Not yet necessary
+       * @param loginName A unique name
        * @param passwd    Password - Not yet necessary
        * @param cb        Reference to the BlasterCallback interface or null for synchronous access
        * @param qos       Quality of Service, flags for additional client informations
