@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.10 1999/11/18 16:59:56 ruff Exp $
+Version:   $Id: Log.java,v 1.11 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -213,6 +213,14 @@ public class Log
     * Log without time/date
     */
    public final static void plain(String instance, String text)
+   {
+      log(null, instance, text);
+   }
+
+   /*
+    * Log without time/date
+    */
+   public final static void dump(String instance, String text)
    {
       log(null, instance, text);
    }

@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.8 1999/11/18 22:12:15 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.9 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -367,5 +367,39 @@ public class XmlKeyBase
    {
       oid.append("-").append(uniqueCounter);
       uniqueCounter++;
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of MessageUnitHandler
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of MessageUnitHandler
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset + "<XmlKeyBase oid='" + keyOid + "'>");
+      sb.append(offset + "   <queryString>" + queryString + "</queryString>");
+      sb.append(offset + "   <keyType>" + keyType + "</keyType>");
+      sb.append(offset + "   <isGeneratedOid>" + isGeneratedOid + "</isGeneratedOid>");
+      sb.append(offset + "   <isPublish>" + isPublish + "</isPublish>");
+      sb.append(offset + "</XmlKeyBase>\n");
+      return sb;
    }
 }

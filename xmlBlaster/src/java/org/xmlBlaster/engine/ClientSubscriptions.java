@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.3 1999/11/18 19:13:49 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.4 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -21,7 +21,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client
  *
  * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.3 1999/11/18 19:13:49 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.4 1999/11/21 22:56:51 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener
@@ -125,6 +125,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     */    
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
+      if (Log.DUMP) Log.dump(ME, "BEFORE LOGOUT\n" + requestBroker.printOn().toString());
+
       ClientInfo clientInfo = e.getClientInfo();
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString() + ", removing entries");
       try {
@@ -136,11 +138,13 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
          removeFromSubscribeRequestsSet(clientInfo, null);
       } catch (XmlBlasterException e2) {
       }
+
+      if (Log.DUMP) Log.dump(ME, "AFTER LOGOUT\n" + requestBroker.printOn().toString());
    }
 
 
    /**
-    * Invoked on new subscription (interface SubscriptionListener)
+    * Event invoked on new subscription (interface SubscriptionListener)
     */
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException
    {
@@ -150,10 +154,12 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       XmlKey xmlKey = subscriptionInfo.getXmlKey();
       String uniqueKey = clientInfo.getUniqueKey();
 
+      /* !!! delete
       if (xmlKey.getQueryType() == XmlKey.PUBLISH) {
          Log.error(ME, "Subscription add event for PUBLISH message ignored");
          return;
       }
+      */
 
       // Insert into first map:
       Object obj;
@@ -260,5 +266,36 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       }
 
       vec = null;
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of ClientSubscriptions
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of ClientSubscriptions
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset + "<ClientSubscriptions>"); 
+      sb.append(offset + "   <PENDING/>"); 
+      sb.append(offset + "</ClientSubscriptions>\n");
+      return sb;
    }
 }

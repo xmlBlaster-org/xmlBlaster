@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.10 1999/11/18 22:12:14 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.11 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -187,6 +187,8 @@ public class MessageUnitHandler
 
       sub.addMessageUnitHandler(this);
 
+      if (Log.TRACE) Log.trace(ME, "You have successfully subscribed to " + uniqueKey);
+
       invokeCallback(sub);
    }
 
@@ -197,6 +199,7 @@ public class MessageUnitHandler
    public int removeSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
       Object removedIt;
+      if (Log.TRACE) Log.trace(ME, "Size of subscriberMap = " + subscriberMap.size());
       synchronized(subscriberMap) {
          removedIt = subscriberMap.remove(sub.getUniqueKey());
       }
@@ -299,4 +302,43 @@ public class MessageUnitHandler
    }
    */
 
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of MessageUnitHandler
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of MessageUnitHandler
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      Iterator iterator = subscriberMap.values().iterator();
+
+      sb.append(offset + "<MessageUnitHandler>");
+      sb.append(offset + "   <uniqueKey>" + messageUnit.content + "</uniqueKey>");
+      sb.append(xmlKey.printOn(offset + "   ").toString());
+      sb.append(offset + "   <content>" + messageUnit.content + "</content>");
+      while (iterator.hasNext()) {
+         SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
+         sb.append(subs.printOn(extraOffset + "   ").toString());
+      }
+      sb.append(offset + "   <handlerIsNewCreated>" + handlerIsNewCreated + "</handlerIsNewCreated>");
+      sb.append(offset + "</MessageUnitHandler>\n");
+      return sb;
+   }
 }

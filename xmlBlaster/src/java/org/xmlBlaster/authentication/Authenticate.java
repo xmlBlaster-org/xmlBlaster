@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.11 1999/11/18 16:59:55 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.12 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -226,7 +226,7 @@ public class Authenticate
 
       ClientInfo clientInfo = (ClientInfo)obj;
 
-      fireClientEvent(clientInfo, false);
+      fireClientEvent(clientInfo, false); // informs all ClientListener
 
       Log.info(ME, "Successfull logout for client " + clientInfo.toString());
 

@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.21 1999/11/20 22:42:04 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.22 1999/11/21 22:56:46 ruff Exp $
 ================================================================================
 */
 
@@ -106,7 +106,7 @@ module clientIdl
        * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
        * @param qos         Qualitiy of Service for each MessageUnit
        */
-     /*oneway*/ void update(in serverIdl::MessageUnitArr messageUnitArr,
+     oneway void update(in serverIdl::MessageUnitArr messageUnitArr,
                         in serverIdl::XmlTypeArr qosArr)
                                 raises(serverIdl::XmlBlasterException);
    };

@@ -3,14 +3,13 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.17 1999/11/20 22:42:04 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.18 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.serverIdl.ServerImpl;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
@@ -45,8 +44,6 @@ public class RequestBroker implements ClientListener
     */
    final private Set subscriptionListenerSet = Collections.synchronizedSet(new HashSet());
 
-   final private ServerImpl serverImpl;
-
    private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
    private com.fujitsu.xml.omquery.DomQueryMgr queryMgr;
 
@@ -58,11 +55,11 @@ public class RequestBroker implements ClientListener
    /**
     * Access to RequestBroker singleton
     */
-   public static RequestBroker getInstance(ServerImpl serverImpl) throws XmlBlasterException
+   public static RequestBroker getInstance(Authenticate authenticate) throws XmlBlasterException
    {
       synchronized (RequestBroker.class) {
          if (requestBroker == null) {
-            requestBroker = new RequestBroker(serverImpl);
+            requestBroker = new RequestBroker(authenticate);
          }
       }
       return requestBroker;
@@ -86,11 +83,9 @@ public class RequestBroker implements ClientListener
    /**
     * private Constructor for Singleton Pattern
     */
-   private RequestBroker(ServerImpl serverImpl) throws XmlBlasterException
+   private RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
-      this.serverImpl = serverImpl;
-
-      this.clientSubscriptions = ClientSubscriptions.getInstance(this, serverImpl.getAuthenticate());
+      this.clientSubscriptions = ClientSubscriptions.getInstance(this, authenticate);
 
       this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
 
@@ -118,7 +113,7 @@ public class RequestBroker implements ClientListener
       xmlKeyDoc.appendChild(root);
       xmlKeyRootNode = xmlKeyDoc.getDocumentElement(); 
 
-      serverImpl.getAuthenticate().addClientListener(this);
+      authenticate.addClientListener(this);
    }
 
 
@@ -183,6 +178,7 @@ public class RequestBroker implements ClientListener
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // subscription without a given oid
 
          fireSubscriptionEvent(subs, true);              // fires event for query subscription
@@ -322,7 +318,7 @@ public class RequestBroker implements ClientListener
       // Now the MessageUnit exists, subscribe to it
       msgHandler.addSubscriber(subs);
 
-      fireSubscriptionEvent(subs, true);
+      fireSubscriptionEvent(subs, true);  // inform all listeners about this new subscription
    }
 
 
@@ -332,7 +328,7 @@ public class RequestBroker implements ClientListener
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
       String uniqueKey = xmlKey.getUniqueKey();
-
+      /*
       Object obj;
       synchronized(messageContainerMap) {
          obj = messageContainerMap.get(uniqueKey);
@@ -341,13 +337,16 @@ public class RequestBroker implements ClientListener
          Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
          throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
       }
-      MessageUnitHandler msg = (MessageUnitHandler)obj;
+      MessageUnitHandler msgHandler = (MessageUnitHandler)obj;
+      */
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS); // to generate the subscription-uniqueKey
-      int numRemoved = msg.removeSubscriber(subs);
+      /*
+      int numRemoved = msgHandler.removeSubscriber(subs);
       if (numRemoved < 1) {
          Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
          throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
       }
+      */
       fireSubscriptionEvent(subs, false);
    }
 
@@ -485,8 +484,8 @@ public class RequestBroker implements ClientListener
             // throw new XmlBlasterException(ME + ".NOT_REMOVED", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
          }
          else {
-            MessageUnitHandler msg = (MessageUnitHandler)obj;
-            org.w3c.dom.Node node = RequestBroker.getInstance().removeKeyNode(msg.getRootNode());
+            MessageUnitHandler msgHandler = (MessageUnitHandler)obj;
+            org.w3c.dom.Node node = RequestBroker.getInstance().removeKeyNode(msgHandler.getRootNode());
             obj = null;
             String[] arr = new String[1];
             arr[0] = uniqueKey;
@@ -558,4 +557,48 @@ public class RequestBroker implements ClientListener
       }
    }
 
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of RequestBroker
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of RequestBroker
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      Iterator iterator = messageContainerMap.values().iterator();
+
+      sb.append(
+         offset + "<RequestBroker>"); 
+         while (iterator.hasNext()) {
+            MessageUnitHandler msgHandler = (MessageUnitHandler)iterator.next();
+            sb.append(msgHandler.printOn(extraOffset + "   ").toString());
+         }
+      sb.append(
+         offset + "</RequestBroker>\n");
+
+      // TODO: redirect into sb
+      try {
+         Writer out = new OutputStreamWriter (System.out);
+         xmlKeyDoc.write(out);
+      } catch (Exception e) { }
+
+      return sb;
+   }
 }

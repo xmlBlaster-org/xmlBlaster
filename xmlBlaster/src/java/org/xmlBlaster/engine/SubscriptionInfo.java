@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.8 1999/11/18 22:12:14 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.9 1999/11/21 22:56:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -125,6 +125,41 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          uniqueKey = buf.toString();
       }
       return uniqueKey;
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of SubscriptionInfo
+    */
+   public final StringBuffer printOn() throws XmlBlasterException
+   {
+      return printOn((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of SubscriptionInfo
+    */
+   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset + "<SubscriptionInfo id='" + uniqueKey + "'>");
+      sb.append(offset + "   <clientInfo id='" + (clientInfo==null ? "null" : clientInfo.toString()) + "'/>");
+      sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
+      sb.append(offset + "   <xmlQoS id='" + (xmlQoS==null ? "null" : xmlQoS.toString()) + "'/>");
+      sb.append(offset + "   <messageUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
+      sb.append(offset + "   <creationTime>" + creationTime + "</creationTime>");
+      sb.append(offset + "</SubscriptionInfo>\n");
+      return sb;
    }
 
 }
