@@ -25,8 +25,7 @@ public class CbQueueProperty extends QueuePropertyBase
 
    /**
     * @param relating  To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
-    * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * @see QueuePropertyBase#(Global, String)
     */
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);

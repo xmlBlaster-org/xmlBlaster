@@ -22,8 +22,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
    private final LogChannel log;
 
    /**
-    * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * @see QueuePropertyBase#(Global, String)
     */
    public MsgUnitStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);
