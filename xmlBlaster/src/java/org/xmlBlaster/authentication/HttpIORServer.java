@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.21 2002/06/22 12:21:05 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.22 2002/06/23 11:03:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -190,6 +190,7 @@ class HandleRequest extends Thread
       BufferedReader iStream = null;
       DataOutputStream oStream = null;
       String clientRequest = "";
+      boolean first = true;
       try {
          iStream = new BufferedReader(new InputStreamReader(sock.getInputStream()));
          oStream = new DataOutputStream(sock.getOutputStream());
@@ -206,6 +207,7 @@ class HandleRequest extends Thread
             return;
          }
 
+         first = false;
          if (log.TRACE) log.trace(ME, "Handling client request '" + clientRequest + "' ...");
 
          StringTokenizer toks = new StringTokenizer(clientRequest);
@@ -282,7 +284,11 @@ class HandleRequest extends Thread
          oStream.flush();
       }
       catch (IOException e) {
-         log.error(ME, "Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
+         if (clientRequest == null && first) {
+            if (log.TRACE) log.trace(ME, "Ignoring connect/disconnect attempt, probably a xmlBlaster client detecting its IP to use");
+         } else {
+            log.error(ME, "Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
+         }
          // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
       }
       finally {
