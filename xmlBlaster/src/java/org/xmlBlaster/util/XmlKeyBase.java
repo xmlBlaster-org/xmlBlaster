@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.22 1999/12/14 11:32:29 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.23 1999/12/14 11:41:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -388,7 +388,7 @@ public class XmlKeyBase
       String ip_addr = "127.0.0.0";
       String oa_port = jacorb.orb.Environment.getProperty("OAPort");
       try {
-         ip_addr = java.net.InetAddress.getLocalHost().toString();
+         ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // "192.168.1.1" from "swand.lake.de/192.168.1.1"
       } catch (java.net.UnknownHostException e) {
          if (Log.TRACE) Log.trace(ME, e.toString());
       }
