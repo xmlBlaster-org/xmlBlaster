@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.2 2000/05/03 17:32:35 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.3 2000/05/05 18:00:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package demo.html.systemInfo;
@@ -35,8 +35,6 @@ public class SystemInfo extends HttpServlet
 {
    private static final String ME          = "SystemInfo";
    private static final int closeTime      = 1000;
-   private CorbaConnection corbaConnection = null;
-   private Object monitor = new Object();
 
 
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException
@@ -65,12 +63,8 @@ public class SystemInfo extends HttpServlet
             return;
          }
 
-         synchronized (monitor) {
-            if (corbaConnection == null) {
-               corbaConnection = BlasterHttpProxy.getCorbaConnection(sessionId);
-               corbaConnection.initCache(100);
-            }
-         }
+         CorbaConnection corbaConnection = BlasterHttpProxy.getCorbaConnection(sessionId);
+         corbaConnection.initCache(100);
 
          // Expecting actionType = "cpuinfo" or "meminfo" but it could be
          // any valid key oid.
