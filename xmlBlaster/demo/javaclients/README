@@ -1,3 +1,15 @@
+These demo clients run with any protocol supported by xmlBlaster,
+you can choose the protocol used with the -client.protocol
+command line setting (see below).
+
+Currently supported are 'IOR' for CORBA, 'RMI' and 'XML-RPC'.
+
+The default protocol used by these clients is CORBA/IIOP.
+
+The demos connect to xmlBlaster and do some subscribing and
+publishing of messages. 
+
+
    Start xmlBlaster server:
 
       jaco org.xmlBlaster.Main
@@ -37,5 +49,5 @@ Running a client with XML-RPC protocol:
 
       jaco javaclients.ClientSub -client.protocol XML-RPC
 
-Note: To run these other protocols, the xmlBlaster server must
-      have switched the supporting driver on (see xmlBlaster.properties)
+NOTE: To run these other protocols, the xmlBlaster server must
+      have switched on the supporting driver (see xmlBlaster.properties)
