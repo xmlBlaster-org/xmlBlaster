@@ -106,7 +106,7 @@ code {FONT-FAMILY: courier, monospace; FONT-STYLE: italic; font-size:10pt; }
 code.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:80%;
              border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 
-pre {FONT-FAMILY: courier, monospace; font-size:10pt; COLOR: black; BACKGROUND-COLOR: #FAFAFA; }
+pre {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:9pt; }
 
 table.BORDER, pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:80%;
             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
