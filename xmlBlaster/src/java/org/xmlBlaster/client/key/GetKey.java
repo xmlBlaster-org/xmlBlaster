@@ -38,7 +38,7 @@ public class GetKey
     * @param XmlBlasterException for invalid queryType
     */
    public GetKey(Global glob, String queryString, String queryType) throws XmlBlasterException {
-      this.queryKeyData = new QueryKeyData(glob);
+      this.queryKeyData = new QueryKeyData(glob, queryString, queryType);
    }
 
    public QueryKeyData getData() {
