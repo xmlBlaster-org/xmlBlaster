@@ -317,73 +317,74 @@ public final class TopicHandler implements I_Timeout
          toAlive();
       }
 
-      boolean changed = true;
-      if (hasHistoryEntries()) {
-          MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
-          if (entry != null) {
-             MsgUnitWrapper old = entry.getMsgUnitWrapper();
-             if (old != null) {
-                changed = !old.getMsgUnit().sameContent(msgUnit.getContent());
+      synchronized (this) {
+         boolean changed = true;
+         if (hasHistoryEntries()) {
+             MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
+             if (entry != null) {
+                MsgUnitWrapper old = entry.getMsgUnitWrapper();
+                if (old != null) {
+                   changed = !old.getMsgUnit().sameContent(msgUnit.getContent());
+                }
              }
-          }
-      }
-
-      // Remove oldest history entry (if queue is full) and decrease reference counter in topicCache
-      long numHist = getNumOfHistoryEntries();
-      if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
-         ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
-         if (entryList.size() != 1) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
-                  "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
          }
-         /*
-         MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-         MsgUnitWrapper msgUnitEntry = entry.getMsgUnitWrapper();
-         if (msgUnitEntry != null) { // Check WeakReference
-            this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
-         }
-         */
-         MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-         if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
-      }
 
-
-      int initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
-      MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0);
-      PublishReturnQos publishReturnQos = null;
- 
-      this.msgUnitCache.put(msgUnitWrapper);
-
-      try {
-         if (this.historyQueue != null && msgUnitWrapper.isAlive()) { // no volatile messages
-            try { // increments reference counter += 1
-               this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), false);
+         // Remove oldest history entry (if queue is full) and decrease reference counter in topicCache
+         long numHist = getNumOfHistoryEntries();
+         if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
+            ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
+            if (entryList.size() != 1) {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
+                     "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
             }
-            catch (XmlBlasterException e) {
-               log.error(ME, "History queue put() problem: " + e.getMessage());
+            /*
+            MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
+            MsgUnitWrapper msgUnitEntry = entry.getMsgUnitWrapper();
+            if (msgUnitEntry != null) { // Check WeakReference
+               this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
+            }
+            */
+            MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
+            if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
+         }
+
+
+         int initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
+         MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0);
+         PublishReturnQos publishReturnQos = null;
+    
+         this.msgUnitCache.put(msgUnitWrapper);
+
+         try {
+            if (this.historyQueue != null && msgUnitWrapper.isAlive()) { // no volatile messages
+               try { // increments reference counter += 1
+                  this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), false);
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "History queue put() problem: " + e.getMessage());
+               }
+            }
+
+
+            if (publishQosServer.isPtp()) {
+               publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+            }
+
+
+            //----- 2. now we can send updates to all interested clients:
+            if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
+            if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
+               String state = publishQosServer.getState();   // Constants.STATE_OK
+               invokeCallback(publisherSessionInfo, msgUnitWrapper, state);
             }
          }
-
-
-         if (publishQosServer.isPtp()) {
-            publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+         finally {
+            // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
+            // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
+            msgUnitWrapper.incrementReferenceCounter((-1)*initialCounter, null); // Reset referenceCount until update queues are filled
          }
-
-
-         //----- 2. now we can send updates to all interested clients:
-         if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
-         if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
-            String state = publishQosServer.getState();   // Constants.STATE_OK
-            invokeCallback(publisherSessionInfo, msgUnitWrapper, state);
-         }
-      }
-      finally {
-         // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
-         // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
-         msgUnitWrapper.incrementReferenceCounter((-1)*initialCounter, null); // Reset referenceCount until update queues are filled
-      }
-
-      return publishReturnQos;
+         return publishReturnQos;
+      } // synchronized
    }
 
    /**
@@ -918,12 +919,14 @@ public final class TopicHandler implements I_Timeout
       if (isUnconfigured()) {
          return 0L;
       }
-      long num = this.msgUnitCache.getNumOfEntries();
-      if (num > 0L && !isAlive() && !isSoftErased()) { // assert
-         log.error(ME, "Internal problem: we have unexpected cache messages: " + toXml());
-         Thread.currentThread().dumpStack();
+      synchronized (this) { // REMOVE SYNC and assert below after code is stable!!! TODO
+         long num = this.msgUnitCache.getNumOfEntries();
+         if (num > 0L && !isAlive() && !isSoftErased()) { // assert
+            log.error(ME, "Internal problem: we have unexpected cache messages: " + toXml());
+            Thread.currentThread().dumpStack();
+         }
+         return num;
       }
-      return num;
    }
 
    /**
