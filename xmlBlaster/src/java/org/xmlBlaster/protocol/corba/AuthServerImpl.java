@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.29 2003/03/27 17:10:08 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.30 2003/03/27 20:56:28 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -299,27 +299,30 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          if (log.TRACE) this.log.trace(ME, "shutdown has been invoked and servant is not null");
 //         xmlBlasterPOA.deactivate_object(xmlBlasterPOA.reference_to_id(xmlBlasterServant));
          // deserialize object, wait for competion
-
+         /*
          try {
-            this.rootPOA.deactivate_object(xmlBlasterPOA.servant_to_id(xmlBlasterServant));
             this.xmlBlasterPOA.deactivate_object(xmlBlasterPOA.servant_to_id(xmlBlasterServant));
          }
          catch (Exception ex) {
             this.log.warn(ME, "shutdown:exception occured when deactivating the servant: " + ex.toString());
+         shutdown:exception occured when deactivating the servant: org.omg.PortableServer.POAPackage.ServantNotActive: IDL:omg.org/PortableServer/POA/ServantNotActive:1.0
          }
-
+         */
          try {
             xmlBlasterPOA.the_POAManager().deactivate(true, true);
          }
          catch (Exception ex) {
             this.log.warn(ME, "shutdown:exception occured deactivate(): " + ex.toString());
          }
+         /*
          try {
             this.xmlBlasterPOA._release();
          }
          catch (Exception ex) {
             this.log.warn(ME, "shutdown:exception occured _release(): " + ex.toString());
+         shutdown:exception occured _release(): org.omg.CORBA.NO_IMPLEMENT: This is a locally constrained object.  vmcid: 0x0  minor code: 0  completed: No
          }
+         */
          try {
             this.xmlBlasterPOA.destroy(true, true);
          }
