@@ -509,6 +509,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, glob.usage());
       log.plain(ME, "");
       log.plain(ME, "Other stuff:");
+      log.plain(ME, "   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
+      log.plain(ME, "                              true: Allows user 'joe' to send wrong sender address in PublishQos");
       log.plain(ME, "   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
       log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning.");

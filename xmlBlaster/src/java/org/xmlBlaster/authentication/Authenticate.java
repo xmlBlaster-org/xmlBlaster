@@ -893,6 +893,14 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
+    * Authorization check (TODO: generic approach)
+    * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
+    */
+   public boolean acceptWrongSenderAddress(SessionInfo sessionInfo) {
+      return sessionInfo.acceptWrongSenderAddress();
+   }
+
+   /**
     * Invoked on run level change, see RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
     * <p />
     * Enforced by I_RunlevelListener

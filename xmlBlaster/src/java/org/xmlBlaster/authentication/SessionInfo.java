@@ -180,6 +180,15 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
+    * Configure server with '-xmlBlaster/acceptWrongSenderAddress true' or "-xmlBlaster/acceptWrongSenderAddress/joe true".
+    * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
+    */
+   public boolean acceptWrongSenderAddress() {
+      boolean may = glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress", false); // TODO: Decide by authorizer
+      return glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress/"+getSessionName().getLoginName(), may);
+   }
+
+   /**
     * if state==UNDEF we block until we are ALIVE (or DEAD)
    public void waitUntilAlive() {
       //!!!
