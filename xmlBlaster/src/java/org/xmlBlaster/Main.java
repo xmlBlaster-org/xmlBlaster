@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.24 2000/02/24 22:00:16 ruff Exp $
+Version:   $Id: Main.java,v 1.25 2000/02/25 17:00:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -150,8 +150,13 @@ public class Main
          Log.panic(ME, e.toString());
       }
 
-      checkForKeyboardInput();
-      // orb.run();
+      // Used by testsuite to switch off blocking, this Main method is by default never returning:
+      boolean doBlocking = Args.getArg(args, "-doBlocking", true);
+
+      if (doBlocking) {
+         checkForKeyboardInput();
+         // orb.run();
+      }
    }
 
 
