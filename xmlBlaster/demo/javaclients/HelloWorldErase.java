@@ -74,10 +74,10 @@ public class HelloWorldErase
          eq.setForceDestroy(forceDestroy);
          eq.setPersistent(persistent);
          EraseReturnQos[] eraseArr = con.erase(ek, eq);
-         log.info(ME, "Erase success");
          for (int i=0; i < eraseArr.length; i++) {
             log.info(ME, eraseArr[i].toXml());
          }
+         log.info(ME, "Erased " + eraseArr.length + " topics");
 
          log.info(ME, "Hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
