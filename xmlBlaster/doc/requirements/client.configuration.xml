@@ -356,11 +356,13 @@ java HelloWorld2 -help
       <pre>
     java HelloWorld2 -maxEntries 100                        \
                      -dispatch/callback/pingInterval 20000  \
-                     -dispatch/clientSide/pingInterval 3000
+                     -dispatch/clientSide/pingInterval 3000 \
+                     -protocol SOCKET
       </pre>
       The <i>-dispatch/callback/pingInterval</i> property is sent to the server with the ConnectQos
       and configures the server behavior. The <i>-dispatch/clientSide/pingInterval</i> setting is only
-      evaluated on the client side. <i>-maxEntries 100</i> is looked at on client and on server side.
+      evaluated on the client side. <i>-maxEntries 100</i> is looked at on client and on server side.<br />
+      We have chosen the SOCKET protocol to talk to xmlBaster.
 
       </p>
    </example>
@@ -370,19 +372,12 @@ java HelloWorld2 -help
       </p>
    </configuration>
 
-   <!--
-   <see type="API">org.xmlBlaster.engine.admin.I_AdminNode</see>
-   <see type="API">org.xmlBlaster.engine.admin.I_AdminSubject</see>
-   <see type="API">org.xmlBlaster.engine.admin.I_AdminSession</see>
-   <see type="API">org.xmlBlaster.engine.admin.extern.TelnetGateway</see>
-   <see type="REQ">admin</see>
-   <see type="REQ">admin.telnet</see>
-   <see type="REQ">admin.messages</see>
-   <see type="REQ">engine.runlevel</see>
-   -->
+   <see type="API">org.xmlBlaster.client.I_XmlBlasterAccess</see>
+   <see type="REQ">interface</see>
+   <see type="REQ">admin.errorcodes</see>
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
 </requirement>
 
