@@ -5,6 +5,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -45,6 +46,7 @@ public class HelloWorldErase
          String xpath = glob.getProperty().get("xpath", (String)null);
          boolean forceDestroy = glob.getProperty().get("forceDestroy", false);
          boolean persistent = glob.getProperty().get("persistent", false);
+         int historyNumErase = glob.getProperty().get("historyNumErase", -99);
 
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive    " + interactive);
@@ -73,6 +75,9 @@ public class HelloWorldErase
          EraseQos eq = new EraseQos(glob);
          eq.setForceDestroy(forceDestroy);
          eq.setPersistent(persistent);
+         if (historyNumErase != -99) {
+            eq.getData().setHistoryQos(new HistoryQos(glob, historyNumErase));
+         }
          EraseReturnQos[] eraseArr = con.erase(ek, eq);
          for (int i=0; i < eraseArr.length; i++) {
             log.info(ME, eraseArr[i].toXml());
