@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.7 2000/12/26 14:56:39 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.8 2001/02/14 00:52:22 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -213,7 +213,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             args.addElement(sessionId);
             this.xmlRpcClient.execute("authenticate.logout", args);
          }
-         if (this.callback != null) this.callback.shutdown();
+         shutdown(); // the callback server
          init();
          return true;
       }
@@ -224,9 +224,23 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Log.warn(ME+".logout", "xml-rpc exception: " + extractXmlBlasterException(e).toString());
       }
 
-      if (this.callback != null) this.callback.shutdown();
+      shutdown(); // the callback server
       init();
       return false;
+   }
+
+
+   /**
+    * Shut down the callback server. 
+    * Is called by logout()
+    */
+   public boolean shutdown()
+   {
+      if (this.callback != null) {
+         this.callback.shutdown();
+         this.callback = null;
+      }
+      return true;
    }
 
 
@@ -302,23 +316,19 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * Publish a message.
     */
-   public final String publish (XmlKey xmlKey, MessageUnit msgUnit,
-                                PublishQoS publishQoS) throws XmlBlasterException, ConnectionException
+   public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "Entering publish(): id=" + sessionId);
 
-      String xmlKey_literal = xmlKey.toXml();
-      String publishQoS_literal = publishQoS.toXml();
+      //PublishQoS publishQoS = new PublishQoS(msgUnit.qos);
+      //msgUnit.qos = publishQoS.toXml();
 
       try {
-         // extractXmlBlasterException from MessageUnit to Vector
-         Vector msgUnitWrap = ProtoConverter.messageUnit2Vector(msgUnit);
-
          Vector args = new Vector();
          args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(msgUnitWrap);
-         args.addElement(publishQoS_literal);
+         args.addElement(msgUnit.xmlKey);
+         args.addElement(msgUnit.content);
+         args.addElement(msgUnit.qos);
 
          return (String)getXmlRpcClient().execute("xmlBlaster.publish", args);
       }
@@ -334,20 +344,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       catch (XmlRpcException e) {
          throw extractXmlBlasterException(e);
       }
-   }
-
-
-   /**
-    * Publish a message.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
-   {
-      XmlKey xmlKey = new XmlKey(msgUnit.xmlKey, true);
-      PublishQoS publishQoS = new PublishQoS(msgUnit.qos);
-
-      return publish(xmlKey, msgUnit, publishQoS);
    }
 
 
