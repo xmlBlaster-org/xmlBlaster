@@ -106,7 +106,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
    protected String changeCommand;
    protected String oldTimestamp;
    protected String newTimestamp;
-   public final String MINSTR = " ";
+   String MINSTR = " ";
    protected String queryMeatStatement;
 
    /**
@@ -120,8 +120,10 @@ public class TimestampChangeDetector implements I_ChangeDetector
       this.changeListener = changeListener;
       this.info = info;
       this.dataConverter = dataConverter;
+
+      this.MINSTR = this.info.get("changeDetector.MINSTR", this.MINSTR);
       
-      this.queryMeatStatement = info.get("db.queryMeatStatement", (String)null);
+      this.queryMeatStatement = this.info.get("db.queryMeatStatement", (String)null);
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
 
@@ -208,6 +210,13 @@ public class TimestampChangeDetector implements I_ChangeDetector
                     newTimestamp = MINSTR;
                   if (oldTimestamp == null || !oldTimestamp.equals(newTimestamp)) {
                     changeCommand = (tableExists) ? "UPDATE" : "CREATE";
+                    if (oldTimestamp != null && oldTimestamp.compareTo(newTimestamp) > 0) {
+                       // The newest entry was removed -> 
+                       //changeCommand=DELETE
+                       // as other DELETE are not detected, we ignore this one as well
+                       if (log.isLoggable(Level.FINE)) log.fine("Ignoring DELETE of newest entry to be consistent (as we can't detect other DELETEs): oldTimestamp=" + oldTimestamp + " newTimestamp=" + newTimestamp);
+                       changeCommand = null;
+                    }
                   }
                   rowCount++;
                }
