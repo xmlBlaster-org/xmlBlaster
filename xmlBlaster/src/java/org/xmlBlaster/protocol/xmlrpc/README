@@ -1,0 +1,36 @@
+This proxy allows clients to access xmlBlaster with XML-RPC.
+
+Not yet finished!
+
+See http://www.xmlrpc.com
+
+You need to download:
+
+	XML-RPC Library for Java
+	Copyright (c) 1999 Hannes Wallnoefer, hannes@helma.at
+	http://helma.at/hannes/xmlrpc/
+
+and add xmlrpc.jar to your CLASSPATH.
+
+
+Start the server:
+
+   java.org.xmlBlaster.Main
+
+Start the xml-rpc proxy:
+
+   java -Dsax.driver=xp org.xmlBlaster.protocol.xmlrpc.XmlRpcProxy
+
+Start an xml-rpc client:
+
+	 java -Dsax.driver=xp   helma.xmlrpc.XmlRpcClient http://localhost:8080 proxy.subscribe "<key oid='cpuinfo'></key>" "<qos></qos>"
+   
+and the proxy receives the updates.
+
+TODO:
+ - Implement a wrapper for CorbaConnection to xml-rpc
+   which transforms MessageUnitContainer[] into <array>
+	for the get() call
+ - How to do asynchronous callbacks?
+ - How to do authentication
+ - Much more.
