@@ -181,6 +181,21 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          try {
             this.connectQos = (qos==null) ? new ConnectQos(glob) : qos;
 
+            // We need to set a unique ID for this client so that global.getId() is unique
+            // which is used e.g. in the JDBC plugin
+            SessionName sn = getSessionName();
+            if (sn != null) {
+               if (sn.isPubSessionIdUser()) {
+                  this.glob.setId(sn.toString());
+               }
+               else {
+                  this.glob.setId(sn.toString() + System.currentTimeMillis()); // Not secure if to clients start simultanously
+               }
+            }
+            else {
+               this.glob.setId(getLoginName() + System.currentTimeMillis()); // Not secure if to clients start simultanously
+            }
+
             this.updateListener = updateListener;
 
             initSecuritySettings(this.connectQos.getSecurityPluginType(), this.connectQos.getSecurityPluginVersion());
