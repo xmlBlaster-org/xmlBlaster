@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.38 2000/12/28 14:53:41 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.39 2001/01/30 14:07:17 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -416,7 +416,7 @@ public class MessageUnitHandler
       if (msgUnitWrapper == null)
          sb.append(offset + "   <MessageUnitWrapper>null</MessageUnitWrapper>");
       else
-         sb.append(getMessageUnitWrapper().printOn(extraOffset + "   ").toString());
+         sb.append(getMessageUnitWrapper().toXml(extraOffset + "   "));
 
       if (subscriberMap.size() == 0)
          sb.append(offset + "   <SubscriptionInfo>NO SUBSCRIPTIONS</SubscriptionInfo>");
@@ -424,7 +424,7 @@ public class MessageUnitHandler
          Iterator iterator = subscriberMap.values().iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
-            sb.append(subs.printOn(extraOffset + "   ").toString());
+            sb.append(subs.toXml(extraOffset + "   "));
          }
       }
 
