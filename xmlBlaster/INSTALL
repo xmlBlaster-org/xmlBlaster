@@ -54,13 +54,15 @@ You need CD 2 or better to run xmlBlaster.
        ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml `cat /tmp/NS_Ref` 
 
 
+   Good. You have done it!
+
+
    Variant using a name service and a local web server to publish the name service
 	(edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
        rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
        ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main
        ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml
 
-   Good. You have done it!
 
 
 -------------------------------------------------------------------------
