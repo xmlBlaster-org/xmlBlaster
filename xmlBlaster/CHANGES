@@ -1,5 +1,13 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for xxx [xxx, xx 2003]
+================================
+ o multiSubscribe QoS support added, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
+
+ o Bugfix NPE in XmlBlasterException, reported by Zang
+
+
 Changes for 0.843 [Mar, 10 2003]
 ================================
  o Bugfix in client.key.GetKey.java constructor
@@ -21,6 +29,7 @@ Changes for 0.843 [Mar, 10 2003]
  o C++: Bugfix: returned pointer was freed before usage in to_string()
 
  o C++: Memory leaks fixed in CORBA plugin
+
 
 Changes for 0.842 [Feb, 21 2003]
 ================================
