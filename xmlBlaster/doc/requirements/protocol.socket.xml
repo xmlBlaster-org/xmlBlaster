@@ -67,8 +67,8 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <td>An identifier of this request (unique in client scope), the return message will contain this ID.
             The server bounces this requestId back, it does not use it. This is useful
             for the client to find out which response belongs to which request.<br />
-	    For callback calls like <tt>update()</tt> or <tt>ping()</tt> the client must return this
-	    id so xmlBlaster knows to which invocation the response belongs.</td>
+            For callback calls like <tt>update()</tt> or <tt>ping()</tt> the client must return this
+            id so xmlBlaster knows to which invocation the response belongs.</td>
          <td>null terminated</td>
       </tr>
       <tr>
@@ -143,7 +143,7 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <td>QoS{string}</td>
          <td><img src="ok.gif" border="0" alt="yes" /></td>
          <td>The server sends the response (ACK) immediately from the SOCKET layer.
-	     It can't send it later because the socket is shutdown during server side disconnect</td>
+             It can't send it later because the socket is shutdown during server side disconnect</td>
       </tr>
       <tr>
          <td>ping</td>
@@ -362,7 +362,8 @@ ConnectQos qos = new ConnectQos(glob);
       for more details:
       </p>
       <pre>
-keytool -genkey  -alias xmlBlaster -keystore testStore -keyalg RSA
+keytool -genkey -dname "cn=xmlBlaster, ou=server, o=xmlBlaster, c=org" -alias xmlBlaster
+        --keypass testtest -keystore testStore -storepass testtest -keyalg RSA
       </pre>
       <p>
       Now you are ready to start the xmlBlaster server with enabled SSL (all in one line):
@@ -427,13 +428,20 @@ java -Djavax.net.debug=all ...
       in this case the xmlBlaster server is a client to another xmlBlaster cluster node
       and needs the imported certificate of the remote node in 'testStore'.
       <br />
-      Additionally we register the client side <i>socket_ssl</i> plugins in <tt>xmlBlaster.properties</tt>:
+      Additionally we register the <i>socket_ssl</i> plugins in <tt>xmlBlaster.properties</tt>:
       </p>
       <pre>
-ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
+# Server side:
+CbProtocolPlugin[socket_ssl][1.0]=\
+       org.xmlBlaster.protocol.socket.CallbackSocketDriver,SSL=true
 
+# Client side:
+ClientProtocolPlugin[socket_ssl][1.0]=\
+       org.xmlBlaster.client.protocol.socket.SocketConnection,SSL=true
+
+# Client side:
 ClientCbServerProtocolPlugin[socket_ssl][1.0]=\
-       org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
+       org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,SSL=true
       </pre>
       <p>
       Starting the server is simple as all configuration is done in the above
@@ -464,33 +472,145 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
       <ul>
       <li>An xmlBlaster server instance can have multiple different SSL SOCKET listeners established,
           all of them reuse the same keystore. You can't use more than one keystore in the same JVM,
-	  the first loaded keystore is used even if you specifiy another keystore before
-	  creating the second socket listener.
+          the first loaded keystore is used even if you specifiy another keystore before
+          creating the second socket listener.
       </li>
       <li>The above examples clients used the server side 'keystore' file which is a bad idea
           as this file contains besides the certificate the servers private key. To avoid copying 
-	  the server private key to the clients host you can generate a certificate file which only
-	  contains the public certificate:<br />
-	  <p>Export the certificate</p>
-	  <p>
-	  <tt>keytool -alias xmlBlaster -export -keystore testStore -rfc -file xmlBlasterTrustStore.Cert</tt>
-	  </p>
-	  <p>Create a 'xmlBlaster.truststore' file to be used by clients</p>
-	  <p>
-	  <tt>keytool -import -alias xmlBlasterClient -file xmlBlasterTrustStore.Cert -keystore xmlBlasterClient.truststore</tt>
-	  </p>
-	  <p>
-	  and start a demo client:
-	  </p>
-	  <p>
-	  <tt>java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/trustStore xmlBlasterClient.truststore -plugin/socket/port 7609</tt>
-	  </p>
+          the server private key to the clients host you can generate a certificate file which only
+          contains the public certificate:<br />
+          <p>Export the certificate</p>
+          <p>
+          <tt>keytool -alias xmlBlaster -export -keystore testStore -rfc -file xmlBlasterTrustStore.Cert</tt>
+          </p>
+          <p>Create a 'xmlBlaster.truststore' file to be used by clients</p>
+          <p>
+          <tt>keytool -import -alias xmlBlasterClient -file xmlBlasterTrustStore.Cert -keystore xmlBlasterClient.truststore</tt>
+          </p>
+          <p>
+          and start a demo client:
+          </p>
+          <p>
+          <tt>java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/trustStore xmlBlasterClient.truststore -plugin/socket/port 7609</tt>
+          </p>
       </li>
       </ul>
    </example>
 
+   <example lang="Java" type="HTML">
+      <h2 id="compress">
+      Configuring compression
+      </h2>
+      <p>
+      The xmlBlaster SOCKET protocol supports compression with zlib and jzlib.
+      You can switch on two compression modes with the property <i>plugin/socket/compress/type</i>.
+      If the server side socket plugin has this option enabled (see <tt>xmlBlasterPlugins.xml</tt>)
+      it won't accept uncompressed clients. If you have both types of clients you need
+      to register two SOCKET protocol driver in <tt>xmlBlasterPlugins.xml</tt>.
+      </p>
+      <p>
+      For a simple usage in this test we set following parameters in <tt>xmlBlaster.properties</tt>
+      </p>
+      <pre>
+protocol=SOCKET
+
+# No compression
+#plugin/socket/compress/type=
+
+# Compress each message separately
+#plugin/socket/compress/type=zlib
+
+# Compress in streaming mode
+plugin/socket/compress/type=zlib:stream
+      </pre>
+      <p>
+      We start now a server and a client instance, the client publishes
+      10 messages with identical content consisting of one thousand 'X' characters:
+      </p>
+      <pre>
+java org.xmlBlaster.Main
+
+java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
+      </pre>
+      <p>
+      If we now restart the client and server for each compression mode and
+      add a socket port forwarder which dumps the transferred bytes we get this result:
+      </p>
+      <table border="1">
+         <tr><th>Compression mode</th><th>Message No</th><th>Size of published message [bytes]</th><th>Size of PublishReturnQos (ACK)</th></tr>
+         <tr><td rowspan="3">no compression</td><td>1</td><td>1505</td><td>196</td></tr>
+         <tr><td>2</td><td>1356</td><td>196</td></tr>
+         <tr><td>3</td><td>1356</td><td>196</td></tr>
+         
+         <tr><td rowspan="5">zlib</td><td>1</td><td>347</td><td>163</td></tr>
+         <tr><td>2</td><td>276</td><td>172</td></tr>
+         <tr><td>3</td><td>275</td><td>164</td></tr>
+         <tr><td>4</td><td>276</td><td>163</td></tr>
+         <tr><td>5</td><td>275</td><td>163</td></tr>
+
+         <tr><td rowspan="5">zlib:stream</td><td>1</td><td>276</td><td>76</td></tr>
+         <tr><td>2</td><td>28</td><td>17</td></tr>
+         <tr><td>3</td><td>21</td><td>17</td></tr>
+         <tr><td>4</td><td>22</td><td>17</td></tr>
+         <tr><td>5</td><td>22</td><td>16</td></tr>
+
+      </table>
+      <p>
+      For <i>no compression</i> you can see that the first message overhead is 505 bytes (1505 bytes - 1000 payload)
+      because we have delivered the topic QoS on first publish. It than reduces to constantly 356 bytes
+      for each published message. The payload (your message content) is 1000 bytes.
+      The 356 bytes are mostly due to the used publish QoS settings.
+      </p>
+      <p>
+      Compressing each message as a unit with <i>zlib</i> reduces the message size to 276 bytes.
+      The compression header adds overhead for each message.
+      </p>
+      <p>
+      Compressing messages with mode <i>zlib:stream</i> reduces the
+      transferred size drastically to 22 bytes per message. The compression
+      header is not transferred again.
+      </p>
+      <b>Note:</b><p>This result is a very optimistic case as the message content consisted
+      of one thousand 'X' characters. In your real day messages the compression
+      rate will be less and depends on your payload.
+      </p> 
+
+      <h2>Compression of SSL connections</h2>
+      <p>contentSize=1000</p>
+      <table border="1">
+         <tr><th>Compression mode</th><th>Message No</th><th>Size of published message [bytes]</th><th>Size of PublishReturnQos (ACK)</th></tr>
+         <tr><td rowspan="3">no compression</td><td>1</td><td>1526</td><td>217</td></tr>
+         <tr>                                   <td>2</td><td>1377</td><td>217</td></tr>
+         <tr>                                   <td>3</td><td>1377</td><td>217</td></tr>
+         
+         <tr><td rowspan="4">zlib:stream</td><td>1</td><td>294</td><td>96</td></tr>
+         <tr><td>2</td><td>49</td><td>38</td></tr>
+         <tr><td>3</td><td>43</td><td>37</td></tr>
+         <tr><td>4</td><td>43</td><td>38</td></tr>
+      </table>
+
+      <p>contentSize=10000</p>
+      <table border="1">
+         <tr><th>Compression mode</th><th>Message No</th><th>Size of published message [bytes]</th><th>Size of PublishReturnQos (ACK)</th></tr>
+         <tr><td rowspan="3">no compression</td><td>1</td><td>10527</td><td>217</td></tr>
+         <tr><td>2</td><td>10378</td><td>217</td></tr>
+         <tr><td>3</td><td>10378</td><td>217</td></tr>
+         
+         <tr><td rowspan="5">zlib:stream</td><td>1</td><td>321</td><td>97</td></tr>
+         <tr><td>2</td><td>69</td><td>38</td></tr>
+         <tr><td>3</td><td>60</td><td>36</td></tr>
+         <tr><td>4</td><td>59</td><td>37</td></tr>
+         <tr><td>5</td><td>60</td><td>37</td></tr>
+      </table>
+
+   </example>
+
    <configuration where="server">
       <h2>Server side configuration</h2>
+
+      <p>Note: For the SSL connection configuration replace <b>socket</b> with <b>socket_ssl</b>,
+      for example <i>plugin/socket_ssl/compress/type=zlib:stream</i>.</p>
+
       <table border="1">
          <tr>
             <th>Property</th>
@@ -546,8 +666,8 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/useUdpForOneway</td>
             <td>false</td>
             <td>When configured to true the updateOneway() callback will be send
-	        as UDP datagram. UDP does not guarantee delivery or correct sequence
-		but has a significant smaller latency.
+                as UDP datagram. UDP does not guarantee delivery or correct sequence
+                but has a significant smaller latency.
                 </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -556,11 +676,11 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/responseTimeout</td>
             <td>60000 (one minute)</td>
             <td>When a method is invoked we wait the given time on a response, the value must be
-	    bigger than zero, there is no unlimited setting possible.<br />
+            bigger than zero, there is no unlimited setting possible.<br />
             The response is the return value or an exception for method invocations which
             are not marked oneway.<br />
-	    On timeout an exception is thrown which leads on server side to a dead message
-	    (depending on the installed error handler).
+            On timeout an exception is thrown which leads on server side to a dead message
+            (depending on the installed error handler).
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -602,10 +722,10 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/SSL</td>
             <td>false</td>
             <td>true enables SSL support on server or client socket.
-	    If the server side plugin has switched on SSL it will accept
-	    only SSL clients. To have SSL and non-SSL SOCKET connections
-	    you need to register two SOCKET plugins in xmlBlasterPlugins.xml
-	    which listen on different ports, for details see the example section.
+            If the server side plugin has switched on SSL it will accept
+            only SSL clients. To have SSL and non-SSL SOCKET connections
+            you need to register two SOCKET plugins in xmlBlasterPlugins.xml
+            which listen on different ports, for details see the example section.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -630,10 +750,10 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/trustStore</td>
             <td>''</td>
             <td>The path of your SSL truststore or keystore file containing the remote certificate.
-	    This option is needed on server side if you want to connect two xmlBlaster cluster nodes via SSL SOCKET.
-	    The xmlBlaster server is simultaneously a SLL SOCKET client and connects to the remote node.
-	    To do this the certificate of the remote node must be imported to the local keystore file
-	    or to a separate certificate store. Add this name here.
+            This option is needed on server side if you want to connect two xmlBlaster cluster nodes via SSL SOCKET.
+            The xmlBlaster server is simultaneously a SLL SOCKET client and connects to the remote node.
+            To do this the certificate of the remote node must be imported to the local keystore file
+            or to a separate certificate store. Add this name here.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -642,7 +762,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/trustStorePassword</td>
             <td>''</td>
             <td>The password of your keystore file.
-	        If none is found we fall back to the server side <tt>plugin/socket/keyStorePassword</tt> setting if set.
+                If none is found we fall back to the server side <tt>plugin/socket/keyStorePassword</tt> setting if set.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -651,11 +771,11 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/compress/type</td>
             <td>''</td>
             <td>Valid values are:
-	      <ul>
-	        <li>'' disables compression (default)</li>
-		<li>'zlib:stream' compresses whole stream</li>
-		<li>'zlib' only compresses flushed chunks bigger than 'compress/minSize' bytes</li>
-	      </ul>
+              <ul>
+                <li>'' disables compression (default)</li>
+                <li>'zlib:stream' compresses whole stream</li>
+                <li>'zlib' only compresses flushed chunks bigger than 'compress/minSize' bytes</li>
+              </ul>
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -734,7 +854,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/trustStore</td>
             <td>''</td>
             <td>The path of your SSL keystore file. Use the java utility keytool.
-	        If none is found we fall back to the server side <tt>plugin/socket/keyStore</tt> setting if set.
+                If none is found we fall back to the server side <tt>plugin/socket/keyStore</tt> setting if set.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -743,7 +863,7 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
             <td>plugin/socket/trustStorePassword</td>
             <td>''</td>
             <td>The password of your keystore file.
-	        If none is found we fall back to the server side <tt>plugin/socket/keyStorePassword</tt> setting if set.
+                If none is found we fall back to the server side <tt>plugin/socket/keyStorePassword</tt> setting if set.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -779,9 +899,13 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <see type="INTERNET" label="SSL tutorial">http://java.sun.com/developer/JDCTechTips/2004/tt0914.html#2</see>
    <see type="INTERNET" label="SSL reference guide">http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html</see>
+   <see type="INTERNET" label="Java compression jzlib">http://www.jcraft.com/jzlib/</see>
+   <see type="INTERNET" label="C compression zlib">http://www.gzip.org/zlib/</see>
+   <see type="INTERNET" label="xmlBlasterPlugins.xml">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlasterPlugins.xml.template</see>
+   <see type="INTERNET" label="xmlBlaster.properties">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlaster.properties.template</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.50 $</revision>
+   <revision>$Revision: 1.51 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
