@@ -57,6 +57,7 @@ import org.xml.sax.helpers.*;
  * Example for PtP addressing style:&lt;p />
  * <pre>
  *  &lt;qos>
+ *     &lt;pubSub>false&lt;/pubSub>  &lt;!-- if true would send PtP AND PubSub if there are any subcribers -->
  *     &lt;destination queryType='EXACT' forceQueuing='true'>
  *        Tim
  *     &lt;/destination>
@@ -109,6 +110,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inTopic = false;
    private boolean inQueue = false;
    private boolean inMsgstore = false;
+   private boolean inIsPubSub = false;
    private boolean inDestination = false;
    private boolean inSender = false;
    private boolean inPriority = false;
@@ -176,6 +178,20 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                }
             }
             // if (log.TRACE) log.trace(ME, "Found state tag");
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("pubSub")) {
+         if (!inQos)
+            return;
+         inIsPubSub = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               log.warn(ME, "Ignoring sent <isPubSub> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (log.TRACE) log.trace(ME, "Found isPubSub tag");
          }
          return;
       }
@@ -517,6 +533,16 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if(name.equalsIgnoreCase("pubSub")) {
+         inIsPubSub = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0) {
+            msgQosData.setIsPubSub(new Boolean(tmp).booleanValue());
+         }
+         character.setLength(0);
+         return;
+      }
+
       if( name.equalsIgnoreCase("destination") ) {
          inDestination = false;
          String tmp = character.toString().trim(); // The address or XPath query string
@@ -581,7 +607,6 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("forceUpdate")) {
-         inIsVolatile = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setForceUpdate(new Boolean(tmp).booleanValue());
@@ -674,6 +699,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (msgQosData.getStateInfo() != null)
             sb.append("' info='").append(msgQosData.getStateInfo());
          sb.append("'/>");
+      }
+
+      if (msgQosData.isPubSubProp().isModified()) {
+         if (msgQosData.isPubSubStyle())
+            sb.append(offset).append(" <pubSub/>");
+         else
+            sb.append(offset).append(" <pubSub>false</pubSub>");
       }
 
       ArrayList list = msgQosData.getDestinations();

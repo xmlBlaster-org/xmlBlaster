@@ -99,6 +99,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    public transient final static boolean DEFAULT_forceDestroy = false;
    private PropBoolean forceDestroy = new PropBoolean(DEFAULT_forceDestroy);
 
+   public transient final static boolean DEFAULT_isPubSub = true;
+   /** As default you can subscribe even PtP messages, set it to false if you don't want any subscriber to see your PtP message */
+   private PropBoolean isPubSub = new PropBoolean(DEFAULT_isPubSub);
+
    /** the sender (publisher) of this message (unique loginName) */
    private SessionName sender;
 
@@ -149,13 +153,24 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
+    * @see #isPubSubStyle()
+    */
+   public void setIsPubSub(boolean isPubSub) {
+      this.isPubSub.setValue(isPubSub);
+   }
+
+   /**
     * Test if Publish/Subscribe style is used.
     *
-    * @return true if Publish/Subscribe style is used
-    *         false if addressing of the destination is used
+    * @return true if Publish/Subscribe style is used<br />
+    *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
     */
    public boolean isPubSubStyle() {
-      return this.destinationList == null;
+      return this.isPubSub.getValue();
+   }
+
+   public PropBoolean isPubSubProp() {
+      return this.isPubSub;
    }
 
    /**
@@ -165,7 +180,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     *         false if Publish/Subscribe style is used
     */
    public boolean isPtp() {
-      return !isPubSubStyle();
+      return this.destinationList != null;
    }
 
    /**
