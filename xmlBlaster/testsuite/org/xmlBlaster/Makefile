@@ -13,20 +13,15 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/org/xmlBlaster
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = classtest clustertest query xmldb
+SUB_DIRS = classtest clustertest query xmldb authentication
 #LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
     $(CLASS_DIR)/TestCorbaThreads.class \
     $(CLASS_DIR)/LoadTestSub.class \
     $(CLASS_DIR)/RamTest.class \
-    $(CLASS_DIR)/TestLogin.class \
-    $(CLASS_DIR)/TestSession.class \
-    $(CLASS_DIR)/TestSessionCb.class \
     $(CLASS_DIR)/TestCallback.class \
     $(CLASS_DIR)/TestCallbackConfig.class \
-    $(CLASS_DIR)/TestLoginLogoutEvent.class \
-    $(CLASS_DIR)/TestLogout.class \
     $(CLASS_DIR)/TestPersistence.class \
     $(CLASS_DIR)/TestPersistence2.class \
     $(CLASS_DIR)/TestPersistenceXMLDB.class \

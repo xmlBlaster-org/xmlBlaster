@@ -35,13 +35,8 @@ public class TestAll
       //try { glob.getProperty().set("client.protocol", "RMI"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       //try { glob.getProperty().set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       suite.addTest(TestCorbaThreads.suite());
-      suite.addTest(TestSession.suite());
-      suite.addTest(TestSessionCb.suite());
-      suite.addTest(TestLogin.suite());
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());
-      suite.addTest(TestLoginLogoutEvent.suite());
-      suite.addTest(new TestSuite(testsuite.org.xmlBlaster.TestLogout.class));
       suite.addTest(TestGet.suite());
       suite.addTest(TestGetFilter.suite());
       suite.addTest(TestGetRegexFilter.suite());

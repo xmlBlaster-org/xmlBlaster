@@ -22,6 +22,8 @@ public class AllTests extends TestCase
     TestSuite suite = new TestSuite();
     suite.addTest(classtest.AllTests.suite());
     suite.addTest(testsuite.org.xmlBlaster.TestAll.suite());
+    suite.addTest(authentication.AllTests.suite());
+    suite.addTest(clustertest.AllTests.suite());
     return suite;
   }
 }
