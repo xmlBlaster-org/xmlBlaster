@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.69 2003/05/23 10:00:43 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.70 2003/08/28 23:55:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -162,7 +162,8 @@ public class CorbaDriver implements I_Driver
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.addressServer = addressServer;
 
-      this.orb = OrbInstanceFactory.createOrbInstance(this.glob, glob.getArgs(), (Properties)null, addressServer);
+      this.orb = OrbInstanceFactory.createOrbInstance(this.glob, (String[])null,
+                                    glob.getProperty().getProperties(), addressServer);
 
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));

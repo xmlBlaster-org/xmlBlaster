@@ -160,7 +160,7 @@ public final class OrbInstanceFactory
 
    /**
     * @param glob
-    * @param args command line args, see org.omg.CORBA.ORB.init(), use glob.getArgs(String[], Properties)
+    * @param args command line args, see org.omg.CORBA.ORB.init(), use glob.getProperty().getProperties()
     * @param props application-specific properties; may be <code>null</code>, see org.omg.CORBA.ORB.init(String[], Properties)
     * @param address The address configuration
     * @return Access to a new created orb handle

@@ -519,7 +519,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       if (log.CALL) log.call(ME, "connectLowlevel() ...");
       this.clientAddress = address;
       if (this.orb == null) {
-         this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(), null, this.clientAddress);
+         this.orb = OrbInstanceFactory.createOrbInstance(this.glob,(String[])null,
+                                              glob.getProperty().getProperties(), this.clientAddress);
       }
       getAuthenticationService(this.clientAddress);
       if (log.TRACE) log.trace(ME, "Success, connectLowlevel()");

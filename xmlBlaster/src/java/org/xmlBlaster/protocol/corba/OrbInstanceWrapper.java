@@ -3,7 +3,7 @@ Name:      OrbInstanceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   OrbInstanceWrapper class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: OrbInstanceWrapper.java,v 1.3 2003/05/21 20:21:19 ruff Exp $
+Version:   $Id: OrbInstanceWrapper.java,v 1.4 2003/08/28 23:55:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -35,7 +35,7 @@ public class OrbInstanceWrapper
    /**
     * On first call an orb is created, further calls return the same orb instance. 
     * @param glob
-    * @param args command line args, see org.omg.CORBA.ORB.init(), use glob.getArgs(String[], Properties)
+    * @param args command line args, see org.omg.CORBA.ORB.init(), use glob.getProperty().getProperties()
     * @param props application-specific properties; may be <code>null</code>, see org.omg.CORBA.ORB.init(String[], Properties)
     * @param address The configuration of the address
     * @return Access to a new created orb handle

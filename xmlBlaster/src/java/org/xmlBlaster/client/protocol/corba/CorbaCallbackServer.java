@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.38 2003/05/21 20:21:04 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.39 2003/08/28 23:56:01 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -82,7 +82,8 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
       this.log = this.glob.getLog("corba");
       this.callbackAddress = callbackAddress;
 
-      this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,this.callbackAddress);
+      this.orb = OrbInstanceFactory.createOrbInstance(this.glob,(String[])null,
+                                         glob.getProperty().getProperties(),this.callbackAddress);
 
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;

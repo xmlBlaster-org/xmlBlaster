@@ -53,7 +53,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       String callbackIOR = callbackAddress.getRawAddress();
       try {
          this.orbInstanceWrapper = OrbInstanceFactory.getOrbInstanceWrapper(this.glob, Constants.RELATING_CALLBACK);
-         this.orb = this.orbInstanceWrapper.getOrb(this.glob.getArgs(), null, this.callbackAddress);
+         this.orb = this.orbInstanceWrapper.getOrb((String[])null, this.glob.getProperty().getProperties(), this.callbackAddress);
          this.cb = BlasterCallbackHelper.narrow(this.orb.string_to_object(callbackIOR));
          if (log.TRACE) log.trace(ME, "Accessing client callback reference using given IOR string");
       }
