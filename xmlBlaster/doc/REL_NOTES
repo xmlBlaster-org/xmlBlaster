@@ -2,6 +2,10 @@
   
 Changes for 0.77 [?, 2000]
 ===============================
+   - Bugfix for XPath subscription match errors.
+	  Thanks to "Brett Palmer" <plum001@hotmail.com>
+	  for finding and describing this bug.
+	  
    - Stripped from jacorb.jar unneeded classes.
 	  This reduces the size from 3.7 MB to 2.3 MB. 
 
