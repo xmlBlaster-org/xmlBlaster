@@ -1,15 +1,36 @@
-Please go to
+---------------------------------------------------------------------
+  C based SOCKET access to xmlBlaster, June 2003
+---------------------------------------------------------------------
 
-  xmlBlaster/src/c
+This is a C based SOCKET client to xmlBlaster.
+It should compile on Linux, Windows (PocketPC, WinCE) and other UNIX OS.
 
-and read 
+Please read 
 
-  xmlBlaster/src/c/README
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 
-
-This code will be removed and only some C demo will
-reside here.
+for more details.
 
 
-mr@marcelruff.info 05/2003
+Compile:
+--------
+
+  cd xmlBlaster
+  build.bat c    (Win)
+  build.sh c     (UNIX)
+
+This will first create a shared library (dll) in xmlBlaster/lib
+and than compile the demo clients in this directory.
+The executables are put to xmlBlaster/demo/c/socket/bin
+
+
+Run:
+----
+
+  java org.xmlBlaster.Main
+
+  bin/LogRedirect -logLevel TRACE
+
+
+mr@marcelruff.info 06/2003
 
