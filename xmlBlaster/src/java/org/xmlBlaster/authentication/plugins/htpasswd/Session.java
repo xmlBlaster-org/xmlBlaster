@@ -46,14 +46,14 @@ public class Session implements I_Session, I_Subject {
    protected String passwd;
 
    public Session( Manager sm, String sessionId ) throws XmlBlasterException {
-      this.glob = sm.getGlobal();
+      this.glob = (sm.getGlobal() == null) ? Global.instance() : sm.getGlobal();
       this.log = this.glob.getLog("auth");
       log.trace(ME, "Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
 
       this.secMgr = sm;
       this.secretSessionId = sessionId;
 
-      this.htpasswd = new HtPasswd(sm.getGlobal());
+      this.htpasswd = new HtPasswd(this.glob);
    }
 
    /**

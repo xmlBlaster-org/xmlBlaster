@@ -38,7 +38,7 @@ public class Manager implements I_Manager {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
-      this.glob = glob;
+      this.glob = (glob == null) ? Global.instance() : glob;
       this.log = glob.getLog("auth");
    }
 
