@@ -24,6 +24,10 @@ BUGS:
 
 
 DONE:
+ - HtPassWd is now extended to accept partial usernames. e.g. if the passwordsfile contains
+    "Username", HtPassWd also accepts "User". Additionally if the passwordfile just contains
+    "*" any username and password is accepted.
+
   - You can automatically build an xmlBlaster distribution, see:
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.deploy.html
 

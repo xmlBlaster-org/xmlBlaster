@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Log;
 import java.io.* ;
 import java.util.Hashtable ;
 import java.util.Enumeration ;
+import java.util.Vector;
 //import org.xmlBlaster.authentication.plugins.htpasswd.jcrypt;
 
 /*
@@ -25,6 +26,13 @@ public class HtPasswd {
 
    private static final String ME = "HtAccess";
 
+   //Changes: astelzl@avitech.de
+   //There can be three cases for authentication:
+   //
+   //1: in xmlBlaster.properties the property Security.Server.Plugin.htpasswd.allowPartialUsername is true -> the user is authenticated with the right password and an username which begins with the specified username
+   //2: allowPartialUsername is false -> the user is just authenticated if the username and password in the password file exactly equals the specifications at connection to the xmlBlaster
+   //3: it is possible that the password file just contains a * instead of (username,password) tuples -> any username and password combination is authenticated
+   protected int useFullUsername = 1;
    protected String htpasswdFilename = null ;
    protected Hashtable htpasswd = null ;
 
@@ -38,13 +46,43 @@ public class HtPasswd {
    public HtPasswd(Global glob) throws XmlBlasterException {
 
       htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", (String) null );
+      boolean help = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", true);
+      if ( help ) {
+          useFullUsername = 1;
+      }
+      else {
+          useFullUsername = 2;
+      }
+
 
       Log.trace( ME, "contructor()" );
 
       if( readHtpasswordFile( htpasswdFilename ) ){
       }
 
-   }//HtPasswd
+   }//HtPassWd
+
+   /**
+    * Helper class for checkPassword in the case of startWith(username) ->
+    * here more usernames of the hashtable can be right
+    * @param userPassword password in plaintext
+    * @param fileEncodedPass vector of passwords where usernames match with the specified beginning of an username
+    * @return true if any one matches
+    */
+   private boolean checkDetailed(String userPassword, Vector fileEncodedPass)
+   { String encoded = null,salt,userEncoded;
+     for (Enumeration e = fileEncodedPass.elements();e.hasMoreElements();)
+     { encoded = (String)e.nextElement();
+       if ( encoded != null ) 
+       {  salt = encoded.substring(0,2);
+          userEncoded = jcrypt.crypt(salt,userPassword);
+          if ( userEncoded.equals(encoded) ) 
+            return true;     
+       }
+     }
+     return false;
+   }
+     
 
    /**
     * Check password
@@ -53,21 +91,28 @@ public class HtPasswd {
     */
    public boolean checkPassword( String userName, String userPassword )
                 throws XmlBlasterException {
-      if( htpasswd != null ){
+      Log.error(ME,"At checking password");
+      Vector pws = new Vector();
+      if ( useFullUsername == 3 ) {
+        return true;
+      }
+      else if( htpasswd != null ){
          if( userName!=null && userPassword!=null ){
 
             //find user in Hashtable htpasswd
-            String fileEncodedPass = (String) htpasswd.get( userName );
-            if( fileEncodedPass != null ){
-               // Get salt to encode user password
-               String salt = fileEncodedPass.substring(0,2);
-               // encode user password for futher comparaison
-               String userEncodedPW = jcrypt.crypt( salt, userPassword );
-
-               if( userEncodedPW.equals( fileEncodedPass ) ){
-                  return true ;
-               }
+            String key;
+            if ( useFullUsername == 2 ) {
+              pws.addElement((String)htpasswd.get(userName));
             }
+            else {       
+              for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
+                key = (String)e.nextElement();
+                if ( key.startsWith(userName) ) {
+                  pws.addElement((String)htpasswd.get(key));
+                }
+              }
+            }
+            return checkDetailed(userPassword,pws);
          }
       }
       return false;
@@ -82,6 +127,7 @@ public class HtPasswd {
    boolean readHtpasswordFile( String htpasswdFilename )
         throws XmlBlasterException {
 
+      Log.error(ME,"Read htpasswdFile");
       Log.trace( ME, "readHtpasswordFile : "+htpasswdFilename );
       File            htpasswdFile ;
 
@@ -118,6 +164,9 @@ public class HtPasswd {
                if( st.ttype>=0 ){
                   if( ((char)st.ttype) == ':' ){  // user:password
                      readUser = false ;
+                  }else if ( ((char)st.ttype) == '*') { //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
+                    useFullUsername = 3;
+                    end = true;                                  
                   }else{
                      if( readUser ){
                         user.append( (char)st.ttype );

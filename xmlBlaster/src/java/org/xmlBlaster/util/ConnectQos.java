@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.21 2002/06/02 23:16:35 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.22 2002/06/06 13:45:56 stelzl Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -241,17 +241,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          clearSessions(glob.getProperty().get("session.clearSessions["+nodeId+"]", clearSessions()));
       }
 
-      String type = glob.getProperty().get("security.plugin.type", "simple");
-      String version = glob.getProperty().get("security.plugin.version", "1.0");
       String loginName = glob.getProperty().get("loginName", "guest");
       String passwd = glob.getProperty().get("passwd", "secret");
       if (nodeId != null) {
-         type = glob.getProperty().get("security.plugin.type["+nodeId+"]", type);
-         version = glob.getProperty().get("security.plugin.version["+nodeId+"]", version);
          loginName = glob.getProperty().get("loginName["+nodeId+"]", loginName);
          passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
       }
-      securityQos = getPlugin(type,version).getSecurityQos();
+      securityQos = getPlugin(null,null).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(passwd);
    }

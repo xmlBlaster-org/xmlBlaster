@@ -171,6 +171,7 @@ public class PluginLoader {
 
       if((mechanism==null) || (mechanism.equals(""))) { // if the client application doesn't select the mechanism and version, we must check the configuartion
          tmp = glob.getProperty().get("Security.Client.DefaultPlugin", "simple,1.0");//(String)null);
+         Log.info(ME, "Got Security.Client.DefaultPlugin=" + tmp);
          if (tmp!=null) {
             int i = tmp.indexOf(',');
             if (i==-1) {  // version is optional

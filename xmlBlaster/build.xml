@@ -371,7 +371,7 @@ Else add it manually.
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,HelloWorld*,doc/requirements/*,classtest/**,clustertest/**,AllTests*"/>
+           includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,HelloWorld*,doc/requirements/*,classtest/**,clustertest/**,authentication/**,AllTests*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
  
@@ -392,7 +392,7 @@ Else add it manually.
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
-      <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**,classtest/**,clustertest/**,AllTests*"/>
+      <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="testsuite/**,classtest/**,clustertest/**,authentication/**,AllTests*"/>
       <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
    </target>
  
