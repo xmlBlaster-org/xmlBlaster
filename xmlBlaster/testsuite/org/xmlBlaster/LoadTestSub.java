@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.20 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.21 2000/10/29 20:26:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -46,7 +46,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
 
-   private final int NUM_PUBLISH = 5000;
+   private final int numPublish;        // 200;
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
@@ -56,12 +56,14 @@ public class LoadTestSub extends TestCase implements I_Callback
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
+    * @param numPublish The number of messages to send
     */
-   public LoadTestSub(String testName, String loginName)
+   public LoadTestSub(String testName, String loginName, int numPublish)
    {
        super(testName);
        this.senderName = loginName;
        this.receiverName = loginName;
+       this.numPublish = numPublish;
    }
 
 
@@ -93,11 +95,11 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      double davg = (double)stopWatch.elapsed() / 1000.0;
-      davg = (double)NUM_PUBLISH / davg;
-      long avg = (long)davg;
-
-      Log.info(ME, NUM_PUBLISH + " messages updated, average messages/second = " + avg + stopWatch.nice());
+      long avg = 0;
+      double elapsed = stopWatch.elapsed();
+      if (elapsed > 0.)
+         avg = (long)(1000.0 * numPublish / elapsed);
+      Log.info(ME, numPublish + " messages updated, average messages/second = " + avg + stopWatch.nice());
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
@@ -148,7 +150,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      Log.info(ME, "Publishing " + numPublish + " messages ...");
 
       numReceived = 0;
       String oid = "LoadTestSub";
@@ -162,7 +164,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       stopWatch = new StopWatch();
       try {
-         for (int ii=0; ii<NUM_PUBLISH; ii++) {
+         for (int ii=0; ii<numPublish; ii++) {
             senderContent = "Yeahh, i'm the new content number " + (ii+1);
             msgUnit.content = senderContent.getBytes();
             publishOid = senderConnection.publish(msgUnit);
@@ -171,10 +173,11 @@ public class LoadTestSub extends TestCase implements I_Callback
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
             */
          }
-         double davg = (double)stopWatch.elapsed() / 1000.0;
-         davg = (double)NUM_PUBLISH / davg;
-         long avg = (long)davg;
-         Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
+         long avg = 0;
+         double elapsed = stopWatch.elapsed();
+         if (elapsed > 0.)
+            avg = (long)(1000.0 * numPublish / elapsed);
+         Log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -194,8 +197,8 @@ public class LoadTestSub extends TestCase implements I_Callback
    {
       testSubscribeXPath();
       testPublish();
-      waitOnUpdate(60*1000L, NUM_PUBLISH);
-      assertEquals("numReceived after publishing", NUM_PUBLISH, numReceived); // message arrived?
+      waitOnUpdate(60*1000L, numPublish);
+      assertEquals("numReceived after publishing", numPublish, numReceived); // message arrived?
    }
 
 
@@ -260,7 +263,8 @@ public class LoadTestSub extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new LoadTestSub("testManyPublish", loginName));
+       int numMsg = 200;
+       suite.addTest(new LoadTestSub("testManyPublish", loginName, numMsg));
        return suite;
    }
 
@@ -270,6 +274,8 @@ public class LoadTestSub extends TestCase implements I_Callback
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
+    * <br />
+    * You can use the command line option -numPublish 5000 to change the number of messages sent.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
     * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.LoadTestSub</pre>
@@ -281,7 +287,8 @@ public class LoadTestSub extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      LoadTestSub testSub = new LoadTestSub("LoadTestSub", "Tim");
+      int numPublish = XmlBlasterProperty.get("numPublish", 5000);
+      LoadTestSub testSub = new LoadTestSub("LoadTestSub", "Tim", numPublish);
       testSub.setUp();
       testSub.testManyPublish();
       testSub.tearDown();
