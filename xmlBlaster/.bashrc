@@ -4,13 +4,13 @@
 # You may use this script to source into your sh, ksh, bash
 #
 # Example (copy this into your .profile or .bashrc):
-#   export JAVA_HOME=/usr/local/jdk
+#   export JAVA_HOME=/opt/local/jdk
 #   export XMLBLASTER_HOME=${HOME}/xmlBlaster
 #
 #   These are optional:
-#   export JacORB_HOME=/usr/local/JacORB
-#   export MICO_HOME=/usr/local/mico
-#   export JIKES_HOME=/usr/local/jikes
+#   export JacORB_HOME=/opt/local/JacORB
+#   export CORBACPP_HOME=/opt/local/mico
+#   export JIKES_HOME=/opt/local/jikes
 #   export USE_ANT=true
 #
 #   . ${XMLBLASTER_HOME}/.bashrc
@@ -71,8 +71,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    
    # OK, know we know where xmlBlaster is installed ...
 
-   ${ECHO} "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
-   ${ECHO} "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
+   ${ECHO} "${BLACK_LTGREEN}Welcome to xmlBlaster.org   ${ESC}"
+   ${ECHO} "${BLACK_LTGREEN}   XMLBLASTER_HOME=${XMLBLASTER_HOME}  ${ESC}"
 
    #a2Blaster - authentication and authorisation service 
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}   
@@ -81,9 +81,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    #CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.0-1.2.jar:${CLASSPATH}
    #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH} 
    #CLASSPATH=${XMLBLASTER_HOME}/lib/xerces.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
-	# jutils.jar is now included in xmlBlaster.jar
+   # jutils.jar is now included in xmlBlaster.jar
    #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
    #fi
@@ -94,10 +92,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
+   #CLASSPATH=${XMLBLASTER_HOME}/lib/cpptasks.jar:${CLASSPATH}
+
    # Mail support
    CLASSPATH=${XMLBLASTER_HOME}/lib/mail.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/activation.jar:${CLASSPATH}
-
 
    # EJB connector (J2EE) support:
    CLASSPATH=${XMLBLASTER_HOME}/lib/connector.jar:${CLASSPATH}
@@ -107,6 +106,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
    # JNDI, only needed for JDK 1.2, not for JDK 1.3
    CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/jndi-jdk1_3_1.jar
+   CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
 
    if [ ${USE_ANT:=""} = "true" ] ; then
       ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
@@ -173,12 +174,12 @@ if [ ${JAVA_HOME:=""} != "" ] ; then
          #ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
          #if [ ! -f ${ORB_PROPS} ]; then
          #   cp ${XMLBLASTER_HOME}/config/orb.properties ${ORB_PROPS}
-			#	RESULT=$?
-			#	if [ ${RESULT} = "0" ]; then
+         #	RESULT=$?
+         #	if [ ${RESULT} = "0" ]; then
          #      ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
-			#	else
+         #	else
          #      ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
-			#	fi
+         #	fi
          #fi
          ## If copy failed (missing permissions?)
          ## if [ $? -ne 0 ] ;  then
@@ -197,20 +198,15 @@ else
    ${ECHO} "$BLACK_RED            and your CLASSPATH setting needs at least          $ESC"
    ${ECHO} "$BLACK_RED               export CLASSPATH=\${JAVA_HOME}/jre/lib/rt.jar    $ESC"
    ${ECHO} "$BLACK_RED            Or set JAVA_HOME, and we will do the rest for you  $ESC"
-   ${ECHO} "$BLACK_RED               Example: 'export JAVA_HOME=/usr/local/jdk'      $ESC"
-	return 1
+   ${ECHO} "$BLACK_RED               Example: 'export JAVA_HOME=/opt/local/jdk'      $ESC"
+   return 1
 fi
 
 if [ ${#1} == 0 ]; then
   if [ ${CORBA_CPP:=""} != "orbacus" ] ; then  
     source ${XMLBLASTER_HOME}/config/jacorb.sh
-    source ${XMLBLASTER_HOME}/config/mico.sh
-    ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
-    ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
   else 
     source ${XMLBLASTER_HOME}/config/orbacus.sh
-    ${ECHO} "$BLACK_LTGREEN   corba for java: orbacus   $ESC"
-    ${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus   $ESC"
   fi
 else
 
@@ -227,32 +223,44 @@ else
    fi
 fi
 
+# tinySQL, a simple DBase JDBC driver.
+# Conflicts with JacORBs idl.jar because both use java_cup
+# (tinySQL has modified parser.java)
+#CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
+
 # stuff fot the c++ classes
 if [ ${USE_CPP:=""} = "" ] ; then
-  ${ECHO} "$BLACK_RED   c++ classes not activated. If you want to compile them $ESC"
-  ${ECHO} "$BLACK_RED   please set USE_CPP=true  $ESC"
+  ${ECHO} "$BLACK_LTGREEN   C++ classes not activated. To activate set USE_CPP=true$ESC"
   export USE_CPP=false  
 else
   if [ ${USE_CPP:=""} = "true" ] ; then
-    ${ECHO} "$BLACK_LTGREEN   c++ classes activated    $ESC"
+    ${ECHO} "$BLACK_LTGREEN   USE_CPP        =true  C++ classes activated    $ESC"
   else 
-    if [ ${USE_CPP:=""} = "false" ] ; then
-      ${ECHO} "$BLACK_LTGREEN   USE_CPP set to false: c++ classes not activated  $ESC"
-    else
-      ${ECHO} "$BLACK_RED   set USE_CPP either to true or false.  $ESC"
-      ${ECHO} "$BLACK_RED   c++ classes not activated.  $ESC"
-      export USE_CPP=false
-    fi
+     ${ECHO} "$BLACK_LTGREEN   USE_CPP is not set to true. C++ not activated  $ESC"
+     export USE_CPP=false
   fi  
 fi
 
 if [ ${USE_CPP:=""} = "true" ] ; then
   CPP_ERROR=false
   export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/c++/bin
-  #check if xerces is installed
+  #check if xerces is installed and version of xerces is set
+  if [ ${XMLCPP_VER:=""} = "" ] ; then
+      ${ECHO} "$BLACK_YELLOW   XMLCPP_VER is not set. I will set it to 1_6_0 $ESC"
+      export XMLCPP_VER="1_6_0"
+      CPP_ERROR=true
+  else
+      ${ECHO} "$BLACK_LTGREEN   Xerces version set to ${XMLCPP_VER} $ESC"
+      export LD_LIBRARY_PATH=$XMLCPP_HOME/lib:$LD_LIBRARY_PATH
+  fi  
   if [ ${XMLCPP_HOME:=""} = "" ] ; then
-    ${ECHO} "$BLACK_RED set XMLCPP_HOME to the directory where the c++ XML is installed $ESC"
-    CPP_ERROR=true
+    if [ -d /opt/local/xerces-c-src${XMLCPP_VER} ] ; then  
+       export XMLCPP_HOME=/opt/local/xerces-c-src${XMLCPP_VER}
+       ${ECHO} "${BLACK_YELLOW}   XMLCPP_HOME    =${XMLCPP_HOME}${ESC}"
+       CPP_ERROR=true
+    else
+       ${ECHO} "${BLACK_YELLOW}   Set XMLCPP_HOME to the directory where the c++ XML is installed $ESC"
+    fi
   else
     if [ ! -d ${XMLCPP_HOME} ] ; then 
       ${ECHO} "$BLACK_RED XMLCPP_HOME: ${XMLCPP_HOME} is not a valid directory $ESC"
@@ -260,40 +268,41 @@ if [ ${USE_CPP:=""} = "true" ] ; then
       ${ECHO} "$BLACK_LTGREEN XMLCPP_HOME set to ${XMLCPP_HOME} $ESC"
     fi  
   fi  
-  #check if the version of xerces is set
-  if [ ${XMLCPP_VER:=""} = "" ] ; then
-      ${ECHO} "$BLACK_RED XMLCPP_VER is not set. I will set it to 1_5_1 $ESC"
-      export XMLCPP_VER="1_5_1"
-      CPP_ERROR=true
-  else
-      ${ECHO} "$BLACK_LTGREEN xerces version set to ${XMLCPP_VER} $ESC"
-      export LD_LIBRARY_PATH=$XMLCPP_HOME/lib:$LD_LIBRARY_PATH
-  fi  
 
   #check if the correct corba is installed
   if [ ${CORBA_CPP:=""} = "" ] ; then
-    ${ECHO} "$BLACK_RED CORBA_CPP is not set. set it to `mico` or `orbacus` $ESC"
+    export CORBA_CPP=mico
+    ${ECHO} "$BLACK_YELLOW   CORBA_CPP is not set. I will set it to ${CORBA_CPP} ('orbacus' is valid as well) $ESC"
     CPP_ERROR=true
   fi
   if [ ${CORBACPP_VER:=""} = "" ] ; then 
-    ${ECHO} "$BLACK_RED CORBACPP_VER is not set. Please set it to the correct version $ESC" 
+    export CORBACPP_VER="2.3.6"
+    ${ECHO} "$BLACK_YELLOW   CORBACPP_VER is not set. I will set it to ${CORBACPP_VER} $ESC" 
     CPP_ERROR=true
   fi
   #home directory of the corba implementation
   if [ ${CORBACPP_HOME:=""} = "" ] ; then  
-    ${ECHO} "$BLACK_RED CORBACPP_HOME is not set. please set it to the directory where corba is installed. $ESC"
-    CPP_ERROR=true
+    if [ -d /opt/local/mico ] ; then  
+       export CORBACPP_HOME=/opt/local/mico
+       ${ECHO} "$BLACK_YELLOW   CORBACPP_HOME is not set. I will set it to ${CORBACPP_HOME}. $ESC"
+    else
+       ${ECHO} "$BLACK_RED   CORBACPP_HOME is not set. Please set it to the directory where corba is installed. $ESC"
+       CPP_ERROR=true
+    fi
   fi
   if [ ! -d ${CORBACPP_HOME} ] ; then
     ${ECHO} "$BLACK_RED CORBACPP_HOME: ${CORBACPP_HOME} is not a valid directory. $ESC"
     CPP_ERROR=true
   fi    
-  ${ECHO} "$BLACK_LTGREEN c++ corba: using ${CORBA_CPP} ${CORBACPP_VER} in ${CORBACPP_HOME} $ESC"
 
   if [ ${CPP_ERROR:=""} = "true" ] ; then 
-    ${ECHO} "$BLACK_YELLOW Please read the file ${XMLBLASTER_HOME}/src/c++/README"
-    ${ECHO} "on how to correctly use the c++-client-classes $ESC"
+    ${ECHO} "${BLACK_LTGREEN}   Please read the file ${XMLBLASTER_HOME}/src/c++/README"
   fi
+
+  if [ ${CORBA_CPP:=""} = "mico" ] ; then
+     source ${XMLBLASTER_HOME}/config/mico.sh
+  fi
+
 fi
 # end of stuff for the c++ classes
 
@@ -304,15 +313,15 @@ if [ ${JIKES_HOME:=""} != "" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
-		if [ ${JDK_1_1:=""} != "" ] ; then
-	      JIKESPATH=${CLASSPATH}
+      if [ ${JDK_1_1:=""} != "" ] ; then
+         JIKESPATH=${CLASSPATH}
    	   export JIKESPATH
-		else
-         JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar:${JAVA_HOME}/jre/lib/i18n.jar
+      else
+         JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar
          export JIKESPATH
-		fi
-      ${ECHO} "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
-      ${ECHO} "$BLACK_LTGREEN         Enhance \$JIKESPATH if you enhance your CLASSPATH$ESC"
+      fi
+      ${ECHO} "$BLACK_LTGREEN   JIKES_HOME     =${JIKES_HOME}  $ESC"
+      ${ECHO} "$BLACK_LTGREEN   Enhance \$JIKESPATH if you enhance your CLASSPATH$ESC"
    else
       ${ECHO} "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
    fi
@@ -343,8 +352,8 @@ if [ ${TOWERJ:=""} != "" ] ; then
       export PATH
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TOWERJ}/lib/x86-linux
       export LD_LIBRARY_PATH
-		#TOWERJ_TJLIB_PATH= ???
-		#export TOWERJ_TJLIB_PATH
+      #TOWERJ_TJLIB_PATH= ???
+      #export TOWERJ_TJLIB_PATH
       ${ECHO} "$BLACK_LTGREEN      Using TOWERJ=${TOWERJ}  $ESC"
    fi
 fi
