@@ -12,6 +12,7 @@ import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Vector;
 import java.util.Map;
@@ -88,14 +89,18 @@ public class NodeParser extends SaxHandlerBase
    private boolean inState = false; // parsing inside <state> ?
    private NodeStateInfo tmpState = null; // Helper variable
 
+   private final SessionInfo sessionInfo;
+
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
     * @param xml  The XML based ASCII string
+    * @param sessionInfo The sessionInfo needs to be passed through to ClusterNode
     */
-   public NodeParser(Global glob, ClusterManager clusterManager, String xml) throws XmlBlasterException {
+   public NodeParser(Global glob, ClusterManager clusterManager, String xml, SessionInfo sessionInfo) throws XmlBlasterException {
       this.glob = glob;
       this.clusterManager = clusterManager;
+      this.sessionInfo = sessionInfo;
       init(xml);  // use SAX parser to parse it (is slow)
    }
 
@@ -133,7 +138,7 @@ public class NodeParser extends SaxHandlerBase
                id = id.trim();
                tmpClusterNode = clusterManager.getClusterNode(id);
                if (tmpClusterNode == null) {
-                  tmpClusterNode = new ClusterNode(glob, new NodeId(id));
+                  tmpClusterNode = new ClusterNode(glob, new NodeId(id), sessionInfo);
                   clusterManager.addClusterNode(tmpClusterNode);
                }
             }
@@ -294,7 +299,7 @@ public class NodeParser extends SaxHandlerBase
 
          {
             System.out.println("\nFull Message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml);
+            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
  
@@ -313,7 +318,7 @@ public class NodeParser extends SaxHandlerBase
          
          {
             System.out.println("\nFull Message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml);
+            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
          /*

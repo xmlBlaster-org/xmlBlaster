@@ -22,6 +22,10 @@ import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -38,6 +42,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    private final String ME;
    private final Global glob;
    private final LogChannel log;
+   private final SessionInfo sessionInfo;
    
    private XmlBlasterConnection xmlBlasterConnection = null;
    private boolean available;
@@ -66,8 +71,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * Create an object holding all informations about a node
     */
-   public ClusterNode(Global glob, NodeId nodeId) {
+   public ClusterNode(Global glob, NodeId nodeId, SessionInfo sessionInfo) {
       this.glob = glob;
+      this.sessionInfo = sessionInfo;
       this.log = this.glob.getLog("cluster");
       this.nodeInfo = new NodeInfo(glob, nodeId);
       this.state = new NodeStateInfo(glob);
@@ -348,12 +354,30 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      log.warn(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "'");
+      if (!isLocalNode())
+         log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
+      else {
+         log.error(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
+         Thread.currentThread().dumpStack();
+      }
+
+      // Important: Do authentication of sender:
       if (!this.cbSessionId.equals(cbSessionId)) {
          log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + glob.getId());
          throw new XmlBlasterException("AccessDenied", "Your callback sessionId is invalid, no access to " + glob.getId());
       }
-      return "";
+
+      // Publish messages to our RequestBroker WITHOUT ANY FURTHER SECURITY CHECKS:
+
+      //Transform an update to a publish: PublishKeyWrapper/PublishQosWrapper ?
+      XmlKey key = new XmlKey(glob, updateKey.toXml(), true);
+      PublishQos qos = new PublishQos(glob, updateQos);
+      MessageUnit msgUnit = new MessageUnit(key.toXml(), content, qos.toXml());
+
+      String ret = glob.getRequestBroker().publish(sessionInfo, key, msgUnit, qos);
+      if (ret == null || ret.length() < 1)
+         return Constants.RET_FORWARD_ERROR;
+      return Constants.RET_OK;
    }
 
    /**

@@ -13,10 +13,13 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.engine.xml2java.SubscribeQoS;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,11 +45,12 @@ import java.util.Comparator;
  */
 public final class ClusterManager
 {
-   private String ME = "ClusterManager";
+   private String ME;
 
-   // The following 8 declarations are 'final' but the SUN JDK 1.3.1 does not like it
+   // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
    private Global glob;
    private LogChannel log;
+   private SessionInfo sessionInfo;
 
    private MapMsgToMasterPluginManager mapMsgToMasterPluginManager;
    private LoadBalancerPluginManager loadBalancerPluginManager;
@@ -64,11 +68,23 @@ public final class ClusterManager
    /** Info about myself */
    private ClusterNode myClusterNode = null;
 
-   public ClusterManager(Global glob) throws XmlBlasterException {
-      this.glob = glob;
-      this.log = this.glob.getLog("cluster");
-      this.ME = this.ME + "-" + this.glob.getId();
+   private boolean postInitialized = false;
 
+   /**
+    * You need to call postInit() after all drivers are loaded.
+    *
+    * @param sessionInfo Internal handle to be used directly with RequestBroker
+    *                    NOTE: We (the cluster code) are responsible for security checks
+    *                    as we directly write into RequestBroker.
+    */
+   public ClusterManager(Global glob, SessionInfo sessionInfo) {
+      this.glob = glob;
+      this.sessionInfo = sessionInfo;
+      this.log = this.glob.getLog("cluster");
+      this.ME = "ClusterManager-" + this.glob.getId();
+   }
+
+   public void postInit() throws XmlBlasterException {
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
       this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob, this);
@@ -104,7 +120,7 @@ public final class ClusterManager
                   continue;
                }
                log.info(ME, "Parsing envrionment -" + env[ii] + " for node '" + nodeIdName + "' ...");
-               NodeParser nodeParser = new NodeParser(glob, this, xml); // fills the info to ClusterManager
+               NodeParser nodeParser = new NodeParser(glob, this, xml, sessionInfo); // fills the info to ClusterManager
             }
          }
       }
@@ -115,6 +131,7 @@ public final class ClusterManager
 
       if (log.DUMP) log.dump(ME, toXml());
       this.log.info(ME, "Initialized and ready");
+      postInitialized = true;
    }
 
    private void publish() {
@@ -137,7 +154,7 @@ public final class ClusterManager
     * Initialize ClusterNode object, containing all informations about myself. 
     */
    private void initClusterNode() {
-      this.myClusterNode = new ClusterNode(this.glob, this.glob.getNodeId());
+      this.myClusterNode = new ClusterNode(this.glob, this.glob.getNodeId(), this.sessionInfo);
       this.addClusterNode(this.myClusterNode);
       I_Driver[] drivers = glob.getPublicProtocolDrivers();
       for (int ii=0; ii<drivers.length; ii++) {
@@ -218,6 +235,39 @@ public final class ClusterManager
    }
 
    /**
+    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    *         <pre>&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos></pre> if message is
+    *         tailed back because cluster node is temporary not available. The message will
+    *         be flushed on reconnect.<br />
+    *         Otherwise the normal publish return value of the remote cluster node.  
+    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
+    */
+   public String forwardSubscribe(SessionInfo publisherSession, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering forwardSubscribe(" + xmlKey.getUniqueKey() + ")");
+
+      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
+                                      new MessageUnit(xmlKey.literal(), new byte[0], subscribeQos.toXml()),
+                                      /*!!! subscribeQos.toXml()*/ new PublishQos(glob, ""));
+      XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
+      if (con == null) {
+         if (log.TRACE) log.trace(ME, "Nothing to forward");
+         return null;
+      }
+
+      log.error(ME, "subscribe forwarding is not implemented");
+      //subscribeQos.addNode();
+
+      try {
+         return con.subscribe(xmlKey.literal(), subscribeQos.toXml());
+      }
+      catch (XmlBlasterException e) {
+         if (e.id.equals("TryingReconnect"))
+            return Constants.RET_FORWARD_WARNING; // "<qos><state id='FORWARD_WARNING'/></qos>"
+         throw e;
+      }
+   }
+
+   /**
     * Add a new node info object or overwrite an existing one. 
     * @param The ClusterNode instance
     * @exception  IllegalArgumentException
@@ -279,6 +329,11 @@ public final class ClusterManager
     * @return null if local node
     */
    public final XmlBlasterConnection getConnection(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+      if (!postInitialized) {
+         // !!! we need proper run level initialization
+         if (log.TRACE) log.trace(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), but clustering is not ready, handling in local node");
+         return null;
+      }
 
       if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
 
