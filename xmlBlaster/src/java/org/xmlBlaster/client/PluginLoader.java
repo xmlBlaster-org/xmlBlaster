@@ -211,7 +211,7 @@ public class PluginLoader {
       }
 
       String[] classnameAndParam = new String[v.size()];
-      v.toArray(classnameAndParam);
+      v.copyInto(classnameAndParam); // For client side JDK 1.1 support (v.toArray(classnameAndParam); is since 1.2)
 
       this.pluginMechanism=mechanism;
       this.pluginVersion=version;

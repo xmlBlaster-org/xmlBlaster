@@ -3,11 +3,12 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.22 2001/11/30 08:05:54 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.23 2002/02/07 13:11:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.JdkCompatible;
 import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -86,8 +87,8 @@ public class CorbaDriver implements I_Driver
 
       // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
       if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-         System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
-         System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
+         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
+         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
       }
       if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
       if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
@@ -97,7 +98,7 @@ public class CorbaDriver implements I_Driver
       //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
       // and xmlBlaster will find it automatically if on same host
       if (System.getProperty("ORBInitRef.NameService") == null) {
-         System.setProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
+         JdkCompatible.setSystemProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
          Log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
       }
 

@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.28 2001/11/30 08:06:37 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.29 2002/02/07 13:09:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -15,6 +15,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.JdkCompatible;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
@@ -67,7 +68,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -115,8 +116,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
          // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
          if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-            System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
-            System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
+            JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
+            JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
          }
 
          // We use default Port 7608 for naming service to listen ...
@@ -126,7 +127,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          //
          // (Clients usually don't publish their IOR to a naming service, the transfer it via QoS to xmlBlaster)
          if (System.getProperty("ORBInitRef.NameService") == null) {
-            System.setProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
+            JdkCompatible.setSystemProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
             Log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
          }
          orb = org.omg.CORBA.ORB.init(args, null);

@@ -3,11 +3,12 @@ Name:      XmlBlasterSecurityManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlBlasterSecurityManager class to invoke the xmlBlaster server using RMI.
-Version:   $Id: XmlBlasterSecurityManager.java,v 1.3 2000/11/03 18:01:28 ruff Exp $
+Version:   $Id: XmlBlasterSecurityManager.java,v 1.4 2002/02/07 13:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.JdkCompatible;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -51,7 +52,7 @@ public class XmlBlasterSecurityManager
          else if (XmlBlasterProperty.get("java.security.policy", (String)null) != null) {
             String file = XmlBlasterProperty.get("java.security.policy", (String)null);
             Log.info(ME, "Setting security policy from file " + file);
-            System.setProperty("java.security.policy", file);
+            JdkCompatible.setSystemProperty("java.security.policy", file);
          }
          else {
             // try to find the policy file in the CLASSPATH
@@ -61,7 +62,7 @@ public class XmlBlasterSecurityManager
                if (serverPolicyURL != null ) {
                   String serverPolicy = serverPolicyURL.getFile();
                   if (serverPolicy.indexOf("!") == -1) {
-                     System.setProperty("java.security.policy", serverPolicy);
+                     JdkCompatible.setSystemProperty("java.security.policy", serverPolicy);
                      Log.info(ME, "Setting security policy " + serverPolicy + ", found it in your CLASSPATH.");
                   }
                   else {
@@ -79,7 +80,7 @@ public class XmlBlasterSecurityManager
                            data += sep;
                         }
                         FileUtil.writeFile("xmlBlaster.policy", data);
-                        System.setProperty("java.security.policy", "xmlBlaster.policy");
+                        JdkCompatible.setSystemProperty("java.security.policy", "xmlBlaster.policy");
                         Log.info(ME, "Using security policy " + serverPolicy + ", found it in your CLASSPATH.");
                         if (Log.TRACE) Log.trace(ME, "Wrote xmlBlaster.policy temporary into local directory to be useful for security manager");
                         if (Log.DUMP) Log.dump(ME, data);
@@ -106,7 +107,7 @@ public class XmlBlasterSecurityManager
                              "   permission java.security.AllPermission;" + sep +
                              "};";
                FileUtil.writeFile("xmlBlaster.policy", data);
-               System.setProperty("java.security.policy", "xmlBlaster.policy");
+               JdkCompatible.setSystemProperty("java.security.policy", "xmlBlaster.policy");
                Log.info(ME, "java.security.policy is not set, please include config/xmlBlaster.policy into your CLASSPATH or pass the file on startup like 'java -Djava.security.policy=<path>xmlBlaster.policy'...");
                Log.info(ME, "Caution: granting all rights for now ...");
                if (Log.TRACE) Log.trace(ME, "Wrote xmlBlaster.policy temporary into local directory to be useful for security manager");
