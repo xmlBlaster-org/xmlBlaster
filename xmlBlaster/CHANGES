@@ -1,6 +1,10 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
-Changes for 0.79b [March, 11 2000]
+Changes for 0.xx [xx, xx 2001]
+==============================
+
+
+Changes for 0.79b [March, 11 2001]
 ==================================
 
  - Bugfix with Base64 support in xmlrpc (thanks to Nikolai Devereaux)
