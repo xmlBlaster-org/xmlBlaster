@@ -537,7 +537,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
                           " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
             try {
-               MsgQueueUpdateEntry entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry);
+               MsgQueueUpdateEntry entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionInfo.getSessionQueue().getStorageId());
                sessionInfo.queueMessage(entryCb);
                countForwarded++;
             }

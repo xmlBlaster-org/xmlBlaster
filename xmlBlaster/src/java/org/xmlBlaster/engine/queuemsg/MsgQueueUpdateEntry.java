@@ -31,7 +31,22 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     */
    public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
                               String subscriptionId) throws XmlBlasterException {
-      super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, storageId, receiver);
+      this(glob, msgUnitWrapper, (Timestamp)null, storageId, receiver, subscriptionId);                           
+   }   
+   
+   /**
+    * convenience constructor to allow passing an already given uniqueId (the timestamp)
+    * @param glob
+    * @param msgUnitWrapper
+    * @param timestamp
+    * @param storageId
+    * @param receiver
+    * @param subscriptionId
+    * @throws XmlBlasterException
+    */
+   public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, Timestamp timestamp, StorageId storageId, SessionName receiver,
+                              String subscriptionId) throws XmlBlasterException {
+      super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, timestamp, storageId, receiver);
       this.getMsgQosData().setSender(msgUnitWrapper.getMsgQosData().getSender());
       this.subscriptionId = subscriptionId;
       this.state = msgUnitWrapper.getMsgUnit().getQosData().getState();
@@ -61,8 +76,8 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    /**
     * Copy constructor, used to get a shallow clone, we still reference the original MsgUnitWrapper. 
     */
-   public MsgQueueUpdateEntry(MsgQueueUpdateEntry entry) throws XmlBlasterException {
-      this(entry.getGlobal(), entry.getMsgUnitWrapper(), entry.getStorageId(), entry.getReceiver(), entry.getSubscriptionId());
+   public MsgQueueUpdateEntry(MsgQueueUpdateEntry entry, StorageId storageId) throws XmlBlasterException {
+      this(entry.getGlobal(), entry.getMsgUnitWrapper(), entry.uniqueIdTimestamp, storageId, entry.getReceiver(), entry.getSubscriptionId());
    }
 
    public String getSubscriptionId() {

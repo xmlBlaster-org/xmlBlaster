@@ -46,8 +46,8 @@ public class ReferenceEntry extends MsgQueueEntry
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
    public ReferenceEntry(String ME, Global glob_, String entryType, MsgUnitWrapper msgUnitWrapper,
-                         StorageId storageId, SessionName receiver) throws XmlBlasterException {
-      super(glob_, entryType, msgUnitWrapper.getMsgQosData().getPriority(),
+                         Timestamp timestamp, StorageId storageId, SessionName receiver) throws XmlBlasterException {
+      super(glob_, entryType, msgUnitWrapper.getMsgQosData().getPriority(), timestamp,
             storageId, msgUnitWrapper.getMsgQosData().isPersistent());
       this.glob = glob_;
       this.ME = ME;
@@ -64,7 +64,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
    public ReferenceEntry(String ME, Global glob, String entryType, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
-      this(ME, glob, entryType, msgUnitWrapper, storageId, (SessionName)null);
+      this(ME, glob, entryType, msgUnitWrapper, (Timestamp)null, storageId, (SessionName)null);
    }
 
    /**
