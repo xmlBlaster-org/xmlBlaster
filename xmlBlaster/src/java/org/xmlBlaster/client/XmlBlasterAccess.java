@@ -70,7 +70,7 @@ import java.util.HashMap;
  * </p>
  */
 public final class XmlBlasterAccess extends AbstractCallbackExtended
-                   implements I_XmlBlasterAccess, I_ConnectionHandler, I_ConnectionStatusListener
+                   implements I_XmlBlasterAccess, I_ConnectionStatusListener
 {
    private String ME = "XmlBlasterAccess";
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
@@ -97,6 +97,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    /** Is not null if the client wishes to be notified about connection state changes in fail safe operation */
    private I_ConnectionStateListener connectionListener;
    private boolean disconnectInProgress;
+   private boolean connectInProgress;
 
 
    /**
@@ -175,60 +176,73 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * @exception On connection failure
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
-   public synchronized ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
-      
-      this.connectQos = (qos==null) ? new ConnectQos(glob) : qos;
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
 
-      this.updateListener = updateListener;
+      synchronized (this) {
+         this.connectInProgress = true;
+         
+         try {
+            this.connectQos = (qos==null) ? new ConnectQos(glob) : qos;
 
-      initSecuritySettings(this.connectQos.getSecurityPluginType(), this.connectQos.getSecurityPluginVersion());
+            this.updateListener = updateListener;
 
-      this.ME = "XmlBlasterAccess-" + getId();
+            initSecuritySettings(this.connectQos.getSecurityPluginType(), this.connectQos.getSecurityPluginVersion());
 
-      try {
-         ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
-         StorageId queueId = new StorageId("client", getId());
-         this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
-                                                this.connectQos.getClientQueueProperty());
-         if (this.clientQueue == null) {
-            String text = "The client queue plugin is not found with this configuration, please check your connect QoS: " + prop.toXml();
-            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+            this.ME = "XmlBlasterAccess-" + getId();
+
+            try {
+               ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
+               StorageId queueId = new StorageId("client", getId());
+               this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
+                                                      this.connectQos.getClientQueueProperty());
+               if (this.clientQueue == null) {
+                  String text = "The client queue plugin is not found with this configuration, please check your connect QoS: " + prop.toXml();
+                  throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+               }
+
+               this.msgErrorHandler = new ClientErrorHandler(glob, this);
+
+               this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
+                                       getSecurityPlugin(), this.clientQueue, this,
+                                       this.connectQos.getAddresses());
+
+               log.info(ME, "Switching to synchronous delivery mode ...");
+               this.deliveryManager.trySyncMode(true);
+
+               if (this.updateListener != null) { // Start a default callback server using same protocol
+                  createDefaultCbServer();
+               }
+
+               MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos);
+
+               // Try to connect to xmlBlaster ...
+               this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
+               this.connectReturnQos.getData().setInitialConnectionState(this.deliveryManager.getDeliveryConnectionsHandler().getState());
+            }
+            catch (XmlBlasterException e) {
+               shutdown(null, false, true, true);
+               throw e;
+            }
+            catch (Throwable e) {
+               shutdown(null, false, true, true);
+               throw XmlBlasterException.convert(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed", e);
+            }
          }
-
-         this.msgErrorHandler = new ClientErrorHandler(glob, this);
-
-         this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
-                                 getSecurityPlugin(), this.clientQueue,
-                                 this.connectQos.getAddresses());
-
-         this.deliveryManager.addConnectionStatusListener(this);
-
-         log.info(ME, "Switching to synchronous delivery mode ...");
-         this.deliveryManager.trySyncMode(true);
-
-         if (this.updateListener != null) { // Start a default callback server using same protocol
-            createDefaultCbServer();
+         finally {
+            this.connectInProgress = false;
          }
-
-         MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos);
-
-         // Try to connect to xmlBlaster ...
-         this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
-         this.connectReturnQos.getData().setInitialConnectionState(this.deliveryManager.getDeliveryConnectionsHandler().getState());
-      }
-      catch (XmlBlasterException e) {
-         shutdown(null, false, true, true);
-         throw e;
-      }
-      catch (Throwable e) {
-         shutdown(null, false, true, true);
-         throw XmlBlasterException.convert(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed", e);
-      }
+      } // synchronized
 
       if (isAlive()) {
+         if (this.connectionListener != null) {
+            this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
+         }
          log.info(ME, "Successful login as " + getId());
       }
       else {
+         if (this.connectionListener != null) {
+            this.connectionListener.reachedPolling(ConnectionStateEnum.UNDEF, this);
+         }
          log.info(ME, "Login request as " + getId() + " is queued");
       }
 
@@ -685,7 +699,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * Enforced by interface I_ConnectionStatusListener
     */
    public void toAlive(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
-      if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE);
+      if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " connectInProgress=" + this.connectInProgress);
+      if (this.connectInProgress) return;
       if (this.connectionListener != null) {
          this.connectionListener.reachedAlive(oldState, this);
       }
@@ -697,7 +712,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * Enforced by interface I_ConnectionStatusListener
     */
    public void toPolling(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
-      if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
+      if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING + " connectInProgress=" + this.connectInProgress);
+      if (this.connectInProgress) return;
       if (this.connectionListener != null) {
          this.connectionListener.reachedPolling(oldState, this);
       }
@@ -708,7 +724,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * <p>Enforced by interface I_ConnectionStatusListener</p>
     */
    public void toDead(DeliveryManager deliveryManager, ConnectionStateEnum oldState, String errorText) {
-      if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      if (log.CALL) log.call(ME, "Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD + " connectInProgress=" + this.connectInProgress);
       if (this.connectionListener != null) {
          this.connectionListener.reachedDead(oldState, this);
       }
@@ -716,26 +732,11 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * Access the environment settings of this connection. 
-    * <p>Enforced by interface I_ConnectionHandler</p>
+    * <p>Enforced by interface I_XmlBlasterAccess</p>
     * @return The global handle (like a stack with local variables for this connection)
     */
    public Global getGlobal() {
       return this.glob;
-   }
-
-   /**
-    * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster. 
-    * <p>
-    * This method blocks until all entries in the queue have been sent.
-    * </p>
-    * <p>Enforced by interface I_ConnectionHandler</p>
-    * @return The number of sent messages. <br />
-    *         If the queue is empty or NULL, then 0 is returned.<br />
-    *         If the state is in POLLING or DEAD, then -1 is returned.<br />
-    */
-   public long flushQueue() throws XmlBlasterException {
-      log.error(ME, "flushQueue() is not implemented");
-      return 0;
    }
 
    /**
@@ -744,19 +745,6 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public I_Queue getQueue() {
       return this.clientQueue;
-   }
-
-   /**
-    * You can activate this mode by setting retries != 0
-    * in the Address object of ConnectQos. 
-    * <p>Enforced by interface I_ConnectionHandler</p>
-    * @return Returns true if the connection is in failsafe mode
-    */
-   public boolean isFailSafe() {
-      if (this.deliveryManager == null) return false;
-      AddressBase addr = this.deliveryManager.getDeliveryConnectionsHandler().getAliveAddress();
-      if (addr != null && addr.getRetries() != 0) return true;
-      return false;
    }
 
    /**
@@ -788,7 +776,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * Access the returned QoS of a connect() call. 
-    * <p>Enforced by interface I_ConnectionHandler</p>
+    * <p>Enforced by interface I_XmlBlasterAccess</p>
     * @return Can be null if not connected
     */
    public ConnectReturnQos getConnectReturnQos() {
@@ -797,7 +785,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * Access the current ConnectQos
-    * <p>Enforced by interface I_ConnectionHandler</p>
+    * <p>Enforced by interface I_XmlBlasterAccess</p>
     * @return Can be null if not connected
     */
    public ConnectQos getConnectQos() {
@@ -889,13 +877,13 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          */
 
          xmlBlasterAccess.registerConnectionListener(new I_ConnectionStateListener() {
-            public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-               log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " with " + connectionHandler.getQueue().getNumOfEntries() + " queue entries pending");
+            public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " with " + connection.getQueue().getNumOfEntries() + " queue entries pending");
             }
-            public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
             }
-            public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
             }
          });
@@ -1000,3 +988,4 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       System.exit(0);
    }
 }
+
