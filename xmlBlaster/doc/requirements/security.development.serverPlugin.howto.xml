@@ -373,4 +373,5 @@
 <see type="API">org.xmlBlaster.authentication.plugins.I_Session</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Subject</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_SecurityQos</see>
+<see type="API">org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor</see>
 </requirement>
