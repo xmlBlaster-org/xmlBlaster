@@ -14,59 +14,77 @@
      Most of all make, sure to have the ACE_ROOT, TAO_ROOT environment vars set correctly.
      The ant build file relies on them being there. 
      </p>
+      <table border="1">
+       <tr>
+       <th>No.</th>
+       <th>OS</th>
+       <th>Compiler</th>
+       <th>xmlBlaster</th>
+       <th>Protocol library</th>
+       <th>XML library</th>
+       <th>Date</th>
+       <th>Author</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>1</td>
+       <td>WindowsXP</td>
+       <td>VC++ 7</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.841</a></td>
+       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html">TAO 1.2.2</a></td>
+       <td><a href="http://xml.apache.org">XERCES C++ 1.7</a></td>
+       <td>2003-02-01</td>
+       <td><a href="mailto:mjhn@bigpond.net.au">Martin</a></td>
+       <td>Use xmlBlaster/src/c++/tao.xml</td>
+       </tr>
+
+       <tr>
+       <td>2</td>
+       <td>WindowsXP</td>
+       <td>VC++ 7</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.841</a></td>
+       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html">ACE 5.3 and TAO 1.3</a></td>
+       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td>2003-02-07</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Use xmlBlaster/src/c++/tao.xml</td>
+       </tr>
+      </table>
    </description>
 
    <example lang="CPP" type="HTML">
       <p>Needed components from TAO for xmlBlaster:</p>
       <table border="1">
-         <tr>
-       <th>
-          Component
-       </th>
-       <th>
-          Description
-       </th>
-    </tr>
-         <tr>
-       <td>
-          ACE
-       </td>
-       <td>
-          The ACE library is needed by TAO.
-       </td>
-    </tr>
-         <tr>
-       <td>
-          TAO
-       </td>
-       <td>
-          The TAO core is needed.
-       </td>
-    </tr>
-         <tr>
-       <td>
-          TAO_IDL
-       </td>
-       <td>
-          The TAO IDL compiler needs to be compiled.
-       </td>
-    </tr>
-         <tr>
-       <td>
-          apps/gperf/src
-       </td>
-       <td>
-          The TAO IDL compiler needs the gperf tool.
-       </td>
-    </tr>
-         <tr>
-       <td>
-          TAO/orbsvcs
-       </td>
-       <td>
-          From the CORBA services only the CosNaming service is needed.
-       </td>
-    </tr>
+       <tr>
+       <th>Component</th>
+       <th>Description</th>
+       </tr>
+
+       <tr>
+       <td>ACE</td>
+       <td>The ACE library is needed by TAO.</td>
+       </tr>
+
+       <tr>
+       <td>TAO</td>
+       <td>The TAO core is needed.</td>
+       </tr>
+       
+       <tr>
+       <td>TAO_IDL</td>
+       <td>The TAO IDL compiler needs to be compiled.</td>
+       </tr>
+
+       <tr>
+       <td>apps/gperf/src</td>
+       <td>The TAO IDL compiler needs the gperf tool.</td>
+       </tr>
+
+       <tr>
+       <td>TAO/orbsvcs</td>
+       <td>From the CORBA services only the CosNaming service is needed.</td>
+       </tr>
       </table>
    </example>
 
@@ -94,10 +112,15 @@
          your home directory (it has precedence there) and adjust
          the path settings to find CORBA and the XML parser.
       </p>
+      <p>
+         Compile it with ant:
+      </p>
       <pre>
-         cd xmlBlaster\src\c++
+cd xmlBlaster\src\c++
+..\..\build.bat -verbose -f tao.xml all
 
-         ..\..\build.bat -verbose -f tao.xml all
+This creates:
+   xmlBlaster\src\c++\tao_build\xmlBlasterClient.dll
       </pre>
    </configuration>
 
@@ -115,7 +138,7 @@
    
    <date>2002 08 27</date>
    
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
