@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.29 2002/09/25 13:41:38 laghi Exp $
+Version:   $Id: SimpleChat.java,v 1.30 2002/09/25 17:33:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -56,9 +56,10 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private String publishOid = "javaclients.chat.SimpleChat";
    private String xmlKey = null;
    private String logFileName = null;
+   private boolean withSound = true;
 
    // UI elements
-   private Button connectButton, actionButton, whoisThereButton;
+   private Button connectButton, actionButton, whoisThereButton, soundButton;
    private Panel fPanel;
    private TextArea output;
    private TextField input;
@@ -155,6 +156,17 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       whoisThereButton.addActionListener(this);
       fPanel.add("South", whoisThereButton);
 
+
+
+
+      // Button for requesting list of who is connected
+      String soundText = "with Sound";
+      if (!this.withSound) soundText = "no Sound";
+      soundButton = new Button(soundText);
+      soundButton.setActionCommand("sound");
+      soundButton.addActionListener(this);
+      fPanel.add("South", soundButton);
+
       // Textfield for input
       input = new TextField(60);
       input.addActionListener(this);
@@ -173,6 +185,20 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       if ("whoisThere".equals(command)) {
         getUserList();
         return;
+      }
+
+	  if ("sound".equals(command)) {
+        if (this.withSound) {
+            this.withSound = false;
+            this.soundButton.setLabel("no Sound");
+            fPanel.repaint();
+
+        }
+        else {
+            this.withSound = true;
+            this.soundButton.setLabel("with Sound");
+            fPanel.repaint();
+        }
       }
 
       if(command.equals("connect")){
@@ -218,7 +244,8 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      java.awt.Toolkit.getDefaultToolkit().beep();
+      if (this.withSound)
+        java.awt.Toolkit.getDefaultToolkit().beep();
 
       String msgContent = new String(content);
       DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
