@@ -292,6 +292,7 @@ TODO
       <echo message="   testsuite   --> generates the testsuite.jar file"/>
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
+      <echo message="         -DADD_HSQLDB=false    does not add hsqldb.jar, no embedded database support [true]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support [true]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support [false]"/>
@@ -311,6 +312,7 @@ TODO
       <echo message=""/>
       <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
       <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
+      <echo message="         -DADD_HSQLDB=false    does not add hsqldb.jar, no embedded database support [true]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support for clients [true]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
@@ -1062,6 +1064,7 @@ TODO
 
       <property name="DIST_PATH" value="."/>
       <property name="ADD_EMAIL" value="true"/>
+      <property name="ADD_HSQLDB" value="true"/>
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_J2EE" value="false"/>
@@ -1092,6 +1095,15 @@ TODO
          </case>
          <default>
             <echo message="ADD_EMAIL=${ADD_EMAIL}: No EMAIL support added." />
+         </default>
+      </switch>
+      <switch value="${ADD_HSQLDB}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/hsqldb.jar for HSQLDB support" />
+            <unjar src="${lib.dir}/hsqldb.jar" dest="${dist-classes.dir}" />
+         </case>
+         <default>
+            <echo message="ADD_HSQLDB=${ADD_HSQLDB}: No HSQLDB support added." />
          </default>
       </switch>
       <switch value="${ADD_CORBA}">
@@ -1252,6 +1264,7 @@ TODO
 
       <property name="DIST_PATH" value="${dist-client.dir}"/>
       <property name="ADD_COLLECTION" value="false"/>
+      <property name="ADD_HSQLDB" value="true"/>
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_SNMP" value="true"/>
@@ -1264,6 +1277,15 @@ TODO
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
 
+      <switch value="${ADD_HSQLDB}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/hsqldb.jar for HSQLDB support" />
+            <unjar src="${lib.dir}/hsqldb.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default>
+            <echo message="ADD_HSQLDB=${ADD_HSQLDB}: No HSQLDB support added." />
+         </default>
+      </switch>
       <switch value="${ADD_CORBA}">
          <case value="true">
             <echo message="Adding ${lib.dir}/jacorb.jar for CORBA support" />
