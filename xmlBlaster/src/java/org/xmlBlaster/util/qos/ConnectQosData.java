@@ -59,7 +59,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    /**
     * Allows to mark that we are an xmlBlaster cluster node.
     */
-   protected PropBoolean isClusterNode = new PropBoolean(false);
+   protected PropBoolean clusterNode = new PropBoolean(false);
 
    /**
     * If duplicateUpdates=false we will send only one update, even if
@@ -377,22 +377,22 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    /**
     * @param Set if we are a cluster node. 
     */
-   public void setIsClusterNode(boolean isClusterNode) {
-      this.isClusterNode.setValue(isClusterNode);
+   public void setClusterNode(boolean clusterNode) {
+      this.clusterNode.setValue(clusterNode);
    }
 
    /**
     * @return Are we a cluster?
     */
    public boolean isClusterNode() {
-      return this.isClusterNode.getValue();
+      return this.clusterNode.getValue();
    }
 
    /**
-    * @return Are we a cluster?
+    * @return The isClusterNode flag object
     */
-   public PropBoolean isClusterNodeProp() {
-      return this.isClusterNode;
+   public PropBoolean getClusterNodeProp() {
+      return this.clusterNode;
    }
 
    /**

@@ -160,7 +160,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          ConnectQosData qos = new ConnectQosData(connectGlob, glob.getNodeId());
 
-         qos.setIsClusterNode(true);
+         qos.setClusterNode(true);
 
          // As we forward many subscribes probably accessing the
          // same message but only want one update.

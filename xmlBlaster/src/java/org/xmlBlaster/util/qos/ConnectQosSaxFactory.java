@@ -313,8 +313,8 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
-      if (name.equalsIgnoreCase("isClusterNode")) {
-         this.connectQosData.setIsClusterNode(true);
+      if (name.equalsIgnoreCase("clusterNode")) {
+         this.connectQosData.setClusterNode(true);
          character.setLength(0);
          return;
       }
@@ -394,10 +394,10 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
-      if (name.equalsIgnoreCase("isClusterNode")) {
+      if (name.equalsIgnoreCase("clusterNode")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.connectQosData.setIsClusterNode(new Boolean(tmp).booleanValue());
+            this.connectQosData.setClusterNode(new Boolean(tmp).booleanValue());
          return;
       }
 
@@ -480,11 +480,11 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             sb.append(offset).append(" <ptp>false</ptp>");
       }
    
-      if (data.isClusterNodeProp().isModified()) {
+      if (data.getClusterNodeProp().isModified()) {
          if (data.isClusterNode())
-            sb.append(offset).append(" <isClusterNode/>");
+            sb.append(offset).append(" <clusterNode/>");
          else
-            sb.append(offset).append(" <isClusterNode>false</isClusterNode>");
+            sb.append(offset).append(" <clusterNode>false</clusterNode>");
       }
 
       if (data.duplicateUpdatesProp().isModified()) {
