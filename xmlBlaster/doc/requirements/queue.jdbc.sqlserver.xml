@@ -28,7 +28,7 @@ set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
         <ol>
         <li>Setup xmlBlaster.properties as described in the example section below</li>
         <li>Create database in SQL Server, as for this demo ,it is <code>xmlBlaster</code></li>
-        <li>xmlBlaster creates on startup automatically the needed three tables</li>
+        <li>xmlBlaster creates on startup automatically the needed table</li>
         </ol>
 
     </description>
@@ -88,7 +88,15 @@ osql -E
             <td>QueuePlugin[CACHE][1.0]</td>
             <td>org.xmlBlaster.util.queue.<br/>
                 cache.CacheQueueInterceptorPlugin</td>
-            <td>specifies the cache implementing class to be used</td>
+            <td>specifies the cache implementing class to be used for storing the queue entries</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>StoragePlugin[CACHE][1.0]</td>
+            <td>org.xmlBlaster.util.queue.<br/>
+                cache.CacheQueueInterceptorPlugin</td>
+            <td>specifies the cache implementing class to be used for storing the message content</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -144,7 +152,7 @@ osql -E
 
    <author>zzwzyz@163.com</author>
    <date>2003 06 09</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
