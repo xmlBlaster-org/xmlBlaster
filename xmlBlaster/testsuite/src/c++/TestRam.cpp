@@ -1,9 +1,9 @@
 /*--------------------------------------------------------------------------
-Name:      RamTest.cpp
+Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.9 2003/01/08 16:03:39 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.1 2003/01/12 00:47:51 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -16,6 +16,7 @@ Version:   $Id: RamTest.cpp,v 1.9 2003/01/08 16:03:39 laghi Exp $
 
 #include <util/StopWatch.h>
 #include <util/Global.h>
+#include <util/EmbeddedServer.h>
 
 using namespace std;
 using org::xmlBlaster::client::XmlBlasterAccess;
@@ -39,13 +40,13 @@ using boost::lexical_cast;
 namespace org { namespace xmlBlaster {
 
 /**
- * Constructs the RamTest object.
+ * Constructs the TestRam object.
  * <p />
  * @param testName  The name used in the test suite
  * @param loginName The name to login to the xmlBlaster
  */
 
-class RamTest {
+class TestRam {
 
 private:
 
@@ -63,19 +64,22 @@ private:
    string            contentMimeExtended_;
    util::Global&     global_;
    util::Log&        log_;
+   EmbeddedServer*   embeddedServer_;
 
 public:
-   RamTest(Global& global, const string &loginName) :
+   TestRam(Global& global, const string &loginName) :
                  stopWatch_(), global_(global), log_(global.getLog("test")) {
       senderName_   = loginName;
       publishOid_   = "";
       contentMime_  = "text/plain";
       contentMimeExtended_ = "1.0";
       senderConnection_ = 0;
+      embeddedServer_ = NULL;
    }
 
-   ~RamTest() {
+   ~TestRam() {
       delete senderConnection_;
+      delete embeddedServer_;
    }
 
 
@@ -93,6 +97,9 @@ public:
       }
       try {
          senderConnection_ = new XmlBlasterAccess(global_); // Find server
+         embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", senderConnection_);
+         embeddedServer_->start();
+         Thread::sleepSecs(10);
          string passwd = "secret";
          SecurityQos secQos(global_, senderName_, passwd);
          ConnectQos connQos(global_);
@@ -117,7 +124,7 @@ public:
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          EraseKey key(global_);
-         key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
+         key.setOid(string("TestRam-") + lexical_cast<string>(i+1));
          EraseQos qos(global_);
          vector<EraseReturnQos> strArr;
          try {
@@ -150,7 +157,7 @@ public:
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          PublishKey key(global_);
-         key.setOid(string("RamTest-") + lexical_cast<string>(i+1));
+         key.setOid(string("TestRam-") + lexical_cast<string>(i+1));
          senderContent_ = lexical_cast<string>(i+1);
          PublishQos qos(global_);
          util::MessageUnit msgUnit(key, senderContent_, qos);
@@ -226,7 +233,7 @@ public:
       XmlBlasterAccess::usage();
       log_.usage();
       log_.plain(me(), "Example:");
-      log_.plain(me(), "   RamTest -hostname myHostName");
+      log_.plain(me(), "   TestRam -hostname myHostName");
       log_.plain(me(), "----------------------------------------------------------");
    }
 };
@@ -249,7 +256,7 @@ int main(int args, char *argc[]) {
 
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
-   org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest(glob, "Tim");
+   org::xmlBlaster::TestRam *testSub = new org::xmlBlaster::TestRam(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testManyPublish();
    testSub->tearDown();

@@ -361,6 +361,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       string retQos = authServer_->connect(reqQos.c_str());
       if (log_.TRACE) log_.trace(me(), string("connect ret: ") + retQos);
       ConnectQosFactory factory(global_);
+      if (log_.DUMP) log_.dump(me(), "connect: the connect qos before parsing: " + retQos);
       connectReturnQos_ = factory.readObject(retQos);
       sessionId_ = connectReturnQos_.getSessionId();
       xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();

@@ -20,35 +20,51 @@ using boost::lexical_cast;
 
 /*---------------------------- SessionQosData --------------------------------*/
 
-SessionQosData::SessionQosData(Global& global, const string& absoluteName)
-    : global_(global)
+SessionQosData::SessionQosData(Global& global, const string& defaultUserName, long publicSessionId)
+    : ME("SessionQosData"), global_(global)
 {
+   initialize("", defaultUserName, publicSessionId);   
+}
+
+SessionQosData::SessionQosData(Global& global, const string& absoluteName)
+    : ME("SessionQosData"), global_(global)
+{
+   initialize(absoluteName, "", -1);
+}
+
+
+void SessionQosData::initialize(const string& absoluteName, const string& defaultUserName, long publicSessionId)
+{
+   pubSessionId_ = publicSessionId;
    timeout_ = global_.getProperty().getTimestampProperty("session.timeout", 86400000ll);
    maxSessions_ = global_.getProperty().getIntProperty("session.maxSessions", 10);
    clearSessions_ = global_.getProperty().getBoolProperty("session.clearSessions", false);
    sessionId_ = global_.getProperty().getStringProperty("session.sessionId", "");
 
-   clusterNodeId_ = global_.getProperty().getStringProperty("session.clusterNodeId", "");
-   if (clusterNodeId_ == "")
-      clusterNodeId_ = global_.getProperty().getStringProperty("hostname", "");
-   if (clusterNodeId_ == "")
-      clusterNodeId_ = global_.getProperty().getStringProperty("HOSTNAME", "unknown");
-
-   /*
-   subjectId_ = global_.getProperty().getStringProperty("session.subjectId", "");
-   if (subjectId_ == "")
-      subjectId_ = global_.getProperty().getStringProperty("user", "");
-   if (subjectId_ == "")
-      subjectId_ = global_.getProperty().getStringProperty("USER", "unknown");
-   pubSessionId_ = global_.getProperty().getLongProperty("session.pubSessionId", "1");
-   */
+   if (!absoluteName.empty()) {
+      setAbsoluteName(absoluteName);
+      return;
+   }
 
    string name = global_.getProperty().getStringProperty("session.name", "");
-   if (name != "") setAbsoluteName(name);
-   if (absoluteName != "") setAbsoluteName(absoluteName);
+   if (!name.empty()) {
+      setAbsoluteName(name);
+      return;
+   }
+
+   clusterNodeId_ = global_.getProperty().getStringProperty("session.clusterNodeId", "");
+
+   if (!defaultUserName.empty()) {
+      subjectId_ = defaultUserName;
+      return;
+   }
+
+   string subjectId = global_.getProperty().getStringProperty("USER", "guest");
+   subjectId_ = global_.getProperty().getStringProperty("user", subjectId);
 }
 
-SessionQosData::SessionQosData(const SessionQosData& data) : global_(data.global_)
+
+SessionQosData::SessionQosData(const SessionQosData& data) : ME(data.ME), global_(data.global_)
 {
    copy(data);
 }
@@ -62,45 +78,63 @@ SessionQosData& SessionQosData::operator =(const SessionQosData& data)
 
 void SessionQosData::setAbsoluteName(const string& name)
 {
-   StringStripper stripper("/");
-   vector<string> help = stripper.strip(name);
+   pubSessionId_ = 0; // resets the value if previously set
+   string relative = "";
+   if (name.empty())
+      throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name is empty");
 
-   if (help.size() < 3) subjectId_ = name;
-   return;
-
-   string clusterNode = "";
-
-   unsigned int i = 2;
-   while (i<(help.size()-1)) {
-      if (help[i] != "client") {
-         if (i != 2) clusterNode += "/";
-         clusterNode += help[i];
+   if (name[0] == '/') { // then it is an absolute name
+      StringStripper stripper("/");
+      vector<string> help = stripper.strip(name);
+      help.erase(help.begin()); // since it is empty for sure.
+      if (help.size() < 4) 
+                         throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed");
+      if (help[0] == "node") clusterNodeId_ = help[1];
+      else throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. It should start with '/node'");
+      if (help[2] != "client") 
+         throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. '/client' is missing");
+   
+      for (size_t i=3; i < help.size(); i++) {
+         relative += help[i];
+        if ( i < help.size()-1) relative += "/";
       }
-      else break;
-      i++;
    }
-   i++;
-   unsigned int ref = i;
-   string subjectId = "";
-   while (i < (help.size()-1)) {
-      if (i != ref) subjectId += "/";
-      subjectId += help[i];
-      i++;
-   }
-   string pubSessionId = help[help.size()-1];
+   else relative = name;
 
-   setClusterNodeId(clusterNode);
-   setSubjectId(subjectId);
-   setPubSessionId(lexical_cast<long>(pubSessionId));
+   StringStripper relStripper("/");
+   vector<string> relHelp = relStripper.strip(relative);
+   if (relHelp.empty()) {
+                throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
+   }
+
+   size_t ii = 0;
+   if ( relHelp.size() > ii ) {
+      string tmp = relHelp[ii++];
+      if ( tmp == "client" ) {
+         if ( relHelp.size() > ii ) {
+            subjectId_ = relHelp[ii++];
+         }
+         else {
+                      throw new XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
+         }
+      }
+      else subjectId_ = tmp;
+   }
+   if ( relHelp.size() > ii ) {
+      pubSessionId_ = lexical_cast<long>(relHelp[ii]);
+   }
 }
 
 string SessionQosData::getRelativeName() const
 {
-   return string("client/") + subjectId_ + string("/") + lexical_cast<string>(pubSessionId_);
+   string ret = string("client/") + subjectId_;
+   if (pubSessionId_ != 0) ret += string("/") + lexical_cast<string>(pubSessionId_);
+   return ret;
 }
 
 string SessionQosData::getAbsoluteName() const
 {
+   if (clusterNodeId_.empty()) return getRelativeName();
    return string("/node/") + clusterNodeId_ + string("/") + getRelativeName();
 }
 
@@ -174,16 +208,12 @@ void SessionQosData::setSessionId(const string& sessionId)
    sessionId_ = sessionId;
 }
 
-string SessionQosData::toXml(const string& extraOffset, bool isClient) const
+string SessionQosData::toXml(const string& extraOffset) const
 {
    string offset = extraOffset; // currently unused.
    string ret = string("<session");
 
-   if (isClient)
-      ret += string(" name='")  + getRelativeName() + string("'");
-   else
-      ret += string(" name='")  + getAbsoluteName() + string("'");
-
+   ret += string(" name='")  + getAbsoluteName() + string("'");
    ret += string(" timeout='") + lexical_cast<string>(getTimeout()) + string("'") + 
           string(" maxSessions='") + lexical_cast<string>(getMaxSessions()) + string("'") +
           string(" clearSessions='") + Global::getBoolAsString(clearSessions_) + string("'");
@@ -311,7 +341,7 @@ int main(int args, char* argv[])
        XMLPlatformUtils::Initialize();
 
        string qos = "<session name='/node/http:/client/ticheta/-3' timeout='86400000' maxSessions='10' \n" +
-             string("         clearSessions='false' sessionId='IIOP:01110728321B0222011028'/>\n") +
+             string("         clearSessions='false' sessionId='IIOP:01110728321B0222011028'/>\n");
 
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);

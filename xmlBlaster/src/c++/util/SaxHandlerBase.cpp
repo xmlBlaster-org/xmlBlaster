@@ -77,31 +77,29 @@ SaxHandlerBase::parse(const string &xmlData)
     return;
   }
   catch (SAXException &err) {
-    if (log_.TRACE) {
-       char *msg = XMLString::transcode(err.getMessage());
-       log_.error(me(), string("parse: SAXException. message:") + string(msg));
-       log_.error(me(), string("parse: SAXException. stack trace:") + XmlBlasterException::getStackTrace());
-
-       delete msg;
-    }
-    return;
+    char *help = XMLString::transcode(err.getMessage());
+    string msg = string(help);
+    delete help;
+    throw XmlBlasterException(USER_ILLEGALARGUMENT, me() + "::parse", string("sax parser exception: ") + msg);
   }
 
-  catch (const bad_alloc& err) {
-    log_.error(me(), string("parse: bad_alloc exception. message:") + err.what());
-    return;
-  }
-  catch (const bad_exception& err) {
-       log_.error(me(), string("parse: bad_exception exception. message:") + err.what());
-    return;
+  catch (XmlBlasterException& ex) {
+     throw ex;
   }
   catch (const exception& err) {
-    log_.error(me(), string("parse: exception. message:") + err.what());
-    return;
+    throw XmlBlasterException(INTERNAL_UNKNOWN, me() + "::parse", string("parse: exception. message:") + err.what());
   }
+
+  catch (const string& err) {
+    throw XmlBlasterException(INTERNAL_UNKNOWN, me() + "::parse", string("parse: exception. message:") + err);
+  }
+
+  catch (const char* err) {
+    throw XmlBlasterException(INTERNAL_UNKNOWN, me() + "::parse", string("parse: exception. message:") + err);
+  }
+
   catch (...) {
-       log_.error(me(), "parse: unknown exception.");
-    return;
+    throw XmlBlasterException(INTERNAL_UNKNOWN, me() + "::parse", string("parse: unknown exception."));
   }
 }
 
@@ -307,8 +305,8 @@ bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const
       if (!help1) return false;
       if (doTrim) {
          help2 = charTrimmer_.trim(help1);
-	 if (!help2) ret = false;
-	 if (ret) value.assign(help2);
+         if (!help2) ret = false;
+         if (ret) value.assign(help2);
       }
       else value.assign(help1);
    }

@@ -112,16 +112,30 @@ XmlBlasterAccess::initSecuritySettings(const string& secMechanism, const string&
 bool
 XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown, bool shutdownCb)
 {
+   bool ret1 = true;
+   bool ret2 = true;
+   bool ret3 = true;
    if (log_.CALL) {
       log_.call(ME, string("disconnect called with flush='") + Global::getBoolAsString(flush) + 
-   		              "' shutdown='" + Global::getBoolAsString(shutdown) + 
+                              "' shutdown='" + Global::getBoolAsString(shutdown) + 
                     "' shutdownCb='" + Global::getBoolAsString(shutdownCb) + "'");
    }
 
+   if (log_.TRACE) log_.trace(ME, "disconnecting the client connection");
    if (log_.DUMP) log_.dump(ME, string("disconnect: the qos is:\n") + qos.toXml());
-   if (connection_ == NULL) return false;
-   bool ret  = connection_->disconnect(qos);
-   return ret;
+   if (connection_ != NULL) {
+      ret1  = connection_->disconnect(qos);
+ 	    if (shutdown) ret2 = connection_->shutdown();
+   }
+   else {
+   		ret1 = false;
+      ret2 = false;
+   }
+   if (shutdownCb) {
+      if (cbServer_) ret3 = cbServer_->shutdownCb();
+      else ret3 = false;
+   }
+   return ret1 && ret2 && ret3;
 }
 
 string XmlBlasterAccess::getId()
@@ -215,7 +229,7 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
    if (log_.CALL) log_.call(ME, "publishOneway");
    if (log_.DUMP) {
       for (int i=0; i < msgUnitArr.size(); i++) {
-   	     log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+             log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
    return connection_->publishOneway(msgUnitArr);
@@ -226,7 +240,7 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUni
    if (log_.CALL) log_.call(ME, "publishArr");
    if (log_.DUMP) {
       for (int i=0; i < msgUnitArr.size(); i++) {
-   	     log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+             log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
    return connection_->publishArr(msgUnitArr);

@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyFactory.h,v 1.2 2003/01/05 23:11:07 ruff Exp $
+Version:   $Id: QueuePropertyFactory.h,v 1.3 2003/01/12 00:47:48 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -37,6 +37,7 @@ private:
    AddressFactory     addressFactory_;
    Address*           address_;
    CallbackAddress*   cbAddress_;
+   XMLCh*             RELATING;
 
 public:
    QueuePropertyFactory(Global& global);

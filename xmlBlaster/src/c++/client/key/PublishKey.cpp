@@ -13,9 +13,12 @@ using namespace org::xmlBlaster::util::key;
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
-PublishKey::PublishKey(Global& global) 
+PublishKey::PublishKey(Global& global, const string& oid, const string& mime, const string& mimeExt) 
    : MsgKeyBase(global)
 {
+   if (!oid.empty()) setOid(oid);
+   if (!mime.empty()) setContentMime(mime);
+   if (!mimeExt.empty()) setContentMimeExtended(mimeExt);
 }
 
 PublishKey::PublishKey(Global& global, const MsgKeyData& data) 

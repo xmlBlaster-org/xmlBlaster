@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.10 2003/01/08 16:03:39 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.11 2003/01/12 00:47:51 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
@@ -248,11 +248,8 @@ private:
          "      </TestSub-DRIVER>"+
          "   </TestSub-AGENT>";
 
-      PublishKey key(global_);
+      PublishKey key(global_, publishOid_, contentMime_, contentMimeExtended_);
       key.setClientTags(clientTags);
-      key.setContentMime(contentMime_);
-      key.setContentMimeExtended(contentMimeExtended_);
-      key.setOid(publishOid_);
       PublishQos pubQos(global_);
       MessageUnit msgUnit(key, senderContent_, pubQos);
       try {

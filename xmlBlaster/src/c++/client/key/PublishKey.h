@@ -28,7 +28,7 @@ public:
    /**
     * Minimal constructor.
     */
-   PublishKey(Global& global);
+   PublishKey(Global& global, const string& oid="", const string& mime="", const string& mimeExt="");
    
    PublishKey(Global& global, const MsgKeyData& data);
 

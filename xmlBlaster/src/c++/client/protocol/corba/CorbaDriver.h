@@ -46,7 +46,7 @@ namespace org {
       Log&             log_;
       StatusQosFactory statusQosFactory_;
       MsgQosFactory    msgQosFactory_;
-      const string     instanceName_;
+      string           instanceName_;
 
       /**
        * frees the resources used. It only frees the resource specified with

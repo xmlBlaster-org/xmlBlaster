@@ -173,6 +173,8 @@ public class TestSubXPath extends TestCase
          MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
          PublishReturnQos tmp = senderConnection.publish(msgUnit);
          assertEquals("returned oid", oid, tmp.getKeyOid());
+         assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, oid, Constants.STATE_OK));
+         assertEquals("", 1, this.updateInterceptor.getMsgs().getMsgs().length);
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());

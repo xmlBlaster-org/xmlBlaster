@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.1 2002/12/20 19:37:18 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.2 2003/01/12 00:47:47 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -16,9 +16,11 @@ using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
+
 QueuePropertyFactory::QueuePropertyFactory(Global& global)
-   : SaxHandlerBase(global), prop_(global, ""), addressFactory_(global)
+   : SaxHandlerBase(global), ME("QueuePropertyFactory"), prop_(global, ""), addressFactory_(global)
 {
+   RELATING   = XMLString::transcode("relating");
    inAddress_ = false;
    address_   = NULL;
    cbAddress_ = NULL;
@@ -28,6 +30,7 @@ QueuePropertyFactory::~QueuePropertyFactory()
 {
    if (address_   != NULL) delete address_;
    if (cbAddress_ != NULL) delete cbAddress_;
+   delete RELATING;
 }
 
 /*
@@ -49,6 +52,11 @@ QueuePropertyBase QueuePropertyFactory::getQueueProperty()
 // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
 void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 {
+   if (log_.CALL) {
+      char* help = XMLString::transcode(name);
+      log_.call(ME, string("startElement: ") + help);
+      delete help;
+   }
    // in case it is inside or entrering an 'address' or 'callbackAddress'
    if (SaxHandlerBase::caseCompare(name, "address")) {
       if (address_ != NULL) delete address_;
@@ -75,12 +83,25 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
 
    // not inside any of the sub-elements (the root element)
    prop_ = QueuePropertyBase(global_, "");
+   if (log_.TRACE) log_.trace(ME, "queue properties are created");
    int len = attrs.getLength();
+   if (log_.TRACE) log_.trace(ME, string("length retrieved: ") + lexical_cast<string>(len));
    if (len > 0) {
       int i=0;
+
+      string relating;
+      if (getStringAttr(attrs, RELATING, relating)) {
+         if (log_.TRACE) log_.trace(ME, "attribute 'relating' found. it is '" + relating + "'");
+         if (relating == "session") prop_.initialize("cb");
+         else prop_.initialize("");
+         prop_.setRelating(relating);
+         if (log_.TRACE) log_.trace(ME, string("the queue is relating to ") + relating);
+      }
+
       for (i = 0; i < len; i++) {
          if (SaxHandlerBase::caseCompare(attrs.getName(i), "relating")) {
-               prop_.setRelating(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+             // do nothing since it is already done as the first thing
+             // but leave it to avoid warnings
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsg")) {
                prop_.setMaxMsg(SaxHandlerBase::getLongValue(attrs.getValue(i)));
@@ -98,6 +119,7 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
                prop_.setMaxBytes(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxBytesCache")) {
+               log_.trace(ME, "maxBytesCache found");
                prop_.setMaxBytesCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "storeSwapLevel")) {
@@ -120,6 +142,13 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "onFailure")) {
                prop_.setOnFailure(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+         }
+
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "size")) {
+            // not doing anything (this is done outside: only in MsgQos Factory
+         }
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "index")) {
+            // not doing anything (this is done outside: only in MsgQos Factory
          }
          else {
             char* help = XMLString::transcode(attrs.getName(i));

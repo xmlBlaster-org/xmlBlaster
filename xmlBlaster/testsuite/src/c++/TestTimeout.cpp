@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-Name:      TimeoutTest.cpp
+Name:      TestTimeout.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
@@ -25,7 +25,7 @@ using namespace org::xmlBlaster::util::thread;
 
 namespace org { namespace xmlBlaster {
 
-class TimeoutTest : public I_Timeout {
+class TestTimeout : public I_Timeout {
    
 private:
    string ME;
@@ -33,11 +33,11 @@ private:
    Global& global_;
    int     count_;
 public:
-   TimeoutTest(Global& global, string name) : ME(name), global_(global) {
+   TestTimeout(Global& global, string name) : ME(name), global_(global) {
       count_ = 0;
    }
 
-   virtual ~TimeoutTest()
+   virtual ~TestTimeout()
    {
       delete timeoutObject;
    }
@@ -91,7 +91,7 @@ int main(int args, char *argc[]) {
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
 
-   org::xmlBlaster::TimeoutTest *test = new org::xmlBlaster::TimeoutTest(glob, "TimeoutTest");
+   org::xmlBlaster::TestTimeout *test = new org::xmlBlaster::TestTimeout(glob, "TestTimeout");
 
    test->setUp(args, argc);
    test->testTimeout();

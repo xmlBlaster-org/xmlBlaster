@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.5 2003/01/08 16:03:39 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.6 2003/01/12 00:47:47 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -131,29 +131,29 @@ protected:
 
    void copy(const QueuePropertyBase& prop)
    {
-      type_                = prop.type_;
-      version_             = prop.version_;
-      maxMsgDefault_       = prop.maxMsgDefault_;
-      maxMsgCacheDefault_  = prop.maxMsgCacheDefault_;
+      type_                 = prop.type_;
+      version_              = prop.version_;
+      maxMsgDefault_        = prop.maxMsgDefault_;
+      maxMsgCacheDefault_   = prop.maxMsgCacheDefault_;
       maxBytesDefault_      = prop.maxBytesDefault_;
       maxBytesCacheDefault_ = prop.maxBytesCacheDefault_;
-      minExpires_          = prop.maxExpires_;
-      relating_            = prop.relating_;
-      expires_             = prop.expires_;
-      maxMsg_              = prop.maxMsg_;
+      minExpires_           = prop.maxExpires_;
+      relating_             = prop.relating_;
+      expires_              = prop.expires_;
+      maxMsg_               = prop.maxMsg_;
       maxBytes_             = prop.maxBytes_;
-      maxMsgCache_         = prop.maxMsgCache_;
-      storeSwapLevel_      = prop.storeSwapLevel_;
+      maxMsgCache_          = prop.maxMsgCache_;
+      storeSwapLevel_       = prop.storeSwapLevel_;
       storeSwapBytes_       = prop.storeSwapBytes_;
-      reloadSwapLevel_     = prop.reloadSwapLevel_;
+      reloadSwapLevel_      = prop.reloadSwapLevel_;
       reloadSwapBytes_      = prop.reloadSwapBytes_;
       maxBytesCache_        = prop.maxBytesCache_;
-      onOverflow_          = prop.onOverflow_;
-      onFailure_           = prop.onFailure_;
-      addressArr_          = prop.addressArr_;
-      nodeId_              = prop.nodeId_;
-      propertyPrefix_      = prop.propertyPrefix_;
-      rootTagName_         = prop.rootTagName_;
+      onOverflow_           = prop.onOverflow_;
+      onFailure_            = prop.onFailure_;
+      addressArr_           = prop.addressArr_;
+      nodeId_               = prop.nodeId_;
+      propertyPrefix_       = prop.propertyPrefix_;
+      rootTagName_          = prop.rootTagName_;
    }
 
    /**

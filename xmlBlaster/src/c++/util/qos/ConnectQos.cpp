@@ -18,11 +18,11 @@ using boost::lexical_cast;
 
 /*---------------------------- ConnectQosData --------------------------------*/
 
-ConnectQosData::ConnectQosData(Global& global, const string& user, const string& passwd)
+ConnectQosData::ConnectQosData(Global& global, const string& user, const string& passwd, long publicSessionId)
     : global_(global),
       log_(global.getLog("core")),
       securityQos_(global, user, passwd),
-      sessionQos_(global),
+      sessionQos_(global, user, publicSessionId),
       addresses_(),
       cbAddresses_(),
       clientQueueProperties_(),

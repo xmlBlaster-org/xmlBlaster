@@ -3,8 +3,9 @@
 #define _UTIL_PROPERTY_C
 
 #include "Property.h"
+#include <boost/lexical_cast.hpp>
 
-
+using boost::lexical_cast;
 using namespace org::xmlBlaster::util;
 
 
@@ -198,6 +199,7 @@ Property::getIntProperty(const string &name, int def, bool env)
    char *test = (char*)0;
    int ret = strtol(value.c_str(), &test, 10);
    if (test == value.c_str()) return def;
+//   int ret = lexical_cast<int>(value);
    return ret;
 }
 
@@ -205,10 +207,11 @@ long
 Property::getLongProperty(const string &name, long def, bool env)
 {
    string value = getProperty(name, env);
-   if (value.length() == 0) return def;
+   if (value.empty()) return def;
    char *test = (char*)0;
    long ret = atol(value.c_str());
    if (test == value.c_str()) return def;
+//   long ret = lexical_cast<long>(value);
    return ret;
 }
 
@@ -220,6 +223,7 @@ Property::getTimestampProperty(const string &name, Timestamp def, bool env)
    char *test = (char*)0;
    long ret = STRING_TO_TIMESTAMP(value.c_str());
    if (test == value.c_str()) return def;
+//   Timestamp ret = lexical_cast<Timestamp>(value);
    return ret;
 }
 
@@ -257,7 +261,7 @@ Property::setProperty(const string &name, const string &value,
       else return false;
    }
    else properties_.insert(valuePair);
-   return true;
+   return true;                                                                                                                                         
 }
 
 

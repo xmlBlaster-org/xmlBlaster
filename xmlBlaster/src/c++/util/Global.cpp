@@ -3,14 +3,16 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.14 2003/01/08 16:03:38 laghi Exp $
+Version:   $Id: Global.cpp,v 1.15 2003/01/12 00:47:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
 #include <util/Timeout.h>
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 
+using boost::lexical_cast;
 using org::xmlBlaster::client::protocol::CbServerPluginManager;
 using namespace std;
 
@@ -115,15 +117,15 @@ string Global::getLocalIP() const
 
 string Global::getBootstrapHostname() const
 {
-   string ret = getProperty().getProperty(string("hostname"));
-   if (ret == "") return getLocalIP();
-   return ret;
+   string hostname = getProperty().getStringProperty(string("hostname"), getLocalIP());
+   int port     = getProperty().getIntProperty(string("port"), Constants::XMLBLASTER_PORT);
+   return "http://" + hostname + ":" + lexical_cast<string>(port);
 }
 
 string Global::getCbHostname() const
 {
 //   std::cout << "Global::getCbHostname implementation is not finished" << std::endl;
-   return getBootstrapHostname();
+   return getProperty().getStringProperty(string("hostname"), getLocalIP());
 }
 
 CbServerPluginManager& Global::getCbServerPluginManager()

@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.8 2002/12/26 22:36:26 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.9 2003/01/12 00:47:51 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -32,6 +32,7 @@ Version:   $Id: TestConnect.cpp,v 1.8 2002/12/26 22:36:26 laghi Exp $
 #include <util/XmlBlasterException.h>
 #include <client/I_Callback.h>
 #include <util/MessageUnit.h>
+#include <util/EmbeddedServer.h>
 #include <util/Global.h>
 
 
@@ -49,19 +50,20 @@ private:
       return "connect";
    }
 
-   string                 publishReturnQos, secondOid_;
-   string                 oid_;
-   string                 qos1_, qos2_;
-   string                 senderContent_;
-   XmlBlasterAccess       *conn1_, *conn2_;
-   MessageUnit            *msgUnit_;
-
-   int             numReceived_; // error checking
-   string          contentMime_;
-   string          contentMimeExtended_;
-   StopWatch       stopWatch_;
-   Global&         global_;
-   Log&            log_;
+   string            publishReturnQos, secondOid_;
+   string            oid_;
+   string            qos1_, qos2_;
+   string            senderContent_;
+   XmlBlasterAccess* conn1_, *conn2_;
+   EmbeddedServer*   embeddedServer_;
+   MessageUnit*      msgUnit_;
+   int               numReceived_; // error checking
+   string            contentMime_;
+   string            contentMimeExtended_;
+   StopWatch         stopWatch_;
+   Global&           global_;
+   Log&              log_;
+   bool              useEmbeddedServer_;
 
 public:
    /**
@@ -83,9 +85,12 @@ public:
       contentMimeExtended_ = "1.0";
       msgUnit_             = NULL;
       conn1_               = conn2_ = NULL;
+      embeddedServer_      = NULL;
+      useEmbeddedServer_   = false;
    }
 
    ~TestConnect() {
+      delete embeddedServer_;
       delete conn1_;
       delete conn2_;
       delete msgUnit_;
@@ -131,6 +136,13 @@ public:
       try {
          if (conn1_) delete conn1_;
          conn1_ = new XmlBlasterAccess(global_); // Find server
+
+         if (useEmbeddedServer_) {
+            embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", conn1_);
+            embeddedServer_->start();
+            Thread::sleepSecs(10);
+         }
+
          ConnectQosFactory factory(global_);
          ConnectQos connectQos1 = factory.readObject(qos1_);
          conn1_->connect(connectQos1, NULL);

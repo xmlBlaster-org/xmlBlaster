@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.6 2003/01/08 16:23:16 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.7 2003/01/12 00:47:47 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -24,10 +24,10 @@ using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-Dll_Export const long DEFAULT_maxMsgDefault = 1000l;
-Dll_Export const long DEFAULT_maxMsgCacheDefault = 1000l;
-Dll_Export const long DEFAULT_bytesDefault = 10485760l; // 10 MB
-Dll_Export const long DEFAULT_bytesCacheDefault = 2097152l; // 2 MB
+Dll_Export const long DEFAULT_maxMsgDefault = 1000L;
+Dll_Export const long DEFAULT_maxMsgCacheDefault = 1000L;
+Dll_Export const long DEFAULT_bytesDefault = 10485760L; // 10 MB
+Dll_Export const long DEFAULT_bytesCacheDefault = 2097152L; // 2 MB
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
 Dll_Export const double DEFAULT_storeSwapLevelRatio = 0.70;
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
@@ -54,31 +54,46 @@ Dll_Export long DEFAULT_expires;
  */
 void QueuePropertyBase::initialize(const string& propertyPrefix)
 {
-   this->propertyPrefix_ = propertyPrefix;
+   if (log_.CALL) log_.call(ME, string("::initialize with property prefix '") + propertyPrefix + "'");
+   propertyPrefix_ = propertyPrefix;
    string prefix = getPrefix();
+   if (log_.TRACE) log_.trace(ME, "::initialize: got the prefix");
 
    // Do we need this range settings?
    setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
    setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
+   if (log_.TRACE) log_.trace(ME, "::initialize: expires set");
    if (nodeId_ != "") {
       setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min["+nodeId_+"]", getMinExpires()));
       setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max["+nodeId_+"]", getMaxExpires())); // Long.MAX_VALUE);
    }
+   if (log_.TRACE) log_.trace(ME, "::initialize: expires for the specific node set");
 
    // prefix is e.g. "cb.queue." or "msgUnitStore"
    setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg", DEFAULT_maxMsgDefault));
+   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxMsg OK");
    setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
+   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxMsgCache OK");
    setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes", DEFAULT_bytesDefault));
+   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxBytes OK");
    setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
+   if (log_.TRACE) log_.trace(ME, "::initialize: setMaxBytesCache OK");
+
    setStoreSwapLevel(global_.getProperty().getLongProperty(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*maxBytesCache_)));
    setStoreSwapBytes(global_.getProperty().getLongProperty(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*maxBytesCache_)));
    setReloadSwapLevel(global_.getProperty().getLongProperty(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*maxBytesCache_)));
    setReloadSwapBytes(global_.getProperty().getLongProperty(prefix+"reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio*maxBytesCache_)));
+
+   if (log_.TRACE) log_.trace(ME, "::initialize: values for the swap control set");
+
    setExpires(global_.getProperty().getTimestampProperty(prefix+"expires", DEFAULT_maxExpires));
    setOnOverflow(global_.getProperty().getStringProperty(prefix+"onOverflow", DEFAULT_onOverflow));
    setOnFailure(global_.getProperty().getStringProperty(prefix+"onFailure", DEFAULT_onFailure));
    setType(global_.getProperty().getStringProperty(prefix+"type", DEFAULT_type));
    setVersion(global_.getProperty().getStringProperty(prefix+"version", DEFAULT_version));
+
+   if (log_.TRACE) log_.trace(ME, "::initialize: going to set specific node properties");
+
    if (nodeId_ != "") {
       setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg["+nodeId_+"]", getMaxMsg()));
       setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache["+nodeId_+"]", getMaxMsgCache()));

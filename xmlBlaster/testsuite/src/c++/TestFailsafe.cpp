@@ -102,7 +102,7 @@ public:
          connection_->initFailsafe(this);
 
          embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", connection_);
-/* currently commented out (problems with multithreading)
+/* currently commented out (problems with multithreading) 
          if (embeddedServer_->isSomeServerResponding()) {
             log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
             assert(0);
@@ -110,7 +110,11 @@ public:
 */
          embeddedServer_->start();
          Thread::sleepSecs(10);
+         Address address(global_);
+         address.setDelay(10000);
+         address.setPingInterval(10000);
          connQos_ = new ConnectQos(global_, "guy", "secret");
+         connQos_->setAddress(address);
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
          connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
@@ -161,7 +165,7 @@ public:
          pubKey_ = new PublishKey(global_);
          pubKey_->setOid("TestFailsafe");
 
-         for (int i=0; i < 18; i++) {
+         for (int i=0; i < 30; i++) {
             string msg = lexical_cast<string>(i);
             MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");

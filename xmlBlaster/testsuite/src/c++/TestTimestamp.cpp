@@ -26,13 +26,13 @@ using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster {
 
-class TimestampTest {
+class TestTimestamp {
    
 private:
    string ME;
    Timeout *timestampObject;
 public:
-   TimestampTest(string name) : ME(name) {
+   TestTimestamp(string name) : ME(name) {
    }
 
 
@@ -75,7 +75,7 @@ public:
 
 int main(int args, char *argc[]) {
 
-   org::xmlBlaster::TimestampTest *test = new org::xmlBlaster::TimestampTest("TimestampTest");
+   org::xmlBlaster::TestTimestamp *test = new org::xmlBlaster::TestTimestamp("TestTimestamp");
 
    test->setUp(args, argc);
    test->testTimestamp();
