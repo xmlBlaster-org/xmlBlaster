@@ -79,7 +79,7 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
     */
    public void setGlobal(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = glob.getLog("core");
+      this.log = this.glob.getLog("core");
    }
 
    public void setOid(String oid) {
