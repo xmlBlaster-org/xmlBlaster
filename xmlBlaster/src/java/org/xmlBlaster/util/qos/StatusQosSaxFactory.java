@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.Constants;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -25,7 +26,7 @@ import org.xml.sax.helpers.*;
  * </pre>
  * @see org.xmlBlaster.util.qos.StatusQosData
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_StatusQosFactory
 {
@@ -158,12 +159,11 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
 
    public static final String writeObject_(StatusQosData statusQosData, String extraOffset) {
       StringBuffer sb = new StringBuffer(180);
-      String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<qos>"); // <!-- SubscribeRetQos -->");
-      if (statusQosData.getState() != null && statusQosData.getState().length() > 0) {
+      if (!statusQosData.isOk()) {
          sb.append(offset).append(" <state id='").append(statusQosData.getState());
          if (statusQosData.getStateInfo() != null)
             sb.append("' info='").append(statusQosData.getStateInfo());
@@ -176,7 +176,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)
-         return "";  // minimal footprint
+         return "<qos/>";  // minimal footprint
 
       return sb.toString();
    }
