@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.16 2002/09/03 16:54:27 kkrafft2 Exp $
+Version:   $Id: ServerThread.java,v 1.17 2002/09/04 21:33:23 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -170,17 +170,24 @@ public class ServerThread extends Thread
 
       ClassLoaderFactory factory = glob.getClassLoaderFactory();
       XmlBlasterClassLoader cl = null;
-/*
+      java.lang.Object mainObject = null;
+
       try {
          cl = factory.getXmlBlasterClassLoader();
          if( log.TRACE ) log.trace(ME, "Get first instance of org.xmlBlaster.Main via own class loader.");
-         Class mainClass = cl.loadClass("org.xmlBlaster.Main");
+         Class mainClass = cl.loadClass("org.xmlBlaster.Main", true);
          if( log.TRACE ) log.trace(ME, "org.xmlBlaster.Main class created.");
          String[] args = glob.getArgs();
          Class[] paramClasses = { args.getClass() };
-         Object[] params = { null };
-         java.lang.reflect.Constructor constructor = mainClass.getConstructor( paramClasses );
-         xmlBlasterMain = (org.xmlBlaster.Main) constructor.newInstance( params );
+         Object[] params = { args };
+         java.lang.reflect.Constructor constructor = mainClass.getDeclaredConstructor( paramClasses );
+         mainObject = constructor.newInstance( params );
+         if( mainObject instanceof org.xmlBlaster.Main )
+            xmlBlasterMain = (org.xmlBlaster.Main) mainObject;
+         else {
+            log.error( ME, "Error in constructing org.xmlBlaster.Main!");
+            System.exit(-1);
+         }
          log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with specific classloader");
       } catch(Throwable e) {
          if (cl != null)
@@ -188,10 +195,10 @@ public class ServerThread extends Thread
          else
             log.error(ME, "Problems loading org.xmlBlaster.Main (classloader = 'null' ???): " + e.toString());
          log.info(ME, "Load class 'org.xmlBlaster.Main' via default class loader.");
+         xmlBlasterMain = new org.xmlBlaster.Main(glob);
       }
-*/
 
-      xmlBlasterMain = new org.xmlBlaster.Main(glob);
+
       log.info(ME, "Starting a xmlBlaster server instance for testing ...");
       while(!stopServer) {
          try { Thread.currentThread().sleep(200L); }

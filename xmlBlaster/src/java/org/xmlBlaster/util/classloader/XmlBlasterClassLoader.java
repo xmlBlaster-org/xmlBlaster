@@ -30,28 +30,40 @@ public class XmlBlasterClassLoader extends URLClassLoader {
       log = glob.getLog("classloader");
    }
 
-   public Class loadClass(String name) throws ClassNotFoundException {
+   public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
       ClassLoader parent = getClass().getClassLoader();
+
       if ( name.startsWith("java.") ) {
+         Class clazz = parent.loadClass(name);
          if (log.TRACE) log.trace(ME, "Using default JVM class loader for java.* and javax.* class " + name);
-         return parent.loadClass(name);
+         return clazz;
       }
 
       Class clazz = findLoadedClass(name);
-      if (clazz != null) {
-          if (log.TRACE) log.trace(ME, "Using specific class loader from cache for " + name);
-          return clazz;
+      if (clazz == null) {
+         try {
+            clazz = findSystemClass (name);
+            if (log.TRACE) log.trace(ME, "Using class loader from system classes for " + name+ ":");
+         } catch (Exception e) {
+            // Ignore these exceptions.
+         }
+      }
+      else {
+         if (log.TRACE) log.trace(ME, "Using specific class loader from cache for " + name+ ":");
       }
 
-      try {
-         clazz = findClass(name);
-         if (log.TRACE) log.trace(ME, "Using specific class loader for " + name);
-         return clazz;
-      }
-      catch (ClassNotFoundException e) {
-          if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name + " as not found in specific class loader");
-          return parent.loadClass(name);
+      if (clazz == null ) {
+         try {
+            clazz = findClass(name);
+            if (log.TRACE) log.trace(ME, "Using specific class loader for " + name + ":");
+         }
+         catch (ClassNotFoundException e) {
+            clazz = parent.loadClass(name);
+            if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name + " as not found in specific class loader"+ ":"+clazz.getProtectionDomain().getCodeSource().getLocation().getFile());
+         }
       }
 
+      if (resolve) resolveClass(clazz);
+      return clazz;
    } // end of loadClass
 }

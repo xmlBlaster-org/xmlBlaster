@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.17 2002/08/30 07:50:21 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.18 2002/09/04 21:33:23 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -85,7 +85,14 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     */
    private void parse(String xmlData) throws XmlBlasterException {
       try {
+         //kkrafft2 (09/04/2002): the SAXParserFactory should be switched by xmlBlaster.properties
+         String factoryBackup = System.getProperty("javax.xml.parsers.SAXParserFactory");
+         String newFactory = glob.getProperty().get("javax.xml.parsers.SAXParserFactory", "org.apache.crimson.jaxp.SAXParserFactoryImpl");
+         System.setProperty("javax.xml.parsers.SAXParserFactory",newFactory);
          SAXParserFactory spf = SAXParserFactory.newInstance();
+         if( factoryBackup != null )
+            System.setProperty("javax.xml.parsers.SAXParserFactory",factoryBackup);
+
          boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
          spf.setValidating(validate);
          //if (log.TRACE) log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);

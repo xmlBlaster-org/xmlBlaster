@@ -111,10 +111,19 @@ public class ClassLoaderFactory {
       if (log.TRACE) log.trace(ME, loaderInfo.toString());
 
       ArrayList classPath = new ArrayList();
+
       if (loaderInfo.jarPath != null)
          classPath.add(loaderInfo.jarPath); // Attach to end e.g. xmlBlaster.jar
       else
          classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
+
+      URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
+      for (int i=0; i<urls.length; i++) {
+         String xmlBlasterJar = (String)classPath.get(0);
+         if( urls[i].getFile().indexOf(xmlBlasterJar) < 0 ) {
+            classPath.add(urls[i].toString());
+         }
+      }
 
       if (log.TRACE) {
          String text = "Build new classpath with " + classPath.size() + " entries:";
