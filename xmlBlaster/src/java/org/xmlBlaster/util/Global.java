@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.29 2002/06/12 18:52:34 ruff Exp $
+Version:   $Id: Global.java,v 1.30 2002/06/15 16:12:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -18,6 +18,7 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
+import org.xmlBlaster.authentication.HttpIORServer;
 
 import java.util.Properties;
 
@@ -58,6 +59,7 @@ public class Global implements Cloneable
    protected PluginLoader clientSecurityLoader = null;
 
    protected RecorderPluginManager recorderPluginManager = null;
+   private HttpIORServer httpServer = null;  // xmlBlaster publishes his AuthServer IOR
 
    protected Hashtable logChannels = new Hashtable();
    protected LogChannel logDefault = null;
@@ -519,8 +521,8 @@ public class Global implements Cloneable
     * You can set "-port 0" to avoid starting the internal HTTP server
     */
    public final Address getBootstrapAddress() {
-      if (log.CALL) log.call(ME, "Entering getBootstrapAddress()");
       if (bootstrapAddress == null) {
+         if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
          bootstrapAddress = new Address(this);
          boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
          if (supportOldStyle) {
@@ -644,6 +646,30 @@ public class Global implements Cloneable
             recorderPluginManager = new RecorderPluginManager(this);
       }
       return recorderPluginManager;
+   }
+
+   /**
+    * Access the http server which allows bootstrapping the CORBA IOR
+    */
+   public final HttpIORServer getHttpServer() throws XmlBlasterException {
+      if (this.httpServer == null) {
+         synchronized(this) {
+            if (this.httpServer == null)
+               this.httpServer = new HttpIORServer(this, getBootstrapAddress().getHostname(), getBootstrapAddress().getPort());
+         }
+      }
+      return this.httpServer;
+   }
+
+   public synchronized final void shutdownHttpServer() {
+      try {
+         if (httpServer != null) httpServer.shutdown();
+         httpServer = null;
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         e.printStackTrace();
+      }
    }
 
    /**
