@@ -15,6 +15,10 @@ import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
+import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.xml2java.PublishQos;
+
 import junit.framework.*;
 
 /**
@@ -40,6 +44,22 @@ public class InvocationRecorderTest extends TestCase {
       glob = new Global();
       log = glob.getLog(null);
    }
+
+   /*
+   public void testMessageUnitWrapper() {
+      try {
+         org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
+         MessageUnit msgUnit = new MessageUnit("<key oid='aaaa'/>", "Hi".getBytes(), "<qos/>");
+         MessageUnitWrapper wr = new MessageUnitWrapper(global, global.getRequestBroker(),
+                                                     new XmlKey(glob, msgUnit.getXmlKey(), true),
+                                                     msgUnit,
+                                                     new PublishQos(glob, msgUnit.getQos())); 
+      }
+      catch (XmlBlasterException e) {
+         fail("Exception thrown: " + e.toString());
+      }
+   }
+   */
 
    public void testPlayback() {
       playback(new FileRecorder());
