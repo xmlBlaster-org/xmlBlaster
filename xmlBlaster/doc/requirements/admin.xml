@@ -104,6 +104,7 @@
    </todo>
 
    <see type="REQ">admin.commands</see>
+   <see type="REQ">admin.jmx</see>
    <see type="REQ">admin.snmp</see>
    <see type="REQ">admin.telnet</see>
    <see type="REQ">admin.messages</see>
@@ -111,7 +112,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 05 26</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
