@@ -65,9 +65,11 @@ sub connect
                         }
                 );
 
+        #print '='x40,"\nConnectQos XML :\n",Dumper( $loginQos->xml ),"\n",'='x40,"\n" ;
+
         my $xml = $srv->call( 'authenticate.connect', $loginQos->xml );
 
-        #print '='x40,"\nConnect XML :\n",Dumper( $xml ),"\n",'='x40,"\n" ;
+        #print '='x40,"\nConnectReturnQos XML :\n",Dumper( $xml ),"\n",'='x40,"\n" ;
 
         $self->{'sessionId'} = $loginQos->sessionId( $xml ) ;
 
