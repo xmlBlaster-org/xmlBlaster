@@ -584,6 +584,17 @@ TODO
 
 
    <!-- =================================================================== -->
+   <!-- Compiles the contrib/dbwatcher source directory                     -->
+   <!-- =================================================================== -->
+   <target name="DbWatcher" depends="xmlBlaster" description="Compile xmlBlaster contrib DbWatcher.jar">
+      <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties"/>
+      <jar destfile="${build.dir}/DbWatcher.jar" basedir="${build.dest}"
+           includes="xmlBlasterJdk14Logging.properties,org/xmlBlaster/contrib/I_Info*,org/xmlBlaster/contrib/dbwatcher/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
+
+      <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
+   </target>
+
+   <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster core source directory                       -->
    <!-- =================================================================== -->
    <target name="xmlBlaster" depends="java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
