@@ -633,8 +633,15 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          }
 
          if (xmlKey.getKeyOid().equals(Constants.JDBC_OID/*"__sys__jdbc"*/)) { // Query RDBMS !!! hack, we need a general service interface
-            String query = xmlKey.toXml();
-            String content = query.substring(query.indexOf(">")+1, query.lastIndexOf("<"));
+            String query = xmlKey.literal();
+            // Extract the query from the xmlkey - this is a bad hack - we need a function to extract user tags in <key>...</key>!
+            int start = query.indexOf(">")+1;
+            int end = query.lastIndexOf("<");
+            if (start<0 || end <0 || start >= end) {
+               log.warn(ME, "The JDBC query is invalid '" + query + "'");
+               throw new XmlBlasterException(ME, "Your JDBC query is invalid");
+            }
+            String content = query.substring(start, end);
             org.xmlBlaster.protocol.jdbc.XmlDBAdapter adap = new org.xmlBlaster.protocol.jdbc.XmlDBAdapter(glob, 
                         content.getBytes(), (org.xmlBlaster.protocol.jdbc.NamedConnectionPool)this.glob.getObjectEntry("NamedConnectionPool-"+glob.getId()));
             return adap.query();
