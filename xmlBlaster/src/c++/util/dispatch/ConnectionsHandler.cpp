@@ -294,7 +294,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 
    // fill in the sender absolute name
    if (connectReturnQos_) {
-                for (int i=0;i<msgUnitArr.size();i++) {
+      for (vector<MessageUnit>::size_type i=0;i<msgUnitArr.size();i++) {
          msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
       }
    }
@@ -325,7 +325,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 
    // fill in the sender absolute name
    if (connectReturnQos_) {
-                for (int i=0;i<msgUnitArr.size();i++) {
+      for (vector<MessageUnit>::size_type i=0;i<msgUnitArr.size();i++) {
          msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos());
       }
    }
@@ -426,7 +426,7 @@ void ConnectionsHandler::timeout(void *userData)
             startPinger();
          }
       }
-      catch (XmlBlasterException& ex) {
+      catch (XmlBlasterException& /*ex*/) {
          toPollingOrDead();
       }
       return;
