@@ -16,7 +16,7 @@ write this into your .profile file:
    export XMLBLASTER_HOME=${HOME}/xmlBlaster
    export MICO_HOME=/usr/local/mico           (optional)
    export JIKES_HOME=/usr/local/jikes         (optional)
-   . xmlBlaster/.bashrc
+   . ${XMLBLASTER_HOME}/.bashrc
 
 and after a new login type 'make all' in the XMLBLASTER_HOME directory.
 See step 5.) below how to start xmlBlaster.
