@@ -1,5 +1,10 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Extended forceQueing=true support for PtP messages sent to a
+   specific session which does not yet exist.
+   This will automatically establish a callback session queue for
+   the destination
+
  o Added support for a sync connected client to reconnect
    in async mode (by providing a callback address).
    Sync connected clients may receive PtP messages which are
