@@ -3,13 +3,13 @@ Name:      Args.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Evaluate parameters at process startup
-Version:   $Id: Args.java,v 1.1 1999/12/08 12:16:18 ruff Exp $
+Version:   $Id: Args.java,v 1.2 1999/12/16 12:23:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 
 /**
- * Evaluate parameters at process startup (args). 
+ * Evaluate parameters at process startup (args).
  */
 public class Args
 {
@@ -17,7 +17,7 @@ public class Args
 
 
    /**
-    * Try to find the given key in the args list. 
+    * Try to find the given key in the args list.
     *
     * @param the argument array
     * @param key the key to look for
@@ -38,8 +38,9 @@ public class Args
       return defaultVal;
    }
 
+
    /**
-    * Try to find the given key in the args list. 
+    * Try to find the given key in the args list.
     *
     * @param the argument array
     * @param key the key to look for
@@ -65,6 +66,27 @@ public class Args
          }
       }
       return defaultVal;
+   }
+
+
+   /**
+    * Try to find the given arg. 
+    *
+    * @param the argument array
+    * @param arg The argument to find (without a value)
+    * @return true found it
+    */
+   public final static boolean getArg(String[] args, String arg)
+   {
+      if (args == null)
+         return false;
+
+      for (int ii=0; ii<args.length; ii++) {
+         if (args[ii].equals(arg)) {
+            return true;
+         }
+      }
+      return false;
    }
 
 }
