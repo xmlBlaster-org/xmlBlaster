@@ -17,6 +17,7 @@ import java.util.Vector;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.protocol.http.common.BufferedInputStreamMicro;
 import org.xmlBlaster.client.protocol.http.common.Msg;
+import org.xmlBlaster.client.protocol.http.common.MsgHolder;
 import org.xmlBlaster.client.protocol.http.common.ObjectInputStreamMicro;
 import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.util.Global;
@@ -355,22 +356,27 @@ public class MicroEditionTest extends TestCase {
       try {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          ObjectOutputStreamMicro oosm = new ObjectOutputStreamMicro(baos);
-         
+
+         String oid = "someOid";         
          String key = "<key oid='100'></key>";
          String qos = "<qos><persistent/></qos>";
          byte[] content = "This is the content".getBytes();
          
-         int length = ObjectOutputStreamMicro.writeMessage(baos, null, key, qos, content);
-         assertEquals("wrong length returned", key.length() + qos.length() + content.length + 2, length);
-
+         int length = ObjectOutputStreamMicro.writeMessage(baos, oid, key, qos, content);
+         assertEquals("wrong length returned", oid.length() + key.length() + qos.length() + content.length + 3, length);
          ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
          ObjectInputStreamMicro oism = new ObjectInputStreamMicro(bais);
 
-         Object[] obj = ObjectInputStreamMicro.readMessage(bais, length);
+         int size = bais.available();
+         assertEquals("wrong length of bytes available", length, size);
+         byte[] msg = new byte[size];
+         bais.read(msg);
+         MsgHolder msgHolder = ObjectInputStreamMicro.readMessage(msg);
          
-         assertEquals("wrong content for the key", key, (String)obj[0]);
-         assertEquals("wrong content for the qos", qos, (String)obj[1]);
-         assertEquals("wrong content for the content", new String(content), new String((byte[])obj[2]));
+         assertEquals("wrong content for the oid", oid, msgHolder.getOid());
+         assertEquals("wrong content for the key", key, msgHolder.getKey());
+         assertEquals("wrong content for the qos", qos, msgHolder.getQos());
+         assertEquals("wrong content for the content", new String(content), new String(msgHolder.getContent()));
          
          this.log.info(ME, "testMessageIO successfully completed");
       }
