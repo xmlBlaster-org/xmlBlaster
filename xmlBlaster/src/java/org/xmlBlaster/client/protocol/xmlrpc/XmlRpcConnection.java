@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.15 2001/10/15 09:54:16 laghi Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.16 2001/11/19 15:22:32 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -213,7 +213,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          Vector args = new Vector();
          if (passwd == null) // The new schema
          {
-            if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via XmlRpc with security plugin" + loginQos.toXml());
+            if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via XmlRpc with security plugin" + qosStripped);
             args.addElement(qosStripped);
             sessionId = null;
             String tmp = (String)getXmlRpcClient().execute("authenticate.connect", args);
