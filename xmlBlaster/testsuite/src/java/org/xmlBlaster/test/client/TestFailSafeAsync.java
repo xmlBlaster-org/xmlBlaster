@@ -173,6 +173,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       //String eraseQos = "<qos><notify>false</notify></qos>";
       EraseQos eraseQos = new EraseQos(glob);
       eraseQos.setWantNotify(false);
+      eraseQos.setForceDestroy(true);
       try {
          try {
             EraseReturnQos[] arr = con.erase(xmlKey, eraseQos.toXml());
@@ -283,8 +284,9 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
 
       int numFailsave = reconnectMsg-failMsg;  // 20
       int numPublish = maxEntries-numFailsave;     // 80
-      long wait = 16000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate));
+      long wait = 5000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate));
       assertEquals("", maxEntries, this.updateInterceptor.waitOnUpdate(wait, maxEntries));
+      log.info(ME, "******* testFailSafe() DONE");
    }
 
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
