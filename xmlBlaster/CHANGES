@@ -39,6 +39,13 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+
+  - Some minor, incompatible changes to the C++ xmlBlaster client lib
+    * There is now a CORBA independend util::MessageUnit
+    * CorbaConnection.cpp has now CORBA independend variants
+      which are based on STL
+    * Fixed memory leaks (in the client C++ libs) 
+
   - Added administration support for killSession/killClient
 
   - C++ support for omniORB added (Nils Nilson)
