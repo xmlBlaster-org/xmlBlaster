@@ -28,9 +28,10 @@ namespace util {
     * are replaced by the value of <code>xy</code>.
     * <br />
     * Fills during construction the properties <code>user.home</code> and
-    * <code>file.separator</code> and <code>path.separator</code>.
+    * <code>file.separator</code> and <code>path.separator</code> and others
+    * as described at method <code>initializeDefaultProperties()</code>.
     * This simplifies the reuse of the xmlBlaster.properties
-    * which used those settings from the Java environment.
+    * which uses those settings from the Java environment.
     */
    class Dll_Export Property {
       
@@ -59,6 +60,8 @@ namespace util {
        * Add some predefined variables to be useful in xmlBlaster.properties as ${user.home} etc:
        * <pre>
        * user.home       For example "/home/marcel"
+       * user.name       Your login name on the OS.
+       * java.io.tmpdir  The temporary directory of your OS.
        * file.separator  On UNIX "/", on Windows "\"
        * path.separator  On UNIX ":", on Windows ";"
        * </pre>
