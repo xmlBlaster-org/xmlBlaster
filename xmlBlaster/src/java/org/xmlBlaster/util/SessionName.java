@@ -46,6 +46,17 @@ public final class SessionName implements java.io.Serializable
       this(glob, (NodeId)null, name);
    }
 
+   /**
+    * @param nodeId if not null it has precedence to the nodeId which is probably found in name
+    * @param name Examples:
+    * <pre>
+    *  /node/heron/client/joe/2
+    *  client/joe/2
+    *  joe/2
+    *  joe
+    * </pre>
+    * @exception IllegalArgumentException if your name can't be parsed
+    */
    public SessionName(Global glob, NodeId nodeId, String name) {
       this.glob = (glob == null) ? Global.instance() : glob;
 
@@ -69,9 +80,9 @@ public final class SessionName implements java.io.Serializable
             if (nodeId != null) {
                this.nodeId = nodeId; // given nodeId is strongest
             }
-            else if (glob.isServer()) {
-               this.nodeId = glob.getNodeId(); // on server side overwrite the nodeId
-            }
+            //else if (glob.isServer()) {
+            //   this.nodeId = glob.getNodeId(); // always respect the given name
+            //}
             else {
                this.nodeId = new NodeId(arr[1]); // the parsed nodeId
                if ("unknown".equals(this.nodeId.getId())) this.nodeId = null;
@@ -91,12 +102,15 @@ public final class SessionName implements java.io.Serializable
       }
 
       if (this.nodeId == null) {
-         if (glob.isServer()) {
+         if (nodeId != null) {
+            this.nodeId = nodeId; // given nodeId is strongest
+         }
+         else if (glob.isServer()) { // if nodeId still not known we set it to the servers nodeId
             this.nodeId = glob.getNodeId();
          }
-         else {
-            this.nodeId = nodeId;
-         }
+         //else {
+         //   this.nodeId = nodeId;
+         //}
       }
 
       // parse relative part
