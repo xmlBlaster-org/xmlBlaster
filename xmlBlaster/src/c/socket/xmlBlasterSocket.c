@@ -66,7 +66,7 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
 /**
  * Creates a raw blob to push over a socket as described in protocol.socket
  * @param msgUnit The message which we need to send
- * @param totalLen is returned
+ * @param totalLen is returned which contains the number of bytes of the returned data
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
  */
