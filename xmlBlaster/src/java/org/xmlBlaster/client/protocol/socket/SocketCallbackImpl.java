@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.12 2002/02/25 17:04:56 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.13 2002/02/26 10:46:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -11,6 +11,7 @@ package org.xmlBlaster.client.protocol.socket;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
@@ -53,7 +54,8 @@ public class SocketCallbackImpl extends Executor implements Runnable
       this.callbackAddressStr = sockCon.getLocalAddress();
       this.SOCKET_DEBUG = sockCon.SOCKET_DEBUG;
 
-      Thread t = new Thread(this);
+      Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+sockCon.getLoginName());
+      t.setPriority(XmlBlasterProperty.get("socket.threadPrio", Thread.NORM_PRIORITY));
       t.start();
    }
 
@@ -65,7 +67,7 @@ public class SocketCallbackImpl extends Executor implements Runnable
       Log.info(ME, "Started callback receiver");
       Parser receiver = new Parser();
       receiver.SOCKET_DEBUG = SOCKET_DEBUG;
-
+      
       while(running) {
 
          try {
