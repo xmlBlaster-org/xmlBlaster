@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.90 2002/06/12 18:53:14 ruff Exp $
+Version:   $Id: Main.java,v 1.91 2002/06/13 13:22:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -15,6 +15,7 @@ import org.jutils.runtime.Memory;
 import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.engine.*;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -72,12 +73,6 @@ public class Main
    /** Version string, please change for new releases (4 digits) */
    private String version = "0.79e";
 
-   public final int HALTED = 0;
-   public final int STANDBY = 5;
-   public final int RUNNING = 10;
-   /** The run level HALTED | STANDBY | RUNNING */
-   private int runLevel = HALTED;
-
    /**
     * true: If instance created by control panel<br />
     * false: running without GUI
@@ -133,7 +128,7 @@ public class Main
 
          catchSignals();
 
-         runLevel = STANDBY;
+         glob.fireRunlevelEvent(Constants.RUNLEVEL_STANDBY, false);
 
          loadCbProtocolDrivers();
          loadProtocolDrivers();
@@ -152,7 +147,7 @@ public class Main
             System.exit(0);
          }
          
-         runLevel = RUNNING;
+         glob.fireRunlevelEvent(Constants.RUNLEVEL_RUNNING, false);
 
          log.info(ME, Memory.getStatistic());
 
@@ -348,24 +343,37 @@ public class Main
     */
    public void shutdown()
    {
+      if (glob.isHalted())
+         return;
+
+      if (glob.getCurrentRunlevel() > Constants.RUNLEVEL_STANDBY) {
+         try {
+            glob.fireRunlevelEvent(Constants.RUNLEVEL_STANDBY, true);
+         }
+         catch (Throwable e) {
+            log.error(ME, "Problems during shutdown: " + e.toString());
+         }
+      }
+
+      // TODO: The protocol drivers should add I_RunlevelListener.java
       if (glob.getProtocolDrivers().size() > 0) {
          log.info(ME, "Shutting down xmlBlaster ...");
          if (log.DUMP) ThreadLister.listAllThreads(System.out);
       }
-
       glob.shutdownProtocolDrivers();
 
-      runLevel = HALTED;
+      try {
+         glob.fireRunlevelEvent(Constants.RUNLEVEL_HALTED, true);
+      }
+      catch (Throwable e) {
+         log.error(ME, "Problems during shutdown: " + e.toString());
+      }
    }
 
-   public boolean isHalted() {
-      return runLevel == HALTED;
-   }
-   public boolean isStandby() {
-      return runLevel == STANDBY;
-   }
-   public boolean isRunning() {
-      return runLevel == RUNNING;
+
+   public boolean isHalted()
+   {
+      return glob.isHalted();
    }
 
 
