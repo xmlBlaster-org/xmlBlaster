@@ -155,7 +155,7 @@ public class SystemInfoMidlet extends MIDlet implements CommandListener, I_Callb
       this.count++;
       this.lines[0].setText((String)updateKey.get("/key/@oid"));
       this.lines[1].setText(new String(content));
-      this.lines[2].setText("" + this.count);
+      this.lines[2].setText(String.valueOf(this.count));
       return "<qos/>";
    }
 }
