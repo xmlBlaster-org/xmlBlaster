@@ -102,9 +102,14 @@ public:
 
    //virtual ~ClientProperty();
 
+   /**
+    * The unique key of the property. 
+    * @return The key string
+    */
    const std::string& getName() const;
 
    /**
+    * Get the data type of the property value. 
     * @return The data type, for example "short" or "byte[]" for "vector<unsigned char>"
     * @see Constants::TYPE_SHORT
     * @see Constants::TYPE_BLOB
@@ -112,6 +117,7 @@ public:
    std::string getType() const;
 
    /**
+    * Get the internally used encoding to transfer data to/from xmlBlaster. 
     * @return The used encoding, for example "base64" or "" for none
     * @see Constants::ENCODING_BASE64
     */
