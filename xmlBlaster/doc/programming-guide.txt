@@ -1,0 +1,309 @@
+ --------------------------------------------------------------------------------------
+|   The xmlBlaster 1.0 Programming Guide                                               |
+|   by Marcel Ruff and Manuel Kron([footnote] ruff@swand.lake.de, manuel.kron@gmx.net) |
+ ---------------------------------------------------------------------------------------
+
+Introduction
+============
+1.1 Status of this document
+
+This document gives a introduction to programming distributed applications
+with xmlBlaster, a LGPL message orientate middleware. 
+
+1.2 Application area of xmlBlaster
+
+XmlBlaster is a pure Java message orientated middleware (MOM) to support
+instantaneous delivery of message objects via IIOP, TCP, SSL or HTTP.
+XmlBlaster offers a very generic solution for wide range of applications,
+such e-commerce, Client/Server applications, enterprise applications
+integration, groupware applications, and information distribution
+among embedded systems.
+
+Installing xmlBlaster
+=====================
+In this chapter we explain how to obtain and install the xmlBlaster
+and give an overview of the package content.
+
+2.1 Obtaining xmlBlaster
+
+The xmlBlaster can be obtained as agzipped tar-achive or as a zp-archive
+from the xmlBlaster home page at http://www.xmlBlaster.org 
+ 
+
+2.2 Installation
+
+To install xmlBlaster, just gunzip/bunzip2/unzip it and untar the archive
+somewhere (we usually do it in our home directory). This would be
+the result directory $HOME/xmlBlaster. 
+
+Read the $HOME/xmlBlaster/INSTALL file how to set up your CLASSPATH
+variable.
+
+2.2.1 Make and Makefiles
+
+Only GNU make is supported.
+
+2.2.2 Configuration
+
+There are two configuration files which you should know.
+
+1. The xmlBlaster configuration file is called xmlBlaster.properties.
+Copy manually the $HOME/xmlBlaster/xmlBlaster.properties.template
+file to $HOME/xmlBlaster.properties. If you use the delivered .bashrc
+file you don't need to copy it, it is done automatically.
+
+These are the settings you should be aware of.
+
++-------------------------+----------------------------------------------++----------------------------------------------------------+
+|Configuration Parameter  |                   Default                    ||                       Description                        |
++-------------------------+----------------------------------------------++----------------------------------------------------------+
++-------------------------+----------------------------------------------++----------------------------------------------------------+
+|   Persistence.Driver    | org.xmlBlaster.engine.persistence.FileDriver ||The driver which handles the persistency of the messages. |
++-------------------------+----------------------------------------------++----------------------------------------------------------+
+|    Persistence.Path     |                $user.home/tmp                ||    The directory into which the messages are stored      |
++-------------------------+----------------------------------------------++----------------------------------------------------------+
+|Persistence.LazyRecovery |                    false                     ||          Only false is supported in the moment           |
++-------------------------+----------------------------------------------++----------------------------------------------------------+
+
+
+The variables 
+
+   $user.dir
+
+   $user.home
+
+may be used and will be replaced to the current directory and the users
+home directory respectively.
+
+ 
+
+You may set $XMLBLASTER_HOME in your JVM environment 
+
+   java -DXMLBLASTER_HOME=/home/joe/xmlBlaster ...
+
+or int this file
+
+   $XMLBLASTER_HOME=$user.home/xmlBlaster
+
+and then use it as a variable in this file.
+
+2. The configuration file delivered for the CORBA library JacORB is
+called jacorb.properties. Copy manually the $HOME/xmlBlaster/jacorb.properties.template
+INSTALL file to $HOME/jacorb.properties. If you use the delivered
+.bashrc file you don't need to copy it, it is done automatically.
+Edit jacorb.properties if necessary. If you need help about this,
+check the JacORB documentation.
+
+Architecture
+============
+3.1 xmlBlaster development overview
+
+3.2 IDL specifications
+
+3.2.1 xmlBlaster Exceptions
+
+3.3 DTD specifications
+
+3.3.1 DTD for xmlBlaster server
+
+3.3.2 DTD for xmlBlaster client
+
+3.4 Message protocol
+
+3.4.1 Message content
+
+3.4.2 Message key
+
+ What is a message key?
+
+The message key, is used for two purposes: 
+
+- It holds the unique message identifyier, called 'oid' = object idenitfyier
+
+- It contains user supplied meta data about the message
+
+To allow this, the syntax of the message key is XML based, so we will
+call it XmlKey form now on.
+
+ How to query the internal state of xmlBlaster
+
+There are 3 internal state variable which you may query: 
+
++----------------+-------------------------------------------------------------------+
+|Variable name   | Comment                                                           |
++----------------+-------------------------------------------------------------------+
++----------------+-------------------------------------------------------------------+
+|__sys__TotalMem | The current allocated amount of RAM in the virtual machine [byte] |
++----------------+-------------------------------------------------------------------+
+|__sys__FreeMem  | The currently not used amount of memory [byte]                    |
++----------------+-------------------------------------------------------------------+
+|__sys__UsedMem  | Effective used memory [byte]                                      |
++----------------+-------------------------------------------------------------------+
+
+
+But how do you access these values?
+
+Believe it or not, you access them as a MessageUnit, using the get()
+method. Use the variable name as the identifier for your XmlKey.
+
+If you are an experienced RDBMS user (like Orcale), you will notice
+the similarity. The internal state of Oracle is stored in 'sys' database
+tables as well.
+
+The following example shows you how to query the currently used memory:
+
+<key oid='__sys__UsedMem' queryType='EXACT'>
+
+</key>
+
+Sending this XmlKey with the get() method to the xmlBlaster, returns
+a message with the currently used memory of the xmlBlaster server.
+In the message content you find the number of bytes consumed.
+
+Please note that subscribing to these internal state variables is not
+supported, you will only receive the actual value but no following
+updates. This is for performance reasons, the internal state values
+are calculated on demand.
+
+If you want to study some real code which queries the internal state
+of xmlBlaster, please have a look into 
+
+xmlBlaster/testsuite/org/xmlBlaster/RamTest.java
+
+3.4.3 Message QoS
+
+3.5 QoS (Quality of Service)
+
+A distinctive feature of xmlBlaster is its Quality-of-Service (QoS).
+A business-application provides the server any objects, that server
+with a QoS administrated.
+
+3.5.1 Authentication
+
+3.5.2 MIME-Type
+
+3.5.3 Time to Live
+
+3.5.4 Priority
+
+3.5.5 Timestamp
+
+3.5.6 Expiration
+
+3.6 Publish/Subscribe Model
+
+3.7 XmlBlaster Application Server Facilities
+
+3.7.1 The Persitence Layer
+
+To store messages from xmlBlaster torestore them again after a new
+startup of the server there is a lightweight interface, called I_PersitenceDriver,
+available.
+
+You may supply your own persistence layer, which for example stores
+the messages in a database like Oracle or PostgreSQL, or where ever
+you like. 
+
+Currently we only provide very simple file based store, called FileDriver,
+which may be used as a reference implementation to your own persitency.
+
+Writing an own persitence layer is very easy:
+
+1. Implement the I_PersitenceDriver interface (look into FileDriver
+how you could do it).
+
+2. Register the driver with xmlBlaster through the xmlBlaster.properties
+file with the Persistence.* variables.
+
+Note that this interface is very likely to change in one of the next
+xmlBlaster releases, since it is to simple to support caching.
+
+Please remind, that the FileDriver implementation is only a simple
+demo, it is based on your filesystem. So don't try to store more then
+some thousands messages with this layer!
+
+Only messages which are marked as 'durable' are stored using this persistent
+layer. The following example shows how to store selected messages
+with the qos (quality of service) flag 'isDurable' set:
+
+<qos>
+
+   <isDurable/>
+
+</qos>
+
+Writing a client application for xmlBlaster
+===========================================
+4.1 Message
+
+4.1.1 Subscribe
+
+4.1.2 Publish
+
+4.2 Java-Client
+
+One of the first steps is to login to xmlBlaster.
+
+The following code snippet does it:
+
+public class HelloWorld extends implements I_Callback {
+
+  ...
+
+  try {
+
+    CorbaConnection connection = new CorbaConnection(); // Find orb
+
+    String loginName = "Tim";
+
+    String passwd = "secret";
+
+    String qos = "<qos></qos>";
+
+    Server xmlBlaster = senderConnection.login(loginName, passwd, qos,
+this);
+
+  }
+
+  catch (Exception e) {
+
+    e.printStackTrace();
+
+  }
+
+  xmlBlaster.publish(...); // Do your work
+
+There is nothing exciting about this, you supply a login name, a password,
+and some empty quality of service (qos).
+
+The 'this' argument in the login method is for the asynchronous Callback
+method. We will discuss this soon.
+
+If you do a second login without a logout, xmlBlaster will do a auto-logout
+before the login proceeds. So all subscriptions etc. from the previous
+logins are destroyed.
+
+4.3 Perl-Client
+
+XmlBlaster service
+==================
+5.1 Running JacOrb
+
+5.2 Running xmlBlaster
+
+5.3 Running a Client application
+
+Writing a server plugin for xmlBlaster
+
+XmlBlaster utilities
+====================
+Feedback, LGPL, Standards, Web links
+
+8.1 Feedback
+8.2 LGPL and Limitations
+8.3 Standards
+8.4 Web links
+
+References
+
+[Orf98] Robert Orfali, Client/Server Programming with JAVA and CORBA  Second Edition. Wiley, 1998
