@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.21 2000/02/11 22:44:46 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.22 2000/02/18 14:53:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,20 +34,20 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
 {
    private final String ME = "CorbaConnection";
-   private String[] args = null;
-   private org.omg.CORBA.ORB orb = null;
-   private NamingContext nameService = null;
-   private AuthServer authServer = null;
-   private Server xmlBlaster = null;
-   private BlasterCallback callback = null;
-   private String loginName = null;
-   private String qos = null;
+   protected String[] args = null;
+   protected org.omg.CORBA.ORB orb = null;
+   protected NamingContext nameService = null;
+   protected AuthServer authServer = null;
+   protected Server xmlBlaster = null;
+   protected BlasterCallback callback = null;
+   protected String loginName = null;
+   protected String qos = null;
 
 
    /**
