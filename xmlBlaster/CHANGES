@@ -24,8 +24,11 @@ BUGS:
 
 
 DONE:
- - Added runlevel listener framework to allow in future different
-   run levels like RUNNING, STANDBY and HALTED
+ - Multithreading publish() bug in RequestBroker.java fixed (with synchronize)
+
+ - Added runlevel listener framework to allow switching between
+   run levels like RUNNING, CLEANUP, STANDBY and HALTED
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
 
  - Added framework for xmlBlaster administration (SNMP/JMX/telnet/message based).
    Added readonly access from telnet on properties and xmlBlaster core attributes
