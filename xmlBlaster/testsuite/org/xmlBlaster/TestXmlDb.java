@@ -3,7 +3,7 @@ Name:      TestXmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing xmldb
-Version:   $Id: TestXmlDb.java,v 1.6 2000/08/26 14:50:16 kron Exp $
+Version:   $Id: TestXmlDb.java,v 1.7 2000/08/29 11:06:39 kron Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -43,9 +43,10 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestXmlDb
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestXmlDb
  *
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestXmlDb
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestXmlDb
+ *    java testsuite.org.xmlBlaster.TestXmlDb -calls true
  * </pre>
  */
 public class TestXmlDb extends TestCase
@@ -95,9 +96,9 @@ public class TestXmlDb extends TestCase
       // Add a MessageUnit with oid=100
       insertMsg("100",true);
 
-      MessageUnit mu;
       PMessageUnit pmu = xmldb.get("100");
 
+      xmldb.showCacheState();
       if(pmu==null)
          assert("Can't get MessageUnit from xmldb with oid : 100",false);
 
@@ -123,6 +124,7 @@ public class TestXmlDb extends TestCase
       insertMsg("100",true);
       insertMsg("101",true);
       insertMsg("102",true);
+
       Enumeration msgIter = xmldb.query("//key[@oid=\"101\"]");
       PMessageUnit pmu=null;
       while(msgIter.hasMoreElements())
@@ -143,6 +145,7 @@ public class TestXmlDb extends TestCase
       for(int i=100;i<200;i++){
          insertMsg(String.valueOf(i),true);
       }
+
       Enumeration msgIter = xmldb.query("//key");
       PMessageUnit pmu=null;
       int countMsg=0;
@@ -163,15 +166,15 @@ public class TestXmlDb extends TestCase
       Log.calls(ME,"Testcase ...... testInsertMsgPerSecond()");
       StopWatch stop = new StopWatch();
       for(int i=100;i<1100;i++){
-         insertMsg(String.valueOf(i),true);
+         insertMsg(String.valueOf(i),false);
       }
 
       if(stop.elapsed()<1000)
       {
          assert("Can't insert 1000 MessageUnits",false);
       }else{
-         long msgSec = 1000 / (stop.elapsed()/1000L); 
-         Log.info(ME,"MessageUnits per Second by INSERT : "+String.valueOf(msgSec)+" Msg/sec.");
+         float msgSec = 1000f / (stop.elapsed()/1000f); 
+         Log.info(ME,"MessageUnits per Second by INSERT : "+String.valueOf((int)msgSec)+" Msg/sec.");
       }
 
       stop.restart();
@@ -179,6 +182,7 @@ public class TestXmlDb extends TestCase
       // Query-time-test
       Enumeration msgIter = xmldb.query("//key");
       Log.info(ME,"Time for a simple query (1000 MessageUnits):"+stop.toString());
+
       PMessageUnit pmu=null;
       int countMsg=0;
       while(msgIter.hasMoreElements())
@@ -188,6 +192,7 @@ public class TestXmlDb extends TestCase
       }
       assertEquals("Query-Test was failed.",new String("1000"),String.valueOf(countMsg));
 
+      xmldb.showCacheState();
       stop.restart();
       // Delete MessageUnits 
       for(int i=100;i<1100;i++){
@@ -203,29 +208,35 @@ public class TestXmlDb extends TestCase
    {
       Log.calls(ME,"Testcase ...... testCacheSize()");
       StopWatch stop = new StopWatch();
-      long varSize[] = {0L, 1000000L, 2000000L, 4000000L, 6000000L};
+      long varSize[] = {0L, 1000000L, 2000000L, 4000000L};
 
-      for(int r=0;r<5;r++)
+      for(int r=0;r<4;r++)
       {
-         Log.info(ME,"Testing Cachesize................................."+String.valueOf(varSize[r]/1000000)+"mb");
+         Log.info(ME,"\033[1mTesting Cachesize................................."+String.valueOf(varSize[r]/1000000)+"mb\033[0m");
          stop.restart();
          xmldb.setMaxCacheSize(varSize[r]);
+         xmldb.resetCache();
 
          // Insert 1000 MessageUnits
-         for(int i=100;i<1100;i++){
-            insertMsg(String.valueOf(i),false);
+         for(int i=2000;i<3000;i++){
+            insertMsg(String.valueOf(i),true);
          }
          Log.info(ME,"    Insert 1000 MUs....in..."+stop.toString());
+
+         float msgSec = 1000f / (stop.elapsed()/1000f);
+         Log.info(ME,"    MessageUnits per Second by INSERT : "+String.valueOf((int)msgSec)+" Msg/sec.");
          stop.restart();
 
          Enumeration msgIter = xmldb.query("//key");
          Log.info(ME,"    Query 1000 MUs.....in..."+stop.toString());
 
          stop.restart();
-         for(int i=100;i<1100;i++){
+         xmldb.showCacheState();
+         for(int i=2000;i<3000;i++){
            xmldb.delete(String.valueOf(i));
          }
          Log.info(ME,"    Delete 1000 MUs....in..."+stop.toString());
+         
       }
    }
 
@@ -244,7 +255,7 @@ public class TestXmlDb extends TestCase
        suite.addTest(new TestXmlDb("testQuery"));
        suite.addTest(new TestXmlDb("testInsertQuery"));
        suite.addTest(new TestXmlDb("testInsertMsgPerSecond"));
-//       suite.addTest(new TestXmlDb("testCacheSize"));
+       suite.addTest(new TestXmlDb("testCacheSize"));
        return suite;
    }
 
@@ -258,11 +269,11 @@ public class TestXmlDb extends TestCase
          Log.panic(ME, e.toString());
       }
       TestXmlDb testXmldb = new TestXmlDb("TestXmlDb");
-/*      testXmldb.testGet();
+      testXmldb.testGet();
       testXmldb.testDelete();
       testXmldb.testQuery();
       testXmldb.testInsertQuery();
-      testXmldb.testInsertMsgPerSecond();*/
+      testXmldb.testInsertMsgPerSecond();
       testXmldb.testCacheSize();
       Log.exit(TestXmlDb.ME, "Good bye");
    } 
