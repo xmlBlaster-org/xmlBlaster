@@ -667,7 +667,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       Hashtable map = new Hashtable();
       map.put("/qos/rcvTimestamp/@nanos", ""+getRcvTimestamp());
       map.put("/qos/rcvTimestamp/text()", ""+getRcvTime());
-      if (getMethod() != null) map.put("/qos/methodName/text()", getMethod().toString());
+      MethodName methodName = getMethod();
+      if (methodName != null) map.put("/qos/methodName/text()", methodName.toString());
       map.put("/qos/persistent/text()", ""+isPersistent());
 
       Map pMap = getClientProperties();
@@ -698,7 +699,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
          map.put("/qos/redeliver/text()", ""+getRedeliver());
       }
 
-      map.put("/qos/sender/text()", getSender().toString());
+      SessionName sender = getSender();
+      if (sender != null) {
+         map.put("/qos/sender/text()", sender.toString());
+      }
       map.put("/qos/expiration/@lifeTime", ""+getLifeTime());
       map.put("/qos/expiration/@remainingLife", ""+getRemainingLife());
 
