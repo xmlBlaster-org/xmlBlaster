@@ -176,6 +176,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public boolean put(Connection conn) {
       if (this.log.CALL) this.log.call(ME, "put invoked");
       if (conn == null) return false;
+      if (this.log.TRACE) {
+         try {
+            if (!conn.getAutoCommit()) this.log.error(ME, "put: error: the connection has not properly been reset: autocommit is 'false'");
+         }
+         catch (Exception ex) {
+            this.log.error(ME, "put: exception when checking for autocommit");
+         }
+      }
       synchronized(this.connections) {
          if ((this.currentIndex >= -1) && (this.currentIndex < (this.capacity-1))) {
             this.connections[++this.currentIndex] = conn;

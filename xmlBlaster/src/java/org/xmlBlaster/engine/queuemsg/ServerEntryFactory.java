@@ -42,7 +42,7 @@ import java.io.IOException;
  * useful for example if you want to store such entries in persitent storage
  * like a database or a file system. It might however be used even for other
  * purposes.
- * @author laghi@swissinfo.org
+ * @author laghi@swissinfo.org	  
  * @author xmlBlaster@marcelruff.info
  */
 public class ServerEntryFactory implements I_EntryFactory
@@ -230,7 +230,7 @@ public class ServerEntryFactory implements I_EntryFactory
 
 
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
-         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, persistent);
+         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, persistent);
          //entry.setUniqueId(timestamp);
          return entry;
       }

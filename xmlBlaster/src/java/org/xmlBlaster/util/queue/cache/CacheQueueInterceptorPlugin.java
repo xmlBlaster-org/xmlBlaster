@@ -65,6 +65,66 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private I_QueueEntry referenceEntry;
 
    /**
+    * Helper method to check the space left on a given queue.
+    * @param  queue the queue on which to calculate the space left.
+    * @param  valueToCheckAgainst the amount of bytes which are subtracted (needed in the queue) in this 
+              check.
+    * @param  ifFullThrowException if 'true' this method will throw an exception if the return value would
+              be negative
+    * @return long the space left on the specified queue after having occupied the queue with what is 
+    *         specified in 'valueToCheckAgainst'
+    * @throws XmlBlasterException if the 'ifFullThrowException' flag has been set to 'true' and the 
+    *         return value would be negative.
+    */
+   private final long checkSpaceAvailable(I_Queue queue, long valueToCheckAgainst, boolean ifFullThrowException) 
+      throws XmlBlasterException {
+      long spaceLeft = queue.getMaxNumOfBytes() - queue.getNumOfBytes() - valueToCheckAgainst;
+      if (this.log.TRACE) this.log.trace(ME, "checkSpaceAvailable : maxNumOfBytes=" + queue.getMaxNumOfBytes() + "' numOfBytes='" + queue.getNumOfBytes() + "'");
+      if (spaceLeft < 0L) {
+         String maxBytes = "maxBytes";
+         String queueName = "Cache";
+         if (queue == this.transientQueue) {
+            maxBytes = "maxBytesCache";
+            queueName = "Transient";
+         }
+         else if (queue == this.persistentQueue) {
+            queueName = "Persistent";
+         }
+         String reason = queueName + " queue overflow, " + queue.getNumOfBytes() +
+                         " bytes are in queue, try increasing '" + 
+                         this.property.getPropName(maxBytes) + "' on client login.";
+         this.log.warn(ME, reason + this.toXml(""));
+         if (ifFullThrowException)
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
+      }
+      return spaceLeft;
+   }
+
+   private final long checkEntriesAvailable(I_Queue queue, long valueToCheckAgainst, boolean ifFullThrowException) 
+      throws XmlBlasterException {
+      long entriesLeft = queue.getMaxNumOfEntries() - queue.getNumOfEntries() - valueToCheckAgainst;
+      if (entriesLeft < 0L) {
+         String maxEntries = "maxEntries";
+         String queueName = "Cache";
+         if (queue == this.transientQueue) {
+            maxEntries = "maxEntriesCache";
+            queueName = "Transient";
+         }
+         else if (queue == this.persistentQueue) {
+            queueName = "Persistent";
+         }
+         String reason = queueName + " queue overflow, " + queue.getNumOfEntries() +
+                         " entries are in queue, try increasing '" + 
+                         this.property.getPropName(maxEntries) + "' on client login.";
+         this.log.warn(ME, reason + this.toXml(""));
+         if (ifFullThrowException)
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
+      }
+      return entriesLeft;
+   }
+
+
+   /**
     * @see I_StorageProblemListener#storageUnavailable(int)
     */
    public void storageUnavailable(int oldStatus) {
@@ -346,7 +406,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       entries[0] = queueEntry;
       put(entries, ignorePutInterceptor);
    }
-    
+
+
    /**
     * All entries are stored into the transient queue. All persistent messages are
     * stored also in the persistent queue. The exceeding size in the transient
@@ -367,48 +428,31 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             return;
       }
 
-      if (getNumOfEntries() > getMaxNumOfEntries()) { // Allow superload one time only
-         String reason = "Queue overflow (number of entries), " + getNumOfEntries() +
-                         " messages are in queue, try increasing '" +
-                         this.property.getPropName("maxEntries") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
-      }
-      if (this.getNumOfBytes() > getMaxNumOfBytes()) { // Allow superload one time only
-         String reason = "Queue overflow, " + getMaxNumOfBytes() +
-                         " bytes are in queue, try increasing '" + 
-                         this.property.getPropName("maxBytes") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
-      }
+      checkEntriesAvailable(this, 0L, true); // throws XmlBlasterException if no space left
+      checkSpaceAvailable(this, 0L, true); // throws XmlBlasterException if no space left
 
       long sizeOfEntries = 0L;
-
       synchronized(this.deleteDeliveredMonitor) {
-
          // separate persistent from transient messages and store the persistents in persistence
          if (this.persistentQueue != null && this.isConnected) {
             ArrayList persistentsFromEntries = new ArrayList();
             long sizeOfPersistents = 0L;
+            long numOfPersistents = 0L;
+
             for (int i=0; i < queueEntries.length; i++) {
                if (queueEntries[i].isPersistent()) {
                   persistentsFromEntries.add(queueEntries[i]);
                   sizeOfPersistents += ((I_QueueEntry)queueEntries[i]).getSizeInBytes();
+                  numOfPersistents++;
                }
                else sizeOfEntries += queueEntries[i].getSizeInBytes();
             }
             sizeOfEntries += sizeOfPersistents;
 
             if (persistentsFromEntries.size() > 0) {
-
-               long spaceLeft = this.persistentQueue.getMaxNumOfBytes() - this.persistentQueue.getNumOfBytes();
-               if (spaceLeft < sizeOfPersistents) {
-                  String reason = "Persistent queue overflow, " + this.getNumOfBytes() +
-                                  " bytes are in queue, try increasing '" + 
-                                  this.property.getPropName("maxBytes") + "' on client login.";
-                  this.log.warn(ME, reason + this.toXml(""));
-                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
-               }
+// allow once an overflow
+//               checkEntriesAvailable(this.persistentQueue, numOfPersistents, true); // throws ex if overflow
+//               checkSpaceAvailable(this.persistentQueue, sizeOfPersistents, true); // throws ex if overflow
                try {
                   this.persistentQueue.put((I_QueueEntry[])persistentsFromEntries.toArray(new I_QueueEntry[persistentsFromEntries.size()]), ignorePutInterceptor);
                }
@@ -421,7 +465,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
          // check if swapping before putting data into ram queue allows to avoid
          // synchronizing in case it is not swapping (better performance)
-         if (sizeOfEntries + this.transientQueue.getNumOfBytes() < this.transientQueue.getMaxNumOfBytes()) {
+         if (checkSpaceAvailable(this.transientQueue, sizeOfEntries, false) > -1L && 
+             checkEntriesAvailable(this.transientQueue, queueEntries.length, false) > -1L) {
             this.transientQueue.put(queueEntries, ignorePutInterceptor);
             if (this.notifiedAboutAddOrRemove) {
                for(int i=0; i<queueEntries.length; i++)
@@ -439,16 +484,19 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                }
 
                // handle swapping (if any)
-               long exceedingSize = this.transientQueue.getNumOfBytes() - this.transientQueue.getMaxNumOfBytes();
-               if (exceedingSize >= 0L) {
-                  if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " state: " + toXml(""));
+               long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false);
+               long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false);
+               if (exceedingSize >= 0L || exceedingEntries >= 0L) {
+                  if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
                   if (this.persistentQueue == null)
                      throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "put: no persistent queue configured, needed for swapping");
-
                   if (!this.isConnected)
                      throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "put: The DB is currently disconnected: swapped messages are lost");
 
-                  ArrayList swaps = this.transientQueue.takeLowest(-1, exceedingSize, null, true);
+                  ArrayList swaps = this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
+                  if (this.log.TRACE) {
+                     this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
+                  }
                   // get the transients
                   ArrayList transients = new ArrayList();
                   long sizeOfTransients = 0L;
@@ -459,11 +507,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                         sizeOfTransients += entry.getSizeInBytes();
                      }
                   }
-                  long spaceLeft = this.persistentQueue.getMaxNumOfBytes() - this.persistentQueue.getNumOfBytes();
-                  if (spaceLeft < sizeOfTransients)
-                     throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: maximum size in bytes for the persistent queue exceeded when swapping. State: " + toXml(""));
+//                  checkSpaceAvailable(this.persistentQueue, 0L, true);
+//                  checkEntriesAvailable(this.persistentQueue, 0L, true);
                   try {
-                     this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
+                     if (transients.size() > 0) 
+                        this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
                   }
                   catch (XmlBlasterException ex) {
                      this.log.error(ME, "put: an error occured when writing to the persistent queue: " +  transients.size() + " transient swapped messages will be lost. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
@@ -924,6 +972,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          ret = this.persistentQueue.getNumOfBytes();
          if (ret < 0L) return this.transientQueue.getNumOfBytes();
          ret += this.transientQueue.getNumOfBytes() - this.transientQueue.getNumOfPersistentBytes();
+         return ret;
       }
       return this.transientQueue.getNumOfBytes();
    }
@@ -935,8 +984,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       long ret = 0L;
       if (this.persistentQueue != null && this.isConnected) {
          ret = this.persistentQueue.getNumOfPersistentBytes();
+         // if a persistent queue return -1L it means it was not able to get the correct size
          if (ret < 0L) return this.transientQueue.getNumOfPersistentBytes();
-         return this.persistentQueue.getNumOfPersistentBytes();
+         return ret;
       }
       return this.transientQueue.getNumOfPersistentBytes();
    }

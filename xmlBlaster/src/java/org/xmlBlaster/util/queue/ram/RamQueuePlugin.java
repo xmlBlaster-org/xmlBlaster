@@ -544,6 +544,21 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 
 
    /**
+    * Helper method to find out if still to retrieve entries in getAndDeleteLowest or not. 
+    */
+   private final boolean isInsideRange(int numEntries, int maxNumEntries, long numBytes, long maxNumBytes) {
+      if (maxNumEntries < 0) {
+         if (maxNumBytes <0L) return true;
+         return numBytes < maxNumBytes;
+      }
+      // then maxNumEntries >= 0
+      if (maxNumBytes <0L) return numEntries < maxNumEntries;
+      // then the less restrictive of both is used (since none is negative)
+      return numEntries < maxNumEntries || numBytes < maxNumBytes;
+   }
+
+
+   /**
     * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
     */
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
@@ -552,16 +567,17 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       synchronized(this) {
          LinkedList list = new LinkedList(this.storage);
          ListIterator iter = list.listIterator(list.size());
-         long count = 0L;
+         int count = 0;
          long currentSizeInBytes = 0L;
          long totalSizeInBytes = 0L;
          ArrayList ret = new ArrayList();
 
          // it leaves at least one entry in the list
-         while (iter.hasPrevious() && (count<numOfEntries||numOfEntries<0) && (totalSizeInBytes < numOfBytes || numOfBytes <0)) {
+         while (iter.hasPrevious()) {
             I_QueueEntry entry = (I_QueueEntry)iter.previous();
             currentSizeInBytes = entry.getSizeInBytes();
-            totalSizeInBytes += entry.getSizeInBytes();
+            if (!isInsideRange(count, numOfEntries, totalSizeInBytes, numOfBytes)) break;
+            totalSizeInBytes += currentSizeInBytes;
 
             if (limitEntry != null && this.comparator.compare(limitEntry, entry) >= 0) break;
             ret.add(entry);
@@ -728,6 +744,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       sb.append("' version='").append(getVersion());
       sb.append("' numOfEntries='").append(getNumOfEntries());
       sb.append("' numOfBytes='").append(getNumOfBytes());
+
+      sb.append("' numOfPersistentEntries='").append(getNumOfPersistentEntries());
+      sb.append("' numOfPersistentBytes='").append(getNumOfPersistentBytes());
       sb.append("'>");
       sb.append(property.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</RamQueuePlugin>");

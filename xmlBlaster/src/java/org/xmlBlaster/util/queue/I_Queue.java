@@ -188,11 +188,11 @@ public interface I_Queue extends I_StorageProblemNotifier
 
    /**
     * Takes entries from the back of the queue. It takes so many entries as the
-    * most restrictive of the limits specified in the argument list.
+    * LESS restrictive of the limits specified in the argument list.
     * If you invoke this method as:
     * takeLowest(10, 50000L, someEntry);
-    * It will take maximum 10 entries to a maximum sum of 50 kB (all entries
-    * together) and maximum to the entry specified as 'someEntry' (exclusive).
+    * It will take either 10 entries or as much entries which together do not exceed 50 kB (all entries
+    * together) whichever is higher. Note that numOfEntries is exclusive.
     * If there is no entry of lower order (lower priority and higher uniqueId)
     * than the one specified, an empty array list is returned.
     * A further restriction is the following: At least one entry must be left

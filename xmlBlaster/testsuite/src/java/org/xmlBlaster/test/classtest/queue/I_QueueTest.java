@@ -836,6 +836,42 @@ public class I_QueueTest extends TestCase {
    }
 
 
+
+   /**
+    * returns the number of entries left in the queue after this processing operation 
+    * @param queue the queue to use for this test
+    * @param numEntries the number of entries to pass to the takeLowest operation
+    * @param numBytes the num of bytes to pass to the takeLowest operation
+    * @param leaveOne the flag to pass to the takeLowest operation
+    * @param origEntries the array of the original entries put into the queue
+    * @param entriesLeft number of entries left in the queue before this operation
+    * @param currentEntries the number of entries which should have been processed by this operation
+    */
+   private final int assertCheckForTakeLowest(I_Queue queue, int numEntries, long numBytes, 
+      I_QueueEntry refEntry, boolean leaveOne, I_QueueEntry[] origEntries, int entriesLeft, 
+      int currentEntries, long size) throws XmlBlasterException {
+      String me = ME + "/" + numEntries + "/" + numBytes + "/" + leaveOne + "/" + entriesLeft + "/" + currentEntries;
+      if (this.log.TRACE) this.log.trace(me, "");
+      assertEquals(me+": Wrong size of entry ", size, origEntries[0].getSizeInBytes());
+      assertEquals(me+": Wrong amount of entries in queue before takeLowest invocation ", entriesLeft, queue.getNumOfEntries());
+      assertEquals(me+": Wrong size of entries in queue before takeLowest invocation ", size*entriesLeft, queue.getNumOfBytes());
+      assertEquals(me+": Wrong amount of persistent entries in queue before takeLowest invocation ", entriesLeft, queue.getNumOfPersistentEntries());
+      assertEquals(me+": Wrong size of persistent entries in queue before takeLowest invocation ", size*entriesLeft, queue.getNumOfPersistentBytes());
+      ArrayList list = queue.takeLowest(numEntries, numBytes, refEntry, leaveOne);  // gives back all minus one
+      assertEquals(me+": Wrong number of entries in takeLowest return ", currentEntries, list.size());
+      assertEquals(me+": Wrong number of entries in queue after takeLowest invocation ", entriesLeft-currentEntries, queue.getNumOfEntries());
+      assertEquals(me+": Wrong number of bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfBytes());
+      assertEquals(me+": Wrong number of persitent bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfPersistentBytes());
+
+      for (int i=entriesLeft-currentEntries; i < entriesLeft; i++) {
+         int j = entriesLeft - 1 - i;
+         long ref = ((I_QueueEntry)list.get(j)).getUniqueId();
+         assertEquals(me+": Wrong sequence in takeLowest", origEntries[i].getUniqueId(), ref);
+      }
+      return entriesLeft - currentEntries;
+   }
+
+
    /**
     * Test takeLowest(I_Queue)
     */
@@ -849,33 +885,52 @@ public class I_QueueTest extends TestCase {
          //========== Test 1: takeLowest without restrictions
          {
             this.log.trace(ME, "takeLowest test 1");
-            int imax = 20;
+            int imax = 50;
             long size = 0L;
+            long msgSize = 100L; // every msg is 100 bytes long
+            int entriesLeft = imax;
 
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
-               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+               entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
                size += entries[i].getSizeInBytes();
                queue.put(entries[i], false);
             }
 
             assertEquals(ME+": Wrong number put", imax, queue.getNumOfEntries());
+            assertEquals(ME+": Wrong expected size in bytes of entries", msgSize*imax, size);
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
-            ArrayList list = queue.takeLowest(-1, -1, queueEntry, true);
-
-            assertEquals(ME+": Wrong size in takeLowest return ", list.size(), entries.length-1);
-            for (int i=1; i < imax; i++) {
-               int j = imax - 1 - i;
-               long ref = ((I_QueueEntry)list.get(j)).getUniqueId();
-               assertEquals(ME+": Wrong size in bytes put", entries[i].getUniqueId(), ref);
-            }
-            queue.clear();
+            entriesLeft = assertCheckForTakeLowest(queue,  0, -1L, null, true, entries, entriesLeft, 0, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  1, -1L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  2, -1L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, 0L, null, true, entries, entriesLeft, 0, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  0, 0L, null, true, entries, entriesLeft, 0, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  1, 0L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  2, 0L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, 50L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  0, 50L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  1, 50L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  2, 50L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, 100L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  0, 100L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  1, 100L, null, true, entries, entriesLeft, 1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  2, 100L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, 150L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  0, 150L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  1, 150L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  2, 150L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, 200L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  0, 200L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  1, 200L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue,  2, 200L, null, true, entries, entriesLeft, 2, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, -1L, null, true, entries, entriesLeft, entriesLeft-1, msgSize);
+            entriesLeft = assertCheckForTakeLowest(queue, -1, -1L, null, false, entries, entriesLeft, 1, msgSize);
             assertEquals(ME+": Wrong size in takeLowest after cleaning ", queue.getNumOfEntries(), 0);
+            queue.clear();
          }
-
 
          //========== Test 2: takeLowest which should return an empty array
          {
@@ -1265,7 +1320,7 @@ public class I_QueueTest extends TestCase {
 
             if (queue instanceof CacheQueueInterceptorPlugin) return;
 
-            ArrayList subList = queue.takeLowest(2, 1000L, null, true);
+            ArrayList subList = queue.takeLowest(2, 100L, null, true);
 
             this.log.info(ME, "size of list before: " + list.size());
             list.remove(list.size()-1);
@@ -1273,8 +1328,6 @@ public class I_QueueTest extends TestCase {
             this.log.info(ME, "size of list after: " + list.size());
 
             this.checkSizeAndEntries("sizesCheck test 1 (after takeLowest): ", list, queue);
-
-
 
             queue.removeRandom(entries);
             list.removeAll(list);
@@ -1341,11 +1394,11 @@ public class I_QueueTest extends TestCase {
          long startTime = System.currentTimeMillis();
 
          testSub.setUp();
-         testSub.testSize1();
+         testSub.testConfig();
          testSub.tearDown();
 
          testSub.setUp();
-         testSub.testConfig();
+         testSub.testSize1();
          testSub.tearDown();
 
          testSub.setUp();

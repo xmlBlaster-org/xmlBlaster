@@ -827,7 +827,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             catch (SQLException ex1) {
                // conn.rollback();
                try {
-  	          for (int ii=0; ii < i; ii++) {
+                  for (int ii=0; ii < i; ii++) {
                      if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
                   }
                }
@@ -839,7 +839,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             catch (XmlBlasterException ex1) {
                // conn.rollback();
                try {
-  	          for (int ii=0; ii < i; ii++) {
+                  for (int ii=0; ii < i; ii++) {
                      if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
                   }
                }
@@ -1322,6 +1322,23 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       return ret;
    }
 
+
+   /**
+    * Helper method to find out if still to retrieve entries in getAndDeleteLowest or not. 
+    */
+   private final boolean isInsideRange(int numEntries, int maxNumEntries, long numBytes, long maxNumBytes) {
+      if (maxNumEntries < 0) {
+         if (maxNumBytes <0L) return true;
+         return numBytes < maxNumBytes;
+      }
+      // then maxNumEntries >= 0
+      if (maxNumBytes <0L) return numEntries < maxNumEntries;
+      // then the less restrictive of both is used (since none is negative)
+      return numEntries < maxNumEntries || numBytes < maxNumBytes;
+   }
+
+
+
    /**
     * Under the same transaction it gets and deletes all the entries which fit
     * into the constrains specified in the argument list.
@@ -1356,9 +1373,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          boolean doContinue = true;
          boolean stillEntriesInQueue = false;
 
-         while ( (stillEntriesInQueue=rs.next()) && ((count < numOfEntries) || (numOfEntries < 0)) &&
-            (doContinue)) {
-
+// while (iter.hasPrevious() && (count<numOfEntries && (totalSizeInBytes<numOfBytes||numOfBytes<0L) )) {
+         while ( (stillEntriesInQueue=rs.next()) && doContinue) {
             long dataId = rs.getLong(1);            // preStatement.setLong(1, dataId);
             /*String nodeId =*/ rs.getString(2);    // preStatement.setString(2, nodeId);
             /*String queueName =*/ rs.getString(3); // preStatement.setString(3, queueName);
@@ -1371,16 +1387,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(7);
+            if (!isInsideRange(count, numOfEntries, amount, numOfBytes)) break;
             byte[] blob = rs.getBytes(8); // preStatement.setObject(5, blob);
 
             // check if allowed or already outside the range ...
-            if (((numOfBytes<0)||(sizeInBytes+amount<numOfBytes)||(count==0)) &&
-               ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) )) {
+            if ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) ) {
                if (this.log.DUMP) this.log.dump(getLogId(queueName, nodeId, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
                ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                amount += sizeInBytes;
-               if (amount > numOfBytes) doContinue = false;
-               if (numOfBytes < 0) doContinue = true;
             }
             else doContinue = false;
             count++;
@@ -1394,8 +1408,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (leaveOne) {
             // leave at least one entry
             if (stillEntriesInQueue) stillEntriesInQueue = rs.next();
-            if ((!stillEntriesInQueue) && (ret.list.size()>0))
-               ret.list.remove(ret.list.size()-1);
+            if ((!stillEntriesInQueue) && (ret.list.size()>0)) {
+               ret.countEntries--;
+               I_Entry entryToDelete = (I_Entry)ret.list.remove(ret.list.size()-1);
+               ret.countBytes -= entryToDelete.getSizeInBytes();
+               if (this.log.TRACE) this.log.trace(ME, "takeLowest size to delete: "  + entryToDelete.getSizeInBytes());
+            }
          }
          //first strip the unique ids:
          long[] uniqueIds = new long[ret.list.size()];
@@ -1411,9 +1429,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             update(req, query.conn);
          }
 
+         query.conn.commit();
          return ret;
       }
       catch (SQLException ex) {
+         query.conn.rollback();
          if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getAndDeleteLowest", "", ex); 
          else throw ex;
@@ -1781,11 +1801,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       String req = null;
       if (inclusive) 
-         req = "DELETE * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId <= "  + limitId + ") )";
+         req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId <= "  + limitId + ") )";
       else
-         req = "DELETE * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") )";
+         req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") )";
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Request: '" + req + "'");
-      return (long)update(req);
+      int ret = update(req);
+      if (this.log.TRACE) this.log.trace(ME, "removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
+      return (long)ret;
    }
 
 
@@ -1855,7 +1877,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedQuery query = null;
 
       try {
-         query = new PreparedQuery(pool, req, this.log, -1);
+         query = new PreparedQuery(pool, req, true, this.log, -1);
          query.rs.next();
          long ret = query.rs.getLong(1);
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfEntries"), "Num=" + ret);
@@ -1888,7 +1910,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistent"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
-         query = new PreparedQuery(pool, req, this.log, -1);
+         query = new PreparedQuery(pool, req, true, this.log, -1);
          query.rs.next();
          long ret = query.rs.getLong(1);
          return ret;
@@ -1921,7 +1943,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistents"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
-         query = new PreparedQuery(pool, req, this.log, -1);
+         query = new PreparedQuery(pool, req, true, this.log, -1);
          query.rs.next();
          long ret = query.rs.getLong(1);
          return ret;

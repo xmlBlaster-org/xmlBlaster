@@ -17,8 +17,14 @@ public class DummyEntry extends MsgQueueEntry {
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
     */
+/*
    public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean persistent) {
       super(glob, ENTRY_TYPE, priority, timestamp, storageId, persistent);
+   }
+*/
+   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, long sizeOfMsg, boolean persistent) {
+      super(glob, ENTRY_TYPE, priority, timestamp, storageId, persistent);
+      this.sizeOfMsg = sizeOfMsg;
    }
 
    public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, boolean persistent) {

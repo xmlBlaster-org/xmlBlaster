@@ -82,11 +82,8 @@ public class CacheQueueTest extends TestCase {
    protected Global glob;
    protected LogChannel log;
    private StopWatch stopWatch = new StopWatch();
-
-//   private I_Queue[] queues = null;
    private CacheQueueInterceptorPlugin queue = null;
-
-//   public ArrayList queueList = null;
+   private I_Queue[] queues;
    public ArrayList queueList = null;
 
    public CacheQueueTest(String name) {
@@ -121,7 +118,15 @@ public class CacheQueueTest extends TestCase {
 
          pluginInfo = new PluginInfo(glob, pluginManager, "CACHE", "1.0");
          this.queue = (CacheQueueInterceptorPlugin)pluginManager.getPlugin(pluginInfo, queueId, cbProp);
-         this.queue.shutdown(); // to allow to initialize again
+         this.queues = new I_Queue[3];
+
+         pluginInfo = new PluginInfo(glob, pluginManager, "RAM", "1.0");
+         this.queues[0] = (I_Queue)pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
+         this.queues[1] = (I_Queue)pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         this.queues[2] = queue;
+
+         for (int i=0; i < 3; i++) this.queues[i].shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
          this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
@@ -132,7 +137,7 @@ public class CacheQueueTest extends TestCase {
 
    public void tearDown() {
       try {
-         this.queue.destroy();
+         for (int i=0; i < 3; i++) this.queues[i].destroy();
       }
       catch (Exception ex) {
          this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp");
@@ -195,9 +200,15 @@ public class CacheQueueTest extends TestCase {
 
 
    public void testPutPeekRemove() {
-      String queueType = "CACHE";
+      String queueType = this.glob.getProperty().get("queueType", "CACHE");
+      this.log.info(ME, "testPutPeekRemove will be done with a queue of type '" + queueType + "'");
+      this.log.info(ME, "if you want to test with another queue type invoke '-queueType $TYPE' on the cmd line where $TYPE is either RAM JDBC or CACHE");
+      int index = 2;
+      if ("RAM".equalsIgnoreCase(queueType)) index = 0;
+      else if ("JDBC".equalsIgnoreCase(queueType)) index = 1;
+
       try {
-         putPeekRemove();
+         putPeekRemove(this.queues[index]);
       }
       catch (XmlBlasterException ex) {
          fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
@@ -206,7 +217,7 @@ public class CacheQueueTest extends TestCase {
    }
 
 
-   public void putPeekRemove() throws XmlBlasterException {
+   public void putPeekRemove(I_Queue refQueue) throws XmlBlasterException {
 
       // set up the queues ....
 
@@ -232,8 +243,8 @@ public class CacheQueueTest extends TestCase {
                StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
 
 //               this.queue = new CacheQueueInterceptorPlugin();
-               this.queue.destroy();
-               this.queue.initialize(queueId, prop);
+               refQueue.destroy();
+               refQueue.initialize(queueId, prop);
 
                for (int it=0; it < numOfTransientEntries.length; it++) {
                   // entry.setPrio(4+(it%3));
@@ -241,25 +252,25 @@ public class CacheQueueTest extends TestCase {
 
                      log.info(ME, "**** SUB-TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is] +
                                    " -> numOfTransientEntries["+it+"]=" + numOfTransientEntries[it] + " numOfPersistentEntries["+id+"]=" + numOfPersistentEntries[id]);
-                     if (!this.queue.isShutdown()) this.queue.shutdown();
-                     this.queue.initialize(queueId, prop);
-                     this.queue.clear();
+                     if (!refQueue.isShutdown()) refQueue.shutdown();
+                     refQueue.initialize(queueId, prop);
+                     refQueue.clear();
 
                      long maxPersistentNumOfBytes = maxNumOfBytes[is];
                      long maxTransientNumOfBytes = maxNumOfBytesCache[ic];
                      long transientNumOfBytes  = 0L;
                      long persistentNumOfBytes  = 0L;
 
-                     assertEquals(ME + " the number of bytes of the queue should be zero ", 0L, queue.getNumOfBytes());
-                     assertEquals(ME + " the number of entries in the queue should be zero ", 0L, queue.getNumOfEntries());
-                     assertEquals(ME + " the number of bytes of the persistent entries in the queue should be zero ", 0L, queue.getNumOfPersistentBytes());
-                     assertEquals(ME + " the number of persistent entries in the queue should be zero ", 0L, queue.getNumOfPersistentEntries());
+                     assertEquals(ME + " the number of bytes of the queue should be zero ", 0L, refQueue.getNumOfBytes());
+                     assertEquals(ME + " the number of entries in the queue should be zero ", 0L, refQueue.getNumOfEntries());
+                     assertEquals(ME + " the number of bytes of the persistent entries in the queue should be zero ", 0L, refQueue.getNumOfPersistentBytes());
+                     assertEquals(ME + " the number of persistent entries in the queue should be zero ", 0L, refQueue.getNumOfPersistentEntries());
 
-                     assertEquals(ME + " the maximum number of entries is wrong ", maxNumOfBytes[is], queue.getMaxNumOfBytes());
+                     assertEquals(ME + " the maximum number of entries is wrong ", maxNumOfBytes[is], refQueue.getMaxNumOfBytes());
 
                      try {
 
-                        this.queue.clear();
+                        refQueue.clear();
                         transientNumOfBytes = 100 * numOfTransientEntries[it];
                         persistentNumOfBytes =100 * numOfPersistentEntries[id];
                         // prepare the inputs .
@@ -275,7 +286,7 @@ public class CacheQueueTest extends TestCase {
                         for (int i=0; i < transients.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, this.queue.getStorageId(), 80, persistent);
+                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), 80, persistent);
                            transients[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
@@ -283,37 +294,35 @@ public class CacheQueueTest extends TestCase {
                         for (int i=0; i < persistentEntries.length; i++) {
                            int prio = i % 3;
                            PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, this.queue.getStorageId(), 80, persistent);
+                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), 80, persistent);
                            persistentEntries[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
 
                         // do the test here ....
-                        assertEquals(ME + " number of persistent entries is wrong ", 0L, this.queue.getNumOfPersistentEntries());
-                        assertEquals(ME + " number of entries is wrong ", 0L, this.queue.getNumOfEntries());
-//                        queue.put(transients, false);
+                        assertEquals(ME + " number of persistent entries is wrong ", 0L, refQueue.getNumOfPersistentEntries());
+                        assertEquals(ME + " number of entries is wrong ", 0L, refQueue.getNumOfEntries());
                         for (int i=0; i < transients.length; i++)
-                           this.queue.put(transients[i], false);
-                        assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, queue.getNumOfEntries());
-//                        queue.put(persistent, false);
+                           refQueue.put(transients[i], false);
+                        assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, refQueue.getNumOfEntries());
                         for (int i=0; i < persistentEntries.length; i++) {
-                           this.queue.put(persistentEntries[i], false);
+                           refQueue.put(persistentEntries[i], false);
                         }
-                        assertEquals(ME + " number of entries after putting transients is wrong ", persistentEntries.length + transients.length, queue.getNumOfEntries());
-                        long nPersistents  = queue.getNumOfPersistentEntries();
-                        long nTransient = queue.getNumOfEntries() - nPersistents;
+                        assertEquals(ME + " number of entries after putting transients is wrong ", persistentEntries.length + transients.length, refQueue.getNumOfEntries());
+                        long nPersistents  = refQueue.getNumOfPersistentEntries();
+                        long nTransient = refQueue.getNumOfEntries() - nPersistents;
 
                         assertEquals(ME + " number of persistent entries is wrong ", persistentEntries.length, nPersistents);
                         assertEquals(ME + " number of transient entries is wrong ", transients.length, nTransient);
 
                         ArrayList total = new ArrayList();
-                        ArrayList ret = queue.peekSamePriority(-1, -1L);
-                        this.queue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
+                        ArrayList ret = refQueue.peekSamePriority(-1, -1L);
+                        refQueue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
                         while (ret.size() > 0) {
                            total.addAll(ret);
-                           ret = this.queue.peekSamePriority(-1, -1L);
+                           ret = refQueue.peekSamePriority(-1, -1L);
                            if (ret.size() > 0)
-                              this.queue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
+                              refQueue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
                         }
                         int mustEntries = inputTable[0].size() + inputTable[1].size() + inputTable[2].size();
 
@@ -322,9 +331,9 @@ public class CacheQueueTest extends TestCase {
                         this.log.trace(ME, "total number of bytes: " + totNumOfBytes + " maxNumOfBytes: " + maxNumOfBytes[is]);
                         this.log.trace(ME, "entries must be: " + mustEntries);
 
-                        assertTrue("Overflow is not allowed " + queue.toXml("") + "total number of bytes " + totNumOfBytes + " max number of bytes: " + maxNumOfBytes[is], totNumOfBytes <= maxNumOfBytes[is]);
-//                        assertTrue(ME + " Overflow is not allowed " + queue.toXml("") , checkIfPossible(transientNumOfBytes, persistentNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
-                        assertEquals(ME + " number of returned values differe from input values " + queue.toXml(""), mustEntries, total.size());
+                        assertTrue("Overflow is not allowed " + refQueue.toXml("") + "total number of bytes " + totNumOfBytes + " max number of bytes: " + maxNumOfBytes[is], totNumOfBytes <= maxNumOfBytes[is]);
+//                        assertTrue(ME + " Overflow is not allowed " + refQueue.toXml("") , checkIfPossible(transientNumOfBytes, persistentNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
+                        assertEquals(ME + " number of returned values differe from input values " + refQueue.toXml(""), mustEntries, total.size());
                         log.info(ME, "SUCCESS: cacheSize=" + maxNumOfBytesCache[ic] + " maxBytes=" + maxNumOfBytes[is] + " .... looks OK");
 
                         int count = 0;
@@ -334,15 +343,14 @@ public class CacheQueueTest extends TestCase {
                            while (keys.hasMoreElements()) {
                               long refId = ((I_QueueEntry)table.get(keys.nextElement())).getUniqueId();
                               long outId = ((I_QueueEntry)total.get(count)).getUniqueId();
-                              assertEquals("uniqueId differe for count " + count + " " + queue.toXml(""), mustEntries, total.size());
+                              assertEquals("uniqueId differe for count " + count + " " + refQueue.toXml(""), mustEntries, total.size());
                               count++;
                            }
                         }
                      }
                      catch(XmlBlasterException e) {
                         log.dump(ME, "Exception (might be ok): " + e.toString());
-                        assertTrue("Overflow is not allowed " + queue.toXml("") + "total number of bytes " + 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
-//                        assertTrue(ME + " Overflow is not allowed" + queue.toXml(""), !checkIfPossible(transientNumOfBytes, persistentNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
+                        assertTrue("Overflow is not allowed " + refQueue.toXml("") + "total number of bytes " + 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], 100*(numOfPersistentEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
                         log.info(ME, "SUCCESS: Exception is OK: " + e.toString());
                      }
                   }
@@ -364,10 +372,15 @@ public class CacheQueueTest extends TestCase {
    }
 
 
+   /**
+    * when queue available:
+    * -fill queue with 3 persistent and 2 transient messages -> RAM:5 JDBC:3
+    * - queue is made unavailable
+    * - queue is filled with 2 persistent and 3 transient msg -> RAM:10 JDBC:3 (since no comm)
+    * - peek and then remove all available entries: -> RAM:0 JDBC:3 (since no comm)
+    */
    public void availability() throws XmlBlasterException {
-
       // set up the queues ....
-
       long maxNumOfBytesCache = 10000L;
       long maxNumOfBytes = 50000L;
       int numOfTransientEntries = 200;

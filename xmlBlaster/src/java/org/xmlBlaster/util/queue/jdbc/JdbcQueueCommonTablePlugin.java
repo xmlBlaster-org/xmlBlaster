@@ -48,15 +48,38 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private QueuePropertyBase property;
    private JdbcManagerCommonTable manager = null;
    private I_QueuePutListener putListener;
-   private long numOfEntries = -1L;
-   private long numOfPersistentEntries = -1L;
-   private long numOfPersistentBytes = -1L;
+   // to set it to -999L makes it easier to identify than -1L
+   private long numOfEntries = -999L;
+   private long numOfPersistentEntries = -999L;
+   private long numOfPersistentBytes = -999L;
+   private long numOfBytes = -999L;
    boolean isDown = true;
-   private long numOfBytes = -1L;
 
    /** Monitor object used to synchronize the count of sizes */
    private Object modificationMonitor = new Object();
    private PluginInfo pluginInfo = null;
+
+
+   /**
+    * This method is only used for testing. It resets all cached sizes and counters. While testing it
+    * could be invoked before each public invocation to see which method fails ...
+    */
+   private final void resetCounters() {
+      try {
+         this.numOfPersistentBytes = -999L;
+         getNumOfPersistentBytes_(true);
+         this.numOfPersistentEntries = -999L;
+         getNumOfPersistentEntries_(true);
+         this.numOfBytes = -999L;
+         getNumOfBytes_();
+         this.numOfEntries = -999L;
+         getNumOfEntries_();
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "resetCoutners exception occured: " + ex.getMessage());
+      }
+   }
+
 
    /**
     * Check is storage is big enough for entry
@@ -252,7 +275,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, "put: the maximum number of entries reached." +
                    " Number of entries=" + getNumOfEntries_() + ", maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
       }
-*/
+*/	  
       String exTxt = null;
       if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
@@ -388,14 +411,14 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
 
             this.numOfEntries -= this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
 
-            this.numOfPersistentBytes = -1L;
+            this.numOfPersistentBytes = -999L;
             getNumOfPersistentBytes_(true);
-            this.numOfPersistentEntries = -1L;
+            this.numOfPersistentEntries = -999L;
             getNumOfPersistentEntries_(true);
 
             // since this method should never be called, we choose the easiest way to
             // find out the sizeInBytes, that is by invoking the dB.
-            this.numOfBytes = -1L;
+            this.numOfBytes = -999L;
             getNumOfBytes_();
             return ret;
          }
@@ -430,10 +453,10 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
             this.numOfBytes -= ret.countBytes;
             this.numOfEntries -= ret.countEntries;
 
-            this.numOfPersistentBytes = -1L;
+            this.numOfPersistentBytes = -999L;
             getNumOfPersistentBytes_(true);
 
-            this.numOfPersistentEntries = -1L;
+            this.numOfPersistentEntries = -999L;
             getNumOfPersistentEntries_(true);
             return ret.list;
          }
@@ -466,7 +489,8 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
    public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       try {
-         return this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+         ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+         return ret;
       }
       catch (SQLException ex)  {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peek(int,long) caught sql exception, status is" + toXml(""), ex);
@@ -493,7 +517,8 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       try {
-         return this.manager.getEntriesByPriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, minPriority, maxPriority);
+         ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, minPriority, maxPriority);
+         return ret;
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekWithPriority() caught sql exception, status is" + toXml(""), ex);
@@ -523,7 +548,14 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
       if (this.log.CALL) this.log.call(ME, "removeWithLimitEntry called");
       if (limitEntry == null) return 0L;
       try {
-         return this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
+         long ret = this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
+         if (ret != 0) { // since we are not able to calculate the size in the cache we have to recalculate it
+            this.numOfEntries = -999L;
+            this.numOfPersistentEntries = -999L;
+            this.numOfPersistentBytes = -999L;
+            this.numOfBytes = -999L;
+         }
+         return ret;
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
@@ -546,9 +578,9 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
-            this.numOfPersistentBytes = -1L;
+            this.numOfPersistentBytes = -999L;
             getNumOfPersistentBytes_(true);
-            this.numOfPersistentEntries = -1L;
+            this.numOfPersistentEntries = -999L;
             getNumOfPersistentEntries_(true);
 
             return (int)ret.countEntries;
@@ -575,9 +607,9 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
-            this.numOfPersistentBytes = -1L;
+            this.numOfPersistentBytes = -999L;
             getNumOfPersistentBytes_(true);
-            this.numOfPersistentEntries = -1L;
+            this.numOfPersistentEntries = -999L;
             getNumOfPersistentEntries_(true);
             return ret.countEntries;
          }
@@ -680,11 +712,11 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
             this.numOfEntries -= ret;
 
             if ((int)ret != queueEntries.length) { // then we need to retrieve the values
-               this.numOfPersistentBytes = -1L;
+               this.numOfPersistentBytes = -999L;
+               getNumOfPersistentBytes_(true);
+               this.numOfPersistentEntries = -999L;
                getNumOfPersistentEntries_(true);
-               this.numOfPersistentEntries = -1L;
-               getNumOfPersistentEntries_(true);
-               this.numOfBytes = -1L;
+               this.numOfBytes = -999L;
                getNumOfBytes_();
             }
             else {
@@ -720,7 +752,7 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
             int ret = this.manager.deleteAllTransient(getStorageId().getStrippedId(), glob.getStrippedId());
             this.numOfEntries -= ret;
             // not so performant but only called on init
-            this.numOfBytes = -1L;
+            this.numOfBytes = -999L;
             getNumOfBytes_();
             return ret;
          }
@@ -734,18 +766,27 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
    /**
     * It returns the size of the queue. Note that this call will return the size
     * stored in cache.
-    * In case this value is -1L (which means a previous attempt to read from the
+    * In case this value is negative (which means a previous attempt to read from the
     * DB failed) it will synchronize against the DB by making a call to the DB.
     * If that fails it will return -1L.
+    * If the log DUMP is set to true, then a refresh of the cache is done by every invocation
+    * and if the cached value is different from the real value an error is written.
     *
     * @see I_Queue#getNumOfEntries()
     * @exception XmlBlasterException if number is not retrievable
     */
    private long getNumOfEntries_() throws XmlBlasterException {
-      if (this.numOfEntries > -1L) return this.numOfEntries;
+      if (this.numOfEntries > -1L && !this.log.DUMP) return this.numOfEntries;
       synchronized (this.modificationMonitor) {
          try {
+            long oldValue = this.numOfEntries;
             this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            if (this.log.DUMP) {
+               if (oldValue != this.numOfEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
+                  this.log.error(ME, "getNumOfEntries: an inconsistency occured between the cached value and the real value of 'numOfEntries': it was '" + oldValue + "' but should have been '" + this.numOfEntries + "'");
+               }
+            }
+            else if (this.log.TRACE) this.log.warn(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
             return this.numOfEntries;
          }
          catch (SQLException ex) {
@@ -785,10 +826,17 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @see I_Queue#getNumOfPersistentEntries()
     */
    private long getNumOfPersistentEntries_(boolean verbose) throws XmlBlasterException {
-      if (this.numOfPersistentEntries > -1L) return this.numOfPersistentEntries;
+      if (this.numOfPersistentEntries > -1L && !this.log.DUMP) return this.numOfPersistentEntries;
       synchronized (this.modificationMonitor) {
          try {
+            long oldValue = this.numOfPersistentEntries;
             this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            if (this.log.DUMP) {
+               if (oldValue != this.numOfPersistentEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
+                  this.log.error(ME, "getNumOfPersistentEntries: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentEntries + "'");
+               }
+            }
+            else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
             return this.numOfPersistentEntries;
          }
          catch (SQLException ex) {
@@ -838,10 +886,17 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @see I_Queue#getNumOfBytes()
     */
    private long getNumOfBytes_() throws XmlBlasterException {
-      if (this.numOfBytes > -1L) return this.numOfBytes;
+      if (this.numOfBytes > -1L && !this.log.DUMP) return this.numOfBytes;
       synchronized (this.modificationMonitor) {
          try {
+            long oldValue = this.numOfBytes;
             this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            if (this.log.DUMP) {
+               if (oldValue != this.numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
+                  this.log.error(ME, "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'");
+               }
+            }
+            else if (this.log.TRACE) this.log.warn(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
             return this.numOfBytes;
          }
          catch (SQLException ex) {
@@ -881,10 +936,17 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @see I_Queue#getNumOfPersistentBytes()
     */
    private long getNumOfPersistentBytes_(boolean verbose) throws XmlBlasterException {
-      if (this.numOfPersistentBytes > -1L) return this.numOfPersistentBytes;
+      if (this.numOfPersistentBytes > -1L && !this.log.DUMP) return this.numOfPersistentBytes;
       synchronized (this.modificationMonitor) {
          try {
+            long oldValue = this.numOfPersistentBytes;
             this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            if (this.log.DUMP) {
+               if (oldValue != this.numOfPersistentBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
+                  this.log.error(ME, "getNumOfPersistentBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentBytes + "'");
+               }
+            }
+            else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
             return this.numOfPersistentBytes;
          }
          catch (SQLException ex) {
@@ -1018,12 +1080,22 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
       
       }
       try {
+         sb.append(offset).append(" <numOfPersistentsCached>").append(this.numOfPersistentEntries).append("</numOfPersistentsCached>");
+         sb.append(offset).append(" <sizeOfPersistentsCached>").append(getNumOfPersistentBytes()).append("</sizeOfPersistentsCached>");
+
+         sb.append(offset).append(" <numOfEntriesCached>").append(this.numOfEntries).append("</numOfEntriesCached>");
+         sb.append(offset).append(" <numOfBytesCached>").append(getNumOfBytes()).append("</numOfBytesCached>");
+
+         sb.append(offset).append(" <numOfEntries>").append(getNumOfEntries_()).append("</numOfEntries>");
+         sb.append(offset).append(" <numOfBytes>").append(getNumOfBytes_()).append("</numOfBytes>");
+
+
          sb.append(offset).append(" <numOfPersistents>").append(getNumOfPersistentEntries_(false)).append("</numOfPersistents>");
          sb.append(offset).append(" <sizeOfPersistents>").append(getNumOfPersistentBytes_(false)).append("</sizeOfPersistents>");
       }
       catch (XmlBlasterException e) {
       }
-      sb.append(offset).append(" <associatedTable>").append(this.associatedTable).append("</associatedTable>");
+
       sb.append(offset).append("</JdbcQueueCommonTablePlugin>");
       return sb.toString();
    }
