@@ -146,6 +146,16 @@
    </update>
 
 
+   <!-- From callback server returned QoS when updating messages (return values of update() method) -->
+   <update>
+      <qos>
+         <state>          <!-- Server state -->
+            OK            <!-- OK | ERROR -->
+         </state>
+      </qos>
+   </update>
+
+
    <!-- QoS with login -->
    <client>
       <qos>
