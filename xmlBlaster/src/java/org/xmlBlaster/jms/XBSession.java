@@ -19,16 +19,12 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
 import javax.jms.StreamMessage;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
+import javax.jms.Session;
 import javax.jms.TopicSubscriber;
 
 import org.jutils.log.LogChannel;
@@ -40,14 +36,13 @@ import org.xmlBlaster.util.Global;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBSession implements TopicSession, QueueSession {
+public class XBSession implements Session {
 
    private final static String ME = "XBTopicSession";
-   private Global global;
-   private LogChannel log;
-   private XBConnection connection;
-   private int ackMode;
-
+   protected Global global;
+   protected LogChannel log;
+   protected XBConnection connection;
+   protected int ackMode;
 
    XBSession(XBConnection connection, int ackMode) {
       this.connection = connection;
@@ -63,62 +58,6 @@ public class XBSession implements TopicSession, QueueSession {
       throws JMSException {
       // TODO Auto-generated method stub
       throw new JMSException(ME + " 'createDurableSubscriber' not implemented yet");
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicSession#createDurableSubscriber(javax.jms.Topic, java.lang.String, java.lang.String, boolean)
-    */
-   public TopicSubscriber createDurableSubscriber(
-      Topic arg0,
-      String arg1,
-      String arg2,
-      boolean arg3)
-      throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + " 'createDurableSubscriber' not implemented yet");
-   }
-
-   public TopicPublisher createPublisher(Topic topic) throws JMSException {
-      return new XBTopicPublisher(this.connection.getAccess(), topic);
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicSession#createSubscriber(javax.jms.Topic)
-    */
-   public TopicSubscriber createSubscriber(Topic topic) throws JMSException {
-      return new XBTopicSubscriber(this.connection.getAccess(), topic, null, false, this.ackMode);
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicSession#createSubscriber(javax.jms.Topic, java.lang.String, boolean)
-    */
-   public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal)
-      throws JMSException {
-      return new XBTopicSubscriber(this.connection.getAccess(), topic, messageSelector, noLocal, this.ackMode);
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicSession#createTemporaryTopic()
-    */
-   public TemporaryTopic createTemporaryTopic() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicSession#createTopic(java.lang.String)
-    */
-   public Topic createTopic(String arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.TopicSession#unsubscribe(java.lang.String)
-    */
-   public void unsubscribe(String arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
    }
 
    /* (non-Javadoc)
@@ -245,31 +184,6 @@ public class XBSession implements TopicSession, QueueSession {
    }
 
    /* (non-Javadoc)
-    * @see javax.jms.QueueSession#createReceiver(javax.jms.Queue)
-    */
-   public QueueReceiver createReceiver(Queue arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.QueueSession#createReceiver(javax.jms.Queue, java.lang.String)
-    */
-   public QueueReceiver createReceiver(Queue arg0, String arg1)
-      throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.QueueSession#createSender(javax.jms.Queue)
-    */
-   public QueueSender createSender(Queue arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
     * @see javax.jms.Session#createBrowser(javax.jms.Queue)
     */
    public QueueBrowser createBrowser(Queue arg0) throws JMSException {
@@ -337,6 +251,43 @@ public class XBSession implements TopicSession, QueueSession {
       String arg1,
       boolean arg2)
       throws JMSException {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see javax.jms.TopicSession#createTopic(java.lang.String)
+    */
+   public Topic createTopic(String arg0) throws JMSException {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see javax.jms.TopicSession#unsubscribe(java.lang.String)
+    */
+   public void unsubscribe(String arg0) throws JMSException {
+      // TODO Auto-generated method stub
+
+   }
+
+   /* (non-Javadoc)
+    * @see javax.jms.TopicSession#createDurableSubscriber(javax.jms.Topic, java.lang.String, java.lang.String, boolean)
+    */
+   public TopicSubscriber createDurableSubscriber(
+      Topic arg0,
+      String arg1,
+      String arg2,
+      boolean arg3)
+      throws JMSException {
+      // TODO Auto-generated method stub
+      throw new JMSException(ME + " 'createDurableSubscriber' not implemented yet");
+   }
+
+   /* (non-Javadoc)
+    * @see javax.jms.TopicSession#createTemporaryTopic()
+    */
+   public TemporaryTopic createTemporaryTopic() throws JMSException {
       // TODO Auto-generated method stub
       return null;
    }

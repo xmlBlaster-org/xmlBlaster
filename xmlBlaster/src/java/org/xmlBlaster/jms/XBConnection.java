@@ -46,7 +46,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
    private ConnectReturnQos connectReturnQos;
    private I_XmlBlasterAccess access;
    private ExceptionListener exceptionListener;
-
+   private XBConnectionMetaData metaData;
    
    I_XmlBlasterAccess getAccess() {
       return this.access;
@@ -66,6 +66,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
       if (this.user == null && this.password == null) 
          this.connectQos = new ConnectQos(this.global);
       else this.connectQos = new ConnectQos(this.global, this.user, this.password);
+      this.metaData = new XBConnectionMetaData();
    }
    
    XBConnection(Global global) throws XmlBlasterException {
@@ -130,18 +131,22 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
    public Session createSession(boolean transacted, int ackMode)
       throws JMSException {
       if (transacted) 
-         throw new JMSException(ME + " 'createTopicSession' in transacted mode not implemented yet");
+         throw new JMSException(ME + " 'createSession' in transacted mode not implemented yet");
       return new XBSession(this, ackMode);      
    }
 
    public TopicSession createTopicSession(boolean transacted, int ackMode)
       throws JMSException {
-      return (TopicSession)createSession(transacted, ackMode);
+         if (transacted) 
+            throw new JMSException(ME + " 'createTopicSession' in transacted mode not implemented yet");
+         return new XBTopicSession(this, ackMode);      
    }
 
    public QueueSession createQueueSession(boolean transacted, int ackMode)
       throws JMSException {
-         return (QueueSession)createSession(transacted, ackMode);
+         if (transacted) 
+            throw new JMSException(ME + " 'createQueueSession' in transacted mode not implemented yet");
+         return new XBQueueSession(this, ackMode);      
    }
 
 
@@ -156,24 +161,14 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
       return this.connectQos.getUserId();
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Connection#getExceptionListener()
-    */
    public ExceptionListener getExceptionListener() throws JMSException {
       return this.exceptionListener;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Connection#getMetaData()
-    */
    public ConnectionMetaData getMetaData() throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + " 'getMetaData' not implemented yet");
+      return this.metaData;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Connection#setClientID(java.lang.String)
-    */
    public void setClientID(String loginName) throws JMSException {
       try {
          this.connectQos.setUserId(loginName);
