@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: Util.java,v 1.3 2001/02/14 21:32:26 ruff Exp $
+Version:   $Id: Util.java,v 1.4 2001/02/20 08:15:44 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,7 +39,10 @@ public class Util
          if (session == null) {
             return defaultVal;
          }
-         String val = null; // (String)session.getAttribute(name);  !!!! only since Servlet API 2.1
+         String val = (String)session.getValue(name);
+
+         // Experiment von Marcel
+         //String val = (String)session.getAttribute(name); // !!!! only since Servlet API 2.1
          if (val == null) {
             return defaultVal;
          } else {
@@ -50,7 +53,9 @@ public class Util
    }
 
 
-
+   /**
+    * 
+    */
    public static final boolean getParameter(HttpServletRequest req, String name, boolean defaultVal)
    {
       return Boolean.getBoolean(getParameter(req, name, new Boolean(defaultVal).toString()));
