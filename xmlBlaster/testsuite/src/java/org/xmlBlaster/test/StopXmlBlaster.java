@@ -41,9 +41,20 @@ public class StopXmlBlaster extends TestCase
          con.publish(new MessageUnit("<key oid='__cmd:?exit=0'/>", "".getBytes(), "<qos/>"));
 
          con.disconnect(null);
+
+         try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+         try {
+            XmlBlasterConnection con2 = new XmlBlasterConnection(args);
+            con2.connect(qos, null);
+            fail("No connection expected");
+         }
+         catch(org.xmlBlaster.util.XmlBlasterException e) {
+            System.err.println("Success, connection not possible any more");
+         }
       }
       catch (Exception e) {
          System.err.println(e.toString());
+         fail(e.toString());
       }
    }
 
