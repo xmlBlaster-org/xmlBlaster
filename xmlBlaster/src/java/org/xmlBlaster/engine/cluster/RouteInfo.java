@@ -44,6 +44,14 @@ public final class RouteInfo {
    }
 
    /**
+    * The unique node name of the xmlBlaster instance. 
+    * @param The string representation of my name
+    */
+   public String getId() {
+      return this.nodeId.getId();
+   }
+
+   /**
     * The distance from the current xmlBlaster node from the
     * master node (for this message). 
     */

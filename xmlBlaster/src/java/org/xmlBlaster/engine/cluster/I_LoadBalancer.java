@@ -10,6 +10,7 @@ package org.xmlBlaster.engine.cluster;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.cluster.ClusterManager;
 
 import java.util.Set;
 
@@ -20,6 +21,13 @@ import java.util.Set;
  * @author ruff@swand.lake.de
  */
 public interface I_LoadBalancer {
+   /**
+    * This is called after instantiation of the plugin 
+    * @param glob The Global handle of this xmlBlaster server instance.
+    * @param clusterManager My manager
+    */
+   public void initialize(Global glob, ClusterManager clusterManager);
+
    /**
     * Your plugin should determine which xmlBlaster node to choose. 
     * <p />
@@ -50,10 +58,12 @@ public interface I_LoadBalancer {
     *  <pre>
     *   "available:stratum:nodeId"
     *
-    *   available := The connection state is: 0 connected, 1 polling, 2 unavailable
+    *   available := The connection state is: 0 connected, 1 polling
     *   stratum   := 0 master, 1 slave, 2 slaveOfSlave ...
     *   nodeId    := a unique counter (nodeDomainInfo.getCount())
     *  </pre>
+    *  The set contains only nodes marked as allowed (these are nodes we are connected
+    *  to or polling for), not available nodes are filtered away already.
     * @return The chosen clusterNode to handle the message
     */
    public ClusterNode getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException;

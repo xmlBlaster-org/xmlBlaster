@@ -46,8 +46,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /** Holds performance informations for load balancing */
    private NodeStateInfo state;
    
-   /** Hold mapping informations to map a message to a master node */
+   /**
+    * Hold mapping informations to map a message to a master node. 
+    * The key is the query string -> to avoid duplicate identical queries
+    * The value is an instance of NodeDomainInfo
+    */
    private Map domainInfoMap = new TreeMap();
+
+   /** Currently always true, needs to be configurable !!! TODO */
+   private boolean isAllowed = true;
 
    /**
     * Create an object holding all informations about a node
@@ -58,6 +65,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       this.nodeInfo = new NodeInfo(glob, nodeId);
       this.state = new NodeStateInfo(glob);
       this.ME = "ClusterNode-" + getId();
+//!!!      addDomainInfo(new NodeDomainInfo());
    }
 
    /**
@@ -103,6 +111,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public XmlBlasterConnection getXmlBlasterConnection() throws XmlBlasterException {
       if (isLocalNode())
+         return null;
+
+      if (!isAllowed())
          return null;
 
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
@@ -217,13 +228,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * Set the filter rules to determine the master of a message. 
     */
    public void addDomainInfo(NodeDomainInfo domainInfo) {
-      this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
+      this.domainInfoMap.put(domainInfo.getQuery(), domainInfo);
    }
 
    /**
     * Check if we have currently a functional connection to this node. 
     */
    public boolean isLoggedIn() throws XmlBlasterException {
+      if (isLocalNode())
+         return true;
       XmlBlasterConnection con = getXmlBlasterConnection();
       if (con != null)
          return con.isLoggedIn();
@@ -231,6 +244,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    public boolean isPolling() throws XmlBlasterException {
+      if (isLocalNode())
+         return false;
       XmlBlasterConnection con = getXmlBlasterConnection();
       if (con != null)
          return con.isPolling();
@@ -243,10 +258,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *         false if the node should not be used
     */
    public boolean isAllowed() throws XmlBlasterException {
-      XmlBlasterConnection con = getXmlBlasterConnection();
-      if (con != null)
+      if (isLocalNode())
          return true;
-      return false;
+      return isAllowed;
    }
 
    /**

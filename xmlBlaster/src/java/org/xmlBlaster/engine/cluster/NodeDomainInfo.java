@@ -22,7 +22,6 @@ import org.xml.sax.Attributes;
  *
  * &lt;master stratum='0' refid='bilbo' type='DomainToMaster' version='1.0'>
  *    &lt;![CDATA[
- *       &lt;key domain=''/>
  *       &lt;key domain='rugby'/>
  *    ]]>
  * &lt;/master>
@@ -45,6 +44,10 @@ public final class NodeDomainInfo implements Comparable
    private final int count;
 
    private int stratum = 0;
+   public final boolean DEFAULT_acceptDefault = true;
+   private boolean acceptDefault = DEFAULT_acceptDefault;
+   public final boolean DEFAULT_acceptOtherDefault = false;
+   private boolean acceptOtherDefault = DEFAULT_acceptOtherDefault;
    private String refId = null;
    private String type = null;
    /** The version of the plugin */
@@ -58,6 +61,8 @@ public final class NodeDomainInfo implements Comparable
 
    /**
     * Create a NodeDomainInfo belonging to the given cluster node. 
+    * <p />
+    * One instance of this is created for each &lt;master> tag
     */
    public NodeDomainInfo(Global glob, ClusterNode clusterNode) {
       this.glob = glob;
@@ -209,6 +214,34 @@ public final class NodeDomainInfo implements Comparable
    }
 
    /**
+    * Are we master for default domains?
+    */
+   public void setAcceptDefault(boolean acceptDefault) {
+      this.acceptDefault = acceptDefault;
+   }
+
+   /**
+    * Are we master for messages with the default domain?
+    */
+   public boolean getAcceptDefault() {
+      return this.acceptDefault;
+   }
+
+   /**
+    * Are we master for default domains of other nodes?
+    */
+   public void setAcceptOtherDefault(boolean acceptOtherDefault) {
+      this.acceptOtherDefault = acceptOtherDefault;
+   }
+
+   /**
+    * Are we master for messages with default domain from other nodes?
+    */
+   public boolean getAcceptOtherDefault() {
+      return this.acceptOtherDefault;
+   }
+
+   /**
     * Called for SAX master start tag
     * @return true if ok, false on error
     */
@@ -230,6 +263,10 @@ public final class NodeDomainInfo implements Comparable
             if (tmp != null) setType(tmp.trim());
             tmp = attrs.getValue("version");
             if (tmp != null) setVersion(tmp.trim());
+            tmp = attrs.getValue("acceptDefault");
+            if (tmp != null) { try { setAcceptDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <master acceptDefault='" + tmp + "'"); }; }
+            tmp = attrs.getValue("acceptOtherDefault");
+            if (tmp != null) { try { setAcceptOtherDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <master acceptOtherDefault='" + tmp + "'"); }; }
          }
          character.setLength(0);
          if (getType() == null) {
@@ -287,6 +324,10 @@ public final class NodeDomainInfo implements Comparable
       sb.append(" type='").append(getType()).append("'");
       if (!DEFAULT_version.equals(getVersion()))
           sb.append(" version='").append(getVersion()).append("'");
+      if (DEFAULT_acceptDefault != getAcceptDefault())
+          sb.append(" acceptDefault='").append(getAcceptDefault()).append("'");
+      if (DEFAULT_acceptOtherDefault != getAcceptOtherDefault())
+          sb.append(" acceptOtherDefault='").append(getAcceptOtherDefault()).append("'");
       sb.append(">");
 
       sb.append(offset).append("   <![CDATA[").append(getQuery()).append("]]>");

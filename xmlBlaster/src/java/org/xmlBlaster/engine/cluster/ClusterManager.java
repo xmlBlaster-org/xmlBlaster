@@ -71,7 +71,7 @@ public final class ClusterManager
 
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
-      this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob);
+      this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob, this);
       loadBalancer = loadBalancerPluginManager.getPlugin(
                 this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"
       if (loadBalancer == null) {
@@ -148,7 +148,7 @@ public final class ClusterManager
       if (drivers.length > 0)
          log.info(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
       else
-         log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster address available");
+         log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster (node=" + getId() + ") address available");
    }
 
    /**
@@ -286,10 +286,21 @@ public final class ClusterManager
                                      // Sorted by stratum (0 is the first entry) -> see NodeDomainInfo.compareTo
       int numRulesFound = 0;                             // For nicer logging of warnings
 
+      PublishQos publishQos = msgWrapper.getPublishQos();
+      if (publishQos.count(glob.getNodeId()) > 1) { // Checked in RequestBroker as well with warning
+         glob.getLog().warn(ME, "Warning, message oid='" + msgWrapper.getXmlKey().getUniqueKey()
+            + "' passed my node id='" + glob.getId() + "' before, we have a circular routing problem, keeping message locally");
+         return null;
+      }
+
       Iterator it = getClusterNodeMap().values().iterator();
       // for each cluster node ...
       while (it.hasNext()) {
          ClusterNode clusterNode = (ClusterNode)it.next();
+         if (clusterNode.isAllowed() == false) {
+            glob.getLog().info(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
+            continue;
+         }
          Iterator domains = clusterNode.getDomainInfoMap().values().iterator();
          if (log.TRACE) log.trace(ME, "Testing " + clusterNode.getDomainInfoMap().size() + " domains rules of node " + clusterNode.getId());
          numRulesFound += clusterNode.getDomainInfoMap().size();

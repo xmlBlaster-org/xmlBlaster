@@ -131,16 +131,27 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     */
    public ClusterNode getMasterId(NodeDomainInfo nodeDomainInfo, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
 
-      if (msgWrapper.getXmlKey().isDefaultDomain()) { // if no domain is specified -> local node is master
-         if (log.TRACE) log.trace(ME, "message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "' is handled by local node");
-         return glob.getClusterManager().getMyClusterNode(); // the local node is the master
+      if (msgWrapper.getXmlKey().isDefaultDomain()) {
+         if (nodeDomainInfo.getClusterNode().isLocalNode()) {
+            if (nodeDomainInfo.getAcceptDefault()==true) {
+               // if no domain is specified and the local node accepts default messages -> local node is master
+               if (log.TRACE) log.trace(ME, "Message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "' is handled by local node");
+               return nodeDomainInfo.getClusterNode(); // Found the master
+            }
+         }
+         else {
+            if (nodeDomainInfo.getAcceptOtherDefault()==true) {
+               log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' which accepts other default domains");
+               return nodeDomainInfo.getClusterNode(); // Found the master
+            }
+         }
       }
 
       XmlKey preparedQuery = (XmlKey)nodeDomainInfo.getPreparedQuery();
 
       if (preparedQuery == null) { // The first time we need to parse the query string, and cache it
          String query = nodeDomainInfo.getQuery().trim();
-         log.info(ME, "Parsing user supplied domain to master mapping query='" + query + "'");
+         if (log.TRACE) log.trace(ME, "Parsing user supplied domain to master mapping query='" + query + "'");
          try {
             preparedQuery = new XmlKey(glob, query);
          } catch(Throwable e) {

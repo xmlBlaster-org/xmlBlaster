@@ -294,7 +294,7 @@ public class NodeParser extends SaxHandlerBase
  
          xml =
             "<clusternode id='heron.mycomp.com'>\n" +
-            "   <master stratum='1' refid='frodo' type='DomainPlugin' version='2.0'>\n" +
+            "   <master stratum='1' refid='frodo' type='DomainPlugin' version='2.0' acceptDefault='false' acceptOtherDefault='true'>\n" +
             "     My own rule\n" +
             "   </master>\n" +
             "   <state>\n" +

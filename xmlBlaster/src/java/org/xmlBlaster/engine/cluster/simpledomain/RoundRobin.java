@@ -15,6 +15,7 @@ import org.xmlBlaster.engine.cluster.I_LoadBalancer;
 import org.xmlBlaster.engine.cluster.NodeInfo;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.ClusterNode;
+import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 import java.util.Set;
@@ -28,17 +29,19 @@ import java.util.Iterator;
 final public class RoundRobin implements I_LoadBalancer, I_Plugin {
 
    private final String ME = "RoundRobin";
-   private Global glob;
-   private Log log;
+   private Global glob = null;
+   private Log log = null;
+   private ClusterManager clusterManager = null;
    private int counter = 0;
 
    /**
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(Global glob, ClusterManager clusterManager) {
       this.glob = glob;
       this.log = glob.getLog();
+      this.clusterManager = clusterManager;
       log.info(ME, "Round robin load balancer is initialized");
    }
 
@@ -101,29 +104,70 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     * @see org.xmlBlaster.engine.cluster.I_LoadBalancer#getClusterNode(java.util.Set)
     */
    public synchronized ClusterNode getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException {
+
+      // TODO: Change return to ClusterNode[] if multiple fail over nodes exist !!!
+      
       if (nodeDomainInfoSet.size() == 0) {
          log.warn(ME, "Empty nodeDomainInfoSet, using local node");
-         return glob.getClusterManager().getMyClusterNode(); // handle locally
+         return clusterManager.getMyClusterNode(); // handle locally
       }
 
       if (counter >= nodeDomainInfoSet.size()) // counter is our RoundRobin approach
          counter = 0;
 
-      /* !!!
+      /*
        The Set is sorted after
        "<available:stratum:nodeId>"
        available := 0 connected, 1 polling, 2 unavailable
        stratum   := 0 master, 1 stratum, 2 stratum ...
 
-       TODO:
        So we may choose a slave routing to a master,
-       the chosen stratum must smaller (closer to the master) than our current stratum
+       the chosen stratum must be smaller (closer to the master) than our current stratum
        
        There must be the possibility to use a slave instead of the master
        directly (choosing the stratum which is exactly one smaller?)
       */
 
+      // Step 1: Find out my stratum for this message (if i have one)
+      // Check all rules to find my lowest stratum
+      int myStratum = Integer.MAX_VALUE;
       Iterator it = nodeDomainInfoSet.iterator();
+      int ii=0;
+      while (it.hasNext()) {
+         NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)it.next();
+         if (nodeDomainInfo.getClusterNode().isLocalNode()) {
+            if (nodeDomainInfo.getStratum() < myStratum) {
+               myStratum = nodeDomainInfo.getStratum();
+               break;
+            }
+         }
+      }
+
+      // Step 2: Take the node with the lowest stratum or myself
+      // Aaheem, this is no round robin ... :-)
+      // We know that the Set is sorted after available:stratum:nodeId
+      it = nodeDomainInfoSet.iterator();
+      while (it.hasNext()) {
+         NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)it.next();
+         if (myStratum <= nodeDomainInfo.getStratum()) {
+            // handle locally, no need to send to a worse or equal stratum
+            if (nodeDomainInfo.getStratum() > 0) {
+               log.warn(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size()
+                    + " nodes, but we are only stratum=" + nodeDomainInfo.getStratum() + ". The message is not routed further!");
+            }
+            else {
+               log.info(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
+            }
+            return clusterManager.getMyClusterNode();
+         }
+         ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
+         log.info(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+         return clusterNode;
+      }
+
+      /*
+      // Step 2: Filter the possible nodes (round robin)
+      it = nodeDomainInfoSet.iterator();
       int ii=0;
       while (it.hasNext()) {
          Object obj = it.next();
@@ -136,8 +180,9 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
          }
          ii++;
       }
+      */
 
       log.warn(ME, "Can't find master, using local node");
-      return glob.getClusterManager().getMyClusterNode(); // handle locally
+      return clusterManager.getMyClusterNode(); // handle locally
    }
 }

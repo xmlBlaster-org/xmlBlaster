@@ -3,7 +3,7 @@ Name:      LoadBalancerPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for load balancing
-Version:   $Id: LoadBalancerPluginManager.java,v 1.4 2002/04/24 06:50:16 ruff Exp $
+Version:   $Id: LoadBalancerPluginManager.java,v 1.5 2002/05/01 07:55:59 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -34,11 +34,13 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
 
    private final Global glob;
    private final Log log;
+   private final ClusterManager clusterManager;
 
-   public LoadBalancerPluginManager(Global glob) {
+   public LoadBalancerPluginManager(Global glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
       this.log = this.glob.getLog();
+      this.clusterManager = clusterManager;
    }
 
    /**
@@ -113,6 +115,7 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    protected I_LoadBalancer loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
       I_LoadBalancer i = (I_LoadBalancer)super.instantiatePlugin(pluginNameAndParam);
+      i.initialize(glob, clusterManager);
       return i;
    }
 }
