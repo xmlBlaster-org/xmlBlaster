@@ -85,20 +85,13 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
       return this.isShutdown;
    }
 
-   public final synchronized void execute(DeliveryManager deliveryManager, java.lang.Runnable command) throws XmlBlasterException {
-      try {
-         //deliveryManager.setDeliveryWorkerIsActive(true); // Done in DeliveryManager already
-         if (this.isShutdown) {
-            log.trace(ME, "The pool is shudown, ignoring execute()");
-            return;
-         }
-         this.pool.execute(command);
+   final synchronized void execute(DeliveryManager deliveryManager, java.lang.Runnable command) 
+                                   throws java.lang.InterruptedException {
+      if (this.isShutdown) {
+         log.trace(ME, "The pool is shudown, ignoring execute()");
+         return;
       }
-      catch (Throwable e) {
-         deliveryManager.setDeliveryWorkerIsActive(false);
-         if (log.TRACE) log.trace(ME, "Callback failed: " + e.toString());
-         throw new XmlBlasterException(ME, "Callback failed: " + e.toString());
-      }
+      this.pool.execute(command);
    }
 
    public String getStatistic() {

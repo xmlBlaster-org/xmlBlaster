@@ -322,7 +322,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       //Thread.currentThread().dumpStack();
       if (entryList == null) {
          if (!this.isShutdown)
-            log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage());
+            log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage() + toXml(""));
          return;
       }
 
@@ -589,13 +589,18 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          //if (log.TRACE) log.trace(ME, "Doing startWorkerThread("+fromTimeout+")");
          synchronized (this) {
             //if (log.TRACE) log.trace(ME, "Doing startWorkerThread(isShutdown="+this.isShutdown+", deliveryWorkerIsActive="+this.deliveryWorkerIsActive+") inside sync");
-            if (this.isShutdown) return;
+            if (this.isShutdown) {
+               if (log.TRACE) log.trace(ME, "startWorkerThread() failed, we are shutdown: " + toXml(""));
+               return;
+            }
             if (this.deliveryWorkerIsActive == false) { // send message directly
                this.deliveryWorkerIsActive = true;
                this.notifyCounter = 0;
                try {
                   this.deliveryWorkerPool.execute(this, new DeliveryWorker(glob, this));
-               } catch (XmlBlasterException e) {
+               }
+               catch (Throwable e) {
+                  this.deliveryWorkerIsActive = false;
                   log.error(ME, "Unexpected error occurred: " + e.toString());
                   e.printStackTrace();
                }
@@ -625,7 +630,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     */
    private boolean checkSending() {
       if (this.isShutdown) {
-         if (log.TRACE) log.trace(ME, "The dispatcher is shutdown, can't activate callback worker thread.");
+         if (log.TRACE) log.trace(ME, "The dispatcher is shutdown, can't activate callback worker thread" + toXml(""));
          return false; // assert
       }
 
@@ -702,9 +707,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * it is triggered again.
     */
    void setDeliveryWorkerIsActive(boolean val) {
-      deliveryWorkerIsActive = val;
+      this.deliveryWorkerIsActive = val;
       if (val == false) {
-         if (this.isShutdown) return;
+         if (this.isShutdown) {
+            if (log.TRACE) log.trace(ME, "setDeliveryWorkerIsActive(" + val + ") failed, we are shutdown: " + toXml(""));
+            return;
+         }
 
          if (msgQueue.getNumOfEntries() > 0) {
             if (log.TRACE) log.trace(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.getNumOfEntries() + " messages.");
@@ -724,7 +732,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Called from DeliveryWorker when internal error (Throwable) occurred to avoid infinite looping
+    * Called locally and from TopicHandler when internal error (Throwable) occurred to avoid infinite looping
     */
    public void internalError(Throwable throwable) {
       givingUpDelivery((throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
@@ -806,7 +814,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       sb.append(offset).append("<DeliveryManager id='").append(getId());
       if (this.msgQueue != null)
          sb.append(offset).append("' numEntries='").append(this.msgQueue.getNumOfEntries());
-      sb.append("'>");
+      sb.append("' isShutdown='").append(this.isShutdown).append("'>");
       sb.append(this.deliveryConnectionsHandler.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append(" <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
       sb.append(offset).append("</DeliveryManager>");
