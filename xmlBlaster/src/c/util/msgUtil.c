@@ -325,12 +325,13 @@ char *strFromBlobAlloc(const char *blob, const size_t len)
  * Guarantees a '\0' terminated string
  * @param to The destination string must be big enough
  * @param from The source to be copied
- * @param maxLen of 'to' will be filled with a '\0'
+ * @param maxLen of 'to' will be filled with a '\0',
+ *        so effectively only maxLen-1 from 'from' are copied.
  * @return The destination string 'to'
  */
 char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 {
-   char *ret=strncpy(to, from, maxLen);
+   char *ret=strncpy(to, from, maxLen-1);
    *(to+maxLen-1) = '\0';
    return ret;
 }
