@@ -1,5 +1,56 @@
-This C-code is outdated, it was just to play a bit with raw sockets.
-We need to implement one day the secification
-  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+This is a first, tiny quick hack of a C based SOCKET client.
+It should compile on Windows and Linux.
 
-Marcel
+It currently supports only synchronous access like
+
+   connect, publish, unSubscribe, erase, disconnect
+
+and reports exception nicely back to the client.
+
+
+COMPILE:
+========
+
+cd xmlBlaster/demo/c/socket   (see client.c)
+
+Linux:    gcc -Wall -g -o client client.c callbackServer.c -lpthread
+
+Windows:  cl /MT /W3 /Wp64 -D_WINDOWS client.c callbackServer.c ws2_32.lib
+
+
+Now start xmlBlaster:
+=====================
+
+   java org.xmlBlaster.Main -dump[socket] true -trace[socket] true -call[socket] true  -call[core] true
+
+and the C client:
+
+   client
+
+The client connects and does some invocations (see the main() in client.c).
+
+The code is plain C so it should be possible to compile it on all platforms
+and it has only 19 kBytes size on Linux.
+
+
+Next steps:
+===========
+
+o Clean up the code
+ - move to xmlBlaster/src/c
+ - split to files
+ - make a lib from it
+
+o Make layers of functionality
+ - raw communication
+ - adding threading support to allow callbacks in the same process.
+ - expat parsing
+
+o Add some demo in xmlBlaster/demo/c
+
+o Wrap it as a C++ protocol plugin to be independend of CORBA and
+ use the C++ testsuite for this C implementation 
+
+
+
+mr@marcelruff.info 05/2003
