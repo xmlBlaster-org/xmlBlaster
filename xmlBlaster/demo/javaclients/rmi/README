@@ -1,0 +1,20 @@
+How to use RMI to access xmlBlaster
+-----------------------------------
+
+Add the driver to xmlBlaster.properties, this example starts
+the CORBA and the RMI server
+
+   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,RMI:org.xmlBlaster.protocol.rmi.RmiDriver
+   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver
+
+Adjust the security policy file if you like to (it is currently totaly relaxed):
+
+   xmlBlaster/config/xmlBlaster.policy
+
+Start the server:
+
+   java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.Main
+
+And the demo client:
+
+   java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy  javaclients.rmi.ClientGet
