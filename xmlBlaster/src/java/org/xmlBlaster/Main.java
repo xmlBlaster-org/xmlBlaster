@@ -468,7 +468,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   -h                  Show the complete usage.");
       log.plain(ME, "");
 //      try { log.plain(ME, glob.getProtocolManager().usage()); } catch (XmlBlasterException e) { log.warn(ME, "No usage: " + e.toString()); }
-      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfType("protocol");
+      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfInterfaceI_Driver(); // getPluginsOfGroup("protocol");
       for (int i=0; i < drivers.size(); i++) {
          I_Driver driver = (I_Driver)drivers.get(i);
          log.plain(ME, driver.usage());
