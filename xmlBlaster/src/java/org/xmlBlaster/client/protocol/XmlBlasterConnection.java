@@ -821,7 +821,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *      System.out.println(e.reason);
     *   }
     * </pre>
-    * Note that on logout we automatically unSubscribe() this subscription
+    * <p />
+    * NOTE: You need to pass a callback handle on login as well (even if you 
+    * never use it). It allows to setup the callback server and is the
+    * default callback deliver channel.
+    * <p />
+    * NOTE: On logout we automatically unSubscribe() this subscription
     * if not done before.
     * @param cb      Your callback handling implementation
     * @return oid    The oid of your subscribed Message<br>
@@ -835,6 +840,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public final String subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "subscribe(with callback) ...");
+      if (updateClient == null) {
+         String text = "No callback server is incarnated. " +
+                       " Please use XmlBlasterConnection - constructor with default I_Callback given.";
+         throw new XmlBlasterException(ME+".NoCallback", text);
+      }
       String subscriptionId = null;
       synchronized (callbackMap) {
          subscriptionId = subscribe(xmlKey, qos);
