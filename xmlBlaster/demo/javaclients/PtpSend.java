@@ -71,26 +71,29 @@ public class PtpSend
 
          int numSend = glob.getProperty().get("numSend", 100);
          long delay = glob.getProperty().get("delay", 2000);
-         log.info(ME, "Send " + numSend + " messages to '" + receiverName + "' sleeping " + delay + " millis inbetween");
+         boolean forceQueuing = glob.getProperty().get("forceQueuing", false);
+         log.info(ME, "Send " + numSend + " messages to '" + receiverName + "' sleeping " + delay + " millis inbetween, forceQueuing=" + forceQueuing);
          for (int ii=0; ii<numSend; ii++) {
             try {
                PublishKey pk = new PublishKey(glob, "PtpSend", "text/plain", "1.0");
 
                PublishQos pq = new PublishQos(glob);
                Destination dest = new Destination(new SessionName(glob, receiverName));
-               dest.forceQueuing(glob.getProperty().get("forceQueuing", false));
+               dest.forceQueuing(forceQueuing);
                pq.addDestination(dest);
 
                MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
                
                PublishReturnQos retQos = sender.publish(msgUnit);
-               log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName);
+               log.info(senderName, "Published message #" + ii + " '" + retQos.getKeyOid() + "' to " + receiverName);
             }
             catch (XmlBlasterException e) {
                log.warn(ME, "We have a problem: " + e.toString());
             }
             finally {
-               try { Thread.currentThread().sleep(delay); } catch( InterruptedException i) {}
+               if (delay > 0L) {
+                  try { Thread.currentThread().sleep(delay); } catch( InterruptedException i) {}
+               }
             }
          }
       }
@@ -114,7 +117,7 @@ public class PtpSend
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         glob.getLog(null).info("PtpSend", "Example: java PtpSend -forceQueuing true\n");
+         glob.getLog(null).info("PtpSend", "Example: java PtpSend -forceQueuing true -numSend 10000 -delay 0\n");
          System.exit(1);
       }
 

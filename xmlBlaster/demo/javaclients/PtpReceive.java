@@ -48,8 +48,8 @@ public class PtpReceive
          ConnectQos qos = new ConnectQos(glob, receiverName, "secret");
          ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(receiverName, "Receiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                counter++;
+               log.info(receiverName, "Receiving asynchronous message #" + counter + " '" + updateKey.getOid() + "' in default handler");
                if (counter == abortCount)
                   System.exit(-1);
                return "";
