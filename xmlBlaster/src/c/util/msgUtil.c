@@ -30,11 +30,11 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 
 #if defined(__GNUC__) || defined(__ICC)
-   // To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
-   // or 'strings libxmlBlasterClientC.so  | grep msgUtil.c'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.10 2003/07/17 17:47:17 ruff Exp $ xmlBlaster @version@";
+   /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
+      or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.11 2003/07/17 17:50:59 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.10 2003/07/17 17:47:17 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.11 2003/07/17 17:50:59 ruff Exp $ xmlBlaster @version@";
 #endif
 
 static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
