@@ -26,9 +26,9 @@ class HelloWorld2 : public I_Callback,          // for the asynchroneous updates
                     public I_ConnectionProblems // for notification of connection problems when failsafe
 {
 private:
-   string  ME;		                              // the string identifying this class when logging
+   string  ME;                                        // the string identifying this class when logging
    Global& global_;                            
-   Log&    log_;																// the reference to the log object for this instance
+   Log&    log_;                                                                                                                                // the reference to the log object for this instance
 
 public:
    HelloWorld2(Global& glob) 
@@ -39,27 +39,26 @@ public:
    }                                            // channel invoke -trace[demo] true on the command line,
                                                 // then it will only switch on the traces for the demo channel
 
-   virtual ~HelloWorld2()												// the constructor does nothing for the moment
+   virtual ~HelloWorld2()                                                                                               // the constructor does nothing for the moment
    {
    }
 
-   bool reConnected()                           // this is invoked when in failsafe mode and a connection has
-   { 																				    // been successfully reestablished.
-      log_.info(ME, "reconnected");             // IMPORTANT: this method should not block for long times
-      return true;                              // since it would block the reconnecting thread
+
+   bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "reconnected");
+      return true;
    }
 
-   void lostConnection()                        // this is invoked when in failsafe mode and a connection has
-   {																						// been lost, i.e. the reconnection mechanism has been stopped
-      log_.info(ME, "lost connection");					// IMPORTANT: this method should not block for long times    
-   }																						// since it would block the reconnecting thread              
+   void reachedDead(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "lost connection");
+   }
 
-   void toPolling()															// this is invoked when in failsafe mode. The connection to
-   {																						// xmlBlaster is broken and the library is going into polling
-      log_.info(ME, "going to poll modus");			// i.e. a thread is checking if it is possible to reconnect.
-                                                // IMPORTANT: this method should not block for long times    
-   }																						// since it would block the reconnecting thread              
-
+   void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "going to poll modus");
+   }
 
    void execute()
    {

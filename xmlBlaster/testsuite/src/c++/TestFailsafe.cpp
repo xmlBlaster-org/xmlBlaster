@@ -86,22 +86,21 @@ public:
       delete embeddedServer_;
    }
 
-   bool reConnected()
+   bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
    {
       log_.info(ME, "reconnected");
       return true;
    }
 
-   void lostConnection()
+   void reachedDead(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
    {
       log_.info(ME, "lost connection");
    }
 
-   void toPolling()
+   void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
    {
       log_.info(ME, "going to poll modus");
    }
-
 
    void setUp()
    {
@@ -169,7 +168,7 @@ public:
 
    void testFailsafe() 
    {
-   	  int imax = 30;
+          int imax = 30;
       try {
          pubQos_ = new PublishQos(global_);
          pubKey_ = new PublishKey(global_);

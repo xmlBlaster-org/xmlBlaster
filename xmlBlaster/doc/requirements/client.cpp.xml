@@ -70,23 +70,22 @@ public:
    {
    }
 
-   bool reConnected()                           // this is invoked when in failsafe mode and a connection has
-   { 																				    // been successfully reestablished.
-      log_.info(ME, "reconnected");             // IMPORTANT: this method should not block for long times
-      return true;                              // since it would block the reconnecting thread
+
+   bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "reconnected");
+      return true;
    }
 
-   void lostConnection()                        // this is invoked when in failsafe mode and a connection has
-   {																						// been lost, i.e. the reconnection mechanism has been stopped
-      log_.info(ME, "lost connection");					// IMPORTANT: this method should not block for long times    
-   }																						// since it would block the reconnecting thread              
+   void reachedDead(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "lost connection");
+   }
 
-   void toPolling()															// this is invoked when in failsafe mode. The connection to
-   {																						// xmlBlaster is broken and the library is going into polling
-      log_.info(ME, "going to poll modus");    // i.e. a thread is checking if it is possible to reconnect.
-			                       // IMPORTANT: this method should not block for long times    
-   }																						// since it would block the reconnecting thread              
-
+   void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "going to poll modus");
+   }
 
    void execute()
    {
@@ -191,6 +190,6 @@ int main(int args, char ** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 

@@ -102,7 +102,9 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    if (log_.TRACE) {
       log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
    }
+   enum States oldState = status_;
    status_ = CONNECTED;
+   connectionProblems_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
    return *connectReturnQos_;
@@ -354,11 +356,12 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 
 void ConnectionsHandler::toPollingOrDead()
 {
+   enum States oldState = status_;
    if (!isFailsafe()) {
       log_.info(ME, "going into DEAD status since not in failsafe mode. For failsafe mode set 'delay' to a positive long value, for example on the cmd line: -delay 10000");
       status_ = DEAD;
       connection_->shutdown();
-      if (connectionProblems_) connectionProblems_->lostConnection();
+      if (connectionProblems_) connectionProblems_->reachedDead(oldState, this);
       return;
    }
 
@@ -375,7 +378,7 @@ void ConnectionsHandler::toPollingOrDead()
    }
    */
    connection_->shutdown();
-   if (connectionProblems_) connectionProblems_->toPolling();
+   if (connectionProblems_) connectionProblems_->reachedPolling(oldState, this);
    startPinger();
 }
 
@@ -418,10 +421,11 @@ void ConnectionsHandler::timeout(void *userData)
            }
 
            bool doFlush = true;
-           if ( connectionProblems_ ) doFlush = connectionProblems_->reConnected();
+           enum States oldState = status_;
+           status_ = CONNECTED;
+           if ( connectionProblems_ ) doFlush = connectionProblems_->reachedAlive(oldState, this);
 
            Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
-           status_ = CONNECTED;
            if (sessionId != lastSessionId_) {
               log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");
               lastSessionId_ = sessionId;
@@ -446,9 +450,10 @@ void ConnectionsHandler::timeout(void *userData)
            startPinger();
         }
         else {
+           enum States oldState = status_;
            status_ = DEAD;
            if ( connectionProblems_ ) {
-              connectionProblems_->lostConnection();
+              connectionProblems_->reachedDead(oldState, this);
               // stopping
            }
         }
