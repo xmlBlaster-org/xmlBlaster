@@ -25,6 +25,10 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.j2ee.k2 \
 			org.xmlBlaster.j2ee.k2.client \
 			org.xmlBlaster.authentication \
+			org.xmlBlaster.authentication.plugins \
+			org.xmlBlaster.authentication.plugins.simple \
+			org.xmlBlaster.authentication.plugins.a2Blaster \
+			org.xmlBlaster.authentication.plugins.gui \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.protocol \
 			org.xmlBlaster.client.protocol.corba \
@@ -44,15 +48,17 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.nativ \
 			org.xmlBlaster.util
 
-JUTILS_PACKGS = org.jutils \
-			org.jutils.collection \
-			org.jutils.init \
-			org.jutils.io \
-			org.jutils.log \
-			org.jutils.pool \
-			org.jutils.runtime \
-			org.jutils.text \
-			org.jutils.time
+JUTILS_PACKGS = 
+
+#JUTILS_PACKGS = org.jutils \
+#			org.jutils.collection \
+#			org.jutils.init \
+#			org.jutils.io \
+#			org.jutils.log \
+#			org.jutils.pool \
+#			org.jutils.runtime \
+#			org.jutils.text \
+#			org.jutils.time
 
 
 
