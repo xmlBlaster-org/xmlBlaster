@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.20 2002/06/02 21:19:42 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.21 2002/06/02 23:16:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -876,6 +876,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (tmp.length() > 0)
             setPtpAllowed(new Boolean(tmp).booleanValue());
          return;
+      }
+
+      if (name.equalsIgnoreCase("sessionId")) {
+         if (inSession) {
+            inSessionId = false;
+            setSessionId(character.toString().trim());
+         }
       }
 
       if (name.equalsIgnoreCase("securityService")) {
