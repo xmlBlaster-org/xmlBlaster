@@ -33,6 +33,9 @@ import junit.framework.*;
 /**
  * This client does test callbacks for two sessions and dead letters. 
  * <p />
+ * Test does not work with SOCKET protocol as here we use the same socket for
+ * callback and we can't simulate a lost callback
+ * <p />
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.authentication.TestSessionCb
@@ -51,6 +54,12 @@ public class TestSessionCb extends TestCase
    private int deadLetterCounter = 0;
 
    /**
+   * Test does not work with SOCKET protocol as here we use the same socket for
+   * callback and we can't simulate a lost callback
+   */
+   private boolean isSocket = false;
+
+   /**
     * Constructs the TestSessionCb object.
     */
    public TestSessionCb(Global glob, String testName) {
@@ -62,11 +71,20 @@ public class TestSessionCb extends TestCase
    /**
     */
    protected void setUp() {
+      String driverType = glob.getProperty().get("client.protocol", "dummy");
+      if (driverType.equalsIgnoreCase("SOCKET"))
+         isSocket = true;
+
+      if (isSocket) {
+         log.warn(ME, "callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoce channel");
+         return;
+      }
    }
 
    /**
     */
    protected void tearDown() {
+      if (isSocket) return;
       try {
          EraseKeyWrapper ek = new EraseKeyWrapper(oid);
          EraseQosWrapper eq = new EraseQosWrapper();
@@ -81,6 +99,7 @@ public class TestSessionCb extends TestCase
    /**
     */
    public void testSessionCb() {
+      if (isSocket) return;
       log.info(ME, "testSessionCb() ...");
       try {
          log.info(ME, "Connecting ...");
