@@ -1,30 +1,34 @@
-#################################################################
-#                        xmlBlaster                             #
-#           Free Message-oriented Middleware (MOM)              #
-#                 http://www.xmlBlaster.org                     #
-#################################################################
-#                                                               #
-#  The XmlBlaster is the only XML based MOM (message-oriented   #
-#  Middleware) which comes with LGPL. XmlBlaster is a pure Java # 
-#  publish/subscribe MOM server which exchanges XML-encoded     #
-#  messages between publishers and subscribers.                 #
-#                                                               # 
-# Communication with the server is based on CORBA, and          # 
-# subscribers can use XPath expressions to filter the messages  #
-# they wish to receive.                                         #
-#                                                               #
-# The xmlBlaster has two sub org's for                          #
-# (1) General used Java classes e.g. io/log...                  #
-#     see: http://www.jutils.org                                #
-#                                                               # 
-# (2) The ACL in the xmlBlaster                                 #
-#     see: http://www.a2Blaster.org                             #                            
-#################################################################
+           _____________________________________________________
+  ________|                                                     |________
+  \       |   xmlBlaster    README    http://www.xmlBlaster.org |       /
+   \      |   Free Message-oriented Middleware (MOM)            |      /
+   /      |_____________________________________________________|      \
+  /___________)                                              (__________\
+
+
+The XmlBlaster is the only XML based MOM (message-oriented
+Middleware) which comes with LGPL. XmlBlaster is a pure Java
+publish/subscribe MOM server which exchanges XML-encoded
+messages between publishers and subscribers.
+
+Communication with the server is based on CORBA, and
+subscribers can use XPath expressions to filter the messages
+they wish to receive.
+
+To install and getting started with xmlBlaster read the INSTALL file.
+
+
+The xmlBlaster has two sub orgs for
+(1) General used Java classes e.g. io/log...
+    see: http://www.jutils.org
+
+(2) The ACL in the xmlBlaster
+    see: http://www.a2Blaster.org
 
 XmlBlaster uses the Sun XML parser for XML parsing, and XT from
 James Clark for XSL parsing.
 
-The query language for xmlBlaster is XPath. For detailed information 
+The query language for xmlBlaster is XPath. For detailed information
 about XPath refer to the following URL:
   - XPath: http://www.w3.org/TR/xpath
 
@@ -45,7 +49,7 @@ Examples of C++/Perl/Tcl clients accessing xmlBlaster you find in directory:
   xmlBlaster/testsuite
 
 
-###############################################################
+---------------------------------
 ruff@swand.lake.de  (Marcel Ruff)
 manuel.kron@gmx.net (Manuel Kron)
 
