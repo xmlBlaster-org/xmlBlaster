@@ -2398,7 +2398,7 @@ TODO
 
     <target name="cpp-delete" depends="cpp-clean" description="Remove all generated C++ files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${build.src.cpp.dir}/generated"/>
+          <fileset dir="${build.src.cpp.dir}"/>
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.hh, *.i"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.*,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
