@@ -388,6 +388,14 @@
             For example try (in one line)
             <pre>java org.xmlBlaster.client.reader.GetMessage
 -oid __cmd:?clientList</pre>
+            Here we change the logging level of the corba plugin:
+            <pre>
+java org.xmlBlaster.client.feeder.PublishFile
+-xmlKey "&lt;key oid='__cmd:sysprop/?trace[corba]=true'/>"</pre>
+            Exit xmlBlaster with exit value 9:
+            <pre>
+java org.xmlBlaster.client.feeder.PublishFile
+-xmlKey "&lt;key oid='__cmd:?exit=9'/>"</pre>
             </td>
             <td>yes</td>
          </tr>
@@ -529,7 +537,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
