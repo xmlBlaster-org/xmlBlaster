@@ -1621,7 +1621,7 @@ public final class TopicHandler implements I_Timeout
          SubscriptionInfo[] subscriptionInfoArr = getSubscriptionInfoArr();
          for(int i=0; i<subscriptionInfoArr.length; i++) {
             try {
-               sb.append(offset).append(" <SubscriptionInfo id='").append(subscriptionInfoArr[i].getSubscriptionId()).append("/>");
+               sb.append(offset).append(" <SubscriptionInfo id='").append(subscriptionInfoArr[i].getSubscriptionId()).append("'/>");
             }
             catch (XmlBlasterException e) {
                log.error(ME, e.getMessage());
