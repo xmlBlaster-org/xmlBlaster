@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.2 1999/12/09 08:22:54 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.3 1999/12/09 10:16:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -29,7 +29,7 @@ import java.util.Properties;
  * If you have a servlet development kit installed (http://java.sun.com/products/servlet/index.html)
  * you may remove the comments from all servlets based code.
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -233,8 +233,8 @@ public class CorbaConnection
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
          }
          if (Log.TRACE) Log.trace(ME, "Successfully narrowed handle for naming service");
-         return nameService; // Note: the naming service IOR is successfully evaluated,
-                             // but its not sure that the naming service is really running
+         return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
+                             // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
          Log.error(ME + ".NoNameService", "Can't access naming service");

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.12 1999/12/09 08:22:54 ruff Exp $
+Version:   $Id: Main.java,v 1.13 1999/12/09 10:16:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -34,12 +34,10 @@ public class Main
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(new AuthServerImpl(orb));
+         org.omg.CORBA.Object authRef = new AuthServerPOATie(new AuthServerImpl(orb))._this(orb);
          // NOT TIE:
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
-
          // org.omg.CORBA.Object authRef = rootPOA.servant_to_reference(authServant);
-         // alternatively you can use (more performance)
-         org.omg.CORBA.Object authRef = new AuthServerPOATie(new AuthServerImpl(orb))._this(orb);
 
 
          // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
@@ -75,13 +73,7 @@ public class Main
             Log.info(ME, "AuthServer IOR is not published to naming service");
          } catch (org.omg.CORBA.COMM_FAILURE e) {
             Log.warning(ME, "Can't publish AuthServer to naming service, is your naming service really running? " + e.toString());
-            // e.printStackTrace();
          }
-      /*
-      } catch (XmlBlasterException e) {
-         e.printStackTrace();
-         Log.panic(ME, "[" + e.id + "] " + e.reason);
-      */
       } catch (Exception e) {
          e.printStackTrace();
          Log.panic(ME, e.toString());
@@ -114,15 +106,17 @@ public class Main
             Log.warning(ME + ".NoNameService", "Can't access naming service");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
          }
-         if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references");
+         if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
          nameService = org.omg.CosNaming.NamingContextHelper.narrow(nameServiceObj);
          if (nameService == null) {
             Log.error(ME + ".NoNameService", "Can't access naming service");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
          }
-         if (Log.TRACE) Log.trace(ME, "Successfully found a naming service");
-         return nameService;
+         if (Log.TRACE) Log.trace(ME, "Successfully narrowed handle for naming service");
+
+         return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
+                             // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
          Log.warning(ME + ".NoNameService", "Can't access naming service");
