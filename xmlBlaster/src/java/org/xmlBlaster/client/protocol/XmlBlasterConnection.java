@@ -897,8 +897,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
+    * Logout from the server. 
+    * <p />
     * Flushes pending publishOneway messages if any and destroys low level connection and callback server. 
-    * @see #disconnect(DisconnectQos qos, boolean flush)
+    * @see org.xmlBlaster.client.protocol.XmlBlasterConnection#disconnect(DisconnectQos, boolean, boolean, boolean)
     */
    public boolean disconnect(DisconnectQos qos) {
       return disconnect(qos, true, true, true);
@@ -906,14 +908,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Logout from the server.
-    * The callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
+    * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
     * Note that this kills the server ping thread as well (if in fail save mode)
     * @param qos The disconnect quality of service
     * @param flush Flushed pending publishOneway() messages if any
     * @param shutdown shutdown lowlevel connection as well (e.g. CORBA connection)
     * @param shutdownCb shutdown callback server as well (if any was established)
-    * @return true successfully logged out
-    *         false failure on logout
+    * @return <code>true</code> successfully logged out<br />
+    *         <code>false</code> failure on logout
     */
    public synchronized boolean disconnect(DisconnectQos qos, boolean flush, boolean shutdown, boolean shutdownCb)
    {
