@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.31 2004/06/24 22:10:44 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.32 2004/08/28 17:23:28 ruff Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -231,7 +231,7 @@ private:
             PublishQos pubQos(global_);
             MessageUnit msgUnit(pubKey1, senderContent_, pubQos);
             connection_.publish(msgUnit);
-    	 }
+         }
    
          for (int i=0; i < 2; i++) {
             PublishKey pubKey2(global_);
@@ -389,6 +389,7 @@ private:
          assert(0);
       }
 
+      /*
       testSubscribeXPath();
       waitOnUpdate(1000L);
       // Wait some time for callback to arrive ...
@@ -396,7 +397,7 @@ private:
          log_.error(ME, "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-
+      */
 
 /*
       testPublishCorbaMethods(TEST_ONEWAY);
@@ -420,28 +421,29 @@ private:
          assert(0);
       }
 */
-/*
       testPublishSTLMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(ME,"numReceived after publishing STL oneway = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-*/
+      numReceived_ = 0;
+
       testPublishSTLMethods(TEST_PUBLISH);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(ME,"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-/*
+      numReceived_ = 0;
+
       testPublishSTLMethods(TEST_ARRAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
          log_.error(ME,"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-*/
+      numReceived_ = 0;
    }
 
 
