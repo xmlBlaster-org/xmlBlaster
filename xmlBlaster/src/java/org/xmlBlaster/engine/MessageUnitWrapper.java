@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.37 2002/05/11 09:36:24 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.38 2002/05/16 15:38:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -79,7 +79,7 @@ public class MessageUnitWrapper implements I_Timeout
     * @param msgUnit the CORBA MessageUnit data container
     * @param publishQos the quality of service
     */
-   MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   public MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
       if (xmlKey == null || msgUnit == null || publishQos == null) {
          Log.error(ME, "Invalid constructor parameter");
