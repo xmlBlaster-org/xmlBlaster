@@ -80,10 +80,10 @@ jacorb.verbosity=1
 # number of retries if connection cannot directly be established
 #jacorb.retries=5
 # xmlBlaster default:
-jacorb.retries=1
+jacorb.retries=0
 
 # how many msecs. do we wait between retries
-jacorb.retry_interval=500
+jacorb.retry_interval=300
 
 # size of network buffers for outgoing messages
 jacorb.outbuf_size=2048
