@@ -20,7 +20,7 @@ namespace org { namespace xmlBlaster { namespace util {
                        const string &lang,
                        const string &message,
                        const string &versionInfo,
-                       Timestamp timestamp,
+                       const string &timestampStr,
                        const string &stackTrace,
                        const string &embeddedMessage,
                        const string &transactionInfo)
@@ -30,7 +30,7 @@ namespace org { namespace xmlBlaster { namespace util {
                        lang_(lang),
                        message_(message),
                        versionInfo_(versionInfo),
-                       timestamp_(timestamp),
+                       timestamp_(timestampStr),
                        stackTrace_(stackTrace),
                        embeddedMessage_(embeddedMessage),
                        transactionInfo_(transactionInfo)
@@ -46,7 +46,7 @@ namespace org { namespace xmlBlaster { namespace util {
                        const string &location,
                        const string &lang,
                        const string &versionInfo,
-                       Timestamp timestamp,
+                       const string &timestampStr,
                        const string &stackTrace,
                        const string &embeddedMessage,
                        const string &transactionInfo)
@@ -56,7 +56,7 @@ namespace org { namespace xmlBlaster { namespace util {
                        lang_(lang),
                        message_(errorCode.description),
                        versionInfo_(versionInfo),
-                       timestamp_(timestamp),
+                       timestamp_(timestampStr),
                        stackTrace_(stackTrace),
                        embeddedMessage_(embeddedMessage),
                        transactionInfo_(transactionInfo)
@@ -118,10 +118,10 @@ namespace org { namespace xmlBlaster { namespace util {
    /**
     * Timestamp when exception was thrown
     */
-   Timestamp XmlBlasterException::getTimestamp()
+   string XmlBlasterException::getTimestamp()
    {
-      if (timestamp_ == 0) {
-         timestamp_ = TimestampFactory::getInstance().getTimestamp();
+      if (timestamp_ == "") {
+         timestamp_ = lexical_cast<string>(TimestampFactory::getInstance().getTimestamp());
       }
       return timestamp_;
    }

@@ -43,7 +43,7 @@ Comment:   Basic xmlBlaster exception.
 #define _UTIL_XMLBLASTER_EXCEPTION_H
 
 #include <string>
-#include <util/Timestamp.h>
+// #include <util/Timestamp.h>
 #include <util/ErrorCode.h>
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -57,7 +57,7 @@ class XmlBlasterException
       const string lang_;
       const string versionInfo_;
 
-      Timestamp timestamp_;
+      string timestamp_;
       string stackTrace_;
 
       string embeddedMessage_;
@@ -75,7 +75,8 @@ class XmlBlasterException
                        const string &lang="en",
                        const string &message="",
                        const string &versionInfo="client-c++",
-                       Timestamp timestamp=0,
+//                       Timestamp timestamp=0,
+                       const string &timestampStr="",
                        const string &stackTrace="",
                        const string &embeddedMessage="",
                        const string &transactionInfo="<transactioninfo/>");
@@ -85,7 +86,8 @@ class XmlBlasterException
                        const string &location,
                        const string &lang="en",
                        const string &versionInfo="client-c++",
-                       Timestamp timestamp=0,
+//                       Timestamp timestamp=0,
+                       const string &timestampStr="",
                        const string &stackTrace="",
                        const string &embeddedMessage="",
                        const string &transactionInfo="<transactioninfo/>");
@@ -110,7 +112,7 @@ class XmlBlasterException
    /**
     * Timestamp when exception was thrown
     */
-   Timestamp getTimestamp();
+   string getTimestamp();
 
    /**
     * @return The stack trace or null, e.g.

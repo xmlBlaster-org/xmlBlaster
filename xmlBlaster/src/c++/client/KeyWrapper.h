@@ -10,8 +10,7 @@ Comment:   Handling one xmlKey
 
 #include <string>
 #include <util/Log.h>
-#define CLIENT_HEADER xmlBlaster
-#include <util/CompatibleCorba.h>
+// #define CLIENT_HEADER xmlBlaster
 using namespace std;
 
 namespace org { namespace xmlBlaster {

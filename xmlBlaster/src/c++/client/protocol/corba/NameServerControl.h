@@ -6,9 +6,10 @@ Comment:   Helper to handle the NameServer stuff (bind, unbind, resolve ...)
 Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
-#ifndef _UTIL_NAMESERVERCONTROL_H
-#define _UTIL_NAMESERVERCONTROL_H
+#ifndef _CLIENT_PROTOCOL_CORBA_NAMESERVERCONTROL_H
+#define _CLIENT_PROTOCOL_CORBA_NAMESERVERCONTROL_H
 using namespace std;
+using namespace org::xmlBlaster::util;
 
 #include <vector>
 #ifndef STLPORT // Is automatically set by STLport if used, problem is on Linux/g++: STLport-4.5.1/stlport/stl/_algo.h:180: declaration of `operator MICO_LongDouble' as non-function
@@ -16,7 +17,7 @@ using namespace std;
 #endif
 
 #define CLIENT_HEADER generated/xmlBlaster
-#include <util/CompatibleCorba.h>
+#include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
 
 #include <util/StringStripper2.h>
@@ -91,7 +92,7 @@ typedef vector<string> ListType;
 
 
 namespace org { namespace xmlBlaster {
-namespace util {
+namespace client { namespace protocol { namespace corba {
 
 /**
  * Class NameServerControl is used to encapsulate methods to access a Name
@@ -381,7 +382,7 @@ namespace util {
          }
             
       };
-}}} // namespace
+}}}}} // namespace
 
 #endif
 

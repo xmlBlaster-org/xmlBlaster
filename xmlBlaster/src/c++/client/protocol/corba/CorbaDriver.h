@@ -10,13 +10,14 @@ Comment:   The client driver for the corba protocol
 
 #include <util/xmlBlasterDef.h>
 #include <client/protocol/corba/CorbaConnection.h>
-#include <client/DefaultCallback.h>
+#include <client/protocol/corba/DefaultCallback.h>
 #include <string>
 #include <vector>
 #include <util/MessageUnit.h>
 #include <client/I_Callback.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
+#include <util/XmlBlasterException.h>
 
 using org::xmlBlaster::util::MessageUnit;
 using namespace std;
@@ -32,10 +33,17 @@ namespace org {
    class CorbaDriver : public I_CallbackServer, public I_XmlBlasterConnection
    {
    private:
-      CorbaConnection connection_;
-      DefaultCallback defaultCallback_;
-   public:
+      CorbaConnection* connection_;
+      DefaultCallback* defaultCallback_;
+      const string     ME;
 
+      /**
+       * frees the resources used. It only frees the resource specified with
+       * 'true'.
+       */
+      void freeResources(bool deleteConnection=true, bool deleteCallback=true);
+
+   public:
       CorbaDriver(int args=0,
                   const char * const argc[]=0,
                   bool connectionOwner = false);
@@ -69,7 +77,11 @@ namespace org {
 
       // following methods are not defined in any parent class
       static void usage();
-
+      // Exception conversion ....
+      static org::xmlBlaster::util::XmlBlasterException
+        convertFromCorbaException(const serverIdl::XmlBlasterException& ex);
+      static serverIdl::XmlBlasterException
+        convertToCorbaException(org::xmlBlaster::util::XmlBlasterException& ex);
    };
 
 }}}}} // namespaces

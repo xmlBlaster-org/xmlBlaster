@@ -7,8 +7,7 @@ Comment:   Handling one xmlKey
 
 #include <string>
 #include <client/KeyWrapper.h>
-#define CLIENT_HEADER xmlBlaster
-#include <util/CompatibleCorba.h>
+// #define CLIENT_HEADER xmlBlaster
 
 using namespace std;
 

@@ -15,18 +15,19 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <vector>
 #include <fstream>
 #include <client/LoginQosWrapper.h>
-#include <client/DefaultCallback.h>
+#include <client/protocol/corba/DefaultCallback.h>
 #include <util/Log.h>
-#include <util/NameServerControl.h>
+#include <client/protocol/corba/NameServerControl.h>
 #include <util/CallbackAddress.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQos.h>
 
 #define  SERVER_HEADER generated/xmlBlaster
-#include <util/CompatibleCorba.h>
+#include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
 using namespace std;
 using namespace org::xmlBlaster::util::qos; // ConnectQos + ConnectReturnQos
+using org::xmlBlaster::client::protocol::corba::NameServerControl;
 
 namespace org {
  namespace xmlBlaster {
@@ -44,7 +45,7 @@ namespace org {
       static CORBA::ORB_ptr           orb_;
       static PortableServer::POA_ptr  poa_;
       static unsigned short           numOfSessions_;
-      util::NameServerControl*        nameServerControl_;
+      NameServerControl*              nameServerControl_;
       authenticateIdl::AuthServer_ptr authServer_;
       serverIdl::Server_ptr           xmlBlaster_;
       clientIdl::BlasterCallback_ptr  callback_;

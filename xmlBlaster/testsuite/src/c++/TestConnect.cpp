@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.3 2002/12/04 13:29:08 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.4 2002/12/05 00:01:32 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -23,17 +23,17 @@ Version:   $Id: TestConnect.cpp,v 1.3 2002/12/04 13:29:08 laghi Exp $
 
 #include <string>
 #include <util/Log.h>
-// #include <client/protocol/corba/CorbaConnection.h>
 #include <client/protocol/corba/CorbaDriver.h>
 #include <util/qos/ConnectQos.h>
 #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
-//#include <unistd.h>
 #include <util/StopWatch.h>
+#include <util/XmlBlasterException.h>
 
 using namespace std;
-using org::xmlBlaster::client::protocol::corba::CorbaDriver;
 using namespace org::xmlBlaster::util::qos;
+using org::xmlBlaster::client::protocol::corba::CorbaDriver;
+using org::xmlBlaster::util::XmlBlasterException;
 
 namespace org { namespace xmlBlaster {
 
@@ -139,9 +139,8 @@ public:
          conn2_->connect(connectQos2);
 
       }
-      catch (CORBA::Exception &e) {
-         log_->error(me(), to_string(e));
-         cerr << to_string(e);
+      catch (XmlBlasterException &e) {
+         log_->error(me(), e.toXml());
          usage();
       }
    }

@@ -11,8 +11,7 @@ Comment:   Helper to easy get the callback messages
 #include <string>
 #include <client/UpdateKey.h>
 #include <client/UpdateQos.h>
-#define CLIENT_HEADER generated/xmlBlaster    // xmlBlaster.h
-#include <util/CompatibleCorba.h>
+// #define CLIENT_HEADER generated/xmlBlaster    // xmlBlaster.h
 using namespace std;
 
 
@@ -23,8 +22,8 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.11 $
-    * @author $Author: johnson $
+    * @version $Revision: 1.12 $
+    * @author $Author: laghi $
     */
    class Dll_Export I_Callback {
       /**

@@ -5,8 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 -----------------------------------------------------------------------------*/
 
-#ifndef _CLIENT_DEFAULTCALLBACK_H
-#define _CLIENT_DEFAULTCALLBACK_H
+#ifndef _CLIENT_PROTOCOL_CORBA_DEFAULTCALLBACK_H
+#define _CLIENT_PROTOCOL_CORBA_DEFAULTCALLBACK_H
 
 #include <string>
 #include <boost/lexical_cast.hpp>
@@ -15,7 +15,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #include <client/UpdateKey.h>
 #include <client/UpdateQos.h>
 #define  SERVER_HEADER generated/xmlBlaster
-#include <util/CompatibleCorba.h>
+#include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
 #ifdef TAO
   #include "generated/xmlBlasterC.h"
@@ -28,7 +28,11 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 using namespace std;
 using namespace boost;
 
-namespace org { namespace xmlBlaster {
+namespace org { 
+ namespace xmlBlaster {
+  namespace client {
+   namespace protocol {
+    namespace corba {
    
    /**
     * Example for a callback implementation.<p />
@@ -123,7 +127,7 @@ namespace org { namespace xmlBlaster {
       ;
 
    }; // class DefaultCallback
-}} // namespace
+}}}}} // namespace
 
 
 #endif

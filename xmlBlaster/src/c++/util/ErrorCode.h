@@ -153,9 +153,6 @@ namespace org { namespace xmlBlaster { namespace util {
          "A remote cluster node is not reachable."
    );
 
-
-
-
    const ErrorCode COMMUNICATION_NOCONNECTION("communication.noConnection",
          "A specific remote connection throws an exception on invocation."
    );

@@ -5,12 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 -----------------------------------------------------------------------------*/
 
-#ifndef _CLIENT_DEFAULTCALLBACK_C
-#define _CLIENT_DEFAULTCALLBACK_C
+#ifndef _CLIENT_PROTOCOL_CORBA_DEFAULTCALLBACK_C
+#define _CLIENT_PROTOCOL_CORBA_DEFAULTCALLBACK_C
 
-#include "DefaultCallback.h"
+#include <client/protocol/corba/DefaultCallback.h>
 
-using namespace org::xmlBlaster;
+using namespace org::xmlBlaster::client::protocol::corba;
 
 
 DefaultCallback::DefaultCallback(const string &name, I_Callback *boss, 

@@ -24,6 +24,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #endif
 
 using org::xmlBlaster::util::qos;
+using org::xmlBlaster::client::protocol::corba::NameServerControl;
 
 namespace org {
  namespace xmlBlaster {
@@ -111,7 +112,7 @@ CorbaConnection::getNamingService()
   if (log_.CALL) log_.call(me(), "getNamingService() ...");
   if (orb_ == 0) log_.panic(me(), "orb==null, internal problem");
   if (nameServerControl_ == 0)
-     nameServerControl_ = new util::NameServerControl(orb_);
+     nameServerControl_ = new NameServerControl(orb_);
   return nameServerControl_->getNamingService();
 }
 
