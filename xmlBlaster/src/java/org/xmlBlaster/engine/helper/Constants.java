@@ -54,12 +54,12 @@ public class Constants
    public final static int NORM_PRIORITY = 5;
 
    /**
-    * The default priority of a message (5).
+    * The higher priority of a message (7).
     */
    public final static int HIGH_PRIORITY = 7;
 
    /**
-    * The maximum priority of a message.
+    * The maximum priority of a message (9).
     */
    public final static int MAX_PRIORITY = 9;
 
