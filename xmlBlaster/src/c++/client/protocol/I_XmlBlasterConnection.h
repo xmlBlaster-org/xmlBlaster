@@ -70,6 +70,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
    class Dll_Export I_XmlBlasterConnection
    {
    public:
+      virtual ~I_XmlBlasterConnection() {}
 
       /**
        * connect() is a login or authentication as well, the authentication schema
