@@ -16,6 +16,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
+# $version$
 #-----------------------------------------------------------
 
 
@@ -164,9 +165,9 @@ if [ ${JDK_HOME:=""} != "" ] ; then
 else
    ${ECHO} "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
    ${ECHO} "$BLACK_LTGREEN            and your CLASSPATH setting needs at least         $ESC"
-   ${ECHO} "$BLACK_LTGREEN               export CLASSPATH=JDK_HOME/jre/lib/rt.jar       $ESC"
+   ${ECHO} "$BLACK_LTGREEN               export CLASSPATH=\${JDK_HOME}/jre/lib/rt.jar    $ESC"
    ${ECHO} "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
-   ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'       $ESC"
+   ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'      $ESC"
 fi
 
 
