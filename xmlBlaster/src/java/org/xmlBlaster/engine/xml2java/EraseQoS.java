@@ -3,7 +3,7 @@ Name:      EraseQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: EraseQoS.java,v 1.8 2002/03/13 16:41:20 ruff Exp $
+Version:   $Id: EraseQoS.java,v 1.9 2002/05/16 23:31:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -130,8 +130,8 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<").append(ME).append(">");
-      sb.append(offset).append("</").append(ME).append(">\n");
+      sb.append(offset).append("<qos> <!-- EraseQos -->");
+      sb.append(offset).append("</qos>");
 
       return sb.toString();
    }

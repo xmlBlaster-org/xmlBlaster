@@ -3,7 +3,7 @@ Name:      GetQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQoS.java,v 1.8 2002/05/06 07:26:30 ruff Exp $
+Version:   $Id: GetQoS.java,v 1.9 2002/05/16 23:31:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -128,13 +128,13 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<").append(ME).append(">");
+      sb.append(offset).append("<qos> <!-- GetQos -->");
       
       AccessFilterQos[] filterArr = getFilterQos();
       for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
          sb.append(filterArr[ii].toXml(extraOffset+"   "));
 
-      sb.append(offset).append("</").append(ME).append(">");
+      sb.append(offset).append("</qos>");
 
       return sb.toString();
    }
