@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.3 2002/02/13 15:38:22 ruff Exp $
+Version:   $Id: Parser.java,v 1.4 2002/02/13 17:24:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -45,9 +45,9 @@ public class Parser extends Converter
    private byte byte5 = 0;
    private int version = 1;
 
-   private String requestId;
+   private String requestId = null;
    private String methodName;
-   private String sessionId;
+   private String sessionId = "";
    private long lenUnzipped = -1L;
    private long checkSumResult = -1L;
 
@@ -132,6 +132,56 @@ public class Parser extends Converter
       this.compressed = compressed;
    }
 
+   /**
+    * Use for methods connect, disconnect, ping.
+    * <br />
+    * Use for return value of methods connect, disconnect, ping, update, publish, subscribe, unSubscribe and erase
+    * @exception IllegalArgumentException if invoked multiple times
+    */
+   public void addQos(String qos) {
+      if (msgVec == null)
+         msgVec = new Vector();
+      else
+         throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
+      MessageUnit msg = new MessageUnit(null, null, qos);
+      msgVec.add(msg);
+   }
+
+   /**
+    * Use for methods get, subscribe, unSubscribe, erase
+    * @exception IllegalArgumentException if invoked multiple times
+    */
+   public void addKeyAndQos(String key, String qos) {
+      if (msgVec == null)
+         msgVec = new Vector();
+      else
+         throw new IllegalArgumentException(ME+".addKeyAndQos() may only be invoked once");
+      MessageUnit msg = new MessageUnit(key, null, qos);
+      msgVec.add(msg);
+   }
+
+   /**
+    * Use for exception message
+    * <br />
+    * NOTE: Exceptions don't return
+    * @exception IllegalArgumentException if invoked multiple times
+    */
+   public void addException(XmlBlasterException e) {
+      if (msgVec == null)
+         msgVec = new Vector();
+      else
+         throw new IllegalArgumentException(ME+".addException() may only be invoked once");
+      MessageUnit msg = new MessageUnit(e.reason, null, e.id);
+      msgVec.add(msg);
+   }
+
+   /**
+    * Use for methods update, publish. 
+    * <br />
+    * Use for return value of method get.
+    * <br />
+    * Multiple adds are OK
+    */
    public void addMessage(MessageUnit msg) {
       if (msgVec == null) msgVec = new Vector();
       msgVec.add(msg);
@@ -150,6 +200,11 @@ public class Parser extends Converter
          BufferedInputStream in = new BufferedInputStream(inputStream);
 
          msgLength = toLong(in);
+
+         if (msgLength == 10) {
+            setMethodName(XmlBlasterImpl.PING);
+            return; // The shortest ping ever
+         }
 
          checksum = (readNext(in) > 0);
          compressed = (readNext(in) > 0);
@@ -190,6 +245,11 @@ public class Parser extends Converter
          if (checksum)
             checkSumResult = toLong0(in, -1);
 
+         if (index != msgLength) {
+            String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength;
+            Log.error(ME, str + " we need to disconnect the client, can't recover.");
+            throw new XmlBlasterException(ME, str);
+         }
          in.close();
       }
       catch(IOException e) {
@@ -253,7 +313,7 @@ public class Parser extends Converter
     *
     * </pre>
     */
-   public ByteArray createStream() throws XmlBlasterException {
+   public byte[] createRawMsg() throws XmlBlasterException {
 
       if (checkMethodName(methodName) == false) {
          String str = "Can't send message, method '" + methodName + " is unknown";
@@ -278,7 +338,7 @@ public class Parser extends Converter
          else if (isException()) // EXCEPTION_TYPE = "E";
             out.write((byte)69);
          else {
-            Log.error(ME, "Unknown type '" + type + "', setting to invoke.");
+            if (Log.TRACE) Log.trace(ME, "Unknown type '" + type + "', setting to invoke.");
             out.write((byte)73); // INVOKE_TYPE = "I";
          }
          out.write(NULL_BYTE); // byte4
@@ -298,7 +358,13 @@ public class Parser extends Converter
             out.write(new String(""+lenUnzipped).getBytes());
          out.write(NULL_BYTE);
 
-         if (XmlBlasterImpl.PUBLISH.equals(methodName) || XmlBlasterImpl.UPDATE.equals(methodName)) {
+         if (msgVec == null) {
+            out.write(NULL_BYTE);
+            out.write(NULL_BYTE);
+            out.write("0".getBytes());
+            out.write(NULL_BYTE);
+         }
+         else {
             for (int ii=0; ii<msgVec.size(); ii++) {
                MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
                out.write(unit.qos.getBytes());
@@ -322,7 +388,7 @@ public class Parser extends Converter
          msgLength = out.size();
          byte[] msgLengthB = new String(""+msgLength).getBytes();
          out.insert(EMPTY10.length - msgLengthB.length, msgLengthB);
-         return out;
+         return out.toByteArray();
       }
       catch(IOException e) {
          String text = "Sending message failed.";
@@ -371,6 +437,10 @@ public class Parser extends Converter
    public static void main( String[] args ) {
       try {
          byte[] rawMsg = null;
+         String testName;
+
+         testName = "Testing qos/key/content";
+         System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
             parser.setType(Parser.INVOKE_TYPE);
@@ -382,25 +452,223 @@ public class Parser extends Converter
             MessageUnit msg = new MessageUnit("<key oid='hello'/>", "Hello world".getBytes(), "<qos></qos>");
             parser.addMessage(msg);
 
-            ByteArray out = parser.createStream();
-            rawMsg = out.toByteArray();
+            rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
-            System.out.println("Created and ready to send: \n>" + send + "<");
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
          }
-
          {
             Parser receiver = new Parser();
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
-            ByteArray outReceive = receiver.createStream();
-            String receive = toLiteral(outReceive.toByteArray());
+            String receive = toLiteral(receiver.createRawMsg());
             System.out.println("Received: \n>" + receive + "<");
             if (toLiteral(rawMsg).equals(receive))
-               System.out.println("SUCCESS");
+               System.out.println(testName + ": SUCCESS");
             else
-               System.out.println("FAILURE");
+               System.out.println(testName + ": FAILURE");
          }
+
+         testName = "Testing qos/key";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.INVOKE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            parser.addKeyAndQos("<key oid='ooo'></key>", "<qos></qos>");
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
+
+         testName = "Testing qos";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.INVOKE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            parser.addQos("<qos></qos>");
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
+         testName = "Testing nothing";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.INVOKE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
+         testName = "Testing really nothing";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            rawMsg = "        10".getBytes();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if ("        29**I**11*ping*****0*".equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
+
+
+         testName = "Testing XmlBlasterException";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.EXCEPTION_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            XmlBlasterException ex = new XmlBlasterException(ME, "An XmlBlasterException test only");
+            parser.addException(ex);
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+      
+
+         testName = "Testing qos/key/content return value";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.RESPONSE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            //parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            MessageUnit msg = new MessageUnit("<key oid='hello'/>", "Hello world response".getBytes(), "<qos></qos>");
+            parser.addMessage(msg);
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
+         testName = "Testing a QoS return value";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.RESPONSE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.GET);
+            //parser.setSessionId("");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            parser.addQos("<qos><state>OK</state></qos>");
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n>" + send + "<");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n>" + receive + "<");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
+
       }
       catch(Throwable e) {
          e.printStackTrace();
