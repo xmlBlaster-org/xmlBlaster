@@ -8,6 +8,7 @@ package org.xmlBlaster.util.key;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import java.util.ArrayList;
@@ -44,7 +45,32 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
     * Minimal constructor.
     */
    public QueryKeyData(Global glob) {
-      this(glob, null, null);
+      this(glob, (I_QueryKeyFactory)null, (String)null);
+   }
+
+   /**
+    * @param glob
+    * @param query The query string (syntax is depending on queryType)
+    * @param queryType Constants.EXACT | Constants.XPATH | Constants.DOMAIN
+    */
+   public QueryKeyData(Global glob, String query, String queryType) throws XmlBlasterException {
+      this(glob);
+      if (query == null) {
+         throw new IllegalArgumentException("QueryKeyData got query=null argument");
+      }
+      this.queryType = checkQueryType(queryType);
+      if (isExact()) {
+         setOid(query);
+      }
+      else if (isXPath()) {
+         this.queryString = query;
+      }
+      else if (isDomain()) {
+         setDomain(query);
+      }
+      else {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Your queryType=" + queryType + " is invalid, implementation is missing");
+      }
    }
 
    /**
@@ -56,36 +82,112 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
       this.factory = (factory == null) ? this.glob.getQueryKeyFactory() : factory;
    }
 
-   public void setQueryType(String queryType) throws XmlBlasterException {
-      if (!Constants.EXACT.equalsIgnoreCase(queryType) &&
-          !Constants.XPATH.equalsIgnoreCase(queryType) &&
-          !Constants.DOMAIN.equalsIgnoreCase(queryType))
-         throw new XmlBlasterException(ME, "Your queryType=" + queryType + " is invalid, use one of '"
+   /**
+    * Should be avoided to call directly.
+    */
+   public String checkQueryType(String queryType) throws XmlBlasterException {
+      queryType = queryType.toUpperCase();
+      if (!Constants.EXACT.equals(queryType) &&
+          !Constants.XPATH.equals(queryType) &&
+          !Constants.DOMAIN.equals(queryType))
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
+              "Your queryType=" + queryType + " is invalid, use one of '"
                + Constants.EXACT + "' , '" + Constants.XPATH + "', '" + Constants.DOMAIN + "'");
+      return queryType;
+   }
+
+   /**
+    * Should be avoided to call directly.
+    */
+   void setQueryType(String queryType) throws XmlBlasterException {
+      this.queryType = checkQueryType(queryType);
+      /*
+      checkQueryType(queryType);
+      String oldType = this.queryType;
       this.queryType = queryType.toUpperCase();
+      if (!this.queryType.equals(oldType)) {
+         if (isExact() && getOid()==null && oldType.equals(Constants.XPATH)) {
+            super.setOid(this.queryString);
+            this.queryString = null;
+         }
+         else if (isExact() && getOid()==null && oldType.equals(Constants.DOMAIN)) {
+            super.setOid(getDomain());
+            super.setDomain(null);
+         }
+         else if (isXPath() && this.queryString==null && oldType.equals(Constants.EXACT)) {
+            this.queryString = getOid();
+            //super.setOid(null);
+         }
+         else if (isXPath() && this.queryString==null && oldType.equals(Constants.DOMAIN)) {
+            this.queryString = getDomain();
+            super.setDomain(null);
+         }
+         else if (isDomain() && getDomain()==null && oldType.equals(Constants.EXACT)) {
+            super.setDomain(getOid());
+            //super.setOid(null);
+         }
+         else if (isDomain() && getDomain()==null && oldType.equals(Constants.XPATH)) {
+            super.setDomain(this.queryString);
+            this.queryString = null;
+         }
+      }
+      */
+   }
+
+   /**
+    * Use for domain specific query
+    */
+   public void setOid(String oid) {
+      this.queryType = Constants.EXACT;
+      super.setOid(oid);
+   }
+
+   /**
+    * Use for domain specific query
+    */
+   public void setDomain(String domain) {
+      this.queryType = Constants.DOMAIN;
+      super.setDomain(domain);
    }
 
    /**
     * Your XPath query string. 
-    * @param str Your tags in ASCII XML syntax
+    * @param query The query string, e.g. "//key"
     */
-   public void setQueryString(String tags) {
-      this.queryString = tags;
+   public void setQueryString(String query) {
+      this.queryType = Constants.XPATH;
+      this.queryString = query;
    }
 
    /**
     * Same as setQueryString() but allows you to call it more than once
     * the strings are concatenated. 
+    * @param query The query string, e.g. "//key"
     */
-   public void appendQueryString(String tags) {
-      if (this.queryString == null)
-         this.queryString = tags;
-      else 
-         this.queryString += tags;
+   public void appendQueryString(String query) {
+      this.queryType = Constants.XPATH;
+      if (this.queryString == null) {
+         this.queryString = query;
+      }
+      else {
+         this.queryString += query;
+      }
    }
 
    public String getQueryString() {
       return this.queryString;
+   }
+
+   public boolean isExact() {
+      return Constants.EXACT.equals(this.queryType);
+   }
+
+   public boolean isXPath() {
+      return Constants.XPATH.equals(this.queryType);
+   }
+
+   public boolean isDomain() {
+      return Constants.DOMAIN.equals(this.queryType);
    }
 
    /**
