@@ -185,8 +185,11 @@ JdbcStorage[MicrosoftSQLServer]=org.inforMessaging.util.queue.jdbc.JdbcQueueComm
                   dbAdmin=true
 
 # for HSQLDB (the default embedded database)
+# DB is created in users home tmp directory, e.g. "/home/joe/tmp/xmlBlaster_192_168_1_4_3412.*"
+# The term "$_{xmlBlaster_uniqueId}" is replaced by JdbcConnectionPool.java to a unique ID
+# for every server or client instance if not given explicitly.
 JdbcStorage[HSQLDatabaseEngine]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                  url=jdbc:hsqldb:xmlblaster,\
+                  url=jdbc:hsqldb:${user.home}${file.separator}tmp${file.separator}$_{xmlBlaster_uniqueId},\
                   user=sa,\
                   password=,\
                   connectionPoolSize=1,\
