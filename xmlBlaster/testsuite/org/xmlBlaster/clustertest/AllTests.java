@@ -20,6 +20,7 @@ public class AllTests {
       suite.addTest(new TestSuite(clustertest.SubscribeTest.class));
       suite.addTest(new TestSuite(clustertest.SubscribeXPathTest.class));
       suite.addTest(new TestSuite(clustertest.DirtyReadTest.class));
+      suite.addTest(new TestSuite(clustertest.EraseTest.class));
       return suite;
    }
    // To force compilation:
