@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.18 2002/03/19 21:32:09 ruff Exp $
+Version:   $Id: Parser.java,v 1.19 2002/03/19 21:40:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -1138,20 +1138,17 @@ public class Parser
    }
 }
 /*
-[19.03.2002 21:40:08 INFO  Tim] Success: Update #4000 received: 'Yeahh, i'm the new content number 3801', average messages/second = 363
-java.lang.Exception: Stack trace
-        at java.lang.Thread.dumpStack(Thread.java:993)
-        at org.xmlBlaster.protocol.socket.Parser.toInt0(Parser.java:899)
-        at org.xmlBlaster.protocol.socket.Parser.toByte(Parser.java:861)
+[19.03.2002 22:31:34 INFO  Tim] Success: Update #31000 received: 'Yeahh, i'm the new content number 30801', average messages/second = 462
+java.lang.NumberFormatException: R
+        at java.lang.Integer.parseInt(Integer.java:414)
+        at java.lang.Integer.parseInt(Integer.java:463)
+        at org.xmlBlaster.protocol.socket.Parser.toInt0(Parser.java:745)
+        at org.xmlBlaster.protocol.socket.Parser.toByte(Parser.java:710)
         at org.xmlBlaster.protocol.socket.Parser.parse(Parser.java:559)
         at org.xmlBlaster.client.protocol.socket.SocketCallbackImpl.run(SocketCallbackImpl.java:102)
         at java.lang.Thread.run(Thread.java:484)
-Exception found location=Parser.java:900
-[19.03.2002 21:40:10 ERROR Parser.java:900-Parser] toInt0(Yeahh, i'm the new content number 5001
-<qos>
- <sen ...) Dumping from offset=150752, problemOffset=150762 msgLen=179929: '/>
-</qos>*<key oid='LoadTestSub' contentMime='text/plain' contentMimeExtended='1.0'>
-   <LoadTestSub-AGENT id=' ...
+Exception found location=Parser.java:749
+[19.03.2002 22:31:36 ERROR Parser.java:749-Parser] toInt0(R) Dumping from offset=196602, problemOffset=196622 msgLen=270530: 'riptio      3083**R**1162*publish*sessionId:192.168.1.2-null-1016573425420--608318242-3**LoadTestSub**0*LoadTestSub**0*L' ...
 Exception found location=SocketCallbackImpl.java:112
-[19.03.2002 21:40:10 ERROR SocketCallbackImpl.java:112-SocketCallbackImpl-] Closing connection to server: java.io.IOException: Format is corrupted 'msgLength=179929, checksum=false, compressed=false, type=73, byte4=0, byte5=0, version=1, requestId=Tim:17, methodName=update, sessionId=unknown, lenUnzipped=-1, checkSumResult=-1, index=0', expected integral value
+[19.03.2002 22:31:36 ERROR SocketCallbackImpl.java:112-SocketCallbackImpl-] Closing connection to server: java.io.IOException: Format is corrupted 'msgLength=270530, checksum=false, compressed=false, type=73, byte4=0, byte5=0, version=1, requestId=Tim:137, methodName=update, sessionId=unknown, lenUnzipped=-1, checkSumResult=-1, index=0', expected integral value
 */
