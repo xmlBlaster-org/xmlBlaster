@@ -165,7 +165,7 @@ public class HelloWorldSubscribe implements I_Callback
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
 
-            UnSubscribeKey uk = (oid.length() > 0) ? new UnSubscribeKey(glob, oid) : new UnSubscribeKey(glob, xpath, Constants.XPATH);
+            UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
             UnSubscribeQos uq = new UnSubscribeQos(glob);
             UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
             log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
