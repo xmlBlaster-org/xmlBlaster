@@ -122,6 +122,7 @@ public final class CbManager
    }
 
    public final void removeCbConnection(CbConnection cbCon) {
+      if (log.CALL) log.call(ME, "removeCbConnection(" + cbCon.getName() + ") ...");
       synchronized (this) {
          boolean found = false;
          for (int ii=0; ii<cbConnectionArr.length; ii++) {
@@ -141,6 +142,7 @@ public final class CbManager
       }
       cbCon.shutdown();
       msgQueue.onExhaust(cbCon);
+      if (log.CALL) log.call(ME, "removeCbConnection(" + cbCon.getName() + ") done");
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.22 2002/07/21 13:11:41 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.23 2002/08/04 17:11:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -514,6 +514,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 
    public void disconnectSession(CbConnection cbConnection) throws XmlBlasterException
    {
+      if (log.CALL) log.call(ME, "disconnectSession(" + cbConnection.getName() + ") ...");
       if (isSessionQueue) {
          SessionMsgQueue q = (SessionMsgQueue)this;
          log.warn(ME, "Callback server is lost, killing login session of client " + q.getSessionInfo().getLoginName() + ".");
@@ -542,6 +543,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal error, messageQueue type is unknown, recovery handling is not coded yet");
       }
+      if (log.CALL) log.call(ME, "disconnectSession(" + cbConnection.getName() + ") done");
    }
 
    public final String getCbWorkerPoolStatistic()
