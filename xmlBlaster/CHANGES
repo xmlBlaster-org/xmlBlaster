@@ -18,6 +18,30 @@ BUGS:
 
 
 DONE:
+  - Server internal changes:
+    Tuned performance for internal messages
+    Added Global argument to many classes
+    Changed subscriptionId to contain a prefix
+ 
+  - Changed (bugfix?) message erase behavior: When a message
+    is deleted, the subscribe on it is not destroyed but placed as
+    a reservation.
+
+  - Added support to unSubscribe not only with subscribeId but
+    with the key-oid as well
+
+  - Added basic cluster support, see
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
+
+  - Extended C++ compile support with build.xml and ant,
+    runs fine on Linux/gcc, needs to be adapted on Windows
+
+  - Bugfix:
+    The persistent http servlet is now fully configurable with web.xml
+
+  - Bugfix:
+    The startup options "-logFile x.log -logConsole false" work again
+
   - Bugfix:
     The internal logged in user "__user..." have now unlimited session
     timeouts.
