@@ -42,8 +42,9 @@ public final class ConnectQos
     * </p>
     * <p>
     * To use another security authentication plugin use setSecurity()
+    * @exception XmlBlasterException on problems loading the client security plugin
     */
-   public ConnectQos(Global glob) {
+   public ConnectQos(Global glob) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = new ConnectQosData(this.glob); 
    }
