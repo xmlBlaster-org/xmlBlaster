@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.1 2000/10/22 12:35:29 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.2 2000/10/22 12:40:14 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -30,10 +30,17 @@ import java.rmi.Naming;
  * but if you need other handling of callbacks, take a copy
  * of this Callback implementation and add your own code.
  * <p />
+ * A rmi-registry server is created automatically, if there is running already one, that is used.<br />
+ * You can specify another port or host to create/use a rmi-registry server:
+ * <pre>
+ *     -rmi.RegistryPortCB Specify a port number where rmiregistry listens.
+ *                         Default is port 1099, the port 0 switches this feature off.
+ *     -rmi.HostnameCB     Specify a hostname where rmiregistry runs.
+ *                         Default is the localhost.
+ * </pre>
+ * <p />
  * Note: The security manager must be initialized properly before you use an instance of this class.<br />
  * RmiConnection does it in its constructor if you use this class, or you could use RmiConnection.createSecurityManager() to do this.
- * <p />
- * Note: The rmi-registry must be running before you use an instance of this class.
  */
 class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback
 {
