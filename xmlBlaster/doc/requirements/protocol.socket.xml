@@ -124,7 +124,7 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <th>Method</th>
          <th>Arguments</th>
          <th>Return value</th>
-         <th>Exception</th>
+         <th>Excep<br />tion</th>
          <th>Comment</th>
       </tr>
       <tr>
@@ -155,7 +155,7 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <td>-</td>
          <td><img src="no.gif" border="0" alt="no" /></td>
          <td>Exception return messages are named similar to the invoked method but are marked with an 'E' flag.<br />
-         See XmlBlasterException.java:toByteArr() for the syntax of the binary message content.
+         See XmlBlasterException.java toByteArr() for the syntax of the binary message content.
          </td>
       </tr>
       <tr>
@@ -446,7 +446,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>dispatch/callback/plugin/socket/multiThreaded</td>
+            <td>dispatch/callback/plugin/<br />socket/multiThreaded</td>
             <td>true</td>
             <td>
             <ul>
@@ -467,7 +467,7 @@ ConnectQos qos = new ConnectQos(glob);
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>dispatch/callback/plugin/socket/invokerThreadPrio</td>
+            <td>dispatch/callback/plugin/<br />socket/invokerThreadPrio</td>
             <td>NORM_PRIORITY = 5</td>
             <td>
               The priority of the client side callback thread which calls your update method.
@@ -475,7 +475,7 @@ ConnectQos qos = new ConnectQos(glob);
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>dispatch/callback/plugin/socket/threadPrio</td>
+            <td>dispatch/callback/plugin/<br />socket/threadPrio</td>
             <td>NORM_PRIORITY = 5</td>
             <td>The priority 1=min - 10=max of the client side callback server listener thread
             </td>
@@ -506,7 +506,7 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.39 $</revision>
+   <revision>$Revision: 1.40 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
