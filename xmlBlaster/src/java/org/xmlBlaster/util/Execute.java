@@ -88,9 +88,9 @@ public class Execute
             log.warn(ME, "Process [" + commandArr[0] + "] was interrupted");
          }
 
-         if (log.TRACE) log.trace(ME, "Process [" + commandArr[0] + "] finished its work, good bye");
-
          this.exitValue = this.process.exitValue();
+
+         if (log.TRACE) log.trace(ME, "Process [" + commandArr[0] + "] finished its work, exit=" + this.exitValue + ", good bye");
 
          this.stdoutThread.stopIt();
          this.stderrThread.stopIt();
