@@ -1,0 +1,126 @@
+<unit>
+
+   <mime>
+      application/xml
+   </mime>
+
+   <key id="12">
+      <param id="product">PR</param>
+      <param id="group">SW</param>
+   </key>
+
+   <content>
+      xml-BLOB
+   </content>
+
+   <qos> <!-- slotdef.cfg -->
+      <state>EXPIRED</state>
+      <insertTimestamp>1999-01-31</insertTimestamp>
+      <updateTimestamp>1999-01-31</updateTimestamp>
+      <expireTimestamp>1999-01-31</expireTimestamp>
+   </qos>
+
+</unit>
+
+<messageList>
+   <message>
+      <subscribe type="FOREVER">
+         <key>
+            <id>.*PR.*</id>
+            <param>SW</param>
+            <orders>            <!-- what to order -->
+               <key/>
+               <content/>
+               <contentMeta/>
+            </orders>
+         </key>
+      </subscribe>
+   </message>
+
+   <message>
+      <subscribe type="SINGLE">
+         <key>
+            <id>.*PR.*</id>
+            <param>SW</param>
+            <content queryType="XQL">/person/firstname=Marcel</content>
+            <content queryType="SQL">SELECT firstname where WHERE firstname='Marcel'</content>
+            <orders>
+               <key/>
+               <content/>
+               <contentMeta/>
+            </orders>
+         </key>
+      </subscribe>
+   </message>
+
+   <message>
+      <unsubscribe>
+         <key>
+            <id>.*PR.*</id>
+            <param>SW</param>
+            <orders>            <!-- what to order -->
+               <key/>
+               <content/>
+            </orders>
+         </key>
+      </unsubscribe>
+   </message>
+
+   <message>
+      <modify>  <!-- New insert 1) XML 2) DTD 3) PARAMS -->
+
+         <key id="org.manuel.firstname">  <!-- optional -->
+         </key>
+
+         <contentMeta>
+            DTD-data
+         </contentMeta>
+
+         <content>
+            XML-data
+         </content>
+
+         <param id="product">
+            PR
+         </param>
+         
+      </modify> <--! return key -->
+   </message>
+
+
+   <message>
+      <modify>  <!-- Update Message -->
+
+         <key id="12">
+         </key>
+
+
+         <content>
+            XML-data
+         </content>
+         
+      </modify>
+   </message>
+
+
+   <message>
+      <update>
+
+         <key id="org.manuel.firstname">  <!-- optional -->
+         </key>
+
+         <contentMeta>
+            DTD-data
+         </contentMeta>
+
+         <content>
+            XML-Daten
+         </content>
+
+         <param id="product">
+            PR
+         </param>
+
+      </update>
+   </message>
+</messageList>
