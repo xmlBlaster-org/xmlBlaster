@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.19 2002/06/19 10:27:38 ruff Exp $
+Version:   $Id: Global.java,v 1.20 2002/06/25 07:40:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -441,4 +441,31 @@ public final class Global extends org.xmlBlaster.util.Global
       return sb.toString();
    }
 
+   /**
+    * Command line usage.
+    * <p />
+    * These variables may be set in your property file as well.
+    * Don't use the "-" prefix there.
+    * <p />
+    * Set the verbosity when loading properties (outputs with System.out).
+    * <p />
+    * 0=nothing, 1=info, 2=trace, configure with
+    * <pre>
+    * java -Dproperty.verbose 2 ...
+    *
+    * java org.xmlBlaster.Main -property.verbose 2
+    * </pre>
+    */
+   public String usage()
+   {
+      StringBuffer sb = new StringBuffer(512);
+      sb.append(super.usage());
+      sb.append("\n");
+      sb.append("  There are fine grained logging possibilities like:\n");
+      sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
+      sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
+      sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
+      sb.append("    Supported is [core], [auth], [cb], [mime], [corba], [xmlrpc] [admin]\n");
+      return sb.toString();
+   }
 }
