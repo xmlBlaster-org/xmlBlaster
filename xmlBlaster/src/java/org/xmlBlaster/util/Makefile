@@ -5,7 +5,7 @@
 
 
 #------------------------------------------------------------------------------
-include $(XMLBLASTER_HOME)/make/make.h
+include $(XMLBLASTER_HOME)/Makefile.Include
 CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/util
 SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/util
 #------------------------------------------------------------------------------
@@ -13,6 +13,8 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/util
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
+			$(CLASS_DIR)/XmlKeyBase.class \
+			$(CLASS_DIR)/XmlQoSBase.class \
 			$(CLASS_DIR)/Log.class \
 			$(CLASS_DIR)/StopWatch.class
 #------------------------------------------------------------------------------
