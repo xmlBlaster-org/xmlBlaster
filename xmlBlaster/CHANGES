@@ -9,15 +9,15 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
-   - #12823
-      Added sax usage
+   - #12823,#12825
+      Added sax configuration usage help
       Added virtual destructor to avoid memory leak
       Fixed SAX parsing for encodings different to US-ASCII, changed default SAX encoding to "iso-8859-1"
-      ("UTF-8" has still problems with our std::string usage)
+      (Using "UTF-8" with our xmlKey and xmlQos has still problems with our std::string usage)
       Added configuration possibility for SAX parse encoding with '-xmlBlaster/encoding'
       Fixed error message for SAX parse errors
    - #12820 Extending XmlBlasterException from std::exception to support catching by base class,
-            added what() method, removed dummy stack trace output.
+      added what() method, removed dummy stack trace output.
    - #12799 Added leaveServer(), still buggy under certain multi threading states
    See: http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/classorg_1_1xmlBlaster_1_1client_1_1XmlBlasterAccess.html#a28
 
