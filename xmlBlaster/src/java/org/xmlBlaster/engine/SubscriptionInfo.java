@@ -3,17 +3,17 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -24,7 +24,7 @@ import java.util.Vector;
 
 /**
  * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MessageUnit of exactly one Client. 
+ * concerning a subscription of exactly one MsgUnit of exactly one Client. 
  * <p />
  */
 public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
@@ -34,18 +34,18 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /** The global handle */
    private Global glob;
    /** Logging to channel "core" */
-   private final LogChannel log;
+   private LogChannel log;
    /** The initiatior of this subscription */
    private SessionInfo sessionInfo;
-   /** reference to xmlKey */
-   private XmlKey xmlKey;
+   /** reference to keyData */
+   private KeyData keyData;
    /** reference to 'Quality of Service' of subscribe() / unSubscribe() */
    private QueryQosData subscribeQos = null;
-   /** The unique key of a subscription (subscriptionId), which is a function of f(xmlKey,xmlQos). <br />
+   /** The unique key of a subscription (subscriptionId), which is a function of f(keyData,xmlQos). <br />
        This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
    /** reference to my managing container */
-   private MessageUnitHandler myHandler;
+   private TopicHandler myHandler;
    /** A reference to the query subscription (XPATH), which created this subscription
        If the subscription was EXACT, querySub is null */
    private SubscriptionInfo querySub = null;
@@ -63,34 +63,29 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /**
     * Use this constructor for an exact subscription.
     * @param sessionInfo The session which initiated this subscription
-    * @param xmlKey     The message meta info
-    * @param qos        This may be a SubscribeQosServer or a UnSubscribeQosServer instance (very bad hack!)
+    * @param keyData     The message meta info
+    * @param qos         This may be a SubscribeQosServer or a UnSubscribeQosServer instance
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, XmlKey xmlKey, QueryQosData qos) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = this.glob.getLog("core");
-      init(sessionInfo, xmlKey, qos);
+   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, KeyData keyData, QueryQosData qos) throws XmlBlasterException {
+      init(glob, sessionInfo, keyData, qos);
    }
 
    /**
     * Use this constructor it the subscription is a result of a XPath subscription
     * @param sessionInfo The session which initiated this subscription
-    * @param xmlKey     The message meta info
-    * @param qos        This may be a SubscribeQosServer or a UnSubscribeQosServer instance (very bad hack!)
+    * @param querySub    The XPATH query subscription which is has us as a child
+    * @param keyData     The matching key for the above querySub
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, XmlKey xmlKey) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = this.glob.getLog("core");
+   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData) throws XmlBlasterException {
       this.querySub = querySub;
-      init(sessionInfo, xmlKey, querySub.getQueryQosData());
+      init(glob, sessionInfo, keyData, querySub.getQueryQosData());
    }
 
-   private void init(SessionInfo sessionInfo, XmlKey xmlKey, QueryQosData qos) throws XmlBlasterException
-   {
+   private void init(Global glob, SessionInfo sessionInfo, KeyData keyData, QueryQosData qos) throws XmlBlasterException {
+      this.glob = glob;
+      this.log = this.glob.getLog("core");
       this.sessionInfo = sessionInfo;
-      this.xmlKey = xmlKey;
+      this.keyData = keyData;
       this.subscribeQos = qos;
 
       AccessFilterQos[] filterQos = this.subscribeQos.getAccessFilterArr();
@@ -174,65 +169,57 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * For this query subscription return all resulted subscriptions
     * @return null if not a query subscription with children
     */
-   public final Vector getChildrenSubscriptions()
-   {
+   public final Vector getChildrenSubscriptions() {
       return childrenVec;
    }
 
-   public boolean isQuery() throws XmlBlasterException
-   {
-      return getXmlKey().isQuery();
+   public boolean isQuery() {
+      return this.keyData.isQuery();
    }
 
-   public boolean isCreatedByQuerySubscription()
-   {
+   public boolean isCreatedByQuerySubscription() {
       return querySub != null;
    }
 
-   protected void finalize()
-   {
+   protected void finalize() {
       if (log.TRACE) log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
 
-   public final AccessFilterQos[] getAccessFilterArr()
-   {
+   public final AccessFilterQos[] getAccessFilterArr() {
       return subscribeQos.getAccessFilterArr();
    }
 
    /**
     * Clean up everything, since i will be deleted now.
     */
-   private void erase()
-   {
+   private void erase() {
       if (log.TRACE) log.trace(ME, "Entering erase()");
       subscribeQos = null;
-      // Keep xmlKey for further processing
+      // Keep keyData for further processing
       // Keep uniqueKey for further processing
    }
 
    /**
-    * This must be called as soon as my MessageUnitHandler handles me.
+    * This must be called as soon as my TopicHandler handles me.
     * @param myHandler I'm handled (lifetime) by this handler
     */
-   public final void addMessageUnitHandler(MessageUnitHandler myHandler)
-   {
+   public final void addTopicHandler(TopicHandler myHandler) {
       if (myHandler == null) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
+         log.error(ME, "addTopicHandler with myHandler==null seems to be strange");
       }
 
       this.myHandler = myHandler;
 
       if (this.myHandler != null) {
-         if (log.TRACE) log.trace(ME, "Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getLoginName() + "' message '" + this.myHandler.getUniqueKey() + "'");
+         if (log.TRACE) log.trace(ME, "Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getId() + "' message '" + this.myHandler.getUniqueKey() + "'");
       }
    }
 
-   public final MessageUnitHandler getMessageUnitHandler()
-   {
+   public final TopicHandler getTopicHandler() {
       if (myHandler == null) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
+         log.error(ME, "addTopicHandler with myHandler==null seems to be strange");
       }
       return myHandler;
    }
@@ -241,20 +228,18 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * Time when this Subscription is invoked.
     * @return the creation time of this subscription (in millis)
     */
-   public final long getCreationTime()
-   {
+   public final long getCreationTime() {
       return creationTime;
    }
 
    /**
     * Telling my container that i am not subscribing any more.
     */
-   final void removeSubscribe()
-   {
+   final void removeSubscribe() {
       try {
          if (myHandler == null) {
-            if (!getXmlKey().isQuery()) {
-               log.warn(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
+            if (!isQuery()) {
+               log.warn(ME, "The id=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
                Thread.dumpStack();
             }
             return;
@@ -266,19 +251,18 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * @return The message wrapper object
-    * @exception If no MessageUnitWrapper available
-    */
-   public final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
-   {
+    * @exception If no MsgUnitWrapper available
+   public final MsgUnitWrapper getMsgUnitWrapper() throws XmlBlasterException {
       if (myHandler == null) {
-         if (!getXmlKey().isQuery()) {
-            log.warn(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it: " + toXml());
+         if (!isQuery()) {
+            log.warn(ME, "Key oid=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
             Thread.dumpStack();
          }
-         throw new XmlBlasterException(ME + ".NoMessageUnitWrapper", "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         throw new XmlBlasterException(ME + ".NoMsgUnitWrapper", "Key oid=" + uniqueKey + " has no TopicHandler which takes care of it");
       }
-      return myHandler.getMessageUnitWrapper();
+      return myHandler.getMsgUnitWrapper();
    }
+    */
 
    /**
     * Compare method needed for Interface Comparable.
@@ -302,24 +286,19 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    */
 
    /**
-    * Access on XmlKey object
-    * @return XmlKey object
+    * Access on KeyData object
+    * @return KeyData object
     */
-   public final XmlKey getXmlKey() {
-      return xmlKey;
+   public final KeyData getKeyData() {
+      return keyData;
    }
 
    /**
     * The oid of the message we belong to
     */
    public final String getKeyOid() {
-      if (xmlKey != null) {
-         try {
-            return xmlKey.getUniqueKey();
-         }
-         catch (XmlBlasterException e) {
-            return null;
-         }
+      if (keyData != null) {
+         return keyData.getOid();
       }
       return null;
    }
@@ -351,7 +330,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
             if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
          }
          else {
-            this.uniqueKey = SubscriptionInfo.generateUniqueKey(xmlKey, subscribeQos).toString();
+            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos).toString();
             if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
          }
       }
@@ -395,15 +374,15 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>53</code>
     */
-   private static final String generateUniqueKey(XmlKey xmlKey, QueryQosData xmlQos) throws XmlBlasterException {
+   private static final String generateUniqueKey(KeyData keyData, QueryQosData xmlQos) throws XmlBlasterException {
       if (xmlQos.getSubscriptionId() != null && xmlQos.getSubscriptionId().length() > 0) {
          return xmlQos.getSubscriptionId(); // Client forced his own key
       }
       StringBuffer buf = new StringBuffer(126);
       synchronized (SubscriptionInfo.class) {
          uniqueCounter++;
-         if (xmlKey.isQuery())
-            buf.append(Constants.SUBSCRIPTIONID_PREFIX).append(xmlKey.getQueryTypeStr()).append(uniqueCounter);
+         if (keyData.isQuery())
+            buf.append(Constants.SUBSCRIPTIONID_PREFIX).append(keyData.getQueryType()).append(uniqueCounter);
          else
             buf.append(Constants.SUBSCRIPTIONID_PREFIX).append(uniqueCounter);
       }
@@ -432,11 +411,11 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       offset += extraOffset;
 
       sb.append(offset + "<SubscriptionInfo id='" + getSubscriptionId() + "'>");
-      //sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
-      if (xmlKey != null)
-         sb.append(xmlKey.printOn(extraOffset + "   ").toString());
+      //sb.append(offset + "   <keyData oid='" + (keyData==null ? "null" : keyData.getUniqueKey()) + "'/>");
+      if (keyData != null)
+         sb.append(keyData.toXml(extraOffset + "   ").toString());
       sb.append(subscribeQos.toXml(extraOffset + "   ").toString());
-      sb.append(offset + "   <msgUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
+      sb.append(offset + "   <topicHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
       sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
       if (childrenVec != null) {
          for (int ii=0; ii<childrenVec.size(); ii++) {
