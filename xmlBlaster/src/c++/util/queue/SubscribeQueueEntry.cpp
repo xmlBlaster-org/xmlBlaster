@@ -14,8 +14,8 @@ using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type, int priority, bool persistent)
-   : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), type, priority, persistent)
+SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& subscribeKey, const SubscribeQos& subscribeQos, const string& type, int priority, bool persistent, Timestamp uniqueId)
+   : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), type, priority, persistent, uniqueId)
 {
    ME = "SubscribeQueueEntry";
 }
@@ -41,6 +41,14 @@ const MsgQueueEntry& SubscribeQueueEntry::send(I_ConnectionsHandler& connections
    if (log_.dump()) log_.dump(ME, string("send: ") + SubscribeQueueEntry::toXml());
    statusQosData_ = new StatusQosData(connectionsHandler.getConnection().subscribe(SubscribeKey(global_, *queryKeyData_), SubscribeQos(global_, *queryQosData_)).getData());
    return *this;
+}
+
+size_t SubscribeQueueEntry::getSizeInBytes() const
+{
+   size_t sum = 0;
+   if (queryQosData_     != NULL) sum += sizeof(*queryQosData_);
+   if (queryKeyData_     != NULL) sum += sizeof(*queryKeyData_);
+   return sum;
 }
 
 SubscribeQos SubscribeQueueEntry::getSubscribeQos() const

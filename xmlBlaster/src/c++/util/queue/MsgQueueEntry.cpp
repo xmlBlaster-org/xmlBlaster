@@ -46,7 +46,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    logId_            = embeddedType_ + string(":") + lexical_cast<std::string>(uniqueId_);
 }
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& embeddedType, int priority, bool persistent)
+MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
    : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue"))
 {
    connectQos_       = new ConnectQos(connectQos);
@@ -56,7 +56,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
    queryQosData_     = NULL;
    queryKeyData_     = NULL;
    statusQosData_    = NULL;
-   uniqueId_         = TimestampFactory::getInstance().getTimestamp();
+   uniqueId_         = uniqueId;
    embeddedType_     = embeddedType;
    priority_         = priority; // should be maximum priority
    persistent_       = persistent; // currently no persistents supported
@@ -64,7 +64,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
 }
 
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& embeddedType, int priority, bool persistent)
+MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
    : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue"))
 {
    connectQos_       = NULL;
@@ -74,7 +74,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, c
    queryQosData_     = new QueryQosData(queryQosData);
    queryKeyData_     = new QueryKeyData(queryKeyData);
    statusQosData_    = NULL;
-   uniqueId_         = TimestampFactory::getInstance().getTimestamp();
+   uniqueId_         = uniqueId;
    embeddedType_     = embeddedType;
    priority_         = priority; // should be maximum priority
    persistent_          = persistent; // currently no persistents supported
@@ -132,16 +132,6 @@ Timestamp MsgQueueEntry::getUniqueId() const
 string MsgQueueEntry::getLogId() const
 {
    return logId_;
-}
-
-size_t MsgQueueEntry::getSizeInBytes() const
-{
-   size_t sum = 0;
-   if (msgUnit_          != NULL) sum += sizeof(*msgUnit_);
-   if (connectQos_       != NULL) sum += sizeof(*connectQos_);
-   if (queryQosData_     != NULL) sum += sizeof(*queryQosData_);
-   if (queryKeyData_     != NULL) sum += sizeof(*queryKeyData_);
-   return sum;
 }
 
 string MsgQueueEntry::getEmbeddedType() const

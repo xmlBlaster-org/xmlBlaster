@@ -3,12 +3,11 @@ Name:      PublishQueueEntry.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-
 #ifndef _UTIL_QUEUE_PUBLISHQUEUEENRY_H
 #define _UTIL_QUEUE_PUBLISHQUEUEENRY_H
 
-#include <util/queue/MsgQueueEntry.h>
 #include <util/MethodName.h>
+#include <util/queue/MsgQueueEntry.h>
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -17,6 +16,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * delete it when its destructor is called).
  *
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @author <a href='mailto:xmlblast@marcelruff.info'>Marcel Ruff</a>
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -52,7 +52,7 @@ public:
    PublishQueueEntry(const PublishQueueEntry& entry);
 
    /**
-    * assignement constructor
+    * assignment constructor
     */
    PublishQueueEntry& operator =(const PublishQueueEntry& entry);
 
@@ -72,9 +72,11 @@ public:
    // this should actually be in another interface but since it is an only method we put it here.
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;
 
+   size_t getSizeInBytes() const;
+
    org::xmlBlaster::util::MessageUnit& getMsgUnit() const;
 
-   org::xmlBlaster::client::qos::PublishReturnQos getPublishReturnQos() const;
+   org::xmlBlaster::client::qos::PublishReturnQos &getPublishReturnQos() const;
 
    std::string toXml(const std::string& indent="") const;
 

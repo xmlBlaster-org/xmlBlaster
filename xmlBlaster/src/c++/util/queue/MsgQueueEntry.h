@@ -41,7 +41,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
  * Holds arbitrary raw data and its length
  */
 typedef struct {
-   size_t dataLen;
+   size_t dataLen; // size_t is the unsigned integer size result of a sizeof operator. Change to uint32_t ?
    char *data;
 } BlobHolder;
 
@@ -57,6 +57,7 @@ protected:
    std::string embeddedType_;
    std::string logId_;
    org::xmlBlaster::util::MessageUnit* msgUnit_;
+   /* TODO: Change that connectQos, queryQos all derive from QosData and are transported inside msgUnit */
    org::xmlBlaster::util::qos::ConnectQos* connectQos_;
    org::xmlBlaster::util::qos::QueryQosData* queryQosData_;
    org::xmlBlaster::util::key::QueryKeyData* queryKeyData_;
@@ -83,23 +84,28 @@ public:
 
     /**
      * Constructor suited for operations like connect
+     * @param connectQos We take a clone of it
      */
     MsgQueueEntry(org::xmlBlaster::util::Global& global,
                   const org::xmlBlaster::util::qos::ConnectQos& connectQos,
                   const std::string& embeddedType,
                   int priority,
-                  bool persistent);
+                  bool persistent,
+                  org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
 
     /**
      * Constructor suited for operations like subscribe and unSubscribe
+     * @param queryKeyData We take a clone of it
+     * @param queryQosData We take a clone of it
      */
     MsgQueueEntry(org::xmlBlaster::util::Global& global,
                   const org::xmlBlaster::util::key::QueryKeyData& queryKeyData,
                   const org::xmlBlaster::util::qos::QueryQosData& queryQosData,
                   const std::string& embeddedType,
                   int priority,
-                  bool persistent);
+                  bool persistent,
+                  org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
 
     virtual ~MsgQueueEntry();
@@ -234,8 +240,7 @@ public:
    /**
     * returns the size in bytes of this entry.
     */
-   size_t getSizeInBytes() const;
-
+   virtual size_t getSizeInBytes() const = 0;
 
    // this should actually be in another interface but since it is an only method we put it here.
    virtual const MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&) const; // = 0;

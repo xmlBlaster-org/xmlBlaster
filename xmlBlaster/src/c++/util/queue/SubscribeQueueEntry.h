@@ -35,9 +35,10 @@ public:
    SubscribeQueueEntry(org::xmlBlaster::util::Global& global,
                        const org::xmlBlaster::client::key::SubscribeKey& subscribeKey,
                        const org::xmlBlaster::client::qos::SubscribeQos& subscribeQos,
-                       const std::string& methodName=org::xmlBlaster::util::MethodName::SUBSCRIBE,
-                       int priority=9,
-                       bool persistent=false);
+                       const std::string& methodName=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::SUBSCRIBE,
+                       int priority=MAX_PRIORITY, // 9
+                       bool persistent=false,
+                       org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
    MsgQueueEntry *getClone() const;
 
@@ -49,6 +50,8 @@ public:
 
    // this should actually be in another interface but since it is an only method we put it here.
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;
+
+   size_t getSizeInBytes() const;
 
    org::xmlBlaster::client::qos::SubscribeQos getSubscribeQos() const;
 

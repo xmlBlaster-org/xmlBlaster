@@ -36,7 +36,7 @@ PublishQueueEntry::~PublishQueueEntry() {
 /** copy constructor */
 PublishQueueEntry::PublishQueueEntry(const PublishQueueEntry& rhs)
     //: MsgQueueEntry((MsgQueueEntry)rhs)
-    : MsgQueueEntry(rhs.getGlobal(), rhs.getMsgUnit(), rhs.getEmbeddedType(), rhs.getPriority(), rhs.isPersistent())
+    : MsgQueueEntry(rhs.getGlobal(), rhs.getMsgUnit(), rhs.getEmbeddedType(), rhs.getPriority(), rhs.isPersistent(), rhs.getUniqueId())
 {
    memset(&blobHolder_, 0, sizeof(BlobHolder)); // reset cache
 }
@@ -126,9 +126,15 @@ MessageUnit& PublishQueueEntry::getMsgUnit() const
    return *msgUnit_;
 }
 
-PublishReturnQos PublishQueueEntry::getPublishReturnQos() const
+PublishReturnQos &PublishQueueEntry::getPublishReturnQos() const
 {
    return *publishReturnQos_;
+}
+
+size_t PublishQueueEntry::getSizeInBytes() const
+{
+   if (msgUnit_) return msgUnit_->getSizeInBytes();
+   return 0;
 }
 
 string PublishQueueEntry::toXml(const string& indent) const

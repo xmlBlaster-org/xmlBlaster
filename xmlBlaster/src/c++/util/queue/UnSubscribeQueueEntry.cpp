@@ -14,8 +14,8 @@ using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-UnSubscribeQueueEntry::UnSubscribeQueueEntry(Global& global, const UnSubscribeKey& unSubscribeKey, const UnSubscribeQos& unSubscribeQos, const string& type, int priority, bool persistent)
-   : MsgQueueEntry(global, unSubscribeKey.getData(), unSubscribeQos.getData(), type, priority, persistent)
+UnSubscribeQueueEntry::UnSubscribeQueueEntry(Global& global, const UnSubscribeKey& unSubscribeKey, const UnSubscribeQos& unSubscribeQos, const string& type, int priority, bool persistent, Timestamp uniqueId)
+   : MsgQueueEntry(global, unSubscribeKey.getData(), unSubscribeQos.getData(), type, priority, persistent, uniqueId)
 {
    ME = "UnSubscribeQueueEntry";
 }
@@ -43,6 +43,14 @@ const MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectio
    connectionsHandler.getConnection().unSubscribe(UnSubscribeKey(global_, *queryKeyData_), UnSubscribeQos(global_, *queryQosData_));
 
    return *this;
+}
+
+size_t UnSubscribeQueueEntry::getSizeInBytes() const
+{
+   size_t sum = 0;
+   if (queryQosData_     != NULL) sum += sizeof(*queryQosData_);
+   if (queryKeyData_     != NULL) sum += sizeof(*queryKeyData_);
+   return sum;
 }
 
 UnSubscribeQos UnSubscribeQueueEntry::getUnSubscribeQos() const
