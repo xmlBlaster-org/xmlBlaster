@@ -97,7 +97,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) throws XmlBlasterException {
-      if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
+      //if (!isInternal()) log.info(ME, getLogId() + " is added to queue");
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
       if (msgUnitWrapper != null) {
          msgUnitWrapper.incrementReferenceCounter(1, storageId);
@@ -112,7 +112,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) throws XmlBlasterException {
-      if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
+      //if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
       /* I couldn't force garbage collect of messageUnitWrapper here, why?
       {  // TEST ONLY

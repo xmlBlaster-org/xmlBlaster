@@ -164,7 +164,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          }
          this.referenceCounter += count;
       }
-      if (!isInternal()) glob.getLog("core").info(ME, "Reference count changed from " + (this.referenceCounter-count) + " to " + this.referenceCounter + ", new historyEntries=" + this.historyReferenceCounter);
+      //if (!isInternal()) glob.getLog("core").info(ME, "Reference count changed from " + (this.referenceCounter-count) + " to " + this.referenceCounter + ", new historyEntries=" + this.historyReferenceCounter);
       if (this.referenceCounter <= 0L) {
          toDestroyed();
       }
@@ -351,7 +351,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
             }
             else {
                this.timerKey = this.destroyTimer.addTimeoutListener(this, timeout, null);
-               this.glob.getLog("core").info(ME, "Register msg for expiration in " + org.jutils.time.TimeHelper.millisToNice(timeout));
+               //this.glob.getLog("core").info(ME, "Register msg for expiration in " + org.jutils.time.TimeHelper.millisToNice(timeout));
             }
          }
       }
@@ -364,7 +364,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    private void toExpired() throws XmlBlasterException {
-      this.glob.getLog("core").info(ME, "Entering toExpired(oldState=" + getStateStr() + ")");
+      //this.glob.getLog("core").info(ME, "Entering toExpired(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -392,7 +392,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    private void toDestroyed() throws XmlBlasterException {
-      this.glob.getLog("core").info(ME, "Entering toDestroyed(oldState=" + getStateStr() + ")");
+      //this.glob.getLog("core").info(ME, "Entering toDestroyed(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -413,7 +413,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * This timeout occurs after a configured expiration delay
     */
    public final void timeout(Object userData) {
-      this.glob.getLog("core").info(ME, "Expiration timeout occurred after " + getMsgQosData().getLifeTime() + " millis");
+      //this.glob.getLog("core").info(ME, "Expiration timeout occurred after " + getMsgQosData().getLifeTime() + " millis");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
