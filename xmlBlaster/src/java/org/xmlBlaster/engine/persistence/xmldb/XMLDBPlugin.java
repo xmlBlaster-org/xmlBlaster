@@ -3,7 +3,7 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.2 2002/02/08 00:48:18 goetzger Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.3 2002/02/09 20:03:26 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -27,11 +27,12 @@ import java.util.Vector;
 /**
  * A simple, XML:DB based, persistence plugin.
  * <br />
- * This plugin stores messages in a <a href="http://www.xmldb.org">XMLDB</a> database, one message to one entry (plus a key and a qos entry).
+ * This plugin stores messages in a <a href="http://www.xmldb.org">XMLDB</a> database,
+ * one message to one entry (plus a key and a qos entry).
  * <br />
- * All methods are marked final, in hope to have some performance gain (could be changed to allow a customized driver)
+ * All methods are marked final, in hope to have some performance gain
+ * (could be changed to allow a customized driver)
  * <br />
- * CAUTION: This driver may not be suitable for production purposes.
  * The Testsuite has to be extended and there haven't been performance meassurements yet.
  * <br />
  * TODO: Extend interface to support caching!<br />
@@ -78,7 +79,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
       if (Log.CALL) Log.call(ME, "init " + param);
 
-      // fixed to xindice right now, needs to be opend to dbXML or eXist or Tamino or ... as well. TODO!!!
+      // fixed to xindice right now, needs to be opend to eXist or Tamino or ... as well. TODO!!!
       db = new XindiceProxy(driverPath + "/" + colName);
 
       // Create Collection manually by using shell-commands
@@ -140,7 +141,8 @@ public class XMLDBPlugin implements I_PersistenceDriver
    /**
     * Allows a already stored message content to be updated.
     * <p />
-    * It only stores the content, so the store() method needs to be called first if this message is new.
+    * It only stores the content, so the store() method needs to be called
+    * first if this message is new.
     * @param messageWrapper The container with all necessary message info.
     */
    public final void update(MessageUnitWrapper messageWrapper) throws XmlBlasterException
@@ -151,7 +153,6 @@ public class XMLDBPlugin implements I_PersistenceDriver
       db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       // Store the sender as well:
       db.addDocument(messageWrapper.getPublishQoS().toXml(), oid + XMLQOS_TOKEN);
-      //store(messageWrapper);
 
       if (Log.TRACE) Log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
    }
