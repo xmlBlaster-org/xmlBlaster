@@ -34,13 +34,11 @@ public class GetKey
    /**
     * Constructor for XPath query. 
     * @param queryString  The String with e.g. XPath syntax
-    * @param queryType    The query syntax, only "XPATH" for the moment
+    * @param queryType    The query syntax, e.g. Constants.XPATH
     * @param XmlBlasterException for invalid queryType
     */
    public GetKey(Global glob, String queryString, String queryType) throws XmlBlasterException {
       this.queryKeyData = new QueryKeyData(glob);
-      this.queryKeyData.setQueryString(queryString);
-      this.queryKeyData.setQueryType(queryType);
    }
 
    public QueryKeyData getData() {
@@ -61,13 +59,6 @@ public class GetKey
     */
    public final String getOid() {
       return this.queryKeyData.getOid();
-   }
-
-   /**
-    * Query type "XPATH" or "EXACT" (see Constants.java)
-    */
-   public void setQueryType(String queryType) throws XmlBlasterException {
-      this.queryKeyData.setQueryType(queryType);
    }
 
    /**

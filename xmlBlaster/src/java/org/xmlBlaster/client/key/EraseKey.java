@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.key;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -34,13 +35,11 @@ public class EraseKey
    /**
     * Constructor with given oid.
     * @param queryString  The String with e.g. XPath syntax
-    * @param queryType    The query syntax, only "XPATH" for the moment
+    * @param queryType    The query syntax, e.g. Constants.XPATH
     * @param XmlBlasterException for invalid queryType
     */
    public EraseKey(Global glob, String queryString, String queryType) throws XmlBlasterException {
-      this.queryKeyData = new QueryKeyData(glob);
-      this.queryKeyData.setQueryString(queryString);
-      this.queryKeyData.setQueryType(queryType);
+      this.queryKeyData = new QueryKeyData(glob, queryString, queryType);
    }
 
    public QueryKeyData getData() {
@@ -61,13 +60,6 @@ public class EraseKey
     */
    public final String getOid() {
       return this.queryKeyData.getOid();
-   }
-
-   /**
-    * Query type "XPATH" or "EXACT" (see Constants.java)
-    */
-   public void setQueryType(String queryType) throws XmlBlasterException {
-      this.queryKeyData.setQueryType(queryType);
    }
 
    /**
