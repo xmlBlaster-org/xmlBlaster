@@ -21,11 +21,16 @@ import org.xmlBlaster.engine.Global;
 
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
 
+import org.jaxen.SimpleFunctionContext;
+import org.jaxen.XPathFunctionContext;
+import org.jaxen.FunctionContext;
+import org.jaxen.Function;
 import org.jaxen.JaxenException;
 import org.jaxen.dom.DOMXPath;
 
@@ -47,13 +52,21 @@ import org.jaxen.dom.DOMXPath;
  * MimeAccessPlugin[XPathFilter][1.0]=org.xmlBlaster.engine.mime.xpath.XPathFilter,engine.mime.xpath.maxcachesize=20.
  * </pre>
  *
+ * <p>
+ * Additional xpath functions can be loaded by setting the parameter <code>engine.mime.xpath.extension_functions</code>.
+ * For a description of the parameter syntax and implementation requirements, see {@link #loadXPathExtensionFunctions(String) loadXPathExtensionFunctions}
+ * </p>
+ *
  * @author Peter Antman
+ * @author Jens Askengren
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
+ * @version $Id: XPathFilter.java,v 1.8 2003/09/10 08:14:02 antman Exp $
  */
 
 public class XPathFilter implements I_Plugin, I_AccessFilter {
    public static final String MAX_DOM_CACHE_SIZE = "engine.mime.xpath.maxcachesize";
    public static final String DEFAULT_MAX_CACHE_SIZE = "10";
+   public static final String XPATH_EXTENSTION_FUNCTIONS = "engine.mime.xpath.extension_functions";
 
    private final String ME = "XPathFilter";
    private Global glob;
@@ -78,12 +91,17 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       Properties prop = pluginInfo.getParameters();
       maxCacheSize = Integer.parseInt( prop.getProperty(MAX_DOM_CACHE_SIZE,
                                                         DEFAULT_MAX_CACHE_SIZE));
+
+      loadXPathExtensionFunctions(prop.getProperty(XPATH_EXTENSTION_FUNCTIONS));
+
       domCache = new LinkedList();
    }
+
+
 
    /**
     * Return plugin type for Plugin loader
@@ -137,10 +155,16 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @param msgUnit The message to check
     * @param query   The Query instance holding the xpath expression from your filter.<br />
     * @return true   The filter xpath expression matches the message content.
-    * @exception see I_AccessFilter#match()
+    * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
+    *            does not fit to message content.<br />
+    *            Take care throwing an exception, as the
+    *            exception is routed back to the publisher. Subscribers which where served before
+    *            may receive the update, subscribers which are served after us won't get it.
+    *            For the publisher it looks as if the publish failed completely. Probably it is
+    *            best to return 'false' instead and log the situation.
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
-      if (msgUnit == null) {
+   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnitWrapper, Query query) throws XmlBlasterException {
+      if (msgUnitWrapper == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in xpath match() call");
       }
@@ -158,11 +182,11 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       else
          expression = (DOMXPath)query.getPreparedQuery();
       
-      Document doc = getDocument(msgUnit);
+      Document doc = getDocument(msgUnitWrapper);
       
       try {
          if ( log.DUMP)
-            log.dump(ME,"Matching query " + query.getQuery() + " against document: " + msgUnit.getContentStr());
+            log.dump(ME,"Matching query " + query.getQuery() + " against document: " + msgUnitWrapper.getContentStr());
          
          boolean match = expression.booleanValueOf(doc);
          if (log.TRACE )
@@ -177,22 +201,88 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
    
    public void shutdown() {
    }
-   
+
+   /**
+    * Load xpath extension functions from a semicolon separated list of classes.
+    *
+    * <p>
+    * <b>List syntax:</b>
+    * <code><pre>
+    *  function := prefix ":" function-name ":" class-name
+    *  extensionClassList := ( function (";" function)* )?
+    * </pre></code>
+    *
+    * The prefix may be the empty string. The class must implement the <code>org.jaxen.Function</code> interface.
+    * </p>
+    * <p>
+    * <b>Example string:</b>
+    *
+    * <code>engine.mime.xpath.extension_functions=:recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</code>
+    * </p>
+    *
+    * @param extensionClassList semicolon separated list of function definitions
+    * @throws XmlBlasterException if the syntax is incorrect, or the class could not be loaded
+    */
+    protected void loadXPathExtensionFunctions(String extensionClassList) throws XmlBlasterException {
+
+       if (extensionClassList == null) {
+           return;
+       }
+
+       StringTokenizer st = new StringTokenizer(extensionClassList, ";");
+       while (st.hasMoreTokens()) {
+           String t = st.nextToken();
+
+           // prefix : func : class
+           int c1 = t.indexOf(":");
+           int c2 = t.lastIndexOf(":");
+
+           if (c1 == -1 || c2 == -1 || c1 == c2) {
+               throw new XmlBlasterException(ME, "Bad xpath extension function definition: \""
+                                             + t + "\". Expected: prefix \":\" function-name \":\" class");
+           }
+
+           String prefix = t.substring(0, c1);
+           String func = t.substring(c1+1, c2);
+           String klass = t.substring(c2+1);
+
+           if (func.length() == 0 || klass.length() == 0) {
+               throw new XmlBlasterException(ME, "Bad xpath extension function definition: \""
+                                             + t + "\". Expected: prefix \":\" function-name \":\" class");
+           }
+
+           try {
+               
+               Object o = Class.forName(klass).newInstance();
+               if (!(o instanceof Function)) {
+                   throw new XmlBlasterException(ME, "Extension function \""
+                                                 + klass + "\" does not implement org.jaxen.Function");
+               }
+
+               ((SimpleFunctionContext)XPathFunctionContext.getInstance())
+                   .registerFunction(("".equals(prefix)?null:prefix), func, (Function)o);
+
+           } catch (Exception e) {
+               throw new XmlBlasterException(ME, "Could not load extension function \""
+                                             + klass + "\": " + e.getMessage());
+           }
+       }
+   }
 
    /**
     * Get a dom document for message, from cache or create a new one.
     */
    
-   private synchronized Document getDocument(MsgUnit msgUnit) throws XmlBlasterException {
+   private synchronized Document getDocument(MsgUnit msg) throws XmlBlasterException {
       /*
-      log.trace(ME,"Number of times qued: " + msgUnit.getEnqueueCounter());
-      log.trace(ME,"Timestamp: " +msgUnit.getRcvTimestamp());
-      log.trace(ME,"Unique key: " +msgUnit.getKeyOid());
-      log.trace(ME,"Key: " +msgUnit.getXmlKey().toXml());
-      log.trace(ME,"Message: "+msgUnit.getContentStr());
+      log.trace(ME,"Number of times qued: " + msg.getEnqueueCounter());
+      log.trace(ME,"Timestamp: " +msg.getRcvTimestamp());
+      log.trace(ME,"Unique key: " +msg.getUniqueKey());
+      log.trace(ME,"Key: " +msg.getXmlKey().toXml());
+      log.trace(ME,"Message: "+msg.getMessageUnit().getContentStr());
       */
       Document doc = null;
-      String key = msgUnit.getKeyOid()+":"+msgUnit.getQosData().getRcvTimestamp().getTimestamp();
+      String key = msg.getKeyOid()+":"+msg.getQosData().getRcvTimestamp().getTimestamp();
       // try get document from cache
       int index = domCache.indexOf(new Entry(key,null));
       if ( index != -1) {
@@ -201,7 +291,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          doc =  e.doc;
       } else {
          if (log.TRACE )log.trace(ME,"Constructing new doc from with key: " +key);
-         doc = getDocument(msgUnit.getContentStr());
+         doc = getDocument(msg.getContentStr());
          
          // Put into cache and check size
          Entry e = new Entry(key,doc);
@@ -233,11 +323,11 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                s.getColumnNumber() +
                " in systemID" + s.getSystemId();
          }
-         throw new XmlBlasterException(glob, ErrorCode.USER_MESSAGE_INVALID, ME,"Could not parse xml: " + reason);
+         throw new XmlBlasterException(ME,"Could not parse xml: " + reason);
       }  catch (javax.xml.parsers.ParserConfigurationException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not setup parser: " + ex);
+         throw new XmlBlasterException(ME,"Could not setup parser " + ex);
       } catch (java.io.IOException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Could not read xml " + ex);
+         throw new XmlBlasterException(ME,"Could not read xml " + ex);
       }
       
    } // end of try-catch
