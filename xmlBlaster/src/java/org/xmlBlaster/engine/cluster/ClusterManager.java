@@ -467,7 +467,8 @@ public final class ClusterManager implements I_RunlevelListener
 
       if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
 
-      if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_PRAEFIX)) {
+      if (msgWrapper.getUniqueKey() != null && msgWrapper.getUniqueKey().startsWith(Constants.INTERNAL_OID_PRAEFIX)) {
+         // key oid can be null for XPath subscription
          // internal system messages are handled locally
          if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_CLUSTER_PRAEFIX))
             log.error(ME, "Forwarding of " + msgWrapper.getXmlKey().getUniqueKey() + " implementation is missing");
