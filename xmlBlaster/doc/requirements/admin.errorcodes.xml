@@ -16,6 +16,79 @@
      <img src="ExceptionHandling.gif" border="0" title="XmlBlaster exception handling example" alt="Example for xmlBlaster exceptions" />
     <br />
 
+    <br />
+    <p>
+    We support a set of top level error code categories:
+    </p>
+    <table border="1">
+     <tr><th>errorCode</th><th>Description</th></tr>
+     <tr><td><b>internal</b></td>
+       <td>
+        Internal errors which are caused by programming errors like null-pointer, illegal arguments and other bugs.
+        If such an error occurs you should report it to the xmlBlaster mailing list.
+       </td>
+     </tr>
+     <tr><td><b>resource</b></td>
+       <td>
+        XmlBlaster uses many local resources like hard disk space, RAM and reading or writing files.
+        If resources exhaust, or access to local resources is not possible or if the configuration
+        of those resources is wrong this can usually be solved by the server administrator or deployer
+        of xmlBlaster.<br />
+        Some typical members of this category are outOfMemory, ioException, fileNotFound and more.
+       </td>
+     </tr>
+     <tr><td><b>communication</b></td>
+       <td>
+        The communication layer to clients or other xmlBlaster cluster nodes is an important
+        part of xmlBlaster. We could categorize them into the <i>resource</i> category as
+        typical IO exceptions, but we keep them separate here to manifest the importance for the MoM.
+       </td>
+     </tr>
+     <tr><td><b>user</b></td>
+       <td>
+         User errors are exceptions when clients access xmlBlaster in an illegal way.
+         For example trying to login with a wrong password or sending a message with a corrupted
+         XML-message key syntax will be reported by a <i>user</i> exception.
+       </td></tr>
+     <tr><td><b>transaction</b></td>
+       <td>
+         This is not specified yet.
+       </td></tr>
+    </table>
+    <br />
+
+    <p>
+    Examples for the error codes <i>errorCode</i>:
+    </p>
+    <table border="1">
+     <tr><th>errorCode</th><th>Description</th></tr>
+     <tr><td>internal</td><td>Server internal problems</td></tr>
+     <tr><td>internal.nullpointer</td><td>Coding error (blame maintainers)</td></tr>
+     <tr><td>internal.illegalArgument</td><td>Coding error</td></tr>
+     <tr><td>...</td><td>...</td></tr>
+     <tr><td>resource</td><td>Problems with resources on server hardware or configuration</td></tr>
+     <tr><td>resource.outOfMemory</td><td>No more memory, increase RAM or <i>java -Xmx</i> option</td></tr>
+     <tr><td>resource.noMoreSpace</td><td>No more space on harddisk</td></tr>
+     <tr><td>resource.configuration.invalid</td><td>Your configuration (e.g. in xmlBlaster.properties) is invalid</td></tr>
+     <tr><td>...</td><td>...</td></tr>
+     <tr><td>communication</td><td>Problems with client server communication</td></tr>
+     <tr><td>communication.noconnection.polling</td><td>We have currently no remote connection but are polling for it</td></tr>
+     <tr><td>communication.noconnection.dead</td><td>The remote connection is dead and it is not possible to recover</td></tr>
+     <tr><td>communication.address</td><td>The remote address is illegal, e.g. an invalid URL address</td></tr>
+     <tr><td>...</td><td>...</td></tr>
+     <tr><td>user</td><td>Errors caused by wrong usage</td></tr>
+     <tr><td>user.security.authentication.accesDenied</td><td>Your login failed</td></tr>
+     <tr><td>user.security.authorization.notAuthorized</td><td>Your message was not accepted</td></tr>
+     <tr><td>user.publish.qos</td><td>Illegal syntax in your QoS</td></tr>
+     <tr><td>user.publish.qos.destination</td><td>Message not delivered as destination is illegal</td></tr>
+     <tr><td>user.publish.key</td><td>Your key has illegal syntax</td></tr>
+     <tr><td>user.publish.key.oid</td><td>Such an oid is not accepted</td></tr>
+     <tr><td>user.publish.maxSize</td><td>The message sent is too big</td></tr>
+     <tr><td>...</td><td>...</td></tr>
+     <tr><td>transaction</td><td>Todo</td></tr>
+    </table>
+    <br />
+
     <p>
     An XmlBlasterException contains a set of attributes describing an exception, all of type String:
     </p>
@@ -28,34 +101,7 @@
       <li><b>embeddedText</b>:    The original exception message (optional, if another exception is rethrown)</li>
       <li><b>transactionInfo</b>: Transaction information</li>
     </ol>
-    <p>
-    Examples for the error codes <i>errorCode</i>:
-    </p>
-    <table border="1">
-     <tr><th>errorCode</th><th>Description</th></tr>
-     <tr><td>internal</td><td>Server internal messages</td></tr>
-     <tr><td>internal.nullpointer</td><td>Coding error (blame maintainers)</td></tr>
-     <tr><td>internal.memoryexhaust</td><td>No more memory</td></tr>
-     <tr><td>...</td><td>...</td></tr>
-     <tr><td>invocation</td><td>The client method invocation is illegal or inappropriate</td></tr>
-     <tr><td>invocation.publish.qos</td><td>...</td></tr>
-     <tr><td>invocation.publish.qos.destination</td><td>...</td></tr>
-     <tr><td>invocation.publish.key</td><td>...</td></tr>
-     <tr><td>invocation.publish.key.oid</td><td>...</td></tr>
-     <tr><td>invocation.publish.resourceexhaust</td><td>The message sent is too big</td></tr>
-     <tr><td>...</td><td>...</td></tr>
-     <tr><td>communication</td><td>Problems with client server communication</td></tr>
-     <tr><td>communication.connectionlost</td><td>...</td></tr>
-     <tr><td>communication.noconnection</td><td>...</td></tr>
-     <tr><td>communication.address</td><td>e.g. Invalid URL address</td></tr>
-     <tr><td>...</td><td>...</td></tr>
-     <tr><td>security.notauthenticated</td><td>...</td></tr>
-     <tr><td>security.notauthorized</td><td>Writing a readonly message, reading a message you are not allowed to</td></tr>
-     <tr><td>...</td><td>...</td></tr>
-     <tr><td>transaction</td><td>...</td></tr>
-     <tr><td>...</td><td>...</td></tr>
-     <tr><td>What else?</td><td>...</td></tr>
-    </table>
+    <br />
     <p>
     Examples for <i>location</i>:
     </p>
@@ -81,12 +127,14 @@ An xml representation is
 XmlBlasterException.toXml():
 ============================
 
- &lt;exception id='invocation.publish'>
+ &lt;exception id='user.publish.qos'>
 
     &lt;errorCode>
-       &lt;invocation>
-          &lt;publish/>
-       &lt;/invocation>
+       &lt;user>
+          &lt;publish>
+             &lt;qos/>
+          &lt;/publish>
+       &lt;/user>
     &lt;/errorCode>
 
     &lt;location>
@@ -118,10 +166,10 @@ try {
 catch (CorbaException ex) {
 
    throw new XmlBlasterException(glob,
-                                 XmlBlasterException.COMMUNICATION+".connectionLost",
-                                 this.getClass().getName(),
-                                 "No callback connection to client joe",
-                                 ex);
+                  XmlBlasterException.COMMUNICATION_NOCONNECTION_POLLING,
+                  this.getClass().getName(),
+                  "No callback connection to client joe",
+                  ex);
 
 }
    </example>
@@ -137,7 +185,7 @@ try {
 }
 catch (XmlBlasterException ex) {
 
-   if (ex.isInternalError()) {
+   if (ex.isInternal()) {
       // Displaying all information available:
       log4j.error(ex.toString());
    }
@@ -154,12 +202,13 @@ catch (XmlBlasterException ex) {
    
    <!-- see type="REQ">admin.commands</see -->
    
+   <author>konrad.krafft@doubleslash.de</author>
    <author>ruff@swand.lake.de</author>
    <author>laghi@swissinfo.org</author>
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
