@@ -44,7 +44,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    connectionProblems_ = NULL;
    instanceName_       = lexical_cast<std::string>(TimestampFactory::getInstance().getTimestamp());
 
-	// Hack for Windows: Initialize it from main thread, using the callback thread fails undeterminable (with xerces)
+        // Hack for Windows: Initialize it from main thread, using the callback thread fails undeterminable (with xerces)
    org::xmlBlaster::util::parser::ParserFactory::getFactory().initialize(global);
 }
 
@@ -164,7 +164,7 @@ XmlBlasterAccess::initSecuritySettings(const string& /*secMechanism*/, const str
    log_.error(ME, "initSecuritySettings not implemented yet");
 }
 
-void XmlBlasterAccess::leaveServer(const StringMap &map)
+void XmlBlasterAccess::leaveServer(const StringMap &/*map*/)
 {
    org::xmlBlaster::util::thread::Lock lock(invocationMutex_);
    if (!isConnected()) {
