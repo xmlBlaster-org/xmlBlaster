@@ -48,7 +48,7 @@ only the SNMP subagent module jax.jar is GPL only!
       jaxp.jar and crimson.jar (renamed to parser.jar)
 
    (Migrated:
-    XML parser from Sun jaxp1.0.1 form April, 21 2000 OLD
+    XML parser from Sun jaxp-1.2_01 from summer 2002
     com.sun.xml.tree.XmlDocument  ->  org.apache.crimson.tree.XmlDocument
    )
 
