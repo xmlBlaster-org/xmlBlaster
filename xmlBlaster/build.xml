@@ -259,6 +259,9 @@ TODO
       <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
       <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message=""/>
+      <echo message="   runTests    --> starts xmlBlaster and runs all JUNIT tests"/>
+      <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
+      <echo message=""/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   javadocs-delete --> remove the above"/>
       <echo message="   html        --> generates the html file of each java/cpp/python ... file in same directory"/>
@@ -594,8 +597,8 @@ TODO
          <classpath>
             <pathelement path="lib/xmlBlaster.jar:${cp}"/>
          </classpath>
-         <test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/>
-         <!-- test name="org.xmlBlaster.test.AllTests" fork="yes" todir="${report.dir}"/ -->
+         <!-- test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/ -->
+         <test name="org.xmlBlaster.test.AllTests" fork="yes" todir="${report.dir}"/>
       </junit>
       <echo message="See ${report.dir} for results"/>
       <echo message="Invoke target 'report' for HTML report generation"/>
@@ -604,7 +607,7 @@ TODO
    <!-- =================================================================== -->
    <!-- starts xmlBlaster and the junit tests                               -->
    <!-- =================================================================== -->
-   <target name="run_all">
+   <target name="runTests">
       <parallel>
          <antcall target="startXmlBlasterServer"/>  <!-- blocks -->
          <sequential>
