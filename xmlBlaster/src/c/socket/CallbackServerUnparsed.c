@@ -21,7 +21,8 @@ Compile:
 #endif
 
 static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse);
-static int initCallbackServer(CallbackServerUnparsed *cb);
+static int runCallbackServer(CallbackServerUnparsed *cb);
+static bool createCallbackServer(CallbackServerUnparsed *cb);
 static int isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
@@ -41,7 +42,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    cb->listenSocket = -1;
    cb->acceptSocket = -1;
    cb->useThisSocket = useThisSocket;
-   cb->initCallbackServer = initCallbackServer;
+   cb->runCallbackServer = runCallbackServer;
    cb->isListening = isListening;
    cb->shutdown = shutdownCallbackServer;
    cb->reusingConnectionSocket = false; /* is true if we tunnel callback through the client connection socket */
@@ -153,85 +154,15 @@ static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, cons
  * in this case implicit pthread_exit() is called. 
  *
  * xmlBlaster will connect and receive callback messages.
- * @return The return value is the exit value returned by pthread_join()
+ * @return 0 on success, 1 on error. The return value is the exit value returned by pthread_join()
  */
-static int initCallbackServer(CallbackServerUnparsed *cb)
+static int runCallbackServer(CallbackServerUnparsed *cb)
 {
-   socklen_t cli_len;
-   char *rawData = NULL;
-   struct hostent hostbuf, *hostP = NULL;
-   struct sockaddr_in serv_addr, cli_addr;
-   char *tmphstbuf=NULL;
-   size_t hstbuflen=0;
- 
    cb->isShutdown = false;
 
    if (cb->listenSocket == -1) {
-      char serverHostName[256];
-      if (cb->hostCB == NULL) {
-         gethostname(serverHostName, 125);
-         cb->hostCB = serverHostName;
-      }   
-
-      if (cb->debug)
-         printf("[CallbackServerUnparsed] Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d ...\n",
-                cb->hostCB, cb->portCB);
-
-      /*
-       * Get a socket to work with.
-       */
-      if ((cb->listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-          printf("[CallbackServerUnparsed] Failed creating socket for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
-             cb->hostCB, cb->portCB);
-          cb->isShutdown = true;
-          return 0;
-      }
-
-      /*
-       * Create the address we will be binding to.
-       */
-      serv_addr.sin_family = AF_INET;
-      hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen);
-      if (hostP != NULL) {
-         serv_addr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /*inet_addr("192.168.1.2"); */
-         free(tmphstbuf);
-      }
-      else
-         serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-      serv_addr.sin_port = htons((u_short)cb->portCB);
-
-      if (bind(cb->listenSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-          printf("[CallbackServerUnparsed] Failed binding port for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
-             cb->hostCB, cb->portCB);
-          cb->isShutdown = true;
-          return 0;
-      }
-
-      /*
-       * Listen on the socket.
-       */
-      if (listen(cb->listenSocket, 5) < 0) {
-          printf("[CallbackServerUnparsed] Failed creating listener for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
-             cb->hostCB, cb->portCB);
-          cb->isShutdown = true;
-          return 0;
-      }
-
-      if (cb->debug) printf("[CallbackServerUnparsed] Waiting for xmlBlaster to connect ...\n");
-
-      /*
-       * Accept connections.  When we accept one, ns
-       * will be connected to the client.  cli_addr will
-       * contain the address of the client.
-       */
-      cli_len = (socklen_t)sizeof(cli_addr);
-      if ((cb->acceptSocket = (int)accept(cb->listenSocket, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
-          perror("[CallbackServerUnparsed] accept");
-          cb->isShutdown = true;
-          return 0;
-      }
-      if (cb->debug) printf("[CallbackServerUnparsed] XmlBlaster connected from %s:%hd\n",
-                            inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
+      if (createCallbackServer(cb) == false)
+         return 1;
    }
    else {
       if (cb->debug) printf("[CallbackServerUnparsed] Reusing connection socket to tunnel callback messages\n");
@@ -297,12 +228,91 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       }
 
       freeXmlBlasterBlobContent(&socketDataHolder.blob);
-      free(rawData);
       freeMsgUnitArr(msgUnitArr);
    }
 
    cb->isShutdown = true;
    return 0;
+}
+
+/**
+ * Is only called if we start a dedicated callback server (not tunneling
+ * through the connection socket). 
+ * @return true The callback server is started, false on error
+ */
+static bool createCallbackServer(CallbackServerUnparsed *cb)
+{
+   socklen_t cli_len;
+   struct hostent hostbuf, *hostP = NULL;
+   struct sockaddr_in serv_addr, cli_addr;
+   char *tmphstbuf=NULL;
+   size_t hstbuflen=0;
+   char serverHostName[256];
+   if (cb->hostCB == NULL) {
+      gethostname(serverHostName, 125);
+      cb->hostCB = serverHostName;
+   }   
+
+   if (cb->debug)
+      printf("[CallbackServerUnparsed] Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d ...\n",
+               cb->hostCB, cb->portCB);
+
+   /*
+      * Get a socket to work with.
+      */
+   if ((cb->listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+         printf("[CallbackServerUnparsed] Failed creating socket for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
+            cb->hostCB, cb->portCB);
+         cb->isShutdown = true;
+         return false;
+   }
+
+   /*
+      * Create the address we will be binding to.
+      */
+   serv_addr.sin_family = AF_INET;
+   hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen);
+   if (hostP != NULL) {
+      serv_addr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /*inet_addr("192.168.1.2"); */
+      free(tmphstbuf);
+   }
+   else
+      serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+   serv_addr.sin_port = htons((u_short)cb->portCB);
+
+   if (bind(cb->listenSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+         printf("[CallbackServerUnparsed] Failed binding port for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
+            cb->hostCB, cb->portCB);
+         cb->isShutdown = true;
+         return false;
+   }
+
+   /*
+      * Listen on the socket.
+      */
+   if (listen(cb->listenSocket, 5) < 0) {
+         printf("[CallbackServerUnparsed] Failed creating listener for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
+            cb->hostCB, cb->portCB);
+         cb->isShutdown = true;
+         return false;
+   }
+
+   if (cb->debug) printf("[CallbackServerUnparsed] Waiting for xmlBlaster to connect ...\n");
+
+   /*
+      * Accept connections.  When we accept one, ns
+      * will be connected to the client.  cli_addr will
+      * contain the address of the client.
+      */
+   cli_len = (socklen_t)sizeof(cli_addr);
+   if ((cb->acceptSocket = (int)accept(cb->listenSocket, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
+         perror("[CallbackServerUnparsed] accept");
+         cb->isShutdown = true;
+         return false;
+   }
+   if (cb->debug) printf("[CallbackServerUnparsed] XmlBlaster connected from %s:%hd\n",
+                           inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
+   return true;
 }
 
 static bool isListening(CallbackServerUnparsed *cb)
@@ -436,7 +446,12 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
    }
 
    if (cb->hostCB != 0) {
-      free(cb->hostCB);
+      /*
+        free(cb->hostCB); The string is returned from inet_ntoa() in a statically allocated buffer,
+         which subsequent calls will overwrite (and reuse).
+         So we may only free it on exit(), but we don't know when we exit
+         so we leave these ~ 20 bytes as they are allocated only once
+      */
       cb->hostCB = 0;
    }
 
@@ -517,7 +532,7 @@ int main(int argc, char** argv)
 
    cb = getCallbackServerUnparsed(argc, argv, myUpdate);
    printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
-   cb->initCallbackServer(cb); /* blocks on socket listener */
+   cb->runCallbackServer(cb); /* blocks on socket listener */
 
    /* This code is reached only on socket EOF */
 
