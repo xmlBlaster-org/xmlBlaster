@@ -1,0 +1,106 @@
+$Id: README,v 1.1 2002/01/14 00:18:56 goetzger Exp $
+
+Integration of Xindice (former dbXML) into xmlBlaster
+-----------------------------------------------------
+
+STATE:      alpha
+            runns stable, afaik
+	    no experience at all, except in development environment
+	    
+
+RESOURCES:  http://www.dbxml.org
+	    http://www.xmlBlaster.org
+            
+
+TRAPS/BUGS: What is with BLOBs?
+            How can we store best binarie data?
+
+
+TODO:       Need to finish Test-case!
+            Simple demo!
+
+XindiceDriver.java is an implementation of I_PersistenceDriver.java
+
+
+To use it, you need a dbXML installed and running (tested and developed
+with 1.0b4). Can be downloaded at http://www.dbxml.org
+
+Add according to your dbXML installation similar to your
+$HOME/.[bash|ksh|zsh]rc file:
+# dbXML
+export DBXML_HOME=/opt/dbXML-Core-1.0b4
+export PATH=${PATH}:$DBXML_HOME/bin
+export CLASSPATH=${DBXML_HOME}/java/lib/dbXML.jar
+export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/xmldb.jar
+export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/juggernaut-1.0.jar
+export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/openorb-1.2.0.jar
+export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/xerces-1.4.3.jar
+export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/xalan-2.0.1.jar
+
+Do a new login, update your checked-out release and rebuild all.
+
+In the meanwhile start a new xterm,
+do a
+$ cd $DBXML_HOME
+start the dbXML (if it's not running anyway)
+$ ./start
+
+Copy the config/xmlblaster.properties.templates to $HOME or edit
+it manually. You need to activate:
+
+Persistence.LazyRecovery=true
+Persistence.Path=xmldb:dbxml:///db
+# (or wherever your db is running)
+Persistence.Collection=xmlBlaster
+# (which you need to create manually, but only once, by:
+$ dbxmladmin ac -c /db -n xmlBlaster
+check with:
+$ dbxmladmin lc -c /db
+Persistence.Driver=org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver
+
+Start the xmlBlaster.
+
+if you can see something like:
+
+[Jan 14, 2002 12:53:58 AM WARN  XindiceDriver] * * * This Driver is under development, it may not be used for production environment! * * *
+[Jan 14, 2002 12:53:58 AM INFO  XindiceDriver] using collectionPath 'xmldb:dbxml:///db/xmlBlaster'
+[Jan 14, 2002 12:53:58 AM INFO  RequestBroker] Loaded persistence driver 'org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver'
+[Jan 14, 2002 12:53:58 AM INFO  XindiceDriver] Successfully got 1 stored message-oids from xmldb:dbxml:///db/xmlBlaster
+
+you're on the right way ;-)
+It says which driver the persistence layer is using and that it got 1
+message restored from it.
+
+Publish some messages which are tagged 'durable', you can do this by using
+the qos-tag:
+
+      String qos = "<qos>" +
+                   "   <isDurable />" +
+                   "</qos>";
+
+Check, if you want, by using for example
+$ dbxml ld -c /db/xmlBlaster
+
+        amIdurable-XmlCon.xml
+        amIdurable-XmlKey.xml
+        amIdurable-XmlQos.xml
+
+Total documents: 3
+
+and list a single content by using:
+$ dbxml rd -c /db/xmlBlaster -n amIdurable-XmlKey.xml
+<?xml version="1.0"?>
+<key oid="amIdurable" contentMime="text/plain">
+   </key>
+
+Now you can subscribe to your messages and see if they arrive well.
+
+After restarting xmlBlaster all messages tagged durable should be able to
+subscribe to without being published now.
+
+
+# end of file
+
+
+
+
