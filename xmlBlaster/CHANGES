@@ -47,6 +47,12 @@ BUGS:
 Changes for 0.80 [Sep, xx 2002]
 ===============================
 
+  - Bugifx in Timeout class:
+    On seldom occasions the addTimeoutListener() was faster than
+    the run() of the Timer thread -> ignoring the timeout!
+    Now the timer constructor blocks until the timer thread is up
+    and ready.
+
   - Added build targets for documentation, e.g.
       build.sh docs
    generates javadoc, a html representation of each source file
