@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.27 2002/09/15 11:20:02 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.28 2002/09/15 17:07:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -19,6 +19,10 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 
 /**
@@ -71,6 +75,8 @@ public class SocketDriver extends Thread implements I_Driver
    /** State of server */
    private boolean running = true;
    private boolean listenerReady = false;
+   /** Remember all client connections */
+   private Set handleClientSet = new HashSet();
 
 
    /**
@@ -213,6 +219,32 @@ public class SocketDriver extends Thread implements I_Driver
       } catch (java.io.IOException e) {
          log.warn(ME, "shutdown problem: " + e.toString());
       }
+
+      // shutdown all clients connected
+      while (true) {
+         HandleClient h = null;
+         synchronized (handleClientSet) {
+            Iterator it = handleClientSet.iterator();
+            if (it.hasNext()) {
+               h = (HandleClient)it.next();
+               it.remove();
+            }
+            else
+               break;
+         }
+         if (h == null)
+            break;
+         h.shutdown();
+      }
+      synchronized (handleClientSet) {
+        handleClientSet.clear();
+      }
+   }
+
+   final void removeClient(HandleClient h) {
+      synchronized (handleClientSet) {
+         handleClientSet.remove(h);
+      }
    }
 
    final Global getGlobal()
@@ -239,6 +271,9 @@ public class SocketDriver extends Thread implements I_Driver
                break;
             }
             HandleClient hh = new HandleClient(glob, this, accept);
+            synchronized (handleClientSet) {
+               handleClientSet.add(hh);
+            }
          }
       }
       catch (java.net.UnknownHostException e) {
