@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.3 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.4 2002/05/16 15:44:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -87,7 +87,6 @@ public class TestGetRegexFilter extends TestCase
       glob.init(args);
 
       serverThread = ServerThread.startXmlBlaster(args);
-      try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
