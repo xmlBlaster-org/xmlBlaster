@@ -25,7 +25,7 @@ void object_manager_cleanup()
     ;//Object_Lifetime_Manager::instance()->fini();
 }
 
-namespace org { namespace xmlBlaster { namespace util {
+//namespace org { namespace xmlBlaster { namespace util {
 
 // Static declaratons for Object_Lifetime_Manager.
 Object_Lifetime_Manager * Object_Lifetime_Manager::instance_ = 0;
@@ -128,4 +128,4 @@ int Object_Lifetime_Manager::shutdown ()
   return 0;
 }
 
-}}}; // namespace
+//}}}; // namespace
