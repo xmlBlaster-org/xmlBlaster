@@ -4,7 +4,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [] (cvs main branch)
 ==================
 
- o SOCKET protocol: Fixed memory leak on exception, added marker for serverSide exception
+ o RunlevelManager: Fixed PRE/POST event traversal
+
+ o SOCKET protocol: Fixed memory leak on timeout exception, added marker for serverSide exception
 
  o Ping is now returning AvailabilityChecker information to support
    an application level ping for different run levels.
