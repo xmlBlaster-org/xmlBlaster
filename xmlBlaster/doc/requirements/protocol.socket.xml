@@ -432,7 +432,7 @@ keytool -alias joe -export -keystore testStore.joe -storepass testtest -rfc -fil
 keytool -import -alias joe -file joeTrustStore.Cert -keystore testStore -storepass testtest
       </tt>
       <p>
-      Create a certificate of the xmlBlaster server (the servers private key is in <tt>teststore</tt> which 
+      Create a certificate of the xmlBlaster server (the servers private key is in <tt>testStore</tt> which 
       was created in the example before):
       </p>
       <tt>
@@ -456,7 +456,7 @@ keytool -list -v  -storepass testtest -keystore testStore
       Start the server:
       </p>
       <tt>
-java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keyStore testStore -plugin/socket/keyStorePassword testtest -plugin/socket/trustStoretestStore -plugin/socket/trustStorePassword testtest -plugin/socket/needClientAuth true
+java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keyStore testStore -plugin/socket/keyStorePassword testtest -plugin/socket/trustStore testStore -plugin/socket/trustStorePassword testtest -plugin/socket/needClientAuth true
       </tt>
       <p>
       and a client to test it:
@@ -550,7 +550,7 @@ java -jar lib/xmlBlaster.jar
 java HelloWorld3 -protocol SOCKET
       </pre>
       <p>
-      Here we start a client using the secure SSL SOCKET connection:
+      and here we start another client using the secure SSL SOCKET connection:
       </p>
       <pre>
 java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socket_ssl/SSL true
