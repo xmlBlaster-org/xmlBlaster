@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.14 2002/07/05 07:14:57 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.15 2002/07/07 21:23:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -245,7 +245,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       String loginName = "Tim";
+       String loginName = TestSubDispatch.ME;
        suite.addTest(new TestSubDispatch(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
@@ -262,7 +262,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      TestSubDispatch testSub = new TestSubDispatch(new Global(args), "TestSubDispatch", "Tim");
+      TestSubDispatch testSub = new TestSubDispatch(new Global(args), "TestSubDispatch", TestSubDispatch.ME);
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
