@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides utility methods for converting ResultSets to XML
- * Version:   $Id: DBAdapterUtils.java,v 1.1 2000/02/22 04:23:23 jsrbirch Exp $
+ * Version:   $Id: DBAdapterUtils.java,v 1.2 2000/06/18 12:31:17 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -20,45 +20,45 @@ import org.xmlBlaster.util.Log;
 
 /**
  * Class declaration
- * 
- * 
+ *
+ *
  * @author
  * @version %I%, %G%
  */
 public class DBAdapterUtils {
+   private static final String ME = "DBAdapterUtils";
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param rs
-    * 
+    *
     * @return
-    * 
+    *
     * @see
     */
    public static XmlDocument createDocument(ResultSet rs) {
       return createDocument("jdbcresults", "row", -1, rs);
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @param rootnode
     * @param rownode
     * @param rowlimit
     * @param rs
-    * 
+    *
     * @return
-    * 
+    *
     * @see
     */
-   public static XmlDocument createDocument(String rootnode, String rownode, 
+   public static XmlDocument createDocument(String rootnode, String rownode,
                                             int rowlimit, ResultSet rs) {
 
-      int         rows = 0;
-
+      int rows = 0;
       XmlDocument doc = new XmlDocument();
 
       ElementNode root = (ElementNode) doc.createElement(rootnode);
@@ -72,15 +72,15 @@ public class DBAdapterUtils {
          ResultSetMetaData rsmd = rs.getMetaData();
          int               columns = rsmd.getColumnCount();
 
-         ElementNode       numColumns = 
+         ElementNode       numColumns =
             (ElementNode) doc.createElement("numcolumns");
-         Text              numColumnsValue = (Text) doc.createTextNode("" 
+         Text              numColumnsValue = (Text) doc.createTextNode(""
                  + columns);
 
          numColumns.appendChild(numColumnsValue);
          desc.appendChild(numColumns);
 
-         ElementNode columnNames = 
+         ElementNode columnNames =
             (ElementNode) doc.createElement("columnnames");
 
          for (int i = 1, j = columns; i <= j; i++) {
@@ -90,17 +90,18 @@ public class DBAdapterUtils {
 
             name.appendChild(value);
             columnNames.appendChild(name);
-         } 
+         }
 
          desc.appendChild(columnNames);
 
          while (rs.next()) {
+            if (Log.TRACE) Log.trace(ME, "Scanning SQL result with rowlimit=" + rowlimit + ", rows=" + rows);
             if (rowlimit < 0) {
                continue;
-            } 
+            }
             else if (rows >= rowlimit) {
                break;
-            } 
+            }
 
             rows++;
 
@@ -149,16 +150,20 @@ public class DBAdapterUtils {
                   break;
                }
 
+               if (Log.TRACE) Log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", columnValue='" + columnValue + "'");
                ElementNode col = (ElementNode) doc.createElement(columnName);
                Text        cvalue = (Text) doc.createTextNode(columnValue);
 
                col.appendChild(cvalue);
                row.appendChild(col);
                results.appendChild(row);
-            } 
-         } 
-      } 
-      catch (Exception e) {}
+            }
+         }
+      }
+      catch (Exception e) {
+         Log.error(ME, "Error in scanning result set: " + e.toString());
+         // !!!!! throw XmlBlasterException
+      }
 
       ElementNode numRows = (ElementNode) doc.createElement("rownum");
       Text        numRowsValue = (Text) doc.createTextNode("" + rows);
@@ -170,7 +175,7 @@ public class DBAdapterUtils {
 
       return doc;
 
-   } 
+   }
 
 }
 

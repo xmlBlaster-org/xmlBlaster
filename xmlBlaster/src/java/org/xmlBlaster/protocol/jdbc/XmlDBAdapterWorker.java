@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.4 2000/06/13 13:04:02 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.5 2000/06/18 12:31:17 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -118,14 +118,14 @@ public class XmlDBAdapterWorker extends Thread {
          String   command = descriptor.getCommand();
 
          if (descriptor.getInteraction().equalsIgnoreCase("update")) {
-            Log.info(ME, "Trying DB update ...");
+            Log.info(ME, "Trying DB update '" + command + "' ...");
 
             int   rowsAffected = s.executeUpdate(command);
 
             doc = createUpdateDocument(rowsAffected, descriptor);
          }
          else {
-            Log.info(ME, "Trying DB select ...");
+            Log.info(ME, "Trying DB select '" + command + "' ...");
             rs = s.executeQuery(command);
             doc =
                DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
@@ -237,7 +237,7 @@ public class XmlDBAdapterWorker extends Thread {
          MessageUnit mu = new MessageUnit(xmlKey, bais.toByteArray());
          String      oid = xmlBlaster.publish(mu, qos);
 
-         System.out.println("Delivered Results...");
+         System.out.println("Delivered Results...\n" + bais);
       }
       catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          System.out.println("Exception in notify: " + e.reason);
@@ -265,11 +265,11 @@ public class XmlDBAdapterWorker extends Thread {
 
       ConnectionDescriptor descriptor = null;
 
-      Log.trace(ME, "Get connection ...");
+      if (Log.TRACE) Log.trace(ME, "Get connection ...");
       descriptor = new ConnectionDescriptor(document);
 
       try {
-         Log.trace(ME, "Access DB ...");
+         if (Log.TRACE) Log.trace(ME, "Access DB ...");
          document = queryDB(descriptor);
       }
       catch (Exception e) {
