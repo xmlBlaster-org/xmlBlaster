@@ -240,8 +240,8 @@ void PublishDemo::publish()
       }
       
       if (destination != "") {
-         SessionQos sessionQos(global_, destination);
-         Destination dest(global_, sessionQos);
+         SessionName sessionName(global_, destination);
+         Destination dest(global_, sessionName);
          dest.forceQueuing(forceQueuing);
          pq.addDestination(dest);
       }
