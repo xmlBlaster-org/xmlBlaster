@@ -333,7 +333,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * handles the SQLException. If it is a communication exception like the
+    * Handles the SQLException. 
+    * If it is a communication exception like the
     * connection has been broken it will inform the connection pool.
     * @param location where the exception occured.
     * @param ex the exception which has to be handled.
@@ -355,8 +356,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * Gets the names of all the tables used by XmlBlaster. This information is retrieved via the database's
-    * metadata.
+    * Gets the names of all the tables used by XmlBlaster. 
+    * This information is retrieved via the database's metadata.
     * @param conn the connection on which to retrieve the metadata.
     * @return HashSet the set containing all the existing tablenames.
     */
@@ -375,7 +376,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
 
    /**
-    * checks if all necessary tables exist. If a table does not exist and 'createTables' true, then the 
+    * Checks if all necessary tables exist. 
+    * If a table does not exist and 'createTables' true, then the 
     * table is created.
     * @return boolean 'true' if the tables are all there after the invocation to this method, 'false' if at
     *         least one of the required tables is missing after the invocation to this method.
@@ -1083,7 +1085,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
 
    /**
-    * wipes out the entire DB, i.e. it deletes the three tables from the DB. IMPORTANT: 
+    * Wipes out the entire DB. 
+    * i.e. it deletes the three tables from the DB. IMPORTANT: 
     * @param doSetupNewTables if set to 'true' it recreates the necessary empty tables.
     */
    public int wipeOutDB(boolean doSetupNewTables) throws XmlBlasterException {
@@ -2233,7 +2236,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
 
    /**
-    * gets the real number of entries. that is it really makes a call to the DB to find out
+    * Gets the real number of entries. 
+    * That is it really makes a call to the DB to find out
     * how big the size is.
     */
    public final long getNumOfEntries(String queueName, String nodeId)
@@ -2275,7 +2279,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
 
    /**
-    * gets the real number of persistent entries, that is it really makes a call to the DB to find out
+    * Gets the real number of persistent entries. 
+    * That is it really makes a call to the DB to find out
     * how big the size is.
     */
    public final long getNumOfPersistents(String queueName, String nodeId)

@@ -266,7 +266,7 @@ public final class XmlKey
    }
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
     */
    public org.w3c.dom.Node getRootNode() throws XmlBlasterException {
       loadDomTree();
@@ -274,7 +274,7 @@ public final class XmlKey
    }
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
     */
    public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException {
       loadDomTree();
@@ -282,7 +282,7 @@ public final class XmlKey
    }
 
    /**
-    * Fills the DOM tree, and assures that a valid <pre>&lt;key oid="..."></pre> is used.
+    * Fills the DOM tree, and assures that a valid <pre>&lt;key oid=""></pre> is used.
     */
    private synchronized void loadDomTree() throws XmlBlasterException {
       if (this.xmlToDom != null)

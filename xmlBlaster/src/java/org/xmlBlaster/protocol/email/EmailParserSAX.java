@@ -28,7 +28,7 @@ import org.xmlBlaster.engine.Global;
  */
 
  /**
-  * xmlBlaster
+  * Parse email body. 
   *
   *  String subscribe(String sessionId, String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException;
   *  <subscribe sessionId='xxx'>

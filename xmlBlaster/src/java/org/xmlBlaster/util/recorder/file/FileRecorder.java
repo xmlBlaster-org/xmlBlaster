@@ -72,7 +72,9 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
    private boolean autoCommit = true; // only true is supported
   
 
-   /**
+  /**
+   * Setup the file name. 
+   * <p />
    * File name is:
    * <pre>
    *   Persistence.Path=${user.home}${file.separator}tmp

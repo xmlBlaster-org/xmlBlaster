@@ -334,7 +334,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Initialize cb protocol manager (to administer CORBA/RMI etc. plugins).
+    * Initialize cb protocol manager. 
+    * <p>To administer CORBA/RMI etc. plugins</p>
     */
    public final CbProtocolManager getCbProtocolManager() throws XmlBlasterException {
       if (this.cbProtocolManager == null) {

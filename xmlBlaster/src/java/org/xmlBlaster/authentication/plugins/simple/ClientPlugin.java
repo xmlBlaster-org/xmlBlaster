@@ -60,13 +60,12 @@ public class ClientPlugin implements I_ClientPlugin {
    // --- message handling ----------------------------------------------------
 
    /**
-    * decrypt, check, unseal ... an incomming message
+    * decrypt, check, unseal an incomming message. 
     * <p/>
     * @param MsgUnitRaw The the received message
     * @param MethodName The name of the method which is intercepted
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(String)
     */
    public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException
    {
@@ -74,13 +73,12 @@ public class ClientPlugin implements I_ClientPlugin {
    }
 
    /**
-    * decrypt, check, unseal ... an incomming message
+    * decrypt, check, unseal an incomming message. 
     * <p/>
     * We do noting in this simple case.
     * @param String The the received message
     * @return String The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MsgUnitRaw)
     */
    public String importMessage(String xmlMsg) throws XmlBlasterException
    {
@@ -93,13 +91,12 @@ public class ClientPlugin implements I_ClientPlugin {
    }
 
    /**
-    * encrypt, sign, seal ... an outgoing message
+    * encrypt, sign, seal an outgoing message. 
     * <p/>
     * We do noting in this simple case.
     * @param MsgUnitRaw The source message
     * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException
    {

@@ -51,8 +51,7 @@ public class Session implements I_Session {
 
 
    /**
-    * Initialize the Session for a login or connect call.<br/>
-    * [I_Session]
+    * Initialize the Session for a login or connect call. 
     * <p/>
     * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
@@ -128,12 +127,11 @@ public class Session implements I_Session {
    }
 
    /**
-    * decrypt, check, unseal ... an incomming message
+    * decrypt, check, unseal an incoming message. 
     * <p/>
     * @param MsgUnitRaw The the received message
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
       // dummy implementation
@@ -149,6 +147,9 @@ public class Session implements I_Session {
       return msg;
    }
 
+   /**
+    * @see #importMessage(MsgUnitRaw, MethodName)
+    */
    public String importMessage(String xmlMsg) throws XmlBlasterException
    {
       if (xmlMsg==null) return null;
@@ -160,6 +161,9 @@ public class Session implements I_Session {
       return ret;
    }
 
+   /**
+    * @see #importMessage(MsgUnitRaw, MethodName)
+    */
    public byte[] importMessage(byte[] byteArr) throws XmlBlasterException
    {
       secMgr.getGUI().printInputStream(new String(byteArr));
@@ -170,12 +174,11 @@ public class Session implements I_Session {
    }
 
    /**
-    * encrypt, sign, seal ... an outgoing message
+    * encrypt, sign, seal an outgoing message. 
     * <p/>
     * @param MsgUnitRaw The source message
     * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation
@@ -188,6 +191,9 @@ public class Session implements I_Session {
 
    }
 
+   /**
+    * @see #exportMessage(MsgUnitRaw, MethodName)
+    */
    public String exportMessage(String xmlMsg) throws XmlBlasterException
    {
       if (xmlMsg==null) return null;
@@ -198,6 +204,9 @@ public class Session implements I_Session {
       return ret;
    }
 
+   /**
+    * @see #exportMessage(MsgUnitRaw, MethodName)
+    */
    public byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
    {
       secMgr.getGUI().printOutputStream(new String(byteArr));

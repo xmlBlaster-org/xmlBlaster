@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.40 2003/06/16 19:57:47 ruff Exp $
+Version:   $Id: Parser.java,v 1.41 2003/07/17 09:34:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -646,6 +646,7 @@ public class Parser
 
 
    /**
+    * Returns a raw data string. 
     * <pre>
     *  msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkSum[10]
     *  +---------+-------+------ -*----------*-----------*-----------*-----------+----------+

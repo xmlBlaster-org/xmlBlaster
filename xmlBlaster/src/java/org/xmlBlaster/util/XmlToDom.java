@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.21 2003/04/03 09:28:02 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.22 2003/07/17 09:34:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -99,7 +99,7 @@ public class XmlToDom
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
     */
    public final org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
@@ -109,7 +109,7 @@ public class XmlToDom
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
     */
    public final org.w3c.dom.Document getXmlDoc() throws XmlBlasterException
    {
@@ -119,7 +119,7 @@ public class XmlToDom
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
     * <p>
     * The keyOid will be set properly if no error occurs
     * The rootNode will be set properly if no error occurs

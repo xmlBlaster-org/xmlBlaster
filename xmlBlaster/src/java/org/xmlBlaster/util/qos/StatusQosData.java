@@ -51,8 +51,8 @@ public final class StatusQosData extends QosData implements java.io.Serializable
    }
 
    /**
-    * Constructs the specialized quality of service object for status informations,
-    * e.g. for a return of a subscribe() call
+    * Constructs the specialized quality of service object for status informations. 
+    * E.g. for a return of a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
    public StatusQosData(Global glob, I_StatusQosFactory factory, MethodName methodName) {
@@ -60,7 +60,7 @@ public final class StatusQosData extends QosData implements java.io.Serializable
    }
 
    /**
-    * Constructs the specialized quality of service object for a publish() call.
+    * Constructs the specialized quality of service object for a publish() call. 
     * For internal use only, this message is sent from the persistence layer
     * @param the XML based ASCII string
     * @param true

@@ -92,7 +92,7 @@ abstract public class DeliveryConnection implements I_Timeout
    abstract public String getName();
 
    /** 
-    * Connects on protocol level to the server and tries a ping
+    * Connects on protocol level to the server and tries a ping. 
     * Needs to be called after construction
     * <p>
     * Calls connectLowLevel() which needs to be implemented by derived classes

@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.enum.MethodName;
 
 /**
- * @author  $Author: atigh $ ($Name:  $)
+ * @author  $Author: ruff $ ($Name:  $)
  *
  * @author Wolfgang Kleinertz
  */
@@ -38,8 +38,7 @@ public class Session implements I_Session {
 
 
    /**
-    * Initialize the Session. (In this case, it's a login.)<br/>
-    * [I_Session]
+    * Initialize the Session - in this case, it's a login. 
     * <p/>
     * @param String A xml-String containing the loginname, password, etc.
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
@@ -50,8 +49,7 @@ public class Session implements I_Session {
    }
 
    /**
-    * Initialize the Session for a login or connect call.<br/>
-    * [I_Session]
+    * Initialize the Session for a login or connect call. 
     * <p/>
     * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
@@ -95,7 +93,6 @@ public class Session implements I_Session {
    }
 
    /**
-    *
     * [I_Session]
     */
    public I_Subject getSubject() {
@@ -127,12 +124,11 @@ public class Session implements I_Session {
    }
 
    /**
-    * decrypt, check, unseal ... an incomming message
+    * decrypt, check, unseal an incomming message. 
     * <p/>
     * @param MsgUnitRaw The the received message
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
       // dummy implementation
@@ -151,12 +147,11 @@ public class Session implements I_Session {
 
 
    /**
-    * encrypt, sign, seal ... an outgoing message
+    * encrypt, sign, seal an outgoing message. 
     * <p/>
     * @param MsgUnitRaw The source message
     * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation

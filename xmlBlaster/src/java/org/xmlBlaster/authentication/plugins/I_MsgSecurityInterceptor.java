@@ -21,7 +21,7 @@ import org.xmlBlaster.engine.Global;
 public interface I_MsgSecurityInterceptor {
 
    /**
-    * decrypt, check, unseal ... an incomming message. 
+    * decrypt, check, unseal etc an incomming message. 
     * <p/>
     * Use this to import (decrypt) the xmlKey or xmlQos
     * @param str The the received message (which is probably crypted)
@@ -37,7 +37,7 @@ public interface I_MsgSecurityInterceptor {
    public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException;
 
    /**
-    * encrypt, sign, seal ... an outgoing message. 
+    * encrypt, sign, seal an outgoing message. 
     * <p/>
     * Use this to export (encrypt) the xmlKey or xmlQos
     * @param str The source message

@@ -190,8 +190,8 @@ public class Timeout extends Thread
 
 
    /**
-    * Add a listener which gets informed after 'delay' milliseconds.<p />
-    * 
+    * Add a listener which gets informed after 'delay' milliseconds. 
+    * <p />
     * After the timeout happened, you are not registered any more. If you 
     * want to cycle timeouts, you need to register again.<p />
     *
@@ -239,8 +239,8 @@ public class Timeout extends Thread
 
 
    /**
-    * Refresh a listener before the timeout happened.<p />
-    * 
+    * Refresh a listener before the timeout happened. 
+    * <p />
     * NOTE: The returned timeout handle is different from the original one.<p />
     *
     * NOTE: If you are not sure if the key has elapsed already try this:
@@ -309,8 +309,8 @@ public class Timeout extends Thread
    }
 
    /**
-    * Remove a listener before the timeout happened.<p />
-    * 
+    * Remove a listener before the timeout happened. 
+    * <p />
     * @param      key
     *             The timeout handle you received by a previous 
     *             addTimeoutListener() call.
@@ -328,8 +328,8 @@ public class Timeout extends Thread
 
 
    /**
-    * Is this handle expired?<p />
-    * 
+    * Is this handle expired? 
+    * <p />
     * @param      key
     *             The timeout handle you received by a previous addTimeoutListener() call<br />
     * @return     true/false
@@ -343,8 +343,8 @@ public class Timeout extends Thread
 
 
    /**
-    * How long to my timeout.<p />
-    *
+    * How long to my timeout. 
+    * <p />
     * @param      key 
     *             The timeout handle you received by a previous addTimeoutListener() call.
     * @return     Milliseconds to timeout, or -1 if not known.
@@ -363,8 +363,8 @@ public class Timeout extends Thread
 
 
    /**
-    * How long am i running.<p />
-    *
+    * How long am i running. 
+    * <p />
     * @param      key 
     *             The timeout handle you received by a previous addTimeoutListener() call.
     * @return     Milliseconds since creation, or -1 if not known.
@@ -381,8 +381,8 @@ public class Timeout extends Thread
 
 
    /**
-    * Access the end of life span.<p />
-    * 
+    * Access the end of life span. 
+    * <p />
     * @param      key 
     *             The timeout handle you received by a previous addTimeoutListener() call.
     * @return     Time in milliseconds since midnight, January 1, 1970 UTC 
@@ -396,7 +396,7 @@ public class Timeout extends Thread
 
 
    /**
-    * Reset all pending timeouts.<p />
+    * Reset all pending timeouts. 
     */
    public final void removeAll() {
       synchronized (map) {
@@ -419,8 +419,8 @@ public class Timeout extends Thread
 
 
    /**
-    * Method for testing only.<p />
-    *
+    * Method for testing only. 
+    * <p />
     * Invoke: java -Djava.compiler= org.xmlBlaster.util.Timeout
     */
    public static void main(String args[]) throws Exception {

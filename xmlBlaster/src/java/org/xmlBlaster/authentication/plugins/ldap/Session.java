@@ -58,8 +58,7 @@ public class Session implements I_Session, I_Subject {
 
 
    /**
-    * Initialize the Session for a login or connect call.<br/>
-    * [I_Session]
+    * Initialize the Session for a login or connect call. 
     * <p/>
     * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
@@ -155,13 +154,12 @@ public class Session implements I_Session, I_Subject {
    }
 
    /**
-    * decrypt, check, unseal ... an incomming message
+    * decrypt, check, unseal an incomming message. 
     * <p/>
     * @param MsgUnitRaw The the received message
     * @param MethodName The name of the method which is intercepted
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation
@@ -177,12 +175,11 @@ public class Session implements I_Session, I_Subject {
    }
 
    /**
-    * encrypt, sign, seal ... an outgoing message
+    * encrypt, sign, seal an outgoing message. 
     * <p/>
     * @param MsgUnitRaw The source message
     * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MsgUnitRaw)
     */
    public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
       // dummy implementation

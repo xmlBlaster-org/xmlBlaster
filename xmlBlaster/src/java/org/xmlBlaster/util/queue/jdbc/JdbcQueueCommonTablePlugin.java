@@ -371,7 +371,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
 
    /**
-    * @see I_Queue#take()
+    * Currently not supported by I_Queue. 
     */
    public I_QueueEntry take() throws XmlBlasterException
    {
@@ -399,7 +399,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
 
    /**
-    * @see I_Queue#take(int, long)
+    * Currently not supported by I_Queue. 
     */
    public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
@@ -1181,7 +1181,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
 
    /**
-    * @see I_Map#change(I_Entry, I_ChangeCallback)
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
       synchronized(this) { // is this the correct synchronization ??

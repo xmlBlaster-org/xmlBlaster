@@ -3,7 +3,7 @@ Name:      XmlBlasterSecurityManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlBlasterSecurityManager class to invoke the xmlBlaster server using RMI.
-Version:   $Id: XmlBlasterSecurityManager.java,v 1.7 2002/09/13 23:18:18 ruff Exp $
+Version:   $Id: XmlBlasterSecurityManager.java,v 1.8 2003/07/17 09:34:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -32,9 +32,9 @@ public class XmlBlasterSecurityManager
 
 
    /**
-    * Create and install a security manager, using xmlBlaster.policy
+    * Create and install a security manager.  
     * <p />
-    * xmlBlaster.policy is searched as follows:
+    * The security manager uses <code>xmlBlaster.policy</code> which is searched as follows:
     * <ol>
     *   <li>In the java.security.policy environment, set e.g. java -Djava.security.policy=lib/xmlBlaster.policy</li>
     *   <li>From XmlBlasterProperty (searched on command line and xmlBlaster.property)</li>

@@ -338,7 +338,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
 
    /**
-    * @see I_Map#change(I_Entry, I_ChangeCallback)
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
       synchronized(this.storage) {

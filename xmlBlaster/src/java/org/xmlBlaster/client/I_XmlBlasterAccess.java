@@ -77,6 +77,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    /**
     * Use a specific error handler instead of the default one. 
+    * @see org.xmlBlaster.client.ClientErrorHandler
     */
    public void setClientErrorHandler(I_MsgErrorHandler msgErrorHandler);
 

@@ -91,7 +91,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
-    * Allows to overwrite properties which where passed on initialize()
+    * Allows to overwrite properties which where passed on initialize(). 
     * The properties which support hot configuration are depending on the used implementation
     * <p>
     * capacity is immutable, if you try to change a warning is logged
@@ -493,7 +493,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
-    * @see I_Queue#take()
+    * Currently NOT supported by I_Queue. 
     */
    public I_QueueEntry take() throws XmlBlasterException {
       ArrayList list = take(1, -1L);
@@ -502,7 +502,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
-    * @see I_Queue#take(int, long)
+    * Currently NOT supported by I_Queue. 
     */
    public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       return takeWithPriority(numOfEntries, numOfBytes, 0, MAX_PRIO);
@@ -515,7 +515,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
-    * @see I_Queue#take(int, long)
+    * @see I_Queue
     */
    public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (isShutdown) {

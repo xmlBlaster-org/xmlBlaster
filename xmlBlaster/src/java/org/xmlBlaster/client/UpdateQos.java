@@ -193,8 +193,8 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    }
 
    /** 
-    * The approximate receive timestamp (UTC time),
-    * when message was created - arrived at xmlBlaster server.<br />
+    * The approximate receive timestamp (UTC time). 
+    * Time when message was created - arrived at xmlBlaster server.<br />
     * In nanoseconds elapsed since midnight, January 1, 1970 UTC
     */
    public final Timestamp getRcvTimestamp()

@@ -73,7 +73,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
    }
 
    /**
-    * Example how an environment is checked for a property:
+    * An environment is checked for a property. 
     * <pre>
     * "/node/frodo/client/joe/queue/history/maxEntries=10"
     *

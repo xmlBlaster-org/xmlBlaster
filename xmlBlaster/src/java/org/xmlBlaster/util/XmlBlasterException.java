@@ -508,7 +508,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    }
 
    /**
-    * Serialize the complete exception
+    * Serialize the complete exception. 
     * Take care when changing!!!
     * Is used e.g. in CallbackServerUnparsed.c
     */

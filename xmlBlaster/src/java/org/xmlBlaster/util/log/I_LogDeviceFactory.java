@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 /**
- * Interface for a factory that returns LogableDevices,
+ * Interface for a factory that returns LogableDevices. 
  *
  * <p>A I_LogDeviceFactory is a plugin that will get loaded by the 
  * LogDevicePluginManager. A typical plugin property might look like this:</p>
@@ -23,7 +23,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/11/07 13:10:26 $
+ * @version $Revision: 1.2 $ $Date: 2003/07/17 09:34:12 $
  */
 
 public interface I_LogDeviceFactory extends I_Plugin {

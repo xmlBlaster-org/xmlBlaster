@@ -431,6 +431,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    /**
+    * Access all entries. 
+    * <p />
     * TODO !!!: This method should be changed to an iterator approach
     * as if we have swapped messages they won't fit to memory. 
     * @see I_Map#getAll()
@@ -745,7 +747,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
 
    /**
-    * @see I_Map#change(I_Entry, I_ChangeCallback)
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
       synchronized(this) { // is this the correct synchronization ??

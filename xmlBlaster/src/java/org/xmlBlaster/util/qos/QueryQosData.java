@@ -69,8 +69,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    private HistoryQos historyQos;
 
    /**
-    * Constructs the specialized quality of service object for query informations,
-    * e.g. for a subscribe() call
+    * Constructs the specialized quality of service object for query informations. 
+    * E.g. for a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
    public QueryQosData(Global glob, MethodName methodName) {
@@ -78,8 +78,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Constructs the specialized quality of service object for query informations,
-    * e.g. for a subscribe() call
+    * Constructs the specialized quality of service object for query informations. 
+    * E.g. for a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
    public QueryQosData(Global glob, I_QueryQosFactory factory, MethodName methodName) {

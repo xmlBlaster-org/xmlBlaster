@@ -158,6 +158,7 @@ public class PreparedQuery {
 
 
    /**
+    * Close the connection. 
     * Note that this method must always be invoked since it handles both
     * rollback and commit transparently (i.e. in case of a previous exception
     * it makes a rollback, otherwise a commit in case the flag isAutoCommit

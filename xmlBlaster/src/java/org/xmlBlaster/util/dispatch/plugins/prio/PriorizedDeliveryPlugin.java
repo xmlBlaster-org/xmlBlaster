@@ -277,7 +277,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    }
 
    /**
-    * Enforced by I_MsgDeliveryInterceptor
+    * Enforced by I_MsgDeliveryInterceptor. 
     * <p>
     * NOTE: When copying entries from one queue to another one we have
     * to take care that the reference counter in msgUnitStore is not temporary zero (and is

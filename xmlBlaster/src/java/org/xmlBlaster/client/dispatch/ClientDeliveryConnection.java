@@ -73,7 +73,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
    }
 
    /**
-    * Load the appropriate protocol driver, e.g. the CORBA protocol plugin. 
+    * Load the appropriate protocol driver, e.g the CORBA protocol plugin. 
     * <p>
     * This method is called by our base class during initialization.
     * </p>

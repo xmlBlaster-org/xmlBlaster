@@ -301,7 +301,10 @@ public final class SubjectInfo implements I_AdminSubject
    }
 
    /**
-    * Allows to overwrite queue property, will be only written if prop!= null
+    * Allows to overwrite queue property. 
+    * <p>
+    * It will be only written if prop!= null. 
+    * </p>
     */
    public final void setCbQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
       this.subjectQueue.setProperties(prop);

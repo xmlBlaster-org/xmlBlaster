@@ -99,7 +99,8 @@ public interface I_Queue extends I_StorageProblemNotifier
    long[] getEntryReferences() throws XmlBlasterException;
 
    /**
-    * Gets a copy of the entries (e.g. the messages) in the queue. If the queue
+    * Gets a copy of the entries (e.g the messages) in the queue. 
+    * If the queue
     * is modified, this copy will not be affected. This method is useful for client browsing.
     */
    ArrayList getEntries() throws XmlBlasterException;

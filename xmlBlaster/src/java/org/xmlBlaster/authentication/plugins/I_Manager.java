@@ -5,7 +5,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author  kleinerz
- * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2002/12/18 11:38:07 $)
+ * @version $Revision: 1.7 $ (State: $State) (Date: $Date: 2003/07/17 09:34:03 $)
  */
 
 public interface I_Manager extends I_Plugin
@@ -15,8 +15,9 @@ public interface I_Manager extends I_Plugin
    // querySubjects(String query, String syntax)
 
    /**
-    * The session handling (<code>org.xmlBlaster.authentication.authenticate.init(...)</code>
-    * and <code>login(...)</code>) calls this method to get a new I_Session
+    * The session handling. 
+    * <code>org.xmlBlaster.authentication.authenticate.init(...)</code>
+    * and <code>login(...)</code> calls this method to get a new I_Session
     * and bind it to the session.
     * <p/>
     * @param String sessionId
@@ -32,7 +33,7 @@ public interface I_Manager extends I_Plugin
    public void releaseSession(String sessionId, String qos_literal) throws XmlBlasterException;
 
    /**
-    * Get the I_Session which corresponds to the given sessionId
+    * Get the I_Session which corresponds to the given sessionId. 
     * <p/>
     * @param String The sessionId
     * @return I_Session

@@ -9,7 +9,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 public interface I_Session extends I_MsgSecurityInterceptor {
 
    /**
-    * Initialize a new session.<br\>
+    * Initialize a new session. 
+    * <br \>
     * E.g.: An implementation could include authentication etc.
     * <p/>
     * @param String A qos-literal. The meaning will be defined by the real implementation.
@@ -20,7 +21,8 @@ public interface I_Session extends I_MsgSecurityInterceptor {
 
 
    /**
-    * Initialize a new session.<br\>
+    * Initialize a new session. 
+    * <br \>
     * E.g.: An implementation could include authentication etc.
     * <p/>
     * @param String The already parsed QoS. The meaning will be defined by the real implementation.
