@@ -12,6 +12,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -1100,6 +1102,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          publishedMessages++;
 
+         if (glob.isAdministrationCommand(xmlKey)) {
+            return glob.getMomClientGateway().setCommand(sessionInfo, xmlKey, msgUnit, publishQos, isClusterUpdate);
+         }
+
          if (publishQos.isPubSubStyle()) {
             if (log.TRACE) log.trace(ME, "Doing publish() in Pub/Sub style");
 synchronized (this) {
@@ -1198,8 +1204,6 @@ synchronized (this) {
             //----- 2. now we can send updates to all interested clients:
             if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
                msgUnitHandler.invokeCallback(sessionInfo);
-
-            // this gap is not 100% thread save
 
             //----- 3. check all known query subscriptions if the new message fits as well
             // TODO: Only check if it is a new message (XmlKey is immutable)
@@ -1750,6 +1754,33 @@ synchronized (this) {
    public long getUsedMem() {
       return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
    }
+   public String getGc() {
+      System.gc();
+      return "OK";
+   }
+   public void setGc(String dummy) {
+      System.gc();
+   }
+   public String getExit() throws XmlBlasterException {
+      setExit("0");
+      return "OK";
+   }
+   public void setExit(String exitValue) throws XmlBlasterException {
+      int val = 0;
+      try { val = Integer.parseInt(exitValue.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid exit value=" + exitValue + ", expected an integer"); };
+      final int exitVal = val;
+      final long exitSleep = 2000L;
+      Timeout timeout = new Timeout("ExitTimer");
+      Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+            public void timeout(Object userData) {
+               log.info(ME, "Administrative exit(" + exitVal + ") after exit-timeout of " + exitSleep + " millis.");
+               System.exit(exitVal);
+            }
+         },
+         exitSleep, null);
+      log.info(ME, "Administrative exit request, scheduled exit in " + exitSleep + " millis with exit value=" + exitVal + ".");
+   }
+
    public String getHostname() {
       return glob.getBootstrapAddress().getAddress();
    }

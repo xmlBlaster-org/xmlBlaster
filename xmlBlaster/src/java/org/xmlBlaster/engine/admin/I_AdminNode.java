@@ -35,6 +35,13 @@ public interface I_AdminNode {
    public long getFreeMem();
    public long getTotalMem();
    public long getUsedMem();
+
+   public String getGc();
+   public void setGc(String dummy);
+
+   public String getExit() throws XmlBlasterException;
+   public void setExit(String exitValue) throws XmlBlasterException;
+
    public String getHostname();
    public int getPort();
    public int getNumClients();
