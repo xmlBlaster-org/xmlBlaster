@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.59 2000/06/26 07:12:35 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.60 2000/07/06 10:26:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -78,7 +78,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.59 $
+ * @version $Revision: 1.60 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -921,7 +921,7 @@ public class CorbaConnection implements I_InvocationRecorder
          return;
       try {
          getXmlBlaster().ping();
-         if (Log.TRACE) Log.trace(ME, "ping success() ...");
+         //if (Log.TRACE) Log.trace(ME, "ping success() ...");
          return;
       } catch(Exception e) {
          if (Log.TRACE) Log.trace(ME, "ping failed, xmlBlaster seems to be down, try to reactivate connection ...");
