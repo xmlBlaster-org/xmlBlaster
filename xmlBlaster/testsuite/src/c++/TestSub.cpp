@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.29 2004/06/21 20:28:04 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.30 2004/06/22 22:25:47 laghi Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -37,7 +37,7 @@ private:
 public:
    SpecificCallback(I_Log& log, const string& name) : log_(log) {
       name_ = name;
-
+      numReceived_ = 0;
    }
 
    int getCount() {
@@ -53,7 +53,7 @@ public:
       log_.info("update", string("Receiving update on callback '") + name_ + "' of message oid=" +
                 updateKey.getOid() + " state=" + updateQos.getState() +
                 " authentication sessionId=" + sessionId + " ...");
-      numReceived_ ++;
+      numReceived_++;
       return "<qos><state id='OK'/></qos>";
    }
 
@@ -74,6 +74,9 @@ private:
    string contentMime_;         // = "text/xml";
    string contentMimeExtended_; //  = "1.0";
    ConnectReturnQos returnQos_;
+   SpecificCallback *cb1_;
+   SpecificCallback *cb2_;
+   SpecificCallback *cb3_;
 
    /** Publish tests */
    enum TestType {
@@ -97,10 +100,16 @@ private:
       contentMime_         = "text/xml";
       contentMimeExtended_ = "1.0";
       senderContent_       = "Yeahh, i'm the new content";
+      cb1_ = new SpecificCallback(log_, "callback1");
+      cb2_ = new SpecificCallback(log_, "callback2");
+      cb3_ = new SpecificCallback(log_, "callback3");
    }
 
    virtual ~TestSub() 
    {
+      delete cb1_;
+      delete cb2_; 
+      delete cb3_;
    }
 
    /**
@@ -116,6 +125,8 @@ private:
          SecurityQos secQos(global_, senderName_, passwd);
          ConnectQos connQos(global_);
          returnQos_ = connection_.connect(connQos, this);
+         string name = returnQos_.getSessionQos().getAbsoluteName();
+         log_.info(ME, string("connection setup: the session name is '") + name + "'");
          // Login to xmlBlaster
       }
       catch (XmlBlasterException &e) {
@@ -200,16 +211,13 @@ private:
       SubscribeKey subKey2(global_, oid2);
       SubscribeKey subKey3(global_, oid3);
       SubscribeQos subQos(global_);
-      SpecificCallback cb1(log_, "callback1");
-      SpecificCallback cb2(log_, "callback2");
-      SpecificCallback cb3(log_, "callback3");
 
       numReceived_ = 0;
       subscribeOid_ = "";
       try {
-         subscribeOid_ = connection_.subscribe(subKey1, subQos, &cb1).getSubscriptionId();
-         connection_.subscribe(subKey2, subQos, &cb2);
-         connection_.subscribe(subKey3, subQos, &cb3);
+         subscribeOid_ = connection_.subscribe(subKey1, subQos, cb1_).getSubscriptionId();
+         connection_.subscribe(subKey2, subQos, cb2_);
+         connection_.subscribe(subKey3, subQos, cb3_);
 
          log_.info(ME, string("Success: Subscribe subscription-id=") + subscribeOid_ + " done");
 
@@ -238,10 +246,9 @@ private:
          }
 
          org::xmlBlaster::util::thread::Thread::sleep(2000L); 
-         assertEquals(log_, "specificCallback", 1, cb1.getCount(), string("callback 1"));
-         assertEquals(log_, "specificCallback", 2, cb2.getCount(), string("callback 2"));
-         assertEquals(log_, "specificCallback", 3, cb3.getCount(), string("callback 3"));
-
+         assertEquals(log_, "specificCallback", 1, cb1_->getCount(), string("callback 1"));
+         assertEquals(log_, "specificCallback", 2, cb2_->getCount(), string("callback 2"));
+         assertEquals(log_, "specificCallback", 3, cb3_->getCount(), string("callback 3"));
       }
       catch(XmlBlasterException &e) {
          log_.warn(ME, string("XmlBlasterException: ")
@@ -369,8 +376,6 @@ private:
          log_.error(ME, "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
-
-     testSubscribeSpecificCallback();
 
       testSubscribeXPath();
       waitOnUpdate(1000L);
@@ -542,9 +547,12 @@ int main(int args, char *argc[])
    try {
       org::xmlBlaster::util::Object_Lifetime_Manager::init();
       TestSub testSub(args, argc, "Tim");
+ 
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
+      testSubscribeSpecificCallback();
       testSub.tearDown();
+
       Thread::sleepSecs(1);
    }
    catch (XmlBlasterException& ex) {
