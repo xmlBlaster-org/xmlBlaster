@@ -26,7 +26,12 @@ jacorb.ProxyServerURL=http://localhost/~user/Appligator_Ref
 
 # client-side caching of object references can turned off,
 # but it should not normally as it prevents connection multiplexing
-jacorb.reference_caching=off
+# JacORB will only create multiple local Delegates when the 
+# property jacorb.reference_caching is set to "off".
+# This property is only 
+# present for testing purposes and should not normally be 
+# used.
+#jacorb.reference_caching=off
 
 # amount of diagnostic output, 0 is off
 jacorb.verbosity=0
@@ -98,7 +103,7 @@ jacorb.poa.thread_priority=8
 
 # size of the request queue, clients will receive Corba.TRANSIENT
 # exceptions if load exceeds this limit
-jacorb.poa.queue_max=1000
+jacorb.poa.queue_max=5000
 #jacorb.poa.queue_max=100
 
 #
