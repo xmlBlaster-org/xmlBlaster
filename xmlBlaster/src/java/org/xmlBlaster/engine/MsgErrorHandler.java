@@ -90,7 +90,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       // Remove the above published dead message from the queue
       try {
          if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
-         long removed = msgQueue.removeRandom(msgQueueEntries);
+         long removed = (msgQueue == null) ? 0 : msgQueue.removeRandom(msgQueueEntries);
          if (removed != msgQueueEntries.length) {
             log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ", exception comes from mime access plugin: " + message);
             return;  // Seems to come from mime access plugin as the message where not in the queue
@@ -107,7 +107,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       }
 
       // 2. Generate dead letters if there are some in the queue
-      long size = msgQueue.getNumOfEntries();
+      long size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
       if (log.TRACE) log.trace(ME, "Flushing " + size + " remaining message from queue");
       if (size > 0) {
          try {
@@ -138,7 +138,8 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          try {
             //if (address == null || address.getOnExhaustKillSession()) {
                log.warn(ME, "Callback server is lost, killing login session of client " +
-                              msgQueue.getStorageId() + ": " + message);
+                             ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
+                             ": " + message);
                try {
                   glob.getAuthenticate().disconnect(sessionInfo.getSessionId(), null);
                }
