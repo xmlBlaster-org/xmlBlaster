@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.9 2000/10/15 10:53:52 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.10 2000/10/23 22:04:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -298,7 +298,7 @@ public class CorbaDriver implements I_Driver
 
 
    /**
-    * The IP address where the HTTP server publishes the IOR. 
+    * The IP address where the HTTP server publishes the IOR.
     * <p />
     * You can specify the local IP address with e.g. -iorHost 192.168.10.1
     * on command line, useful for multi-homed hosts.
@@ -333,6 +333,8 @@ public class CorbaDriver implements I_Driver
       text += "                       Default is port "+DEFAULT_HTTP_PORT+", the port 0 switches this feature off.\n";
       text += "   -ns false           Don't publish the IOR to a naming service.\n";
       text += "                       Default is to publish the IOR to a naming service.\n";
+      text += "   java -DOAIAddr=<ip> For JacORB only, allows to set the corba server IP address\n";
+      text += "                       for multi-homed hosts\n";
       text += "\n";
       return text;
    }
