@@ -248,9 +248,6 @@ public class Global implements Cloneable
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
-      if (args != null) {
-         init(args);
-      }
    }
 
    /**
