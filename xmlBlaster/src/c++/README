@@ -11,12 +11,12 @@ HOW TO BUILD THE CLIENT CLASSES:
     USE_CPP=true (which tells the compiler to build the c++-classes)
     XMLCPP_HOME=<directory-where-you-installed-xerces>
                 (for example XMLCPP_HOME=/usr/local/xerces)
-    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_1")
+    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_5_1")
     CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
     ORBACUS_HOME or MICO_HOME (depending if you run with orbacus or mico
         ex.: ORBACUS_HOME=/usr/local/orbacus
     ORBACUS_VER or MICO_VER to the version of mico or orbacus
-        ex.: MICO_VER="2.3.1"
+        ex.: MICO_VER="2.3.6"
 
 So if you use bash, an example would be:
 
@@ -24,7 +24,7 @@ export XMLCPP_HOME=/usr/local/xerces
 export XMLCPP_VER="1_5_1"
 export CORBA_CPP="mico"
 export MICO_HOME=/usr/local/mico
-export MICO_VER="2.3.5"
+export MICO_VER="2.3.6"
 
 Then you can run make from the $XMLBLASTER_HOME directory or from
 $XMLBLASTER_HOME/src/c++
