@@ -92,7 +92,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
    /**
     * This sends the update to the client.
     */
-   public final String[] sendUpdate(MsgUnitRaw[] msg) throws XmlBlasterException
+   public String[] sendUpdate(MsgUnitRaw[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) 
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
@@ -150,7 +150,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
     * @return    Currently an empty string ""
     * @exception XmlBlasterException If client not reachable
     */
-   public final String ping(String qos) throws XmlBlasterException
+   public String ping(String qos) throws XmlBlasterException
    {
       log.info(ME, "Email ping is not supported, request ignored");
       return "";
