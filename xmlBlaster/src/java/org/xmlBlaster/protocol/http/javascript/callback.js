@@ -24,10 +24,9 @@ function xmlBlasterLogout()
  */
 function publish(message)
 {
-   Log.error("Publish implementation to xmlBlaster is missing");
-   Log.trace("Invoking get request for " + key.oid + " ...");
+   if (Log.TRACE) Log.trace("Invoking publish request ...");
    request("publish", message);
-   Log.trace("Get request for " + key.oid + " done");
+   if (Log.TRACE) Log.trace("Publish request done");
 }
 
 /**
@@ -37,9 +36,9 @@ function publish(message)
 function get(key, qos)
 {
    Log.error("Synchronous GET implementation to xmlBlaster is not supported");
-   Log.trace("Invoking get request for " + key.oid + " ...");
+   if (Log.TRACE) Log.trace("Invoking get request for " + key.oid + " ...");
    request("get", new MessageWrapperLiteral(key, "", qos));
-   Log.trace("Get request for " + key.oid + " done");
+   if (Log.TRACE) Log.trace("Get request for " + key.oid + " done");
 }
 
 /**
@@ -48,9 +47,9 @@ function get(key, qos)
  */
 function subscribe(key, qos)
 {
-   Log.trace("Invoking subscribe request for " + key.oid + " ...");
+   if (Log.TRACE) Log.trace("Invoking subscribe request for " + key.oid + " ...");
    request("subscribe", new MessageWrapperLiteral(key, "", qos));
-   Log.trace("Subscribe request for " + key.oid + " done");
+   if (Log.TRACE) Log.trace("Subscribe request for " + key.oid + " done");
 }
 
 /**
@@ -58,10 +57,9 @@ function subscribe(key, qos)
  */
 function unSubscribe(key, qos)
 {
-   Log.error("UnSubscribe implementation to xmlBlaster is missing");
-   Log.trace("Invoking unSubscribe request for " + key.oid + " ...");
+   if (Log.TRACE) Log.trace("Invoking unSubscribe request for " + key.oid + " ...");
    request("unSubscribe", new MessageWrapperLiteral(key, "", qos));
-   Log.trace("UnSubscribe request for " + key.oid + " done");
+   if (Log.TRACE) Log.trace("UnSubscribe request for " + key.oid + " done");
 }
 
 /**
@@ -69,10 +67,9 @@ function unSubscribe(key, qos)
  */
 function erase(key, qos)
 {
-   Log.error("Erase implementation to xmlBlaster is missing");
-   Log.trace("Invoking get erase for " + key.oid + " ...");
+   if (Log.TRACE) Log.trace("Invoking get erase for " + key.oid + " ...");
    request("erase", new MessageWrapperLiteral(key, "", qos));
-   Log.trace("Get erase for " + key.oid + " done");
+   if (Log.TRACE) Log.trace("Get erase for " + key.oid + " done");
 }
 
 
@@ -94,7 +91,7 @@ function erase(key, qos)
  */
 function request(methodName, msgWrapper)
 {
-   if (Log.TRACE) Log.trace("Sending request " + methodName + " to serlvet");
+   if (Log.TRACE) Log.trace("Sending request " + methodName + " to servlet");
    if (isExplorer) {
       self.frames["requestFrame"].location.reload(true);
    }
@@ -176,7 +173,7 @@ function cutConnection() {
  */
 function browserReady()
 {
-   if (Log.TRACE) Log.trace("Sending browserReady() to serlvet");
+   if (Log.TRACE) Log.trace("Sending browserReady() to servlet");
    // add some dynamic data (milliseconds since 1970), that MSIE 5 resends it.
    var date = new Date();
    var millisec = Date.parse(date);
@@ -275,7 +272,7 @@ function PublishKeyWrapperToXml()
    if ((typeof this.clientTags) != "undefined" && this.clientTags!=null)
       str += this.clientTags;
    str += "\n</key>";
-   if (Log.INFO) Log.info(str);
+   if (Log.TRACE) Log.trace("PublishKey=" + str);
    return str;
 }
 function PublishKeyWrapperWrap(tags)
