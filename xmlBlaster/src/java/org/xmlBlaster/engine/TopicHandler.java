@@ -368,14 +368,16 @@ public final class TopicHandler implements I_Timeout
 
             if (publishQosServer.isPtp()) {
                publishReturnQos = forwardToDestinations(publisherSessionInfo, msgUnitWrapper, publishQosServer);
+               if (!publishQosServer.isPubSubStyle()) {
+                  return publishReturnQos;
+               }
             }
 
 
             //----- 2. now we can send updates to all interested clients:
             if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
             if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
-               String state = publishQosServer.getState();   // Constants.STATE_OK
-               invokeCallback(publisherSessionInfo, msgUnitWrapper, state);
+               invokeCallback(publisherSessionInfo, msgUnitWrapper);
             }
          }
          finally {
@@ -411,7 +413,7 @@ public final class TopicHandler implements I_Timeout
             }
             MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                              receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
-                             "PtP", Constants.STATE_OK);
+                             "PtP");
             receiverSessionInfo.queueMessage(msgEntry);
          }
          else {
@@ -419,7 +421,7 @@ public final class TopicHandler implements I_Timeout
                SubjectInfo destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination());
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                              destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                             "PtP", Constants.STATE_OK);
+                             "PtP");
                destinationClient.queueMessage(msgEntry);
             }
             else {
@@ -432,7 +434,7 @@ public final class TopicHandler implements I_Timeout
                }
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                               destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                              "PtP", Constants.STATE_OK);
+                              "PtP");
                destinationClient.queueMessage(msgEntry);
             }
          }
@@ -584,7 +586,7 @@ public final class TopicHandler implements I_Timeout
 
       if (queryQos.getWantInitialUpdate() == true && hasHistoryEntries()) {
          MsgUnitWrapper[] wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries());
-         if (invokeCallback(null, sub, wrappers, Constants.STATE_OK) == 0) {
+         if (invokeCallback(null, sub, wrappers) == 0) {
             Set removeSet = new HashSet();
             removeSet.add(sub);
             handleCallbackFailed(removeSet);
@@ -690,9 +692,8 @@ public final class TopicHandler implements I_Timeout
     * Send updates to all subscribed clients.
     * <p />
     * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
-    * @param state The state of the message on update, e.g. Constants.STATE_OK
     */
-   private final void invokeCallback(SessionInfo publisherSessionInfo, MsgUnitWrapper msgUnitWrapper, String state) throws XmlBlasterException {
+   private final void invokeCallback(SessionInfo publisherSessionInfo, MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
@@ -707,7 +708,7 @@ public final class TopicHandler implements I_Timeout
       for (int ii=0; ii<subInfoArr.length; ii++) {
          SubscriptionInfo sub = subInfoArr[ii];
          MsgUnitWrapper[] msgUnitWrapperArr = { msgUnitWrapper };
-         if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapperArr, state) == 0) {
+         if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapperArr) == 0) {
             if (removeSet == null) removeSet = new HashSet();
             removeSet.add(sub); // We can't delete directly since we are in the iterator
          }
@@ -719,11 +720,10 @@ public final class TopicHandler implements I_Timeout
     * Send update to subscribed client (Pub/Sub mode only).
     * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
     * @param sub The subscription handle of the client
-    * @param state The status of the message e.g. Constants.STATE_OK or Constants.STATE_ERASED="ERASED"
     * @return Number of successful processed messages, throws never an exception
     */
    private final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
-                                        MsgUnitWrapper[] msgUnitWrapperArr, String state) {
+                                        MsgUnitWrapper[] msgUnitWrapperArr) {
       if (isUnconfigured()) {
          log.warn(ME, "invokeCallback() not supported, this MsgUnit was created by a subscribe() and not a publish()");
          return 0;
@@ -777,7 +777,7 @@ public final class TopicHandler implements I_Timeout
                      // receiver =    sub.getSessionInfo().getLoginName()
                      MsgQueueEntry entry =
                           new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                      sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(), state);
+                                      sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
                      publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, e));
                      retCount++;
                      continue NEXT_MSG;
@@ -786,11 +786,11 @@ public final class TopicHandler implements I_Timeout
             } // if filterQos
 
             if (log.CALL) log.call(ME, "pushing update() message '" + sub.getKeyData().getOid() + "' " + msgUnitWrapper.getStateStr() +
-                          " state '" + state + "' into '" + sub.getSessionInfo().getId() + "' callback queue");
+                          "' into '" + sub.getSessionInfo().getId() + "' callback queue");
             
             UpdateReturnQosServer retQos = (UpdateReturnQosServer)sub.getMsgQueue().put(
                  new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                     sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(), state),
+                     sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()),
                  false);
 
             sub.getSessionInfo().getDeliveryManager().notifyAboutNewEntry();
