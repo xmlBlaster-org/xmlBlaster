@@ -198,6 +198,12 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       if (connectQos.hasPublicSessionId()) {
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
          if (info != null && !info.isShutdown()) {
+            if (connectQos.getSessionQos().reconnectSameClientOnly()) {
+               String text = "Only the creator of session " + connectQos.getSessionName().toString() + " may reconnect, access denied.";
+               log.warn(ME+".connect()", text);
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_IDENTICALCLIENT,
+                         ME+".connect()", text);
+            }
             try {
                // Check password as we can't trust the public session ID
                // throws XmlBlasterExceptions if authentication fails
@@ -224,7 +230,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
                return returnQos;
             }
             catch (XmlBlasterException e) {
-               if (log.TRACE) log.trace(ME, "Access is denied when trying to reconnect to session " + info.getSessionName() + ": " + e.getMessage());
+               log.warn(ME, "Access is denied when trying to reconnect to session " + info.getSessionName() + ": " + e.getMessage());
                throw e; // Thrown if authentication failed
             }
             catch (Throwable e) {
@@ -256,13 +262,13 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
       catch (XmlBlasterException e) {
          // If access is denied: cleanup resources
-         if (log.TRACE) log.trace(ME, "Access is denied: " + e.getMessage());
+         log.warn(ME, "Access is denied: " + e.getMessage());
          securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
-         if (log.TRACE) log.trace(ME, "PANIC: Access is denied: " + e.getMessage());
+         log.error(ME, "PANIC: Access is denied: " + e.getMessage());
          // On error: cleanup resources
          securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
