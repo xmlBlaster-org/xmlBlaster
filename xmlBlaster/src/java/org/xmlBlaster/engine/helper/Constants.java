@@ -187,5 +187,12 @@ public class Constants
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
 
+   /** XmlKey queryType enum */
+   public static final String XPATH = "XPATH";
+   public static final String EXACT = "EXACT";
+   public static final String DOMAIN = "DOMAIN";
+   public static final String REGEX = "REGEX";
+
+
 }
 
