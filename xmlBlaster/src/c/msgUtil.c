@@ -308,7 +308,7 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
       int error;
       int s;
       const char *cause = NULL;
-      const char* servname = "7609"; // or "http"
+      const char* servname = "7609"; /* or "http" */
       memset(&hints, 0, sizeof(hints));
       hints.ai_family = PF_UNSPEC;
       hints.ai_socktype = SOCK_STREAM;
@@ -349,7 +349,7 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
       int error;
       int s[MAXSOCK];
       int nsock;
-      const char* servname = "7609"; // or "http"
+      const char* servname = "7609"; /* or "http" */
       const char *cause = NULL;
       memset(&hints, 0, sizeof(hints));
       hints.ai_family = PF_UNSPEC;
