@@ -1240,7 +1240,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    /**
     * Event invoked on message erase() invocation.
     */
-   public void messageErase(TopicHandler topicHandler) throws XmlBlasterException {
+   void messageErase(TopicHandler topicHandler) throws XmlBlasterException {
       if (topicHandler.hasExactSubscribers()) {
          log.warn(ME, "Erase event occured for oid=" + topicHandler.getUniqueKey() + ", " + topicHandler.numSubscribers() + " subscribers exist ...");
       }

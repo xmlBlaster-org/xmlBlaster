@@ -558,6 +558,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                }
 
                // Remove oldest history entry (if queue is full) and decrease reference counter in msgUnitStore
+               /*
                long numHist = getNumOfHistoryEntries();
                if (numHist > 0L && numHist >= this.historyQueue.getMaxNumOfEntries()) {
                   ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
@@ -565,19 +566,31 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
                            "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
                   }
-                  /*
+                  / *
                   MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
                   MsgUnitWrapper msgUnitEntry = entry.getMsgUnitWrapper();
                   if (msgUnitEntry != null) { // Check WeakReference
                      this.msgUnitCache.remove(msgUnitEntry.getUniqueId()); // decrements reference counter -= 1 -> the entry is only removed if reference counter == 0
                   }
-                  */
+                  * /
                   MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
                   if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
                }
-
+               */
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
+
+                  long numHist = getNumOfHistoryEntries();
+                  if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
+                     ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
+                     if (entryList.size() != 1) {
+                        throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
+                              "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+                     }
+                     MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
+                     if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
+                  }
+
                }
                catch (XmlBlasterException e) {
                   log.error(ME, "History queue put() problem: " + e.getMessage());
@@ -1705,6 +1718,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     * @param sessionName The session which triggered this event
     */
    private void toDead(SessionName sessionName, boolean forceDestroy) {
+      
       if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
       long numHistory = 0L;
       synchronized (this) {
