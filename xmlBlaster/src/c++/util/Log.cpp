@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.6 2002/02/01 17:54:47 ruff Exp $
+Version:   $Id: Log.cpp,v 1.7 2002/08/15 16:18:13 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -204,7 +204,7 @@ char* const Log::BLACK_LTGREEN= "\033[40;46m";
    }
 
 
-   void Log::plain(const string &instance, const string &text) {
+   void Log::plain(const string &/*instance*/, const string &text) {
       log("", L_PLAIN, "", text);
    }
 
