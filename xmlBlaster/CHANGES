@@ -3,6 +3,16 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.xx [xx, xx 2001]
 ==============================
 
+ - Added qos support for get() responses, for example:
+   <qos>
+     <state>
+       OK
+     </state>
+     <sender>
+       Tim
+     </sender>
+   </qos> 
+
  - Fixed C++ testclients in xmlBlaster/testsuite/c++
 
  - It is now possible to query the current logged in users
