@@ -25,23 +25,48 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.QuerySpecQos;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * QueueQueryPlugin
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class QueueQueryPlugin implements I_Query {
+public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
 
    private final static String ME = "QueueQueryPlugin";
    private Global global;
    private LogChannel log;
+   private int maxEntries;
+   private long maxSize;
    
    public QueueQueryPlugin(Global global) {
       this.global = global;
       this.log = global.getLog("query");
    }
 
+
+   /**
+    * If no restriction is given, i.e. if both maxEntries and maxBytes is negative,
+    * then it will wait.
+    * 
+    * @param maxEntries the maximum number of entries for which to wait. If negative
+    *        no restriction is given, so the the other limitations count.
+    * @param maxBytes the maximum number of bytes which need to be in the queue before
+    *        it will continue. If negative no restriction is given.
+    * @return true if it has to wait, false if there are already sufficently entries 
+    *         in the queue.
+    */
+   private final boolean checkIfNeedsWaiting(int entriesInQueue, long bytesInQueue, int maxEntries, long maxBytes) {
+      if (maxEntries > 0) {
+         if (entriesInQueue >= maxEntries) return false;
+      }
+      if (maxBytes > 0) {
+         if (bytesInQueue >= maxBytes) return false;
+      }
+      return true;
+   }
+   
    /**
     * The query to the queue. The parameters specifying which kind of query it is
     * are specified in the qos, and more precisely in the QuerySpecQos.
@@ -59,8 +84,8 @@ public class QueueQueryPlugin implements I_Query {
          
       I_Queue queue = (I_Queue)source;         
 
-      int maxEntries = 1;
-      long maxSize = -1L;
+      this.maxEntries = 1;
+      this.maxSize = -1L;
       boolean consumable = false;
       long waitingDelay = 0L; // no wait is default
       
@@ -82,16 +107,43 @@ public class QueueQueryPlugin implements I_Query {
          // "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
          Map props = StringPairTokenizer.parseToStringClientPropertyPairs(this.global, query, "&", "=");
          ClientProperty prop = (ClientProperty)props.get("maxEntries");
-         if (prop != null) maxEntries = prop.getIntValue();
+         if (prop != null) this.maxEntries = prop.getIntValue();
          prop = qosData.getClientProperty("maxSize");
-         if (prop != null) maxSize = prop.getLongValue();
+         if (prop != null) this.maxSize = prop.getLongValue();
          prop = qosData.getClientProperty("consumable");
          if (prop != null) consumable = prop.getBooleanValue();
          prop = qosData.getClientProperty("waitingDelay");
          if (prop != null) waitingDelay = prop.getLongValue();
       }
       
-      // TODO implement blocking invocation and deletion ..
+      if (waitingDelay != 0L) {
+         if (maxEntries < 1 || maxSize < 1L && waitingDelay < 0L)
+            throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: if you specify a blocking get you must also specify a maximum size or maximum number of entries to retreive, otherwise specify non-blocking by setting 'waitingDelay' to zero");
+         if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
+            synchronized(this) {
+               try {
+                  queue.addQueueSizeListener(this);
+                  if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
+                     try {
+                        if (waitingDelay < 0L) this.wait();
+                        else this.wait(waitingDelay);
+                     }
+                     catch (InterruptedException ex) {
+                     }
+                  }
+               }
+               finally {
+                  try {
+                     queue.removeQueueSizeListener(this);
+                  }
+                  catch (Throwable ex) {
+                     if (this.log.TRACE) this.log.trace(ME, "query: exception occurred when removing the QueueSizeListener from the queue");
+                  }
+               }
+            }
+         }
+      }
+      
       ArrayList list = queue.peek(maxEntries, maxSize);
       ArrayList entryListChecked = DispatchManager.prepareMsgsFromQueue(ME, this.log, queue, list);
       
@@ -118,7 +170,16 @@ public class QueueQueryPlugin implements I_Query {
          ret[i] = new MsgUnit(mu, null, null, msgQosData);
          // ret[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
       }
+      if (consumable) queue.removeRandom(entries);
       return ret;
    }
 
+   public void changed(I_Queue queue, long numEntries, long numBytes) {
+      if (!checkIfNeedsWaiting((int)numEntries, numBytes, this.maxEntries, this.maxSize)) {
+         synchronized(this) {
+            this.notify();
+         }
+      }
+   }
+   
 }
