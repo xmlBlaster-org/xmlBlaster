@@ -38,8 +38,13 @@ Start the test suite manually:
       jaco -Djava.compiler= testsuite.org.xmlBlaster.TestUnSub -trace true -dump true -calls true -time true
 
 
+   Test RMI:
 
+      jaco -Djava.compiler= -Dclient.protocol=RMI test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
+   Test XML-RPC:
+
+      jaco -Djava.compiler= -Dclient.protocol=XML-RPC test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
 
 Note that Junit is extended by some methods in TestCase.java
