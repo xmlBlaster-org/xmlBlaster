@@ -718,8 +718,9 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
    <configuration where="server">
       <h2>Server side configuration</h2>
 
-      <p>Note: For the SSL connection configuration replace <b>socket</b> with <b>socket_ssl</b>,
-      for example <i>plugin/socket_ssl/compress/type=zlib:stream</i>.</p>
+      <p>Note: If you have additional SOCKET plugins registered,
+      you need to replace <b>socket</b> with the name you gave to your plugin, for example <b>socket_ssl</b>,
+      and the property would be for example <i>plugin/socket_ssl/compress/type=zlib:stream</i>.</p>
 
       <table border="1">
          <tr>
