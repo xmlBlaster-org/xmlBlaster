@@ -2,6 +2,8 @@
 
 Changes for 0.77 [Jun, 3 2000]
 ===============================
+  - Bugfix in Main - MainGUI swapping and log WARN toggle.
+
   - browser callback enhancement:
     It is now possible to pass the loginname and the password
     through the session object of the servlet (cookie).
