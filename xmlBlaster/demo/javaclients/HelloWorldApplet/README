@@ -1,3 +1,8 @@
+NOTE:
+
+  This applet is not functional yet!
+
+
 Start applet as application:
 ============================
 
@@ -10,9 +15,21 @@ Start applet as application:
 Start applet in appletviewer:
 =============================
 
-   jaco org.xmlBlaster.MainGUI
+  Start the naming service (IOR into your www servers document root):
 
-   jacapplet $XMLBLASTER_HOME/demo/javaclients/HelloWorldApplet/HelloWorld.html
+     xmlBlaster/bin/ns $DOCUMENT_ROOT/NS_Ref
+
+  Start the appligator (applet http tunneling):
+
+     xmlBlaster/bin/appligator 7777 $DOCUMENT_ROOT/Appligator_Ref
+
+  Start xmlBlaster server:
+
+     java -jar lib/xmlBlaster.jar
+
+  Start the applet:
+
+     xmlBlaster/bin/jacapplet HelloWorld.html
 
 
 
