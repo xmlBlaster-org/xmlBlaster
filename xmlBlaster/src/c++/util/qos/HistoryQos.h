@@ -8,7 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Helper class holding QoS settings to acces historical message. 
  * <p />
  * <pre>
- *   &lt;history numEntries='20'/>
+ *   &lt;history numEntries='20' newestFirst='true'/>
  * </pre>
  * <p>
  * Default is to deliver the most current entry (numEntries='1'),
@@ -35,6 +35,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 extern Dll_Export const long DEFAULT_numEntries;
+extern Dll_Export const bool DEFAULT_newestFirst;
 
 
 class Dll_Export HistoryQos
@@ -45,6 +46,7 @@ private:
    org::xmlBlaster::util::I_Log&         log_;
 
    int numEntries_; // = DEFAULT_numEntries;
+   bool newestFirst_; // = DEFAULT_newestFirst;
 
 public:
    /**
@@ -66,6 +68,17 @@ public:
     * @return e.g. 1
     */
    long getNumEntries() const;
+ 
+   /**
+    * @param newestFirst The number of history entries
+    */
+   void setNewestFirst(bool newestFirst);
+ 
+   /**
+    * Returns the number of history entries.
+    * @return e.g. 1
+    */
+   bool getNewestFirst() const;
  
    /**
     * Dump state of this object into a XML ASCII std::string.
