@@ -210,7 +210,7 @@ public class ClientInfo
 
       // Get the appropriate callback protocol driver, add driver by reflection with xmlBlaster.properties
       // How to protect the misuse of other email addresses??
-      this.cbInfo = new CbInfo(authInfo.getCallbackAddresses());
+      this.cbInfo = new CbInfo(authInfo.getCallbackAddresses(), authInfo.getCallbackDriver());
 
       // send messages to client, if there are any in the queue
       if (messageQueue != null) {
