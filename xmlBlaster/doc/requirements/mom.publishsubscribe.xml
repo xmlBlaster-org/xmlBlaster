@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='mom.publishsubscribe' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>XmlBlaster supports the publish/subscribe paradigm</topic>
+   <description>
+      <p>
+      XmlBlaster allows clients to independently publish messages.
+      Clients may subscribe independently to messages.
+      </p>
+      <p>
+      The indirect communication, in particular the publish/subscribe communication model,
+      is gaining increasing acceptance as a useful alternative to direct communication models,
+      such as the ones based on remote invocations.
+      </p>
+      <p>
+      The main advantage of this paradigm is that it supports a weak coupling among participants,
+      which do not need to be aware of the location or number of its peers.
+      This simplifies the reconfiguration of the applications and eases the reuse of the same components for different applications.
+      </p>
+      <p>
+      One of the main advantages of the publish/subscribe model is that it decouples publishers
+      and subscribers in several dimensions. Note these three dimensions of decoupling:
+      <ul>
+         <li>Space decoupling:<br />
+          That captures the fact that interacting parties do not need to known each other</li>
+         <li>Time decoupling:<br />
+          That captures the fact that parties do not need to be actively participating in the interaction at the same time</li>
+         <li>Flow decoupling:<br />
+          That captures the asynchrony of the model</li>
+      </ul>
+      </p>
+      <p>
+      Typically publish/subscribe behavior is configurable with quality-of-service (QoS) parameters,
+      for example:
+      <ul>
+         <li>Message reliability</li>
+         <li>Message expire time</li>
+         <li>Message ordering</li>
+         <li>Message priority</li>
+         <li>Message filtering</li>
+         <li>Message checking</li>
+         <li>Message manipulation</li>
+         <li>Message latency</li>
+         <li>Message compression</li>
+         <li>Routing of messages</li>
+         <li>Readonly messages</li>
+      </ul>
+      </p>
+   </description>
+   <example lang="Java">
+   </example>
+   <configuration where="server">
+   </configuration>
+   <see type="REQ">engine.qos.publish.PubSub</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 04 06</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
