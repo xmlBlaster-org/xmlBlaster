@@ -31,7 +31,7 @@ import org.xmlBlaster.util.ConnectReturnQos;
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-public interface I_XmlBlasterConnection
+public interface I_XmlBlasterConnection extends I_XmlBlaster
 {
    /**
     * connect() is a login or authentication as well, the authentication schema
@@ -79,19 +79,7 @@ public interface I_XmlBlasterConnection
 
    public String ping(String qos) throws XmlBlasterException, ConnectionException;
 
-   public String subscribe(String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException, ConnectionException;
-
-   public void unSubscribe(String xmlKey_literal, String unSubscribeQoS_literal) throws XmlBlasterException, ConnectionException;
-
-   public String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException;
-
-   public String[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException;
-
-   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException;
-
-   public String[] erase(String xmlKey_literal, String eraseQoS_literal) throws XmlBlasterException, ConnectionException;
-
-   public MessageUnit[] get(String xmlKey_literal, String getQoS_literal) throws XmlBlasterException, ConnectionException;
+   // NOTE: All methods from I_XmlBlaster like publish()/subscribe() can throw the ConnectionException as well!
 
    //public static void usage();
 }

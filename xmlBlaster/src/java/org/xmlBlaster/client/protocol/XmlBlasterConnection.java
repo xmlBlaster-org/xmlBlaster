@@ -107,7 +107,7 @@ import java.util.Collections;
  *
  * @author $Author: ruff $
  */
-public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder, I_CallbackServer, I_Timeout
+public class XmlBlasterConnection extends AbstractCallbackExtended implements I_XmlBlaster, I_CallbackServer, I_Timeout
 {
    private String ME = "XmlBlasterConnection";
    // protected Global glob = null; see AbstractCallbackExtended
@@ -698,7 +698,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
       if (this.clientProblemCallback != null) { // fail save mode:
          //this.clientProblemCallback = new DummyConnectionProblemHandler(this);
-         this.recorder = new InvocationRecorder(address.getMaxMsg(), this, null);
+         this.recorder = new InvocationRecorder(glob, address.getMaxMsg(), this, null);
          Log.info(ME, "Activated fail save mode: " + address.getSettings());
       }
 
