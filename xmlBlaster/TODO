@@ -35,6 +35,9 @@ Choosing the port for the server/callback server (e.g. XmlRpl):
   method "getServerPort" that retrieves the port value from serverSocket
   and returns it.  [michael wilke]
 
+Using dynamic Proxies for logging etc. see
+  http://java.sun.com/j2se/1.3/docs/guide/reflection/proxy.html
+
 --------------------------- TODO for the future ------------------------
 
 PERSISTENCE
