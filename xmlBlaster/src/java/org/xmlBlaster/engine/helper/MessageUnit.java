@@ -3,7 +3,7 @@ Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.9 2002/05/09 11:50:27 ruff Exp $
+Version:   $Id: MessageUnit.java,v 1.10 2002/06/18 11:34:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
@@ -140,17 +140,15 @@ public class MessageUnit implements java.io.Serializable
    public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
+      String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<MessageUnit>");
+      //sb.append(offset).append("<MessageUnit>");
       sb.append(offset).append(xmlKey);
-      sb.append(offset).append("   <content>");
-      sb.append(offset).append("   ").append(new String(content));
-      sb.append(offset).append("   </content>\n");
+      sb.append(offset).append("  <content>").append(new String(content)).append("</content>");
       sb.append(offset).append(qos);
-      sb.append(offset).append("</MessageUnit>\n");
+      //sb.append(offset).append("</MessageUnit>\n");
 
       return sb.toString();
    }
