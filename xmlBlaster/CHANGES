@@ -3,6 +3,17 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
 
+  - Added Update QoS element <queue> with queue informations
+    (Thanks to Cyrille)
+
+  - UpdateQoS and UpdateKey: Renamed printOn() to toXml()
+
+  - Added default corbaloc to xmlBlaster server and naming service
+    This allows connecting to a local naming service without configuration
+
+  - Corrected shell scripts in xmlBlaster/bin directory
+    to reflect the new JacORB package names
+
   - Added a LDAP security plugin, please follow
     instrutions in 
 
