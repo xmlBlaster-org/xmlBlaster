@@ -7,6 +7,9 @@ package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;
 
@@ -37,25 +40,25 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    private String subscriptionId;
 
    /** On erase forceDestroy */
-   private boolean forceDestroy = false;
+   private PropBoolean forceDestroy = new PropBoolean(false);
 
    /** not yet supported */
-   private boolean meta = true;
+   private PropBoolean meta = new PropBoolean(true);
 
    /** not yet supported */
-   private boolean content = true;
+   private PropBoolean content = new PropBoolean(true);
 
    /** allow duplicate identical subscriptions */
-   private boolean multiSubscribe = true;
+   private PropBoolean multiSubscribe = new PropBoolean(true);
 
    /** update messages i have sent myself to myself? */
-   private boolean local = true;
+   private PropBoolean local = new PropBoolean(true);
 
    /** send on subscribe an initial update with the current message */
-   private boolean initialUpdate = true;
+   private PropBoolean initialUpdate = new PropBoolean(true);
 
    /** for erase(): Notify the subscribers on erase? */
-   private boolean notify = true;
+   private PropBoolean notify = new PropBoolean(true);
 
    /** Mime based filter rules */
    private ArrayList filters = null;
@@ -98,11 +101,15 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @return defaults to true
     */
    public boolean getMultiSubscribe() {
+      return this.multiSubscribe.getValue();
+   }
+
+   public PropBoolean getMultiSubscribeProp() {
       return this.multiSubscribe;
    }
 
    public void setMultiSubscribe(boolean multiSubscribe) {
-      this.multiSubscribe = multiSubscribe;
+      this.multiSubscribe.setValue(multiSubscribe);
    }
 
    /**
@@ -114,13 +121,17 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
     */
    public void setWantInitialUpdate(boolean initialUpdate) {
-      this.initialUpdate = initialUpdate;
+      this.initialUpdate.setValue(initialUpdate);
    }
 
    /**
     * Defaults to true. 
     */
    public boolean getWantInitialUpdate() {
+      return this.initialUpdate.getValue();
+   }
+
+   public PropBoolean getInitialUpdateProp() {
       return this.initialUpdate;
    }
 
@@ -128,7 +139,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * Defaults to true. 
     */
    public void setWantNotify(boolean notify) {
-      this.notify = notify;
+      this.notify.setValue(notify);
    }
 
    /**
@@ -136,6 +147,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * Defaults to true. 
     */
    public boolean getWantNotify() {
+      return this.notify.getValue();
+   }
+
+   public PropBoolean getNotifyProp() {
       return this.notify;
    }
 
@@ -144,7 +159,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @param setWantLocal false Inhibit the delivery of messages to myself if i have published it.
     */
    public void setWantLocal(boolean local) {
-      this.local = local;
+      this.local.setValue(local);
    }
 
    /**
@@ -152,6 +167,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @return false Inhibit the delivery of messages to myself if i have published it.
     */
    public boolean getWantLocal() {
+      return this.local.getValue();
+   }
+
+   public PropBoolean getLocalProp() {
       return this.local;
    }
 
@@ -160,7 +179,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @param meta false: Don't send me the meta information of a message key
     */
    public void setWantMeta(boolean meta) {
-      this.meta = meta;
+      this.meta.setValue(meta);
    }
 
    /**
@@ -168,6 +187,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @return false: Don't send me the meta information of a message key
     */
    public boolean getWantMeta() {
+      return this.meta.getValue();
+   }
+
+   public PropBoolean getMetaProp() {
       return this.meta;
    }
 
@@ -177,13 +200,17 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * TODO: Implement in server!!!
     */
    public void setWantContent(boolean content) {
-      this.content = content;
+      this.content.setValue(content);
    }
 
    /**
     * Defaults to true. 
     */
    public boolean getWantContent() {
+      return this.content.getValue();
+   }
+
+   public PropBoolean getContentProp() {
       return this.content;
    }
 
@@ -192,7 +219,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @param forceDestroy
     */
    public void setForceDestroy(boolean forceDestroy) {
-      this.forceDestroy = forceDestroy;
+      this.forceDestroy.setValue(forceDestroy);
    }
 
    /**
@@ -200,6 +227,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @return for erase behaviour
     */
    public boolean getForceDestroy() {
+      return this.forceDestroy.getValue();
+   }
+
+   public PropBoolean getForceDestroyProp() {
       return this.forceDestroy;
    }
 

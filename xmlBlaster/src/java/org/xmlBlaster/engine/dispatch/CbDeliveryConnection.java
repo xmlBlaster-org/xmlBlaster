@@ -87,7 +87,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
     * @return The returned string from the client which is decrypted if necessary, for oneway updates it is null
     */
-   public Object doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
+   public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
    {
       // Convert to UpdateEntry
       MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgArr_.length];
@@ -136,10 +136,11 @@ public final class CbDeliveryConnection extends DeliveryConnection
 
       connectionsHandler.getDeliveryStatistic().incrNumUpdate(rawReturnVal.length);
 
-      UpdateReturnQosServer[] returnObjects = null;
       if (rawReturnVal != null) {
-         returnObjects = new UpdateReturnQosServer[rawReturnVal.length];
          for (int i=0; i<rawReturnVal.length; i++) {
+            if (!msgArr_[i].wantReturnObj())
+               continue;
+
             if (securityInterceptor != null) {
                // decrypt ...
                rawReturnVal[i] = securityInterceptor.importMessage(rawReturnVal[i]);
@@ -147,18 +148,16 @@ public final class CbDeliveryConnection extends DeliveryConnection
 
             // create object
             try {
-               returnObjects[i] = new UpdateReturnQosServer(glob, rawReturnVal[i]);
+               msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
             }
             catch (Throwable e) {
                log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
                //e.printStackTrace();
-               returnObjects[i] = new UpdateReturnQosServer(glob, "<qos/>");
+               msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, "<qos/>"));
             }
          }
          if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");
       }
-
-      return returnObjects;
    }
 
    /**

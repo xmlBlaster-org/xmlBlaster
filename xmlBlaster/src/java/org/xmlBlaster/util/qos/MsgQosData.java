@@ -237,24 +237,6 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @param persistent mark a message as persistent
-    */
-   public void setPersistent(boolean persistent) {
-      this.persistent.setValue(persistent);
-   }
-
-   /**
-    * @return true/false
-    */
-   public boolean isPersistent() {
-      return this.persistent.getValue();
-   }
-
-   public PropBoolean getPersistentProp() {
-      return this.persistent;
-   }
-
-   /**
     * Send message to subscriber even if the content is the same as the previous. 
     * @param forceUpdate
     */
@@ -675,7 +657,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * Returns a shallow clone, you can change savely all basic or immutable types
+    * Returns a shallow clone, you can change safely all basic or immutable types
     * like boolean, String, int.
     * Currently TopicProperty and RouteInfo is not cloned (so don't change it)
     */

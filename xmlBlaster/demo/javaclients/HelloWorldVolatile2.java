@@ -25,7 +25,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -55,7 +55,7 @@ public class HelloWorldVolatile2 implements I_Callback
       this.glob = glob;
       this.log = glob.getLog(null);
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          // Check if other name or password was given on command line:
          String name = glob.getProperty().get("session.name", "HelloWorldVolatile2");
@@ -67,7 +67,7 @@ public class HelloWorldVolatile2 implements I_Callback
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, "HelloWorldVolatile2");
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos subRet = con.subscribe(sk, sq);
 
          // Publish a volatile message
          PublishKey pk = new PublishKey(glob, "HelloWorldVolatile2", "text/xml", "1.0");
@@ -78,14 +78,14 @@ public class HelloWorldVolatile2 implements I_Callback
          topicProperty.setDestroyDelay(4000L);
          topicProperty.setCreateDomEntry(false);
          pq.setTopicProperty(topicProperty);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          con.publish(msgUnit);
 
          // This should not be possible as the message was volatile
          try {
             GetKey gk = new GetKey(glob, "HelloWorldVolatile2");
             GetQos gq = new GetQos(glob);
-            MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+            MsgUnit[] msgs = con.get(gk, gq);
             if (msgs.length > 0) {
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
                log.error("", "Did not expect any message as it was volatile");
@@ -130,7 +130,7 @@ public class HelloWorldVolatile2 implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java HelloWorldVolatile2 -session.name Jeff\n");
          System.exit(1);
       }

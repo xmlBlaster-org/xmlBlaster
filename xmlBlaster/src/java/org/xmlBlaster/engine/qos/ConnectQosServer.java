@@ -32,7 +32,7 @@ public final class ConnectQosServer
    private final Global glob;
    private final ConnectQosData connectQosData;
 
-   public ConnectQosServer(Global glob, ConnectQosData connectQosData) throws XmlBlasterException {
+   public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = connectQosData;
       this.connectQosData.eraseClientQueueProperty(); // not of interest on server side

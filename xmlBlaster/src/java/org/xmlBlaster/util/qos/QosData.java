@@ -12,6 +12,7 @@ import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.property.PropBoolean;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * In nanoseconds elapsed since midnight, January 1, 1970 UTC
     */
    protected Timestamp rcvTimestamp;
+
+   public transient final static boolean DEFAULT_persistent = false;
+   private PropBoolean persistent = new PropBoolean(DEFAULT_persistent);
 
    /**
     * ArrayList containing RouteInfo objects
@@ -168,6 +172,24 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    /**
+    * @param persistent mark a message as persistent
+    */
+   public void setPersistent(boolean persistent) {
+      this.persistent.setValue(persistent);
+   }
+
+   /**
+    * @return true/false
+    */
+   public boolean isPersistent() {
+      return this.persistent.getValue();
+   }
+
+   public PropBoolean getPersistentProp() {
+      return this.persistent;
+   }
+
+   /**
     * Adds a new route hop to the QoS of this message. 
     * The added routeInfo is assumed to be one stratum closer to the master
     * So we will rearrange the stratum here. The given stratum in routeInfo
@@ -270,6 +292,10 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @return internal state of the query as a XML ASCII string
     */
    public abstract String toXml(String extraOffset);
+
+   public final Global getGlobal() {
+      return this.glob;
+   }
 
    /**
     * Returns a shallow clone, you can change savely all basic or immutable types

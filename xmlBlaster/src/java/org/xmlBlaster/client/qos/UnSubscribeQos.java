@@ -33,8 +33,34 @@ public final class UnSubscribeQos
     * Constructor for default qos (quality of service).
     */
    public UnSubscribeQos(Global glob) {
+      this(glob, null); 
+   }
+
+   /**
+    * Constructor for internal use. 
+    * @param queryQosData The struct holding the data
+    */
+   public UnSubscribeQos(Global glob, QueryQosData queryQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.queryQosData = new QueryQosData(glob, glob.getQueryQosFactory()); 
+      this.queryQosData = (queryQosData==null) ? new QueryQosData(this.glob, this.glob.getQueryQosFactory()) : queryQosData;
+   }
+
+   /**
+    * Access the wrapped data holder
+    */
+   public QueryQosData getData() {
+      return this.queryQosData;
+   }
+
+   /**
+    * Mark the unSubscribe request to be persistent. 
+    * <p>
+    * NOTE: The request is only persistent in the client side
+    * queue if we are polling for xmlBlaster.
+    * </p>
+    */
+   public void setPersistent(boolean persistent) {
+      this.queryQosData.setPersistent(persistent);
    }
 
    /**

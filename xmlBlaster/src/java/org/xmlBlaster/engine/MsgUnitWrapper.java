@@ -81,16 +81,20 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * @param msgUnit The raw data
     */
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache) throws XmlBlasterException {
-      this(glob, msgUnit, ownerCache.getStorageId());
+      this(glob, msgUnit, ownerCache.getStorageId(), 0, 0, (String)null, -1);
       this.ownerCache = ownerCache;
    }
 
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, 0, 0, (String)null);
+      this(glob, msgUnit, storageId, 0, 0, (String)null, -1);
    }
 
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter, int historyReferenceCounter) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, referenceCounter, historyReferenceCounter, (String)null);
+   /**
+    * Used when message comes from persistence, the owning I_Map is unknown
+    */
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
+                        int historyReferenceCounter, long sizeInBytes) throws XmlBlasterException {
+      this(glob, msgUnit, storageId, referenceCounter, historyReferenceCounter, (String)null, sizeInBytes);
    }
 
    /**
@@ -98,9 +102,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * @param embeddedType Allows you to control how to make this object persistent:<br />
     *         ServerEntryFactory.ENTRY_TYPE_MSG_XML Dump strings as XML ASCII (which is smaller, faster, portable -> and therefor default)<br />
     *         ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL Dump object with java.io.Serializable
+    * @param sizeInBytes The estimated size of this entry in RAM, if -1 we estimate it for you
     */
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
-                         int historyReferenceCounter, String embeddedType) throws XmlBlasterException {
+                         int historyReferenceCounter, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       this.glob = glob;
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "MsgUnitWrapper", "Invalid constructor parameter msgUnit==null");
@@ -129,7 +134,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       // 1 MsgKeyData
       // 1 MsgUnit
       // 1 MsgUnitWrapper
-      this.immutableSizeInBytes = 3200 + this.msgUnit.size();
+      this.immutableSizeInBytes = (sizeInBytes >= 0) ? sizeInBytes : (3200 + this.msgUnit.size());
 
       toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
@@ -487,7 +492,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          PublishKey publishKey = new PublishKey(glob, "HA");
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
          publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
-         MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
+         MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
          StorageId storageId = new StorageId("mystore", "someid");
          MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
          try {

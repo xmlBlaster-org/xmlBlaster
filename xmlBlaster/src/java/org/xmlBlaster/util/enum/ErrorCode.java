@@ -321,6 +321,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_SUBSCRIBE_NOCALLBACK = new ErrorCode("user.subscribe.noCallback",
+         "You try to subscribe to a topic but have no callback registered on connect.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect"),
+         }
+      );
+
    public static final ErrorCode USER_OID_UNKNOWN = new ErrorCode("user.oid.unknown",
          "You passed a message oid which is not known.",
          new ResourceInfo[] {
@@ -337,6 +344,13 @@ public final class ErrorCode implements java.io.Serializable
 
    public static final ErrorCode USER_CONNECT = new ErrorCode("user.connect",
          "Your connection request could not be handled, check your QoS",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+         }
+      );
+
+   public static final ErrorCode USER_NOT_CONNECTED = new ErrorCode("user.notConnected",
+         "Your operation is not possible, please login with connect() first",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
          }

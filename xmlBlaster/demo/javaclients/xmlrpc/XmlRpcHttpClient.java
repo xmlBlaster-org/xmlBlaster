@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.19 2003/01/05 23:06:59 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.20 2003/03/24 16:12:55 ruff Exp $
 Author:    Michele Laghi (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -28,7 +28,7 @@ import org.xmlBlaster.util.MsgUnit;
 /**
  * Demo showing how to implement a client which connects to xmlBlaster via
  * xml-rpc. 
- * Calls are made through the XmlBlasterConnection client helper class.
+ * Calls are made through the I_XmlBlasterAccess client helper class.
  *
  * When using this class as a client, the xmlrpc
  * protocol is completely transparent, even the Callback server is created for you.
@@ -39,7 +39,7 @@ import org.xmlBlaster.util.MsgUnit;
  * </pre>
  *
  * <p />
- * NOTE:  Any java client using XmlBlasterConnection helper class will switch
+ * NOTE:  Any java client using I_XmlBlasterAccess helper class will switch
  *        to XML-RPC if the command line parameter -client.protocol is specified as follows:
  * <br />
  * <pre>
@@ -75,9 +75,9 @@ public class XmlRpcHttpClient
          // force XML-RPC protocol:
          glob.getProperty().set("client.protocol", "XML-RPC");
          
-         XmlBlasterConnection client = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess client = glob.getXmlBlasterAccess();
          
-         log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterConnection");
+         log.info(ME, "Going to invoke xmlBlaster using XmlRpc-I_XmlBlasterAccess");
          String sessionId = "Session1";
          ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
 
@@ -134,7 +134,7 @@ public class XmlRpcHttpClient
       System.out.println("----------------------------------------------------------");
       System.out.println("java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
       System.out.println("----------------------------------------------------------");
-      XmlBlasterConnection.usage();
+      System.out.println(glob.usage());
       System.out.println(Global.instance().usage());
       System.out.println("----------------------------------------------------------");
       System.out.println("");

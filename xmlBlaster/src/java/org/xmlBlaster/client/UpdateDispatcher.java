@@ -29,34 +29,29 @@ public final class UpdateDispatcher
    /**
     * Register a callback interface with the given subscriptionId
     */
-   public void addCallback(String subscriptionId, I_Callback callback) {
+   public synchronized void addCallback(String subscriptionId, I_Callback callback) {
       if (subscriptionId == null) {
          throw new IllegalArgumentException("Null argument not allowed in addCallback: subscriptionId=" + subscriptionId + " callback=" + callback);
       }
-      callbackMap.put(subscriptionId, callback);
+      this.callbackMap.put(subscriptionId, callback);
    }
 
    /**
     * Access a callbacl interface for the given subscriptionId
     * @return null if not found
     */
-   public I_Callback getCallback(String subscriptionId) {
+   public synchronized I_Callback getCallback(String subscriptionId) {
       if (subscriptionId == null) {
          throw new IllegalArgumentException("The subscriptionId is null");
       }
-      synchronized (callbackMap) {
-         return (I_Callback)callbackMap.get(subscriptionId);
-      }
+      return (I_Callback)this.callbackMap.get(subscriptionId);
    }
    
    /**
     * Returns a current snapshot (shallow copy). 
     */
-   public I_Callback[] getCallbacks() {
-      Set values = null;
-      synchronized (callbackMap) {
-         values = callbackMap.entrySet();
-      }
+   public synchronized I_Callback[] getCallbacks() {
+      Set values = this.callbackMap.entrySet();
       if (values == null || values.size() < 1) {
          return new I_Callback[0];
       }
@@ -64,17 +59,28 @@ public final class UpdateDispatcher
    }
 
    /**
+    * Returns a current snapshot. 
+    */
+   public synchronized String[] getSubscriptionIds() {
+      Set keys = this.callbackMap.keySet();
+      if (keys == null || keys.size() < 1) {
+         return new String[0];
+      }
+      return (String[])keys.toArray(new String[keys.size()]);
+   }
+
+   /**
     * Remove the callback interface for the given subscriptionId
     * @return the removed entry of null if subscriptionId is unknown
     */
-   public I_Callback removeCallback(String subscriptionId) {
+   public synchronized I_Callback removeCallback(String subscriptionId) {
       return (I_Callback)callbackMap.remove(subscriptionId);
    }
 
    /**
     * Remove all callback registrations
     */
-   public void clear() {
+   public synchronized void clear() {
       callbackMap.clear();
    }
 }

@@ -3,10 +3,11 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.PublishKey;
@@ -19,7 +20,8 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 
 /**
@@ -37,7 +39,7 @@ public class HelloWorld4
 {
    private final String ME = "HelloWorld4";
    private final LogChannel log;
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
 
@@ -46,14 +48,14 @@ public class HelloWorld4
       log = glob.getLog(null);
 
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
 
-         con.initFailSave(new I_ConnectionProblems() {
+         con.registerConnectionListener(new I_ConnectionStateListener() {
                
-               public void reConnected() {
+               public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                   connected = true;
                   conRetQos = con.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
+                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
                   try {
                      con.flushQueue();    // send all tailback messages
@@ -61,10 +63,16 @@ public class HelloWorld4
                   } catch (XmlBlasterException e) {
                      log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
                   }
+                  return false;
                }
 
-               public void lostConnection() {
-                  log.warn(ME, "I_ConnectionProblems: No connection to " + glob.getId());
+               public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+                  log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
+                  connected = false;
+               }
+
+               public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+                  log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
                   connected = false;
                }
             });
@@ -106,12 +114,12 @@ public class HelloWorld4
 
          SubscribeKey sk = new SubscribeKey(glob, "Banking");
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos sr1 = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos sr1 = con.subscribe(sk, sq);
 
 
          sk = new SubscribeKey(glob, "HelloWorld4");
          sq = new SubscribeQos(glob);
-         SubscribeReturnQos sr2 = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld4"))
                   log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
@@ -126,7 +134,7 @@ public class HelloWorld4
 
          PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
@@ -134,7 +142,7 @@ public class HelloWorld4
          pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
          pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
          pq = new PublishQos(glob);
-         msgUnit = new MsgUnit(glob, pk, "Ho".getBytes(), pq);
+         msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
          retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
       }
@@ -152,10 +160,10 @@ public class HelloWorld4
                EraseQos eq = new EraseQos(glob);
 
                EraseKey ek = new EraseKey(glob, "HelloWorld4");
-               EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
+               EraseReturnQos[] er = con.erase(ek, eq);
                
                ek = new EraseKey(glob, "Banking");
-               er = con.erase(ek.toXml(), eq.toXml());
+               er = con.erase(ek, eq);
 
                // Wait on message erase events
                try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
@@ -181,7 +189,7 @@ public class HelloWorld4
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java HelloWorld4 -session.name Jeff\n");
          System.exit(1);
       }

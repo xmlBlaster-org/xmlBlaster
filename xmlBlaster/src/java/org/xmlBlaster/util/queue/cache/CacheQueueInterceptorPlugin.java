@@ -23,7 +23,7 @@ import org.xmlBlaster.util.enum.Constants;
 import java.util.ArrayList;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 
-// import org.xmlBlaster.util.queue.jdbc.I_ConnectionListener;
+// import org.xmlBlaster.util.queue.jdbc.I_ConnectionStateListener;
 // currently only for a dump ...
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
@@ -287,17 +287,15 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries not implemented");
    }
 
-
    /**
     * @see I_Queue#put(I_QueueEntry, boolean)
     */
-   public Object put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
+   public void put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
       throws XmlBlasterException {
       I_QueueEntry[] entries = new I_QueueEntry[1];
       entries[0] = queueEntry;
-      return put(entries, ignorePutInterceptor);
+      put(entries, ignorePutInterceptor);
    }
-
     
    /**
     * All entries are stored into the transient queue. All persistent messages are
@@ -309,13 +307,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * 
     * @see I_Queue#put(I_QueueEntry[], boolean)
     */
-   public Object[] put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
+   public void put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
       throws XmlBlasterException {
-      if (queueEntries == null || queueEntries.length < 1) return null;
+      if (queueEntries == null || queueEntries.length < 1) return;
       XmlBlasterException e = null;
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          // Is an interceptor registered (and not bypassed) ?
-         return this.putListener.put(queueEntries);
+         if (this.putListener.putPre(queueEntries) == false)
+            return;
       }
 
       if (getNumOfEntries() > getMaxNumOfEntries()) { // Allow superload one time only
@@ -427,7 +426,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
 
       if (e != null) throw e;
-      return null;
+
+      if ((this.putListener != null) && (!ignorePutInterceptor)) {
+         this.putListener.putPost(queueEntries);
+      }
    }
 
 

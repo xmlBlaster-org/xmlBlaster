@@ -257,6 +257,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       <pre>
    import org.xmlBlaster.client.key.PublishKey;
    import org.xmlBlaster.client.qos.PublishQos;
+   import org.xmlBlaster.util.MsgUnit;
 
    ...
 
@@ -382,7 +383,6 @@ print "\nLogout done, bye.\n";
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.26 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>

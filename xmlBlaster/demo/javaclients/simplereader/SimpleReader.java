@@ -7,7 +7,8 @@ Author:    Wolfgang Kleinertz
 package javaclients.simplereader;
 
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -29,11 +30,11 @@ public class SimpleReader implements I_Callback  {
    private static final String SECPLUGIN_MECHANISM = "simple";
    private static final String SECPLUGIN_VERSION   = "1.0";
 
-   private              XmlBlasterConnection xmlBlaster = null;
+   private              I_XmlBlasterAccess xmlBlaster = null;
    private              Global glob = null;
 
 
-   public SimpleReader(XmlBlasterConnection _xmlBlaster, String _key) throws Exception{
+   public SimpleReader(I_XmlBlasterAccess _xmlBlaster, String _key) throws Exception{
       this.xmlBlaster = _xmlBlaster;
       glob = Global.instance();
 
@@ -55,7 +56,7 @@ public class SimpleReader implements I_Callback  {
             System.exit(0);
          }
 
-         XmlBlasterConnection xmlBlaster = new XmlBlasterConnection( args );
+         I_XmlBlasterAccess xmlBlaster = new XmlBlasterAccess(args);
          SimpleReader sr = new SimpleReader(xmlBlaster, args[1]);
 
          while (true) {

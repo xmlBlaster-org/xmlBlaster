@@ -43,12 +43,12 @@ import java.util.Vector;
 public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionProblems
 {
    private final String ME;
-   private final Global glob;
+   private final Global fatherGlob;
    /** 
     * This util global instance is used for XmlBlasterConnection, it
     * uses the specific settings from NodeInfo to connect to the remote node
     */
-   private final org.xmlBlaster.util.Global connectGlob;
+   private final org.xmlBlaster.util.Global remoteGlob;
    private final LogChannel log;
    private final SessionInfo sessionInfo;
    
@@ -80,13 +80,13 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * Create an object holding all informations about a node
     */
    public ClusterNode(Global glob, NodeId nodeId, SessionInfo sessionInfo) {
-      this.glob = glob;
+      this.fatherGlob = glob;
       this.sessionInfo = sessionInfo;
-      this.log = this.glob.getLog("cluster");
-      this.nodeInfo = new NodeInfo(glob, nodeId);
-      this.state = new NodeStateInfo(glob);
-      this.ME = "ClusterNode" + glob.getLogPrefixDashed() + "-" + "/node/" + getId() + "/";
-      this.connectGlob = glob.getClone(new String[0]);
+      this.log = this.fatherGlob.getLog("cluster");
+      this.remoteGlob = this.fatherGlob.getClone(new String[0]);
+      this.nodeInfo = new NodeInfo(this.remoteGlob, nodeId);
+      this.state = new NodeStateInfo(this.remoteGlob);
+      this.ME = "ClusterNode" + this.remoteGlob.getLogPrefixDashed() + "-" + "/node/" + getId() + "/";
 //!!!      addDomainInfo(new NodeDomainInfo());
    }
 
@@ -147,9 +147,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             log.error(ME, "Can't connect to node '" + getId() + "', address is null");
             throw new XmlBlasterException(ME, "Can't connect to node '" + getId() + "', address is null");
          }
-         connectGlob.setBootstrapAddress(addr);
+         this.remoteGlob.setBootstrapAddress(addr);
 
-         this.xmlBlasterConnection = new XmlBlasterConnection(connectGlob);
+         this.xmlBlasterConnection = new XmlBlasterConnection(this.remoteGlob);
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.initFailSave(this);
 
@@ -158,7 +158,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             callback.setSecretSessionId(createCbSessionId());
          this.cbSessionId = callback.getSecretSessionId();
 
-         ConnectQosData qos = new ConnectQosData(connectGlob, glob.getNodeId());
+         ConnectQosData qos = new ConnectQosData(this.remoteGlob, this.fatherGlob.getNodeId());
 
          qos.setClusterNode(true);
 
@@ -167,7 +167,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // We cache this update and distribute to all our clients:
          qos.setDuplicateUpdates(false);
 
-         qos.setUserId(connectGlob.getId()); // the login name
+         qos.setUserId(this.remoteGlob.getId()); // the login name
          // The password is from the environment -passwd or more specific -passwd[heron]
 
          qos.setAddress(addr);      // use the configured access properties
@@ -178,13 +178,13 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          try {
             log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
 
-            if (glob.getClusterManager().isLocalAddress(addr)) {
+            if (this.fatherGlob.getClusterManager().isLocalAddress(addr)) {
                log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
                return null;
             }
             if (log.DUMP) log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
 
-            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(new ConnectQos(glob, qos), this);
+            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(new ConnectQos(this.remoteGlob, qos), this);
          }
          catch(XmlBlasterException e) {
             log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
@@ -319,7 +319,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * Check if we have currently a functional connection to this node. 
     */
    public boolean isLocalNode() {
-      return getId().equals(glob.getId());
+      return getId().equals(this.fatherGlob.getId());
    }
 
    /**
@@ -386,13 +386,13 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       // Important: Do authentication of sender:
       if (!this.cbSessionId.equals(cbSessionId)) {
-         log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + glob.getId());
-         throw new XmlBlasterException("AccessDenied", "Your callback sessionId is invalid, no access to " + glob.getId());
+         log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + this.remoteGlob.getId());
+         throw new XmlBlasterException("AccessDenied", "Your callback sessionId is invalid, no access to " + this.remoteGlob.getId());
       }
 
       // Publish messages to our RequestBroker WITHOUT ANY FURTHER SECURITY CHECKS:
 
-      String ret = glob.getRequestBroker().update(sessionInfo, updateKey, content, updateQos.getData());
+      String ret = this.fatherGlob.getRequestBroker().update(sessionInfo, updateKey, content, updateQos.getData());
       if (ret == null || ret.length() < 1)
          return Constants.RET_FORWARD_ERROR;   // OK like this?
       return Constants.RET_OK;
@@ -405,10 +405,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    private String createCbSessionId() throws XmlBlasterException {
       try {
-         String ip = glob.getLocalIP();
+         String ip = this.remoteGlob.getLocalIP();
          java.util.Random ran = new java.util.Random();
          StringBuffer buf = new StringBuffer(512);
-         buf.append(Constants.SESSIONID_PREFIX).append(ip).append("-").append(glob.getId()).append("-");
+         buf.append(Constants.SESSIONID_PREFIX).append(ip).append("-").append(this.remoteGlob.getId()).append("-");
          buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
          String sessionId = buf.toString();
          if (log.TRACE) log.trace(ME, "Created sessionId='" + sessionId + "'");

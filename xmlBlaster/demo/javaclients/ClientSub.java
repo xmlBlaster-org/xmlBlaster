@@ -3,14 +3,14 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.39 2003/01/13 20:21:56 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.40 2003/03/24 16:12:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -25,10 +25,10 @@ import org.xmlBlaster.util.MsgUnit;
  * This client tests the method subscribe() with a later publish() with XPath query.<br />
  * The subscribe() should be recognized for this later arriving publish().
  * <p>
- * This demo uses the XmlBlasterConnection helper class, which hides the raw
+ * This demo uses the I_XmlBlasterAccess helper class, which hides the raw
  * CORBA/RMI/XML-RPC nastiness.<br />
- * XmlBlasterConnections hides how to find the xmlBlaster server (see XmlBlasterConnection API).<br />
- * XmlBlasterConnection installs a callback server (for CORBA,RMI or XML-RPC) for you and informs
+ * I_XmlBlasterAccesss hides how to find the xmlBlaster server (see I_XmlBlasterAccess API).<br />
+ * I_XmlBlasterAccess installs a callback server (for CORBA,RMI or XML-RPC) for you and informs
  * you about asynchronous callbacks using the I_Callback interface (method update() see below).
  * <p>
  * If you want to know step by step what happens with CORBA, study the corba/ClientRaw.java example.
@@ -56,7 +56,7 @@ public class ClientSub implements I_Callback
       this.glob = glob;
       this.log = glob.getLog(null);
       try {
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();
          blasterConnection.connect(null, this);
          // Now we are connected to xmlBlaster MOM server.
 
@@ -79,7 +79,7 @@ public class ClientSub implements I_Callback
       }
    }
 
-   private void sendSomeMessages(XmlBlasterConnection blasterConnection)
+   private void sendSomeMessages(I_XmlBlasterAccess blasterConnection)
    {
       String subscriptionId="";
       try {
@@ -204,7 +204,7 @@ public class ClientSub implements I_Callback
    public static void main(String args[]) {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.out.println("Get help: java javaclients.ClientSub -help\n");
          System.out.println("Example: java javaclients.ClientSub -session.name Jeff\n");
          System.exit(1);

@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.20 2002/12/20 16:32:03 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.21 2003/03/24 16:13:03 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -67,8 +67,24 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
 
 
-   public RmiCallbackServer() throws java.rmi.RemoteException
-   {
+   public RmiCallbackServer() throws java.rmi.RemoteException {
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getCbProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**
@@ -180,7 +196,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    /**
     * Shutdown the callback server.
     */
-   public boolean shutdownCb()
+   public void shutdown()
    {
       try {
          if (callbackRmiServerBindName != null)
@@ -191,7 +207,6 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
          ;
       }
       log.info(ME, "The RMI callback server is shutdown.");
-      return true;
    }
 
    /**

@@ -25,7 +25,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -53,8 +53,10 @@ public class HelloWorld3 implements I_Callback
    public HelloWorld3(Global glob) {
       this.glob = glob;
       this.log = glob.getLog(null);
+      
+      I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
+      
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
          // Check if other login name or password was given on command line:
          // (This is redundant as it is done by ConnectQos already)
@@ -68,13 +70,13 @@ public class HelloWorld3 implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorld3", "text/xml", "1.0");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          con.publish(msgUnit);
 
 
          GetKey gk = new GetKey(glob, "HelloWorld3");
          GetQos gq = new GetQos(glob);
-         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         MsgUnit[] msgs = con.get(gk, gq);
          GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
 
          log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
@@ -83,10 +85,10 @@ public class HelloWorld3 implements I_Callback
 
          SubscribeKey sk = new SubscribeKey(glob, "HelloWorld3");
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos subRet = con.subscribe(sk, sq);
 
 
-         msgUnit = new MsgUnit(glob, pk, "Ho".getBytes(), pq);
+         msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
          PublishReturnQos prq = con.publish(msgUnit);
 
          log.info("", "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
@@ -97,11 +99,11 @@ public class HelloWorld3 implements I_Callback
 
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
-         UnSubscribeReturnQos[] urq = con.unSubscribe(uk.toXml(), uq.toXml());
+         UnSubscribeReturnQos[] urq = con.unSubscribe(uk, uq);
 
          EraseKey ek = new EraseKey(glob, "HelloWorld3");
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] eraseArr = con.erase(ek, eq);
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
@@ -143,7 +145,7 @@ public class HelloWorld3 implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java HelloWorld3 -session.name Jeff\n");
          System.exit(1);
       }

@@ -18,6 +18,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.QueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
 
 /**
@@ -31,6 +32,8 @@ public final class ConnectQos
    private String ME = "ConnectQos";
    private final Global glob;
    private final ConnectQosData connectQosData;
+   /** Access to encrypt/decrypt framework, used by protocol plugins */
+   private I_MsgSecurityInterceptor securityInterceptor;
 
    /**
     * Default constructor. 
@@ -297,6 +300,13 @@ public final class ConnectQos
       return this.connectQosData.getSessionCbQueueProperty();
    }
 
+   /** 
+    * The number of bytes of stringified qos
+    */
+   public int size() {
+      return this.connectQosData.size();
+   }
+
    /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
@@ -311,6 +321,22 @@ public final class ConnectQos
     */
    public String toXml() {
       return this.connectQosData.toXml();
+   }
+
+   /**
+    * Access the security interceptor to encrypt/decrypt. 
+    * @return I_MsgSecurityInterceptor plugin or null
+    */
+   public I_MsgSecurityInterceptor getSecurityInterceptor() {
+      return this.securityInterceptor;
+   }
+
+   /**
+    * Access the security interceptor to encrypt/decrypt. 
+    * @return I_MsgSecurityInterceptor
+    */
+   public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
+      this.securityInterceptor = securityInterceptor;
    }
 
    /**

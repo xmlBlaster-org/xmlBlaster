@@ -8,6 +8,7 @@ package org.xmlBlaster.util.dispatch.plugins;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 
 import java.util.ArrayList;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  * </p>
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_MsgDeliveryInterceptor extends I_ConnectionStateListener
+public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
 {
    //public void initClientAccess(Global glob, I_XmlBlasterConnection con, I_CallbackDriver driver) throws XmlBlasterException;
 

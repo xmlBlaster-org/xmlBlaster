@@ -42,13 +42,16 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * For persistence recovery
     */
    public MsgQueueUpdateEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
-                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent, SessionName receiver,
-                              String subscriptionId, String state, int redeliverCount) {
+                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes,
+                              SessionName receiver, String subscriptionId, String state, int redeliverCount) {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
             updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, receiver);
       this.subscriptionId = subscriptionId;
       this.state = state;
       super.redeliverCounter = redeliverCount;
+      if (sizeInBytes != getSizeInBytes()) {
+         log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
+      }
    }
 
    public String getSubscriptionId() {

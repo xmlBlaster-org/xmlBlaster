@@ -42,6 +42,14 @@ public class EraseKey
       this.queryKeyData = new QueryKeyData(glob, queryString, queryType);
    }
 
+   /**
+    * Constructor for internal use. 
+    * @param queryKeyData The struct holding the data
+    */
+   public EraseKey(Global glob, QueryKeyData queryKeyData) {
+      this.queryKeyData = queryKeyData;
+   }
+
    public QueryKeyData getData() {
       return this.queryKeyData;
    }
@@ -68,6 +76,18 @@ public class EraseKey
     */
    public String getQueryType() {
       return this.queryKeyData.getQueryType();
+   }
+
+   public boolean isExact() {
+      return this.queryKeyData.isExact();
+   }
+
+   public boolean isQuery() {
+      return this.queryKeyData.isQuery();
+   }
+
+   public boolean isXPath() {
+      return this.queryKeyData.isXPath();
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.19 2003/01/05 23:06:51 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.20 2003/03/24 16:12:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -82,7 +82,7 @@ public class ClientSubEmail implements I_Callback
          // check if parameter -loginName <userName> is given at startup of client
          String loginName = Args.getArg(args, "-loginName", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
-         ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
+         ConnectQos loginQos = new ConnectQos(glob, loginName, passwd); // creates "<qos></qos>" string
 
          CallbackAddress c = new CallbackAddress(glob, "EMAIL");
          c.setAddress(Args.getArg(args, "-email", "et@xyz.org"));
@@ -96,8 +96,8 @@ public class ClientSubEmail implements I_Callback
          c.setAddress(Args.getArg(args, "-email3", "et@xyz.org"));
          loginQos.addCallbackAddress(c);
 
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
-         blasterConnection.login(loginName, passwd, loginQos, this);
+         I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();
+         blasterConnection.connect(loginQos, this);
          // Now we are connected to xmlBlaster MOM server.
 
 
@@ -214,7 +214,7 @@ public class ClientSubEmail implements I_Callback
          log.plain(ME, "   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver");
          log.plain(ME, "   EmailDriver.smtpHost=localhost");
          log.plain(ME, "   EmailDriver.from=xmlblast@localhost");
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          log.info(ME, "Example: java javaclients.ClientSubEmail -loginName Jeff -email et@universe.xy\n");
          System.exit(1);
       }

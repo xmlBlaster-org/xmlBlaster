@@ -58,7 +58,7 @@
                    "</qos>";
 
       content = "Should we sponsor open source?";
-      MsgUnit msgUnit = new MsgUnit(xmlKey, content, qos);
+      MsgUnit msgUnit = new MsgUnit(glob, xmlKey, content, qos);
       try {
          xmlBlaster.publish(msgUnit);
       } catch(XmlBlasterException e) {
@@ -72,7 +72,7 @@
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 01 17</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

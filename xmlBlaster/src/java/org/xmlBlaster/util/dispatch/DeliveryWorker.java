@@ -42,17 +42,17 @@ public final class DeliveryWorker implements Runnable
    }
 
    /**
-    * Synchronous push mode
-    * @return The 'synchronous' ACK or null if entryList was empty.
-    *         The array contains pre parsed objects like SubscribeQosReturn etc.
+    * Synchronous push mode. 
+    * The 'synchronous' ACK is transported in entryList(i).getReturnObj()
+    * which contains pre parsed objects like SubscribeQosReturn etc.
     */
-   public Object run(ArrayList entryList) throws XmlBlasterException {
+   public void run(ArrayList entryList) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Starting push remote delivery of " + ((entryList!=null)?entryList.size():0) + " entries.");
       MsgQueueEntry[] entries = null;
       try {
          I_MsgDeliveryInterceptor msgInterceptor = deliveryManager.getMsgDeliveryInterceptor();
          if (msgInterceptor != null) {
-            log.warn(ME, "Communication plugin support is missing - not implemented");
+            log.error(ME, "Communication dispatch plugin support is missing in sync mode - not implemented");
             /*!!! filter or whatever
             try {
                entryList = msgInterceptor.handleNextMessages(deliveryManager, entryList); // should call prepareMsgsFromQueue() immediately
@@ -66,43 +66,19 @@ public final class DeliveryWorker implements Runnable
 
          if (entryList == null || entryList.size() < 1) {
             if (log.TRACE) log.trace(ME, "Got zero messages from to deliver, expected at least one");
-            return null;
+            return;
          }
 
          entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
          
          if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ...");
          
-         return deliveryManager.getDeliveryConnectionsHandler().send(entries);
+         deliveryManager.getDeliveryConnectionsHandler().send(entries); // entries are filled with return values
       }
       catch(Throwable throwable) {
-         return deliveryManager.handleSyncWorkerException(entryList, throwable);
+         deliveryManager.handleSyncWorkerException(entryList, throwable);
       }
    }
-
-   /*
-    * Simulate return values, and manipulate missing informations into entries. 
-    * <p>
-    * For example for the PublishQos an oid is generated if none is available
-    * or for the SubscriptionQos a subscriptionId is created
-    * </p>
-   private Object[] generateReturnValues(MsgQueueEntry[] entries) {
-      Object[] returnQos = new Object[entries.length];
-      for (int ii=0; ii<entries.length; ii++) {
-         StatusQosData statRetQos = new StatusQosData(glob);
-         statRetQos.setStateInfo(Constants.INFO_QUEUED);
-         if (Constants.UPDATE.equals(entries[ii].getEmbeddedType())) {
-            returnQos[ii] = new UpdateReturnQosServer(glob, statRetQos);
-         }
-         else if (Constants.PUBLISH.equals(entries[ii].getEmbeddedType())) {
-            // TODO: See XmlBlasterConnection.getAndReplaceOid
-            //statRetQos.setKeyOid(oid);
-            returnQos[ii] = new PublishReturnQos(glob, statRetQos);
-         }
-      }
-      return returnQos;
-   }
-    */
 
    /**
     * Asynchronous pull mode, invoked by DeliveryWorkerPool.execute() -> see DeliveryManager calling it
@@ -136,7 +112,7 @@ public final class DeliveryWorker implements Runnable
             
             if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
             
-            Object returnVals = deliveryManager.getDeliveryConnectionsHandler().send(entries);
+            deliveryManager.getDeliveryConnectionsHandler().send(entries);
             
             if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
          }

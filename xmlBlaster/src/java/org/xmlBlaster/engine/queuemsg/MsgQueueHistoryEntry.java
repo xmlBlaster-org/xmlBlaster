@@ -35,16 +35,19 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     * For persistence recovery
     */
    public MsgQueueHistoryEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
-                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent) {
+                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes) {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, priority, storageId,
             entryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null);
+      if (sizeInBytes != getSizeInBytes()) {
+         log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
+      }
    }
 
    /**
     * Enforced by I_QueueEntry
     * @return Allways the same int as the history queue is strictly chronologic
     */
-   public final int getPriority() {
+   public int getPriority() {
       return PriorityEnum.NORM_PRIORITY.getInt();
    }
 
@@ -53,7 +56,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     * Enforced by I_QueueEntry
     * @param negative nano seconds to enforce LIFO behavior (the newest message is at the front)
     */
-   public final long getUniqueId() {
+   public long getUniqueId() {
       return (this.uniqueIdTimestamp.getTimestamp()<0L) ? this.uniqueIdTimestamp.getTimestamp() : (-1)*this.uniqueIdTimestamp.getTimestamp();
    }
 
@@ -61,7 +64,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     * The negative unique creation timestamp (unique in a Global of a virtual machine)
     * @param negative nano seconds to enforce LIFO behavior (the newest message is at the front)
     */
-   public final Long getUniqueIdLong() {
+   public Long getUniqueIdLong() {
       return new Long(getUniqueId());
    }
 

@@ -26,6 +26,8 @@ import org.xmlBlaster.util.key.I_QueryKeyFactory;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
+import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
@@ -59,6 +61,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginRegistry;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
 
 import java.util.Properties;
 
@@ -147,6 +151,7 @@ public class Global implements Cloneable
    protected I_MsgKeyFactory msgKeyFactory;
    protected I_QueryKeyFactory queryKeyFactory;
    protected I_ConnectQosFactory connectQosFactory;
+   protected I_DisconnectQosFactory disconnectQosFactory;
    protected I_MsgQosFactory msgQosFactory;
    protected I_QueryQosFactory queryQosFactory;
    protected I_StatusQosFactory statusQosFactory;
@@ -169,6 +174,9 @@ public class Global implements Cloneable
 
    private PluginManagerBase pluginManager;
    private PluginRegistry pluginRegistry;
+
+   /** The client handle to access xmlBlaster */
+   protected I_XmlBlasterAccess xmlBlasterAccess;
 
    /**
     * Constructs an initial Global object.
@@ -814,6 +822,11 @@ public class Global implements Cloneable
     * All other attributes are initialized as on startup.
     */
    protected Object clone() {
+      Property p = (Property)this.property.clone();
+      Global g = new Global(p.getProperties());
+      return g;
+      // Changed 2003-03-24 Marcel
+      /*
       try {
          Global g = (Global)super.clone();
          g.errorText = null;
@@ -839,6 +852,7 @@ public class Global implements Cloneable
          logDefault.error(ME, "Global clone failed: " + e.toString());
          return null;
       }
+      */
    }
 
    /**
@@ -897,6 +911,20 @@ public class Global implements Cloneable
          }
       }
       return this.connectQosFactory;
+   }
+
+   /**
+    * Return a factory parsing QoS XML strings from disconnect() requests. 
+    */
+   public final I_DisconnectQosFactory getDisconnectQosFactory() {
+      if (this.disconnectQosFactory == null) {
+         synchronized (this) {
+            if (this.disconnectQosFactory == null) {
+               this.disconnectQosFactory = new DisconnectQosSaxFactory(this);
+            }
+         }
+      }
+      return this.disconnectQosFactory;
    }
 
    /**
@@ -1845,6 +1873,27 @@ public class Global implements Cloneable
 
 
    /**
+    * The client handle to access xmlBlaster remotely. 
+    * <p>
+    * Access your client side handle with this method only, it
+    * is the with this Global instance configured client connection to xmlBlaster
+    * (a singleton regarding this Global).
+    * </p>
+    * <p>
+    * NOTE: On server side engine.Global.getXmlBlasterAccess() returns the native access handle.
+    * </p>
+    */
+   public I_XmlBlasterAccess getXmlBlasterAccess() {
+      if (this.xmlBlasterAccess == null) {
+         synchronized(this) {
+            if (this.xmlBlasterAccess == null)
+               this.xmlBlasterAccess = new XmlBlasterAccess(this);
+         }
+      }
+      return this.xmlBlasterAccess;
+   }
+
+   /**
     * Command line usage.
     * <p />
     * These variables may be set in your property file as well.
@@ -1859,9 +1908,15 @@ public class Global implements Cloneable
     * java org.xmlBlaster.Main -property.verbose 2
     * </pre>
     */
-   public String usage()
-   {
-      StringBuffer sb = new StringBuffer(512);
+   public String usage() {
+      StringBuffer sb = new StringBuffer(4028);
+      sb.append(org.xmlBlaster.client.XmlBlasterAccess.usage(this));
+      sb.append(logUsage());
+      return sb.toString();
+   }
+
+   public static String logUsage() {
+      StringBuffer sb = new StringBuffer(1024);
       sb.append("Logging options:\n");
       sb.append("   -info  false        Supress info output.\n");
       sb.append("   -trace true         Show code trace.\n");

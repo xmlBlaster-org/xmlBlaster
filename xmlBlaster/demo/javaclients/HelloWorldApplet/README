@@ -59,7 +59,7 @@ Start applet in netscape:
         at java.lang.SecurityManager.checkPropertyAccess(SecurityManager.java:958)
         at java.lang.System.getProperty(System.java:456)
         at org.omg.CORBA.ORB.init(ORB.java:37)
-      * at org.xmlBlaster.client.protocol.corba.XmlBlasterConnection.<init>(XmlBlasterConnection.java:60)
+      * at org.xmlBlaster.client.protocol.corba.I_XmlBlasterAccess.<init>(I_XmlBlasterAccess.java:60)
         at javaclients.HelloWorldApplet.HelloWorld.setUp(HelloWorld.java:128)
 
     The JacORB mtclient.html example works well, so it must be possible.

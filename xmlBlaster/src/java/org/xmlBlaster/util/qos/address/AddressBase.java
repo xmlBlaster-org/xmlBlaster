@@ -196,14 +196,14 @@ public abstract class AddressBase
     * Check if a hostname is set already
     */
    public boolean hasHostname() {
-      return this.hostname != null;
+      return (this.hostname != null && this.hostname.length() > 0);
    }
 
    /**
     * @return The Hostname, IP or "" if not known
     */
    public final String getHostname() {
-      if (this.hostname == null) {
+      if (this.hostname == null || this.hostname.length() < 1) {
          this.hostname = glob.getBootstrapHostname();
          this.address = null; // reset cache
       }
@@ -378,8 +378,8 @@ public abstract class AddressBase
     * Delay between callback retries in milliseconds, defaults to one minute
     */
    public void setDelay(long delay) {
-      if (delay < 0L)
-         this.delay = 0L;
+      if (delay <= 0L)
+         this.delay = getDefaultDelay();
       else
          this.delay = delay;
    }

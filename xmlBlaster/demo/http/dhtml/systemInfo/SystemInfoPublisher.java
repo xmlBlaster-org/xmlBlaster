@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.8 2002/12/18 13:52:46 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.9 2003/03/24 16:12:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
@@ -14,7 +14,7 @@ import org.jutils.time.StopWatch;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.MsgUnit;
@@ -40,7 +40,7 @@ public class SystemInfoPublisher
    private static final String ME = "SystemInfoPublisher";
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection con;
+   private I_XmlBlasterAccess con;
    private Random random = new Random();
 
    /**
@@ -112,7 +112,7 @@ public class SystemInfoPublisher
     */
    private void setUp() {
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          con.connect(null, null); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -145,7 +145,7 @@ public class SystemInfoPublisher
       PublishKey key = new PublishKey(glob, oid, "text/plain", "systemInfo");
       key.setClientTags("<systemInfo />");
       PublishQos qos = new PublishQos(glob);
-      MsgUnit msgUnit = new MsgUnit(glob, key, content.getBytes(), qos);
+      MsgUnit msgUnit = new MsgUnit(key, content.getBytes(), qos);
 
       try {
          con.publish(msgUnit);

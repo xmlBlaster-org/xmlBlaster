@@ -3,7 +3,6 @@ Name:      DeliveryWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: DeliveryWorkerPool.java,v 1.5 2003/03/22 12:28:11 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
@@ -17,7 +16,7 @@ import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.jutils.runtime.Sleeper;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-
+import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
 
 /**
  * Pool of threads doing a callback.
@@ -32,6 +31,15 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    private int minimumPoolSize;
    private int createThreads;
    private boolean isShutdown = false;
+
+   protected static class DeamonThreadFactory implements ThreadFactory {
+      public Thread newThread(Runnable command) {
+         Thread t = new Thread(command);
+         t.setDaemon(true);
+         //System.out.println("Created new daemon thread instance for DeliveryWorkerPool");
+         return t;
+      }
+   }
 
    /**
     * @param maxWorkers Maximum allowed callback threads
@@ -49,6 +57,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
          return;
 
       this.pool = new PooledExecutor(new LinkedQueue());
+      this.pool.setThreadFactory(new DeamonThreadFactory());
 
       maximumPoolSize = glob.getProperty().get("cb.maximumPoolSize", 200);
       minimumPoolSize = glob.getProperty().get("cb.minimumPoolSize", 10);

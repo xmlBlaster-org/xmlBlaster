@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.29 2003/01/03 17:16:34 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.30 2003/03/24 16:13:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -316,7 +316,7 @@ public class XmlDBAdapter
       PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", contentMimeExtended);
       GetReturnQosServer retQos = new GetReturnQosServer(glob, null, Constants.STATE_OK);
 
-      MsgUnit mu = new MsgUnit(glob, key.getData(), content, retQos.getData());
+      MsgUnit mu = new MsgUnit(key.getData(), content, retQos.getData());
 
       if (log.DUMP) log.plain(ME, "SQL Results...\n" + new String(content));
       MsgUnit[] msgArr = new MsgUnit[1];

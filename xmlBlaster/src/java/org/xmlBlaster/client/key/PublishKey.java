@@ -156,6 +156,10 @@ public class PublishKey
       return this.msgKeyData.getClientTags();
    }
 
+   public Global getGlobal() {
+      return this.msgKeyData.getGlobal();
+   }
+
    /**
     * Converts the data in XML ASCII string.
     * @return An XML ASCII string

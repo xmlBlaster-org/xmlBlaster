@@ -11,6 +11,7 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.dispatch.DeliveryConnection;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
+import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -49,20 +50,21 @@ public final class CbDeliveryConnectionsHandler extends DeliveryConnectionsHandl
     * we can generate here valid return objects
     * @param state e.g. Constants.STATE_OK
     */
-   public Object createFakedReturnObjects(MsgQueueEntry[] entries, String state, String stateInfo) {
-      Object[] returnQos = new Object[entries.length];
+   public void createFakedReturnObjects(I_QueueEntry[] entries, String state, String stateInfo) {
       for (int ii=0; ii<entries.length; ii++) {
+         MsgQueueEntry msgQueueEntry = (MsgQueueEntry)entries[ii];
+         if (!msgQueueEntry.wantReturnObj())
+            continue;
          StatusQosData statRetQos = new StatusQosData(glob);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
-         if (MethodName.UPDATE == entries[ii].getMethodName()) {
-            returnQos[ii] = new UpdateReturnQosServer(glob, statRetQos);
+         if (MethodName.UPDATE == msgQueueEntry.getMethodName()) {
+            UpdateReturnQosServer ret = new UpdateReturnQosServer(glob, statRetQos);
+            msgQueueEntry.setReturnObj(ret);
          }
          else {
-            log.error(ME, "Internal problem, MsgQueueEntry '" + entries[ii].getEmbeddedType() + "' not expected here");
-            returnQos[ii] = null;
+            log.error(ME, "Internal problem, MsgQueueEntry '" + msgQueueEntry.getEmbeddedType() + "' not expected here");
          }
       }
-      return returnQos;
    }
 }

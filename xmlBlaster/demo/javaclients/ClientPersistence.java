@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
@@ -32,11 +32,12 @@ import org.xmlBlaster.util.MsgUnit;
 public class ClientPersistence implements I_Callback
 {
    private final static String ME = "ClientPersistence";
+   private final Global glob;
    private final LogChannel log;
 
    private final String senderName = "Tanja";
    private String publishOid = "amIpersistent";
-   private XmlBlasterConnection senderConnection = null;
+   private I_XmlBlasterAccess senderConnection = null;
 
    private static int numReceived = 0;
 
@@ -44,7 +45,8 @@ public class ClientPersistence implements I_Callback
     * Constructs the ClientPersistence object.
     */
    public ClientPersistence(Global glob) {
-      log = glob.getLog(null);
+      this.glob = glob;
+      this.log = glob.getLog(null);
    }
 
 
@@ -58,9 +60,9 @@ public class ClientPersistence implements I_Callback
    {
       try {
          String passwd = "secret";
-         senderConnection = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(null); // == "<qos></qos>";
-         senderConnection.login(ME, passwd, qos, this);
+         senderConnection = glob.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(glob, ME, passwd); // == "<qos></qos>";
+         senderConnection.connect(qos, this);
       }
       catch (Exception e) {
           log.error(ME, e.toString());

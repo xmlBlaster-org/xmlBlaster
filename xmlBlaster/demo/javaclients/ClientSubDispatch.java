@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.14 2003/01/05 23:06:51 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.15 2003/03/24 16:12:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -29,7 +29,7 @@ import org.xmlBlaster.util.MsgUnit;
  * Like this not all callback messages arrive in a centralized update()
  * with the need to look into them and decide why the arrived.
  * <p />
- * This demo uses the XmlBlasterConnection helper class, which hides the raw
+ * This demo uses the I_XmlBlasterAccess helper class, which hides the raw
  * CORBA/RMI/XML-RPC nastiness and allows this client side dispatching.
  * <br />
  * Invoke examples:<br />
@@ -55,14 +55,14 @@ public class ClientSubDispatch implements I_Callback
 
       try {
          ConnectQos loginQos = new ConnectQos(null); // creates "<qos></qos>" string
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();
          blasterConnection.connect(loginQos, this);  // Now we are connected to xmlBlaster MOM server.
 
          // Subscribe to messages with XPATH using some helper classes
          log.info(ME, "Subscribing #1 for anonymous callback class using XPath syntax ...");
          SubscribeKey key = new SubscribeKey(glob, "//DispatchTest", "XPATH");
          SubscribeQos qos = new SubscribeQos(glob);
-         blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
+         blasterConnection.subscribe(key, qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "Receiving message with specialized update() #1 ...");
                   numReceived1++;
@@ -76,7 +76,7 @@ public class ClientSubDispatch implements I_Callback
 
          log.info(ME, "Subscribing #2 for anonymous callback class using XPath syntax ...");
          key = new SubscribeKey(glob, "A message id");
-         blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
+         blasterConnection.subscribe(key, qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "Receiving message with specialized update() #2 ...");
                   numReceived2++;

@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.31 2003/01/03 17:17:58 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.32 2003/03/24 16:13:02 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -46,6 +46,9 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    private LogChannel log;
    private I_CallbackExtended boss;
 
+   /**
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
+    */
    public CorbaCallbackServer() {}
 
    /**
@@ -87,6 +90,23 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       log.info(ME, "Success, created CORBA callback server on host " + cbHostname);
    }
 
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getCbProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   }
+
    /**
     * Building a Callback server, using the tie approach.
     *
@@ -122,11 +142,11 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    /**
     * Shutdown the callback server.
     */
-   public boolean shutdownCb()
+   public void shutdown()
    {
       if (this.callback == null) {
          if (log.TRACE) log.trace(ME, "No callback server to shutdown.");
-         return false;
+         return;
       }
 
       if (rootPOA != null && this.callback != null) {
@@ -157,7 +177,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       }
       */
       log.info(ME, "The callback server is shutdown.");
-      return true;
    }
 
    /**

@@ -3,23 +3,21 @@ Name:      MsgQueueConnectEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util.queuemsg;
+package org.xmlBlaster.client.queuemsg;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
-import java.util.ArrayList;
 
 /**
- * Wraps an publish() message into an entry for a sorted queue.
+ * Wraps an connect() message into an entry for a sorted queue.
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
@@ -28,15 +26,28 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
    private final static String ME = "ConnectQueueEntry";
    private final ConnectQos connectQos;
    private SessionName receiver;
+   private final long immutableSizeInBytes;
 
    /**
-    * Use this constructor if a new message object is fed by method publish(). 
+    * Use this constructor if a new message object is fed by method connect(). 
     * <p />
     */
    public MsgQueueConnectEntry(Global glob, StorageId storageId, ConnectQos connectQos)
          throws XmlBlasterException {
-      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, /*persistent*/true);
+      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, connectQos.getData().isPersistent());
       this.connectQos = connectQos;
+      this.immutableSizeInBytes = 2400; // 126 + this.connectQos.getData().size();
+   }
+
+   /**
+    * For persistence recovery
+    */
+   public MsgQueueConnectEntry(Global glob, PriorityEnum priority, StorageId storageId,
+                               Timestamp timestamp, long sizeInBytes, ConnectQos connectQos) {
+      super(glob, MethodName.CONNECT.toString(), priority,
+            timestamp, storageId, connectQos.getData().isPersistent());
+      this.connectQos = connectQos;
+      this.immutableSizeInBytes = sizeInBytes;
    }
 
    /**
@@ -58,11 +69,8 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
    }
 
    /**
-    * Access the unique login name of the (last) publisher.
-    * <p />
-    * The sender of this message.
-    * @return loginName of the data source which last publishd this message
-    *         or null
+    * Access the unique login name of the sender. 
+    * @return loginName of the data source
     * @see MsgQueueEntry#getSender()
     */
    public final SessionName getSender() {
@@ -93,33 +101,27 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
    }
 
    /**
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
+    * return null
     */
    public final Timestamp getRcvTimestamp() {
       return null;
    }
 
    /**
-    * The embeddded object for this implementing class is an Object[3] where
-    * Object[2] = Boolean (embeds boolean subscribeable)
+    * The embeddded object for this implementing class is an Object[1] where
+    * Object[0] = qos.toXml()
     */
    public Object getEmbeddedObject() {
-//      Object[] obj = { new Boolean(subscribeable) };
-//      return obj;
-      log.error(ME, "getEmbeddedObject() IMPLEMENT");
-      throw new IllegalArgumentException("getEmbeddedObject() IMPLEMENT");
+      Object[] obj = { this.connectQos.toXml() };
+      return obj;
    }
 
    public final long getSizeInBytes() {
-      long size = super.getSizeInBytes();
-      size += 8; // correct it !!!
-      return size;
+      return this.immutableSizeInBytes;
    }
 
    /**
-    * @return If it is an internal message (oid starting with "_"). 
+    * @return true
     */
    public final boolean isInternal() {
       return true;

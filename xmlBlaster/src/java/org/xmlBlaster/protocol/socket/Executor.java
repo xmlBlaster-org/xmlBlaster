@@ -44,8 +44,8 @@ import java.util.Collections;
 public abstract class Executor implements ExecutorBase
 {
    private String ME = "SocketExecutor";
-   protected final Global glob;
-   private final LogChannel log;
+   protected Global glob;
+   private LogChannel log;
    /** The socket connection to/from one client */
    protected Socket sock;
    /** Reading from socket */
@@ -80,6 +80,8 @@ public abstract class Executor implements ExecutorBase
     */
    protected final Map responseListenerMap = Collections.synchronizedMap(new HashMap());
 
+   public Executor() {
+   }
 
    /**
     * Used by SocketCallbackImpl on client side, uses I_CallbackExtended to invoke client classes
@@ -92,14 +94,14 @@ public abstract class Executor implements ExecutorBase
     * @param sock The open socket to/from a specific client
     * @param xmlBlasterImpl Handle for the server implementation
     */
-   protected Executor(Global glob, Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
-      this.glob = glob;
-      this.log = glob.getLog("socket");
+   protected void initialize(Global glob, Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("socket");
       this.sock = sock;
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
-      setResponseWaitTime(glob.getProperty().get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS));
+      setResponseWaitTime(this.glob.getProperty().get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS));
       // the responseWaitTime is used later to wait on a return value
       // additionally we protect against blocking on socket level during invocation
       // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
@@ -107,10 +109,10 @@ public abstract class Executor implements ExecutorBase
 
       // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
       // But we always block on input read() to receive update() messages.
-      setSoTimeout(glob.getProperty().get("socket.SoTimeout", 0L)); // switch off
+      setSoTimeout(this.glob.getProperty().get("socket.SoTimeout", 0L)); // switch off
       this.sock.setSoTimeout((int)this.soTimeout);
 
-      setSoLingerTimeout(glob.getProperty().get("socket.SoLingerTimeout", Constants.MINUTE_IN_MILLIS));
+      setSoLingerTimeout(this.glob.getProperty().get("socket.SoLingerTimeout", Constants.MINUTE_IN_MILLIS));
       if (getSoLingerTimeout() > 0L)
          this.sock.setSoLinger(true, (int)this.soLingerTimeout);
       else
@@ -258,11 +260,14 @@ public abstract class Executor implements ExecutorBase
          else if (MethodName.PUBLISH == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = xmlBlasterImpl.publishArr(receiver.getSecretSessionId(), arr);
             executeResponse(receiver, response);
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
+            if (this.cbClient == null) {
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation");
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
                log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
@@ -271,16 +276,19 @@ public abstract class Executor implements ExecutorBase
             this.cbClient.updateOneway(receiver.getSecretSessionId(), arr);
          }
          else if (MethodName.UPDATE == receiver.getMethodName()) {
+            if (this.cbClient == null) {
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation");
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = this.cbClient.update(receiver.getSecretSessionId(), arr);
             executeResponse(receiver, response);
          }
          else if (MethodName.GET == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             MsgUnitRaw[] response = xmlBlasterImpl.get(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
@@ -290,21 +298,21 @@ public abstract class Executor implements ExecutorBase
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String response = xmlBlasterImpl.subscribe(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String[] response = xmlBlasterImpl.unSubscribe(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String[] response = xmlBlasterImpl.erase(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
@@ -350,7 +358,7 @@ public abstract class Executor implements ExecutorBase
       }
       else {
          log.error(ME, "PANIC: Invalid response message for " + receiver.getMethodName());
-         listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(ME, "Invalid response message '" + receiver.getMethodName()));
+         listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response message '" + receiver.getMethodName()));
       }
 
       return true;
@@ -403,7 +411,7 @@ public abstract class Executor implements ExecutorBase
       }
       catch (InterruptedIOException e) {
          String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
-         throw new XmlBlasterException(ME, str);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
       }
 
       if (log.DUMP) log.dump(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
@@ -437,7 +445,7 @@ public abstract class Executor implements ExecutorBase
          }
          else {
             String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
-            throw new XmlBlasterException(ME, str);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
          }
       }
       finally {
@@ -486,7 +494,7 @@ public abstract class Executor implements ExecutorBase
       else if (response instanceof MsgUnitRaw)
          returner.addMessage((MsgUnitRaw)response);
       else
-         throw new XmlBlasterException(ME, "Invalid response data type " + response.toString());
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response data type " + response.toString());
       synchronized (oStream) {
          oStream.write(returner.createRawMsg());
          oStream.flush();

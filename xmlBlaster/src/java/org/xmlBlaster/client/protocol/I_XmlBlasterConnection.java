@@ -12,6 +12,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.util.plugin.I_Plugin;
 
 
 /**
@@ -32,7 +33,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public interface I_XmlBlasterConnection
+public interface I_XmlBlasterConnection extends I_Plugin
 {
    /**
     * connect() is a login or authentication as well, the authentication schema

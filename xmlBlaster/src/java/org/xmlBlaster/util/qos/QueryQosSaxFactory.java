@@ -322,21 +322,59 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    }
 
    public static final String writeObject_(QueryQosData queryQosData, String extraOffset) {
-      StringBuffer sb = new StringBuffer(512);
+      StringBuffer sb = new StringBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<qos>"); // <!-- SubscribeRetQos -->");
+      sb.append(offset).append("<qos>"); // <!-- SubscribeQos, UnSubscribeQos, EraseQos, GetQos -->");
       if (queryQosData.getSubscriptionId() != null)
          sb.append(offset).append(" <subscribe id='").append(queryQosData.getSubscriptionId()).append("'/>");
-      if (queryQosData.getForceDestroy())
+
+      if (queryQosData.getForceDestroyProp().isModified()) {
          sb.append(offset).append(" <erase forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
-      if (!queryQosData.getWantMeta()) sb.append(offset).append(" <meta>false</meta>");
-      if (!queryQosData.getWantContent()) sb.append(offset).append(" <content>false</content>");
-      if (!queryQosData.getMultiSubscribe()) sb.append(offset).append(" <multiSubscribe>false</multiSubscribe>");
-      if (!queryQosData.getWantLocal()) sb.append(offset).append(" <local>false</local>");
-      if (!queryQosData.getWantInitialUpdate()) sb.append(offset).append(" <initialUpdate>false</initialUpdate>");
-      if (!queryQosData.getWantNotify()) sb.append(offset).append(" <notify>false</notify>");
+      }
+
+      if (queryQosData.getMetaProp().isModified()) {
+         if (queryQosData.getWantMeta())
+            sb.append(offset).append(" <meta/>");
+         else
+            sb.append(offset).append(" <meta>false</meta>");
+      }
+
+      if (queryQosData.getContentProp().isModified()) {
+         if (queryQosData.getWantContent())
+            sb.append(offset).append(" <content/>");
+         else
+            sb.append(offset).append(" <content>false</content>");
+      }
+
+      if (queryQosData.getMultiSubscribeProp().isModified()) {
+         if (queryQosData.getMultiSubscribe())
+            sb.append(offset).append(" <multiSubscribe/>");
+         else
+            sb.append(offset).append(" <multiSubscribe>false</multiSubscribe>");
+      }
+
+      if (queryQosData.getLocalProp().isModified()) {
+         if (queryQosData.getWantLocal())
+            sb.append(offset).append(" <local/>");
+         else
+            sb.append(offset).append(" <local>false</local>");
+      }
+
+      if (queryQosData.getInitialUpdateProp().isModified()) {
+         if (queryQosData.getWantInitialUpdate())
+            sb.append(offset).append(" <initialUpdate/>");
+         else
+            sb.append(offset).append(" <initialUpdate>false</initialUpdate>");
+      }
+
+      if (queryQosData.getNotifyProp().isModified()) {
+         if (queryQosData.getWantNotify())
+            sb.append(offset).append(" <notify/>");
+         else
+            sb.append(offset).append(" <notify>false</notify>");
+      }
 
       AccessFilterQos[] list = queryQosData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {

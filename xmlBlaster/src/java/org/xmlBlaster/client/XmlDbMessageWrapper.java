@@ -117,6 +117,6 @@ public class XmlDbMessageWrapper
    {
       PublishQos qos = new PublishQos(glob, new Destination(new SessionName(Global.instance(), "__sys__jdbc")));
       PublishKey key = new PublishKey(glob, "", "text/xml", "SQL_QUERY");
-      return new MsgUnit(glob, key.getData(), toXml().getBytes(), qos.getData());
+      return new MsgUnit(key, toXml().getBytes(), qos);
    }
 }

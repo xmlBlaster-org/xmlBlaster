@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.24 2003/01/09 14:56:08 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.25 2003/03/24 16:12:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -12,7 +12,7 @@ import org.jutils.init.Args;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -52,8 +52,8 @@ public class ClientQuery
          else
             usage("Please enter a query string");
 
-         XmlBlasterConnection con = new XmlBlasterConnection(args);
-         con.login(loginName, passwd, null);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
+         con.connect(null, null);
 
 
          String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
@@ -88,7 +88,7 @@ public class ClientQuery
    {
       log.plain(ME, "\nAvailable options:");
       log.plain(ME, "   -queryXpath         \"//key\"");
-      XmlBlasterConnection.usage();
+      System.out.println(Global.instance().usage());
       log.plain(ME, "Example: java javaclients.ClientQuery -queryXpath //key\n");
       log.plain(ME, text);
       System.exit(1);

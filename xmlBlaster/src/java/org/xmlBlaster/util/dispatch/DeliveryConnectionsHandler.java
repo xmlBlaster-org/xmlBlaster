@@ -11,8 +11,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.plugins.I_ConnectionStateListener;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
 
@@ -287,7 +287,7 @@ abstract public class DeliveryConnectionsHandler
     * we can generate here valid return objects
     * @param state e.g. Constants.STATE_OK
     */
-   abstract public Object createFakedReturnObjects(MsgQueueEntry[] entries, String state, String stateInfo) throws XmlBlasterException;
+   abstract public void createFakedReturnObjects(I_QueueEntry[] entries, String state, String stateInfo) throws XmlBlasterException;
 
    /**
     * Send the messages back to the client. 
@@ -295,7 +295,7 @@ abstract public class DeliveryConnectionsHandler
     * first fails.
     * @return The returned String[] from the client, for oneway invocations it is null
     */
-   public Object send(MsgQueueEntry[] msgArr) throws Throwable, XmlBlasterException
+   public void send(MsgQueueEntry[] msgArr) throws Throwable, XmlBlasterException
    {
       if (isDead()) // if (conList.size() < 1)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
@@ -312,7 +312,8 @@ abstract public class DeliveryConnectionsHandler
          if (log.TRACE) log.trace(ME, "Trying cb# " + ii + " state=" + con.getState().toString() + " ...");
          if (con.isAlive()) {
             try {
-               return con.send(msgArr);
+               con.send(msgArr);
+               return;
             } catch(Throwable e) {
                ex = e;
                if (ii<(cons.length-1)) log.warn(ME, "Callback failed, trying other addresses");

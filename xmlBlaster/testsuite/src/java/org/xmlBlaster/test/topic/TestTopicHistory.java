@@ -164,7 +164,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          PublishKey pk = new PublishKey(glob, publishOid, "text/xml", "1.0");
          PublishQos pq = new PublishQos(glob);
          pq.setTopicProperty(topicProperty);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, senderContent, pq);
+         MsgUnit msgUnit = new MsgUnit(pk, senderContent, pq);
          PublishReturnQos publishReturnQos = con.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, publishReturnQos.getKeyOid());
          log.info(ME, "Topic oid=" + publishOid + " created: " + msgUnit.toXml());
@@ -192,7 +192,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
             topicProperty.setCreateDomEntry(false);
             pq.setTopicProperty(topicProperty);
          }
-         MsgUnit msgUnit = new MsgUnit(glob, pk, senderContent, pq);
+         MsgUnit msgUnit = new MsgUnit(pk, senderContent, pq);
          PublishReturnQos publishReturnQos = con.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, publishReturnQos.getKeyOid());
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid + " " + msgUnit.toXml());

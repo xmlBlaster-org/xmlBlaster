@@ -15,7 +15,6 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.plugins.I_ConnectionStateListener;
 
 import java.io.IOException;
 
@@ -40,7 +39,7 @@ import java.io.IOException;
  *
  * </pre>
  * <p>
- * Not that DeliveryConnection can't recover from DEAD state
+ * Note that DeliveryConnection can't recover from DEAD state
  * you need to create a new instance if desired
  * </p>
  * @author xmlBlaster@marcelruff.info
@@ -150,20 +149,21 @@ abstract public class DeliveryConnection implements I_Timeout
 
    /**
     * Send the messages. 
-    * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
-    * @return The returned string array from the client which is decrypted if necessary, for oneway updates it is null
+    * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content. 
+    * msgArr[i].getReturnObj() transports the returned string array from the client which is decrypted
+    * if necessary, for oneway updates it is null
     */
-   abstract public Object doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException;
+   abstract public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException;
 
    /**
     * Send the messages back to the client. 
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
     * @return The returned string from the client which is decrypted if necessary, for oneway updates it is null
     */
-   public Object send(MsgQueueEntry[] msgArr) throws XmlBlasterException
+   public void send(MsgQueueEntry[] msgArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "send(msgArr.length=" + msgArr.length + ")"); 
-      if (msgArr == null || msgArr.length == 0) return null; // assert
+      if (msgArr == null || msgArr.length == 0) return; // assert
 
       if (isDead()) { // assert
          log.error(ME, "Connection to " + address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
@@ -172,9 +172,9 @@ abstract public class DeliveryConnection implements I_Timeout
 
       // Send the message ...
       try {
-         Object ret = doSend(msgArr);
+         doSend(msgArr);
          handleTransition(true, true, null);
-         return ret;
+         return;
       }
       catch (XmlBlasterException e) {
          if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + state.toString());
@@ -326,17 +326,26 @@ abstract public class DeliveryConnection implements I_Timeout
             // poll for connection ...
             state = ConnectionStateEnum.POLLING;
             retryCounter++;
-            if (address.getDelay() > 0L) // respan reconnect poller
+            if (address.getDelay() > 0L) { // respan reconnect poller
+               if (log.TRACE) log.trace(ME, "Polling for server with delay=" + address.getDelay());
                timerKey = pingTimer.addTimeoutListener(this, address.getDelay(), "poll");
-            if (oldState == ConnectionStateEnum.ALIVE) {
-               resetConnection();
-               log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": " + address.toString() + " is unaccessible, we poll for it ...");
-               if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + address.getDelay() + ", maxRetries=" + address.getRetries());
-               connectionsHandler.toPolling(this);
+               if (oldState == ConnectionStateEnum.ALIVE) {
+                  resetConnection();
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": " + address.toString() + " is unaccessible, we poll for it every " + address.getDelay() + " msec ...");
+                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + address.getDelay() + ", maxRetries=" + address.getRetries());
+                  connectionsHandler.toPolling(this);
+               }
+               if (byDeliveryConnectionsHandler)
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request");
+               return;
             }
-            if (byDeliveryConnectionsHandler)
-               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request");
-            return;
+            else {
+               if (oldState == ConnectionStateEnum.ALIVE) {
+                  resetConnection();
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + ": " + address.toString() + " is unaccessible");
+                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": retryCounter=" + retryCounter + ", delay=" + address.getDelay() + ", maxRetries=" + address.getRetries());
+               }
+            }
          }
 
          // error giving up ...

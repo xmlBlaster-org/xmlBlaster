@@ -18,7 +18,7 @@ To chat from you multi homed host the another server running xmlBlaster (CORBA):
    -ior.hostnameCB is the IP address for our internal chat CORBA callback server.
 
    Note that if you use a dialin host with dynamic IP the correct
-   IP is usually extracted and choosen automatically by XmlBlasterConnection.
+   IP is usually extracted and choosen automatically by I_XmlBlasterAccess.
 
 
 To chat from you multi homed host the another server running xmlBlaster (XML-RPC):

@@ -228,20 +228,22 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
    }
 
    /**
-    * @return null (other implementations may return some ACK object)
     * @see I_Queue#put(I_QueueEntry, boolean)
     */
-   public Object put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
-      throws XmlBlasterException
-   {
-      if (queueEntry == null) return null;
+   public void put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
+      throws XmlBlasterException {
+      if (queueEntry == null) return;
 
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          // Is an interceptor registered (and not bypassed) ?
-         return this.putListener.put(queueEntry);
+         if (this.putListener.putPre(queueEntry) == false)
+            return;
       }
       put((I_Entry)queueEntry);
-      return null;
+
+      if (this.putListener != null && !ignorePutInterceptor) {
+         this.putListener.putPost(queueEntry);
+      }
    }
 
    /**
@@ -286,15 +288,16 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
    /**
     * @see I_Queue#put(I_QueueEntry[], boolean)
     */
-   public Object[] put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
+   public void put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
       throws XmlBlasterException {
       SQLException ex0 =  null;
 
-      if (queueEntries == null) return null;
+      if (queueEntries == null) return;
 
       if ((this.putListener != null) &&(!ignorePutInterceptor)) {
          // Is an interceptor registered (and not bypassed) ?
-         return this.putListener.put(queueEntries);
+         if (this.putListener.putPre(queueEntries) == false)
+            return;
       }
 
 /*
@@ -332,8 +335,10 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
          }
          if (ex0 != null)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "put(entry[]) caught sql exception, status is" + toXml(""), ex0);
+      }
 
-         return null;
+      if (this.putListener != null && !ignorePutInterceptor) {
+         this.putListener.putPost(queueEntries);
       }
    }
 

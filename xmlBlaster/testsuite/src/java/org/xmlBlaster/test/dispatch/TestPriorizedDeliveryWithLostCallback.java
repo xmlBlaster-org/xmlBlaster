@@ -266,14 +266,8 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       this.updateInterceptor.clear();
 
       // Now kill our callback server
-      try {
-         log.info(ME, "Shutdown callback, expecting messages to be queued or destroyed depending on the priority");
-         con.shutdownCb();
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Shutdown of callback failed: "  + e.toString());
-         fail(e.toString());
-      }
+      log.info(ME, "Shutdown callback, expecting messages to be queued or destroyed depending on the priority");
+      con.shutdown();
       this.updateInterceptor.clear();
 
       // These messages are depending on the priority queued or destroyed
@@ -342,7 +336,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       }
       finally {
          if (cbServer != null) {
-            try { cbServer.shutdownCb(); } catch (Exception e) { log.error(ME, e.toString()); };
+            try { cbServer.shutdown(); } catch (Exception e) { log.error(ME, e.toString()); };
          }
       }
 

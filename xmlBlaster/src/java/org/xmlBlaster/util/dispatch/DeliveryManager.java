@@ -23,7 +23,7 @@ import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor;
-import org.xmlBlaster.util.dispatch.plugins.I_ConnectionStateListener;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
 import java.util.ArrayList;
@@ -46,6 +46,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private final I_MsgDeliveryInterceptor msgInterceptor;
+   private I_ConnectionStatusListener connectionStatusListener;
    private final String typeVersion;
    /** If > 0 does burst mode */
    private long collectTime = -1L;
@@ -61,6 +62,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    private int notifyCounter = 0;
 
    private boolean isShutdown = false;
+   private boolean isSyncMode = false;
+   private boolean trySyncMode = false; // true: client side queue embedding, false: server side callback queue
 
    /**
     * @param msgQueue The message queue witch i use (!!! TODO: this changes, we should pass it on every method where needed)
@@ -98,6 +101,18 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (this.msgInterceptor != null)
          this.msgInterceptor.addDeliveryManager(this);
       if (log.TRACE && this.msgInterceptor != null) log.trace(ME, "Activated dispatcher plugin '" + this.typeVersion + "'");
+
+      this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
+   }
+
+   /**
+    * Set behavior of dispatch framework. 
+    * @param trySyncMode true: client side queue embedding, false: server side callback queue
+    * defaults to false
+    */
+   public void trySyncMode(boolean trySyncMode) {
+      this.trySyncMode = trySyncMode;
+      switchToSyncMode();
    }
 
    public final void updateProperty(CbQueueProperty cbQueueProperty) throws XmlBlasterException {
@@ -111,6 +126,23 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
    public I_Queue getQueue() {
       return this.msgQueue;
+   }
+
+   /**
+    * Register yourself if you want to be informed about the remote connection status. 
+    * NOTE: Currently max. one listener is implemented
+    * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
+    */
+   public void addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      if (this.connectionStatusListener != null) {
+         log.error(ME, "addConnectionStatusListener() ignored, there is already a listener registered");
+         return;
+      }
+      this.connectionStatusListener = connectionStatusListener;
+   }
+
+   public void removeConnectionStateListener(I_ConnectionStatusListener connectionStatusListener) {
+      this.connectionStatusListener = null;
    }
 
    /**
@@ -137,6 +169,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
    /** Call by DeliveryConnectionsHandler on state transition */
    void toAlive(ConnectionStateEnum oldState) {
+      
+      if (this.trySyncMode) {
+         switchToSyncMode();
+      }
+
       // Remember the current collectTime
       AddressBase addr = deliveryConnectionsHandler.getAliveAddress();
       if (addr == null) {
@@ -144,6 +181,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          return;
       }
 
+      // 1. We allow a client to intercept and for example destroy all entries in the queue
+      if (this.connectionStatusListener != null)
+         this.connectionStatusListener.toAlive(this, oldState);
+
+      // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
          this.msgInterceptor.toAlive(this, oldState);
 
@@ -154,6 +196,14 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
    /** Call by DeliveryConnectionsHandler on state transition */
    void toPolling(ConnectionStateEnum oldState) {
+
+      switchToASyncMode();
+
+      // 1. We allow a client to intercept and for example destroy all entries in the queue
+      if (this.connectionStatusListener != null)
+         this.connectionStatusListener.toPolling(this, oldState);
+
+      // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
          this.msgInterceptor.toPolling(this, oldState);
    }
@@ -162,8 +212,14 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    void toDead(ConnectionStateEnum oldState, AddressBase address, XmlBlasterException ex) {
       ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       
+      // 1. We allow a client to intercept and for example destroy all entries in the queue
+      if (this.connectionStatusListener != null)
+         this.connectionStatusListener.toDead(this, oldState, ex.getMessage());
+
+      // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
          this.msgInterceptor.toDead(this, oldState, ex.getMessage());
+
       givingUpDelivery(ex);
    }
 
@@ -178,7 +234,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    /**
     * Called by DeliveryWorker if an Exception occured in sync mode
     */
-   Object handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
+   void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
 
       if (log.CALL) log.call(ME, "Sync delivery failed connection state is " + deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
       
@@ -187,8 +243,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (xmlBlasterException.isUser()) {
          // Exception from remote client from update(), pass it to error handler and carry on ...
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-         getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, xmlBlasterException));
-         return null;
+         getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, entries, xmlBlasterException));
+         return;
       }
       else if (xmlBlasterException.isCommunication()) {
 
@@ -207,7 +263,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
                this.failureListener.handleError(new MsgErrorInfo(glob, entries, xmlBlasterException));
             }
-            return null;
+            return;
          }
 
          // Exception from connection to remote client (e.g. from Corba layer)
@@ -220,12 +276,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          switchToASyncMode();
 
          // Simulate return values, and manipulate missing informations into entries ...
-         MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-         Object retArr = getDeliveryConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
-         msgQueue.put(entries, false);
+         I_QueueEntry[] entries = (I_QueueEntry[])entryList.toArray(new I_QueueEntry[entryList.size()]);
+         getDeliveryConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
+         msgQueue.put(entries, I_Queue.IGNORE_PUT_INTERCEPTOR);
 
-         if (log.TRACE) log.trace(ME, "Delivery failed, pushed " + entries.length + " into tail back queue");
-         return retArr;
+         if (log.TRACE) log.trace(ME, "Delivery failed, pushed " + entries.length + " entries into tail back queue");
       }
       else {
          if (log.TRACE) log.trace(ME, "Invocation failed: " + xmlBlasterException.getMessage());
@@ -301,15 +356,20 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * Exception if one is thrown.
     */
    public void switchToSyncMode() {
-      if (this.syncDeliveryWorker == null) this.syncDeliveryWorker = new DeliveryWorker(glob, this);
+      if (this.isSyncMode) return;
 
-      this.msgQueue.addPutListener(this);
-      log.info(ME, "Switched to synchronous message delivery");
-      
-      if (this.timerKey != null)
-         log.error(ME, "Burst mode timer was activated and we switched to synchronous delivery" +
-                       " - handling of this situation is not coded yet");
-      removeBurstModeTimer();
+      synchronized (this) {
+         if (this.isSyncMode) return;
+         if (this.syncDeliveryWorker == null) this.syncDeliveryWorker = new DeliveryWorker(glob, this);
+
+         this.isSyncMode = true;
+         log.info(ME, "Switched to synchronous message delivery");
+         
+         if (this.timerKey != null)
+            log.error(ME, "Burst mode timer was activated and we switched to synchronous delivery" +
+                          " - handling of this situation is not coded yet");
+         removeBurstModeTimer();
+      }
    }
 
    /**
@@ -318,36 +378,70 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * and deliver them in asynchronous mode.
     */
    public void switchToASyncMode() {
-      this.msgQueue.removePutListener(this);
-      activateDeliveryWorker(); // just in case there are some messages pending in the queue
-      log.info(ME, "Switched to asynchronous message delivery");
+      if (!this.isSyncMode) return;
+
+      synchronized (this) {
+         if (!this.isSyncMode) return;
+         //this.msgQueue.removePutListener(this);
+         activateDeliveryWorker(); // just in case there are some messages pending in the queue
+         this.isSyncMode = false;
+         log.info(ME, "Switched to asynchronous message delivery");
+      }
    }
 
    /**
-    * Called by I_Queue implementation when a put() is invoked and we have registered for such events. 
-    * This allows synchronous invocations on xmlBlaster clients side and
-    * transparently switch to queueing mode on connection errors.
-    * @return The returned object from the message invocation
-    * @see I_QueuePutListener#put(I_QueueEntry)
+    * @see I_QueuePutListener#putPre(I_QueueEntry)
     */
-   public Object put(I_QueueEntry queueEntry) throws XmlBlasterException {
+   public boolean putPre(I_QueueEntry queueEntry) throws XmlBlasterException {
+      if (!this.isSyncMode) return true; // Add entry to queue
+
       I_QueueEntry[] queueEntries = new I_QueueEntry[1];
       queueEntries[0] = queueEntry;
-      Object[] retArr = put(queueEntries);
-      return retArr[0];
+      return putPre(queueEntries);
    }
 
    /**
-    * @return An ACK object for each queueEntry (ackObject.length == queueEntries.length) or null
-    * @see #put(I_QueueEntry)
-    * @see I_QueuePutListener#put(I_QueueEntry[])
-    * @return An array of response objects
+    * @see #putPre(I_QueueEntry)
+    * @see I_QueuePutListener#putPre(I_QueueEntry[])
     */
-   public Object[] put(I_QueueEntry[] queueEntries) throws XmlBlasterException {
-      log.info(ME, "Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
+   public boolean putPre(I_QueueEntry[] queueEntries) throws XmlBlasterException {
+      if (!this.isSyncMode) return true; // Add entry to queue
+      
+      if (log.TRACE) log.trace(ME, "putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
       ArrayList entryList = new ArrayList(queueEntries.length);
       for (int ii=0; ii<queueEntries.length; ii++) entryList.add(queueEntries[ii]);
-      return (Object[])this.syncDeliveryWorker.run(entryList);
+      this.syncDeliveryWorker.run(entryList);
+      return false;
+   }
+
+   /**
+    * @see I_QueuePutListener#putPost(I_QueueEntry)
+    */
+   public void putPost(I_QueueEntry queueEntry) throws XmlBlasterException {
+      //log.error(ME, "DEBUG ONLY: putPost() is not implemented");
+      if (!this.isSyncMode) {
+         notifyAboutNewEntry();
+         if (((MsgQueueEntry)queueEntry).wantReturnObj()) {
+            // Simulate return values, and manipulate missing informations into entries ...
+            I_QueueEntry[] entries = new I_QueueEntry[] { queueEntry };
+            getDeliveryConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
+         }
+      }
+   }
+
+   /**
+    * @see #putPost(I_QueueEntry)
+    * @see I_QueuePutListener#putPost(I_QueueEntry[])
+    */
+   public void putPost(I_QueueEntry[] queueEntries) throws XmlBlasterException {
+      //log.error(ME, "DEBUG ONLY: putPost([]) is not implemented");
+      if (!this.isSyncMode) {
+         notifyAboutNewEntry();
+         if (queueEntries.length > 0 && ((MsgQueueEntry)queueEntries[0]).wantReturnObj()) {
+            // Simulate return values, and manipulate missing informations into entries ...
+            getDeliveryConnectionsHandler().createFakedReturnObjects(queueEntries, Constants.STATE_OK, Constants.INFO_QUEUED);
+         }
+      }
    }
 
    /**
@@ -395,9 +489,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * When somebody puts a new entry into the queue, we want to be
     * notified about this after the entry is fed.
     * <p>
-    * E.g. called by SessionInfo.java, TopicHandler.java etc.
+    * Called by I_Queue.putPost()
     */
    public void notifyAboutNewEntry() {
+      if (log.CALL) log.call(ME, "Entering notifyAboutNewEntry()");
       this.notifyCounter++;
       activateDeliveryWorker();
    }
@@ -523,7 +618,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       }
 
       if (deliveryConnectionsHandler.isPolling()) {
-         log.warn(ME, "Can't send message as connection is lost and we are polling");
+         if (log.TRACE) log.trace(ME, "Can't send message as connection is lost and we are polling");
          return false;
       }
 

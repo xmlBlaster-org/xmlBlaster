@@ -12,7 +12,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.Constants;
 
@@ -44,10 +44,10 @@ public class Subscribe implements I_Callback
 
    public Subscribe(Global glob) {
       log = glob.getLog("client");
-      XmlBlasterConnection con = null;
+      I_XmlBlasterAccess con = null;
       updateSleep = glob.getProperty().get("updateSleep", 0L);
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob);
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -105,7 +105,7 @@ public class Subscribe implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.out.println("Example: java javaclients.cluster.Subscribe -port 7601 -domain STOCK_EXCHANGE\n");
          System.exit(1);
       }

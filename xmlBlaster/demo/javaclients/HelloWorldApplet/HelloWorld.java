@@ -3,16 +3,16 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.21 2003/01/05 23:06:52 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.22 2003/03/24 16:12:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.MsgUnit;
@@ -47,7 +47,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    private Global glob;
 
    private String oid = "HelloWorld-Message";
-   private XmlBlasterConnection corbaConnection;
+   private I_XmlBlasterAccess corbaConnection;
    private String senderName = "HelloWorld-Applet";
    private ConnectReturnQos conRetQos = null;
 
@@ -129,10 +129,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       try {
          String passwd = "secret";
 
-         if (isApplet)
-            corbaConnection = new XmlBlasterConnection(this, "IOR"); // Find orb
-         else
-            corbaConnection = new XmlBlasterConnection(); // Find orb
+         corbaConnection = glob.getXmlBlasterAccess(); // Find orb
 
          ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
          conRetQos = corbaConnection.connect(connectQos, this); // Login to xmlBlaster

@@ -36,6 +36,9 @@ public class NodeStateInfo {
    /** Average idle of all CPUs of the node, -1 if not known */
    private int avgCpuIdle = -1;
 
+   /**
+    * @param glob The global specific to this node
+    */
    public NodeStateInfo(Global glob) {
       this.glob = glob;
    }

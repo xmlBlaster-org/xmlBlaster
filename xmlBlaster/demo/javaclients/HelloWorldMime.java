@@ -24,7 +24,7 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -54,7 +54,7 @@ public class HelloWorldMime implements I_Callback
    public HelloWorldMime(Global glob) {
       log = glob.getLog(null);
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob); // name, passwd can be set on command line, try -help
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -63,14 +63,14 @@ public class HelloWorldMime implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorldMime", "text/xml");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "<news type='sport'/>".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk, "<news type='sport'/>".getBytes(), pq);
          con.publish(msgUnit);
 
 
          GetKey gk = new GetKey(glob, "HelloWorldMime");
          GetQos gq = new GetQos(glob);
          gq.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
-         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         MsgUnit[] msgs = con.get(gk, gq);
 
          log.info("", "Accessed xmlBlaster message synchronous with get() with content '" + new String(msgs[0].getContent()) + "'");
 
@@ -78,10 +78,10 @@ public class HelloWorldMime implements I_Callback
          SubscribeKey sk = new SubscribeKey(glob, "HelloWorldMime");
          SubscribeQos sq = new SubscribeQos(glob);
          sq.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='fishing']"));
-         SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos subRet = con.subscribe(sk, sq);
 
 
-         msgUnit = new MsgUnit(pk.toXml(), "<news type='fishing'/>".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk, "<news type='fishing'/>".getBytes(), pq);
          con.publish(msgUnit);
 
 
@@ -91,11 +91,11 @@ public class HelloWorldMime implements I_Callback
 
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
-         con.unSubscribe(uk.toXml(), uq.toXml());
+         con.unSubscribe(uk, uq);
 
          EraseKey ek = new EraseKey(glob, "HelloWorldMime");
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] eraseArr = con.erase(ek, eq);
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
@@ -131,7 +131,7 @@ public class HelloWorldMime implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java HelloWorldMime -session.name Jeff\n");
          System.exit(1);
       }

@@ -7,7 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -47,6 +47,7 @@ public final class NodeInfo
 
    /**
     * Holds the addresses of a node. 
+    * @param glob The global specific to this node instance. 
     */
    public NodeInfo(Global glob, NodeId nodeId) {
       this.glob = glob;

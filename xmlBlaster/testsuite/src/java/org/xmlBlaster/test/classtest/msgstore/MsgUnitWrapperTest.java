@@ -87,7 +87,7 @@ public class MsgUnitWrapperTest extends TestCase {
             "</qos>\n";
 
          PublishQosServer publishQosServer = new PublishQosServer(glob, xml, true); // true prevents new timestamp
-         MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
+         MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
          StorageId storageId = new StorageId("mystore", "someid");
          MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
 
@@ -104,10 +104,11 @@ public class MsgUnitWrapperTest extends TestCase {
          long uniqueId = msgUnitWrapper.getUniqueId();
          String type = msgUnitWrapper.getEmbeddedType();
          boolean persistent = msgUnitWrapper.isPersistent();
+         long sizeInBytes = msgUnitWrapper.getSizeInBytes();
          byte[] blob = factory.toBlob(msgUnitWrapper);
 
          MsgUnitWrapper newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
-                                        uniqueId, type, persistent, blob, storageId);
+                                        uniqueId, type, persistent, sizeInBytes, blob, storageId);
  
          assertEquals("", msgUnitWrapper.getPriority(), newWrapper.getPriority());
          assertEquals("", msgUnitWrapper.getReferenceCounter(), newWrapper.getReferenceCounter()); // A reference counter is reset to 0 when loaded from persistence

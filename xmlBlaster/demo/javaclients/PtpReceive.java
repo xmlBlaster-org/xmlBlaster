@@ -7,7 +7,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Destination;
 
@@ -30,7 +30,7 @@ import org.xmlBlaster.util.qos.address.Destination;
 public class PtpReceive
 {
    private final String ME = "PtpReceive";
-   private XmlBlasterConnection receiver = null;
+   private I_XmlBlasterAccess receiver = null;
    private final String receiverName = "receiver";
    private int counter = 0;
    private int abortCount = 3;
@@ -43,7 +43,7 @@ public class PtpReceive
       try {
 
          // setup the receiver client ...
-         receiver = new XmlBlasterConnection(glob);
+         receiver = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob, receiverName, "secret");
          ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
@@ -82,7 +82,7 @@ public class PtpReceive
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          glob.getLog(null).info("PtpReceive", "Example: java PtpReceive -abortCount 3\n");
          System.exit(1);
       }

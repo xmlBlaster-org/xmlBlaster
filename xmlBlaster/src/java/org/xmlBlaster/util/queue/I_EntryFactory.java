@@ -28,8 +28,19 @@ public interface I_EntryFactory
 
    /**
     * Parses back the raw data to a I_Entry (deserializing)
+    *
+    * @param priority The priority of the entry (the queues first sort criteria)
+    * @param timestamp The queues second sort criteria
+    * @param type The type of the entry, used to know how to parse it
+    * @param persistent true: the entry is persistent, false: the entry is swapped from cache (no more RAM memory)
+    * @param sizeInBytes The approximate, immutable size that the entry occupies in RAM,
+    *        this can be totally different
+    *        to the size the entry occupies on storage
+    * @param obj The serialized data (formatted as given by 'type')
+    * @param storageId A unique identifier of the queue
     */
-   I_Entry createEntry(int priority, long timestamp, String type, boolean persistent, byte[] obj, StorageId storageId)
+   I_Entry createEntry(int priority, long timestamp, String type, boolean persistent,
+                       long sizeInBytes, byte[] obj, StorageId storageId)
       throws XmlBlasterException;
 
    /**

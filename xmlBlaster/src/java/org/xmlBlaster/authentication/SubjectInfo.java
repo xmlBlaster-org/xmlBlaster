@@ -360,7 +360,7 @@ public final class SubjectInfo implements I_AdminSubject
          log.warn(ME, "No login session available for client '" + entry.getReceiver().getAbsoluteName() +
                       "', queueing message '" + entry.getLogId() + "'");
          try {
-            this.subjectQueue.put(entry, false);
+            this.subjectQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
             forwardToSessionQueue();
          }
          catch (Throwable e) {

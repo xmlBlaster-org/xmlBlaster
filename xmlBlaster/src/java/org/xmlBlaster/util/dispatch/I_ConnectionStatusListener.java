@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      I_ConnectionStateListener.java
+Name:      I_ConnectionStatusListener.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util.dispatch.plugins;
+package org.xmlBlaster.util.dispatch;
 
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
  * <p>
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_ConnectionStateListener
+public interface I_ConnectionStatusListener
 {
    void toAlive(DeliveryManager deliveryManager, ConnectionStateEnum oldState);
    void toPolling(DeliveryManager deliveryManager, ConnectionStateEnum oldState);

@@ -13,7 +13,6 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
@@ -154,13 +153,13 @@ public final class TopicHandler implements I_Timeout
       if (uniqueKey == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
 
-      this.log = glob.getLog("core");
+      this.log = this.glob.getLog("core");
       this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
       this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
-      this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
+      this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
 
       toUnconfigured();
       TopicHandler t = this.requestBroker.addTopicHandler(this);
@@ -183,15 +182,15 @@ public final class TopicHandler implements I_Timeout
    public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, String keyOid) throws XmlBlasterException {
       this.glob = requestBroker.getGlobal();
       if (keyOid == null)
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters, keyOid=null");
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters, keyOid=null");
 
-      this.log = glob.getLog("core");
+      this.log = this.glob.getLog("core");
       this.requestBroker = requestBroker;
       this.uniqueKey = keyOid;
       this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
       this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
-      this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
+      this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
       
       //Happens automatically on first publish
       //administrativeInitialize((MsgKeyData)msgUnit.getKeyData(), (MsgQosData)msgUnit.getQosData());
@@ -383,7 +382,7 @@ public final class TopicHandler implements I_Timeout
                msgQosData.touchRcvTimestamp();
                msgQosData.setPersistent(true);
                msgQosData.setSender(creatorSessionName);
-               MsgUnit msgUnit = new MsgUnit(glob, this.msgKeyData, null, msgQosData);
+               MsgUnit msgUnit = new MsgUnit(this.msgKeyData, null, msgQosData);
                this.topicEntry = new TopicEntry(glob, msgUnit);
                isNew = true;
                if (log.TRACE) log.trace(ME, "Created persistent topicEntry '" + this.topicEntry.getUniqueId() + "'"); //: " + this.topicEntry.toXml());
@@ -532,14 +531,14 @@ public final class TopicHandler implements I_Timeout
 
 
             initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
-            msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0);
+            msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0, -1);
        
             this.msgUnitCache.put(msgUnitWrapper);
 
             if (this.historyQueue != null && msgUnitWrapper.isAlive() &&             // no volatile messages
                 !(publishQosServer.isPtp() && publishQosServer.isSubscribeable())) { // no invisible PtP 
                try { // increments reference counter += 1
-                  this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), false);
+                  this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
                }
                catch (XmlBlasterException e) {
                   log.error(ME, "History queue put() problem: " + e.getMessage());
@@ -931,6 +930,10 @@ public final class TopicHandler implements I_Timeout
     */
    private final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
                                         MsgUnitWrapper[] msgUnitWrapperArr) {
+      if (!sub.getSessionInfo().hasCallback()) {
+         log.error(ME, "Internal problem: A client which subcribes should have a callback server: " + publisherSessionInfo.toXml(""));
+         return 0;
+      }
       if (isUnconfigured()) {
          log.warn(ME, "invokeCallback() not supported, this MsgUnit was created by a subscribe() and not a publish()");
          return 0;
@@ -997,14 +1000,15 @@ public final class TopicHandler implements I_Timeout
 
             if (log.CALL) log.call(ME, "pushing update() message '" + sub.getKeyData().getOid() + "' " + msgUnitWrapper.getStateStr() +
                           "' into '" + sub.getSessionInfo().getId() + "' callback queue");
-            
-            UpdateReturnQosServer retQos = (UpdateReturnQosServer)sub.getMsgQueue().put(
-                 new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                     sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()),
-                 false);
 
-            sub.getSessionInfo().getDeliveryManager().notifyAboutNewEntry();
+            MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnitWrapper,
+                     sub.getMsgQueue().getStorageId(),
+                     sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
 
+            sub.getMsgQueue().put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+
+            // If in MsgQueueUpdateEntry we set super.wantReturnObj = true; (see ReferenceEntry.java):
+            //UpdateReturnQosServer retQos = (UpdateReturnQosServer)entry.getReturnObj();
             retCount++;
          }
          catch (Throwable e) {
@@ -1540,7 +1544,7 @@ public final class TopicHandler implements I_Timeout
             pq.setState(Constants.STATE_ERASED);
             pq.setVolatile(true);
             pq.setSender(sessionName);
-            MsgUnit msgUnit = new MsgUnit(glob, pk, getId(), pq); // content contains the global name?
+            MsgUnit msgUnit = new MsgUnit(pk, getId(), pq); // content contains the global name?
             PublishQosServer ps = new PublishQosServer(glob, pq.getData());
             //log.error(ME, "DEBUG ONLY" + msgUnit.toXml());
             publish(publisherSessionInfo, msgUnit, ps);

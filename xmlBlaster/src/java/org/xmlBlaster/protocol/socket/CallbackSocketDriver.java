@@ -30,12 +30,13 @@ public class CallbackSocketDriver implements I_CallbackDriver
    private HandleClient handler;
    private CallbackAddress callbackAddress;
 
-   /* Should not be instantiated by plugin loader.
+   /**
+    * Should not be instantiated by plugin loader.
+    */
    public CallbackSocketDriver() {
-      log.error(ME, "Empty Constructor!");
+      System.err.println(ME + ": Empty Constructor!");
       (new Exception("")).printStackTrace();
    }
-   */
 
    public CallbackSocketDriver(String loginName, HandleClient handler) {
       this.loginName = loginName;

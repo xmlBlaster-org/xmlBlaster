@@ -82,6 +82,25 @@ CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
 
 
 #------------------------------------------------------------------------------
+# On client side only
+
+# Register the client side protocol plugion to connect to server
+ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnection
+ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
+ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
+ClientProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
+#ClientProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapConnection
+
+# Register the client side callback server plugins:
+ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
+ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
+ClientCbServerProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiCallbackServer
+ClientCbServerProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer
+#ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
 # Adjust if you want to use the EMAIL plugin.
 # See xmlBlaster/demo/javaclients/email/README
 EmailDriver.smtpHost=localhost

@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.Timestamp;
 
 import java.util.ArrayList;
 
@@ -80,6 +81,18 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    public QueryKeyData(Global glob, I_QueryKeyFactory factory, String serialData) {
       super(glob, serialData);
       this.factory = (factory == null) ? this.glob.getQueryKeyFactory() : factory;
+   }
+
+   /**
+    * @param uniquePrefix relative login session name on client side
+    */
+   public static String generateSubscriptionId(String uniquePrefix) {
+      StringBuffer sb = new StringBuffer(126);
+      Timestamp timestamp = new Timestamp();
+      sb.append(Constants.SUBSCRIPTIONID_PREFIX); // "__subId:"
+      sb.append(uniquePrefix);
+      sb.append("-").append(timestamp.getTimestamp());
+      return sb.toString();
    }
 
    /**

@@ -147,7 +147,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * which is referenced here may be changed by other threads.
     * @see I_Queue#getEntryReferences()
     */
-   public final long[] getEntryReferences() throws XmlBlasterException {
+   public long[] getEntryReferences() throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntryReferences() is not implemented");
    }
 
@@ -155,7 +155,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * Gets a copy of the entries (the messages) in the queue. If the queue
     * is modified, this copy will not be affected. This method is useful for client browsing.
     */
-   public final ArrayList getEntries() throws XmlBlasterException {
+   public ArrayList getEntries() throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries() is not implemented");
    }
 
@@ -164,11 +164,11 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /** For verbose logging */
-   public final StorageId getStorageId() {
+   public StorageId getStorageId() {
       return storageId;
    }
 
-   public final void shutdown() {
+   public void shutdown() {
       if (log.TRACE) log.trace(ME, "Entering shutdown(" + this.storage.size() + ")");
       synchronized (this) {
          if (this.storage.size() > 0) {
@@ -185,7 +185,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       }
    }
 
-   public final boolean isShutdown() {
+   public boolean isShutdown() {
       return this.isShutdown;
    }
 
@@ -193,7 +193,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * Flush the queue
     * @return The number of messages erased
     */
-   public final long clear() {
+   public long clear() {
       synchronized(this) {
          long ret = (long)this.storage.size();
          if (this.notifiedAboutAddOrRemove) {
@@ -219,14 +219,14 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#remove()
     */
-   public final int remove() throws XmlBlasterException {
+   public int remove() throws XmlBlasterException {
       return (int)remove(1, -1L);
    }
 
    /**
     * @see I_Queue#remove(long, long)
     */
-   public final long remove(long numOfEntries, long numOfBytes)
+   public long remove(long numOfEntries, long numOfBytes)
       throws XmlBlasterException
    {
       if (numOfEntries > Integer.MAX_VALUE)
@@ -256,7 +256,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 
    /**
     */
-   public final long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority)
+   public long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
       if (numOfEntries > Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "remove: too many entries to remove " + numOfEntries);
@@ -275,7 +275,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#peek()
     */
-   public final I_QueueEntry peek() {
+   public I_QueueEntry peek() {
       if (getNumOfEntries() < 1) return null;
       synchronized (this) {
          return (I_QueueEntry)this.storage.first();
@@ -288,7 +288,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @param minPrio Extension to I_Queue:  if -1 then only entries with similar priority as the first one are taken (= peekSamePriority())
     * @see I_Queue#peek(int, long)
     */
-   public final ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
+   public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
       throws XmlBlasterException {
       return genericPeek(numOfEntries, numOfBytes, minPrio, maxPrio).list;
    }
@@ -304,7 +304,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     *          this value is inclusive.
     * @param   maxPrio the maximum priority to return (inclusive).
     */
-   private final ReturnDataHolder genericPeek(int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
+   private ReturnDataHolder genericPeek(int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
       throws XmlBlasterException {
       ReturnDataHolder ret = new ReturnDataHolder();
 //      long numOfBytes = bytes.longValue();
@@ -343,7 +343,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#peek(int, long)
     */
-   public final ArrayList peek(int numOfEntries, long numOfBytes)
+   public ArrayList peek(int numOfEntries, long numOfBytes)
       throws XmlBlasterException {
       return genericPeek(numOfEntries, numOfBytes, 0, MAX_PRIO).list;
    }
@@ -388,7 +388,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#getMaxNumOfEntries()
     */
-   public final long getMaxNumOfEntries() {
+   public long getMaxNumOfEntries() {
       return property.getMaxMsg();
    }
 
@@ -426,7 +426,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#getMaxNumOfBytes()
     */
-   public final long getMaxNumOfBytes() {
+   public long getMaxNumOfBytes() {
       return this.property.getMaxBytes();
    }
 
@@ -475,7 +475,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#take()
     */
-   public final I_QueueEntry take() throws XmlBlasterException {
+   public I_QueueEntry take() throws XmlBlasterException {
       ArrayList list = take(1, -1L);
       if (list == null || list.size() < 1) return null;
       return (I_QueueEntry)list.get(0);
@@ -484,7 +484,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#take(int, long)
     */
-   public final ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
+   public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       return takeWithPriority(numOfEntries, numOfBytes, 0, MAX_PRIO);
    }
 
@@ -497,7 +497,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * @see I_Queue#take(int, long)
     */
-   public final ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
+   public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (isShutdown) {
          log.warn(ME, "The queue is shutdown, no message access is possible.");
          if (log.TRACE) Thread.currentThread().dumpStack();
@@ -571,9 +571,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * Put a message into the queue, blocks if take thread blocks synchronize
     */
-   public final Object put(I_QueueEntry entry, boolean ignorePutInterceptor)
+   public void put(I_QueueEntry entry, boolean ignorePutInterceptor)
       throws XmlBlasterException {
-      if (entry == null) return null;
+      if (entry == null) return;
 
       if (isShutdown) {
          if (log.TRACE) log.trace(ME, "The queue is shutdown, put() of message " + entry.getUniqueId() + " failed");
@@ -582,7 +582,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          // Is an interceptor registered?
-         return this.putListener.put(entry);
+         if (this.putListener.putPre(entry) == false)
+            return;
       }
 
       if (getNumOfEntries() > property.getMaxMsg()) { // Allow superload one time only
@@ -618,15 +619,18 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             Thread.currentThread().dumpStack();
          }
       }
-      return null;
+
+      if (this.putListener != null && !ignorePutInterceptor) {
+         this.putListener.putPost(entry);
+      }
    }
 
    /**
     * Put messages into the queue, blocks if take thread blocks synchronize
     */
-   public final Object[] put(I_QueueEntry[] msgArr, boolean ignorePutInterceptor)
+   public void put(I_QueueEntry[] msgArr, boolean ignorePutInterceptor)
       throws XmlBlasterException {
-      if (msgArr == null) return null;
+      if (msgArr == null) return;
 
       //if (log.CALL) log.call(ME, "Entering put(" + msgArr.length + ")");
 
@@ -638,7 +642,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       // delegate put?
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          // Is an interceptor registered and it is not bypassed
-         return this.putListener.put(msgArr);
+         if (this.putListener.putPre(msgArr) == false)
+            return;
       }
 
       if (getNumOfEntries() > property.getMaxMsg()) { // Allow superload one time only
@@ -672,13 +677,16 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
          }
       }
-      return null;
+
+      if (this.putListener != null && !ignorePutInterceptor) {
+         this.putListener.putPost(msgArr);
+      }
    }
    
    /**
     * Dump state of this object into a XML ASCII string.
     */
-   public final String toXml() {
+   public String toXml() {
       return toXml((String)null);
    }
 
@@ -688,7 +696,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @param extraOffset indenting of tags for nice output
     * @return internal state of RamQueuePlugin as a XML ASCII string
     */
-   public final String toXml(String extraOffset) {
+   public String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -784,13 +792,13 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
  * </ol>
  * @see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(I_QueueEntry)
  */
-class MsgComparator implements Comparator
+final class MsgComparator implements Comparator
 {
    /**
     * Comparing the longs directly is 20% faster than having a
     * String compound key
     */
-   public final int compare(Object o1, Object o2) {
+   public int compare(Object o1, Object o2) {
       I_QueueEntry d1 = (I_QueueEntry)o1;
       I_QueueEntry d2 = (I_QueueEntry)o2;
       return d1.compare(d2);

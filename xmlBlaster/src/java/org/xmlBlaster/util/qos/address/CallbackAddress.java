@@ -77,8 +77,12 @@ public class CallbackAddress extends AddressBase
     */
    private void initialize() {
       initHostname(glob.getCbHostname()); // don't use setHostname() as it would set isCardcodedHostname=true
+
+      // Choose same protocol for callback as for sending (as a default)
+      String protocolType = glob.getProperty().get("client.protocol", getType());
+      setType(glob.getProperty().get("cb.protocol", protocolType));
+
       setPort(glob.getProperty().get("cb.port", getPort()));
-      setType(glob.getProperty().get("cb.protocol", getType()));
       setCollectTime(glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
       setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
       setPingInterval(glob.getProperty().get("cb.pingInterval", getDefaultPingInterval()));
@@ -92,8 +96,11 @@ public class CallbackAddress extends AddressBase
       setSecretSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
       setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
       if (nodeId != null) {
+         // Choose same protocol for callback as for sending (as a default)
+         String protocolTypeNode = glob.getProperty().get("client.protocol["+nodeId+"]", getType());
+         setType(glob.getProperty().get("cb.protocol["+nodeId+"]", protocolTypeNode));
+
          setPort(glob.getProperty().get("cb.port["+nodeId+"]", getPort()));
-         setType(glob.getProperty().get("cb.protocol["+nodeId+"]", getType()));
          setCollectTime(glob.getProperty().get("cb.burstMode.collectTime["+nodeId+"]", collectTime));
          setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway["+nodeId+"]", collectTimeOneway));
          setPingInterval(glob.getProperty().get("cb.pingInterval["+nodeId+"]", pingInterval));
@@ -155,6 +162,7 @@ public class CallbackAddress extends AddressBase
       text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
       text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
       text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      text += "   -cb.protocol        You can choose another protocol for the callback server [defaults to -client.protocol]\n";
       //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
       return text;
    }

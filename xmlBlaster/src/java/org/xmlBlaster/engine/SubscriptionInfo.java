@@ -379,6 +379,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     * <p />
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>53</code>
+    * @see org.xmlBlaster.util.key.QueryKeyData#generateSubscriptionId(String)
     */
    private static String generateUniqueKey(KeyData keyData, QueryQosData xmlQos) throws XmlBlasterException {
       if (xmlQos.getSubscriptionId() != null && xmlQos.getSubscriptionId().length() > 0) {

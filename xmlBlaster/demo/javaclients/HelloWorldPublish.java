@@ -30,7 +30,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -131,7 +131,7 @@ public class HelloWorldPublish
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
 
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
@@ -187,7 +187,7 @@ public class HelloWorldPublish
                   content[j] = (byte)(j % 255);
             }
 
-            MsgUnit msgUnit = new MsgUnit(glob, pk, content, pq);
+            MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             if (log.DUMP) log.dump("", "Going to publish message: " + msgUnit.toXml());
 
             PublishReturnQos prq = con.publish(msgUnit);
@@ -206,7 +206,7 @@ public class HelloWorldPublish
 
             EraseKey ek = new EraseKey(glob, oid);
             EraseQos eq = new EraseQos(glob);
-            EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
+            EraseReturnQos[] eraseArr = con.erase(ek, eq);
             log.info(ME, "Erase success");
          }
 
@@ -238,7 +238,7 @@ public class HelloWorldPublish
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("\nExample:");
          System.err.println("  java javaclients.HelloWorldPublish -interactive false -sleep 1000 -numPublish 10 -oid Hello -persistent true -erase true\n");
          System.exit(1);

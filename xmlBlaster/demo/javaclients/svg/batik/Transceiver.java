@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.10 2003/01/05 23:06:57 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.11 2003/03/24 16:12:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -21,7 +21,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -52,7 +52,7 @@ public class Transceiver implements I_Callback
    private final LogChannel log;
    private BridgeContext        bridgeContext        = null;
    private JSVGCanvasExtended   canvas               = null;
-   private XmlBlasterConnection xmlBlasterConnection = null;
+   private I_XmlBlasterAccess xmlBlasterConnection = null;
    private String               svgFileName          = null;
 
    private final static String SVG_PREFIX  = "<?xml version='1.0' standalone='no'?>\n<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.0//EN'\n'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'><svg>";
@@ -105,7 +105,7 @@ public class Transceiver implements I_Callback
          String svgSlave  = glob.getProperty().get("svgSlave", (String)null);
          String svgUser   = glob.getProperty().get("svgUser", "dummyUser");
 
-         this.xmlBlasterConnection = new XmlBlasterConnection(glob);
+         this.xmlBlasterConnection = glob.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(glob, svgUser, "secret");
          this.xmlBlasterConnection.connect(connectQos, this);
 

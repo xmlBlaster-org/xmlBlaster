@@ -8,6 +8,7 @@ package org.xmlBlaster.client.protocol;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.I_Plugin;
 
 
 /**
@@ -24,7 +25,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @see org.xmlBlaster.client.protocol.I_XmlBlasterConnection
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public interface I_CallbackServer
+public interface I_CallbackServer extends I_Plugin
 {
    /**
     * Initialize and start the callback server. 
@@ -51,8 +52,7 @@ public interface I_CallbackServer
    
    /**
     * Stop the server
-    * @return true if everything went fine.
     */
-   public boolean shutdownCb() throws XmlBlasterException;
+   public void shutdown() throws XmlBlasterException;
 }
 

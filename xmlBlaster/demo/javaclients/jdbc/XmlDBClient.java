@@ -2,7 +2,7 @@ package javaclients.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -28,7 +28,7 @@ public class XmlDBClient implements I_Callback
    private static String ME = "XmlDBClient";
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection con = null;
+   private I_XmlBlasterAccess con = null;
    private String results;
    private boolean done = false;
 
@@ -75,7 +75,7 @@ public class XmlDBClient implements I_Callback
     */
    public void initBlaster() {
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
          con.connect(null, this);
          log.info(ME, "Connected to xmlBlaster");
       }

@@ -11,17 +11,19 @@ import org.jutils.time.TimeHelper;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionProblems;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 import java.awt.event.*;
 import java.awt.*;
@@ -42,12 +44,12 @@ import java.util.Date;
  *    java javaclients.chat.SimpleChat -loginName "nickname"
  * @author Mike Groezinger
  */
-public class SimpleChat extends Frame implements I_Callback, ActionListener, I_ConnectionProblems {
+public class SimpleChat extends Frame implements I_Callback, ActionListener, I_ConnectionStateListener {
 
    // XmlBlaster attributes
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection xmlBlasterConnection = null;
+   private I_XmlBlasterAccess xmlBlasterConnection = null;
    private static String ME = "Mike's TestClient";
    private static String passwd ="some";
    private static String qos = "<qos></qos>";
@@ -298,10 +300,10 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    /** find xmlBlaster server, login and subscribe  */
    public void initBlaster(){
       try {
-         xmlBlasterConnection = new XmlBlasterConnection(glob);
+         xmlBlasterConnection = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob);
          xmlBlasterConnection.connect(qos, this);
-         xmlBlasterConnection.initFailSave(this);  // configure settings on command line or in xmlBlaster.properties
+         xmlBlasterConnection.registerConnectionListener(this);  // configure settings on command line or in xmlBlaster.properties
       }
       catch (Exception e) {
          log.error(ME, e.toString());
@@ -358,37 +360,25 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       xmlBlasterConnection.disconnect(null);
    }
 
-   private static void usage() {
-      XmlBlasterConnection.usage();
-      Global.instance().usage();
+   private static void usage(Global glob) {
+      System.out.println(glob.usage());
       System.err.println("Example: java javaclients.chat.SimpleChat -loginName Heidi");
       System.exit(1);
    }
 
    /**
-     * This is the callback method invoked from XmlBlasterConnection
-     * informing the client in an asynchronous mode if the connection was lost.
-     * <p />
-     * This method is enforced through interface I_ConnectionProblems
-     */
-   public void lostConnection()
-   {
-      log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
-   }
-
-   /**
-     * This is the callback method invoked from XmlBlasterConnection
+     * This is the callback method invoked from I_XmlBlasterAccess
      * informing the client in an asynchronous mode if the connection was established.
-     * <p />
-     * This method is enforced through interface I_ConnectionProblems
+     * @see I_ConnectionStateListener
      */
-   public void reConnected()
+   public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
    {
       subscription();
       try {
-         if (xmlBlasterConnection.queueSize() > 0) {
-            log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " + xmlBlasterConnection.queueSize() + " messages ...");
-            xmlBlasterConnection.flushQueue();
+         if (connectionHandler.getQueue().getNumOfEntries() > 0) {
+            log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " +
+                         connectionHandler.getQueue().getNumOfEntries() + " messages ...");
+            connectionHandler.flushQueue();
          }
          else
             log.info(ME, "We were lucky, reconnected to xmlBlaster, no backup messages to flush");
@@ -396,12 +386,31 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       catch (XmlBlasterException e) {
          log.error(ME, "Sorry, flushing of backup messages failed, they are lost: " + e.toString());
       }
+      return false;
+   }
+
+   /**
+     * This is the callback method invoked from I_XmlBlasterAccess
+     * informing the client in an asynchronous mode if the connection was lost.
+     * @see I_ConnectionStateListener
+     */
+   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+   {
+      log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+   }
+
+   /**
+     * @see I_ConnectionStateListener
+     */
+   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+   {
+      log.warn(ME, "I_ConnectionStateListener: DEAD - Lost connection to xmlBlaster, giving up.");
    }
 
    public static void main(String args[]) {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         usage();
+         usage(glob);
          System.exit(1);
       }
 

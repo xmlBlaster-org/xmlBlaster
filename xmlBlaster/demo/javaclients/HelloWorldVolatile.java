@@ -24,7 +24,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -56,7 +56,7 @@ public class HelloWorldVolatile implements I_Callback
       this.glob = glob;
       this.log = glob.getLog(null);
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -64,20 +64,20 @@ public class HelloWorldVolatile implements I_Callback
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, "HelloWorldVolatile");
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos subRet = con.subscribe(sk, sq);
 
          // Publish a volatile message
          PublishKey pk = new PublishKey(glob, "HelloWorldVolatile", "text/xml", "1.0");
          PublishQos pq = new PublishQos(glob);
          pq.setVolatile(true);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          con.publish(msgUnit);
 
          // This should not be possible as the message was volatile
          try {
             GetKey gk = new GetKey(glob, "HelloWorldVolatile");
             GetQos gq = new GetQos(glob);
-            MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+            MsgUnit[] msgs = con.get(gk, gq);
             if (msgs.length > 0) {
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
                log.error("", "Did not expect any message as it was volatile");
@@ -122,7 +122,7 @@ public class HelloWorldVolatile implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java HelloWorldVolatile -session.name Jeff\n");
          System.exit(1);
       }

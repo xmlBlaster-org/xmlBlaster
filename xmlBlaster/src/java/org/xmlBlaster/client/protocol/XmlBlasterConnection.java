@@ -113,7 +113,7 @@ import java.util.Collections;
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see org.xmlBlaster.test.qos.TestFailSave
  *
- * @author $Author: laghi $
+ * @deprecated Please use org.xmlBlaster.client.XmlBlasterAccess instead
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_XmlBlaster, I_CallbackServer, I_Timeout
 {
@@ -254,6 +254,23 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (glob.wantsHelp()) {
          usage();
       }
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getCbProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**
@@ -890,8 +907,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       try {
          if (driverType.equalsIgnoreCase("SOCKET")) {
-            SocketConnection sc = (SocketConnection)this.driver; // downcast hack
-            I_CallbackServer server =  sc.getCallbackServer();
+            I_CallbackServer server = new SocketCallbackImpl();
             server.initialize(this.glob, loginName, this);
             return server;
          }
@@ -1262,13 +1278,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * Shutdown the callback server.
     */
-   public boolean shutdownCb() throws XmlBlasterException
+   public void shutdownCb() throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "shutdownCb() ...");
       //Thread.currentThread().dumpStack();
       if (this.cbServer != null)
-         return this.cbServer.shutdownCb();
-      return false;
+         this.cbServer.shutdown();
    }
 
    /**
@@ -1279,9 +1294,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @return true CB server successfully shut down
     *         false failure on shutdown
     */
-   public boolean shutdown()
+   public void shutdown()
    {
-      return shutdown(true);
+      shutdown(true);
    }
 
    /**
@@ -1862,7 +1877,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
       MsgUnit[] msgUnitArr = new MsgUnit[units.length];
       for(int i=0; i<units.length; i++) {
-         msgUnitArr[i] = new MsgUnit(glob, units[i].getKey(), units[i].getContent(), units[i].getQos());
+         msgUnitArr[i] = new MsgUnit(units[i].getKey(), units[i].getContent(), units[i].getQos());
       }
       return msgUnitArr;
    }

@@ -28,15 +28,17 @@
    <example lang="Java">
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 
 ...
 
+PublishKey pk = new PublishKey(glob, "HelloMsg");
 PublishQos pq = new PublishQos(glob);
 
 pq.setPriority(PriorityEnum.MAX_PRIORITY);
 
-MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), pk.toXml());
+MsgUnit msgUnit = new MsgUnit(pk, senderContent.getBytes(), pq);
 
 con.publish(msgUnit);
    </example>
@@ -45,7 +47,7 @@ con.publish(msgUnit);
    <see type="API">org.xmlBlaster.util.enum.Constants</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 01 15</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Missing</comment>

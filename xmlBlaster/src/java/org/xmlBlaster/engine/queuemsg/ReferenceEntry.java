@@ -55,6 +55,7 @@ public class ReferenceEntry extends MsgQueueEntry
       setMsgUnitWrapper(msgUnitWrapper);
       //setSender(msgUnitWrapper.getMsgQosData().getSender());
       setReceiver(receiver);
+      super.wantReturnObj = false;
    }
 
    /**
@@ -77,6 +78,7 @@ public class ReferenceEntry extends MsgQueueEntry
       this.keyOid = keyOid;
       this.msgUnitWrapperUniqueId = msgUnitWrapperUniqueId;
       setReceiver(receiver);
+      super.wantReturnObj = false;
    }
 
    /** @return the MsgUnitWrapper or null if not found */
@@ -181,10 +183,6 @@ public class ReferenceEntry extends MsgQueueEntry
    public long getMsgUnitWrapperUniqueId() {
       return this.msgUnitWrapperUniqueId;
    }
-
-   //public long getSizeInBytes() {
-   //   return 180; // This is a guess only, we have only a reference on the real data
-   //}
 
    public String getKeyOid() {
       return this.keyOid;

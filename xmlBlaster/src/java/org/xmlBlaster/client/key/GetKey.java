@@ -41,6 +41,14 @@ public class GetKey
       this.queryKeyData = new QueryKeyData(glob, queryString, queryType);
    }
 
+   /**
+    * Constructor for internal use. 
+    * @param queryKeyData The struct holding the data
+    */
+   public GetKey(Global glob, QueryKeyData queryKeyData) {
+      this.queryKeyData = queryKeyData;
+   }
+
    public QueryKeyData getData() {
       return this.queryKeyData;
    }

@@ -40,6 +40,13 @@ public final class UnSubscribeReturnQos
    }
 
    /**
+    * Constructor which reuses a StatusQosData object.
+    */
+   public UnSubscribeReturnQos(Global glob, StatusQosData statusQosData) {
+      this.statusQosData = statusQosData;
+   }
+
+   /**
     * Access the state of message. 
     * @return OK (Other values are not yet supported)
     */

@@ -14,6 +14,12 @@ public class DeliveryStatistic
 {
    private long numUpdate = 0L;
    private long numPublish = 0L;
+   private long numSubscribe = 0L;
+   private long numUnSubscribe = 0L;
+   private long numConnect = 0L;
+   private long numErase = 0L;
+   private long numGet = 0L;
+   private long numDisconnect = 0L;
 
    /**
     * Add count messages which where updated
@@ -47,6 +53,96 @@ public class DeliveryStatistic
    }
 
    /**
+    * Add count subscribe requests. 
+    * @param count The additional number of subscribe requests
+    */
+   public final void incrNumSubscribe(long count) {
+      this.numSubscribe += count; // Sync for client side?
+   }
+
+   /**
+    * How many subscribe requests sent. 
+    */ 
+   public final long getNumSubscribe() {
+      return this.numSubscribe;
+   }
+
+   /**
+    * Add count unSubscribe requests. 
+    * @param count The additional number of unSubscribe requests
+    */
+   public final void incrNumUnSubscribe(long count) {
+      this.numUnSubscribe += count; // Sync for client side?
+   }
+
+   /**
+    * How many unSubscribe requests sent. 
+    */ 
+   public final long getNumUnSubscribe() {
+      return this.numUnSubscribe;
+   }
+
+   /**
+    * Add count erase requests. 
+    * @param count The additional number of erase requests
+    */
+   public final void incrNumErase(long count) {
+      this.numErase += count; // Sync for client side?
+   }
+
+   /**
+    * How many erase requests sent. 
+    */ 
+   public final long getNumErase() {
+      return this.numErase;
+   }
+
+   /**
+    * Add count get requests. 
+    * @param count The additional number of get equests
+    */
+   public final void incrNumGet(long count) {
+      this.numGet += count; // Sync for client side?
+   }
+
+   /**
+    * How many synchronous get requests sent. 
+    */ 
+   public final long getNumGet() {
+      return this.numGet;
+   }
+
+   /**
+    * Add count connect requests. 
+    * @param count The additional number of connect requests
+    */
+   public final void incrNumConnect(long count) {
+      this.numConnect += count; // Sync for client side?
+   }
+
+   /**
+    * How many connect requests sent. 
+    */ 
+   public final long getNumConnect() {
+      return this.numConnect;
+   }
+
+   /**
+    * Add count disconnect requests. 
+    * @param count The additional number of disconnect requests
+    */
+   public final void incrNumDisconnect(long count) {
+      this.numDisconnect += count; // Sync for client side?
+   }
+
+   /**
+    * How many disconnect requests sent. 
+    */ 
+   public final long getNumDisconnect() {
+      return this.numDisconnect;
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
@@ -56,7 +152,32 @@ public class DeliveryStatistic
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
-      sb.append(offset).append("<DeliveryStatistic numUpdate='").append(getNumUpdate()).append("' numPublish='").append(getNumPublish()).append("'/>");
+      sb.append(offset).append("<DeliveryStatistic");
+      if (getNumUpdate() > 0) {
+         sb.append("' numUpdate='").append(getNumUpdate());
+      }
+      if (getNumPublish() > 0) {
+         sb.append("' numPublish='").append(getNumPublish());
+      }
+      //sb.append("' numGet='").append(getNumGet());
+      if (getNumSubscribe() > 0) {
+         sb.append("' numSubscribe='").append(getNumSubscribe()).append("'/>");
+      }
+      if (getNumUnSubscribe() > 0) {
+         sb.append("' numUnSubscribe='").append(getNumUnSubscribe()).append("'/>");
+      }
+      if (getNumErase() > 0) {
+         sb.append("' numErase='").append(getNumErase()).append("'/>");
+      }
+      if (getNumGet() > 0) {
+         sb.append("' numGet='").append(getNumGet()).append("'/>");
+      }
+      if (getNumConnect() > 0) {
+         sb.append("' numConnect='").append(getNumConnect()).append("'/>");
+      }
+      if (getNumDisconnect() > 0) {
+         sb.append("' numDisconnect='").append(getNumDisconnect()).append("'/>");
+      }
       return sb.toString();
    }
 }

@@ -3,7 +3,11 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.42 2003/03/22 12:27:53 laghi Exp $
+<<<<<<< SocketConnection.java
+Version:   $Id: SocketConnection.java,v 1.43 2003/03/24 16:13:05 ruff Exp $
+=======
+Version:   $Id: SocketConnection.java,v 1.43 2003/03/24 16:13:05 ruff Exp $
+>>>>>>> 1.41.6.2
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -43,8 +47,7 @@ import org.xmlBlaster.protocol.socket.Parser;
  * This "SOCKET:" driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup:
  * <pre>
- * ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
- * CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+ * ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
  * </pre>
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.socket.SocketConnection#usage()}
@@ -54,8 +57,8 @@ import org.xmlBlaster.protocol.socket.Parser;
 public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 {
    private String ME = "SocketConnection";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    /** The port for the socket server */
    private int port = DEFAULT_SERVER_PORT;
    /** The port for our client side */
@@ -75,7 +78,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /** Writing to socket */
    protected OutputStream oStream;
    /** SocketCallbackImpl listens on socket to receive callbacks */
-   protected SocketCallbackImpl cbReceiver = null;
+   protected SocketCallbackImpl cbReceiver;
    private String passwd = null;
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos connectReturnQos = null;
@@ -86,20 +89,46 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    private I_CallbackExtended cbClient = null;
 
    /**
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
+    */
+   public SocketConnection() {
+   }
+
+   /**
     * Connect to xmlBlaster using plain socket with native message format.
     */
-   public SocketConnection(Global glob) throws XmlBlasterException
-   {
-      this(glob, null);
+   public SocketConnection(Global glob) throws XmlBlasterException {
+      init(glob, null);
    }
 
    /**
     * Connect to xmlBlaster using plain socket messaging.
     */
-   public SocketConnection(Global glob, java.applet.Applet ap) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = glob.getLog("socket");
+   public SocketConnection(Global glob, java.applet.Applet ap) throws XmlBlasterException {
+      init(glob, null);
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("socket");
+      if (log.CALL) log.call(ME, "Entering init()");
+      // Put this instance in the NameService, will be looked up by SocketCallbackImpl
+      this.glob.addObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection", this);
+      initSocketClient(); // Establish a raw socket connection
    }
 
    /**
@@ -126,6 +155,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       if (isConnected())
          return;
+      
+      if (log.CALL) log.call(ME, "Entering initSocketClient(), connection with raw socket to server ...");
 
       try {
          port = glob.getProperty().get("socket.port", DEFAULT_SERVER_PORT);
@@ -185,8 +216,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          iStream = this.sock.getInputStream();
 
          // start the socket sender and callback thread here
-         if (this.cbReceiver == null) { // only the first time, not on reconnect
-            this.cbReceiver = new SocketCallbackImpl(this);
+         if (this.cbReceiver != null) { // only the first time, not on reconnect
             this.cbReceiver.initialize(glob, loginName, this.cbClient);
          }
       }
@@ -279,8 +309,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       this.loginName = qos.getUserId();
       this.passwd = null;
 
-      initSocketClient();
-
       return loginRaw();
    }
 
@@ -294,6 +322,18 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public ConnectReturnQos loginRaw() throws XmlBlasterException
    {
+      initSocketClient();
+
+      if (getCbReceiver() == null) {
+         // SocketCallbackImpl.java must be instantiated first
+         //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+         //      "Sorry, SOCKET callback handler is not available but is necessary if client connection is of type 'SOCKET', please do not mix 'SOCKET' with other protocols in the same client connection.");
+         log.info(ME, "Creating default callback server type=" + getType());
+         I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(getType(), getVersion());
+         server.initialize(this.glob, getLoginName(), null);
+         // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
+      }
+
       try {
 
          if (passwd == null) { // connect() the new schema
@@ -381,8 +421,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (log.CALL) log.call(ME, "Entering shutdown of callback server");
       if (this.cbReceiver != null) {
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
-         this.cbReceiver.shutdownCb();
-         this.cbReceiver = null;
+         this.cbReceiver.shutdown();
       }
       try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
@@ -410,9 +449,16 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * Opens the socket connection if not logged in.
     */
-   public I_CallbackServer getCallbackServer() throws XmlBlasterException
-   {
-      return getCbReceiver();
+   //public I_CallbackServer getCallbackServer() throws XmlBlasterException
+   //{
+   //   return getCbReceiver();
+   //}
+
+   /**
+    * Called by SocketCallbackImpl on creation
+    */
+   final void registerCbReceiver(SocketCallbackImpl cbReceiver) {
+      this.cbReceiver = cbReceiver;
    }
 
    /**
@@ -420,11 +466,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * Returns the valid SocketCallbackImpl, opens the socket connection if not logged in.
     */
-   private final SocketCallbackImpl getCbReceiver() throws XmlBlasterException
-   {
-      if (!isConnected()) {
-         initSocketClient();
-      }
+   private final SocketCallbackImpl getCbReceiver() throws XmlBlasterException {
       return this.cbReceiver;
    }
 

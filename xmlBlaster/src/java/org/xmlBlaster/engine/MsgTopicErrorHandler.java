@@ -56,6 +56,15 @@ public final class MsgTopicErrorHandler implements I_MsgErrorHandler
       log.error(ME, "PANIC: MESSAGE ERROR HANDLING IS NOT IMPLELEMENTED , messages are lost: " + msgErrorInfo.toString());
    }
 
+   /**
+    * @exception XmlBlasterException is thrown if we are in sync mode and we have no COMMUNICATION problem,
+    * the client shall handle it himself
+    */
+   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+      log.error(ME, "PANIC: handleErrorSync(): MESSAGE ERROR HANDLING IS NOT IMPLELEMENTED , messages are lost: " + msgErrorInfo.toString());
+      throw msgErrorInfo.getXmlBlasterException();
+   }
+
    public void shutdown() {
    }
 }

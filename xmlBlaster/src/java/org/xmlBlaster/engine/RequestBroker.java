@@ -26,7 +26,6 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -489,8 +488,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                }
                origMsgUnit = ((ReferenceEntry)entry).getMsgUnit();
             }
-            else if (entry instanceof MsgQueuePublishEntry)
-               origMsgUnit = ((ReferenceEntry)entry).getMsgUnit();
             else {
                log.error(ME, "PANIC: Internal error in deadMessage data type");
                retArr[ii] = "PANIC";
@@ -713,6 +710,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     */
    String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException
    {
+      if (!sessionInfo.hasCallback()) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
+      }
       try {
          if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
          String returnOid = "";
@@ -748,7 +748,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                if (vec != null) {
                   if (vec.size() > 0) {
                      subs = (SubscriptionInfo)vec.firstElement();
-                     if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getOid() + "' is subscribed " + vec.size() + " times with duplicateUpdates==false");
+                     if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() +
+                                    "', message '" + xmlKeyExact.getOid() + "' is subscribed " +
+                                    vec.size() + " times with duplicateUpdates==false");
                   }
                   if (vec.size() > 1)
                      log.error(ME, "Internal problem for session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getOid() + "' is subscribed " + vec.size() + " times but duplicateUpdates==false!");
@@ -834,7 +836,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             for(int i=0; i<raw.length; i++) {
                String key = "<key oid='" + raw[i].getKey() + "'/>";
                byte[] cont = (getQos.getWantContent()) ? raw[i].getContent() : new byte[0];
-               msgUnitArr[i] = new MsgUnit(glob, key, cont, raw[i].getQos());
+               msgUnitArr[i] = new MsgUnit(key, cont, raw[i].getQos());
             }
             return msgUnitArr;
          }
@@ -955,7 +957,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // Create QoS with new timestamp
          PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().toXml(), false);
          //publishQosUserListEvent.clearRoutes();
-         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyUserListEvent,
+         MsgUnit msgUnit = new MsgUnit(this.xmlKeyUserListEvent,
                                  glob.getAuthenticate().getSubjectList().getBytes(), //content.getBytes(),
                                  publishQosUserListEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit);
@@ -1320,7 +1322,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
       else {
          PublishQosServer qos = new PublishQosServer(glob, msgQosData);
-         MsgUnit msgUnit = new MsgUnit(glob, updateKey.getData(), content, qos.getData());
+         MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, qos.getData());
          return publish(sessionInfo, msgUnit, true);
       }
    }
@@ -1398,7 +1400,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
 
          if (log.CALL) log.call(ME, "Entering " + (publishQos.isClusterUpdate()?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
-         if (log.DUMP) log.dump(ME, "Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80) + "\n" + publishQos.toXml());
+         if (log.DUMP) log.dump(ME, "Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80) + "\n" + publishQos.toXml() + "\nfrom\n" + sessionInfo.toXml());
 
          PublishReturnQos publishReturnQos = null;
 
@@ -1733,7 +1735,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       if (this.publishLoginEvent) {
          this.publishQosLoginEvent.clearRoutes();
-         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLoginEvent,
+         MsgUnit msgUnit = new MsgUnit(this.xmlKeyLoginEvent,
                                   sessionInfo.getLoginName().getBytes(),
                                   this.publishQosLoginEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client has logged in
@@ -1760,7 +1762,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       if (this.publishLogoutEvent) {
          if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString());
          this.publishQosLogoutEvent.clearRoutes();
-         MsgUnit msgUnit = new MsgUnit(glob, this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(),
+         MsgUnit msgUnit = new MsgUnit(this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(),
                                        this.publishQosLogoutEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client logged out
          this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
@@ -1888,7 +1890,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       return sb.toString();
    }
 
-   //====== These methods satisfy the I_AdminNode administration interface =======
+   //====== These methods satisfy the I_AdminNode administration interface ======
    public int getNumNodes() {
       if (glob.useCluster() == false) return 1;
       try {

@@ -9,6 +9,7 @@ package org.xmlBlaster.client.protocol.socket;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
@@ -29,42 +30,78 @@ import java.io.IOException;
  */
 public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
 {
-   private final String ME;
-   private final Global glob;
-   private final LogChannel log;
+   private String ME = "SocketCallbackImpl";
+   private Global glob;
+   private LogChannel log;
    /** The connection manager 'singleton' */
-   private final SocketConnection sockCon;
+   private SocketConnection sockCon;
    /** A unique name for this client socket */
    private String callbackAddressStr = null;
 
    /** Stop the thread */
-   boolean running = true;
+   boolean running = false;
 
    /**
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
-    * @param sockCon    The socket driver main code
-    * @param callback   Our implementation of I_CallbackExtended.
     */
-   SocketCallbackImpl(SocketConnection sockCon) throws XmlBlasterException, IOException
-   {
-      super(sockCon.getGlobal(), sockCon.getSocket(), null);
-      setLoginName(sockCon.getLoginName());
-      this.glob = sockCon.getGlobal();
-      this.log = glob.getLog("socket");
-      this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
-      this.sockCon = sockCon;
-      this.callbackAddressStr = sockCon.getLocalAddress();
-
-      Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+sockCon.getLoginName());
-      t.setDaemon(true);
-      t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
-      t.start();
+   public SocketCallbackImpl() {
    }
 
-   /** Initialize and start the callback server */
-   public final void initialize(Global glob, String loginName, I_CallbackExtended cbClient) throws XmlBlasterException
-   {
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getCbProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   }
+
+   /**
+    * Initialize and start the callback server
+    * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
+    */
+   public synchronized final void initialize(Global glob, String loginName, I_CallbackExtended cbClient) throws XmlBlasterException {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("socket");
+      this.ME = "SocketCallbackImpl-" + loginName;
+      setLoginName(loginName);
       setCbClient(cbClient); // access callback client in super class Executor:callback
+
+      if (this.running == false) {
+         // Lookup SocketConnection instance in the NameService
+         this.sockCon = (SocketConnection)glob.getObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection");
+
+         if (this.sockCon == null) {
+            // SocketConnection.java must be instantiated first and registered to reuse the socket for callbacks
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+                  "Sorry, creation of SOCKET callback handler is not possible if client connection is not of type 'SOCKET'");
+         }
+         
+         this.sockCon.registerCbReceiver(this);
+
+         try {
+            super.initialize(this.sockCon.getGlobal(), this.sockCon.getSocket(), null);
+         }
+         catch (IOException e) {
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Creation of SOCKET callback handler failed", e);
+         }
+         this.callbackAddressStr = this.sockCon.getLocalAddress();
+
+         this.running = true;
+         Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+this.sockCon.getLoginName());
+         t.setDaemon(true);
+         t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
+         t.start();
+      }
    }
 
    /**
@@ -85,6 +122,9 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public String getCbAddress() throws XmlBlasterException
    {
+      if ( sockCon == null ) {
+         return "";
+      }
       return sockCon.getLocalAddress();
    }
    
@@ -152,8 +192,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     * Shutdown callback, called by SocketConnection on problems
     * @return true everything is OK, false if probably messages are lost on shutdown
     */
-   public boolean shutdownCb() {
-      running = false;
+   public synchronized void shutdown() {
+      this.running = false;
       try { iStream.close(); } catch(IOException e) { log.warn(ME, e.toString()); }
       try {
          if (responseListenerMap.size() > 0) {
@@ -166,9 +206,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
             }
             log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
             responseListenerMap.clear();
-            return false;
          }
-         return true;
       }
       finally {
          freePendingThreads();

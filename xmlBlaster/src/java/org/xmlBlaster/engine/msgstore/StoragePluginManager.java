@@ -60,6 +60,7 @@ public class StoragePluginManager extends PluginManagerBase
       this.glob = glob;
       this.log = glob.getLog("persistence");
       this.ME = "StoragePluginManager" + this.glob.getLogPrefixDashed();
+      //this.glob.addObjectEntry("org.xmlBlaster.engine.msgstore.StoragePluginManager", this);
       if (log.CALL) log.call(ME, "Constructor StoragePluginManager");
    }
 

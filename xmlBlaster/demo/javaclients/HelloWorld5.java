@@ -14,7 +14,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -28,9 +28,9 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 public class HelloWorld5
 {
    private final String ME = "HelloWorld5";
-   private XmlBlasterConnection sender = null;
+   private I_XmlBlasterAccess sender = null;
    private final String senderName = "sender";
-   private XmlBlasterConnection receiver = null;
+   private I_XmlBlasterAccess receiver = null;
    private final String receiverName = "receiver";
 
    public HelloWorld5(final Global glob) {
@@ -40,12 +40,13 @@ public class HelloWorld5
       try {
 
          {  // setup the sender client ...
-            sender = new XmlBlasterConnection(glob);
+            sender = glob.getXmlBlasterAccess();
 
-            ConnectQos qos = new ConnectQos(glob, senderName, "secret");
+            ConnectQos qos = new ConnectQos(sender.getGlobal(), senderName, "secret");
             ConnectReturnQos conRetQos = sender.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(senderName, "Receiving asynchronous message '" + updateKey.getOid() + "' in sender default handler");
+                  log.info(senderName, "Receiving asynchronous message '" + updateKey.getOid() + "' in sender default handler" );
+                  log.info(receiverName, "Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
@@ -55,23 +56,23 @@ public class HelloWorld5
 
 
          {  // setup the receiver client ...
-            receiver = new XmlBlasterConnection(glob);
+            Global globReceiver = glob.getClone(null);
+            receiver = globReceiver.getXmlBlasterAccess();
 
-            ConnectQos qos = new ConnectQos(glob, receiverName, "secret");
+            ConnectQos qos = new ConnectQos(receiver.getGlobal(), receiverName, "secret");
             ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(receiverName, "Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
-                  log.info(receiverName, updateKey.toXml() + "\n" + updateQos.toXml());
+                  log.info(receiverName, "Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
 
                   if (updateKey.isInternal()) return "";
                   if (updateQos.isErased()) return "";
-
                   try {
                      // Send an ACK back ...
-                     PublishKey pk = new PublishKey(glob, "HelloWorld5:ACK", "text/plain", "1.0");
-                     PublishQos pq = new PublishQos(glob);
+                     PublishKey pk = new PublishKey(receiver.getGlobal(), "HelloWorld5:ACK", "text/plain", "1.0");
+                     PublishQos pq = new PublishQos(receiver.getGlobal());
                      pq.addDestination(new Destination(updateQos.getSender()));
-                     MsgUnit msgUnit = new MsgUnit(glob, pk, "ACK", pq);
+                     MsgUnit msgUnit = new MsgUnit(pk, "ACK", pq);
                      boolean oneway = false; // just for demo, you can try a variant with never blocking oneway
                      if (oneway) {
                         MsgUnit[] arr = new MsgUnit[1];
@@ -87,7 +88,6 @@ public class HelloWorld5
                   catch (XmlBlasterException e) {
                      log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed: " + e.getMessage());
                   }
-
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
@@ -96,13 +96,12 @@ public class HelloWorld5
          }
 
          // Send a message to 'receiver'
-         PublishKey pk = new PublishKey(glob, "HelloWorld5", "text/plain", "1.0");
-         PublishQos pq = new PublishQos(glob);
-         pq.addDestination(new Destination(new SessionName(glob, receiverName)));
-         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         PublishKey pk = new PublishKey(sender.getGlobal(), "HelloWorld5", "text/plain", "1.0");
+         PublishQos pq = new PublishQos(sender.getGlobal());
+         pq.addDestination(new Destination(new SessionName(sender.getGlobal(), receiverName)));
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos retQos = sender.publish(msgUnit);
-         log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName);
-
+         log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName + ":\n" + msgUnit.toXml());
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Houston, we have a problem: " + e.getMessage());
@@ -113,8 +112,8 @@ public class HelloWorld5
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (sender != null) { sender.disconnect(new DisconnectQos(glob)); }
-         if (receiver != null) { receiver.disconnect(new DisconnectQos(glob)); }
+         if (sender != null) { sender.disconnect(new DisconnectQos(sender.getGlobal())); }
+         if (receiver != null) { receiver.disconnect(new DisconnectQos(receiver.getGlobal())); }
       }
    }
 
@@ -129,7 +128,7 @@ public class HelloWorld5
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          glob.getLog(null).info("HelloWorld5", "Example: java HelloWorld5\n");
          System.exit(1);
       }

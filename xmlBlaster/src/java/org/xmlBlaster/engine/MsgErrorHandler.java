@@ -219,6 +219,17 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
    }
 
+   /**
+    * This should never happen on server side, so we just call handleError(I_MsgErrorInfo). 
+    * @exception XmlBlasterException is thrown if we are in sync mode and we have no COMMUNICATION problem,
+    * the client shall handle it himself
+    */
+   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+      log.error(ME, "Unexpected error handling invocation, we try our best");
+      Thread.currentThread().dumpStack();
+      handleError(msgErrorInfo);
+   }
+
    public void shutdown() {
       //this.sessionInfo = null;
    }

@@ -115,7 +115,7 @@ importPackage(Packages.org.xmlBlaster.util);
       doc = evt.target.ownerDocument;
       var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
 
-      // you can set here the command line to pass to XmlBlasterConnection
+      // you can set here the command line to pass to I_XmlBlasterAccess
       /*
       args = new Array(6);
       args[0] = new String("-client.protocol");
@@ -128,7 +128,7 @@ importPackage(Packages.org.xmlBlaster.util);
       args = new Array(2);
       args[0] = new String("-hostname");
       args[1] = new String("localhost");    // try "server.xmlBlaster.org"
-      xmlBlaster = new XmlBlasterConnection(args);
+      xmlBlaster = new I_XmlBlasterAccess(args);
 
       xmlBlaster.login(getUser(), "secret", new ConnectQos(), new JavascriptCallback(this));
       xmlBlaster.subscribe(key, "<qos></qos>");

@@ -173,7 +173,7 @@ public class TestPtDQueueRedeliver extends TestCase
             }
 
             byte[] content = "Hello".getBytes();
-            MsgUnit msgUnit = new MsgUnit(glob, pk, content, pq);
+            MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             sentArr[i] = msgUnit;
             PublishReturnQos prq = conSnd.publish(msgUnit);
             sentQos[i] = prq;

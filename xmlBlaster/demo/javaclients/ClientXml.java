@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.26 2003/01/05 23:06:51 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.27 2003/03/24 16:12:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -12,7 +12,7 @@ import org.jutils.time.StopWatch;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -24,7 +24,7 @@ import org.xmlBlaster.util.MsgUnit;
  * This client tests the method subscribe()/publish() with XML syntax key
  * and XPath query using the DefaultCallback implementation.
  * <p>
- * It is a nice example using the DefaultCallback implementation from XmlBlasterConnection.java
+ * It is a nice example using the DefaultCallback implementation from I_XmlBlasterAccess.java
  * which calls the update() method using I_Callback interface when messages arrive.
  * <p>
  * Have a look into the testsuite for other possibilities.
@@ -47,14 +47,14 @@ public class ClientXml implements I_Callback
       Global glob = new Global();
       log = glob.getLog(null);
       if (glob.init(args) != 0) {
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          log.info(ME,"Example: java javaclients.ClientXml -loginName Jeff\n");
          System.exit(1);
       }
 
       StopWatch stop = new StopWatch();
       try {
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();
 
          // Login and install the Callback server
          ConnectQos qos = new ConnectQos(glob);

@@ -2,9 +2,7 @@
 Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.31 2003/03/22 12:27:51 laghi Exp $
-Author:    xmlBlaster@marcelruff.info
+Comment:   Helper to connect to xmlBlaster using RMI
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
 
@@ -49,15 +47,18 @@ import java.applet.Applet;
  * RMI server.publish()).
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
+ * <pre>
+ *  # Configure RMI plugin to load:
+ *  ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
+ * </pre>
  *
- * @version $Revision: 1.31 $
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
 {
    private String ME = "RmiConnection";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private I_AuthServer authServer = null;
    private I_XmlBlaster blasterServer = null;
@@ -72,30 +73,48 @@ public class RmiConnection implements I_XmlBlasterConnection
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
 
    /**
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
+    */
+   public RmiConnection() {
+   }
+
+   /**
     * RMI client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
     * @param arg  parameters given on command line
     */
-   public RmiConnection(Global glob) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = glob.getLog("rmi");
-      XmlBlasterSecurityManager.createSecurityManager(glob);
+   public RmiConnection(Global glob) throws XmlBlasterException {
+      init(glob, null);
    }
-
 
    /**
     * RMI client access to xmlBlaster for <strong>applets</strong>.
     * <p />
     * @param ap  Applet handle
     */
-   public RmiConnection(Global glob, Applet ap) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = glob.getLog("rmi");
-       XmlBlasterSecurityManager.createSecurityManager(glob);
+   public RmiConnection(Global glob, Applet ap) throws XmlBlasterException {
+      init(glob, null);
    }
 
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("rmi");
+      XmlBlasterSecurityManager.createSecurityManager(this.glob);
+   }
 
    /**
     * Connect to RMI server.

@@ -86,7 +86,8 @@ public class ServerEntryFactory implements I_EntryFactory
     * Parses back the raw data to a I_Entry (deserializing)
     * @param type see ENTRY_TYPE_MSG etc.
     */
-   public I_Entry createEntry(int priority, long timestamp, String type, boolean persistent, byte[] blob, StorageId storageId)
+   public I_Entry createEntry(int priority, long timestamp, String type,
+                              boolean persistent, long sizeInBytes, byte[] blob, StorageId storageId)
       throws XmlBlasterException {
 
       if (ENTRY_TYPE_UPDATE_REF.equals(type)) {
@@ -111,8 +112,8 @@ public class ServerEntryFactory implements I_EntryFactory
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueUpdateEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
-                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent, receiver,
-                                           subscriptionId, state, redeliverCount.intValue());
+                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes, 
+                                           receiver, subscriptionId, state, redeliverCount.intValue());
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry", ex);
@@ -132,7 +133,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueHistoryEntry((org.xmlBlaster.engine.Global)this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
-                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent);
+                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes);
          }
          catch (Exception ex) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueHistoryEntry", ex);
@@ -154,9 +155,9 @@ public class ServerEntryFactory implements I_EntryFactory
             Integer historyReferenceCounter = (Integer)obj[4];
             PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
-            MsgUnit msgUnit = new MsgUnit(glob, msgKeyData, content, publishQosServer.getData());
+            MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
             MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId,
-                                      referenceCounter.intValue(), historyReferenceCounter.intValue());
+                                      referenceCounter.intValue(), historyReferenceCounter.intValue(), sizeInBytes);
             return msgUnitWrapper;
          }
          catch (Exception ex) {
@@ -177,7 +178,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Integer historyReferenceCounter = (Integer)obj[2];
             msgUnit.setGlobal(glob);
             MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId,
-                             referenceCounter.intValue(), historyReferenceCounter.intValue());
+                             referenceCounter.intValue(), historyReferenceCounter.intValue(), sizeInBytes);
             return msgUnitWrapper;
          }
          catch (Exception ex) {
@@ -199,8 +200,8 @@ public class ServerEntryFactory implements I_EntryFactory
             byte[] content = null;
             PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
-            MsgUnit msgUnit = new MsgUnit(glob, msgKeyData, content, publishQosServer.getData());
-            TopicEntry topicEntry = new TopicEntry(glob, msgUnit);
+            MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, type, sizeInBytes);
             return topicEntry;
          }
          catch (Exception ex) {
@@ -218,7 +219,7 @@ public class ServerEntryFactory implements I_EntryFactory
             }
             MsgUnit msgUnit = (MsgUnit)obj[0];
             msgUnit.setGlobal(glob);
-            TopicEntry topicEntry = new TopicEntry(glob, msgUnit);
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, type, sizeInBytes);
             return topicEntry;
          }
          catch (Exception ex) {
@@ -289,9 +290,9 @@ public class ServerEntryFactory implements I_EntryFactory
                PublishKey publishKey = new PublishKey(glob, "HA");
                PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
                publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
-               MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
+               MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
                StorageId storageId = new StorageId("mystore", "someid");
-               MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, 0, 0, persistType[jj]);
+               MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, 0, 0, persistType[jj], -1);
 
                I_EntryFactory factory = glob.getEntryFactory(storageId.getStrippedId());
 
@@ -299,6 +300,7 @@ public class ServerEntryFactory implements I_EntryFactory
                long timestamp = msgUnitWrapper.getUniqueId();
                String type = msgUnitWrapper.getEmbeddedType();
                boolean persistent = msgUnitWrapper.isPersistent();
+               long sizeInBytes = msgUnitWrapper.getSizeInBytes();
 
                ME = persistType[jj];
 
@@ -315,7 +317,7 @@ public class ServerEntryFactory implements I_EntryFactory
                org.jutils.time.StopWatch stopWatchToObj = new org.jutils.time.StopWatch();
                for(int kk=0; kk<numTransform; kk++) {
                   newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
-                                              timestamp, type, persistent, blob, storageId);
+                                              timestamp, type, persistent, sizeInBytes, blob, storageId);
                }
                elapsed = stopWatchToObj.elapsed();
                log.info(ME, "num toObj=" + numTransform + " elapsed=" + elapsed + stopWatchToObj.nice());

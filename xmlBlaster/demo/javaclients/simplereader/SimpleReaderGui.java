@@ -7,7 +7,7 @@ Author:    Wolfgang Kleinertz, Thomas Bodemer
 package javaclients.simplereader;
 
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -34,7 +34,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 
    private ImageIcon image = null;
 
-   private XmlBlasterConnection xmlBlaster = null;
+   private I_XmlBlasterAccess xmlBlaster = null;
    private DefaultListModel listModel = new DefaultListModel();
    private JList jList1 = new JList();
    private JScrollPane jScrollPane1 = new JScrollPane();
@@ -54,7 +54,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    private BorderLayout borderLayout4 = new BorderLayout();
 
 
-   public SimpleReaderGui(XmlBlasterConnection _xmlBlaster) throws Exception{
+   public SimpleReaderGui(I_XmlBlasterAccess _xmlBlaster) throws Exception{
       this.xmlBlaster = _xmlBlaster;
       try {
         jbInit();
@@ -82,7 +82,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       SimpleReaderGui srGui = null;
       try {
          Global glob = new Global(args);
-         XmlBlasterConnection xmlBlaster = new XmlBlasterConnection( glob );
+         I_XmlBlasterAccess xmlBlaster = glob.getXmlBlasterAccess();
          srGui = new SimpleReaderGui(xmlBlaster);
          srGui.loadImage();
          ConnectQos qos = new ConnectQos(glob, USR_LOGIN, USR_PASSWD);

@@ -3,7 +3,7 @@ Name:      MsgQueuePublishEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util.queuemsg;
+package org.xmlBlaster.client.queuemsg;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -16,6 +16,7 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.util.ArrayList;
 
@@ -31,40 +32,75 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
    private SessionName receiver;
    /** The MsgUnit with key/content/qos (raw struct) */
    private MsgUnit msgUnit;
+   private final long immutableSizeInBytes;
 
    /**
-    * Use this constructor if a new message object is fed by method publish(). 
+    * Use this constructor if a new message object is fed by method publish() (not oneway). 
     * <p />
     * @param msgUnit The raw data
     */
-   public MsgQueuePublishEntry(Global glob, MsgUnit msgUnit, StorageId storageId)
+   public MsgQueuePublishEntry(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
+      this(glob, msgUnit, storageId, false);
+   }
+
+   public MsgQueuePublishEntry(Global glob, MsgUnit msgUnit, StorageId storageId, boolean oneway)
          throws XmlBlasterException {
-      super(glob, MethodName.PUBLISH, ((MsgQosData)msgUnit.getQosData()).getPriority(), storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
+      super(glob, oneway ? MethodName.PUBLISH_ONEWAY : MethodName.PUBLISH,
+            ((MsgQosData)msgUnit.getQosData()).getPriority(), storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
       if (msgUnit == null) {
          glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
       }
+      if (log.CALL) log.call(ME, "Created: " + getUniqueId());
       this.msgUnit = msgUnit;
       this.msgQosData = (MsgQosData)msgUnit.getQosData();
+
+      // Estimated calculation of used memory by one MsgUnitWrapper instance
+      // = Object memory + payload
+      // Where following objects need to be created (approx. 660 bytes RAM):
+      // 6 PropBoolean
+      // 1 PropLong
+      // 1 Timestamp
+      // 1 MsgQosData
+      // 1 MsgKeyData
+      // 1 MsgUnit
+      // 1 MsgQueuePublishEntry
+      this.immutableSizeInBytes = 660 + this.msgUnit.size();
+   }
+
+   /**
+    * For persistence recovery
+    * @param sizeInByte The estimated size of the entry in RAM (can be totally different on HD). 
+    */
+   public MsgQueuePublishEntry(Global glob, MethodName entryType, PriorityEnum priority, StorageId storageId,
+                               Timestamp publishEntryTimestamp, long sizeInBytes,
+                               MsgUnit msgUnit) {
+      super(glob, entryType.toString(), ((MsgQosData)msgUnit.getQosData()).getPriority(),
+            publishEntryTimestamp, storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
+      if (msgUnit == null) {
+         glob.getLog("queue").error(ME, "Invalid constructor parameter");
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
+      }
+      this.msgUnit = msgUnit;
+      this.msgQosData = (MsgQosData)msgUnit.getQosData();
+      this.immutableSizeInBytes = sizeInBytes;
+      if (log.CALL) log.call(ME, "Created from persistence: " + getUniqueId());
    }
 
    /**
     * @see MsgQueueEntry#isExpired
     */
-   public final boolean isExpired() {
+   public boolean isExpired() {
       return this.msgQosData.isExpired();
    }
 
    /**
     * @see MsgQueueEntry#isDestroyed
     */
-   public final boolean isDestroyed() {
+   public boolean isDestroyed() {
       return false;
-   }
-
-   public final MsgQosData getMsgQosData() {
-      return this.msgQosData;
    }
 
    /**
@@ -72,43 +108,17 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     * <p />
     * See private getUpdateQos(int,int,int)
     */
-   public final MsgUnit getMsgUnit() {
+   public MsgUnit getMsgUnit() {
       return this.msgUnit;
-   }
-
-   /**
-    * Get the message unit.
-    */
-   public final void setMsgUnit(MsgUnit msg) {
-      this.msgUnit = msg;
    }
 
    /**
     * Try to find out the approximate memory consumption of this message.
     * <p />
-    * It counts the message content bytes but NOT the xmlKey, xmlQoS etc. bytes<br />
-    * This is because its used for the MessageQueue to figure out
-    * how many bytes the client consumes in his queue.<p />
-    *
-    * As the key and qos will usually not change with follow up messages
-    * (with same oid), the message only need to clone the content, and
-    * that is quoted for the client.<p />
-    *
-    * Note that when the same message is queued for many clients, the
-    * server load is duplicated for each client (needs to be optimized).<p />
-    *
-    * @return the approximate size in bytes of this object which contributes to a ClientUpdateQueue memory consumption
+    * @return The size in bytes
     */
-   public final long getSizeInBytes() {
-      long size = super.getSizeInBytes();
-      if (this.msgUnit != null) {
-         size += this.msgUnit.getContent().length;
-         //size += this.msgUnit.size();
-         // These are references on the original MsgQueueEntry and consume almost no memory:
-         // size += xmlKey;
-         // size += uniqueKey.size() + objectHandlingBytes;
-      }
-      return size;
+   public long getSizeInBytes() {
+      return this.immutableSizeInBytes;
    }
 
    /**
@@ -126,7 +136,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     *         or null
     * @see MsgQueueEntry#getSender()
     */
-   public final SessionName getSender() {
+   public SessionName getSender() {
       return this.msgQosData.getSender();
    }
 
@@ -134,7 +144,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     * @return The name of the receiver (data sink) or null
     * @see MsgQueueEntry#getReceiver()
     */
-   public final void setReceiver(SessionName receiver) {
+   public void setReceiver(SessionName receiver) {
       this.receiver = receiver;
    }
 
@@ -142,7 +152,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     * @return The name of the receiver (data sink) or null
     * @see MsgQueueEntry#getReceiver()
     */
-   public final SessionName getReceiver() {
+   public SessionName getReceiver() {
       if (this.receiver == null) {
          ArrayList list = this.msgQosData.getDestinations();
          if (list != null && list.size() >0) {
@@ -154,34 +164,26 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
       return this.receiver;
    }
 
-   public final MsgKeyData getMsgKeyData() {
+   public MsgKeyData getMsgKeyData() {
       return (MsgKeyData)getMsgUnit().getKeyData();
    }
 
    /**
     * @see MsgQueueEntry#getKeyOid()
     */
-   public final String getKeyOid() {
+   public String getKeyOid() {
       return getMsgKeyData().getOid();
    }
 
    /**
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   public final Timestamp getRcvTimestamp() {
-      return this.msgQosData.getRcvTimestamp();
-   }
-
-   /**
-    * The embeddded object for this implementing class is an Object[3] where
+    * The embedded object. 
+    * @return qos.toXml, key.toXml, contentBytes
     */
    public Object getEmbeddedObject() {
-//      Object[] obj = { new Boolean(subscribeable) };
-//      return obj;
-      log.error(ME, "getEmbeddedObject() IMPLEMENT");
-      throw new IllegalArgumentException("getEmbeddedObject() IMPLEMENT");
+      Object[] obj = { this.msgUnit.getQosData().toXml(),
+                       this.msgUnit.getKeyData().toXml(),
+                       this.msgUnit.getContent() };
+      return obj;
    }
 
    /**

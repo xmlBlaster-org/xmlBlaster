@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -39,12 +38,9 @@ import java.util.ArrayList;
  * @see org.xmlBlaster.util.qos.ConnectQosSaxFactory
  * @see org.xmlBlaster.test.classtest.ConnectQosTest
  */
-public final class ConnectQosData // implements java.io.Serializable, Cloneable
+public final class ConnectQosData extends QosData implements java.io.Serializable, Cloneable
 {
    private final String ME = "ConnectQosData";
-   protected transient Global glob;
-   protected transient LogChannel log;
-   protected transient final String serialData; // can be null - in this case use toXml()
    protected transient I_ConnectQosFactory factory;
 
    /** 
@@ -117,10 +113,8 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     * @param nodeId The node id with stripped special characters (see Global#getStrippedId)
     */
    public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) {
-      this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("core");
+      super(glob, serialData);
       this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
-      this.serialData = serialData;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side
    }
@@ -280,7 +274,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    /**
     * Get our unique SessionName. 
     * <p />
-    * @return The unique SessionName (null if not known)
+    * @return The unique SessionName (never null)
     */
    public SessionName getSessionName() {
       if (this.sessionQos.getSessionName() == null && this.securityQos != null) {
@@ -564,6 +558,13 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
          return this.securityQos.getUserId();
    }
 
+   /** 
+    * The number of bytes of stringified qos
+    */
+   public int size() {
+      return this.toXml().length();
+   }
+
    /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
@@ -588,4 +589,27 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    public String toXml(String extraOffset) {
       return this.factory.writeObject(this, extraOffset);
    }
+
+   /**
+    * Returns a shallow clone, you can change safely all basic or immutable types
+    * like boolean, String, int.
+    * Currently TopicProperty and RouteInfo is not cloned (so don't change it)
+    */
+   public Object clone() {
+      log.error(ME, "clone() is not tested");
+      ConnectQosData newOne = null;
+      newOne = (ConnectQosData)super.clone();
+      synchronized(this) {
+         newOne.ptpAllowed = (PropBoolean)this.ptpAllowed.clone();
+         newOne.clusterNode = (PropBoolean)this.clusterNode.clone();
+         newOne.duplicateUpdates = (PropBoolean)this.duplicateUpdates.clone();
+         newOne.reconnected = (PropBoolean)this.reconnected.clone();
+         //newOne.sessionQos = (SessionQos)this.sessionQos.clone();
+         //newOne.securityQos = (I_SecurityQos)this.securityQos.clone();
+         newOne.serverRefVec = (Vector)this.serverRefVec;
+         newOne.nodeId = (NodeId)this.nodeId;
+      }
+      return newOne;
+   }
+
 }

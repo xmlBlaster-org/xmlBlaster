@@ -173,7 +173,7 @@ public class SoapCallbackServer implements I_CallbackServer
     * Shutdown the callback server.
     * @return true if everything went fine.
     */
-   public boolean shutdownCb()
+   public void shutdown()
    {
       if (manager != null) {
          try {
@@ -188,7 +188,6 @@ public class SoapCallbackServer implements I_CallbackServer
       }
       else
          log.info(ME, "SOAP calback server shutdown, nothing to do.");
-      return true;
    }
 
    /**

@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.11 2002/12/18 12:39:11 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.12 2003/03/24 16:13:20 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -25,7 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_XmlBlaster
 {
-   private final String ME = "XmlBlasterImpl";
+   private final String ME = "RMI.XmlBlasterImpl";
    private final LogChannel log;
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
 

@@ -177,7 +177,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
             topicProperty.setCreateDomEntry(false);
             pq.setTopicProperty(topicProperty);
          }
-         MsgUnit msgUnit = new MsgUnit(glob, pk, senderContent, pq);
+         MsgUnit msgUnit = new MsgUnit(pk, senderContent, pq);
          PublishReturnQos publishReturnQos = con.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, publishReturnQos.getKeyOid());
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid + " " + msgUnit.toXml());

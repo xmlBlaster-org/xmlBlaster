@@ -21,7 +21,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -115,7 +115,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
 
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
@@ -148,7 +148,7 @@ public class HelloWorldSubscribe implements I_Callback
             try { System.in.read(); } catch(java.io.IOException e) {}
          }
 
-         SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos srq = con.subscribe(sk, sq);
 
          log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
                       "', got subscription id='" + srq.getSubscriptionId() + "'");
@@ -167,7 +167,7 @@ public class HelloWorldSubscribe implements I_Callback
 
             UnSubscribeKey uk = (oid.length() > 0) ? new UnSubscribeKey(glob, oid) : new UnSubscribeKey(glob, xpath, Constants.XPATH);
             UnSubscribeQos uq = new UnSubscribeQos(glob);
-            UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk.toXml(), uq.toXml());
+            UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
             log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
          }
 
@@ -229,7 +229,7 @@ public class HelloWorldSubscribe implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("\nExample:");
          System.err.println("  java javaclients.HelloWorldSubscribe -oid Hello -initialUpdate true\n");
          System.exit(1);

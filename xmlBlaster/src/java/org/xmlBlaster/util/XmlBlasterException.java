@@ -3,7 +3,6 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.19 2003/03/10 12:57:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -47,6 +46,7 @@ import org.jutils.JUtilsException;
  *  {7} = stackTrace
  *  {8} = embeddedMessage
  *  {9} = transactionInfo
+ *  {10} = errorCode.getDescription()
  * </pre>
  * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @since 0.8+ with extended attributes
@@ -74,7 +74,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    private final static String DEFAULT_LOGFORMAT_INTERNAL = "XmlBlasterException node=[{1}] location=[{2}]\n" +
                                                             "{8}\n" +
                                                             "stackTrace={7}\n" +
-                                                            "versionInfo={5}\n";
+                                                            "versionInfo={5}\n" +
+                                                            "errorCode description={10}\n";
    private final String logFormatInternal;
    private final String logFormatResource;
    private final String logFormatCommunication;
@@ -82,6 +83,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    private final String logFormatTransaction;
    private final String logFormatLegacy;
    private final String logFormat;
+
+   /**
+    * The errorCodeEnum.getDescription() is used as error message. 
+    */
+   public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String location) {
+      this(glob, errorCodeEnum, location, (String)null, (Throwable)null);
+   }
 
    public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String location, String message) {
       this(glob, errorCodeEnum, location, message, (Throwable)null);
@@ -106,7 +114,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                                String lang, String message, String versionInfo, Timestamp timestamp,
                                String stackTrace, String embeddedMessage, String transcationInfo, Throwable cause) {
       //super(message, cause); // JDK 1.4 only
-      super(message);
+      super((message == null || message.length() < 1) ? errorCodeEnum.getDescription() : message);
       this.glob = (glob == null) ? Global.instance() : glob;
       this.logFormat = this.glob.getProperty().get("XmlBlasterException.logFormat", DEFAULT_LOGFORMAT);
       this.logFormatInternal = this.glob.getProperty().get("XmlBlasterException.logFormat.internal", DEFAULT_LOGFORMAT_INTERNAL);
@@ -195,7 +203,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                               (timestamp==null) ? "" : timestamp.toString(),  // {6}
                               stackTrace,    // {7}
                               embeddedMessage, // {8}
-                              transactionInfo }; // {9}
+                              transactionInfo, // {9}
+                              errorCodeEnum.getDescription() }; // {10}
       if (isInternal()) {
          return MessageFormat.format(this.logFormatInternal, arguments);
       }

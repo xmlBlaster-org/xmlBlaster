@@ -3,6 +3,24 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxx, xx 2003]
 ================================
 
+ o Embedded queue framework into Java client library.
+   Please port your code, typical changes you should make are:
+      XmlBlasterConnection         ->  org.xmlBlaster.client.I_XmlBlasterAccess
+      XmlBlasterConnection.usage() ->  System.out.println(glob.usage())
+      XmlBlasterConnection         ->  I_XmlBlasterAccess
+      new I_XmlBlasterAccess(glob) ->  glob.getXmlBlasterAccess()  
+   If you use fail safe clients:
+      import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+      import org.xmlBlaster.client.I_ConnectionHandler;
+      I_ConnectionProblems  ->  I_ConnectionStateListener
+        void reConnected()  ->    boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+        lostConnection()    ->    reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+                            ->    reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+      con.initFailSave(...  ->  con.registerConnectionListener(...
+
+   NOTE: If you use mutliple clients to connect to xmlBlaster
+   you need a seperate util.Global instance for each of them (see HelloWorld5 example).
+
  o Fixed behavior and error handling of PtP messages, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.offline.html
 

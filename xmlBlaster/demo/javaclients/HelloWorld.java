@@ -1,5 +1,6 @@
 // xmlBlaster/demo/javaclients/HelloWorld.java
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -18,7 +19,7 @@ public class HelloWorld
 {
    public HelloWorld(String[] args) {
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(args);
+         I_XmlBlasterAccess con = new XmlBlasterAccess(args);
 
          con.connect(null, null);    // Login to xmlBlaster as "guest"
 

@@ -2,7 +2,7 @@ package javaclients.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
@@ -26,7 +26,7 @@ public class XmlDBClientSync
    private static String   ME = "XmlDBClientSync";
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection corbaConnection = null;
+   private I_XmlBlasterAccess corbaConnection = null;
 
    /**
     * Constructor declaration
@@ -45,7 +45,7 @@ public class XmlDBClientSync
     */
    public void initBlaster() {
       try {
-         corbaConnection = new XmlBlasterConnection(glob);
+         corbaConnection = glob.getXmlBlasterAccess();
          corbaConnection.connect(null, null);
          log.info(ME, "Connected to xmlBlaster");
       }

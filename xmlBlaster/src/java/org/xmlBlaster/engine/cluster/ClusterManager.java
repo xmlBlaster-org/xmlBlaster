@@ -373,7 +373,7 @@ public final class ClusterManager implements I_RunlevelListener
    public SubscribeReturnQos forwardSubscribe(SessionInfo publisherSession, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardSubscribe(" + xmlKey.getOid() + ")");
 
-      MsgUnit msgUnit = new MsgUnit(glob, xmlKey, (byte[])null, subscribeQos.getData());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, (byte[])null, subscribeQos.getData());
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;
@@ -397,7 +397,7 @@ public final class ClusterManager implements I_RunlevelListener
    public MsgUnit[] forwardGet(SessionInfo publisherSession, QueryKeyData xmlKey, GetQosServer getQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardGet(" + xmlKey.getOid() + ")");
 
-      MsgUnit msgUnit = new MsgUnit(glob, xmlKey, new byte[0], getQos.getData());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, new byte[0], getQos.getData());
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;
@@ -421,7 +421,7 @@ public final class ClusterManager implements I_RunlevelListener
    public EraseReturnQos[] forwardErase(SessionInfo publisherSession, QueryKeyData xmlKey, EraseQosServer eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardErase(" + xmlKey.getOid() + ")");
 
-      MsgUnit msgUnit = new MsgUnit(glob, xmlKey, new byte[0], eraseQos.getData());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, new byte[0], eraseQos.getData());
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;

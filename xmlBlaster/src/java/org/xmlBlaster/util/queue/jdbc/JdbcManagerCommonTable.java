@@ -934,7 +934,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if ( (numOfBytes < 0) || (sizeInBytes+amount < numOfBytes) || (count == 0)) {
                if (this.log.DUMP)
                   this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, blob, storageId));
+               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                amount += sizeInBytes;
             }
          }
@@ -960,7 +960,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
             if (this.log.DUMP)
                this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, blob, storageId));
+            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
          }
          count++;
       }
@@ -1197,7 +1197,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (((numOfBytes<0)||(sizeInBytes+amount<numOfBytes)||(count==0)) &&
                ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) )) {
                if (this.log.DUMP) this.log.dump(getLogId(queueName, nodeId, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, blob, storageId));
+               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                amount += sizeInBytes;
                if (amount > numOfBytes) doContinue = false;
                if (numOfBytes < 0) doContinue = true;

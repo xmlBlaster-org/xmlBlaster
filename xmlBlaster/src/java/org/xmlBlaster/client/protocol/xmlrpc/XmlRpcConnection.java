@@ -47,8 +47,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 {
    private String ME = "XmlRpcConnection";
    public static final int DEFAULT_SERVER_PORT = 8080; // port of xmlBlaster server
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private String url = "http://localhost:" + DEFAULT_SERVER_PORT;
    private XmlRpcClient xmlRpcClient; // xml-rpc client to send method calls.
    private String sessionId;
@@ -59,22 +59,43 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    private boolean firstAttempt = true;
 
    /**
-    * Connect to xmlBlaster using XML-RPC.
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     */
-   public XmlRpcConnection(Global glob) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = glob.getLog("xmlrpc");
+   public XmlRpcConnection() {
    }
 
    /**
     * Connect to xmlBlaster using XML-RPC.
     */
-   public XmlRpcConnection(Global glob, Applet ap) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = glob.getLog("xmlrpc");
+   public XmlRpcConnection(Global glob) throws XmlBlasterException {
+      init(glob, null);
+   }
+
+   /**
+    * Connect to xmlBlaster using XML-RPC.
+    */
+   public XmlRpcConnection(Global glob, Applet ap) throws XmlBlasterException {
+      init(glob, null);
     }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("xmlrpc");
+   }
 
    /**
     * @return The connection protocol name "XML-RPC"

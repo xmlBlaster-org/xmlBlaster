@@ -8,6 +8,8 @@ package org.xmlBlaster.client;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -41,14 +43,30 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
       this.xmlBlasterAccess = xmlBlasterAccess;
    }
 
+   /**
+    * Handle errors in async mode, we have nobody we can throw an exception to
+    * so we handle everything here. 
+    */
    public void handleError(I_MsgErrorInfo msgErrorInfo) {
       if (msgErrorInfo == null) return;
       if (log.CALL) log.call(ME, "Entering handleError for " + msgErrorInfo.getMsgQueueEntries().length + " messages");
       MsgQueueEntry[] entries = msgErrorInfo.getMsgQueueEntries();
       for (int i=0; i<entries.length; i++) {
-         log.error(ME, "PANIC: handleError error handling NOT IMPLEMENTED, message '" +
-                       entries[i].getLogId() + "' is lost");
+         log.error(ME, "PANIC: handleError error handling NOT IMPLEMENTED, message '" + entries[i].getEmbeddedType() + "' '" +
+                       entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage());
       }
+   }
+
+   /**
+    * @exception XmlBlasterException is thrown if we are in sync mode and we have no COMMUNICATION problem,
+    * the client shall handle it himself
+    */
+   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+      if (msgErrorInfo.getXmlBlasterException().isCommunication()) {
+         handleError(msgErrorInfo);
+         return;
+      }
+      throw msgErrorInfo.getXmlBlasterException(); // Throw back to client
    }
 
    public void shutdown() {

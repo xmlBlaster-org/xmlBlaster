@@ -51,7 +51,7 @@ public class HandleClient extends Executor implements Runnable
     * Creates an instance which serves exactly one client. 
     */
    public HandleClient(Global glob, SocketDriver driver, Socket sock) throws IOException {
-      super(glob, sock, driver.getXmlBlaster());
+      super.initialize(glob, sock, driver.getXmlBlaster());
       this.log = glob.getLog("socket");
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();

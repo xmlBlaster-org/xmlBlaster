@@ -182,7 +182,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private MsgUnit toMsgUnit(MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
       MsgKeyData key = glob.getMsgKeyFactory().readObject(msgUnitRaw.getKey());
       PublishQosServer qos = new PublishQosServer(glob, msgUnitRaw.getQos());
-      return new MsgUnit(glob, key, msgUnitRaw.getContent(), qos.getData());
+      return new MsgUnit(key, msgUnitRaw.getContent(), qos.getData());
    }
 
    /**

@@ -62,6 +62,23 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    /** You must call initialize after constructing me */
    public XmlRpcCallbackServer() {}
 
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getCbProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   }
+
    /**
     * Construct a persistently named object.
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
@@ -168,7 +185,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Shutdown the callback server.
     * @return true if everything went fine.
     */
-   public boolean shutdownCb()
+   public void shutdown()
    {
       if (webServer != null) {
          try { 
@@ -177,11 +194,10 @@ public class XmlRpcCallbackServer implements I_CallbackServer
          }
          catch(Throwable e) {
             log.warn(ME, "Problems during shutdown of XML-RPC callback web server: " + e.toString());
-            return false;
+            return;
          }
       }
       log.info(ME, "The XML-RPC callback server is shutdown.");
-      return true;
    }
 
    /**

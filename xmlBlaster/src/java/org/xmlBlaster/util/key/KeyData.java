@@ -93,6 +93,10 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
       return this.oid;
    }
 
+   public boolean hasOid() {
+      return this.oid != null;
+   }
+
    /**
     * Test if oid is '__sys__deadMessage'. 
     * <p />
@@ -272,6 +276,10 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
     */
    public boolean isGeneratedOid() {
       return isGeneratedOid;
+   }
+
+   public final Global getGlobal() {
+      return this.glob;
    }
 
    /**

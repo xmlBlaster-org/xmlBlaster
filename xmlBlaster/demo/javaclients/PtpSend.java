@@ -12,7 +12,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Destination;
 
@@ -46,7 +46,7 @@ import org.xmlBlaster.util.qos.address.Destination;
 public class PtpSend
 {
    private final String ME = "PtpSend";
-   private XmlBlasterConnection sender = null;
+   private I_XmlBlasterAccess sender = null;
    private final String senderName = "sender";
    private final String receiverName = "receiver";
 
@@ -57,7 +57,7 @@ public class PtpSend
       try {
 
          // setup the sender client ...
-         sender = new XmlBlasterConnection(glob);
+         sender = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob, senderName, "secret");
          ConnectReturnQos conRetQos = sender.connect(qos, new I_Callback() {
@@ -116,7 +116,7 @@ public class PtpSend
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          glob.getLog(null).info("PtpSend", "Example: java PtpSend -forceQueuing true -numSend 10000 -delay 0\n");
          System.exit(1);
       }

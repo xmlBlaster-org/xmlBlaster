@@ -27,7 +27,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
@@ -71,41 +71,41 @@ public class AllProtocols implements I_Callback
       this.log = glob.getLog(null);
       for(int i=0; i<conList.length; i++) {
          ME = conList[i].helpText;
+         conList[i].con = conList[i].glob.getXmlBlasterAccess();
+         I_XmlBlasterAccess con = conList[i].con;
          try {
-            conList[i].con = new XmlBlasterConnection(conList[i].glob);
-            XmlBlasterConnection con = conList[i].con;
 
             // Check if other login name or password was given on command line:
             // (This is redundant as it is done by ConnectQos already)
-            String name = glob.getProperty().get("session.name", "AllProtocols");
-            String passwd = glob.getProperty().get("passwd", "secret");
+            String name = con.getGlobal().getProperty().get("session.name", "AllProtocols");
+            String passwd = con.getGlobal().getProperty().get("passwd", "secret");
 
-            ConnectQos qos = new ConnectQos(glob, name, passwd);
+            ConnectQos qos = new ConnectQos(con.getGlobal(), name, passwd);
             con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
 
-            PublishKey pk = new PublishKey(glob, "AllProtocols", "text/xml", "1.0");
+            PublishKey pk = new PublishKey(con.getGlobal(), "AllProtocols", "text/xml", "1.0");
             pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
-            PublishQos pq = new PublishQos(glob);
-            MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+            PublishQos pq = new PublishQos(con.getGlobal());
+            MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
             con.publish(msgUnit);
 
 
-            GetKey gk = new GetKey(glob, "AllProtocols");
-            GetQos gq = new GetQos(glob);
+            GetKey gk = new GetKey(con.getGlobal(), "AllProtocols");
+            GetQos gq = new GetQos(con.getGlobal());
             MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
-            GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
+            GetReturnQos grq = new GetReturnQos(con.getGlobal(), msgs[0].getQos());
 
             log.info(ME, "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                          "' and status=" + grq.getState());
 
 
-            SubscribeKey sk = new SubscribeKey(glob, "AllProtocols");
-            SubscribeQos sq = new SubscribeQos(glob);
+            SubscribeKey sk = new SubscribeKey(con.getGlobal(), "AllProtocols");
+            SubscribeQos sq = new SubscribeQos(con.getGlobal());
             SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
 
 
-            msgUnit = new MsgUnit(glob, pk, "Ho".getBytes(), pq);
+            msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
             PublishReturnQos prq = con.publish(msgUnit);
 
             log.info(ME, "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
@@ -114,15 +114,15 @@ public class AllProtocols implements I_Callback
             catch( InterruptedException ie) {} // wait a second to receive update()
 
 
-            UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
-            UnSubscribeQos uq = new UnSubscribeQos(glob);
+            UnSubscribeKey uk = new UnSubscribeKey(con.getGlobal(), subRet.getSubscriptionId());
+            UnSubscribeQos uq = new UnSubscribeQos(con.getGlobal());
             UnSubscribeReturnQos[] urq = con.unSubscribe(uk.toXml(), uq.toXml());
 
-            EraseKey ek = new EraseKey(glob, "AllProtocols");
-            EraseQos eq = new EraseQos(glob);
+            EraseKey ek = new EraseKey(con.getGlobal(), "AllProtocols");
+            EraseQos eq = new EraseQos(con.getGlobal());
             EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
 
-            DisconnectQos dq = new DisconnectQos(glob);
+            DisconnectQos dq = new DisconnectQos(con.getGlobal());
             con.disconnect(dq);
          }
          catch (XmlBlasterException e) {
@@ -148,7 +148,7 @@ public class AllProtocols implements I_Callback
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + " from xmlBlaster");
 
-      UpdateReturnQos uq = new UpdateReturnQos(glob);
+      UpdateReturnQos uq = new UpdateReturnQos(updateKey.getGlobal());
       return uq.toXml();
    }
 
@@ -163,7 +163,7 @@ public class AllProtocols implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java javaclients.AllProtocols -session.name Jeff\n");
          System.exit(1);
       }
@@ -178,7 +178,7 @@ class Con {
    }
    public String helpText;
    public Global glob;
-   public XmlBlasterConnection con;
+   public I_XmlBlasterAccess con;
 };
 }
 

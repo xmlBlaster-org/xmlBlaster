@@ -141,9 +141,6 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue,
                                 this.connectQos.getSessionCbQueueProperty().getCallbackAddresses());
-
-         //log.error(ME, "TESTCODE, SYNC MODE ...");
-         //this.deliveryManager.switchToSyncMode(); //TEST ONLY !!!
       }
       else { // No callback configured
          this.msgErrorHandler = null;
@@ -296,8 +293,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
 
       try {
-         this.sessionQueue.put(entry, false);
-         this.deliveryManager.notifyAboutNewEntry();
+         this.sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
       }
       catch (Throwable e) {
          log.warn(ME, e.toString());

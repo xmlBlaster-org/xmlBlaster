@@ -11,7 +11,7 @@
    <%@ page import = "org.jutils.log.LogChannel" %>
    <%@ page import = "org.jutils.init.Args" %>
    <%@ page import = "org.jutils.text.StringHelper" %>
-   <%@ page import = "org.xmlBlaster.client.protocol.XmlBlasterConnection" %>
+   <%@ page import = "org.xmlBlaster.client.I_XmlBlasterAccess" %>
    <%@ page import = "org.xmlBlaster.client.I_Callback" %>
    <%@ page import = "org.xmlBlaster.client.qos.ConnectQos" %>
    <%@ page import = "org.xmlBlaster.client.key.UpdateKey" %>
@@ -23,7 +23,7 @@
    <%@ page import = "org.xmlBlaster.util.MsgUnit" %>
 
    <%
-      XmlBlasterConnection blasterConnection = null;
+      I_XmlBlasterAccess blasterConnection = null;
       String ME = "ClientSub";
       Global glob = new Global();
       LogChannel log = glob.getLog(null);
@@ -34,7 +34,7 @@
             String passwd = glob.getProperty().get("passwd", "secret");
             ConnectQos loginQos = new ConnectQos(glob, loginName, passwd); // creates "<qos>...</qos>" string
 
-            blasterConnection = new XmlBlasterConnection(glob);
+            blasterConnection = glob.getXmlBlasterAccess();
             blasterConnection.connect(loginQos);
             log.info(ME, "Now we are connected to xmlBlaster MOM server");
 

@@ -124,13 +124,11 @@ public class Address extends AddressBase
       */
    }
 
-   /** How often to retry if connection fails: defaults to -1 (retry forever) */
+   /** How often to retry if connection fails: defaults to -1 (retry forever), 0 switches failsafe mode off */
    public int getDefaultRetries() { return -1; }
 
-   /** Delay between connection retries in milliseconds (5000 is a good value): defaults to 0, a value bigger 0 switches fails save mode on */
-   public long getDefaultDelay() { return 0; }
-   // /* Delay between connection retries in milliseconds: defaults to 5000 (5 sec), a value of 0 switches fails save mode off */
-   // public long getDefaultDelay() { return 5 * 1000L; };
+   /* Delay between connection retries in milliseconds: defaults to 5000 (5 sec) */
+   public long getDefaultDelay() { return 5 * 1000L; };
 
    /** Ping interval: pinging every given milliseconds, defaults to 10 seconds */
    public long getDefaultPingInterval() { return 10 * 1000L; }

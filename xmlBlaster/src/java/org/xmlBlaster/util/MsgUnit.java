@@ -107,21 +107,25 @@ public final class MsgUnit implements java.io.Serializable
    /**
     * This is a constructor suitable for clients. 
     */
-   public MsgUnit(Global glob, PublishKey key, String contentAsString, PublishQos qos) {
-      this(glob, key, contentAsString.getBytes(), qos);
+   public MsgUnit(PublishKey key, String contentAsString, PublishQos qos) {
+      this(key, contentAsString.getBytes(), qos);
    }
 
    /**
     * This is a constructor suitable for clients. 
     */
-   public MsgUnit(Global glob, PublishKey key, byte[] content, PublishQos qos) {
-      this(glob, key.getData(), content, qos.getData());
+   public MsgUnit(PublishKey key, byte[] content, PublishQos qos) {
+      this(key.getData(), content, qos.getData());
    }
 
    /**
     */
-   public MsgUnit(Global glob, KeyData key, byte[] content, QosData qos) {
-      this.glob = (glob == null) ? Global.instance() : glob;
+   public MsgUnit(KeyData key, byte[] content, QosData qos) {
+      if (key == null && qos == null) {
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException("MsgUnit constructor with key=="+key+" AND qos="+qos+" is invalid");
+      }
+      this.glob = (key == null) ? qos.getGlobal() : key.getGlobal();
       this.keyData = key;
       this.qosData = qos;
       setContent(content);
@@ -162,7 +166,7 @@ public final class MsgUnit implements java.io.Serializable
    }
    */
 
-   Global getGlobal() {
+   public Global getGlobal() {
       return glob;
    }
 
@@ -266,7 +270,7 @@ public final class MsgUnit implements java.io.Serializable
    public MsgUnit getClone() {
       byte[] newContent = new byte[content.length];
       System.arraycopy(this.content, 0,  newContent, 0, this.content.length);
-      return new MsgUnit(glob, (KeyData)this.keyData.clone(), content, (QosData)this.qosData.clone());
+      return new MsgUnit((KeyData)this.keyData.clone(), content, (QosData)this.qosData.clone());
    }
 
    public MsgUnitRaw getMsgUnitRaw() {

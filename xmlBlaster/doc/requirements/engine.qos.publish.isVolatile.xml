@@ -38,7 +38,7 @@ PublishQos publishQos = new PublishQos(glob);
 
 publishQos.setVolatile(true);
 
-con.publish(new MsgUnit("<key oid='HelloWorld2'/>",
+con.publish(new MsgUnit(glob, "<key oid='HelloWorld2'/>",
                             "Hello World".getBytes(),
                             publishQos.toXml()));
 
@@ -50,7 +50,7 @@ con.publish(new MsgUnit("<key oid='HelloWorld2'/>",
    <author>pra@mint.se</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2001 02 22</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

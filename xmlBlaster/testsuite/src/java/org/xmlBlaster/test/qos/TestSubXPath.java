@@ -169,7 +169,7 @@ public class TestSubXPath extends TestCase
          PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, "Hi", pq);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos tmp = senderConnection.publish(msgUnit);
          assertEquals("returned oid", oid, tmp.getKeyOid());
          assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, oid, Constants.STATE_OK));

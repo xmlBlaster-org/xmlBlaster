@@ -12,7 +12,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDeliveryInterceptor;
-import org.xmlBlaster.util.dispatch.plugins.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -472,7 +471,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    /**
     * Call by DeliveryConnectionsHandler on state transition. 
     * <p />
-    * Enforced by interface I_ConnectionStateListener
+    * Enforced by interface I_ConnectionStatusListener
     */
    public final void toAlive(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
       changeManagerState(deliveryManager, ConnectionStateEnum.ALIVE, true);
@@ -481,7 +480,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    /**
     * Call by DeliveryConnectionsHandler on state transition
     * <p />
-    * Enforced by interface I_ConnectionStateListener
+    * Enforced by interface I_ConnectionStatusListener
     */
    public final void toPolling(DeliveryManager deliveryManager, ConnectionStateEnum oldState) {
       changeManagerState(deliveryManager, ConnectionStateEnum.POLLING, true);
@@ -490,7 +489,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    /**
     * Call by DeliveryConnectionsHandler on state transition
     * <p />
-    * Enforced by interface I_ConnectionStateListener
+    * Enforced by interface I_ConnectionStatusListener
     */
    public final void toDead(DeliveryManager deliveryManager, ConnectionStateEnum oldState, String errorText) {
       changeManagerState(deliveryManager, ConnectionStateEnum.DEAD, true);

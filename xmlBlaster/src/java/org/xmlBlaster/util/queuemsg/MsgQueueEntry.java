@@ -30,6 +30,11 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    protected transient Global glob;
    protected transient LogChannel log;
 
+   // Three helpers to transport the return value back to the caller
+   protected transient boolean wantReturnObj = true;
+   protected transient Object returnObj;
+   protected transient MsgQueueEntry refToCloneOrigin;
+
    private String logId;
 
    /** The queue to which this entry belongs (set in the constructors) */
@@ -273,8 +278,9 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       String offset = "\n   ";
       if (extraOffset != null) offset += extraOffset;
 
-      sb.append(offset).append("<MsgQueueEntry>");
+      sb.append(offset).append("<MsgQueueEntry type='").append(entryType).append("'>");
       sb.append(offset).append("   <priority>").append(getPriority()).append("</priority>");
+      sb.append(offset).append("   <persistent>").append(isPersistent()).append("</persistent>");
       sb.append(offset).append("   <uniqueId>").append(getUniqueId()).append("</uniqueId>");
       sb.append(offset).append("   <sender>").append(getSender()).append("</sender>");
       sb.append(offset).append("   <receiver>").append(getReceiver()).append("</receiver>");
@@ -304,14 +310,13 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    /**
     * @see I_QueueEntry.getEmbeddedObject()
     */
-//   public Object getEmbeddedObject() {
-//      return this.getMsgUnit();
-//   }
+   //public Object getEmbeddedObject() {
+   //   return this.getMsgUnit();
+   //}
 
 
    /**
-    * @return e.g. "publish"
-    * @see I_QueueEntry#getEmbeddedType()
+    * @return MethodName.xxx
     */
    public String getEmbeddedType() {
       return entryType;
@@ -342,12 +347,38 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    }
 
    /**
-    * @return Constants.UPDATE = "update" etc in the derived classes
-    * @see I_QueueEntry.getEmbeddedType()
+    * @return true if the dispatcher framework shall provide a return object
     */
-//   public String getEmbeddedType() {
-//      return ME;
-//   }
+   public boolean wantReturnObj() {
+      return this.wantReturnObj;
+   }
+
+   /**
+    * If this instance is a clone we can remember who cloned us. 
+    */
+   void setRefToCloneOrigin(MsgQueueEntry origEntry) {
+      this.refToCloneOrigin = origEntry;
+   }
+
+   /**
+    * @return returnObj The carried object used as return QoS in sync or async I_Queue.put() mode, can be null.
+    */
+   public Object getReturnObj() {
+      return this.returnObj;
+   }
+
+   /**
+    * Set the object to be carried as return value. 
+    * NOTE: This can be used only once as the first call to this method
+    * destroys the reference to the clone original instance.
+    */
+   public void setReturnObj(Object returnObj) {
+      if (this.refToCloneOrigin != null) {
+         this.refToCloneOrigin.setReturnObj(returnObj);
+         this.refToCloneOrigin = null; // free reference so that GC can remove it if swapped
+      }
+      this.returnObj = returnObj;
+   }
 
    /**
     * Returns a shallow clone
@@ -356,6 +387,9 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       MsgQueueEntry entry = null;
       try {
          entry = (MsgQueueEntry)super.clone();
+         if (entry.wantReturnObj) {
+            entry.setRefToCloneOrigin(this);
+         }
       }
       catch(CloneNotSupportedException e) {
          log.error(ME, "Internal clone problem: " + e.toString());

@@ -7,7 +7,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
@@ -24,7 +24,7 @@ public class Demo
    public Demo(Global glob) {
       this.glob = glob;
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob, "joe", "secret");
 

@@ -11,7 +11,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -56,7 +56,7 @@ public class Latency implements I_Callback
    public Latency(Global glob) {
       log = glob.getLog("client");
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -114,7 +114,7 @@ public class Latency implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          Global.instance().usage();
          System.err.println("Example: java Latency -loginName Jeff\n");
          System.exit(1);

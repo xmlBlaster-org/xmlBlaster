@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.14 2002/12/20 15:28:54 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.15 2003/03/24 16:12:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * <p />
  * YOU MAY USE THIS AS YOUR CALLBACK IMPLEMENTATION, JUST TAKE A COPY OF IT.
  * <p />
- * Note that there is a default Callback implementation hidden behind XmlBlasterConnection.java<br />
+ * Note that there is a default Callback implementation hidden behind I_XmlBlasterAccess.java<br />
  * (see xmlBlaster/src/java/org/xmlBlaster/client/protocol/corba/CorbaCallbackServer.java)
  * which is usually sufficient, so you don't really need to implement the callback code yourself.<br />
  * See xmlBlaster/demo/javaclients/ClientSub.java for an example how to use it.

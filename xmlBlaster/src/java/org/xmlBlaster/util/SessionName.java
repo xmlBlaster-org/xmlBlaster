@@ -209,7 +209,7 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
-    * @return The public session identifier e.g. "2" or null if in subject context
+    * @return The public session identifier e.g. "2" or 0 if in subject context
     */
    public long getPublicSessionId() {
       return this.pubSessionId;

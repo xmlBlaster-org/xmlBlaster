@@ -11,7 +11,7 @@ with this entry in xmlBlaster.properties
 
    client.protocol=RMI
 
-The recommended way is to use XmlBlasterConnection as in the
+The recommended way is to use I_XmlBlasterAccess as in the
 demo clients in the directory above, which allows switching
 of the access protocol between CORBA, XmlRpc and RMI.
 

@@ -591,8 +591,18 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             if (log.TRACE) log.trace(ME, "Got authServer handle, trying connect ...");
             if (log.DUMP) log.dump(ME, "Got authServer handle, trying connect:" + connectQos.toXml());
 
-            String tmp = authServer.connect(connectQos.toXml());
-            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
+            String qos = connectQos.toXml();
+            if (connectQos.getSecurityInterceptor() != null) {
+               qos = connectQos.getSecurityInterceptor().exportMessage(qos);
+               if (log.TRACE) log.trace(ME, "Exported/encrypted connect request.");
+            }
+
+            String rawReturnVal = authServer.connect(qos);
+
+            if (connectQos.getSecurityInterceptor() != null) {
+               rawReturnVal = connectQos.getSecurityInterceptor().importMessage(rawReturnVal);
+            }
+            this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
             sessionId = this.connectReturnQos.getSecretSessionId();
             String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
 

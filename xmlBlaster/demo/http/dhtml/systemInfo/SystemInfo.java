@@ -3,14 +3,14 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.9 2002/12/18 13:52:46 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.10 2003/03/24 16:12:45 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
 import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
@@ -96,7 +96,7 @@ public class SystemInfo extends HttpServlet
             return;
          }
 
-         XmlBlasterConnection corbaConnection = BlasterHttpProxy.getXmlBlasterConnection(request, sessionId);
+         I_XmlBlasterAccess corbaConnection = BlasterHttpProxy.getXmlBlasterAccess(request, sessionId);
          if (corbaConnection == null) {
             String text = "Your Session ID is not valid, please try again with cookies enabled";
             log.error(ME, text);

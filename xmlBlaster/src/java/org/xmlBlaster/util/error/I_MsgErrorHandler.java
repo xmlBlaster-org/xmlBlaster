@@ -22,8 +22,27 @@ public interface I_MsgErrorHandler
     * <p>
     * This handler is called for example from the 'put' side of a queue if the queue is full
     * or from the 'take' side from the queue e.g. if DeliveryManager exhausted to reconnect.
+    * </p>
+    * <p>
+    * This method never throws an exception but handles the error itself.
+    * </p>
     */
    public void handleError(I_MsgErrorInfo msgErrorInfo);
+
+   /**
+    * The final recovery, all informations necessary are transported in msgErrorInfo. 
+    * <p>
+    * This handler is called for example from the 'put' side of a queue if the queue is full
+    * or from the 'take' side from the queue e.g. if DeliveryManager exhausted to reconnect.
+    * </p>
+    * <p>
+    * This method can throw an exception, the caller usually passes this back
+    * the client code. 
+    * </p>
+    * @exception XmlBlasterException To throw an XmlBlasterException makes sense
+    * if we are in sync mode and want to pass the exception back to the caller.
+    */
+   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException;
    
    public void shutdown();
 }

@@ -47,8 +47,8 @@ public class SoapConnection implements I_XmlBlasterConnection
 {
    private String ME = "SoapConnection";
    public static final int DEFAULT_SERVER_PORT = 8686; // port of xmlBlaster SOAP server
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private String url = "http://localhost:" + DEFAULT_SERVER_PORT;
    private TransportConnection soapClient = null; // SOAP client to send method calls.
    private String sessionId = null;
@@ -62,18 +62,42 @@ public class SoapConnection implements I_XmlBlasterConnection
    private final String xmlBlasterService = "urn:XmlBlasterService";
 
    /**
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
+    */
+   public SoapConnection() {
+   }
+
+   /**
     * Connect to xmlBlaster using SOAP.
     */
    public SoapConnection(Global glob) {
-      this.glob = glob;
-      this.log = glob.getLog("soap");
+      init(glob, null);
    }
 
    /**
     * Connect to xmlBlaster using SOAP.
     */
    public SoapConnection(Global glob, Applet ap) {
-      this(glob);
+      init(glob, null);
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("soap");
    }
 
    /**

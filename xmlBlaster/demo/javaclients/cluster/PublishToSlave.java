@@ -15,7 +15,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -50,9 +50,9 @@ public class PublishToSlave implements I_Callback
 
    public PublishToSlave(Global glob) {
       log = glob.getLog("client");
-      XmlBlasterConnection con = null;
+      I_XmlBlasterAccess con = null;
       try {
-         con = new XmlBlasterConnection(glob);
+         con = glob.getXmlBlasterAccess();
 
          log.info("", "Usage example: java javaclients.cluster.PublishToSlave -port 7601 -numPublish 1000 -interactivePublish false");
 
@@ -120,7 +120,7 @@ public class PublishToSlave implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("Example: java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE -content 'We win'\n");
          System.exit(1);
       }

@@ -116,7 +116,7 @@ public class PublishTest extends TestCase {
          PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
          pk.setDomain(domain);
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(glob, pk, contentStr, pq);
+         MsgUnit msgUnit = new MsgUnit(pk, contentStr, pq);
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
@@ -254,7 +254,7 @@ public class PublishTest extends TestCase {
          System.err.println("->Check publish, frodo should not get it ...");
          pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
          pq = new PublishQos(glob);
-         msgUnit = new MsgUnit(glob, pk, contentStr, pq);
+         msgUnit = new MsgUnit(pk, contentStr, pq);
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +

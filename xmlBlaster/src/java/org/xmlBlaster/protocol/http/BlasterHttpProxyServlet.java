@@ -11,7 +11,7 @@ import org.jutils.runtime.Memory;
 import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
@@ -378,12 +378,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       log.info(ME, "Entering BlasterHttpProxy.doPost() servlet");
 
       ProxyConnection proxyConnection = null;
-      XmlBlasterConnection xmlBlaster = null;
+      I_XmlBlasterAccess xmlBlaster = null;
       HttpPushHandler pushHandler = null;
 
       try {
          proxyConnection = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
-         xmlBlaster = proxyConnection.getXmlBlasterConnection();
+         xmlBlaster = proxyConnection.getXmlBlasterAccess();
          pushHandler = proxyConnection.getHttpPushHandler(sessionId);
       }
       catch (XmlBlasterException e) {

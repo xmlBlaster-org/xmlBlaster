@@ -34,9 +34,10 @@ public interface I_Entry extends java.io.Serializable
    Object getEmbeddedObject();
 
    /**
-    * gets the type of the object embedded in this entry.
+    * Gets the type of the object embedded in this entry, how the object is serialized.
     * @return String the identifier which tells the I_EntryFactory how to
-    *         deserialize this entry.
+    *         deserialize this entry.<br />
+    *         ServerEntryFactory.ENTRY_TYPE_MSG_XML or ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL or ClientEntryFactory.ENTRY_TYPE_MSG_XML
     */
    String getEmbeddedType();
 

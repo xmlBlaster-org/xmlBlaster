@@ -88,7 +88,7 @@ public class ConnectReturnQos {
    }
 
    /**
-    * The object holding alll session specific information. 
+    * The object holding all session specific information. 
     */
    public SessionQos getSessionQos() {
       return this.connectQosData.getSessionQos();

@@ -39,6 +39,8 @@ import java.util.ArrayList;
  */
 public interface I_Queue extends I_StorageProblemNotifier
 {
+   public final boolean IGNORE_PUT_INTERCEPTOR = true;
+   public final boolean USE_PUT_INTERCEPTOR = false;
 
    /**
     * Is called after the instance is created.
@@ -113,15 +115,15 @@ public interface I_Queue extends I_StorageProblemNotifier
     * undefined.
     *
     * @param msgQueueEntry the queue entry to put into the queue.
-    * @param ignorePutInterceptor if set to 'true' the put will not inform the
+    * @param ignorePutInterceptor if set to 'IGNORE_PUT_INTERCEPTOR=true' the put will not inform the
     *        QueuePutListener that a put occurred.
     * @throws XmlBlasterException in case an error occurs. Possible causes of
     * error can be a communication exception of the underlying implementation (jdbc, file system etc).
-    * @return Some ACK object or null if none is supplied
-    * @see I_QueuePutListener#put(I_QueueEntry)
+    * @see I_QueuePutListener#putPre(I_QueueEntry)
+    * @see I_QueuePutListener#putPost(I_QueueEntry)
     * 
     */
-   Object put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
+   void put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
       throws XmlBlasterException;
 
 
@@ -134,14 +136,15 @@ public interface I_Queue extends I_StorageProblemNotifier
     * undefined.
     *
     * @param msgQueueEntries the queue entry to put into the queue.
-    * @param ignorePutInterceptor if set to 'true' the put will not inform the
+    * @param ignorePutInterceptor if set to 'IGNORE_PUT_INTERCEPTOR=true' the put will not inform the
     *        QueuePutListener that a put occurred.
     * @throws XmlBlasterException in case an error occurs. Possible causes of
     * error can be a communication exception of the underlying implementation (jdbc, file system etc).
     * @return An ACK object for each queueEntry (ackObject.length == queueEntries.length) or null
-    * @see I_QueuePutListener#put(I_QueueEntry[])
+    * @see I_QueuePutListener#putPre(I_QueueEntry[])
+    * @see I_QueuePutListener#putPost(I_QueueEntry[])
     */
-   Object[] put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
+   void put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
       throws XmlBlasterException;
 
    /**

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.25 2002/09/13 23:18:10 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.26 2003/03/24 16:13:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -13,7 +13,7 @@ import java.util.*;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class BlasterHttpProxy
 {
@@ -143,11 +143,11 @@ public class BlasterHttpProxy
     *
     * @param loginName
     */
-   public static XmlBlasterConnection getXmlBlasterConnection(Global glob, String loginName, String passwd ) throws XmlBlasterException
+   public static I_XmlBlasterAccess getXmlBlasterAccess(Global glob, String loginName, String passwd ) throws XmlBlasterException
    {
       synchronized( proxyConnections ) {
          ProxyConnection pc = getNewProxyConnection(glob, loginName, passwd);
-         return pc.getXmlBlasterConnection();
+         return pc.getXmlBlasterAccess();
       }
    }
 
@@ -155,12 +155,12 @@ public class BlasterHttpProxy
    /**
     * gives a xmlBlasterConnection by sessionId.
     * <p />
-    * This XmlBlasterConnection holds the CORBA connection to the XmlBlaster server
+    * This I_XmlBlasterAccess holds the CORBA connection to the XmlBlaster server
     * @param req Servlet request, only for error handling
     * @param sessionId
-    * @return The XmlBlasterConnection object or null if sessionId is unknown
+    * @return The I_XmlBlasterAccess object or null if sessionId is unknown
     */
-   public static XmlBlasterConnection getXmlBlasterConnection(HttpServletRequest req, String sessionId) throws XmlBlasterException
+   public static I_XmlBlasterAccess getXmlBlasterAccess(HttpServletRequest req, String sessionId) throws XmlBlasterException
    {
       if (sessionId == null && req != null && !req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
          throw new XmlBlasterException(ME+".NoCookies", "Sorry, your browser\n" +
@@ -174,7 +174,7 @@ public class BlasterHttpProxy
       }
 
       ProxyConnection pc = getProxyConnectionBySessionId(sessionId);
-      return pc.getXmlBlasterConnection();
+      return pc.getXmlBlasterAccess();
    }
 
 

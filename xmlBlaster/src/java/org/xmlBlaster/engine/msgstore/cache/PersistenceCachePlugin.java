@@ -11,7 +11,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
-// import org.xmlBlaster.util.queue.jdbc.I_ConnectionListener;
+// import org.xmlBlaster.util.queue.jdbc.I_ConnectionStateListener;
 // import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -54,7 +54,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    
    /**
     * Triggered by persistent store (JDBC) on lost connection
-    * @see org.xmlBlaster.util.queue.jdbc.I_ConnectionListener#disconnected()
+    * @see org.xmlBlaster.util.queue.jdbc.I_ConnectionStateListener#disconnected()
     */
    public void storageUnavailable(int oldStatus) {
       this.log.call(ME, "storageUnavailable");
@@ -120,8 +120,6 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
 
          this.property = null;
-         this.glob = (org.xmlBlaster.engine.Global)((QueuePropertyBase)userData).getGlobal();
-         this.log = glob.getLog("persistence");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.queueId = uniqueQueueId;
          try {
@@ -132,6 +130,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          }
          if (log.CALL) log.call(ME, "Entering initialize(" + getType() + ", " + getVersion() + ")");
 
+         // StoragePluginManager pluginManager = (StoragePluginManager)this.glob.getObjectEntry("org.xmlBlaster.engine.msgstore.StoragePluginManager");
          StoragePluginManager pluginManager = glob.getStoragePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
 
@@ -675,6 +674,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
 //      this.pluginProperties = pluginInfo.getParameters();
+      this.glob = (org.xmlBlaster.engine.Global)glob;
+      this.log = this.glob.getLog("persistence");
       this.pluginInfo = pluginInfo;
    }
 

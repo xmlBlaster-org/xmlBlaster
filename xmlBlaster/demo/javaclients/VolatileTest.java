@@ -57,7 +57,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -105,7 +105,7 @@ public class VolatileTest
       this.glob = glob;
       this.log = glob.getLog(null);
       try {
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();
          blasterConnection.connect(new ConnectQos(glob),new MessageEater("subscriber"));
          // Now we are connected to xmlBlaster MOM server.
 
@@ -137,31 +137,31 @@ public class VolatileTest
       }
    }
 
-   private void createSubscribers(XmlBlasterConnection blasterConnection, int numListeners)
+   private void createSubscribers(I_XmlBlasterAccess blasterConnection, int numListeners)
    {
-        log.info(ME, "Subscribing using XPath syntax ...");
+      log.info(ME, "Subscribing using XPath syntax ...");
 
-         // SubscribeKey helps us to create this string:
-         //   "<key oid='' queryType='XPATH'>" +
-         //   "   /xmlBlaster/key/VolatileTest-AGENT" +
-         //   "</key>";
-                try {
+      // SubscribeKey helps us to create this string:
+      //   "<key oid='' queryType='XPATH'>" +
+      //   "   /xmlBlaster/key/VolatileTest-AGENT" +
+      //   "</key>";
+      try {
          SubscribeQos qos = new SubscribeQos(glob);
          SubscribeKey key = new SubscribeKey(glob, "/xmlBlaster/key/VolatileTest-AGENT", "XPATH");
 
-                 for (int i=0; i< numListeners;i++){
-                                String eaterName = "MessageEater-"+i;
-                                MessageEater me = new MessageEater(eaterName);
-                                String subscriptionId = blasterConnection.subscribe(key.toXml(), qos.toXml(),me).getSubscriptionId();
-                                log.info(ME, "Subscribe done:"+eaterName+"  subcriptionId=" + subscriptionId);
-                        } 
-                 }
-                catch(XmlBlasterException e) {
-                        log.warn(ME, "XmlBlasterException: " + e.getMessage());
-                }
+         for (int i=0; i< numListeners;i++){
+            String eaterName = "MessageEater-"+i;
+            MessageEater me = new MessageEater(eaterName);
+            String subscriptionId = blasterConnection.subscribe(key, qos, me).getSubscriptionId();
+            log.info(ME, "Subscribe done:"+eaterName+"  subcriptionId=" + subscriptionId);
+         } 
+      }
+      catch(XmlBlasterException e) {
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+      }
    }
 
-   private void sendSomeMessages(XmlBlasterConnection blasterConnection, String message)
+   private void sendSomeMessages(I_XmlBlasterAccess blasterConnection, String message)
    {
       String subscriptionId="";
       try {
@@ -204,7 +204,7 @@ public class VolatileTest
    public static void main(String args[]) {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.out.println("Get help: java javaclients.VolatileTest -help\n");
          System.out.println("Example: java javaclients.VolatileTest -session.name Jeff\n");
          System.exit(1);

@@ -57,7 +57,7 @@ public final class TopicEntry implements I_MapEntry
     * @param msgUnit The raw data
     */
    public TopicEntry(Global glob, MsgUnit msgUnit) throws XmlBlasterException {
-      this(glob, msgUnit, (String)null);
+      this(glob, msgUnit, (String)null, -1L);
    }
 
    /**
@@ -65,8 +65,10 @@ public final class TopicEntry implements I_MapEntry
     * @param embeddedType Allows you to control how to make this object persistent:<br />
     *         ServerEntryFactory.ENTRY_TYPE_TOPIC_XML Dump strings as XML ASCII (which is smaller, faster, portable -> and therefor default)<br />
     *         ServerEntryFactory.ENTRY_TYPE_TOPIC_SERIAL Dump object with java.io.Serializable
+    * @param sizeInByte The estimated size of the entry in RAM (can be totally different on HD). 
+    *                   If -1L it is estimated for you
     */
-   public TopicEntry(Global glob, MsgUnit msgUnit, String embeddedType) throws XmlBlasterException {
+   public TopicEntry(Global glob, MsgUnit msgUnit, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       this.glob = glob;
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "TopicEntry", "Invalid constructor parameter msgUnit==null");
@@ -80,7 +82,7 @@ public final class TopicEntry implements I_MapEntry
       this.uniqueId = getMsgQosData().getRcvTimestamp().getTimestamp();
       this.uniqueIdStr = ""+this.uniqueId;
       this.ME = "TopicEntry-" + getLogId();
-      this.immutableSizeInBytes = this.msgUnit.size();
+      this.immutableSizeInBytes = (sizeInBytes >= 0L) ? sizeInBytes : this.msgUnit.size();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
    }
 
@@ -149,12 +151,6 @@ public final class TopicEntry implements I_MapEntry
    }
 
    public long getSizeInBytes() {
-      if (this.immutableSizeInBytes != this.msgUnit.size()) {
-         // assert: We assure that the size can't change (e.g. by a errorneous modified QoS) as it is used as a queue entry
-         this.glob.getLog("core").error(ME, "PANIC: The size of message '" + getUniqueId() +
-             "' changed from initial " + this.immutableSizeInBytes + " bytes to " + this.msgUnit.size() +
-             " please report this error with all details to the xmlBlaster.org mailing list: " + toXml());
-      }
       return this.immutableSizeInBytes;
    }
 
@@ -266,7 +262,7 @@ public final class TopicEntry implements I_MapEntry
          org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "HA");
          org.xmlBlaster.engine.qos.PublishQosServer publishQosServer = new org.xmlBlaster.engine.qos.PublishQosServer(glob, "<qos><persistent/></qos>");
          publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
-         MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
+         MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
          TopicEntry msgUnitWrapper = new TopicEntry(glob, msgUnit);
          try {
             java.io.FileOutputStream f = new java.io.FileOutputStream(fileName);
