@@ -505,7 +505,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     */
    private final int forwardToSessionQueue(MsgQueueEntry entry) throws XmlBlasterException {
 
-      if (getSessions().length < 1) return 0;
+      if (getSessions().length < 1) return -1;
 
       int countForwarded = 0;
 
