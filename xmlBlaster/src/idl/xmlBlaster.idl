@@ -11,7 +11,7 @@ Compile:   JacORB:
              /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            Mico:
              /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.19 1999/11/17 13:51:25 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.20 1999/11/18 16:59:43 ruff Exp $
 ================================================================================
 */
 
@@ -35,6 +35,7 @@ module serverIdl
    typedef sequence<XmlType> XmlTypeArr;
 
    typedef sequence<octet> ContentType;
+   typedef sequence<string> StringArr;
    typedef string ExceptionIdType;
 
    /**
@@ -235,10 +236,14 @@ module serverIdl
        * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
        * @param qos         Qualitiy of Service for each MessageUnit
        *
-       * @return number of keys successfully set
+       * @return String array with the key oid's, corresponding to the index
+       *         of messageUnitArr<br>
+       *         If you let the oid be generated, you need this information
+       *         for further publishing to the same MessageUnits<br>
+       *         Rejected Messages will contain an empty string ""
        */
       //oneway
-      long publish(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
+      StringArr publish(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
                                           raises(XmlBlasterException);
 
 
