@@ -1,0 +1,72 @@
+#!/bin/sh
+# $Id: xmlBlaster,v 1.1 2002/10/11 17:48:08 goetzger Exp $
+#
+# description: Controls the xmlBlaster Server
+# processname: xmlBlaster
+#
+
+# NOTE: If you use the RMI server, you should adjust the security policy
+#       file ${XMLBLASTER_HOME}/config/xmlBlaster.policy
+#
+# NOTE: Just edit this script, if you need to increase JVM memory or
+#       other settings (see last line)!
+
+BLACK_LTGREEN="\033[40;46m"
+BLACK_RED="\033[30;41m"
+BLACK_YELLOW="\033[40;43m"
+ESC="\033[0m"
+if test "`echo -e xxx`" = "xxx"
+then
+    ECHO="echo -e"
+else
+    ECHO=echo
+fi
+
+if [ ${XMLBLASTER_HOME:=""} = "" ] ; then
+   ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+   ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
+   exit 1
+fi
+
+if [ ! -d ${XMLBLASTER_HOME} ] ; then
+   ${ECHO} "$BLACK_RED   The directory XMLBLASTER_HOME=$XMLBLASTER_HOME doesn't exist   $ESC"
+   exit 1
+fi
+
+case "$1" in
+  start)
+    echo "xmlBlaster startup"
+    (
+    java -Xms18M -Xmx64M \
+       -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
+       -jar ${XMLBLASTER_HOME}/lib/xmlBlaster.jar \
+       -useKeyboard false \
+       -logConsole true \
+       >> $XMLBLASTER_HOME/xmlBlaster_info.log 2>>$XMLBLASTER_HOME/xmlBlaster_warn.log &
+    )&
+    # Debugging with www.karmira.com
+    #java -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 org.xmlBlaster.Main -dump true
+    ;;
+  stop)
+    echo "xmlBlaster shutdown"
+    killall java
+    ;;
+  restart)
+    echo "xmlBlaster restarting"
+    $0 stop
+    $0 start
+    ;;
+  clear)
+    echo "xmlBlaster clear"
+    $0 stop
+    rm -rf $XMLBLASTER_HOME/xmlBLaster_info.log
+    rm -rf $XMLBLASTER_LOGDIR/xmlBlaster_warn.log
+    ;;
+  *)
+    echo "Usage: xmlBlaster {start|stop|restart|clear}"
+    exit 1
+esac
+
+exit 0
+
+# end of file
