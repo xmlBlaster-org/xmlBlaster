@@ -79,6 +79,7 @@ public class HelloWorldPublish
       this.log = glob.getLog("HelloWorldPublish");
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
+         boolean oneway = glob.getProperty().get("oneway", false);
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 1);
          String oid = glob.getProperty().get("oid", "Hello");
@@ -104,6 +105,7 @@ public class HelloWorldPublish
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive    " + interactive);
          log.info(ME, "   -sleep          " + org.jutils.time.TimeHelper.millisToNice(sleep));
+         log.info(ME, "   -oneway         " + oneway);
          log.info(ME, "   -erase          " + erase);
          log.info(ME, "   -disconnect     " + disconnect);
          log.info(ME, " Pub/Sub settings");
@@ -193,12 +195,20 @@ public class HelloWorldPublish
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             if (log.DUMP) log.dump("", "Going to publish message: " + msgUnit.toXml());
 
-            PublishReturnQos prq = con.publish(msgUnit);
-            if (log.DUMP) log.dump("", "Returned: " + prq.toXml());
+            if (oneway) {
+               MsgUnit msgUnitArr[] = { msgUnit };
+               con.publishOneway(msgUnitArr);
+               log.info(ME, "#" + (i+1) + "/" + numPublish +
+                         ": Published oneway message '" + msgUnit.getKeyOid() + "'");
+            }
+            else {
+               PublishReturnQos prq = con.publish(msgUnit);
+               if (log.DUMP) log.dump("", "Returned: " + prq.toXml());
 
-            log.info(ME, "#" + (i+1) + "/" + numPublish +
+               log.info(ME, "#" + (i+1) + "/" + numPublish +
                          ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp() +
                          " for published message '" + prq.getKeyOid() + "'");
+            }
          }
 
          if (erase) {
