@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.26 1999/12/16 17:24:00 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.27 1999/12/20 15:35:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -99,7 +99,7 @@ public class XmlKeyBase
    protected String keyOid = null;
 
    /** The MIME type of the content, RFC1521 */
-   protected String contentMime = null;         
+   protected String contentMime = null;
 
    /** Some further content info, e.g. the version number */
    protected String contentMimeExtended = null;
@@ -237,7 +237,7 @@ public class XmlKeyBase
 
 
    /**
-    * Some further specifying information of the content. 
+    * Some further specifying information of the content.
     * <p />
     * For example the application version number the document in the content.<br />
     * You may use this attribute for you own purposes.
@@ -515,18 +515,18 @@ public class XmlKeyBase
       try {
          sb.append(offset).append("<XmlKeyBase oid='").append(getUniqueKey()).append("'");
          if (contentMime != null)
-            sb.append(offset).append(" contentMime='").append(contentMime).append("'");
+            sb.append(" contentMime='").append(contentMime).append("'");
          if (contentMimeExtended != null)
-            sb.append(offset).append(" contentMimeExtended='").append(contentMimeExtended).append("'");
+            sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
          if (queryType != PUBLISH)
-            sb.append(offset).append(" queryType='").append(getQueryTypeStr()).append("'");
-         sb.append(offset).append(">");
+            sb.append(" queryType='").append(getQueryTypeStr()).append("'");
+         sb.append(offset).append(">\n");
 
          if (queryString.length() > 0)
-            sb.append(offset).append("   <queryString>").append(queryString).append("</queryString>");
-         sb.append(offset).append("   <keyType>").append(keyType).append("</keyType>");
-         sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid).append("</isGeneratedOid>");
-         sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>");
+            sb.append(offset).append("   <queryString>").append(queryString).append("</queryString>\n");
+         sb.append(offset).append("   <keyType>").append(keyType).append("</keyType>\n");
+         sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid).append("</isGeneratedOid>\n");
+         sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>\n");
          sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
          sb.append(offset).append("</XmlKeyBase>\n");
       } catch (XmlBlasterException e) {
