@@ -65,7 +65,7 @@
          <maxSessions>10</maxSessions>
          <sessionThresholdOverflow type='event'/>
 
-         <sessionList>ses3,ses17</sessionList>
+         <sessionList>-3,17</sessionList>
          <session id='-3'>
             <uptime>10050</uptime>
             <killSession/>
@@ -93,6 +93,7 @@
                   </topic>
                </entry>
             </queue>
+            <subscribe id='__subId:3' oid='hello' creationTime='Mar 7, 2003 6:33:14 PM'/>
          </session> <!-- -3 -->
 
          <session id='17'>
@@ -182,6 +183,8 @@
                </topic>
             </entry>
          </queue>
+         <subscribe id='__subId:3' sessionName='/node/heron/client/joe/-3'
+                    creationTime='1047058394074000000'/>
       </topic>
 
       <topic id='radar.track'>
@@ -605,7 +608,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.36 $</revision>
+   <revision>$Revision: 1.37 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
