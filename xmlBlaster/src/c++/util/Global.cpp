@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.34 2003/04/25 23:15:33 ruff Exp $
+Version:   $Id: Global.cpp,v 1.35 2003/05/04 21:33:19 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,9 +14,9 @@ Version:   $Id: Global.cpp,v 1.34 2003/04/25 23:15:33 ruff Exp $
 
 #if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.34 2003/04/25 23:15:33 ruff Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.35 2003/05/04 21:33:19 laghi Exp $";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.34 2003/04/25 23:15:33 ruff Exp $";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.35 2003/05/04 21:33:19 laghi Exp $";
 #endif
 
 using namespace std;
@@ -61,10 +61,25 @@ Global::~Global()
    }
 }
 
+/*
 Global& Global::getInstance(const string&)
 {
    static Global global;
    return global;
+}
+*/
+
+Global *Global::global_ = NULL;
+
+//-----------------
+// Global.cpp modification
+Global& Global::getInstance(const string&)
+{
+   if(global_ == NULL) {
+     global_ = new Global();
+     Object_Lifetime_Manager::instance()->manage_object(global_);  // if not pre-allocated.
+   }
+   return *global_;
 }
 
 Global& Global::initialize(int args, const char * const argc[])

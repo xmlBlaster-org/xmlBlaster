@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.8 2003/02/18 21:24:27 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.9 2003/05/04 21:33:20 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <util/XmlBCfg.h>
@@ -220,6 +220,7 @@ public:
 using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
    TestRam* testObj = NULL;
    try {
       testObj = new TestRam(args, argc, "Tim");
@@ -231,6 +232,7 @@ int main(int args, char *argc[]) {
    }
    delete testObj;
    testObj = NULL;
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
 

@@ -291,6 +291,7 @@ using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) 
 {
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
 
@@ -325,6 +326,7 @@ int main(int args, char *argc[])
    testObj->testMaxEntries();
    testObj->tearDown();
 
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
 

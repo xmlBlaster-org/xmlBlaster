@@ -181,6 +181,7 @@ public:
  */
 int main(int args, char ** argv)
 {
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
    // suppose you have already initialized an orb
    CORBA::ORB_ptr orb = CORBA::ORB_init(args, argv);
 
@@ -190,5 +191,6 @@ int main(int args, char ** argv)
 
    org::xmlBlaster::demo::ExternOrb hello(glob, orb);
    hello.execute();
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }

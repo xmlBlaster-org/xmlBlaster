@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.16 2003/03/09 21:58:06 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.17 2003/05/04 21:33:20 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -192,6 +192,7 @@ public:
 using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
 
 # ifdef XMLBLASTER_MICO
         std::cout << " !!!!! THIS TEST CAN NOT BE RUN WITH MICO SINCE AN ORB WHICH IS SHUTDOWN CAN NOT BE REUSED !!!!" << std::endl;
@@ -232,6 +233,7 @@ int main(int args, char *argc[]) {
    testConnect->testPubSub();
    testConnect->tearDown();
    delete testConnect;
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
 

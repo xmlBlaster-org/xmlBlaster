@@ -2002,7 +2002,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       System.gc();
    }
    public String getExit() throws XmlBlasterException {
-      setExit("0");
+//      setExit("0");
       return "OK";
    }
    public void setExit(String exitValue) throws XmlBlasterException {

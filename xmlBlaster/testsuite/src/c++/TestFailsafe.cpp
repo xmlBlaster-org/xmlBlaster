@@ -340,6 +340,7 @@ int main(int args, char ** argv)
 {
    TestFailsafe *testFailsafe = 0;
    try {
+      org::xmlBlaster::util::Object_Lifetime_Manager::init();
       testFailsafe = new TestFailsafe(args, argv);
       testFailsafe->setUp();
       testFailsafe->testReconnect();
@@ -348,6 +349,7 @@ int main(int args, char ** argv)
       testFailsafe->tearDown();
       delete testFailsafe;
       testFailsafe = 0; 
+      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

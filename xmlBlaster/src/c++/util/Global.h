@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.18 2003/03/15 21:46:40 laghi Exp $
+Version:   $Id: Global.h,v 1.19 2003/05/04 21:33:19 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -21,6 +21,14 @@ Version:   $Id: Global.h,v 1.18 2003/03/15 21:46:40 laghi Exp $
 #include <string>
 #include <map>
 
+// for managed objects
+#include <util/objman.h>
+
+//----------------
+// Global.h modification
+
+class Object_Lifetime_Manager;
+
 using namespace std;
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::util::dispatch;
@@ -35,6 +43,11 @@ class Dll_Export Global {
 typedef map<string, Log> LogMap;
 
 friend Global& getInstance(const string &instanceName);
+
+// added fot the managed objects
+template <class TYPE> friend class ManagedObject;
+friend class Object_Lifetime_Manager;
+
 private:
    const string           ME;
    LogMap                 logMap_;
@@ -47,6 +60,8 @@ private:
    Timeout*               pingTimer_;
    string                 id_;
    thread::Mutex          pingerMutex_;
+   // added for managed objects.
+   static Global*         global_; // becomes pointer
 
    /**
     * The default constructor is made private to implement the singleton

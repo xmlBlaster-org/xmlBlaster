@@ -2,6 +2,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o added Martin's managed objects in the c++ clients 
 
  o Merged basic JMX support from branch jmx_gui
 

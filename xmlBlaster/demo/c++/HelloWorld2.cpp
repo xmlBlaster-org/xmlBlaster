@@ -165,6 +165,7 @@ public:
  */
 int main(int args, char ** argv)
 {
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
    XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
@@ -173,5 +174,6 @@ int main(int args, char ** argv)
 
    HelloWorld2 hello(glob);
    hello.execute();
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }

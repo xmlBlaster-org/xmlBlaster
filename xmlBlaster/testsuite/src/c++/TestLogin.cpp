@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.9 2003/02/07 11:49:08 laghi Exp $
+Version:   $Id: TestLogin.cpp,v 1.10 2003/05/04 21:33:20 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -426,6 +426,7 @@ private:
 
 int main(int args, char *argc[]) {
    // Init the XML platform
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
    try {
       XMLPlatformUtils::Initialize();
    }
@@ -443,6 +444,7 @@ int main(int args, char *argc[]) {
    testSub->tearDown();
    delete testSub;
    // .exit(TestLogin.ME, "Good bye");
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
 

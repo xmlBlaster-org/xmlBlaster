@@ -144,12 +144,13 @@ using namespace org::xmlBlaster::test;
 int main(int args, char ** argv)
 {
    try {
-
-      TestSubXPath testSubXpath(args, argv);
-      testSubXpath.setUp();
-      testSubXpath.testInitial();
-      testSubXpath.tearDown();
+      org::xmlBlaster::util::Object_Lifetime_Manager::init();
+      TestSubXPath *testSubXpath = new TestSubXPath(args, argv);
+      testSubXpath->setUp();
+      testSubXpath->testInitial();
+      testSubXpath->tearDown();
       Thread::sleepSecs(1);
+      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

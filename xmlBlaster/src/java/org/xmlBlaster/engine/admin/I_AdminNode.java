@@ -39,7 +39,7 @@ public interface I_AdminNode {
    public String getGc();
    public void setGc(String dummy);
 
-   // public String getExit() throws XmlBlasterException;
+   public String getExit() throws XmlBlasterException;
    public void setExit(String exitValue) throws XmlBlasterException;
 
    public String getHostname();

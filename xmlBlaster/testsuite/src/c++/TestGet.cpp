@@ -227,6 +227,7 @@ using namespace org::xmlBlaster::test;
 int main(int args, char *argc[]) 
 {
    try {
+      org::xmlBlaster::util::Object_Lifetime_Manager::init();
       TestGet *testObj = new TestGet(args, argc, "Tim");
       testObj->setUp();
       testObj->testMany();
@@ -234,6 +235,7 @@ int main(int args, char *argc[])
       testObj->tearDown();
       delete testObj;
       testObj = NULL;
+      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
    catch (XmlBlasterException& err) {
       cout << "exception occurred in main string = " << err.getMessage() << endl;

@@ -91,6 +91,7 @@ void usage(Log& log)
  */
 int main(int args, char ** argv)
 {
+   org::xmlBlaster::util::Object_Lifetime_Manager::init();
    TimestampFactory& tsFactory = TimestampFactory::getInstance();
    Timestamp startStamp = tsFactory.getTimestamp();
    std::cout << " end time: " << tsFactory.toXml(startStamp, "", true) << std::endl;
@@ -137,5 +138,6 @@ int main(int args, char ** argv)
       cout << e.toXml() << endl;
    }
 
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }

@@ -104,6 +104,7 @@ void usage(Log& log)
 int main(int args, char ** argv)
 {
    try {
+      org::xmlBlaster::util::Object_Lifetime_Manager::init();
       XMLPlatformUtils::Initialize();
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
@@ -125,6 +126,7 @@ int main(int args, char ** argv)
          if (publishDelay > 0) org::xmlBlaster::util::thread::Thread::sleep(publishDelay);
       }
       demo.erase();
+      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

@@ -133,7 +133,7 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
    PublishKey key(global_);
    key.setOid("__cmd:?exit=0");
    PublishQos qos(global_);
-   MessageUnit msgUnit(key, "", qos);
+   MessageUnit msgUnit(key, "0", qos);
 
    XmlBlasterAccess conn(global_);
    try {
