@@ -34,11 +34,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 {
    private String ME;
    private LogChannel log;
-   private QueuePropertyBase property;
+   private QueuePropertyBase property;             // plugins via I_Queue
    private boolean notifiedAboutAddOrRemove = false;
    boolean isDown = true;
    private StorageId queueId;
    private I_QueuePutListener putListener;
+   private java.util.Properties pluginProperties;  // plugins via I_Plugin
 
    private I_Queue transientQueue;
    private I_Queue persistentQueue;
@@ -124,14 +125,22 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
          QueuePluginManager pluginManager = glob.getQueuePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
 
-         //instantiate and initialize the underlying queues
 
-         String defaultTransient = glob.getProperty().get("queue.cache.transientQueue", "RAM,1.0");
+         //instantiate and initialize the underlying queues
+         String defaultTransient = this.pluginProperties.getProperty("transientQueue", "RAM,1.0").trim();
+         if (defaultTransient.startsWith(getType())) {
+            log.error(ME,"Cache queue configured with transientQueue=CACHE, to prevent recursion we set it to 'RAM,1.0'");
+            defaultTransient = "RAM,1.0";
+         }
          this.transientQueue = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
          //log.error(ME, "Debug only: " + this.transientQueue.toXml(""));
          
          try {
-            String defaultPersistent = glob.getProperty().get("queue.cache.persistentQueue", "JDBC,1.0");
+            String defaultPersistent = this.pluginProperties.getProperty("persistentQueue", "JDBC,1.0").trim();
+            if (defaultPersistent.startsWith(getType())) {
+               log.error(ME,"Cache queue configured with persistentQueue=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
+               defaultPersistent = "JDBC,1.0";
+            }
             this.persistentQueue = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
 
             this.isConnected = true;
@@ -139,8 +148,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
             this.glob.getJdbcQueueManager(this.queueId).registerListener(this);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "Could not initialize the persistent queue. Is the JDBC Driver jar file in the CLASSPATH ?" +
-                " Is the DB up and running ? We continue RAM based ..." + ex.getMessage());
+            this.log.error(ME, "Could not initialize the persistent queue '" + uniqueQueueId + "'. Is the JDBC Driver jar file in the CLASSPATH ?" +
+                " Is the DB up and running ? We continue RAM based ..." + ex.getMessage() +
+                " The propery settings are:" + queuePropertyBase.toXml());
             // start a polling thread to see if the connection can be established later 
 
          }
@@ -946,12 +956,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      java.util.Properties props = pluginInfo.getParameters();
+      this.pluginProperties = pluginInfo.getParameters();
    }
 
    /**
     * Enforced by I_Plugin
-    * @return "JDBC"
+    * @return "CACHE"
     */
    public String getType() { return "CACHE"; }
 
