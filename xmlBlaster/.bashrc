@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.88 2002/01/07 16:14:36 ruff Exp $
+# $Id: .bashrc,v 1.89 2002/01/09 09:33:59 goetzger Exp $
 #-----------------------------------------------------------
 
 
@@ -315,7 +315,7 @@ if [ "${USE_CPP}" = "true" ] ; then
   fi    
 
   if [ "${CPP_ERROR}" = "true" ] ; then 
-    ${ECHO} "${BLACK_LTGREEN}   Please read the file ${XMLBLASTER_HOME}/src/c++/README"
+    ${ECHO} "${BLACK_LTGREEN}   Please read the file ${XMLBLASTER_HOME}/src/c++/README $ESC"
   fi
 
   if [ "${CORBA_CPP}" = "mico" ] ; then
