@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.2 2000/01/11 00:30:49 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.3 2000/01/11 22:47:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -42,7 +42,11 @@ public class TestLogin extends TestCase implements I_Callback
    private CorbaConnection senderConnection;
    private String senderName;
    private String senderContent;
-   private String receiverName;         // sender/receiver is here the same client
+
+   private CorbaConnection secondConnection;
+   private Server secondBlaster;
+   private String secondName;
+
    private MessageUnit messageUnit;     // a message to play with
 
    private int numReceived = 0;         // error checking
@@ -55,11 +59,11 @@ public class TestLogin extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestLogin(String testName, String loginName)
+   public TestLogin(String testName, String senderName, String secondName)
    {
        super(testName);
-       this.senderName = loginName;
-       this.receiverName = loginName;
+       this.senderName = senderName;
+       this.secondName = secondName;
    }
 
 
@@ -71,10 +75,14 @@ public class TestLogin extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
          String qos = "<qos></qos>";
+
+         senderConnection = new CorbaConnection(); // Find orb
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+
+         secondConnection = new CorbaConnection(); // Find orb
+         secondBlaster = secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -108,6 +116,7 @@ public class TestLogin extends TestCase implements I_Callback
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
       senderConnection.logout(xmlBlaster);
+      secondConnection.logout(secondBlaster);
    }
 
 
@@ -180,6 +189,26 @@ public class TestLogin extends TestCase implements I_Callback
       testSubscribeXPath();
       waitOnUpdate(1000L, 1);              // message arrived?
 
+      // test publish from other user
+      numReceived = 0;
+      try {
+         // a sample message unit
+         String xmlKey = "<key oid='Temporary' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+                         "   <TestLogin-AGENT>" +
+                         "   </TestLogin-AGENT>" +
+                         "</key>";
+         String content = "Some content";
+         MessageUnit mu = new MessageUnit(xmlKey, content.getBytes());
+         publishOid = secondBlaster.publish(mu, "<qos></qos>");
+      } catch(XmlBlasterException e) {
+         Log.warning(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
+         assert("second - publish - XmlBlasterException: " + e.reason, false);
+      }
+      waitOnUpdate(1000L, 1);              // message arrived?
+
+      assert("returned publishOid == null", publishOid != null);
+      assertNotEquals("returned publishOid", 0, publishOid.length());
+
       // test logout with following subscribe()
       senderConnection.logout(xmlBlaster);
       try {
@@ -249,7 +278,7 @@ public class TestLogin extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestLogin("testLoginLogout", loginName));
+       suite.addTest(new TestLogin("testLoginLogout", "Tim", "Joe"));
        return suite;
    }
 
@@ -265,7 +294,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      TestLogin testSub = new TestLogin("TestLogin", "Tim");
+      TestLogin testSub = new TestLogin("TestLogin", "Tim", "Joe");
       testSub.setUp();
       testSub.testLoginLogout();
       testSub.tearDown();
