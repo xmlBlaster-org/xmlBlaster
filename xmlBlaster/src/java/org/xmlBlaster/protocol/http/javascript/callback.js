@@ -262,10 +262,14 @@ function sendMessageQueue(queueName)
       if( fmq.frame.update != null ) {
          Log.trace("Frame "+fmq.frame.name+" is ready, sending update ...");
          fmq.frame.update( fmq.messageQueue );
-         var str = "Update:<br />";
-         for( var i = 0; i < fmq.messageQueue.length; i++ )
-            str += fmq.messageQueue[i].key.oid + "<br />";
-         Log.trace("Queue["+fmq.frame.name+"]: "+str);
+         if (Log.TRACE) {
+            var str = "Update:<br />";
+            for( var i = 0; i < fmq.messageQueue.length; i++ ) {
+               str += fmq.messageQueue[i].key.oid;
+               if (i<fmq.messageQueue.lengt-1) str += "<br />";
+            }
+            Log.trace("Queue["+fmq.frame.name+"]: "+str);
+         }
       }
       else {
         Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
@@ -392,9 +396,10 @@ function removeUpdateListenerAtPos( index ) {
  */
 function getListeners()
 {
-   var str = "Current registered frame listeners:\n\n";
+   var str = "Currently registered frame listeners:<br />";
    for( var i = 0; i < listenerList.length; i++ ) {
-      str += "-" + listenerList[i].frame.name + ", ready="+listenerList[i].ready+"\n";
+      str += listenerList[i].frame.name + ", ready="+listenerList[i].ready;
+      if (i < listenerList.length-1) str += "<br />";
    }
    return str;
 }
