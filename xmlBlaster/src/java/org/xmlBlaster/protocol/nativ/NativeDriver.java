@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.1 2000/06/26 11:59:53 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.2 2000/06/26 15:31:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.LoginQosWrapper;
 
 
 /**
- * Native driver class to invoke the xmlBlaster server in the same JVM (not remote). 
+ * Native driver class to invoke the xmlBlaster server in the same JVM (not remote).
  * <p />
  * This is a demo fragment only. You can take a copy and
  * code your own native access.
@@ -52,7 +52,7 @@ public class NativeDriver implements I_Driver
    private String sessionId = null;
 
 
-   /** Get a human readable name of this driver. 
+   /** Get a human readable name of this driver.
     * <p />
     * Enforced by interface I_Driver.
     */
@@ -63,7 +63,7 @@ public class NativeDriver implements I_Driver
 
 
    /**
-    * Start xmlBlaster native access. 
+    * Start xmlBlaster native access.
     * <p />
     * Enforced by interface I_Driver.
     * @param args The command line parameters
@@ -105,7 +105,7 @@ public class NativeDriver implements I_Driver
 
 
    /**
-    * Instructs native driver to shut down. 
+    * Instructs native driver to shut down.
     * <p />
     * Enforced by interface I_Driver.
     */
@@ -116,7 +116,7 @@ public class NativeDriver implements I_Driver
 
 
    /**
-    * Command line usage. 
+    * Command line usage.
     * <p />
     * Enforced by interface I_Driver.
     */
@@ -131,7 +131,7 @@ public class NativeDriver implements I_Driver
 
 
    /**
-    * Does a login, returns a valid session id. 
+    * Does a login, returns a valid session id.
     * <p />
     * @param loginName The unique login name
     * @param password
@@ -147,17 +147,12 @@ public class NativeDriver implements I_Driver
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
       }
 
-      try {
-         String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
-         if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
-            Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
-            throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
-         }
-         Log.info(ME, "login for '" + loginName + "' successful.");
-         return tmpSessionId;
+      String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
+      if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
+         Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+         throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
       }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
-      }
+      Log.info(ME, "login for '" + loginName + "' successful.");
+      return tmpSessionId;
    }
 }
