@@ -3,9 +3,19 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for x.xxx [xxx, xx xxxx]
 ================================
 
-TODO 
-- Renew lease for msg queue automatically on usage
-- RMI update() variant with string return
+TODO:
+
+* Renew lease for msg queue automatically on usage
+* RMI update() variant with string return
+* PtP with session destination
+* RequestBroker.get() the return QoS should be merged with UpdateQos
+* SOCKET protocol driver: Port to use read(buf, msgLen) -> performance
+* Test (implement?) forceUpdate=false with same content
+* Remove thread save gap in RequestBroker:publish()
+* Test: C++, Perl, HTTP, different protocol drivers ...
+
+DONE:
+
 
   - For PtP messages <forceQueuing> is now an
     attribute of <destination forceQueuing='true'>
