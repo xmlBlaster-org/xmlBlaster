@@ -147,12 +147,17 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          runlevelManager.initPluginManagers();
          runlevelManager.changeRunlevel(runlevel, false);
       } catch (Throwable e) {
-         e.printStackTrace();
+         if (!(e instanceof XmlBlasterException)) {
+            e.printStackTrace();
+         }
          log.error(ME, e.toString());
-         if (glob.isEmbedded())
+         if (glob.isEmbedded()) {
             throw new IllegalArgumentException(e.toString());
-         else
+         }
+         else {
+            log.error(ME, "Changing runlevel to '" + RunlevelManager.toRunlevelStr(runlevel) + "' failed, good bye");
             System.exit(1);
+         }
       }
 
       boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
