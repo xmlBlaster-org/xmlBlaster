@@ -102,3 +102,15 @@ proprietary Protocol plugins (not CORBA)
 - Protocol plugins (www.webdav.com)
 - state less protocols (email, http, webDav)
 
+
+xmlBlaster homepage
+-------------------
+- Allow search e.g. with
+     glimpse http://glimpse.cs.arizona.edu/
+	  Wilma at http://www.hpc.uh.edu/majordomo/#wilma integrates glimpse and MHonArc
+  or
+	  ht://Dig http://www.htdig.org/
+  for an example see
+     http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/
+	  http://www.hpc.uh.edu/fvwm/archive/
+
