@@ -932,7 +932,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       killPing();
 
       if (!isLoggedIn()) {
-         if (isInFailSaveMode() || recorder.size() > 0)
+         if (isInFailSaveMode() || recorder != null && recorder.size() > 0)
             Log.warn(ME, "Logout! Please note that there are " + recorder.size() + " unsent invocations/messages in the queue");
          else
             Log.trace(ME, "No logout, you are not logged in");
