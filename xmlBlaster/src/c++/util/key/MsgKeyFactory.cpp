@@ -44,7 +44,7 @@ MsgKeyData MsgKeyFactory::readObject(const string& xmlKey)
 
 void MsgKeyFactory::startElement(const string &name, const parser::AttributeMap &attrs)
 {
-   log_.call(ME, "startElement");
+   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
    if (name.compare("key") == 0) {
       msgKeyData_ = MsgKeyData(global_);
       inKey_++;

@@ -110,7 +110,7 @@ void Sax2Parser::startDocument()
 /** Receive notification of the start of an element. */
 void Sax2Parser::startElement(const XMLCh *const /*uri*/, const XMLCh *const /*localname*/, const XMLCh *const qname, const Attributes &attrs)
 {
-   //if (log_.call()) log_.call(ME, string("startElement"));
+   //if (log_.call()) log_.call(ME, "startElement <" + name + ">");
    AttributeMap tmpMap;
    handler_->startElement(getStringValue(qname), getAttributeMap(tmpMap, attrs));
 }

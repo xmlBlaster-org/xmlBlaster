@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.13 2004/01/20 15:03:49 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.14 2004/04/27 08:27:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -52,7 +52,7 @@ QueuePropertyBase QueuePropertyFactory::getQueueProperty()
  */
 void QueuePropertyFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   if (log_.call()) log_.call(ME, string("startElement: ") + name);
+   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    // in case it is inside or entrering an 'address' or 'callbackAddress'
    if (name.compare("address") == 0) {

@@ -86,7 +86,6 @@ MsgQosData MsgQosFactory::readObject(const string& xmlQos)
 
 void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   //log_.error(ME, "startElement: name=" + name);// + " attrs=" + attrs.size());
    bool      tmpBool;
    string    tmpString;
    long      tmpLong;

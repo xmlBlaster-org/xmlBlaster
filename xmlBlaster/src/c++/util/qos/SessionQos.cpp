@@ -264,10 +264,7 @@ void SessionQosFactory::characters(const string &ch)
 }
 
 void SessionQosFactory::startElement(const string &name, const AttributeMap& attrs) {
-   log_.call(ME, "startElement");
-   if (log_.trace()) {
-      log_.trace(ME, string("startElement. name:'") + name + string("' character: '") + character_ + string("'"));
-   }
+   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    if (util::XmlQoSBase::startElementBase(name, attrs)) return;
 

@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.15 2004/02/09 10:08:03 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.16 2004/04/27 08:27:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -49,13 +49,7 @@ AddressBase& AddressFactory::getAddress()
 // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
 void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-//   log_.info(ME, string("startElement(rootTag=") + address_->rootTag_ +
-//    string("): name=") + name + " character='" + character_ + "'");
-
-   if (log_.call()) log_.call(ME, "::startElement");
-   if (log_.trace()) {
-     log_.trace(ME, string("::startElement: '") + name + string("'"));
-   }
+   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    if (character_.length() > 0) {
       StringTrim::trim(character_);
