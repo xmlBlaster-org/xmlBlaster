@@ -156,6 +156,7 @@ TODO
    <property name="CORBACPP_HOME" value="/opt/local/mico"/>
    <property name="XMLCPP_VER" value="2"/>  <!-- 1_7_0 -->
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
+   <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -1273,7 +1274,6 @@ TODO
       <property name="${corba.product},${os.family}" value="true" /> <!-- Setting e.g. "MICO,windows" or "TAO,unix" to be used in if="" clause below -->
       <echo message=" Setting ${corba.product},${os.family} = true" />
 
-      <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
       <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNITHREAD" to be used in if="" clause below -->
       <echo message=" Setting ${thread.impl} = true" />
 
