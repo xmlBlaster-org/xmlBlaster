@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.24 2002/09/10 18:55:24 ruff Exp $
+Version:   $Id: Executor.java,v 1.25 2002/09/11 16:19:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -392,8 +392,10 @@ public abstract class Executor implements ExecutorBase
       byte[] rawMsg = parser.createRawMsg();
       if (SOCKET_DEBUG>1) log.info(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
       try {
-         oStream.write(rawMsg);
-         oStream.flush();
+         synchronized (oStream) {
+            oStream.write(rawMsg);
+            oStream.flush();
+         }
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (InterruptedIOException e) {
@@ -442,8 +444,10 @@ public abstract class Executor implements ExecutorBase
          returner.addMessage((MessageUnit)response);
       else
          throw new XmlBlasterException(ME, "Invalid response data type " + response.toString());
-      oStream.write(returner.createRawMsg());
-      oStream.flush();
+      synchronized (oStream) {
+         oStream.write(returner.createRawMsg());
+         oStream.flush();
+      }
       if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (SOCKET_DEBUG>1) log.info(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
@@ -456,8 +460,10 @@ public abstract class Executor implements ExecutorBase
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);
-      oStream.write(returner.createRawMsg());
-      oStream.flush();
+      synchronized (oStream) {
+         oStream.write(returner.createRawMsg());
+         oStream.flush();
+      }
       /*
       try {
          oStream.write(returner.createRawMsg());
