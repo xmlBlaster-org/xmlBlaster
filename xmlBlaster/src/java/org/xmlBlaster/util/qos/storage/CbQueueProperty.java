@@ -30,8 +30,10 @@ public class CbQueueProperty extends QueuePropertyBase
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("dispatch");
-      setRelating(relating);
-      super.initialize(relating);
+      String rel = (relating == null) ? Constants.RELATING_SESSION : relating;
+      setRelating(rel);
+      super.initialize(rel);
+      if (log.TRACE) log.trace(ME, "Created CbQueueProperty " + rel + " " + super.nodeId);
    }
 
    /**
