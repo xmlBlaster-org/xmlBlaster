@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.enum.MethodName;
 
@@ -63,6 +62,17 @@ public final class UnSubscribeQos
     */
    public void setPersistent(boolean persistent) {
       this.queryQosData.setPersistent(persistent);
+   }
+
+   
+   /**
+    * Sets a client property (an application specific property) to the
+    * given value
+    * @param key
+    * @param value
+    */
+   public void setClientProperty(String key, String value) {
+      this.queryQosData.setClientProperty(key, value);
    }
 
    /**

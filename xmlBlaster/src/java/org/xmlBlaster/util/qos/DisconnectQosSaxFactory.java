@@ -6,13 +6,13 @@ Comment:   Parsing disconnect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.HashMap;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xml.sax.Attributes;
-
-
 
 /**
  * This class encapsulates the qos of a logout() or disconnect(). 
@@ -37,7 +37,8 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
    private final LogChannel log;
 
    private DisconnectQosData disconnectQosData;
-
+   private String clientPropertyKey;
+   
    /**
     */
    public DisconnectQosSaxFactory(Global glob) {
@@ -85,6 +86,13 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
          character.setLength(0);
          return;
       }
+
+      if (name.equalsIgnoreCase("clientProperty")) {
+         this.clientPropertyKey = attrs.getValue("name");
+         character.setLength(0);
+         return;
+      }
+
    }
 
 
@@ -112,6 +120,15 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
          character.setLength(0);
          return;
       }
+
+      if (name.equalsIgnoreCase("clientProperty")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0 || this.clientPropertyKey != null)
+            this.disconnectQosData.setClientProperty(this.clientPropertyKey, tmp);
+         this.clientPropertyKey = null;   
+         return;
+      }
+
    }
 
    /**
@@ -149,6 +166,15 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
          else
             sb.append(offset).append(" <clearSessions>").append(data.clearSessions()).append("</clearSessions>");
       }
+
+      HashMap map = data.getClientProperties();
+      if (map != null && map.size() > 0) {
+         Object[] keys = map.keySet().toArray();
+         for (int i=0; i < keys.length; i++) {
+            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]).append("'>").append(map.get(keys[i])).append("</clientProperty>");
+         }
+      }
+      
       sb.append(offset).append("</qos>");
 
       return sb.toString();

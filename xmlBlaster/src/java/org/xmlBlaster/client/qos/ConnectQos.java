@@ -8,10 +8,8 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
-import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -345,6 +343,16 @@ public final class ConnectQos
     */
    public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
       this.securityInterceptor = securityInterceptor;
+   }
+
+   /**
+    * Sets a client property (an application specific property) to the
+    * given value
+    * @param key
+    * @param value
+    */
+   public void setClientProperty(String key, String value) {
+      this.connectQosData.setClientProperty(key, value);
    }
 
    /**

@@ -5,17 +5,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.HashMap;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-
-import java.util.ArrayList;
 
 /**
  * Parsing xml QoS (quality of service) of return query. 
@@ -61,7 +59,8 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 
    private AccessFilterQos tmpFilter = null;
    private HistoryQos tmpHistory = null;
-
+   private String clientPropertyKey;
+   
    /**
     * Can be used as singleton. 
     */
@@ -253,6 +252,11 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("clientProperty")) {
+         this.clientPropertyKey = attrs.getValue("name");
+         character.setLength(0);
+         return;
+      }
    }
 
    /**
@@ -352,6 +356,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          character.setLength(0);
          return;
       }
+      if (name.equalsIgnoreCase("clientProperty")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0 || this.clientPropertyKey != null)
+            this.queryQosData.setClientProperty(this.clientPropertyKey, tmp);
+         this.clientPropertyKey = null;   
+         return;
+      }
 
       character.setLength(0); // reset data from unknown tags
    }
@@ -442,6 +453,14 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
       else if (queryQosData.getMethod() == MethodName.UNSUBSCRIBE) {
          sb.append(offset).append(" <isUnSubscribe/>");
+      }
+
+      HashMap map = queryQosData.getClientProperties();
+      if (map != null && map.size() > 0) {
+         Object[] keys = map.keySet().toArray();
+         for (int i=0; i < keys.length; i++) {
+            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]).append("'>").append(map.get(keys[i])).append("</clientProperty>");
+         }
       }
 
       sb.append(offset).append("</qos>");

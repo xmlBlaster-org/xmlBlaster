@@ -6,30 +6,22 @@ Comment:   Parsing connect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.HashMap;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
-import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.PluginLoader;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.StopParseException;
 import org.xmlBlaster.util.SessionName;
 
 import org.xml.sax.Attributes;
-
-import java.util.Vector;
-import java.util.ArrayList;
-import java.io.Serializable;
-
 
 /**
  * This class encapsulates the qos of a login() or connect(). 
@@ -128,6 +120,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private CallbackAddress tmpCbAddr;
    private ClientQueueProperty tmpProp;
    private Address tmpAddr;
+   private String clientPropertyKey;
    protected String tmpSecurityPluginType;
    protected String tmpSecurityPluginVersion;
 
@@ -340,6 +333,12 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
+      if (name.equalsIgnoreCase("clientProperty")) {
+         this.clientPropertyKey = attrs.getValue("name");
+         character.setLength(0);
+         return;
+      }
+
       if (inSecurityService) {
          //Collect everything in character buffer
          character.append("<").append(name);
@@ -421,6 +420,14 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setReconnected(new Boolean(tmp).booleanValue());
+         return;
+      }
+
+      if (name.equalsIgnoreCase("clientProperty")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0 || this.clientPropertyKey != null)
+            this.connectQosData.setClientProperty(this.clientPropertyKey, tmp);
+         this.clientPropertyKey = null;   
          return;
       }
 
@@ -531,6 +538,14 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          ServerRef[] arr = data.getServerRefs();
          for (int ii=0; arr!=null && ii<arr.length; ii++) {
             sb.append(arr[ii].toXml(extraOffset+Constants.INDENT));
+         }
+      }
+
+      HashMap map = data.getClientProperties();
+      if (map != null && map.size() > 0) {
+         Object[] keys = map.keySet().toArray();
+         for (int i=0; i < keys.length; i++) {
+            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]).append("'>").append(map.get(keys[i])).append("</clientProperty>");
          }
       }
 

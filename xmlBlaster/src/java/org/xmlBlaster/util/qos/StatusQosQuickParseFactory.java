@@ -7,7 +7,6 @@ package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.enum.MethodName;
 
@@ -53,7 +52,6 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
          statusQosData.setStateInfo(parseOurself(xmlQos, "info="));
          statusQosData.setSubscriptionId(parseOurself(xmlQos, "<subscribe id="));
          statusQosData.setKeyOid(parseOurself(xmlQos, "<key oid="));
-
          String tmp = parseOurself(xmlQos, "<rcvTimestamp nanos=");
          if (tmp != null) {
             try {

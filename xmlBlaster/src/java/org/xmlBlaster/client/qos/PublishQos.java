@@ -244,6 +244,16 @@ public final class PublishQos
    }
 
    /**
+    * Sets a client property (an application specific property) to the
+    * given value
+    * @param key
+    * @param value
+    */
+   public void setClientProperty(String key, String value) {
+      this.msgQosData.setClientProperty(key, value);
+   }
+
+   /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */

@@ -17,16 +17,13 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 
-import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-
 
 /**
  * Parsing xml QoS (quality of service) of publish() and update(). 
@@ -138,6 +135,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private  RouteInfo routeInfo;
 
    private boolean sendRemainingLife = true;
+
+   private String clientPropertyKey;
 
    /**
     * Can be used as singleton. 
@@ -284,7 +283,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                try { msgQosData.setLifeTime(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid lifeTime - millis =" + tmp); };
             }
             else {
-               log.warn(ME, "QoS <expiration> misses lifeTime attribute, setting default of " + msgQosData.getMaxLifeTime());
+               log.warn(ME, "QoS <expiration> misses lifeTime attribute, setting default of " + MsgQosData.getMaxLifeTime());
                msgQosData.setLifeTime(msgQosData.getMaxLifeTime());
             }
 
@@ -554,6 +553,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          msgQosData.setMethod(MethodName.GET);
          return;
       }
+
+      if (name.equalsIgnoreCase("clientProperty")) {
+         this.clientPropertyKey = attrs.getValue("name");
+         character.setLength(0);
+         return;
+      }
    }
 
    /**
@@ -735,6 +740,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          this.character.setLength(0);
          return;
       }
+      if (name.equalsIgnoreCase("clientProperty")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0 || this.clientPropertyKey != null)
+            this.msgQosData.setClientProperty(this.clientPropertyKey, tmp);
+         this.clientPropertyKey = null;   
+         return;
+      }
 
       character.setLength(0); // reset data from unknown tags
    }
@@ -869,6 +881,14 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
       if (msgQosData.hasTopicProperty()) {
          sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
+      }
+
+      HashMap map = msgQosData.getClientProperties();
+      if (map != null && map.size() > 0) {
+         Object[] keys = map.keySet().toArray();
+         for (int i=0; i < keys.length; i++) {
+            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]).append("'>").append(map.get(keys[i])).append("</clientProperty>");
+         }
       }
 
       sb.append(offset).append("</qos>");

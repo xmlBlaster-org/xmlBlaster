@@ -16,6 +16,7 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.property.PropBoolean;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 /**
@@ -56,6 +57,8 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 
    private MethodName methodName;
 
+   private HashMap clientProperties;
+
    /**
     * Constructor, it does not parse the data, use a factory for this. 
     */
@@ -63,6 +66,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       this.methodName = methodName;
       setGlobal(glob);
       this.serialData = serialData;
+      this.clientProperties = new HashMap();
    }
 
    /**
@@ -346,4 +350,13 @@ public abstract class QosData implements java.io.Serializable, Cloneable
          return null;
       }
    }
+   
+   public final void setClientProperty(Object key, Object value) {
+      this.clientProperties.put(key, value);
+   }
+   
+   public final HashMap getClientProperties() {
+      return this.clientProperties;
+   }
+   
 }

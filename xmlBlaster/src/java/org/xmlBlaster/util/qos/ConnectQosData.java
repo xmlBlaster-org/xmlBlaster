@@ -19,8 +19,6 @@ import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.property.PropEntry;
-import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 

@@ -3,12 +3,11 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.4 2003/07/11 15:07:03 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.5 2003/09/18 13:48:14 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropBoolean;
@@ -94,6 +93,16 @@ public class DisconnectQos
     */
    public void clearSessions(boolean del) {
       this.disconnectQosData.clearSessions(del);
+   }
+
+   /**
+    * Sets a client property (an application specific property) to the
+    * given value
+    * @param key
+    * @param value
+    */
+   public void setClientProperty(String key, String value) {
+      this.disconnectQosData.setClientProperty(key, value);
    }
 
    /**
