@@ -31,6 +31,18 @@ public interface I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException;
 
    /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return e.g. "IOR" "EMAIL" "XML-RPC" depending on driver
+    */
+   public String getProtocolId();
+
+   /**
+    * Return the address how to access this driver. 
+    * @return e.g. "http:/www.mars.universe:8080/RPC2" or "IOR:000034100..."
+    */
+   public String getRawAddress();
+
+   /**
     * Send the message update to the client.
     * <p />
     * The protocol for sending is implemented in the derived class

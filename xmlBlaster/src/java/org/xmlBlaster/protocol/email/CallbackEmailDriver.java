@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.19 2002/05/11 09:36:32 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.20 2002/05/30 09:53:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -48,6 +48,24 @@ public class CallbackEmailDriver implements I_CallbackDriver
       return ME;
    }
 
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "NativeDemo"
+    */
+   public String getProtocolId()
+   {
+      return "EMAIL";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return null
+    */
+   public String getRawAddress()
+   {
+      return this.callbackAddress.getAddress();
+   }
 
    /**
     * @param  callbackAddress Contains the email TO: address

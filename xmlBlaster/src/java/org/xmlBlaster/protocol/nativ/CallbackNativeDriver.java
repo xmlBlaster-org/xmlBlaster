@@ -3,7 +3,7 @@ Name:      CallbackNativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using native interface.
-Version:   $Id: CallbackNativeDriver.java,v 1.7 2002/05/11 08:08:57 ruff Exp $
+Version:   $Id: CallbackNativeDriver.java,v 1.8 2002/05/30 09:53:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
@@ -39,6 +39,24 @@ public class CallbackNativeDriver implements I_CallbackDriver
       return ME;
    }
 
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "NativeDemo"
+    */
+   public String getProtocolId()
+   {
+      return "NativeDemo";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return null
+    */
+   public String getRawAddress()
+   {
+      Log.error(ME+".getRawAddress()", "No external access address available");
+      return null;
+   }
 
    /**
     * Get callback reference here.

@@ -3,7 +3,7 @@ Name:      CallbackJdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using jdbc interface.
-Version:   $Id: CallbackJdbcDriver.java,v 1.7 2002/05/11 08:08:56 ruff Exp $
+Version:   $Id: CallbackJdbcDriver.java,v 1.8 2002/05/30 09:53:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
@@ -39,6 +39,24 @@ public class CallbackJdbcDriver implements I_CallbackDriver
       return ME;
    }
 
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "JDBC"
+    */
+   public String getProtocolId()
+   {
+      return "JDBC";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return null
+    */
+   public String getRawAddress()
+   {
+      if (Log.TRACE) Log.trace(ME+".getRawAddress()", "No external access address available");
+      return null;
+   }
 
    /**
     * Get callback reference here.

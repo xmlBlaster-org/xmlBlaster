@@ -3,7 +3,7 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.15 2002/05/11 08:09:00 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.16 2002/05/30 09:53:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -45,6 +45,23 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       return ME;
    }
 
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "XML-RPC"
+    */
+   public String getProtocolId()
+   {
+      return "XML-RPC";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return "http://server.mars.universe:8080/"
+    */
+   public String getRawAddress()
+   {
+      return callbackAddress.getAddress();
+   }
 
    /**
     * Get callback reference here.

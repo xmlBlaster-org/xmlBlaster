@@ -3,7 +3,7 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.7 2002/05/11 08:08:59 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.8 2002/05/30 09:53:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -47,6 +47,22 @@ public class CallbackSocketDriver implements I_CallbackDriver
 
    public String getName() {
       return this.loginName;
+   }
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver. 
+    * @return "SOCKET"
+    */
+   public String getProtocolId() {
+      return "SOCKET";
+   }
+
+   /**
+    * Get the address how to access this driver. 
+    * @return "server.mars.univers:6701"
+    */
+   public String getRawAddress() {
+      return this.callbackAddress.getAddress();
    }
 
    public void init(Global glob, CallbackAddress callbackAddress) {
