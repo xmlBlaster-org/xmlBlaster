@@ -21,6 +21,8 @@ BUGS:
 
 
 DONE:
+  - Bugfix for volatile message deletion with multiple subscribers
+
   - Sepcific logging, examples:
     -trace[cluster] true   Trace cluster
     -trace[mime] true      Trace mime plugins
