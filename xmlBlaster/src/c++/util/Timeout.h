@@ -89,7 +89,7 @@ class Dll_Export Timeout : public Thread
 
  private: 
    /** Name for logging output */
-   const string ME; //  = "Timeout";
+   string ME; //  = "Timeout";
    string threadName_;
 //   boost::thread* runningThread_;
    /** Sorted map */
@@ -117,6 +117,11 @@ class Dll_Export Timeout : public Thread
 
    size_t Timeout::getTimeoutMapSize();
 
+   /**
+    * Starts the thread
+    */
+    void start();
+
 //   friend class TimeoutRunner;
  public:
 
@@ -131,11 +136,6 @@ class Dll_Export Timeout : public Thread
    Timeout(Global& global, const string &name);
 
     ~Timeout();
-
-   /**
-    * Starts the thread
-    */
-    void start();
 
    /**
     * used to join the thread used by this instance

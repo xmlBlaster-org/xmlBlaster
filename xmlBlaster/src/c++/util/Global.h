@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.16 2003/03/02 19:54:01 ruff Exp $
+Version:   $Id: Global.h,v 1.17 2003/03/11 23:32:37 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -46,6 +46,7 @@ private:
    DeliveryManager*       deliveryManager_;
    Timeout*               pingTimer_;
    string                 id_;
+   thread::Mutex          pingerMutex_;
 
    /**
     * The default constructor is made private to implement the singleton

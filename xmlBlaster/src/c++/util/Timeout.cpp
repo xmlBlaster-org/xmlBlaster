@@ -43,20 +43,26 @@ Timeout::Timeout(Global& global)
      global_(global), log_(global.getLog("util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
+   ME += "-Timeout-Thread-" + lexical_cast<string>(this);
    // the thread will only be instantiated when starting
    log_.call(ME, " default constructor");
    log_.trace(ME, " default constructor: after creating timeout condition");
+   start();
+   log_.trace(ME, " default constructor: after starting the thread");
 }
 
 Timeout::Timeout(Global& global, const string &name)
-   : Thread(), ME("Timeout"), threadName_(string("Timeout-Thread") + name),
+   : Thread(), ME("Timeout"), threadName_(name),
      timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
      isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
      global_(global), log_(global.getLog("util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
    // the thread remains uninitialized ...
+   ME += "-" + name + "-" + lexical_cast<string>(this);
    log_.call(ME, " alternative constructor");
+   start();
+   log_.trace(ME, " default constructor: after starting the thread");
 }
 
 Timeout::~Timeout() 
@@ -73,11 +79,12 @@ void Timeout::start()
    isRunning_ = true;
    log_.trace(ME, " before creating the running thread");
    Thread::start();
+
+   log_.trace(ME, " start: waiting for the thread to be ready (waiting for the first timeout addition)");
    while (!isReady_) {
       Thread::sleep(5);
    }
-
-   log_.trace(ME, " start: running thread created");
+   log_.trace(ME, " start: running thread created and ready");
 }
 
 void Timeout::join() 
@@ -202,7 +209,7 @@ void Timeout::run()
 
    Container *container = NULL;
    Container tmpContainer;
-   
+
    while (isRunning_) {
 
       log_.trace(ME, " run(): is running");

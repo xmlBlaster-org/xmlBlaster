@@ -418,7 +418,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
    pingIsStarted_ = false;
    timestamp_ = 0;
    if (doStopPing_) return; // then it must stop
-   if ( log_.call() ) log_.call(ME, "ping timeout occured");
+   if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + lexical_cast<string>(status_) + "'" );
    if (status_ == CONNECTED) { // then I am pinging
       if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
       try {
@@ -475,6 +475,8 @@ void ConnectionsHandler::timeout(void * /*userData*/)
          }
       }
       catch (XmlBlasterException ex) {
+         if (log_.trace()) log_.trace(ME, "timeout got exception ");
+         if (log_.dump()) log_.dump(ME, string("timeout got exception ") + ex.toString());
          currentRetry_++;
          if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
             startPinger();
@@ -604,9 +606,10 @@ bool ConnectionsHandler::isFailsafe() const
 
 bool ConnectionsHandler::startPinger()
 {
+   log_.call(ME, "startPinger");
    if (doStopPing_) return false;
 
-   log_.call(ME, "startPinger");
+   log_.trace(ME, "startPinger (no request to stop the pinger is active for the moment)");
    if (pingIsStarted_) {
       log_.warn(ME, "startPinger: the pinger is already running. I will return without starting a new thread");
       return false;  

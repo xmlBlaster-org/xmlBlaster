@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $
+Version:   $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,9 +14,9 @@ Version:   $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $
 
 #if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp $";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.30 2003/03/11 23:32:36 laghi Exp $";
 #endif
 
 using namespace std;
@@ -25,9 +25,12 @@ using namespace org::xmlBlaster::client::protocol;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-Global::Global() : ME("Global"), logMap_()
+Global::Global() : ME("Global"), logMap_(), pingerMutex_() 
 {
-   cbServerPluginManager_ = NULL;
+   cbServerPluginManager_ = 0;
+   pingTimer_             = 0;
+   deliveryManager_       = 0;
+   property_              = 0;
    copy();
    isInitialized_ = false;
 }
@@ -49,10 +52,10 @@ Global& Global::operator =(const Global &)
 Global::~Global()
 {
    try {
-      logMap_.erase(logMap_.begin(), logMap_.end());
       delete property_;
       delete cbServerPluginManager_;
       delete pingTimer_;
+      logMap_.erase(logMap_.begin(), logMap_.end());
    }
    catch (...) {
    }
@@ -167,9 +170,13 @@ DeliveryManager& Global::getDeliveryManager()
 Timeout& Global::getPingTimer()
 {
    if (pingTimer_) return *pingTimer_;
-   pingTimer_ = new Timeout(*this, string("ping timer"));
-   pingTimer_->start();
-   return *pingTimer_;
+   thread::Lock lock(pingerMutex_);
+   { // this is synchronized. Test again if meanwhile it has been set ...
+      getLog("core").info(ME, "::getPingTimer: creating the singleton 'ping timer'");
+      if (pingTimer_) return *pingTimer_;
+      pingTimer_ = new Timeout(*this, string("ping timer"));
+      return *pingTimer_;
+   }
 }
 
 const string& Global::getBoolAsString(bool val)

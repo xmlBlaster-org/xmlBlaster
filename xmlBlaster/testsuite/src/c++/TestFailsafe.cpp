@@ -35,13 +35,13 @@ public:
       : TestSuite(args, argv, "TestFailsafe"),
         updateMutex_()
    {
-      connQos_        = NULL;
-      connRetQos_     = NULL;
-      subQos_         = NULL;
-      subKey_         = NULL;
-      pubQos_         = NULL;
-      pubKey_         = NULL;
-      address_        = NULL;
+      connQos_        = 0;
+      connRetQos_     = 0;
+      subQos_         = 0;
+      subKey_         = 0;
+      pubQos_         = 0;
+      pubKey_         = 0;
+      address_        = 0;
       numOfUpdates_   = 0;
    }
 
@@ -81,12 +81,13 @@ public:
          connection_.initFailsafe(this);
 
          address_  = new Address(global_);
-         address_->setDelay(10000);
-         address_->setPingInterval(10000);
+         address_->setDelay(1000);
+         address_->setPingInterval(1000);
          connQos_ = new ConnectQos(global_, "guy", "secret");
          connQos_->setAddress(*address_);
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
-         connRetQos_ = new ConnectReturnQos(connection_.connect(*connQos_, this));  // Login to xmlBlaster, register for updates
+         // Login to xmlBlaster, register for updates
+         connRetQos_ = new ConnectReturnQos(connection_.connect(*connQos_, this));  
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
 
          subKey_ = new SubscribeKey(global_);
@@ -101,9 +102,16 @@ public:
          log_.error(ME, string("exception occurred in setUp. ") + ex.toXml());
          assert(0);
       }
-
    }
 
+
+   /**
+    * This test does the following:
+    * - tears down , i.e. it erases the message 'TestFailsafe' and disconnects.
+    * - shuts down the server if embedded, otherwise waits you to shutdown for 20 s.
+    * - tries to reconnect (and should fail since the server is not connected and the session id is negative)
+    * - 
+    */
    void testReconnect()
    {
       log_.info(ME, "testReconnect START");
@@ -227,7 +235,7 @@ public:
 
    void testFailsafe() 
    {
-          int imax = 30;
+      int imax = 30;
       try {
          pubQos_ = new PublishQos(global_);
          pubKey_ = new PublishKey(global_);
@@ -324,7 +332,7 @@ using namespace org::xmlBlaster::test;
  */
 int main(int args, char ** argv)
 {
-   TestFailsafe *testFailsafe = NULL;
+   TestFailsafe *testFailsafe = 0;
    try {
       testFailsafe = new TestFailsafe(args, argv);
       testFailsafe->setUp();
@@ -333,7 +341,7 @@ int main(int args, char ** argv)
       // testFailsafe.testFailsafe();
       testFailsafe->tearDown();
       delete testFailsafe;
-      testFailsafe = NULL; 
+      testFailsafe = 0; 
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

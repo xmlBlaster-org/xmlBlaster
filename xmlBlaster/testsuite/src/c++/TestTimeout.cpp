@@ -56,8 +56,6 @@ public:
 
    void testTimeout() 
    {
-      log_.info(ME, "testTimeout(): the timeout will now be started");
-      timeoutObject->start();
       log_.info(ME, "testTimeout(): the timeout will now be triggered");
       timeoutObject->addTimeoutListener(this, 2000, timeoutObject);
       log_.info(ME, "testTimeout: timeout triggered. Waiting to be fired (should happen in 2 seconds");
