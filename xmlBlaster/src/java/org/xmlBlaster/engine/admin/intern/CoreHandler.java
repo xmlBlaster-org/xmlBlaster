@@ -105,11 +105,11 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    /**
     * Your plugin should process the command. 
     * <p />
-    * @param cmd "?user.home"
+    * @param cmd "/node/heron/?clientList"
     * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(CommandWrapper)
     */
-   public synchronized MessageUnit[] get(CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
 
@@ -170,7 +170,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    /**
     * Set a value. 
     */
-   public String set(CommandWrapper cmd) throws XmlBlasterException {
+   public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
 

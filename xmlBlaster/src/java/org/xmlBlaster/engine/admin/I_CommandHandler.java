@@ -30,6 +30,7 @@ public interface I_CommandHandler {
    /**
     * Your plugin should process the command. 
     * <p />
+    * @param sessionId Is null if not logged in
     * @param cmd The command to process
     * @return An array of MessageUnit object:
     *       <ul>
@@ -41,16 +42,17 @@ public interface I_CommandHandler {
     *       </ul>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
     */
-   public MessageUnit[] get(CommandWrapper cmd) throws XmlBlasterException;
+   public MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException;
 
    /**
     * Your plugin should process the set command. 
     * <p />
+    * @param sessionId Is null if not logged in
     * @param cmd The command to process, e.g. ?trace=true
     * @return null if not set
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
     */
-   public String set(CommandWrapper cmd) throws XmlBlasterException;
+   public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException;
 
    public String help();
 

@@ -100,7 +100,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
     * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(CommandWrapper)
     */
-   public synchronized MessageUnit[] get(CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MessageUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
       if (cmd.getTail() == null)
@@ -132,7 +132,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    /**
     * @return The new value set, it can be different to the passed value for example if ${} replacement occured
     */
-   public String set(CommandWrapper cmd) throws XmlBlasterException {
+   public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
       if (cmd.getTail() == null)

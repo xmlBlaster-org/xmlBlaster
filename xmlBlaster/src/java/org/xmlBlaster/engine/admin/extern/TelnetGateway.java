@@ -52,6 +52,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private boolean isLogin = false;
    private ConnectReturnQos connectRetQos = null;
    private String loginName = "";
+   private String sessionId = null;
 
    private Timeout expiryTimer = new Timeout("TelnetSessionTimer");
    private Timestamp timerKey = null;
@@ -301,18 +302,20 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
-            MessageUnit[] msgs = commandManager.get(query);
+            MessageUnit[] msgs = commandManager.get(sessionId, query);
             if (msgs.length == 0) return "NO ENTRY FOUND: " + cmd + CRLF;
             StringBuffer sb = new StringBuffer(msgs.length * 40);
             for (int ii=0; ii<msgs.length; ii++) {
                MessageUnit msg = msgs[ii];
                if (msg.getQos().startsWith("text/plain"))
                   sb.append(msg.getXmlKey()).append("=").append(msg.getContentStr()).append(CRLF);
+               else
+                  sb.append(msg.toXml());
             }
             return sb.toString() + CRLF;
          }
          else if (cmdType.trim().equalsIgnoreCase("SET")) {
-            SetReturn ret = commandManager.set(query);
+            SetReturn ret = commandManager.set(sessionId, query);
             if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
             return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
          }
@@ -390,6 +393,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          connectQos.setSessionTimeout(sessionTimeout);
          this.connectRetQos = glob.getAuthenticate().connect(connectQos);
          this.loginName = loginName;
+         this.sessionId = connectRetQos.getSessionId();
          isLogin = true;
 
          if (connectQos.getSessionTimeout() > 0L) {

@@ -30,6 +30,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    private Global glob;
    private LogChannel log;
    private CommandManager manager;
+   private String sessionId = null;
 
    /**
     * This is called after creation of the plugin. 
@@ -82,7 +83,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
 
          if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query);
 
-         MessageUnit[] msgs = manager.get(query);
+         MessageUnit[] msgs = manager.get(sessionId, query);
          if (msgs.length == 0)
             return "NOT FOUND";
          else {

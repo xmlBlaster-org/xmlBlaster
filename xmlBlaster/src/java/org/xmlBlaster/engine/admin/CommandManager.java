@@ -72,6 +72,10 @@ public final class CommandManager implements I_RunlevelListener
       org.xmlBlaster.engine.admin.intern.CoreHandler coreHandler = 
                              new org.xmlBlaster.engine.admin.intern.CoreHandler();
       coreHandler.initialize(glob, this); // This will call register()
+
+      org.xmlBlaster.engine.admin.intern.MsgHandler msgHandler = 
+                             new org.xmlBlaster.engine.admin.intern.MsgHandler();
+      msgHandler.initialize(glob, this); // This will call register()
    }
 
    private void initializeExternal() {
@@ -122,9 +126,11 @@ public final class CommandManager implements I_RunlevelListener
    } 
 
    /**
+    * @param sessionId Is null if not logged in
+    * @param cmd The query string
     * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final MessageUnit[] get(String cmd) throws XmlBlasterException {
+   public synchronized final MessageUnit[] get(String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new IllegalArgumentException("Please pass a command which is not null");
@@ -139,7 +145,7 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         MessageUnit[] ret = handler.get(w);
+         MessageUnit[] ret = handler.get(sessionId, w);
          if (ret == null) ret = new MessageUnit[0];
          return ret;
          //return (ret==null) ? "<qos><state id='NOT_FOUND' info='" + w.getCommand() + " has no results.'/></qos>" : ret;
@@ -154,10 +160,12 @@ public final class CommandManager implements I_RunlevelListener
    }
 
    /**
+    * @param sessionId Is null if not logged in
+    * @param cmd The query string
     * @return The SetReturn object:<br />
     *         setReturn.returnString contains the actually set value or is null if not set. 
     */
-   public synchronized final SetReturn set(String cmd) throws XmlBlasterException {
+   public synchronized final SetReturn set(String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new IllegalArgumentException("Please pass a command which is not null");
@@ -172,7 +180,7 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         return new SetReturn(w, handler.set(w));
+         return new SetReturn(w, handler.set(sessionId, w));
       }
       catch (XmlBlasterException e) {
          throw e;

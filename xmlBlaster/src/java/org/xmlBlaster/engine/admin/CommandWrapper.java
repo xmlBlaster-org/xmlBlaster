@@ -147,8 +147,11 @@ public final class CommandWrapper
    }
 
    /**
+    * <pre>
     * /node/heron/client/joe/ses17/?cb.queue.maxMsg
-    * @return "joe" in the above example
+    * /node/heron/msg/?hello
+    * </pre>
+    * @return "joe" or "?hello" in the above example
     */
    public final String getUserNameLevel() {
       return fourth;
