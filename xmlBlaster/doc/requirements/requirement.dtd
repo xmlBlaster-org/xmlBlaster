@@ -37,5 +37,6 @@
           type (NEW | BUG | CHANGE_REQUEST) "BUG"
 			 status (OPEN | INWORK | CLOSED) "OPEN">  
 
+<!ATTLIST example lang (Java | C | CPP | Perl | Python | TCL | Javascript) "Java">  
 <!ATTLIST fix status (OPEN | CLOSED) "OPEN">  
 <!ATTLIST test tool (SUITE | MANUAL) "SUITE">  
