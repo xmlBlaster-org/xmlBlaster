@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.40 2002/06/19 10:27:41 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.41 2002/06/20 13:11:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -147,9 +147,10 @@ public class CorbaDriver implements I_Driver
          iorFile = glob.getProperty().get("ior.file", (String)null);
          if(iorFile != null) {
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
+            //if (log.DUMP) log.dump(ME, "Dumping authRef=" + authRef + " to " + iorFile + ": " + orb.object_to_string(authRef));
             ps.println(orb.object_to_string(authRef));
             ps.close();
-            log.info(ME, "Published AuthServer IOR to file " + iorFile);
+            log.info(ME, "Published AuthServer IOR to file " + iorFile + ", this will be deleted on shutdown.");
          }
 
          // 2) Publish IOR on given port (switch off this feature with '-port 0'
