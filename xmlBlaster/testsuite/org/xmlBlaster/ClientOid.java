@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.7 1999/12/08 12:16:18 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.8 1999/12/09 00:22:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,9 +17,9 @@ import org.xmlBlaster.clientIdl.*;
  * This client tests the method get().
  * <p>
  * Invoke examples:
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid
  *
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid -name "Jeff" `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientOid -name "Jeff"
  */
 public class ClientOid
 {
