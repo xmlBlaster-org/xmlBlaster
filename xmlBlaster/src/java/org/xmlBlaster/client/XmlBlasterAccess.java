@@ -189,7 +189,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
 
             try {
                ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
-               StorageId queueId = new StorageId("client", getId());
+               StorageId queueId = new StorageId(Constants.RELATING_CLIENT, getId());
                this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                                                       this.connectQos.getClientQueueProperty());
                if (this.clientQueue == null) {
