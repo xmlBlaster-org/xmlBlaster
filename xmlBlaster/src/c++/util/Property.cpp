@@ -5,7 +5,7 @@
 #include "Property.h"
 #include <boost/lexical_cast.hpp>
 
-using boost::lexical_cast;
+using namespace boost;
 using namespace org::xmlBlaster::util;
 
 
@@ -221,9 +221,15 @@ Property::getTimestampProperty(const string &name, Timestamp def, bool env)
    string value = getProperty(name, env);
    if (value.length() == 0) return def;
    char *test = (char*)0;
-   long ret = STRING_TO_TIMESTAMP(value.c_str());
+//   Timestamp ret = STRING_TO_TIMESTAMP(value.c_str());
    if (test == value.c_str()) return def;
-//   Timestamp ret = lexical_cast<Timestamp>(value);
+   Timestamp ret = 0;
+   try {
+      lexical_cast<Timestamp>(value);
+   }
+   catch (...) {
+      ret = 0;
+   }
    return ret;
 }
 

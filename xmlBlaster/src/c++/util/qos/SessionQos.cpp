@@ -15,7 +15,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::util;
 using namespace std;
-using boost::lexical_cast;
+using namespace boost;
 
 
 /*---------------------------- SessionQosData --------------------------------*/

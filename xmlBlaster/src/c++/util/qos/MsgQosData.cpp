@@ -32,13 +32,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <limits.h>
 #include <boost/lexical_cast.hpp>
 
-using boost::lexical_cast;
-
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cluster;
-using org::xmlBlaster::util::qos::SessionQos;
-
 using namespace std;
+using namespace boost;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::cluster;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 

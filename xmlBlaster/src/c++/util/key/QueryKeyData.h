@@ -27,7 +27,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <string>
 
 using namespace std;
-using org::xmlBlaster::util::qos::AccessFilterQos;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 

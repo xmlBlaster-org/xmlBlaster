@@ -22,12 +22,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  */
 
 #ifndef _CLIENT_QOS_SUBSCRIBERETURNQOS_H
-#define	_CLIENT_QOS_SUBSCRIBERETURNQOS_H
+#define _CLIENT_QOS_SUBSCRIBERETURNQOS_H
 
 #include <util/qos/StatusQosData.h>
 
-using org::xmlBlaster::util::qos::StatusQosData;
 using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 

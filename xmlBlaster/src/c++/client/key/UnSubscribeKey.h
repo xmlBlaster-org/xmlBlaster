@@ -21,6 +21,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 
 using namespace std;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::key;
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {

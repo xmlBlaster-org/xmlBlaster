@@ -11,10 +11,10 @@ Comment:   Helper to easy get the callback messages
 #include <string>
 #include <client/key/UpdateKey.h>
 #include <client/qos/UpdateQos.h>
-// #define CLIENT_HEADER generated/xmlBlaster    // xmlBlaster.h
+
 using namespace std;
-using org::xmlBlaster::client::qos::UpdateQos;
-using org::xmlBlaster::client::key::UpdateKey;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 namespace org { namespace xmlBlaster { namespace client {
 /**
@@ -23,7 +23,7 @@ namespace org { namespace xmlBlaster { namespace client {
  * You may use this, if you don't want to program with the rawer CORBA 
  * BlasterCallback.update()
  *
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  * @author $Author: laghi $
  */
 class Dll_Export I_Callback {

@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.9 2003/01/12 00:47:51 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.10 2003/01/16 10:11:56 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -35,11 +35,10 @@ Version:   $Id: TestConnect.cpp,v 1.9 2003/01/12 00:47:51 laghi Exp $
 #include <util/EmbeddedServer.h>
 #include <util/Global.h>
 
-
-using org::xmlBlaster::client::XmlBlasterAccess;
-using namespace org::xmlBlaster::util;
 using namespace std;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::client;
 
 namespace org { namespace xmlBlaster {
 

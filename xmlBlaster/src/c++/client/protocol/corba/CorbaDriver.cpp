@@ -11,10 +11,8 @@ Comment:   The client driver for the corba protocol
 #include <util/Global.h>
 #include <boost/lexical_cast.hpp>
 
-using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::XmlBlasterException;
-using org::xmlBlaster::util::ErrorCode;
-using boost::lexical_cast;
+using namespace org::xmlBlaster::util;
+using namespace boost;
 
 using namespace std;
 

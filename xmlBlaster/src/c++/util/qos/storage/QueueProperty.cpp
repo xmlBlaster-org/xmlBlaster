@@ -9,7 +9,7 @@ Comment:   Holding callback queue properties
 #include <boost/lexical_cast.hpp>
 #include <util/Global.h>
 
-using boost::lexical_cast;
+using namespace boost;
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
@@ -119,7 +119,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 #ifdef _XMLBLASTER_CLASSTEST
 
 using namespace std;
-using org::xmlBlaster::util::qos::storage::QueueProperty;
+using namespace org::xmlBlaster::util::qos::storage;
 
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
 int main(int args, char* argv[])

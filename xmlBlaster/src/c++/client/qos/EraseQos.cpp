@@ -28,7 +28,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-using org::xmlBlaster::util::qos::QueryQosData;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 

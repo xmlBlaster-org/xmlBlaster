@@ -10,7 +10,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-using org::xmlBlaster::util::qos::storage::QueueProperty;
+using namespace org::xmlBlaster::util::qos::storage;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -174,11 +174,6 @@ bool MsgQueue::empty() const
 #include <util/qos/ConnectQos.h>
 #include <util/queue/ConnectQueueEntry.h>
 
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::queue::ConnectQueueEntry;
-
-using namespace std;
-using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::queue;
 
 int main(int args, char* argv[])

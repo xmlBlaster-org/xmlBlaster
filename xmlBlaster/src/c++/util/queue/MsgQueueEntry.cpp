@@ -7,10 +7,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/MsgQueueEntry.h>
 #include <util/Global.h>
 #include <boost/lexical_cast.hpp>
-using boost::lexical_cast;
 
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::MessageUnit;
+using namespace boost;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 /**
  * Class embedding messages or information to be stored on the client queues

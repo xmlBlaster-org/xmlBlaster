@@ -21,12 +21,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 #include <stddef.h>
 
-using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
-using org::xmlBlaster::client::protocol::I_XmlBlasterConnection;
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::ReferenceCounterBase;
-using org::xmlBlaster::util::MessageUnit;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::protocol;
 
 /**
  * Class embedding messages or information to be stored on the client queues

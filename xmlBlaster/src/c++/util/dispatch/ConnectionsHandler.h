@@ -30,6 +30,7 @@ Comment:   Handles the I_XmlBlasterConnections
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {

@@ -14,7 +14,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-using boost::lexical_cast;
+using namespace boost;
 
 /*---------------------------- ConnectQosData --------------------------------*/
 

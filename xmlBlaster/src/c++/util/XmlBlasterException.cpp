@@ -10,7 +10,7 @@ Comment:   Basic xmlBlaster exception.
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util {
 

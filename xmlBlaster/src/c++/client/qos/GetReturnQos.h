@@ -35,6 +35,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 # include <util/qos/MsgQosData.h>
 
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cluster;
 
 using namespace std;

@@ -11,7 +11,7 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/Timeout.h>
 #include <boost/lexical_cast.hpp>
 
-using boost::lexical_cast;
+using namespace boost;
 
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;

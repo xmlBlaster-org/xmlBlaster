@@ -10,7 +10,9 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifndef _CLIENT_PROTOCOL_CORBA_CORBACONNECTION_H
 #define _CLIENT_PROTOCOL_CORBA_CORBACONNECTION_H
 
-#include <util/XmlBCfg.h>
+// #include <util/XmlBCfg.h>
+#include <util/xmlBlasterDef.h>
+
 #include <string>
 #include <vector>
 #include <fstream>
@@ -27,12 +29,11 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define  SERVER_HEADER generated/xmlBlaster
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING
+
 using namespace std;
 using namespace org::xmlBlaster::util::qos; // ConnectQos + ConnectReturnQos
 using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util::qos;
-using org::xmlBlaster::client::protocol::corba::NameServerControl;
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util;
 
 namespace org {
  namespace xmlBlaster {

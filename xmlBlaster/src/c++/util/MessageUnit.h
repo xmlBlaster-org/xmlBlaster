@@ -16,10 +16,11 @@ Comment:   Holding a message
 #include <util/qos/MsgQosData.h>
 #include <util/key/MsgKeyData.h>
 
-
 using namespace std;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
+using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace util {
    

@@ -3,13 +3,11 @@ Name:      ReferenceCounterBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper class to be used as a base for classes to be reference counted
-Version:   $Id: ReferenceCounterBase.h,v 1.5 2003/01/15 11:39:42 johnson Exp $
+Version:   $Id: ReferenceCounterBase.h,v 1.6 2003/01/16 10:11:44 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCECOUNTERBASE_H
 #define _UTIL_REFERENCECOUNTERBASE_H
-
-#include <util/XmlBCfg.h>
 
 // using namespace std;
 
@@ -22,7 +20,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 
-class Dll_Export ReferenceCounterBase 
+class ReferenceCounterBase 
 {
 private:
    mutable int  refCount_;

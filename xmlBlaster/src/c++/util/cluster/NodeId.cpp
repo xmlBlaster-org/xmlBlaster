@@ -19,7 +19,7 @@ Comment:   Holds the unique name of a cluster node
 #include <boost/lexical_cast.hpp>
 
 using namespace org::xmlBlaster::util;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 

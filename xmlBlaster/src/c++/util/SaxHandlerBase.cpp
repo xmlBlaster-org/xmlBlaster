@@ -16,7 +16,6 @@ Comment:   Default handling of Sax callbacks
 #include <sax/SAXException.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <util/Timestamp.h>
 
 # include <boost/lexical_cast.hpp>
 
@@ -216,8 +215,8 @@ SaxHandlerBase::getLocationString(const SAXParseException &ex)
     if (index != -1) systemId = systemId.substr(index + 1);
     str += systemId;
   }
-  return str + ":" + boost::lexical_cast<string>(ex.getLineNumber()) 
-             + ":" + boost::lexical_cast<string>(ex.getColumnNumber());
+  return str + ":" +lexical_cast<string>(ex.getLineNumber()) 
+             + ":" + lexical_cast<string>(ex.getColumnNumber());
 }
 
    
@@ -366,8 +365,8 @@ bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* co
    string buf;
    bool ret = getStringAttr(list, name, buf);
    if (ret) {
-      value = STRING_TO_TIMESTAMP(buf.c_str());
-      //value = lexical_cast<Timestamp>(buf); 
+//      value = STRING_TO_TIMESTAMP(buf.c_str());
+      value = lexical_cast<Timestamp>(buf); 
       return true;
    }
    return false;
@@ -444,7 +443,8 @@ SaxHandlerBase::getTimestampValue(const XMLCh* const value)
       help1 = XMLString::transcode(value);
       help2 = charTrimmer_.trim(help1);
       // this might not be fully ansi compatible
-      ret = STRING_TO_TIMESTAMP(help2);
+//      ret = STRING_TO_TIMESTAMP(help2);
+      ret = lexical_cast<Timestamp>(help2);
    }
    catch (...) {}
    delete help1;

@@ -10,7 +10,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/ConnectQos.h>
 #include <util/MessageUnit.h>
-// #include <util/queue/MsgQueueEntry.h>
 #include <util/dispatch/DeliveryManager.h>
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/CbServerPluginManager.h>
@@ -22,8 +21,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <string>
 #include <vector>
 
-using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::dispatch::DeliveryManager;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::client::protocol;
 
 namespace org { namespace xmlBlaster { namespace client {
 
@@ -33,9 +34,6 @@ namespace org { namespace xmlBlaster { namespace client {
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  * </p>
  */
-
-using namespace org::xmlBlaster::client::protocol;
-// using org::xmlBlaster::util::queue::MsgQueueEntry;
 
 class XmlBlasterAccess : public I_Callback
 {

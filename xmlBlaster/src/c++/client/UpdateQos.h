@@ -14,7 +14,7 @@ Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
 #include <util/Global.h>
 
 using namespace std;
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster {
    

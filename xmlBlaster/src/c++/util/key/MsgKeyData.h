@@ -41,6 +41,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <string>
 
 using namespace std;
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace util { namespace key {
 

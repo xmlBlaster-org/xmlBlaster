@@ -24,6 +24,8 @@ Comment:   Manager to retrieve the correct delivery protocol
 #include <string>
 // #include <map>
 
+using namespace org::xmlBlaster::util;
+
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
 #ifndef _UTIL_DISPATCH_CONNECTIONSHANDLER_H

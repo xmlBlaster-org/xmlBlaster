@@ -8,18 +8,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Global.h>
 #include <boost/lexical_cast.hpp>
 
-using namespace std;
 using namespace boost;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::client::protocol;
 
 namespace org { namespace xmlBlaster { namespace client {
 
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::qos::ConnectReturnQos;
-using namespace org::xmlBlaster::client::protocol;
-using org::xmlBlaster::util::Log;
-using org::xmlBlaster::util::MessageUnit;
-// using org::xmlBlaster::util::queue::MsgQueueEntry;
 
 XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
    : ME(string("XmlBlasterAccess-") + instanceName),
@@ -246,7 +242,7 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUni
              log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
-   return connection_->publishArr(msgUnitArr);
+   connection_->publishArr(msgUnitArr);
 }
 
 vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQos& qos)

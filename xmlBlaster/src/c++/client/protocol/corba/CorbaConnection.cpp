@@ -6,10 +6,11 @@ Comment:   Helper to connect to xmlBlaster: for now a simplified version
            without caching and without failsafe mode.
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
+/*
 #ifdef _WINDOWS
 #pragma warning(disable:4786)
 #endif
-
+*/
 #include <client/protocol/corba/CorbaConnection.h>
 #include <util/Constants.h>
 #include <sys/types.h>
@@ -25,8 +26,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #include <util/Global.h>
 
-using org::xmlBlaster::util::qos;
-using org::xmlBlaster::client::protocol::corba::NameServerControl;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org {
  namespace xmlBlaster {

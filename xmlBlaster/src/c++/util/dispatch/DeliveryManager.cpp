@@ -20,7 +20,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
-using org::xmlBlaster::client::protocol::corba::CorbaDriver;
+using namespace org::xmlBlaster::client::protocol::corba;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 

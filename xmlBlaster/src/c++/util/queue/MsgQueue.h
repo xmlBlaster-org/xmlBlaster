@@ -30,8 +30,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <set>
 
 using namespace std;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
-using org::xmlBlaster::util::qos::storage::QueueProperty;
+using namespace org::xmlBlaster::util::qos::storage;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -97,7 +98,7 @@ public:
 
     /**
      * returns true if the queue is empty, false otherwise
-     */					 
+     */                                  
      bool empty() const;
 
 };

@@ -15,7 +15,7 @@
 #include <util/Destination.h>
 
 using namespace std;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster {
    

@@ -21,7 +21,7 @@ Comment:   The Factory for the simple QosSecurityQos
 
 #include <authentication/SecurityQos.h>
 
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace authentication {
 

@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.2 2003/01/12 00:47:47 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.3 2003/01/16 10:11:53 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -12,7 +12,7 @@ Version:   $Id: QueuePropertyFactory.cpp,v 1.2 2003/01/12 00:47:47 laghi Exp $
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 

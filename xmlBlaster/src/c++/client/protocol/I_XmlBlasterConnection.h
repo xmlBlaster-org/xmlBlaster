@@ -24,7 +24,8 @@ Comment:   Interface (virtual class)
 
 #include <client/xmlBlasterClient.h>
 
-using org::xmlBlaster::util::MessageUnit;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 

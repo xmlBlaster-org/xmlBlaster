@@ -7,8 +7,9 @@ Comment:   The qos for the security (a subelement of connect qos)
 #include <authentication/SecurityQos.h>
 #include <string>
 #include <util/StringStripper.h>
+#include <util/Global.h>
 
-using org::xmlBlaster::util::StringStripper;
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { namespace authentication {
 

@@ -16,7 +16,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <boost/lexical_cast.hpp>
 #include <util/Global.h>
 
-using boost::lexical_cast;
+using namespace boost;
 using namespace org::xmlBlaster::util;
 using namespace std;
 

@@ -15,7 +15,7 @@ Comment:   Handling one xmlKey, knows how to parse it with DOM
 #include <util/Global.h>
 
 using namespace std;
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util;
 
 namespace org { namespace xmlBlaster { 
    

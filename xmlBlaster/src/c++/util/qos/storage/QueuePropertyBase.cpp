@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.8 2003/01/13 11:28:39 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.9 2003/01/16 10:11:53 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -20,7 +20,7 @@ Version:   $Id: QueuePropertyBase.cpp,v 1.8 2003/01/13 11:28:39 ruff Exp $
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 

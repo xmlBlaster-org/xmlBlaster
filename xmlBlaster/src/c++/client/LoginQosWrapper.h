@@ -30,7 +30,7 @@ Comment:   Handling one xmlQoS
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
 using namespace std;
-using org::xmlBlaster::util::qos::address::CallbackAddress;
+using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster {
    

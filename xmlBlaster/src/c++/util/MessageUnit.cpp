@@ -18,8 +18,9 @@ Comment:   Holding a message
 #include <util/MessageUnit.h>
 
 using namespace std;
-
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util::qos;
    
 /**
  * Holding a message. 

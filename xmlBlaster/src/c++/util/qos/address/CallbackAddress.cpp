@@ -3,7 +3,7 @@ Name:      CallbackAddress.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.cpp,v 1.2 2003/01/07 20:41:42 laghi Exp $
+Version:   $Id: CallbackAddress.cpp,v 1.3 2003/01/16 10:11:53 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/address/CallbackAddress.h>
@@ -13,7 +13,7 @@ Version:   $Id: CallbackAddress.cpp,v 1.2 2003/01/07 20:41:42 laghi Exp $
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
 using namespace org::xmlBlaster::util;
-using boost::lexical_cast;
+using namespace boost;
 
 inline void CallbackAddress::initialize()
 {
@@ -134,7 +134,7 @@ string CallbackAddress::usage()
 #ifdef _XMLBLASTER_CLASSTEST
 
 using namespace std;
-using org::xmlBlaster::util::qos::address::CallbackAddress;
+using namespace org::xmlBlaster::util::qos::address;
 
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
 int main(int args, char* argv[])

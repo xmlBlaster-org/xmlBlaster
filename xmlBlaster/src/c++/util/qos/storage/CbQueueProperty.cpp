@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.3 2003/01/08 16:03:39 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.4 2003/01/16 10:11:53 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -18,8 +18,7 @@ Version:   $Id: CbQueueProperty.cpp,v 1.3 2003/01/08 16:03:39 laghi Exp $
 #include <ctype.h> // for toUpper
 #include <util/Global.h>
 
-using boost::lexical_cast;
-
+using namespace boost;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
 
@@ -207,7 +206,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 #ifdef _XMLBLASTER_CLASSTEST
 
 using namespace std;
-using org::xmlBlaster::util::qos::storage::CbQueueProperty;
+using namespace org::xmlBlaster::util::qos::storage;
 
 /** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
 int main(int args, char* argv[])

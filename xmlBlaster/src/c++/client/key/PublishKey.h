@@ -16,6 +16,7 @@
 #include <client/key/MsgKeyBase.h>
 
 using namespace std;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::key;
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {

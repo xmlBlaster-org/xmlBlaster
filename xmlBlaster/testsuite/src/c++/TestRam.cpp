@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.1 2003/01/12 00:47:51 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.2 2003/01/16 10:11:57 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -19,12 +19,12 @@ Version:   $Id: TestRam.cpp,v 1.1 2003/01/12 00:47:51 laghi Exp $
 #include <util/EmbeddedServer.h>
 
 using namespace std;
-using org::xmlBlaster::client::XmlBlasterAccess;
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::XmlBlasterException;
-using org::xmlBlaster::authentication::SecurityQos;
+using namespace boost;
+using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::authentication;
 
-using boost::lexical_cast;
 
 /**
  * This client publishes 1000 different messages to measure RAM
