@@ -3,12 +3,12 @@ Name:      SubjectMsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: SubjectMsgQueue.java,v 1.5 2002/05/03 13:46:09 ruff Exp $
+Version:   $Id: SubjectMsgQueue.java,v 1.6 2002/05/26 16:30:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.CbQueueProperty;

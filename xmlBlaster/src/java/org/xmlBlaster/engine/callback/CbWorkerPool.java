@@ -3,12 +3,12 @@ Name:      CbWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: CbWorkerPool.java,v 1.5 2002/05/11 09:36:24 ruff Exp $
+Version:   $Id: CbWorkerPool.java,v 1.6 2002/05/26 16:32:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.queue.MsgQueue;
@@ -24,6 +24,7 @@ public class CbWorkerPool
 {
    public final String ME = "CbWorkerPool";
    private final Global glob;
+   private final LogChannel log;
    private final PooledExecutor pool;
    private int maximumPoolSize;
    private int minimumPoolSize;
@@ -35,6 +36,7 @@ public class CbWorkerPool
    public CbWorkerPool(Global glob)
    {
       this.glob = glob;
+      this.log = glob.getLog("cb");
       this.pool = new PooledExecutor(new LinkedQueue());
 
       maximumPoolSize = glob.getProperty().get("cb.maximumPoolSize", 200);
@@ -56,7 +58,7 @@ public class CbWorkerPool
       }
       catch (Throwable e) {
          queue.setCbWorkerIsActive(false);
-         Log.error(ME, "Callback failed: " + e.toString());
+         log.error(ME, "Callback failed: " + e.toString());
          throw new XmlBlasterException(ME, "Callback failed: " + e.toString());
       }
    }

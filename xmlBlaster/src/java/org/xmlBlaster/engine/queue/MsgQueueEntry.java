@@ -3,17 +3,17 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.7 2002/05/20 13:30:15 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.8 2002/05/26 16:30:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -37,6 +37,7 @@ public class MsgQueueEntry
    private final static String ME = "MsgQueueEntry";
 
    private final Global glob;
+   private final LogChannel log;
 
    /** The SubscriptionInfo if a Pub/Sub message, is null for PtP messages */
    private final SubscriptionInfo subscriptionInfo;
@@ -65,12 +66,13 @@ public class MsgQueueEntry
     */
    public MsgQueueEntry(Global glob, SubjectInfo receiverSubjectInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (receiverSubjectInfo == null || msgUnitWrapper == null) {
-         Log.error(ME, "Invalid constructor parameter");
+         Global.instance().getLog("cb").error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
 
       this.glob = glob;
+      this.log = glob.getLog("cb");
       this.isSubjectQueue = true;
       this.subscriptionInfo = null;
       this.receiverSubjectInfo = receiverSubjectInfo;
@@ -78,7 +80,7 @@ public class MsgQueueEntry
       this.msgUnitWrapper = msgUnitWrapper;
       initialize();
 
-      if (Log.TRACE) Log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
    }
 
    /**
@@ -89,19 +91,20 @@ public class MsgQueueEntry
     */
    public MsgQueueEntry(Global glob, SessionInfo receiverSessionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (receiverSessionInfo == null || msgUnitWrapper == null) {
-         Log.error(ME, "Invalid constructor parameter");
+         Global.instance().getLog("cb").error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
       
       this.glob = glob;
+      this.log = glob.getLog("cb");
       this.subscriptionInfo = null;
       this.receiverSessionInfo = receiverSessionInfo;
       this.receiverSubjectInfo = receiverSessionInfo.getSubjectInfo();
       this.msgUnitWrapper = msgUnitWrapper;
       initialize();
 
-      if (Log.TRACE) Log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
    }
 
    /**
@@ -112,19 +115,20 @@ public class MsgQueueEntry
     */
    public MsgQueueEntry(Global glob, SubscriptionInfo subscriptionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (subscriptionInfo == null || msgUnitWrapper == null) {
-         Log.error(ME, "Invalid constructor parameter with subscriptionInfo");
+         Global.instance().getLog("cb").error(ME, "Invalid constructor parameter with subscriptionInfo");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
       
       this.glob = glob;
+      this.log = glob.getLog("cb");
       this.subscriptionInfo = subscriptionInfo;
       this.receiverSessionInfo = subscriptionInfo.getSessionInfo();
       this.receiverSubjectInfo = this.receiverSessionInfo.getSubjectInfo();
       this.msgUnitWrapper = msgUnitWrapper;
       initialize();
 
-      if (Log.TRACE) Log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
    }
 
    private final void initialize() throws XmlBlasterException
@@ -135,7 +139,7 @@ public class MsgQueueEntry
 
    public void finalize()
    {
-      if (Log.TRACE) Log.trace(ME, "finalize - garbage collect");
+      if (log.TRACE) log.trace(ME, "finalize - garbage collect");
    }
 
    public final boolean isExpired()
@@ -157,7 +161,7 @@ public class MsgQueueEntry
          return this.receiverSessionInfo;
       
       if (this.receiverSessionInfo == null && this.subscriptionInfo == null && this.receiverSubjectInfo == null) {
-         Log.error(ME, "Internal error: Nobody has set the receiverSessionInfo");
+         log.error(ME, "Internal error: Nobody has set the receiverSessionInfo");
          Thread.currentThread().dumpStack();
       }
       else if (this.subscriptionInfo != null) {
@@ -192,7 +196,7 @@ public class MsgQueueEntry
          return this.receiverSubjectInfo.getSubjectQueue();
       else if (this.receiverSessionInfo != null)
          return this.receiverSessionInfo.getSessionQueue();
-      Log.error(ME, "Unknown queue");
+      log.error(ME, "Unknown queue");
       return null;
    }
 
@@ -259,7 +263,7 @@ public class MsgQueueEntry
    public final MessageUnit getMessageUnit(int index, int max, int redeliver) throws XmlBlasterException
    {
       if (msgUnit == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
       }
       msgUnit.qos = getUpdateQos(index, max, redeliver);
@@ -274,7 +278,7 @@ public class MsgQueueEntry
    public final MessageUnit getMessageUnit() throws XmlBlasterException
    {
       if (msgUnit == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
       }
       return msgUnit;
@@ -334,7 +338,7 @@ public class MsgQueueEntry
     * </ol>
     */
    public final int compare(MsgQueueEntry m2) {
-      //Log.info(ME, "Entering compare A=" + getRcvTimestamp().getTimestamp() + " B=" + m2.getRcvTimestamp().getTimestamp());
+      //log.info(ME, "Entering compare A=" + getRcvTimestamp().getTimestamp() + " B=" + m2.getRcvTimestamp().getTimestamp());
       int diff = m2.getPriority() - getPriority();
       if (diff != 0) // The higher prio wins
          return diff;
