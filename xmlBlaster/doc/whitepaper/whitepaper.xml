@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <article>
    <title>
-      <para><graphic fileref="tims_rainbowfish_small.gif"/>
+      <para><graphic fileref="/tims_rainbowfish_small.gif"/>
          White Paper XmlBlaster</para>
       <para>Message-oriented Middleware (MOM)</para>
    </title>
