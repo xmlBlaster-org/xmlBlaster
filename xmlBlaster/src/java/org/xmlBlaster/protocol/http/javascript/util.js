@@ -43,9 +43,9 @@ function getBrowserInfo()
  */
 function getFromUrlParam(urlParams, key, defaultValue)
 {
-   Log.trace("Looking for key='" + key + "' in URL params=" + urlParams);
+   // Log.trace("Looking for key='" + key + "' in URL params=" + urlParams);
    if (urlParams == null || urlParams.length < 5) {
-      Log.warning("Your URL parameters are empty");
+      Log.warning("Your URL parameters are empty, can't find '" + key + "', using default = '" + defaultValue + "'");
       return defaultValue;
    }
 
@@ -59,11 +59,11 @@ function getFromUrlParam(urlParams, key, defaultValue)
       var pos = param.indexOf(key);
       if (pos != -1) {
          value = param.substring(pos + key.length + 1); // strip the '=' as well
-         Log.trace("URL parameter " + key + " found, value = '" + value + "'");
+         Log.trace("URL parameter '" + key + "' found, value = '" + value + "'");
          return value;
       }
    }
-   Log.trace("Your URL parameter " + key + " is missing, returning " + defaultValue);
+   Log.trace("Your URL parameter '" + key + "' is missing, returning " + defaultValue);
    return defaultValue;
 }
 
