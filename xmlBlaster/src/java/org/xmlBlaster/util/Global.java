@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.34 2002/06/19 10:27:41 ruff Exp $
+Version:   $Id: Global.java,v 1.35 2002/06/23 08:38:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -31,6 +31,8 @@ import java.net.MalformedURLException;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Enumeration;
+
+import java.net.Socket;
 
 
 /**
@@ -60,6 +62,9 @@ public class Global implements Cloneable
    protected String[] args;
    protected Property property = null;
    protected String errorText = null;
+
+   protected String cbHostname = null;
+
 
    // deprecated
    protected org.xmlBlaster.util.Log log;
@@ -713,6 +718,30 @@ public class Global implements Cloneable
                         " port=" + bootstrapAddress.getPort() + ": " + bootstrapAddress.getAddress());
       }
       return bootstrapAddress;
+   }
+
+   /**
+    * Returns a local IP or hostname as a default setting. 
+    * <p />
+    * It is determined by doing a short connect to the xmlBlaster HTTP server
+    * an reading the used local hostname.
+    * @return The default IP or null
+    */
+   public String getCbHostname() {
+      if (this.cbHostname == null) {
+         try {
+            Address addr = getBootstrapAddress();
+            Socket sock = new Socket(addr.getHostname(), addr.getPort());
+            this.cbHostname = sock.getLocalAddress().getHostAddress();
+            sock.close();
+            sock = null;
+            if (log.TRACE) log.trace(ME, "Default cb host is " + this.cbHostname);
+         }
+         catch (java.io.IOException e) {
+            log.trace(ME, "Can't find default cb hostname: " + e.toString());
+         }
+      }
+      return this.cbHostname;
    }
 
    /**
