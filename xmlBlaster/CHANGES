@@ -3,6 +3,16 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes svn
 ===========
+ o #12696 Added org.xmlBlaster.engine.DeadMessageDumper plugin to dump
+   dead messages to hard disk, supports republishing (see javadoc)
+
+ o #12689,#12690 Added '__deadMessageReason' ClientProperty to dead messages
+
+ o #12685,#12686 New server flag -xmlBlaster/acceptWrongSenderAddress/<subjectId>  true/false [false]
+   -xmlBlaster/acceptWrongSenderAddress/joe true
+    Allows user 'joe' to send a wrong sender address in PublishQos
+    Useful to resend dead messages with 'javaclients.script.XmlScript'
+
  o #12681 Checking subscription handle to be null to avoid IllegalArgumentException
    Thanks to aaron@mindwidgets.com
 
