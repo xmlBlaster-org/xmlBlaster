@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.error;
 
+import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.Global;
@@ -24,33 +25,33 @@ import org.xmlBlaster.util.enum.Constants;
 public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
 {
    private final MsgQueueEntry[] msgQueueEntries;
-   private final I_Queue queue;
+   private final DeliveryManager deliveryManager;
    private final XmlBlasterException xmlBlasterException;
 
    /**
     * Creates an error info instance with errorCode="internal.unknown"
-    * @param queue The queue where the entry is inside, null if the entry is not in a queue
+    * @param deliveryManager The deliveryManager/queue where the entry is inside, null if the entry is not in a queue
     * @param throwable Creates an error info instance with errorCode="internal.unknown" <br />
     *        if throwable instanceof XmlBlasterException we use the given exception
     */
-   public MsgErrorInfo(Global glob, MsgQueueEntry msgQueueEntry, I_Queue queue, Throwable throwable) {
+   public MsgErrorInfo(Global glob, MsgQueueEntry msgQueueEntry, DeliveryManager deliveryManager, Throwable throwable) {
       this(glob, (msgQueueEntry == null) ? new MsgQueueEntry[0] : new MsgQueueEntry[]{ msgQueueEntry },
-                                                                      queue, throwable);
+                                                                      deliveryManager, throwable);
    }
 
    /**
     * Creates an error info instance for an array of message queue entries
-    * @param queue The queue where the entry is inside, null if the entry is not in a queue
+    * @param deliveryManager The deliveryManager/queue where the entry is inside, null if the entry is not in a queue
     * @param throwable Creates an error info instance with errorCode="internal.unknown" <br />
     *        if throwable instanceof XmlBlasterException we use the given exception
     */
-   public MsgErrorInfo(Global glob, MsgQueueEntry[] msgQueueEntries, I_Queue queue, Throwable throwable) {
+   public MsgErrorInfo(Global glob, MsgQueueEntry[] msgQueueEntries, DeliveryManager deliveryManager, Throwable throwable) {
       if (throwable == null) {
          Thread.currentThread().dumpStack();
          throw new IllegalArgumentException("MsgErrorInfo: xmlBlasterException may not be null");
       }
       this.msgQueueEntries = (msgQueueEntries == null) ? (new MsgQueueEntry[0]) : msgQueueEntries;
-      this.queue = queue;
+      this.deliveryManager = deliveryManager;
       this.xmlBlasterException = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
                          new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, 
                             "MsgErrorInfo.INTERNAL", (throwable==null) ? "NO INFO" : throwable.toString());
@@ -69,7 +70,11 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
     * @return null if entries are not in a queue
     */
    public I_Queue getQueue() {
-      return this.queue;
+      return (this.deliveryManager != null) ? this.deliveryManager.getQueue() : null;
+   }
+
+   public DeliveryManager getDeliveryManager() {
+      return this.deliveryManager;
    }
 
    /**
