@@ -1,0 +1,45 @@
+#! /usr/local/bin/perl -w
+
+# Client program for COPE object implementation examples
+# Assumes it will get the stringified IOR for the server's Supervisor
+# object on the command line
+
+use lib '.';
+
+use COPE::CORBA::ORB;
+use authenticateIdl::AuthServer;
+use serverIdl::Server;
+use clientIdl::BlasterCallback;
+use Experimental::Exception;
+
+my $orb = CORBA::ORB_init();
+
+$ARGV[0] or die "Usage: $0 <ior_string>";
+
+my $super = $orb->string_to_object($ARGV[0]);
+$super = authenticateIdl::AuthServer->_narrow($super);
+
+
+#-------------- login() to AuthServer_obj ---------
+my $xmlBlaster = $super->login("Perl-Heidi", "secret", "", "");
+print "login successfull\n";
+
+
+#-------------- publish() a message -------------
+#my $xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n"
+#             "<key oid=''>\n"
+#             "<AGENT id='192.168.124.10' subId='1' type='generic'>"
+#             "<DRIVER id='FileProof' pollingFreq='10'>"
+#             "</DRIVER>"
+#             "</AGENT>"
+#             "</key>";
+
+my $message;
+#my serverIdl::MessageUnit message;
+#my message.xmlKey = xmlKey.c_str();
+my $content = "Hello xmlBlaster, i'm a C++ client";
+#??? my message.content(MICO_ULong(content.size()), MICO_ULong(content.size()), (CORBA::Octet*)content.c_str());
+
+my $publishOid = $xmlBlaster->publish($message, "");
+print "Successfull published message with new oid=$publishOid";
+

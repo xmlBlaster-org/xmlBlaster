@@ -1,0 +1,26 @@
+This is an example to access xmlBlaster from a Perl client
+
+- client uses the COPE (Perl) CORBA library
+
+- xmlBlaster runs with JacORB (Java)
+
+
+1.) Install COPE (0.50_51) and set the PATH variable to point to idl2perl
+
+   export PATH=${PATH}_/usr/bin
+
+
+2) Generate idl perl stubs with:
+
+   make all
+
+
+3) Start the xmlBlaster server
+
+	 ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+
+
+4) And connect with the Perl client
+
+	 ./client `cat /tmp/NS_Ref`
+
