@@ -81,6 +81,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public void shutdown() {
       super.shutdown();
       if (log.TRACE) log.trace(ME, "Destroying engine.Global handle");
+
+      try {
+         unregisterJmx();
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Ignoring exception during JMX unregister: " + e.getMessage());
+      }
+
       if (sessionTimer != null) {
          sessionTimer.shutdown();
          sessionTimer = null;
@@ -451,20 +459,29 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-     * @return the JmxWrapper used to manage the MBean resources
-     */
-     public JmxWrapper getJmxWrapper() throws XmlBlasterException {
-       if (this.jmxWrapper == null) {
-          synchronized (this) {
-             if (this.jmxWrapper == null) {
-                this.jmxWrapper = new JmxWrapper(this);
-             }
-          }
-       }
-       return this.jmxWrapper;
-     }
+    * @return the JmxWrapper used to manage the MBean resources
+    */
+    public JmxWrapper getJmxWrapper() throws XmlBlasterException {
+      if (this.jmxWrapper == null) {
+         synchronized (this) {
+            if (this.jmxWrapper == null) {
+               boolean activateJmx = getProperty().get("xmlBlaster.activateJmx", false);
+               if (activateJmx) {
+                  this.jmxWrapper = new JmxWrapper(this);
+               }
+            }
+         }
+      }
+      return this.jmxWrapper;
+    }
 
 
+    public synchronized void unregisterJmx() throws XmlBlasterException {
+      if (this.jmxWrapper != null) {
+         this.jmxWrapper.unRegister(getStrippedId());
+         this.jmxWrapper = null;
+      }
+    }
 
    /**
     * Access instance of remote command administration manager.

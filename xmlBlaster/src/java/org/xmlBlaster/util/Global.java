@@ -299,31 +299,6 @@ public class Global implements Cloneable
 
 
    /**
-    * @return the JmxWrapper used to manage the MBean resources
-    */
-    public JmxWrapper getJmxWrapper() throws XmlBlasterException {
-      if (this.jmxWrapper == null) {
-         synchronized (this) {
-            if (this.jmxWrapper == null) {
-               boolean activateJmx = getProperty().get("xmlBlaster.activateJmx", false);
-               if (activateJmx) {
-                  this.jmxWrapper = new JmxWrapper(this);
-               }
-            }
-         }
-      }
-      return this.jmxWrapper;
-    }
-
-
-    public synchronized void unregisterJmx() throws XmlBlasterException {
-      if (this.jmxWrapper != null) {
-         this.jmxWrapper.unRegister(getStrippedId());
-         this.jmxWrapper = null;
-      }
-    }
-
-   /**
     * See @build.timestamp@ which will be replaced by build.xml with the current timestamp
     * @return e.g. "06/17/2002 01:38 PM"
     */
@@ -1852,13 +1827,6 @@ public class Global implements Cloneable
       if (this.xmlProcessor != null) {
          this.xmlProcessor.shutdown();
          this.xmlProcessor = null;
-      }
-
-      try {
-         unregisterJmx();
-      }
-      catch (XmlBlasterException e) {
-         log.warn(ME, "Ignoring exception during JMX unregister: " + e.getMessage());
       }
 
       synchronized (Global.class) {
