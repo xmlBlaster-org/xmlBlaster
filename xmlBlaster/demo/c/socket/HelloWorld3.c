@@ -245,7 +245,7 @@ int main(int argc, char** argv)
  
    if (true) {  /* publishOneway */
       MsgUnitArr holder;
-      printf("[client] Publishing oneway messages 'HelloWorld1' and 'HelloWorld1' ...\n");
+      printf("[client] Publishing oneway messages 'HelloWorld0' and 'HelloWorld1' ...\n");
       holder.len = 2;
       holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
       holder.msgUnitArr[0].key = strcpyAlloc("<key oid='HelloWorld0'/>");
