@@ -18,7 +18,7 @@ Changes for 0.xxx [xxx, xx 2003]
       import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
       import org.xmlBlaster.client.I_ConnectionHandler;
       I_ConnectionProblems  ->  I_ConnectionStateListener
-        void reConnected()  ->    boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
+        reConnected()       ->    reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
         lostConnection()    ->    reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
                             ->    reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler)
       con.initFailSave(...  ->  con.registerConnectionListener(...
