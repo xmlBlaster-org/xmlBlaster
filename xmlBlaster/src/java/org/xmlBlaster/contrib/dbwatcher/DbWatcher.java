@@ -124,10 +124,10 @@ public class DbWatcher implements I_ChangeListener {
 
       // Now we load all plugins to do the job
       
-      String converterClass = this.info.get("converter.class", "org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter");
-      String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher");
-      String changeDetectorClass = this.info.get("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector");
-      String alerSchedulerClasses = this.info.get("alertProducer.class", "org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler"); // comma separated list
+      String converterClass = this.info.get("converter.class", "org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter").trim();
+      String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher").trim();
+      String changeDetectorClass = this.info.get("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector").trim();
+      String alerSchedulerClasses = this.info.get("alertProducer.class", "org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler").trim(); // comma separated list
    
       if (converterClass.length() > 0) {
           this.dataConverter = (I_DataConverter)cl.loadClass(converterClass).newInstance();
@@ -247,14 +247,12 @@ public class DbWatcher implements I_ChangeListener {
    public int publishMessagesFromStmt(final String stmt, final boolean useGroupCol,
                                final ChangeEvent changeEvent,
                                Connection conn) throws Exception {
-      if (conn == null) {
-         throw new IllegalArgumentException("publishMessagesFromStmt() does not support passing a null JDBC-Connection");
-      }
+      boolean autoCommit = (conn == null);
       this.changeCount = 0;
       final String command = (changeEvent.getCommand() == null) ? "UPDATE" : changeEvent.getCommand();
       Connection connRet = null;
       try {
-          connRet = this.dbPool.select(conn, stmt, new I_ResultCb() {
+          connRet = this.dbPool.select(conn, stmt, autoCommit, new I_ResultCb() {
              public void result(ResultSet rs) throws Exception {
                 if (log.isLoggable(Level.FINE)) log.fine("Processing result set for '" + stmt + "'");
                 String groupColName = changeEvent.getGroupColName();
@@ -357,7 +355,42 @@ public class DbWatcher implements I_ChangeListener {
       }
       return text;
    }
-   
+
+   /*
+   public static String replaceVariable(String text, Map replacements) throws Exception {
+      if (replacements == null || replacements.size() < 1) return text;
+      int i;
+      for (i = 0; i<50; i++) {
+         int offset = 2;
+         int from = text.indexOf("${");
+         if (from == -1) {
+            from = text.indexOf("$_{");
+            offset = 3;
+            if (from == -1) {
+               break;
+            }
+         }
+         int to = text.indexOf("}", from);
+         if (to == -1) {
+            throw new Exception("Invalid variable '" + text.substring(from) + "', expecting ${} syntax in '" + text + "'");
+         }
+         String sub = text.substring(from, to + 1); // "${XY}" or $_{XY}
+         String subKey = sub.substring(offset, sub.length() - 1); // "XY"
+         String subValue = (String)replacements.get(subKey);
+         if (subValue == null) {
+            throw new Exception("Unknown variable '" + subKey + "' in '" + text + "'");
+         }
+         text = text.substring(0, from) + subValue + text.substring(to+1);
+      }
+      
+      if (i>49)
+        log.warning("Max. recursion depth reached, please check ${} replacement in '" + text + "'");
+    
+      return text;
+   }
+   */
+
+
    /**
     * Cleanup resources.
     * @throws Exception Can be of any type 
@@ -366,9 +399,9 @@ public class DbWatcher implements I_ChangeListener {
       for (int i=0; i<this.alertProducerArr.length; i++) {
          try { this.alertProducerArr[i].shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
       }
-      try { this.changeDetector.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
-      try { this.dataConverter.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
-      try { this.publisher.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
+      try { if (this.changeDetector != null) this.changeDetector.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
+      try { if (this.dataConverter != null) this.dataConverter.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
+      try { if (this.publisher != null) this.publisher.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
       if (this.poolOwner && this.dbPool != null) {
          this.dbPool.shutdown();
          this.dbPool = null;
