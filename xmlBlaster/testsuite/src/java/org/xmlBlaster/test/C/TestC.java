@@ -21,6 +21,8 @@ import junit.framework.*;
  * C SOCKET client library, it is only a wrapper around the real C tests in xmlBlaster/testsuite/src/c
  * to retrieve the results for our HTML test report (see build.xml 'report' task). 
  * <p />
+ * xmlBlaster needs to be started separately.
+ * <p />
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.C.TestC
@@ -74,7 +76,6 @@ public class TestC extends TestCase
    protected void tearDown()
    {
       /*
-      try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
       Util.resetPorts();
