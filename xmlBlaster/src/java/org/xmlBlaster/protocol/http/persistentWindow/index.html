@@ -19,10 +19,8 @@
          Log.INFO = false;
          Log.TRACE = false;
 
-         var pingTimeoutHandler;
-
          /**
-          * Servlet is pinging browser to keep connection alive.
+          * The Servlet is pinging the browser to keep connection alive.
           * This method is invoked from the callbackFrame.
           * @param state The string "refresh"<br />
           *        When login is done successfully, state="loginSucceeded" is sent one time
@@ -32,14 +30,15 @@
                Log.trace("Received ping for successful login");
                self.opener.loginSucceeded(self); // callback my opener that the connection is established
             }
-            window.clearTimeout(pingTimeoutHandler);
+            if ((typeof pingTimeoutHandler) != "undefined")
+               window.clearTimeout(pingTimeoutHandler);
             pingTimeoutHandler = window.setTimeout( "cutConnection()", 25000 );
          }
 
          /**
           */
          function cutConnection() {
-            Log.trace("Entering cutConnection() ...");
+            Log.info("Entering cutConnection() ...");
             self.connectionTextFrame.document.location.href="notConnected.html";
          }
 
