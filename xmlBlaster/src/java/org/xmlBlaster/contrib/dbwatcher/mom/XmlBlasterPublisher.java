@@ -238,7 +238,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     */
    public String publish(String changeKey, String out, Map attrMap) throws Exception {
       if (out == null) out = "";
-      String pk = DbWatcher.replaceVariable(this.publishKey, changeKey);
+      String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
       String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
       if (this.eraseOnDrop && "DROP".equals(command)) {
          String oid = this.glob.getMsgKeyFactory().readObject(pk).getOid();
