@@ -15,7 +15,7 @@ Class-Path: xmlrpc.jar junit.jar omquery.jar
  batik/batik.jar js.jar 
  xpath/jaxen-core.jar xpath/jaxen-dom.jar 
  xpath/saxpath.jar 
- jdbc7.2dev-1.2.jar 
+ postgresql.jar 
  jmxtools.jar jmxri.jar 
  hsqldb.jar 
  commons-codec.jar commons-logging.jar 
