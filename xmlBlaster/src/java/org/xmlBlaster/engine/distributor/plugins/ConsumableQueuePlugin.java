@@ -7,7 +7,6 @@ package org.xmlBlaster.engine.distributor.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -189,7 +188,12 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          ArrayList lst = null;
          while (true) {
             synchronized(this) {
-               lst = this.topicHandler.getHistoryQueue().peek(-1, -1L);
+               I_Queue historyQueue = this.topicHandler.getHistoryQueue();
+               if (historyQueue == null) {
+                  this.isRunning = false;
+                  break;
+               }
+               lst = historyQueue.peek(-1, -1L);
                if (this.log.TRACE) this.log.trace(ME, "processQueue: processing '" + lst.size() + "' entries from queue");
                if (lst == null || lst.size() < 1) {
                   this.isRunning = false;
@@ -246,6 +250,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     */
    private boolean distributeOneEntry(MsgUnitWrapper msgUnitWrapper, MsgQueueHistoryEntry entry, List subInfoList) { 
       I_Queue srcQueue = this.topicHandler.getHistoryQueue();
+      if (srcQueue == null)
+         return false;
       try {
 
          if (msgUnitWrapper == null) {
@@ -351,7 +357,9 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
             this.topicHandler.getRequestBroker().deadMessage(new MsgQueueEntry[] { entry }, null, ME + ".givingUpDistribution: " + exTxt);
          }
          // remove the entry from the history queue now that a dead letter has been sent.
-         this.topicHandler.getHistoryQueue().removeRandom(entry);               
+         I_Queue historyQueue = this.topicHandler.getHistoryQueue();
+         if (historyQueue != null)
+            historyQueue.removeRandom(entry);
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "givingUpDistribution: " + ex.getMessage());
