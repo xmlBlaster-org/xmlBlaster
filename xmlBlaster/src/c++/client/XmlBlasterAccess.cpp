@@ -142,7 +142,6 @@ bool
 XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown, bool shutdownCb)
 {
    bool ret1 = true;
-   bool ret2 = true;
    bool ret3 = true;
    if (log_.call()) {
       log_.call(ME, string("disconnect called with flush='") + Global::getBoolAsString(flush) + 
@@ -154,11 +153,10 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
    if (log_.dump()) log_.dump(ME, string("disconnect: the qos is:\n") + qos.toXml());
    if (connection_ != NULL) {
       ret1  = connection_->disconnect(qos);
-            if (shutdown) ret2 = connection_->shutdown();
+      if (shutdown) connection_->shutdown();
    }
    else {
       ret1 = false;
-      ret2 = false;
    }
    if (shutdownCb) {
       if (cbServer_) {
@@ -171,7 +169,7 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
       }
       else ret3 = false;
    }
-   return ret1 && ret2 && ret3;
+   return ret1 && ret3;
 }
 
 string XmlBlasterAccess::getId()
