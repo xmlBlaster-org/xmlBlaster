@@ -677,9 +677,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "                       Use seperate threads per update() on client side [true].\n";
       text += "   -dispatch/connection/plugin/socket/SSL\n";
       text += "                       True enables SSL support on server socket [false].\n";
-      text += "   -dispatch/connection/plugin/socket/keystore\n";
+      text += "   -dispatch/connection/plugin/socket/trustStore\n";
       text += "                       The path of your trusted keystore file. Use the java utility keytool.\n";
-      text += "   -dispatch/connection/plugin/socket/keystorepass\n";
+      text += "   -dispatch/connection/plugin/socket/trustStorePassword\n";
       text += "                       The password of your trusted keystore file.\n";
       text += "   -dispatch/connection/plugin/socket/compress/type\n";
       text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";
