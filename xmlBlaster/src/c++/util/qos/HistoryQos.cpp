@@ -72,7 +72,7 @@ Dll_Export const long DEFAULT_numEntries = 1;
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation or "" if all settings are default
     */
-   string HistoryQos::toXml(const string& extraOffset="")
+   string HistoryQos::toXml(const string& extraOffset)
    {
       if (getNumEntries() == DEFAULT_numEntries) {
          return "";
