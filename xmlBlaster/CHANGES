@@ -1,5 +1,16 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xxx, xx xxxx]
+================================
+
+  - Added a LDAP security plugin, please follow
+    instrutions in 
+
+      xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/ldap/README
+      
+    to test it. It is quite simple.
+     
+
 Changes for 0.79c [Sep, 05 2001]
 ================================
 
