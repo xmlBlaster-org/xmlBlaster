@@ -156,7 +156,7 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
-   <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
+   <property name="CPP_LINK" value="static"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
@@ -2029,8 +2029,6 @@ TODO
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
       <cc debug="${c.debug}"
           link="${C_LINK}"
-          outtype="${C_LINK}"
-          runtime="static"
           outfile="${lib.dir}/xmlBlasterClientC"
           objdir="${build.dir}/obj"
           multithreaded="true">
@@ -2072,7 +2070,7 @@ TODO
       </cc>
 
       <!-- Was only needed for "@version@" replacement during compilation -->
-      <!-- delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" / --> <!-- Leave it for lookup for debugger -->
+      <delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" /> <!-- Leave it for lookup for debugger? -->
 
    </target>  <!-- C lib -->
 
