@@ -3,7 +3,7 @@ Name:      Property.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class used to read, store & write (java) properties.
-Version:   $Id: Property.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
+Version:   $Id: Property.h,v 1.5 2001/11/30 08:04:16 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_PROPERTY_H
@@ -50,7 +50,7 @@ namespace util {
        * Filters (throws away) all whitespaces from the specified string.
        */
       string filter(const string &line) const {
-	 string ret = "";
+	 string ret;
 	 for (string::size_type i=0; i<line.length(); i++) {
 	    if (line.c_str()[i] != ' ') ret += line.c_str()[i];
 	 }
