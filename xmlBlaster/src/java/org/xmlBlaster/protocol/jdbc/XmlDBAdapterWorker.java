@@ -4,7 +4,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.21 2002/12/20 16:32:37 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.22 2003/03/13 14:10:30 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -68,15 +68,17 @@ public class XmlDBAdapterWorker extends Thread {
       XmlDBAdapter adap = new XmlDBAdapter(glob, content, namedPool);
       MsgUnit[] msgArr = adap.query();
       try {
-         if (msgArr.length > 0) {
+         if (msgArr == null || msgArr.length == 0) {
+            if (log.TRACE) log.trace(ME, "No result message returned to client");
+            return;
+         }
+         for (int ii=0; ii<msgArr.length; ii++) {
             PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", "SQLQuery");
             PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
-            MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[0], key.toXml(), null, qos.toXml());
+            MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[ii], key.toXml(), msgArr[ii].getContent(), qos.toXml());
             String  oid = callback.publish(msgUnitRaw);
             if (log.DUMP) log.plain(ME, "Delivered Results...\n" + new String(content));
          }
-         else
-            if (log.TRACE) log.trace(ME, "No result message returned to client");
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Exception in notify: " + e.getMessage());
