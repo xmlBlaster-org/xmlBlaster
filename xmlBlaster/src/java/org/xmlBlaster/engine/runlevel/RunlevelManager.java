@@ -177,14 +177,14 @@ public final class RunlevelManager
       }
 
       if (from < to) { // startup
-         for (int ii=from; ii<=to; ii++) {
+         for (int ii=from; ii<to; ii++) {
             int dest = ii+1;
             try {
                startupPlugins(ii, dest);
-               if (ii != from) fireRunlevelEvent(ii, dest, force); // exclusive from
+               fireRunlevelEvent(ii, dest, force);
             }
             finally {
-               currRunlevel = ii; // pre/post events are not marked as run levels
+               currRunlevel = dest; // pre/post events are not marked as run levels
                if (dest > from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
@@ -194,16 +194,19 @@ public final class RunlevelManager
                }
             }
          }
+         if (to == RUNLEVEL_RUNNING) { // Main.java to display banner
+            fireRunlevelEvent(RUNLEVEL_RUNNING, RUNLEVEL_RUNNING_POST, force);
+         }
       }
       else if (from > to) { // shutdown
-         for (int ii=from; ii>=to; ii--) {
+         for (int ii=from; ii>to; ii--) {
             int dest = ii-1;
             try {
-               if (ii != to) shutdownPlugins(ii, dest);
+               shutdownPlugins(ii, dest);
                fireRunlevelEvent(ii, dest, force);
             }
             finally {
-               currRunlevel = ii;
+               currRunlevel = dest;
                if (dest < from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
