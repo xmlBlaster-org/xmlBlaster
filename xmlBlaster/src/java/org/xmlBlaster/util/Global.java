@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.21 2002/05/19 20:39:16 ruff Exp $
+Version:   $Id: Global.java,v 1.22 2002/05/27 20:53:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -17,6 +17,7 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
+import org.xmlBlaster.util.recorder.RecorderPluginManager;
 
 import java.util.Properties;
 
@@ -55,6 +56,8 @@ public class Global implements Cloneable
    protected /*final*/ Map objectMap;
    protected Address bootstrapAddress = null;
    protected PluginLoader clientSecurityLoader = null;
+
+   protected RecorderPluginManager recorderPluginManager = null;
 
    protected Hashtable logChannels = new Hashtable();
    protected LogChannel logDefault = null;
@@ -137,6 +140,7 @@ public class Global implements Cloneable
       this.objectMap = utilGlob.objectMap;
       this.bootstrapAddress = utilGlob.bootstrapAddress;
       this.clientSecurityLoader = utilGlob.clientSecurityLoader;
+      this.recorderPluginManager = utilGlob.recorderPluginManager;
       this.logChannels = utilGlob.logChannels;
       this.logDefault = utilGlob.logDefault;
    }
@@ -379,6 +383,7 @@ public class Global implements Cloneable
          g.objectMap = Collections.synchronizedMap(new HashMap());
          g.bootstrapAddress = null;
          g.clientSecurityLoader = null;
+         g.recorderPluginManager = null;
          if (g.id != id)
             log.error(ME, "g.id=" + g.id + " and id=" + id);
          return g;
@@ -604,6 +609,18 @@ public class Global implements Cloneable
             clientSecurityLoader = new PluginLoader(this);
       }
       return clientSecurityLoader;
+   }
+
+   /**
+    * Needed by java client helper classes to load
+    * the tail back queuing mechanism (invocation recorder). 
+    */
+   public RecorderPluginManager getRecorderPluginManager() {
+      synchronized (RecorderPluginManager.class) {
+         if (recorderPluginManager == null)
+            recorderPluginManager = new RecorderPluginManager(this);
+      }
+      return recorderPluginManager;
    }
 
    /**
