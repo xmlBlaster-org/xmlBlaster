@@ -10,6 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
@@ -185,13 +186,20 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
             else {                  
                receive(receiver, SOCKET_TCP);    // Parse the message and invoke actions in same thread
             }
+            if (MethodName.DISCONNECT == receiver.getMethodName() && receiver.isResponse()) {
+               if (log.TRACE) log.trace(ME, "Terminating socket callback thread because of disconnect response");
+               running = false;
+            }
          }
          catch(XmlBlasterException e) {
             log.warn(ME, e.toString());
          }
          catch(Throwable e) {
             if (running == true) {
-               if (e instanceof IOException) {
+               if (e.toString().indexOf("javax.net.ssl") != -1) {
+                  log.warn(ME, "Closing connection to server, please try debugging SSL with 'java -Djavax.net.debug=all ...': " + e.toString());
+               }
+               else if (e instanceof IOException) {
                   log.warn(ME, "Closing connection to server: " + e.toString());
                }
                else {
@@ -225,6 +233,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     * Shutdown SOCKET connection and callback, called by SocketConnection on problems
     */
    public synchronized void shutdownSocket() {
+      if (log.TRACE) log.trace(ME, "Entering shutdownSocket()");
       this.running = false;
       if (this.iStream != null) {
          try {
