@@ -440,7 +440,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
       SubjectInfo subjectInfo = getSubjectInfoByName(subjectName);
       if (subjectInfo == null) {
-         SessionName name = new SessionName(glob, glob.getNodeId(), subjectName.getRelativeName()); // strip nodeId
+         // strip nodeId, strip pubSessionId
+         SessionName name = new SessionName(glob, glob.getNodeId(), subjectName.getLoginName());
          subjectInfo = new SubjectInfo(getGlobal(), name);
          subjectInfo.toAlive(null, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       }
