@@ -516,8 +516,11 @@ TODO
 
 
    <!-- =================================================================== -->
-   <!-- Compile the xmlBlaster.idl file for the CORBA plugin                -->
-   <!-- Uses ${idl}=org.xmlBlaster.protocol.corba package prefix            -->
+   <!-- Generate the lexical files (JFlex and JavaCup)                      -->
+   <!-- JFlex is normally not in the distribution. If a JFlex.jar file is   -->
+   <!-- found in ${xmlBlaster.lib} then JFlex is generated if not uptodate. -->
+   <!-- JavaCup is always generated if not uptodate (since the license	    -->
+   <!-- allows to have it in the distribution                               -->
    <!-- =================================================================== -->
    <target name="lexicalCheck" depends="prepare" description="checks if JFlex exists">
       <available file="${lib.dir}/JFlex.jar" property="flexAvailable"/>
@@ -531,21 +534,45 @@ TODO
       <copy file="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Selector.flex"
             tofile="${build.src}/xmlBlaster/org/xmlBlaster/util/lexical/Sql92Selector.flex" />
       -->
-      <delete file="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Scanner.java"/>
-      <java classname="JFlex.Main" classpath="./lib/JFlex.jar" fork="false" dir="${src.java.dir}/org/xmlBlaster/util/lexical">
-         <arg line="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Scanner.flex"></arg>
-      </java>
+      <uptodate property="jflexBuild.required" targetfile="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Scanner.flex" value="false">
+         <srcfiles dir= "${src.java.dir}/org/xmlBlaster/util/lexical" includes="Sql92Scanner.java"/>
+      </uptodate>
+      <if><equals arg1="${jflexBuild.required}" arg2="false" />
+         <then>
+            <echo message="Generating java files from JFlex not necessary since already up to date" />
+         </then>
+         <else>
+            <echo message="Generating the necessary java files ..."/>
+
+            <delete file="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Scanner.java"/>
+            <java classname="JFlex.Main" classpath="./lib/JFlex.jar" fork="false" dir="${src.java.dir}/org/xmlBlaster/util/lexical">
+               <arg line="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Scanner.flex"></arg>
+            </java>
+         </else>
+      </if>
+      <echo message="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Scanner.java done"/>
    </target>
 
    <target name="javaCup" depends="jflex" if="cupAvailable" description="Generates the necessary java classes for the SQL92 lexical parser">
-      <echo message="Generating the necessary java files ..."/>
-      <!--
-      <copy file="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Selector.cup"
-            tofile="${build.src}/xmlBlaster/org/xmlBlaster/util/lexical/Sql92Selector.cup" />
-      -->
-      <java classname="java_cup.Main" classpath="./lib/java_cup.jar" fork="true" dir="${src.java.dir}/org/xmlBlaster/util/lexical">
-         <arg line="-symbols Sql92Symbols -parser Sql92Parser Sql92Parser.cup"/>
-      </java>
+      <uptodate property="cupBuild.required" targetfile="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Parser.java" value="false">
+         <srcfiles dir= "${src.java.dir}/org/xmlBlaster/util/lexical" includes="Sql92Parser.cup"/>
+      </uptodate>
+      <if><equals arg1="${cupBuild.required}" arg2="false" />
+         <then>
+            <echo message="Generating java files from JavaCup not necessary since already up to date" />
+         </then>
+         <else>
+            <echo message="Generating the necessary java files ..."/>
+            <!--
+            <copy file="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Selector.cup"
+                  tofile="${build.src}/xmlBlaster/org/xmlBlaster/util/lexical/Sql92Selector.cup" />
+            -->
+            <java classname="java_cup.Main" classpath="./lib/java_cup.jar" fork="true" dir="${src.java.dir}/org/xmlBlaster/util/lexical">
+               <arg line="-symbols Sql92Symbols -parser Sql92Parser Sql92Parser.cup"/>
+            </java>
+         </else>
+      </if>
+      <echo message="${src.java.dir}/org/xmlBlaster/util/lexical/Sql92Parser.java done"/>
    </target>
 
 
@@ -1308,7 +1335,6 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates html from new requirements from doc/docbookReq/ XML files       -->
    <!-- =================================================================== -->
-    <!--
     <target name="docbookTest" description="just a temporary test">
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/client.c.socket.xml"
@@ -1325,7 +1351,7 @@ TODO
              force="true">              
        </style>
     </target>
-    -->
+
     <target name="docbookReq" description="Creates new html requirements from docbook doc/docbookReq/ XML files">
 
       <style processor="trax" 
@@ -1355,8 +1381,9 @@ TODO
       <pathconvert  targetos="windows" dirsep="/" pathsep="&lt;/url>&lt;url>" property="files" refid="docbookReq.files">
         <map from="${base.dir}/doc/docbookReq/" to="&lt;url>"/>
       </pathconvert>
-      <echo file="${docbookReq.dir}/all.xml"><![CDATA[<files><url>${files}</url></files>]]></echo>
-      <!-- Create the overview -->
+      <echo file="${docbookReq.dir}/all.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+   <files><url>${files}</url></files>]]></echo>
+      <!-- Create the overview -->		     
       <!--
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/all.xml"

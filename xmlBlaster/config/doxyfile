@@ -56,7 +56,13 @@ WARN_LOGFILE           = doxygen_warn.log
 #---------------------------------------------------------------------------
 INPUT                  = ../src/java \
                          ../testsuite/src/java \
-                         ../demo/javaclients
+                         ../demo/javaclients \
+                         ../demo/HelloWorld.java \
+                         ../demo/HelloWorld2.java \
+                         ../demo/HelloWorld3.java \
+                         ../demo/HelloWorld4.java \
+                         ../demo/HelloWorld5.java \
+                         ../demo/HelloWorld6.java
 FILE_PATTERNS          = *.java
 RECURSIVE              = YES
 EXCLUDE                = 
