@@ -39,7 +39,7 @@ import org.xml.sax.helpers.*;
  *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
  *     &lt;persistent/>
  *     &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
- *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
+ *        &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
  *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='exception'/>
  *     &lt;/topic>
  *  &lt;/qos>
