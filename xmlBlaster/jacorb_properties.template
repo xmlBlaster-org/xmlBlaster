@@ -1,0 +1,108 @@
+##
+##  JacORB configuration options
+##
+
+#
+# Basic ORB properties
+#
+
+# number of retries if connection cannot directly be established
+jacorb.retries=5
+jacorb.retry_interval=500
+
+# size of network buffers for outgoing messages
+jacorb.outbuf_size=2048
+
+# URL where IORs are stored (used in orb.resolve_initial_service())
+jacorb.NameServerURL=NAMESERVERURL
+jacorb.TradingServiceURL=TRADERURL
+jacorb.ImplementationRepositoryURL=http://www.inf.fu-berlin.de/~brose/ImR_Ref
+jacorb.ProxyServerURL=http://www.inf.fu-berlin.de/~brose/Proxy_Ref
+
+# client-side caching of object references
+#jacorb.reference_caching=off
+
+# amount of diagnostic output, 0 is off
+jacorb.verbosity=4
+
+# standard name for servers if none is specified
+jacorb.implname=StandardImplName
+
+# where does output go? Terminal is default
+#jacorb.logfile=LOGFILEPATH
+
+#
+# interceptor configuration, interceptors can be
+# configured out for performance
+#
+jacorb.interceptor.client.Requests=on
+jacorb.interceptor.client.Messages=on
+jacorb.interceptor.server.Messages=on
+jacorb.interceptor.server.Requests=on
+jacorb.interceptor.perObject=on
+
+#
+# Implementation Repository Configuration Options
+#
+jacorb.imr.table_file=/home/bwana/brose/table.dat
+jacorb.imr.backup_file=/home/bwana/brose/backup.dat
+jacorb.imr.ior_file=/home/bwana/brose/public_html/ImR_Ref
+jacorb.imr.timeout=
+jacorb.imr.no_of_poas=
+jacorb.imr.no_of_servers=
+jacorb.imr.SSD.interpreter=jaco
+
+#
+# POA configuration
+#
+
+# displays a GUI monitoring tool for servers
+jacorb.poa.monitoring=off
+
+# thread pool configuration for request processing
+jacorb.poa.thread_pool_max=50
+jacorb.poa.thread_pool_min=10
+
+# size of the request queue, clients will receive Corba.TRANSIENT
+# exceptions if load exceeds this limit
+jacorb.poa.queue_max=100
+
+#
+# Trader configuration, please see
+# src/trading/README.PROPERTIES for
+# explanation
+jtrader.util.max_threads=10
+jtrader.util.min_threads=1
+jtrader.util.query_timeout=5000
+jtrader.impl.cache_max=100
+
+# boolean values, e.g. true / false
+#jtrader.modifiable_properties=
+#jtrader.dynamic_properties=
+#jtrader.proxy_offers=
+
+jtrader.debug=false
+jtrader.debug_verbosity=0
+
+#integer values
+jtrader.def_search_card=
+jtrader.max_search_card=
+jtrader.def_match_card=
+jtrader.max_match_card=
+jtrader.def_return_card=
+jtrader.max_return_card=
+jtrader.max_list=
+jtrader.def_hop_count=
+jtrader.max_hop_count=
+
+#FollowOptions
+#always=2
+#if_no_local=1
+#local_only=0
+jtrader.def_follow_policy=
+jtrader.max_follow_policy=
+jtrader.max_link_follow_policy=
+
+# any other custom properties can be added here. 
+# These are available through the API (call 
+# jacorb.orb.Environment.getProperty())
