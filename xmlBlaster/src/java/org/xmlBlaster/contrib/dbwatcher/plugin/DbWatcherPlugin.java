@@ -22,7 +22,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
-
+import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -59,6 +59,11 @@ import java.util.logging.Level;
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
 &lt;/plugin>
  * </pre>
+ *
+ * <p>
+ * This plugin uses <tt>java.util.logging</tt> and redirects the logging to xmlBlasters default
+ * logging framework. You can switch this off by setting the attribute <tt>xmlBlaster/jdk14loggingCapture</tt> to false.
+ * </p>
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
@@ -82,7 +87,18 @@ public class DbWatcherPlugin implements I_Plugin, I_Info {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.global = global_; // .getClone(null);
+      this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
+
+      boolean jdk14loggingCapture = this.global.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
+      if (jdk14loggingCapture) {
+         try {
+            XmlBlasterJdk14LoggingHandler.initLogManager(this.global);
+         }
+         catch (Throwable e) {
+            log.warning("Capturing JDK 1.4 logging output failed: " + e.toString());
+         }
+      }
+
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
       if (log.isLoggable(Level.FINER)) {

@@ -42,6 +42,7 @@ import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
  * </p>
  * Configuration:
  * <ul>
+ *   <li><tt>dbPool.class</tt> configures your implementation of interface {@link I_DbPool} which defaults to <tt>org.xmlBlaster.contrib.db.DbPool</tt></li>
  *   <li><tt>db.queryMeatStatement</tt> if given a SQL select string this
  *       is executed on changes and the query result is dumped according
  *       to the configured I_DataConverter plugin and send as message content
