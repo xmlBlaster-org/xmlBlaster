@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #12961 Added ConnectQos to xml server dump (without security parts)
+
+ o #12960 Fixed delay of callback polling after a client reconnect
+
  o #12956 build.xml: JFlex and JavaCup are invoked only if files not up to date.
 
  o #12954 BUGFIX: Topic erase notification events could dead lock
@@ -29,6 +33,7 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
+   - #12958 duplicateUpdates defaults now to true to have identical behaviour for Java and C++
    - #12937 FreeBSD port, support for BOOST added again, thanks to Viner, David <dviner@yahoo-inc.com>
    - #12877 Added xerces initialization from main thread, as on Windows it crashed sometimes if initialized from callback thread
    - #12871 Extended clientProperty API
