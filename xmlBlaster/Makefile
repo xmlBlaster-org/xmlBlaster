@@ -6,7 +6,7 @@
 
 include $(XMLBLASTER_HOME)/Makefile.Include
 
-SUB_DIRS = src
+SUB_DIRS = src testsuite
 
 all: all_SUB_DIRS
 
