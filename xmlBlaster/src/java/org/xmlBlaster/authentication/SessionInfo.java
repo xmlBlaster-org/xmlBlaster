@@ -37,8 +37,15 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p />
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
- *
- * @author $Author: ruff $
+ * <p />
+ * We distinguish two different unique ID for each login session:
+ * <ol>
+ *   <li>sessionId: This is the unique, secret session Id which is passed
+ *                  by the client on every method invocation to allow authentication</li>
+ *   <li>instanceId: This is a unique counter (with respect to one virtual machine JVM).
+ *                   It allows 'public' addressing of a session</li>
+ * </ol>
+ * @author Marcel Ruff
  */
 public class SessionInfo implements I_Timeout
 {
@@ -89,14 +96,25 @@ public class SessionInfo implements I_Timeout
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
-      this.sessionQueue = new SessionMsgQueue("session:"+securityCtx.getSessionId(), this, connectQos.getSessionCbQueueProperty(), glob);
+                                          // securityCtx.getSessionId()
+      this.sessionQueue = new SessionMsgQueue("session:"+getInstanceId(), this, connectQos.getSessionCbQueueProperty(), glob);
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
-         log.info(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
+         if (log.TRACE) log.trace(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
          timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else
          log.info(ME, "Session for " + getLoginName() + " lasts forever, requested expiry timer was 0");
+   }
+
+   /**
+    * This is a unique instance id per JVM. 
+    * <p />
+    * It is NOT the sessionId and may be published with PtP messages
+    * without security danger
+    */
+   public final long getInstanceId() {
+      return this.instanceId;
    }
 
    public void finalize()
@@ -212,7 +230,7 @@ public class SessionInfo implements I_Timeout
     */
    public final String getLoginName()
    {
-      return subjectInfo.getLoginName();
+      return (subjectInfo==null)?"--":subjectInfo.getLoginName();
    }
 
 
