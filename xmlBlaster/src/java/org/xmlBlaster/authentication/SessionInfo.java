@@ -3,16 +3,15 @@ Name:      SessionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -26,9 +25,10 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+//import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -78,7 +78,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    private final DeliveryManager deliveryManager;
 
    /**
-    * All MessageUnit which shall be delivered to the current session of the client
+    * All MsgUnit which shall be delivered to the current session of the client
     * are queued here to be ready to deliver.
     * <p />
     * Node objects = MsgQueueEntry
@@ -126,7 +126,8 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
          String type = connectQos.getSessionCbQueueProperty().getType();
          String version = connectQos.getSessionCbQueueProperty().getVersion();
-         this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, "cb:"+this.sessionName.getAbsoluteName(), connectQos.getSessionCbQueueProperty());
+         this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId("cb", this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
+         this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
          this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue,
@@ -263,22 +264,20 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       return false;
    }
 
-   /**
+   /*
     * Put the given message into the queue
-    */
-   public final void queueMessage(MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public final void queueMessage(MsgUnit msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Queing message");
-      if (msgUnitWrapper == null) {
+      if (msgUnit == null) {
          log.error(ME+".Internal", "Can't queue null message");
          throw new XmlBlasterException(ME+".Internal", "Can't queue null message");
       }
 
-      MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob,
-         msgUnitWrapper.getMessageUnit(), sessionQueue, msgUnitWrapper.getUniqueKey(),
-         msgUnitWrapper.getPublishQos().getData(), getSessionName());
+      MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnit, this.sessionQueue, getSessionName());
 
       queueMessage(entry);
    }
+    */
 
    /**
     * Put the given message entry into the queue
@@ -384,13 +383,12 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     */
    public final String toXml(String extraOffset) throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<SessionInfo id='").append(getId()).append("'>");
       if (hasCallback())
-         sb.append(sessionQueue.toXml(extraOffset+"   "));
+         sb.append(sessionQueue.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</SessionInfo>");
 
       return sb.toString();
