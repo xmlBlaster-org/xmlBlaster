@@ -107,13 +107,18 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    wVersionRequested = MAKEWORD( 2, 2 );
    err = WSAStartup( wVersionRequested, &wsaData );
    if ( err != 0 ) {
-      return false; /* Tell the user that we could not find a usable WinSock DLL */
+      strncpy0(exception->errorCode, "resource.unavailable", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Couldn't find a usable WinSock DLL", __FILE__, __LINE__);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      return false;
    }
 
-   /* Confirm that the WinSock DLL supports 2.2. */
    if ( LOBYTE( wsaData.wVersion ) != 2 ||
    HIBYTE( wsaData.wVersion ) != 2 ) {
       WSACleanup( );
+      strncpy0(exception->errorCode, "resource.unavailable", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Couldn't find a usable WinSock DLL which supports version 2.2", __FILE__, __LINE__);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false; 
    }
 # endif
@@ -201,29 +206,32 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
             if (xb->logLevel>=LOG_INFO) xb->log(xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
          }
          else {
-            if (xb->logLevel>=LOG_WARN) {
-               char errnoStr[MAX_ERRNO_LEN];
-               SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, strerror(errno)); /* default if strerror_r fails */
-#              ifdef _LINUX
-               strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
-#              endif
-               xb->log(xb->logLevel, LOG_WARN, __FILE__,
-                  "Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, %s",
-                  serverHostName, servTcpPort, errnoStr);
-            }
+            char errnoStr[MAX_ERRNO_LEN];
+            SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, strerror(errno)); /* default if strerror_r fails */
+#           ifdef _LINUX
+            strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
+#           endif
+            strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                     "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, %s",
+                     __FILE__, __LINE__, serverHostName, servTcpPort, errnoStr);
+            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
             return false;
          }
       }
       else {
-         if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
-            "Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
-            serverHostName, servTcpPort, errno);
+         strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                  "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
+                  __FILE__, __LINE__, serverHostName, servTcpPort, errno);
          return false;
       }
    }
    else {
-      if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
-         "Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d", serverHostName, servTcpPort, errno);
+      strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
+               __FILE__, __LINE__, serverHostName, servTcpPort, errno);
       return false;
    }
    xb->isInitialized = true;
