@@ -55,7 +55,7 @@ Type a 'g' if you want the GUI to pop up.
 
 Now start a client:
 
-  java -classpath lib\xmlBlaster.jar javaclients.corba.ClientSub
+  java -classpath lib\xmlBlaster.jar javaclients.ClientSub
 
 You should see some output on your terminal telling
 that a message is published and subscribed.
@@ -175,7 +175,7 @@ One important note:
 
    and a testclient
     
-     jaco javaclients.ClientGet
+     jaco javaclients.ClientSub
 
 
 
@@ -190,7 +190,7 @@ One important note:
 
    and a testclient
 
-     jaco javaclients.ClientGet -iorFile C:\tmp\Blaster_Ref
+     jaco javaclients.ClientSub -iorFile C:\tmp\Blaster_Ref
 
 
 
@@ -215,6 +215,8 @@ One important note:
 +--------------------+
 | HOW TO COMPILE     |
 +--------------------+
+
+You can compile using build.bat or using Make (see following instructions)
 
 For the compilation on the Windows platform you need a proper make utility.
 It works perfect with cygwin environment. You can download it over this site:

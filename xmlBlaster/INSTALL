@@ -62,6 +62,11 @@ Now start a client:
 You should see some output on your terminal telling
 that a message is published and subscribed.
 
+Find out what command line options you have:
+
+  java -classpath lib/xmlBlaster.jar javaclients.ClientSub -help
+
+
 But - if you want to adjust some properties
 or develop with xmlBlaster, please read the following section
 how to do it.
@@ -233,7 +238,7 @@ One important note:
    This client looks into jacorb.properties to find the URL with the naming service IOR.
    Edit ${HOME}/jacorb.properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
 
-     jaco javaclients.corba.ClientXml -iorPort 0
+     jaco javaclients.ClientXml -iorPort 0
 
    If you have problems, check your web server:
 
