@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.26 2001/01/30 14:25:02 freidlin Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.27 2001/01/30 14:27:12 freidlin Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -344,7 +344,7 @@ public class MessageUnitWrapper
       if (publishQoS==null)
          sb.append(offset).append("   <PublishQoS>null</PublishQoS>");
       else
-         sb.append(publishQoS.toXml(extraOffset).append("   "));
+         sb.append(publishQoS.toXml(extraOffset + "   "));
       sb.append(offset).append("   <content>").append((msgUnit.content==null ? "null" : msgUnit.content.toString())).append("</content>");
       sb.append(offset).append("</MessageUnitWrapper>\n");
       return sb.toString();
