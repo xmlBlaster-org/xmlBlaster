@@ -85,10 +85,10 @@
       <ul>
       <li>Oneway updates<br />
       Oneway updates are callbacks without a return value, e.g.<br />
-      <code>
+      <pre><code>
       oneway void update(...);  // not blocking invocation
       String update(...);       // blocking method invocation
-      </code>
+      </code></pre>
       It is not yet decided if we need this feature.
       </li>
       <li>Blocking publisher<br />
@@ -118,7 +118,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
