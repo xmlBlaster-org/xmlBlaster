@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.24 2000/12/26 14:56:40 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.25 2001/01/30 14:08:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
+import org.xmlBlaster.engine.callback.CbQueue;
 import java.util.*;
 
 
@@ -167,6 +168,14 @@ public class MessageUnitWrapper
       return publishQoS;
    }
 
+   /**
+    *
+    */
+   public int getPriority()
+   {
+      return CbQueue.NORM_PRIORITY;
+   }
+
 
    /**
     * Access the unique login name of the (last) publisher.
@@ -306,9 +315,9 @@ public class MessageUnitWrapper
     * <br>
     * @return XML state of MessageUnitWrapper
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -318,7 +327,7 @@ public class MessageUnitWrapper
     * @param extraOffset indenting of tags
     * @return XML state of MessageUnitWrapper
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -337,6 +346,6 @@ public class MessageUnitWrapper
          sb.append(publishQoS.toXml(extraOffset + "   "));
       sb.append(offset + "   <content>" + (msgUnit.content==null ? "null" : msgUnit.content.toString()) + "</content>");
       sb.append(offset + "</MessageUnitWrapper>\n");
-      return sb;
+      return sb.toString();
    }
 }
