@@ -4,26 +4,52 @@
 <requirement id='engine.qos.publish.isVolatile' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster allows to mark messages as volatile</topic>
    <description>
-      Using the QOS flag &amp;lt;isVolatile/&amp;gt; allows to mark a published message
+      <p>
+      Using the QOS flag <b>&lt;isVolatile/&gt;</b> allows to mark a published message
       as volatile. A volatile published message lives only until it is processed in the
       server and is erased immediately thereafter.
-      A message not marked volatile will stay in memory until xmlBlaster shuts down or
+      </p>
+      <p>
+      A message <b>not marked volatile</b> will stay in memory until xmlBlaster shuts down or
       until it is erased explicitly (this is the default case).
+      <br />
+      If a message with the same <i>oid</i> is published it overwrites the previous one.
+      </p>
    </description>
-   <example lang="Java">
+   
+   <example lang="any">
       <![CDATA[
-      <qos>
-         <isVolatile>false</isVolatile> <!-- Message remains transient in memory until shutdown -->
-                                        <!-- Default is transient -->
-      </qos>
+<qos>
+   <isVolatile>false</isVolatile>
+   <!-- Message remains transient in memory until shutdown -->
+   <!-- Default is transient -->
+</qos>
       ]]>
    </example>
+
+   <example lang="Java">
+      <![CDATA[
+import org.xmlBlaster.client.PublishQosWrapper;
+
+...
+
+PublishQosWrapper publishQos = new PublishQosWrapper();
+
+publishQos.isVolatile(true);
+
+con.publish(new MessageUnit("<key oid='HelloWorld2'/>",
+                            "Hello World".getBytes(),
+                            publishQos.toXml()));
+
+      ]]>
+   </example>
+
    <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
    <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
    <author>pra@mint.se</author>
    <author>ruff@swand.lake.de</author>
    <date>2001 02 22</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
