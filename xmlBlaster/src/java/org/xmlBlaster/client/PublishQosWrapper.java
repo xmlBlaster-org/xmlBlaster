@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.18 2002/05/06 12:41:23 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.19 2002/05/09 11:53:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -218,7 +218,7 @@ public class PublishQosWrapper extends QosWrapper
     */
    public String toXml()
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(256);
       sb.append("\n<qos>");
       if (destVec != null) {
          for (int ii=0; ii<destVec.size(); ii++) {
@@ -240,6 +240,10 @@ public class PublishQosWrapper extends QosWrapper
       if (readonly)
          sb.append("\n   <readonly/>");
       sb.append("\n</qos>");
+
+      if (sb.length() < 15)
+         return "";  // minimal footprint
+      
       return sb.toString();
    }
 
@@ -248,13 +252,19 @@ public class PublishQosWrapper extends QosWrapper
     */
    public static void main( String[] args ) throws XmlBlasterException
    {
-      PublishQosWrapper qos =new PublishQosWrapper(new Destination("joe"));
-      qos.addDestination(new Destination("Tim"));
-      qos.setPriority(Constants.HIGH_PRIORITY);
-      qos.setDurable(true);
-      qos.setForceUpdate(true);
-      qos.setReadonly(true);
-      qos.setRemainingLife(60000);
-      System.out.println(qos.toXml());
+      {
+         PublishQosWrapper qos =new PublishQosWrapper(new Destination("joe"));
+         qos.addDestination(new Destination("Tim"));
+         qos.setPriority(Constants.HIGH_PRIORITY);
+         qos.setDurable(true);
+         qos.setForceUpdate(true);
+         qos.setReadonly(true);
+         qos.setRemainingLife(60000);
+         System.out.println(qos.toXml());
+      }
+      {
+         PublishQosWrapper qos =new PublishQosWrapper();
+         System.out.println("Minimal '" + qos.toXml() + "'");
+      }
    }
 }
