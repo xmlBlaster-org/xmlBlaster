@@ -25,7 +25,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 /**
  * K2 Connection interface for xmlBlaster. 
 
- <p>Only a subset of XmlBlasterConnection. Be aware that this is a connection 
+ <p>Only a subset of I_XmlBlasterAccess. Be aware that this is a connection 
  interface whose underlying physical pipe typically is pooled.</p>
  *
  */
