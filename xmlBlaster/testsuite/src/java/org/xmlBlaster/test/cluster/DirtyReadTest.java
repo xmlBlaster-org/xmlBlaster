@@ -159,15 +159,15 @@ public class DirtyReadTest extends TestCase {
          heronCon = serverHelper.connect(serverHelper.getHeronGlob(), null);
 
 
-         System.err.println(ME+"->Find out the public session Id of slave frodo at heron ...");
-         String cmd = "__cmd:client/" + serverHelper.getFrodoGlob().getId() + "/?sessionList";
+         String cmd = "__cmd:client/frodo/?sessionList";
+         System.err.println(ME+"->Find out the public session Id of slave frodo at heron with '" + cmd + "' ...");
          MsgUnit[] msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
          assertEquals("Command failed", 1, msgs.length);
          String pubSessionId = msgs[0].getContentStr();
 
 
          // command = "__cmd:client/frodo/2/?numUpdates" : (the cluster slave loggs in usually with its glob.getId()
-         cmd = "__cmd:client/" + serverHelper.getFrodoGlob().getId() + "/" + pubSessionId + "/?numUpdates";
+         cmd = "__cmd:client/frodo/" + pubSessionId + "/?numUpdates";
          System.err.println("->Query numUpdates with '" + cmd + "' ...");
          msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
 
