@@ -92,3 +92,13 @@
 	and compiling xmlBlaster with corba implementations other than jacorb. 
 	It is a (mini) alternative to 6). Use it only if you don't want
 	jacorb on your machine.
+
+9) gnu-regexp-1.0.8.jar
+=======================
+
+  GNU-REXEXP is under LGPL. The syntax of gnu.regexp includes awk, sed, 
+  emacs, perl and grep.  
+  Download: http://www.cacas.org/java/gnu/regexp/
+  To run the Grep and Egrep programs, you'll need to install the gnu.getopt package
+  available at http://www.urbanophile.com/~arenn/hacking/download.html, , and put
+  those class files in your classpath as well.
