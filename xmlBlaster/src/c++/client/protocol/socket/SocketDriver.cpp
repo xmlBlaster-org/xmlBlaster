@@ -11,6 +11,7 @@ Comment:   The client driver for the socket protocol
 #include <util/lexical_cast.h>
 #include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
 #include <util/qos/ConnectQosFactory.h>
+#include <util/Properties.h>
 #include <string>
 #include <stdarg.h> // va_start
 #include <stdio.h> // vsnprintf for g++ 2.9x only
@@ -221,6 +222,10 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
       connection_->userObject = this; // Transports us to the myUpdate() method
       connection_->log = myLogger;    // Register our own logging function
       connection_->logUserP = this;   // Pass ourself to myLogger()
+      if (log_.dump()) {
+         log_.dump(ME, "C properties:");
+         ::dumpProperties(connection_->props);
+      }
    } catch_MACRO("::Constructor", true)
 }
 
