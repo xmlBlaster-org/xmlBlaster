@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.10 2000/10/15 10:53:52 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.11 2000/11/05 23:31:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -27,7 +27,7 @@ import java.io.*;
  * to choose another port or to choose a server IP address on
  * multi homed hosts.
  *
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -41,7 +41,7 @@ public class HttpIORServer extends Thread
 
 
    /**
-    * Create a little web server. 
+    * Create a little web server.
     * <p />
     * @param ip_addr The string representation like "192.168.1.1", useful if multihomed computer
     * @param port    The port where we publish the IOR
@@ -62,10 +62,11 @@ public class HttpIORServer extends Thread
    public void run()
    {
       try {
-         int backlog = 50; // queue for max 50 incoming connection request
+         int backlog = XmlBlasterProperty.get("iorBacklog", 50); // queue for max 50 incoming connection request
          listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
             Socket accept = listen.accept();
+            //Log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
             if (!running) {
                Log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
                break;
@@ -149,7 +150,7 @@ class HandleRequest extends Thread
     * TODO: The HTTP/1.1 spec states that we should return the "Date:" header as well.
     * <p />
     * Test with "telnet <host> 7609"<br />
-    *   GET /AuthenticationService.ior HTTP/1.0 
+    *   GET /AuthenticationService.ior HTTP/1.0
     */
    public void run()
    {
@@ -159,20 +160,22 @@ class HandleRequest extends Thread
       try {
          iStream = new BufferedReader(new InputStreamReader(sock.getInputStream()));
          oStream = new DataOutputStream(sock.getOutputStream());
-         
+
          String clientRequest = iStream.readLine();
          iStream.readLine(); // "\r\n"
 
          if (clientRequest == null) {
             errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true);
-            Log.trace(ME, "Empty client request");
+            Log.warn(ME, "Empty client request");
             return;
          }
-         
+
+         if (Log.TRACE) Log.trace(ME, "Handling client request '" + clientRequest + "' ...");
+
          StringTokenizer toks = new StringTokenizer(clientRequest);
          if (toks.countTokens() != 3) {
             errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true);
-            Log.trace(ME, "Wrong syntax in client request: '" + clientRequest + "'");
+            Log.warn(ME, "Wrong syntax in client request: '" + clientRequest + "'");
             return;
          }
 
@@ -183,13 +186,13 @@ class HandleRequest extends Thread
          // RFC 2068 enforces minimum implementation GET and HEAD
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("HEAD")) {
             errorResponse(oStream, "HTTP/1.1 501 Method Not Implemented", "Allow: GET", true);
-            Log.trace(ME, "Invalid method in client request: '" + clientRequest + "'");
+            Log.warn(ME, "Invalid method in client request: '" + clientRequest + "'");
             return;
          }
 
          if (!resource.equalsIgnoreCase("/AuthenticationService.ior")) {
             errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true);
-            Log.trace(ME, "Ignoring unknown data from client request: '" + clientRequest + "'");
+            Log.warn(ME, "Ignoring unknown data from client request: '" + clientRequest + "'");
             return;
          }
 
@@ -203,6 +206,7 @@ class HandleRequest extends Thread
             oStream.write(CRLF.getBytes());
             oStream.write(ior.getBytes());
          }
+         oStream.flush();
       }
       catch (IOException e) {
          Log.error(ME, "Problems with sending IOR to client: " + e.toString());
