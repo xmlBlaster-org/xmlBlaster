@@ -73,8 +73,11 @@
    <![CDATA[
    <qos> <!-- a full example -->
 
-      <session timeout='3600000'>
+      <session timeout='3600000' maxSessions='20'>
          <!-- The login session will be destroyed after 1 hour (3600000 ms) -->
+         <!-- This user wishes have max. 20 logins in parallel -->
+         <!-- maxSessions='1' is the single login variant -->
+         <sessionId>049630238-445422</sessionId>
       </session>
 
       <callbacks retrials='2' delay='10000' ptp='false'>
@@ -189,7 +192,7 @@
    <see type="API">org.xmlBlaster.client.LoginQosWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
