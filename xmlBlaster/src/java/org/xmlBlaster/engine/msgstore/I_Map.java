@@ -73,6 +73,11 @@ public interface I_Map extends I_StorageProblemNotifier
    int remove(final I_MapEntry mapEntry) throws XmlBlasterException;
 
    /**
+    * @return the number of elements erased.
+    */
+   int remove(final long uniqueId) throws XmlBlasterException;
+
+   /**
     * Remove the oldest entry. 
     * 'Oldest' is defined in the context of the implementation to support an
     * efficient cache, typically it is the LRU (last recent used) entry.

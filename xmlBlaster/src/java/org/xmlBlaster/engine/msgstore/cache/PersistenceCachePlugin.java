@@ -517,6 +517,20 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    /**
+    * @see I_Map#remove(long)
+    */
+   public int remove(final long uniqueId) throws XmlBlasterException {
+      if (log.CALL) this.log.call(ME, "remove(" + uniqueId + ")");
+      synchronized (this) {
+         I_MapEntry mapEntry = get(uniqueId);
+         if (mapEntry == null) {
+            return 0;
+         }
+         return remove(mapEntry);
+      }
+   }
+
+   /**
     * @see I_Map#removeOldest()
     */
    public I_MapEntry removeOldest() throws XmlBlasterException {

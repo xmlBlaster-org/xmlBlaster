@@ -183,6 +183,9 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       }
    }
 
+   /**
+    * @see I_Map#remove(I_MapEntry)
+    */
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
       if (mapEntry == null) return 0;
       if (log.CALL) log.call(ME, "remove(" + mapEntry.getLogId() + ")");
@@ -200,6 +203,20 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          entry.setStored(false);
          this.sizeInBytes -= entry.getSizeInBytes();
          return 1;
+      }
+   }
+
+   /**
+    * @see I_Map#remove(long)
+    */
+   public int remove(final long uniqueId) throws XmlBlasterException {
+      if (log.CALL) this.log.call(ME, "remove(" + uniqueId + ")");
+      synchronized (this.storage) {
+         I_MapEntry mapEntry = get(uniqueId);
+         if (mapEntry == null) {
+            return 0;
+         }
+         return remove(mapEntry);
       }
    }
 

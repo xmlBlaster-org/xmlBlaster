@@ -1239,6 +1239,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       return num;
    }
 
+   public int remove(final long uniqueId) throws XmlBlasterException {
+      int num = removeRandom(uniqueId);
+      synchronized (this.modificationMonitor) {
+      }
+      return num;
+   }
+
    /**
     * @see I_Map#removeOldest()
     */

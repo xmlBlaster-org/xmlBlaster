@@ -385,9 +385,12 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          return;
       }
 
+      this.subscribeStore.remove(subscriptionInfo.getPersistenceId());
+      /*
       SubscribeEntry entry = new SubscribeEntry(keyData.toXml(), qosData.toXml(), subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName(), subscriptionInfo.getPersistenceId(), 0L);
       if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove: removing from persistence entry '" + entry.getUniqueId() + "' secretSessionId='" + subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName());
       this.subscribeStore.remove(entry);
+      */
    }
 
    /**
