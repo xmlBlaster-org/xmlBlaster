@@ -1141,8 +1141,10 @@ synchronized (this) {
                            String ret = plugin.intercept(sessionInfo.getSubjectInfo(), msgUnitWrapper);
                            if (ret == null || ret.length() == 0 || ret.equals(Constants.STATE_OK))
                               break;
-                           else
+                           else {
+                              if (log.TRACE) log.trace(ME, "Message " + xmlKey.getKeyOid() + " is rejected by PublishPlugin");
                               return "<qos><state id='" + ret + "'/></qos>";  // Message is rejected by PublishPlugin
+                           }
                         }
                      }
                   }
@@ -1159,8 +1161,10 @@ synchronized (this) {
                            //Thread.currentThread().dumpStack();
                            if (ret != null) { // Message was forwarded to master cluster
                               retVal = ret.getPublishRetQos();
-                              if (ret.getNodeDomainInfo().getDirtyRead() == false)
+                              if (ret.getNodeDomainInfo().getDirtyRead() == false) {
+                                 if (log.TRACE) log.trace(ME, "Message " + xmlKey.getKeyOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
                                  return retVal.toXml();
+                              }
                               // else we publish it locally as well (dirty read!)
                            }
                         }
@@ -1202,6 +1206,7 @@ synchronized (this) {
             }
 
             //----- 2. now we can send updates to all interested clients:
+            if (log.TRACE) log.trace(ME, "Message " + xmlKey.getKeyOid() + " handled, now we can send updates to all interested clients.");
             if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
                msgUnitHandler.invokeCallback(sessionInfo);
 
