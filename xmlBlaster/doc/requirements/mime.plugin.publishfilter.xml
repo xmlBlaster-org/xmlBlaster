@@ -83,19 +83,19 @@
       <p>
          This is an example message for a publish() method invocation:
       </p>
-      <pre class="BORDER">
+      <table border="1"><tr><td><pre>
 &lt;key oid='LongMessage'/>
 content="veeerrrrrylongcooontenttttttt"
 &lt;qos/>
-      </pre>
+      </pre></td></tr></table>
       <p>
          As the message is too long for our plugin, the plugin.intercept() method
          returns "TOOLONG".
          xmlBlaster rejects the messages and returns for this publish()
       </p>
-      <pre class="BORDER">
+      <table border="1"><tr><td><pre>
 &lt;qos>&lt;state id='TOOLONG'/>&lt;qos>
-      </pre>
+      </pre></td></tr></table>
 
       <p>
          If you return strings contain '&lt;' characters, please
@@ -155,7 +155,7 @@ content="veeerrrrrylongcooontenttttttt"
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -27,7 +27,7 @@
       <p>
       The main reason for this requirement is to minimize net traffic on
       connections between cluster nodes with limited band width.<br />
-      For example if you send 1200 radar message / sec over a 2MBit net
+      For example if you send 1200 radar messages / sec over a 2MBit net
       the band width is almost exhausted. With dirty reads you can allow the cluster
       slave to cache those messages directly without approving from the master node
       and updating back again (assuming you have local subscribers at the slave node).
@@ -43,7 +43,7 @@
    The dirty read attribute has to be set at all stratum levels to be active, here
    <code>heron</code> declares it (he is the master):
    </p>
-<pre class="BORDER">
+<pre>
 <![CDATA[
 cluster.node[heron.mycomp.com]=\
    <clusternode id='heron.mycomp.com'>\
@@ -66,7 +66,7 @@ cluster.node[heron.mycomp.com]=\
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
