@@ -493,6 +493,16 @@
             <td>Kills the first session of joe (force logout)</td>
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
+         <tr>
+            <td>client/joe/1/?activateManager</td>
+            <td>tells if the DispatchManager of the specified session is active for asynchronous dispatch</td>
+            <td><img src="ok.gif" border="0" alt="no" /></td>
+         </tr>
+         <tr>
+            <td>client/joe/1/?activateManager=true</td>
+            <td>tells the DispatchManager of the specified session to become active</td>
+            <td><img src="ok.gif" border="0" alt="no" /></td>
+         </tr>
       </table>
       <p>
       You can address an attribute with global scope <i>/node/heron/client/joe/?uptime</i>
@@ -701,7 +711,7 @@ UserInfo: joe:mypasswd
    <author>laghi@swissinfo.org</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.53 $</revision>
+   <revision>$Revision: 1.54 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
