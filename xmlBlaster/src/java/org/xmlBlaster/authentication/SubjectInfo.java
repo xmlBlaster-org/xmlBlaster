@@ -61,9 +61,11 @@ public class SubjectInfo implements I_AdminSubject
    private SessionName subjectName;
    /** The partner class from the security framework */
    private I_Subject securityCtx = null;
-   /** All sessions of this subject are stored in this map.
-       The sessionId is the key, the SessionInfo object the value
-   */
+   /**
+    * All sessions of this subject are stored in this map.
+    * The absoluteSessionName == sessionInfo.getId() is the key,
+    * the SessionInfo object the value
+    */
    private Map sessionMap = new HashMap();
    private SessionInfo[] sessionArrCache;
    /** Check if instance is still valid */
@@ -389,9 +391,9 @@ public class SubjectInfo implements I_AdminSubject
     */
    public final SessionInfo[] getSessions() {
       if (this.sessionArrCache == null) {
-         synchronized (sessionMap) {
+         synchronized (this.sessionMap) {
             if (this.sessionArrCache == null) {
-               this.sessionArrCache = (SessionInfo[])sessionMap.values().toArray(new SessionInfo[sessionMap.size()]);
+               this.sessionArrCache = (SessionInfo[])this.sessionMap.values().toArray(new SessionInfo[this.sessionMap.size()]);
             }
          }
       }
@@ -470,9 +472,9 @@ public class SubjectInfo implements I_AdminSubject
          log.error(ME, text);
          throw new XmlBlasterException(ME, text);
       }
-      if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSessionId() + ")");
-      synchronized (sessionMap) {
-         this.sessionMap.put(sessionInfo.getSessionId(), sessionInfo);
+      if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
+      synchronized (this.sessionMap) {
+         this.sessionMap.put(sessionInfo.getId(), sessionInfo);
          this.sessionArrCache = null;
          this.callbackAddressCache = null;
       }
@@ -486,24 +488,28 @@ public class SubjectInfo implements I_AdminSubject
     * Get notification that the client did a logout.
     * <br />
     * Note that the loginName is not reset.
+    * @param absoluteSessionName == sessionInfo.getId()
     * @param clearQueue Shall the message queue of the client be destroyed as well?
     */
-   public final void notifyAboutLogout(String sessionId, boolean clear) throws XmlBlasterException {
+   public final void notifyAboutLogout(String absoluteSessionName, boolean clear) throws XmlBlasterException {
       if (isShutdown()) { // disconnect() and connect() are not synchronized, so this can happen
          String text = "SubjectInfo is shutdown, no logout";
          Thread.currentThread().dumpStack();
          log.error(ME, text);
          throw new XmlBlasterException(ME, text);
       }
-      if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + sessionId + ", " + clear + ")");
+      if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + absoluteSessionName + ", " + clear + ")");
       SessionInfo sessionInfo = null;
-      synchronized (sessionMap) {
-         sessionInfo = (SessionInfo)sessionMap.remove(sessionId);
+      synchronized (this.sessionMap) {
+         sessionInfo = (SessionInfo)sessionMap.remove(absoluteSessionName);
          this.sessionArrCache = null;
          this.callbackAddressCache = null;
       }
       if (sessionInfo != null) {
          this.deliveryStatistic.incrNumUpdate(sessionInfo.getNumUpdates());
+      }
+      else {
+         log.warn(ME, "Lookup of session with absoluteSessionName=" + absoluteSessionName + " failed");
       }
 
       if (log.DUMP) log.dump(ME, this.subjectQueue.toXml(null));
@@ -696,6 +702,12 @@ public class SubjectInfo implements I_AdminSubject
          }
          sessionInfo.getKillSession();
       }
-      return getId() + " Sessions " + sessionList + " killed";
+      /* The upper form is probably better
+      SessionInfo[] sessions = getSessions();
+      for (int ii=0; ii<sessions.length; ii++) {
+         sessions[ii].getKillSession();
+      }
+      */
+     return getId() + " Sessions " + sessionList + " killed";
    }
 }
