@@ -45,9 +45,11 @@ cd <XMLBLASTER_HOME>/demo/c/xmlrpc
 
    CLIENT_CFLAGS=`xmlrpc-c-config libwww-client --cflags`
    CLIENT_LIBS=`xmlrpc-c-config libwww-client --libs`
-   gcc $CLIENT_CFLAGS -o testLogin testLogin.c $CLIENT_LIBS
+   gcc $CLIENT_CFLAGS -o client client.c $CLIENT_LIBS -Wall
 
-
+   SERVER_CFLAGS=`xmlrpc-c-config abyss-server --cflags`
+   SERVER_LIBS=`xmlrpc-c-config abyss-server --libs`
+	gcc $SERVER_CFLAGS -o callbackServer callbackServer.c $SERVER_LIBS -Wall
 
 Run it:
 =======
@@ -60,11 +62,15 @@ Start xmlBlaster server
 
 Start this client:
 
-   testLogin -xmlrpc.serverUrl http://anotherHost:8080/ -xmlrpc.cbUrl http://myHost:8080/ -name ben -passwd secret -dest gesa -msgFile xy.xml
+	client -xmlrpc.serverUrl http://idvssrv:8080/ -xmlrpc.cbUrl http://idvssrv:8081/RPC2 -name ben -passwd secret -dest ben -msgFile hello.txt
 
-It will login as user 'ben', and send to user 'gesa' a PtP message
+It will login as user 'ben', and send to user 'ben' a PtP message
 (Probably you should start a Java client to receive the message like:
- java org.xmlBlaster.client.reader.SubscribeMessage  -name gesa  -passwd secret  -oid __sys__TotalMem
+ java org.xmlBlaster.client.reader.SubscribeMessage  -name ben  -passwd secret  -oid __sys__TotalMem
 ) 
+
+Start the callbackServer:
+
+   callbackServer abyss.conf
 
 01/2002 marcel
