@@ -4,10 +4,25 @@ These are examples on how to access xmlBlaster from a C++ client
 
 - xmlBlaster runs with JacORB (Java)
 
+-  clientPOA -ORBNamigAddr corbaname::localhost:7608#MyService
+-  TestGet -ORBNamigAddr corbaname::localhost:7608#xmlBlaster-Authenticate.MOM
+-  TestGet -ORBNamigAddr corbaname:rir:/NameService#xmlBlaster-Authenticate.MOM
+
+
+C++ callback:
+
+When using -ORBIIOPAddr, Mico will only listen on
+the one interface that handles this IP address, so servers will only
+be addressable using that exact address.
+
+You might want to try using -ORBIIOPAddr inet::9000 instead; Mico
+will then listen on INADDR_ANY.
+
+
 
 1.) Install MICO (2.3) and set the environment variable to point to MICO
 
-   export MICO_HOME=/usr/local/mico
+   export MICO_HOME=/opt/local/mico
 
 
 2) Compile the clients with
@@ -35,7 +50,7 @@ Using POA (clientPOA.cpp) with a naming service:
 
 You need to have a running web server and set the DocumentRoot to e.g.
 
-   export DocumentRoot=/usr/local/httpd/html
+   export DocumentRoot=/opt/local/httpd/html
 
 3) Start the naming service (with a running web server)
 
