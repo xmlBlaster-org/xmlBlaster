@@ -1209,7 +1209,9 @@ TODO
          <compiler refid="bcc"/>
          <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
+         <fileset dir="${src.cpp.dir}/util/qos" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
+         <fileset dir="${src.cpp.dir}/authentication" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp"/>
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->

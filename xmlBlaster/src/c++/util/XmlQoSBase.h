@@ -82,7 +82,7 @@ namespace util {
         *         need to look at this tag anymore
         *         false this tag is not handled by this Base class
         */
-       bool startElementBase(const XMLCh* const name, AttributeList &/*attrs*/) {
+       bool startElementBase(const XMLCh* const name, AttributeList& /*attrs*/) {
           if (SaxHandlerBase::caseCompare(name, "qos")) {
              inQos_ = true;
              return true;

@@ -44,6 +44,7 @@ Comment:   Basic xmlBlaster exception.
 
 #include <string>
 #include <util/Timestamp.h>
+#include <util/ErrorCode.h>
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -73,6 +74,16 @@ class XmlBlasterException
                        const string &location,
                        const string &lang="en",
                        const string &message="",
+                       const string &versionInfo="client-c++",
+                       Timestamp timestamp=0,
+                       const string &stackTrace="",
+                       const string &embeddedMessage="",
+                       const string &transactionInfo="<transactioninfo/>");
+
+   XmlBlasterException(const ErrorCode &errorCode,
+                       const string &node,
+                       const string &location,
+                       const string &lang="en",
                        const string &versionInfo="client-c++",
                        Timestamp timestamp=0,
                        const string &stackTrace="",

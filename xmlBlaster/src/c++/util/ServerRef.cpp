@@ -4,14 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding serverRef address string and protocol string to
            access XmlBlaster
-Version:   $Id: ServerRef.cpp,v 1.1 2002/11/29 20:35:18 laghi Exp $
+Version:   $Id: ServerRef.cpp,v 1.2 2002/12/01 21:23:51 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding serverRef address string and protocol string.
  * <p />
  * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author ruff@swand.lake.de
  * @author laghi@swissinfo.org
  */
@@ -21,16 +21,24 @@ Version:   $Id: ServerRef.cpp,v 1.1 2002/11/29 20:35:18 laghi Exp $
 
 namespace org { namespace xmlBlaster { namespace util {
 
-
-ServerRef::ServerRef(const string& type)
+ServerRef::ServerRef(const ServerRef& serverRef)
 {
-   type_ = type;
+   type_    = serverRef.type_;
+   address_ = serverRef.address_;
 }
+
+ServerRef& ServerRef::operator =(const ServerRef& serverRef)
+{
+   type_    = serverRef.type_;
+   address_ = serverRef.address_;
+   return *this;
+}
+
 
 ServerRef::ServerRef(const string& type, const string& address)
 {
    type_ = type;
-   setAddress(address);
+   address_ = address;
 }
 
 void ServerRef::setAddress(const string& address)

@@ -13,6 +13,7 @@ Comment:   Default handling of Sax callbacks
 #endif
 
 #include <util/SaxHandlerBase.h>
+#include <sax/SAXException.hpp>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ SaxHandlerBase::SaxHandlerBase(int args, char *argc[])
   charTrimmer_(),
   xmlChTrimmer_() 
 {
+  log_.initialize();
   if (log_.CALL) log_.trace(me(), "Creating new SaxHandlerBase");
 }
 
@@ -44,8 +46,14 @@ SaxHandlerBase::init(const string &xmlLiteral)
 void 
 SaxHandlerBase::parse(const string &xmlData) 
 {
+  log_.call(me(), "parse");
+  if (log_.TRACE) {
+     log_.trace(me(), string("parse content:'") + xmlData + string("'"));
+  }
   try {
+    log_.trace(me(), "parse entrering try/catch block");
     SAXParser parser;
+    log_.trace(me(), "parser successfully created");
     // = ParserFactory.makeParser(); // DEFAULT_PARSER_NAME
     parser.setDocumentHandler(this);
     parser.setErrorHandler(this);
@@ -56,12 +64,35 @@ SaxHandlerBase::parse(const string &xmlData)
   }
   catch (StopParseException &) { 
     // If it does not work, it could be wrapped into SAXParseException
-    if (log_.TRACE) log_.trace(me(), string("StopParseException: ") +
-                          "Parsing execution stopped half the way");
+    log_.error(me(), string("StopParseException: ") +
+                            "Parsing execution stopped half the way");
+    return;
+  }
+
+  catch (SAXException &err) {
+    if (log_.TRACE) {
+       char *msg = XMLString::transcode(err.getMessage());
+       log_.error(me(), string("parse: SAXException. message:") + string(msg));
+       delete msg;
+    }
+    return;
+  }
+
+  catch (const exception& err) {
+    log_.error(me(), string("parse: exception. message:") + err.what());
+    return;
+  }
+  catch (const bad_alloc& err) {
+    log_.error(me(), string("parse: bad_alloc exception. message:") + err.what());
+    return;
+  }
+  catch (const bad_exception& err) {
+       log_.error(me(), string("parse: bad_exception exception. message:") + err.what());
     return;
   }
   catch (...) {
-   cerr << "SOME OTHER EXEPTION" << std::endl;
+       log_.error(me(), "parse: unknown exception.");
+    return;
   }
 }
 
@@ -77,6 +108,8 @@ SaxHandlerBase::characters(const XMLCh* const ch, const unsigned int start,
 {
   char *chHelper = XMLString::transcode(ch);
   character_.assign(string(chHelper), start, length);
+  if (log_.TRACE)
+     log_.trace(me(), string("characters, character:'") + character_ + string("'"));
   delete chHelper;
 }
 
@@ -195,5 +228,35 @@ SaxHandlerBase::caseCompare(const XMLCh *name1, const char *name2)
   delete name2Helper;
   return ret;
 }
+
+
+string
+SaxHandlerBase::getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const
+{
+   char *nameCh = NULL;
+   char *keyCh = NULL;
+   char *valueCh = NULL;
+   string ret = "";
+   try {
+      nameCh = XMLString::transcode(name);
+      int len = attrs.getLength();
+      ret += string("<") + string(nameCh) + string(" ");
+      for (int i = 0; i < len; i++) {
+         if (keyCh != NULL) delete keyCh;
+         if (valueCh != NULL) delete valueCh;
+         keyCh   = XMLString::transcode(attrs.getName(i));
+         valueCh = XMLString::transcode(attrs.getValue(i));
+         ret += string(keyCh) + string("='") + string(valueCh) + string("' ");
+      }
+   }
+   catch (...) { // to avoid memory leaks
+   }
+   delete nameCh;
+   delete keyCh;
+   delete valueCh;
+   ret += ">";
+   return ret;
+}
+
 
 #endif

@@ -43,7 +43,7 @@ SecurityQos::SecurityQos(const string& loginName,
 }
 
 SecurityQos::SecurityQos(const SecurityQos& securityQos)
-   : SaxHandlerBase(securityQos.args_, argc_), ME("SecurityQos-simple"), trim_()
+   : SaxHandlerBase(securityQos.args_, securityQos.argc_), ME("SecurityQos-simple"), trim_()
 {
    copy(securityQos);
 }
@@ -103,17 +103,21 @@ string SecurityQos::getCredential() const
  */
 void SecurityQos::startElement(const XMLCh* const name, AttributeList& attrs)
 {
-   log_.call(ME, "startElement");
-   if (name == XMLString::transcode("securityService")) {
+   if (log_.CALL) log_.call(ME, "startElement");
+   if (log_.TRACE) {
+      string txt = SaxHandlerBase::getStartElementAsString(name, attrs);
+      log_.trace(ME, string("startElement: ") + txt);
+   }
+   if (SaxHandlerBase::caseCompare(name, "securityService")) {
       inSecurityService_ = true;
       unsigned int len = attrs.getLength();
 
       unsigned int ii=0;
       for (ii = 0; ii < len; ii++) {
-         if (attrs.getName(ii) == XMLString::transcode("type")) {
+         if (SaxHandlerBase::caseCompare(attrs.getName(ii), "securityService")) {
             type_ = trim_.trim(XMLString::transcode(attrs.getValue(ii))); // .trim();
          }
-         else if (attrs.getName(ii) == XMLString::transcode("version")) {
+         else if (SaxHandlerBase::caseCompare(attrs.getName(ii), "version")) {
             version_ = trim_.trim(XMLString::transcode(attrs.getValue(ii))); //.trim();
          }
       }
@@ -121,13 +125,13 @@ void SecurityQos::startElement(const XMLCh* const name, AttributeList& attrs)
       return;
    }
 
-   if (name == XMLString::transcode("user")) {
+   if (SaxHandlerBase::caseCompare(name, "user")) {
       inUser_ = true;
       character_.erase();
       return;
    }
 
-   if (name == XMLString::transcode("passwd")) {
+   if (SaxHandlerBase::caseCompare(name, "passwd")) {
       inPasswd_ = true;
       character_.erase();
       return;
@@ -142,21 +146,21 @@ void SecurityQos::startElement(const XMLCh* const name, AttributeList& attrs)
  void SecurityQos::endElement(const XMLCh* const name)
 {
    log_.call(ME, "endElement");
-   if (name == XMLString::transcode("user")) {
+   if (SaxHandlerBase::caseCompare(name, "user")) {
       inUser_ = false;
       user_ = trim_.trim(character_.c_str()); // .toString().trim();
       character_.erase();
       return;
    }
 
-   if (name == XMLString::transcode("passwd")) {
+   if (SaxHandlerBase::caseCompare(name, "passwd")) {
       inPasswd_ = false;
       passwd_ = trim_.trim(character_.c_str()); // .toString().trim();
       character_.erase();
       return;
    }
 
-   if (name == XMLString::transcode("securityService")) {
+   if (SaxHandlerBase::caseCompare(name, "securityService")) {
       inSecurityService_ = false;
       character_.erase();
       return;

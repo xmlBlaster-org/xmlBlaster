@@ -187,7 +187,6 @@ namespace org { namespace xmlBlaster {
       serverIdl::Server_ptr login(const string &loginName, const string &passwd, 
                    const LoginQosWrapper &qos, I_Callback *client=0);
 
-
       /**
        * Building a Callback server.
        * @return the BlasterCallback server

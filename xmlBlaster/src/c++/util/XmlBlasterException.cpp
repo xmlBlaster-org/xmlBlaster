@@ -40,6 +40,32 @@ namespace org { namespace xmlBlaster { namespace util {
       }
    }
 
+
+   XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
+                       const string &node,
+                       const string &location,
+                       const string &lang,
+                       const string &versionInfo,
+                       Timestamp timestamp,
+                       const string &stackTrace,
+                       const string &embeddedMessage,
+                       const string &transactionInfo)
+      :                errorCodeStr_(errorCode.errorCode),
+                       node_(node),
+                       location_(location),
+                       lang_(lang),
+                       message_(errorCode.description),
+                       versionInfo_(versionInfo),
+                       timestamp_(timestamp),
+                       stackTrace_(stackTrace),
+                       embeddedMessage_(embeddedMessage),
+                       transactionInfo_(transactionInfo)
+   {
+      if (embeddedMessage_ == "") {
+         embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
+      }
+   }
+
    string XmlBlasterException::getErrorCodeStr() const
    {
       return errorCodeStr_;

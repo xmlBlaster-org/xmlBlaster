@@ -4,14 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding serverRef address string and protocol string to
            access XmlBlaster
-Version:   $Id: ServerRef.h,v 1.1 2002/11/29 20:35:18 laghi Exp $
+Version:   $Id: ServerRef.h,v 1.2 2002/12/01 21:23:51 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding serverRef address string and protocol string.
  * <p />
  * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author ruff@swand.lake.de
  * @author laghi@swissinfo.org
  */
@@ -26,8 +26,6 @@ namespace org { namespace xmlBlaster { namespace util {
 class ServerRef
 {
 private:
-   const string ME; // = "ServerRef";
-
    /** The unique address, e.g. the CORBA IOR string */
    string address_;
    /** The unique protocol type, e.g. "IOR" */
@@ -35,17 +33,16 @@ private:
 
 public:
 
-   /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
-    */
-   ServerRef(const string& type);
+    ServerRef(const ServerRef& serverRef);
+
+    ServerRef& operator =(const ServerRef& serverRef);
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
     * @param address A serverRef address for your client, suitable to the protocol
     *                for email e.g. "xmlblaster@xmlBlaster.org"
     */
-   ServerRef(const string& type, const string& address);
+   ServerRef(const string& type, const string& address="");
 
    /**
     * Set the serverRef address, it should fit to the protocol-type.

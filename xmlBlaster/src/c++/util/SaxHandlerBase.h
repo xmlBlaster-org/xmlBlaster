@@ -201,6 +201,12 @@ namespace util {
        * xerces.
        */
       bool caseCompare(const XMLCh *name1, const char *name2) ;
+
+      /**
+       * Gets the start element parameters, reads them and builds a string.
+       */
+       string getStartElementAsString(const XMLCh* const name, AttributeList& attrs) const;
+
    };
 }}} // namespace
 
