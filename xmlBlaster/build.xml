@@ -1316,9 +1316,9 @@ TODO
    <!-- =================================================================== -->
    <target name="cpp-corba-idl-TAO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
       <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
-      <switch value="${os.family}" caseinsensitive="false">
+      <switch value="${os.family}" caseinsensitive="true">
          <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/../bin/tao_idl" />
+            <property name="idl.cmd" value="${CORBACPP_HOME}/TAO_IDL/tao_idl" />
          </case>
          <default>
             <property name="idl.cmd" value="${CORBACPP_HOME}/../bin/tao_idl.exe" />
@@ -1340,7 +1340,7 @@ TODO
               /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
             -->
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${src.cpp.dir}/util/xmlbcfg.h -Wb,export_macro=Dll_Export"/>
+               <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
             <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
@@ -1503,10 +1503,10 @@ TODO
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
 
             <!-- TAO -->
-            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO" />
-            <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO" />       
-            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO" />
-            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO" />
+            <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
+            <libset dir="${CORBACPP_HOME}/tao" libs="TAO" if="TAO" />       
+            <libset dir="${CORBACPP_HOME}/tao/PortableServer" libs="TAO_PortableServer" if="TAO" />
+            <libset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" libs="TAO_CosNaming" if="TAO" />
 
             <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
 
