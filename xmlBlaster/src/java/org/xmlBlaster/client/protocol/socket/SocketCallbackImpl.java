@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.25 2002/09/14 23:12:41 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.26 2002/09/15 11:19:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -29,6 +29,7 @@ import java.io.IOException;
  * on the socket input stream waiting for messages from xmlBlaster. 
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.socket.Parser
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
 {
@@ -59,6 +60,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       this.callbackAddressStr = sockCon.getLocalAddress();
 
       Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+sockCon.getLoginName());
+      t.setDaemon(true);
       t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
       t.start();
    }
@@ -96,6 +98,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    public void run()
    {
       log.info(ME, "Started callback receiver");
+      boolean multiThreaded = glob.getProperty().get("socket.cb.multiThreaded", true);
       
       while(running) {
 
@@ -104,14 +107,16 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
             receiver.parse(iStream); // This method blocks until a message arrives
             if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<\n" + receiver.dump());
 
-//            receive(receiver);       // Parse the message and invoke callback to client code
-
-            // Parse the message and invoke callback to client code in a seperate thread
-            // to avoid dead lock when client does a e.g. publish() during this update()
-            WorkerThread t = new WorkerThread(glob, this, receiver);
-            t.setPriority(glob.getProperty().get("socket.cbInvokerThreadPrio", Thread.NORM_PRIORITY));
-            t.start();
-
+            if (multiThreaded) {
+               // Parse the message and invoke callback to client code in a seperate thread
+               // to avoid dead lock when client does a e.g. publish() during this update()
+               WorkerThread t = new WorkerThread(glob, this, receiver);
+               t.setPriority(glob.getProperty().get("socket.cbInvokerThreadPrio", Thread.NORM_PRIORITY));
+               t.start();
+            }
+            else {
+               receive(receiver);       // Parse the message and invoke callback to client code
+            }
          }
          catch(XmlBlasterException e) {
             log.error(ME, e.toString());
