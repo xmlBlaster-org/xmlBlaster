@@ -29,7 +29,9 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.corba.serverIdl \
 			org.xmlBlaster.protocol.corba.email \
 			org.xmlBlaster.protocol.corba.http \
-			org.xmlBlaster.util
+			org.xmlBlaster.protocol.corba.jdbc \
+			org.xmlBlaster.util \
+			org.xmlBlaster.util.pool.jdbc
 
 TEST_PACKGS = testsuite.org.xmlBlaster
 
