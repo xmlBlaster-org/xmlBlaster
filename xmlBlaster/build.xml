@@ -156,6 +156,9 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
+   <property name="COMPILE_CORBA_PLUGIN" value="1" />   <!-- Add the Corba protocol plugin -->
+   <property name="COMPILE_SOCKET_PLUGIN" value="1" />  <!-- Add the C socket library wrapper plugin? -->
+
    <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
@@ -1372,6 +1375,8 @@ TODO
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
       <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
       <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
+      <echo message=" COMPILE_SOCKET_PLUGIN=${COMPILE_SOCKET_PLUGIN}"/>
+      <echo message=" COMPILE_CORBA_PLUGIN=${COMPILE_CORBA_PLUGIN}"/>
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
 
@@ -1409,6 +1414,26 @@ TODO
       <condition property="tao.lib.type" value="">
          <equals arg1="${cpp.debug}" arg2="false" />
       </condition>
+
+      <switch value="${COMPILE_SOCKET_PLUGIN}">
+         <case value="1">
+            <property name="COMPILE_SOCKET_EXCLUDES" value="" />
+            <property name="COMPILE_SOCKET_DEFINE" value="1" />
+         </case>
+         <default>
+            <property name="COMPILE_SOCKET_EXCLUDES" value="**/socket/**" />
+         </default>
+      </switch>
+
+      <switch value="${COMPILE_CORBA_PLUGIN}">
+         <case value="1">
+            <property name="COMPILE_CORBA_EXCLUDES" value="" />
+            <property name="COMPILE_CORBA_DEFINE" value="1" />
+         </case>
+         <default>
+            <property name="COMPILE_CORBA_EXCLUDES" value="**/corba/**" />
+         </default>
+      </switch>
 
    </target>
 
@@ -1639,9 +1664,25 @@ TODO
    <!-- =================================================================== -->
    <target name="cpp-lib" depends="prepare-cpp" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
 
-      <echo message="calling ant target cpp-corba-idl-${corba.product} ..." />
-      <antcall target="cpp-corba-idl-${corba.product}"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
+      <switch value="${COMPILE_SOCKET_PLUGIN}">
+         <case value="1">
+            <echo message="calling ant target c-lib for SOCKET protocol plugin ..." />
+            <antcall target="c-lib"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
+            <echo message="c-lib done, continue with cpp-lib ..." />
+         </case>
+         <default>
+         </default>
+      </switch>
 
+      <switch value="${COMPILE_CORBA_PLUGIN}">
+         <case value="1">
+            <echo message="calling ant target cpp-corba-idl-${corba.product} for CORBA protocol support ..." />
+            <antcall target="cpp-corba-idl-${corba.product}"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
+            <echo message="cpp-corba-idl-${corba.product} done, continue with cpp-lib ..." />
+         </case>
+         <default>
+         </default>
+      </switch>
 
       <!-- Build a shared library xmlBlasterClient.so, xmlBlasterClient.sl or xmlBlasterClient.dll -->
       <!-- A typical compile:
@@ -1705,7 +1746,8 @@ TODO
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <fileset dir="${src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" excludes="Global.cpp"/>
-         <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp" />
+         <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp"
+                  excludes="${COMPILE_SOCKET_EXCLUDES},${COMPILE_CORBA_EXCLUDES}" />
          <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
          <fileset dir="${src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
@@ -1727,7 +1769,11 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
+         <sysincludepath location="${src.c.dir}" />   <!-- Using the C SOCKET client library -->
+         
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
+           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
+           <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
@@ -1944,6 +1990,9 @@ TODO
 
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+
+            <!-- xmlBlasterClientC.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
