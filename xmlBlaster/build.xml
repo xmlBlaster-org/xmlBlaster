@@ -65,7 +65,7 @@ them at need.
   <property name="lib.dir" value="./lib"/>
   <property name="packages" value="org.xmlBlaster.*"/>
 
-  <property name="idl" value="org.xmlBlaster"/>
+  <property name="idl" value="org.xmlBlaster.protocol.corba"/>
   <property name="idl.class" value="jacorb.idl.parser"/>
 
   <property name="build.dir" value="./build"/>
