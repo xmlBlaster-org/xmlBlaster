@@ -14,8 +14,8 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
@@ -444,7 +444,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             }
 
             String tmpDirty = attrs.getValue("dirtyRead");
-            boolean dirtyRead = org.xmlBlaster.engine.cluster.NodeDomainInfo.DEFAULT_dirtyRead;
+            boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
             if (tmpDirty != null) {
                try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.error(ME, "Invalid dirtyRead =" + tmpDirty); };
             }
