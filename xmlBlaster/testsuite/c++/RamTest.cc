@@ -3,7 +3,7 @@ Name:      RamTest.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cc,v 1.5 2001/03/16 09:47:03 ruff Exp $
+Version:   $Id: RamTest.cc,v 1.6 2001/11/25 19:24:48 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -39,7 +39,7 @@ private:
       return "Tim";
    }
 
-   const static int NUM_PUBLISH = 1000;
+   const static string::size_type NUM_PUBLISH = 1000;
    util::StopWatch  stopWatch_;
    CorbaConnection* senderConnection_;
    string           publishOid_;
@@ -50,8 +50,8 @@ private:
    util::Log log_;
 
 public:
-   RamTest(const string &testName, const string &loginName) : log_(),
-      stopWatch_() {
+   RamTest(const string &testName, const string &loginName) : 
+                 stopWatch_(), log_() {
       senderName_   = loginName;
       publishOid_   = "";
       contentMime_  = "text/plain";
@@ -91,7 +91,7 @@ public:
       log_.info(me(), "tearDown() ...");
 //      stopWatch = new StopWatch();
 
-      for (int i=0; i < NUM_PUBLISH; i++) {
+      for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          char buffer[256];
          ostrstream out(buffer, 255);
          out << "<key oid='RamTest-" << (i+1) << "'>\n" << "</key>" << (char)0;
@@ -129,14 +129,13 @@ public:
     */
    void testPublish() {
       if (log_.TRACE) log_.trace(me(), "Publishing a message ...");
-      long usedMemBefore = 0L;
 
       serverIdl::MessageUnitArr msgUnitArr(NUM_PUBLISH);
       msgUnitArr.length(NUM_PUBLISH);
 
       char buffer[128];
 
-      for (int i=0; i < NUM_PUBLISH; i++) {
+      for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          ostrstream out(buffer, 127);
          out << i+1 << (char)0;
 //           string xmlKey = string("<key oid='RamTest-") + buffer

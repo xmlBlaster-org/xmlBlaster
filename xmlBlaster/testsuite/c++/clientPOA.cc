@@ -32,7 +32,7 @@ class BlasterCallback_impl : virtual public POA_clientIdl::BlasterCallback  {
 
 private:
   ostream& print_msg(ostream &out, const serverIdl::MessageUnit &msg) {
-    for (int i=0; i < msg.content.length(); i++) {
+    for (string::size_type i=0; i < msg.content.length(); i++) {
       out << msg.content[i];
     }
     return out;
@@ -60,7 +60,6 @@ int main(int argc, char* argv[]) {
 
   AuthServer_var authServer_obj;
   CORBA::ORB_var orb;
-  char           objref_str[1024];
 
   try {
     // Create the ORB

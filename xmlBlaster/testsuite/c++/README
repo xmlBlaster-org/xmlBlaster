@@ -23,12 +23,12 @@ Using BOA (clientBOA.cc):
 
 3) Start the xmlBlaster server
 
-         jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
+   java org.xmlBlaster.Main -iorFile /tmp/ior.dat
 
 
 4) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
 
-         ./TestGet  -ior `cat /tmp/ior.dat`
+   ./TestGet  -ior `cat /tmp/ior.dat`
 
 
 Using POA (clientPOA.cc) with a naming service:
@@ -39,12 +39,12 @@ You need to have a running web server and set the DocumentRoot to e.g.
 
 3) Start the naming service (with a running web server)
 
-   jaco org.jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
+   jaco -DOAPort=7608 org.jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
 
 
 4) Start the xmlBlaster server (The web server URL is in jacorb.properties)
 
-   jaco org.xmlBlaster.Main
+   java org.xmlBlaster.Main
 
 
 5) And connect with the C++ client

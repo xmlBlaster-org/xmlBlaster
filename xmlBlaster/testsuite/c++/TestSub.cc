@@ -3,7 +3,7 @@ Name:      TestSub.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cc,v 1.5 2001/03/16 09:47:03 ruff Exp $
+Version:   $Id: TestSub.cc,v 1.6 2001/11/25 19:24:48 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/CorbaConnection.h>
@@ -57,6 +57,10 @@ private:
       contentMimeExtended_ = "1.0";
    }
 
+   virtual ~TestSub() {
+      if (senderConnection_ != NULL)
+         delete senderConnection_;
+   }
 
    /**
     * Sets up the fixture. <p />
