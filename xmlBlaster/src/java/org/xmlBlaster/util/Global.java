@@ -74,8 +74,6 @@ import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.xmlBlaster.util.admin.extern.JmxWrapper;
-
 /**
  * Global variables to avoid singleton.
  *
@@ -84,7 +82,6 @@ import org.xmlBlaster.util.admin.extern.JmxWrapper;
 public class Global implements Cloneable
 {
    private static Global firstInstance;
-   private JmxWrapper jmxWrapper;
 
    /** Version string, please change for new releases (4 digits) */
    private String versionDefault = "0.85b";
@@ -163,7 +160,6 @@ public class Global implements Cloneable
    protected static int counter = 0;
 
    /** a hastable keeping all JdbcManager objects: one per DB */
-   protected Hashtable jdbcQueueManagers;
    protected Hashtable jdbcQueueManagersCommonTable;
 
    private PluginManagerBase pluginManager;
@@ -1587,22 +1583,27 @@ public class Global implements Cloneable
 
 
       //Thread.currentThread().dumpStack();
-      if (deliveryWorkerPool != null) {
-         deliveryWorkerPool.shutdown();
+      if (this.deliveryWorkerPool != null) {
+         this.deliveryWorkerPool.shutdown();
          // registered itself to Runlevel changes deliveryWorkerPool.shutdown();?
-         deliveryWorkerPool = null;
+         this.deliveryWorkerPool = null;
       }
-      if (burstModeTimer != null) {
-         burstModeTimer.shutdown();
-         burstModeTimer = null;
+      if (this.burstModeTimer != null) {
+         this.burstModeTimer.shutdown();
+         this.burstModeTimer = null;
       }
-      if (cbPingTimer != null) {
-         cbPingTimer.shutdown();
-         cbPingTimer = null;
+      if (this.cbPingTimer != null) {
+         this.cbPingTimer.shutdown();
+         this.cbPingTimer = null;
       }
-      if (messageTimer != null) {
-         messageTimer.shutdown();
-         messageTimer = null;
+      if (this.messageTimer != null) {
+         this.messageTimer.shutdown();
+         this.messageTimer = null;
+      }
+
+      if (this.jdbcConnectionPoolTimer != null) {
+         this.jdbcConnectionPoolTimer.shutdown();
+         this.jdbcConnectionPoolTimer = null;
       }
 
       shutdownHttpServer();
@@ -1753,5 +1754,33 @@ public class Global implements Cloneable
       sb.append("                        The contained settings overwrite a property file found in the xmlBlaster.jar file.\n");
       sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
       return sb.toString();
+   }
+
+   /** To play with a profiling tool */
+   public static void main(String[] args) {
+      System.out.println("NO GLOBAL, Hit a key");
+      try { System.in.read(); } catch(java.io.IOException e) {}
+      Global glob = new Global(args);
+      try {
+         while (true) {
+            System.out.println("NO XmlBlasterAccess, Hit a key");
+            try { System.in.read(); } catch(java.io.IOException e) {}
+            XmlBlasterAccess a = new XmlBlasterAccess(glob);
+
+            System.out.println("connecting ...");
+            a.connect(null, null);
+            System.out.println("connected ...");
+            
+            System.out.println("Hit a key");
+            try { System.in.read(); } catch(java.io.IOException e) {}
+            a.disconnect(null);
+
+            System.out.println("All is shutdown: Hit a key");
+            try { System.in.read(); } catch(java.io.IOException e) {}
+         }
+      }
+      catch (Exception e) {
+         System.out.println("Global.main: " + e.toString());
+      }
    }
 }
