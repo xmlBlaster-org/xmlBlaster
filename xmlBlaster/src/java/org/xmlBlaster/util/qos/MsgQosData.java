@@ -63,6 +63,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId;
 
+   public transient final static boolean DEFAULT_isSubscribeable = true;
+   /** As default you can subscribe even PtP messages, set it to false if you don't want any subscriber to see your PtP message */
+   private PropBoolean isSubscribeable = new PropBoolean(DEFAULT_isSubscribeable);
+
    /** the number of resend tries on failure */
    private int redeliver;
    private long queueIndex = -1L;
@@ -98,10 +102,6 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
 
    public transient final static boolean DEFAULT_forceDestroy = false;
    private PropBoolean forceDestroy = new PropBoolean(DEFAULT_forceDestroy);
-
-   public transient final static boolean DEFAULT_isPubSub = true;
-   /** As default you can subscribe even PtP messages, set it to false if you don't want any subscriber to see your PtP message */
-   private PropBoolean isPubSub = new PropBoolean(DEFAULT_isPubSub);
 
    /** the sender (publisher) of this message (unique loginName) */
    private SessionName sender;
@@ -153,10 +153,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @see #isPubSubStyle()
+    * @see #isSubscribeable()
     */
-   public void setIsPubSub(boolean isPubSub) {
-      this.isPubSub.setValue(isPubSub);
+   public void setIsSubscribeable(boolean isSubscribeable) {
+      this.isSubscribeable.setValue(isSubscribeable);
    }
 
    /**
@@ -165,12 +165,12 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @return true if Publish/Subscribe style is used<br />
     *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
     */
-   public boolean isPubSubStyle() {
-      return this.isPubSub.getValue();
+   public boolean isSubscribeable() {
+      return this.isSubscribeable.getValue();
    }
 
-   public PropBoolean isPubSubProp() {
-      return this.isPubSub;
+   public PropBoolean isSubscribeableProp() {
+      return this.isSubscribeable;
    }
 
    /**

@@ -36,7 +36,7 @@ import org.xml.sax.helpers.*;
  *     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;priority>5&lt;/priority>
- *     &lt;subscriptionId>subId:1&lt;/subscriptionId> <!-- Only for updates -->
+ *     &lt;subscribe id='__subId:1'/> <!-- Only for updates, PtP message are marked with id='__subId:PtP' -->
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>
@@ -57,12 +57,12 @@ import org.xml.sax.helpers.*;
  * Example for PtP addressing style:&lt;p />
  * <pre>
  *  &lt;qos>
- *     &lt;pubSub>false&lt;/pubSub>  &lt;!-- if true would send PtP AND PubSub if there are any subcribers -->
+ *     &lt;subscribeable>false&lt;/subscribeable>  &lt;!-- false to make PtP message invisible for subscribes -->
  *     &lt;destination queryType='EXACT' forceQueuing='true'>
  *        Tim
  *     &lt;/destination>
  *     &lt;destination queryType='EXACT'>
- *        /node/heron/client/Ben
+ *        /node/heron/client/Ben/-2
  *     &lt;/destination>
  *     &lt;destination queryType='XPATH'>   <!-- Not supported yet -->
  *        //[GROUP='Manager']
@@ -105,7 +105,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    private boolean inState = false;
-   private boolean inSubscriptionId = false;
+   private boolean inSubscribe = false;
    private boolean inRedeliver = false;
    private boolean inTopic = false;
    private boolean inQueue = false;
@@ -182,16 +182,16 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("pubSub")) {
+      if (name.equalsIgnoreCase("subscribeable")) {
          if (!inQos)
             return;
          inIsPubSub = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <isPubSub> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <subscribeable> tag " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (log.TRACE) log.trace(ME, "Found isPubSub tag");
+            // if (log.TRACE) log.trace(ME, "Found subscribeable tag");
          }
          return;
       }
@@ -467,16 +467,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("subscriptionId")) {
+      if (name.equalsIgnoreCase("subscribe")) {
          if (!inQos)
             return;
-         inSubscriptionId = true;
+         inSubscribe = true;
          if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <subscriptionId> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
-            }
-            // if (log.TRACE) log.trace(ME, "Found subscriptionId tag");
+            msgQosData.setSubscriptionId(attrs.getValue("id"));
          }
          return;
       }
@@ -533,11 +529,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("pubSub")) {
+      if(name.equalsIgnoreCase("subscribeable")) {
          inIsPubSub = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
-            msgQosData.setIsPubSub(new Boolean(tmp).booleanValue());
+            msgQosData.setIsSubscribeable(new Boolean(tmp).booleanValue());
          }
          character.setLength(0);
          return;
@@ -615,10 +611,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("subscriptionId")) {
-         inSubscriptionId = false;
-         msgQosData.setSubscriptionId(character.toString().trim());
-         // if (log.TRACE) log.trace(ME, "Found message subscriptionId = " + msgQosData.getSubscriptionId());
+      if (name.equalsIgnoreCase("subscribe")) {
+         inSubscribe = false;
          character.setLength(0);
          return;
       }
@@ -701,11 +695,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append("'/>");
       }
 
-      if (msgQosData.isPubSubProp().isModified()) {
-         if (msgQosData.isPubSubStyle())
-            sb.append(offset).append(" <pubSub/>");
+      if (msgQosData.isSubscribeableProp().isModified()) {
+         if (msgQosData.isSubscribeable())
+            sb.append(offset).append(" <subscribeable/>");
          else
-            sb.append(offset).append(" <pubSub>false</pubSub>");
+            sb.append(offset).append(" <subscribeable>false</subscribeable>");
       }
 
       ArrayList list = msgQosData.getDestinations();
@@ -732,9 +726,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(offset).append(" <priority>").append(msgQosData.getPriority()).append("</priority>");
       }
 
-      if (msgQosData.getSubscriptionId() != null) {
-         sb.append(offset).append(" <subscriptionId>").append(msgQosData.getSubscriptionId()).append("</subscriptionId>");
-      }
+      if (msgQosData.getSubscriptionId() != null)
+         sb.append(offset).append(" <subscribe id='").append(msgQosData.getSubscriptionId()).append("'/>");
 
       if (msgQosData.getLifeTimeProp().isModified() || msgQosData.getForceDestroyProp().isModified()) {
          sb.append(offset).append(" <expiration");
