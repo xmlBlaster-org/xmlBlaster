@@ -66,6 +66,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
+   private boolean verbose = true;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -116,6 +117,12 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Connect to RMI server.
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "connectLowlevel() ...");
+
+      if (this.authServer != null) {
+         return;
+      }
+
       this.clientAddress = address;
 
       String hostname = glob.getLocalIP();
@@ -130,13 +137,12 @@ public class RmiConnection implements I_XmlBlasterConnection
       String addr = glob.getProperty().get("rmi.AuthServer.url", authServerUrl);
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
-         authServer = (I_AuthServer)rem;
+         this.authServer = (I_AuthServer)rem;
          log.info(ME, "Accessed xmlBlaster authentication reference with '" + addr + "'");
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "No connect to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
       }
-
 
       String xmlBlasterUrl = prefix + "I_XmlBlaster";
       addr = glob.getProperty().get("rmi.XmlBlaster.url", xmlBlasterUrl);
@@ -160,12 +166,12 @@ public class RmiConnection implements I_XmlBlasterConnection
          return Naming.lookup(addr);
       }
       catch (RemoteException e) {
-         log.error(ME, "Can't access address ='" + addr + "', no rmi registry running");
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "Can't access address ='" + addr + "', no rmi registry running");
+         if (this.verbose) log.warn(ME, "Can't access address ='" + addr + "', no rmi registry running");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Can't access address ='" + addr + "', no rmi registry running");
       }
       catch (NotBoundException e) {
-         log.error(ME, "The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
+         if (this.verbose) log.warn(ME, "The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
       }
       catch (MalformedURLException e) {
          log.error(ME, "The given address ='" + addr + "' is invalid: " + e.toString());
@@ -175,13 +181,16 @@ public class RmiConnection implements I_XmlBlasterConnection
          log.error(ME, "The given address ='" + addr + "' is invalid : " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The given address '" + addr + "' is invalid : " + e.toString());
       }
+      finally {
+         this.verbose = false;
+      }
    }
 
    /**
     * Reset
     */
    public void resetConnection(){
-      authServer = null;
+      this.authServer = null;
       this.blasterServer = null;
       this.sessionId = null;
    }
