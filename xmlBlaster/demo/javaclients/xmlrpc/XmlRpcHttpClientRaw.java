@@ -3,8 +3,8 @@ Name:      XmlRpcHttpClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClientRaw.java,v 1.3 2002/09/13 23:17:44 ruff Exp $
-Author:    "Michele Laghi" <michele.laghi@attglobal.net>
+Version:   $Id: XmlRpcHttpClientRaw.java,v 1.4 2002/09/18 16:27:14 laghi Exp $
+Author:    "Michele Laghi" <laghi@swissinfo.org>
 ------------------------------------------------------------------------------*/
 
 package javaclients.xmlrpc;
@@ -40,7 +40,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p/>
  * This demo first reads "raw" procedure calls from the standard input.
  *
- * @author "Michele Laghi" <michele.laghi@attglobal.net>
+ * @author "Michele Laghi" <laghi@swissinfo.org>
  * @see org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
  */
 public class XmlRpcHttpClientRaw
