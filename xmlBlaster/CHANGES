@@ -3,12 +3,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.847 [12, May 2003]
 ================================
 
- o Michele Laghi added a grafic chat demo using xmlBlaster.
+ o Michele Laghi added a graphic chat demo using xmlBlaster.
    It can be used for example to discuss designs and the
    remote participants drawings are instantly copied to the other
    users. See xmlBlaster/demo/javaclients/graphical/README
 
- o added Martin's managed objects in the c++ clients 
+ o Added Martin's managed objects in the c++ clients 
 
  o Java client library interface change, removed method
    boolean disconnect(DisconnectQos disconnectQos, boolean clearClientQueue, boolean shutdown, boolean shutdownCb) 
