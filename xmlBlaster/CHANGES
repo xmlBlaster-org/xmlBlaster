@@ -1,5 +1,13 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o C-client: Fixed gcc warnings on 64-bit s390 (with Linux) for printf() and sscanf()
+
+ o Fixed NPE in graphical chat demo
+
+ o Fixed NPE for ctor with null argument: client.PublishQos(null)
+
+ o Removed the nowhere documented "message.lifeTime" property
+
  o added I_MsgDistributor plugin (acts in TopicHandler)
 
  o Changed signature for I_AccessPlugin.check(...) by removing the publisherSessionInfo
@@ -20,6 +28,7 @@ Changes for 0.85d (beta) [2003-10-12]
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 
  o Added type to client properties in qos
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
 
  o Some more work is done on the JMS Java client library, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/jms.html
