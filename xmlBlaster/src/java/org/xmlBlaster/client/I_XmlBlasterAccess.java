@@ -35,7 +35,8 @@ import org.xmlBlaster.util.MsgUnit;
 
 /**
  * The Java client side access to xmlBlaster. 
- * This interface hides a remote connection or a native connection. 
+ * <br />
+ * This interface hides a remote connection or a native connection to the server. 
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html">interface requirement</a>
  */
 public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
@@ -67,6 +68,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    /**
     * Use a specific error handler instead of the default one. 
+    * @param msgErrorHandler Your implementation of the error handler.
     * @see org.xmlBlaster.client.ClientErrorHandler
     */
    public void setClientErrorHandler(I_MsgErrorHandler msgErrorHandler);
@@ -129,7 +131,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param qos Your configuration desire
     * @param updateListener If not null a callback server will be created and 
     *        callback messages will be routed to your updateListener.update() method. 
-    * @exception XmlBlasterException only if connection state is DEAD, typically thrown on wrong configurations.
+    * @throws XmlBlasterException only if connection state is DEAD, typically thrown on wrong configurations.
     *            You must call connect again with different settings.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
@@ -141,6 +143,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Note that the returned instance is of your control only, we don't cache it in any way, this
     * method is only a helper hiding the plugin loading.
     * </p>
+    * @param loginName A nice name for logging purposes
     * @param callbackAddress The callback address configuration, contains for example
     *        type like "IOR" or "RMI" and version of the driver, e.g. "1.0"
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.html">protocol requirement</a>
@@ -217,7 +220,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    /**
     * Send an event to xmlBlaster to refresh the login session life time.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html">session requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    void refreshSession() throws XmlBlasterException;
 
@@ -260,6 +263,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    /**
     * Allows to set the node name for nicer logging. 
     * Used for clustering.
+    * @param nodeId For example "/xmlBlaster/node/heron"
     */
    void setServerNodeId(String nodeId);
 
@@ -282,7 +286,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param subscribeQos Control the behavior and further filter messages with mime based filter plugins
     * @see org.xmlBlaster.client.I_Callback#update(String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos) throws XmlBlasterException;
 
@@ -324,7 +328,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_Callback cb) throws XmlBlasterException;
 
@@ -333,7 +337,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param xmlKey Which message topics to retrieve
     * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    SubscribeReturnQos subscribe(String xmlKey, String xmlQos, I_Callback cb) throws XmlBlasterException;
 
@@ -362,10 +366,10 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param getKey Which message topics to retrieve
     * @param getQos Control the behavior and further filter messages with mime based filter plugins
     * @return An array of messages, the sequence is arbitrary
-    * @exception XmlBlasterException if <i>createSynchronousCache()</i> was not used to establish a cache first
+    * @throws XmlBlasterException if <i>createSynchronousCache()</i> was not used to establish a cache first
     * @see #createSynchronousCache(int)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cache.html">client.cache requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    public MsgUnit[] getCached(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
@@ -375,7 +379,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param getKey Which message topics to retrieve
     * @param getQos Control the behavior and further filter messages with mime based filter plugins
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">interface.get requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    MsgUnit[] get(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
@@ -386,7 +390,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param unSubscribeQos Control the behavior
     * @return The status of the unSubscribe request, is never null
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">interface.unSubscribe requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    UnSubscribeReturnQos[] unSubscribe(UnSubscribeKey unSubscribeKey, UnSubscribeQos unSubscribeQos) throws XmlBlasterException;
 
@@ -400,7 +404,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Publish messages. 
     * @param msgUnitArr The messages to send to the server
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException;
 
@@ -410,7 +414,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param eraseQos Control the erase behavior
     * @return The status of the erase request, is never null
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">interface.erase requirement</a>
-    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    EraseReturnQos[] erase(EraseKey eraseKey, EraseQos eraseQos) throws XmlBlasterException;
 
