@@ -84,3 +84,30 @@ LogFormat.Time=MEDIUM
 #LogFormat.Country=DE
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# XMLDB (PDOM - Persistence Document Object Model)
+#
+#   Setup your Cachesize in kbyte
+PDOM.Cachesize=2000
+#
+#   Configure you xmldb-path
+PDOM.Dbpath=$user.home/xmldb
+#
+#   Setup max size of a message in kbyte
+PDOM.Messagesize=100
+#
+#   Setup the Isolation Level. Overview on the possible lock modes:
+#   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
+#   "serializable" to the strongest level (4).
+#
+#                  ANSI    Dirty   Non Repreatable  Phantom Read
+#     LOCK                 Read    Read
+#     ----------------------------------------------------------
+#     UNCOMMITED    0       X           X               X
+#     COMMITED      1       -           X               X
+#     REPEATABLE    2       -           -               X
+#     SERIALIZABLE  3       -           -               -
+#
+#   Example for UNCOMMITED:
+#PDOM.Isolationslevel=0
+
