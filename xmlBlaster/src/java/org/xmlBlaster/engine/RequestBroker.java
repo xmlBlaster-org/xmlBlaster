@@ -2038,5 +2038,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       }
       return sb.toString();
    }
+   public int getNumSubscriptions() {
+      return getClientSubscriptions().getNumSubscriptions();
+   }
+   public String getSubscriptionList() {
+      return getClientSubscriptions().getSubscriptionList();
+   }
 
 }
