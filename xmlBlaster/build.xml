@@ -712,10 +712,28 @@ TODO
       <delete dir="${build.dir}/jms"/>
    </target>
 
+   <target name="applet_jar" depends="prepare" description="Creates a little jar file with an generic applet to access xmlBlaster">
+      <mkdir dir="${build.war}/WEB-INF/lib"/>
+      <!-- copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/client/protocol/http/applet">
+        <fileset dir="${build.dest}/org/xmlBlaster/client/protocol/http/applet"/>
+      </copy -->
+      <!-- For simple CODEBASE demo only: -->
+      <!-- copy todir="${build.war}/org/xmlBlaster/client/protocol/http/applet">
+         <fileset file="${build.dest}/org/xmlBlaster/client/protocol/http/applet/HelloApplet.class"/>
+      </copy -->
+      <copy todir="${build.war}">
+         <fileset file="${src.java.dir}/org/xmlBlaster/client/protocol/http/applet/*.html"/>
+      </copy>
+      <jar destfile="${build.war}/xmlBlasterApplet.jar"
+           basedir="${build.dest}/"
+           includes="**/org/xmlBlaster/client/protocol/http/applet/*.class">
+      </jar>
+   </target>
+
    <!-- =================================================================== -->
    <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
    <!-- =================================================================== -->
-   <target name="deploy_war" depends="prepare" description="Creates a web archive (.war) to deploy to a modern servlet engine">
+   <target name="deploy_war" depends="prepare, applet_jar" description="Creates a web archive (.war) to deploy to a modern servlet engine">
       <echo message="Please run 'build.sh all' before if you have changed some code"/>
       <mkdir dir="${build.war}"/>
       <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
@@ -768,7 +786,8 @@ TODO
       <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
       <echo message=""/>
       <echo message="   Start tomcat and invoke the demo with:"/>
-      <echo message="      tomcat.sh start"/>
+      <echo message="      ${TOMCAT_HOME}/startup.sh"/>
+      <echo message="      http://HOSTNAME:8080/xmlBlaster         or:"/>
       <echo message="      http://HOSTNAME:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
    </target>
 
