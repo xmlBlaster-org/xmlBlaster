@@ -1,168 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2000/10/XMLSchema" elementFormDefault="qualified">
-	<xsd:element name="requirement">
-		<xsd:annotation>
-			<xsd:documentation>das Requirement als Root-Element</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element ref="topic"/>
-				<xsd:element ref="description"/>
-				<xsd:element ref="example" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="todo" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="done" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="see" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="author"/>
-				<xsd:element ref="hacker" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="effort" minOccurs="0"/>
-				<xsd:element ref="date"/>
-				<xsd:element ref="revision"/>
-				<xsd:element ref="log" minOccurs="0"/>
-				<xsd:element ref="testcase" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="bug" minOccurs="0" maxOccurs="unbounded"/>
-			</xsd:sequence>
-			<xsd:attribute name="id" type="xsd:ID" use="required"/>
-			<xsd:attribute name="prio" use="default" value="LOW">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="LOW"/>
-						<xsd:enumeration value="MEDIUM"/>
-						<xsd:enumeration value="HIGH"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-			<xsd:attribute name="type" use="default" value="NEW">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="NEW"/>
-						<xsd:enumeration value="CHANGE_REQUEST"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-			<xsd:attribute name="status" use="default" value="OPEN">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="OPEN"/>
-						<xsd:enumeration value="INWORK"/>
-						<xsd:enumeration value="BUG"/>
-						<xsd:enumeration value="CLOSED"/>
-						<xsd:enumeration value="OBSOLETE"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-			<xsd:attribute name="scope" use="default" value="INTERN">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="EXTERN"/>
-						<xsd:enumeration value="INTERN"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-	<xsd:element name="description"/>
-	<xsd:element name="topic"/>
-	<xsd:element name="example">
-		<xsd:complexType>
-			<xsd:attribute name="lang" use="default" value="Java">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="Java"/>
-						<xsd:enumeration value="C"/>
-						<xsd:enumeration value="CPP"/>
-						<xsd:enumeration value="Perl"/>
-						<xsd:enumeration value="Python"/>
-						<xsd:enumeration value="TCL"/>
-						<xsd:enumeration value="Javascript"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-	<xsd:element name="todo"/>
-	<xsd:element name="done"/>
-	<xsd:element name="see">
-		<xsd:complexType mixed="true">
-			<xsd:attribute name="type" use="optional" value="API">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="API"/>
-						<xsd:enumeration value="REQ"/>
-						<xsd:enumeration value="OTHER"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-	<xsd:element name="author"/>
-	<xsd:element name="hacker"/>
-	<xsd:element name="effort"/>
-	<xsd:element name="date"/>
-	<xsd:element name="revision"/>
-	<xsd:element name="log"/>
-	<xsd:element name="testcase">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element ref="name" minOccurs="0"/>
-				<xsd:element ref="comment" minOccurs="0"/>
-				<xsd:element ref="predecessor" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="precondition" minOccurs="0"/>
-				<xsd:element ref="test" minOccurs="0"/>
-				<xsd:element ref="postcondition" minOccurs="0"/>
-			</xsd:sequence>
-			<xsd:attribute name="status" use="default" value="OPEN">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="OPEN"/>
-						<xsd:enumeration value="INWORK"/>
-						<xsd:enumeration value="CLOSED"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-	<xsd:element name="bug">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element ref="author"/>
-				<xsd:element ref="date"/>
-				<xsd:element ref="description"/>
-				<xsd:element ref="fixinfo"/>
-			</xsd:sequence>
-			<xsd:attribute name="status" use="default" value="OPEN">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="OPEN"/>
-						<xsd:enumeration value="FIXED"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-	<xsd:element name="name"/>
-	<xsd:element name="comment"/>
-	<xsd:element name="predecessor"/>
-	<xsd:element name="precondition"/>
-	<xsd:element name="test">
-		<xsd:complexType mixed="true">
-			<xsd:attribute name="tool" use="default" value="SUITE">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="SUITE"/>
-						<xsd:enumeration value="MANUAL"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-	<xsd:element name="postcondition"/>
-	<xsd:element name="fixinfo">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element ref="author"/>
-				<xsd:element ref="date"/>
-				<xsd:element ref="description"/>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
+   <xsd:element name="requirement">
+      <xsd:annotation>
+         <xsd:documentation>das Requirement als Root-Element</xsd:documentation>
+      </xsd:annotation>
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element ref="topic"/>
+            <xsd:element ref="description"/>
+            <xsd:element ref="example" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="todo" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="done" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="see" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="author"/>
+            <xsd:element ref="hacker" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="effort" minOccurs="0"/>
+            <xsd:element ref="date"/>
+            <xsd:element ref="revision"/>
+            <xsd:element ref="log" minOccurs="0"/>
+            <xsd:element ref="testcase" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="bug" minOccurs="0" maxOccurs="unbounded"/>
+         </xsd:sequence>
+         <xsd:attribute name="id" type="xsd:ID" use="required"/>
+         <xsd:attribute name="prio" use="default" value="LOW">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="LOW"/>
+                  <xsd:enumeration value="MEDIUM"/>
+                  <xsd:enumeration value="HIGH"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+         <xsd:attribute name="type" use="default" value="NEW">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="NEW"/>
+                  <xsd:enumeration value="CHANGE_REQUEST"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+         <xsd:attribute name="status" use="default" value="OPEN">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="OPEN"/>
+                  <xsd:enumeration value="INWORK"/>
+                  <xsd:enumeration value="BUG"/>
+                  <xsd:enumeration value="CLOSED"/>
+                  <xsd:enumeration value="OBSOLETE"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+         <xsd:attribute name="scope" use="default" value="INTERN">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="EXTERN"/>
+                  <xsd:enumeration value="INTERN"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="description"/>
+   <xsd:element name="topic"/>
+   <xsd:element name="example">
+      <xsd:complexType>
+         <xsd:attribute name="lang" use="default" value="Java">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="Java"/>
+                  <xsd:enumeration value="C"/>
+                  <xsd:enumeration value="CPP"/>
+                  <xsd:enumeration value="Perl"/>
+                  <xsd:enumeration value="Python"/>
+                  <xsd:enumeration value="TCL"/>
+                  <xsd:enumeration value="Javascript"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="todo"/>
+   <xsd:element name="done"/>
+   <xsd:element name="see">
+      <xsd:complexType mixed="true">
+         <xsd:attribute name="type" use="optional" value="API">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="API"/>
+                  <xsd:enumeration value="REQ"/>
+                  <xsd:enumeration value="OTHER"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="author"/>
+   <xsd:element name="hacker"/>
+   <xsd:element name="effort"/>
+   <xsd:element name="date"/>
+   <xsd:element name="revision"/>
+   <xsd:element name="log"/>
+   <xsd:element name="testcase">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element ref="name" minOccurs="0"/>
+            <xsd:element ref="comment" minOccurs="0"/>
+            <xsd:element ref="predecessor" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="precondition" minOccurs="0"/>
+            <xsd:element ref="test" minOccurs="0"/>
+            <xsd:element ref="postcondition" minOccurs="0"/>
+         </xsd:sequence>
+         <xsd:attribute name="status" use="default" value="OPEN">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="OPEN"/>
+                  <xsd:enumeration value="INWORK"/>
+                  <xsd:enumeration value="CLOSED"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="bug">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element ref="author"/>
+            <xsd:element ref="date"/>
+            <xsd:element ref="description"/>
+            <xsd:element ref="fixinfo"/>
+         </xsd:sequence>
+         <xsd:attribute name="status" use="default" value="OPEN">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="OPEN"/>
+                  <xsd:enumeration value="FIXED"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="name"/>
+   <xsd:element name="comment"/>
+   <xsd:element name="predecessor"/>
+   <xsd:element name="precondition"/>
+   <xsd:element name="test">
+      <xsd:complexType mixed="true">
+         <xsd:attribute name="tool" use="default" value="SUITE">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="SUITE"/>
+                  <xsd:enumeration value="MANUAL"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:attribute>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="postcondition"/>
+   <xsd:element name="fixinfo">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element ref="author"/>
+            <xsd:element ref="date"/>
+            <xsd:element ref="description"/>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
 </xsd:schema>
