@@ -25,7 +25,7 @@ typedef std::map<org::xmlBlaster::util::Global*, DriverEntry> DriversMap;
  * that reason private constructors, destructor and assignment operator. 
  * To get a reference to the singleton instance you must invoke getFactory(...).
  */
-class Dll_Export SocketDriverFactory : public org::xmlBlaster::util::thread::Thread
+class Dll_Export SocketDriverFactory
 {
 friend SocketDriverFactory& getFactory(org::xmlBlaster::util::Global& global);
 
@@ -35,11 +35,8 @@ friend class ManagedObject;
 
 private:
    const std::string   ME;
-   DriversMap     drivers_;         // the std::map containing all drivers created by this factory
-   bool           doRun_;           // the command: if set to 'false' the thread will stop.
-   bool           isRunning_;       // the status: if the thread is running it is 'true'
-   org::xmlBlaster::util::thread::Mutex          mutex_,           // the mutex passed to all SocketDriver instances (for singlethreaded)
-                  getterMutex_;     // the mutex used for creating/deleting SocketDriver instances
+   DriversMap     drivers_;         //< the std::map containing all drivers created by this factory
+   org::xmlBlaster::util::thread::Mutex getterMutex_;  //< the mutex used for creating/deleting SocketDriver instances
 
    static SocketDriverFactory* factory_;
 

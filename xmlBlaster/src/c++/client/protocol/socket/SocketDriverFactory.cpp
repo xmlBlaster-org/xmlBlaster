@@ -19,31 +19,22 @@ namespace org {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::thread;
 
 SocketDriverFactory::SocketDriverFactory(Global& global)
-   : Thread(), 
-     ME("SocketDriverFactory"), 
+   : ME("SocketDriverFactory"), 
      drivers_(),
-     mutex_(),
      getterMutex_()
 {
    I_Log& log = global.getLog("org.xmlBlaster.client.protocol.socket");
    if (log.call()) log.call(ME, string("Constructor"));
-   doRun_     = true;
-   isRunning_ = false;
 
    //int args                 = global_.getArgs();
    //const char * const* argc = global_.getArgc();
 }
 
 SocketDriverFactory::SocketDriverFactory(const SocketDriverFactory& factory)
-: Thread(), 
-  ME(factory.ME), 
+: ME(factory.ME), 
   drivers_(),
-  doRun_(true),
-  isRunning_(false),
-  mutex_(),
   getterMutex_()
 {
    throw util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
@@ -57,7 +48,7 @@ SocketDriverFactory& SocketDriverFactory::operator =(const SocketDriverFactory&)
 SocketDriverFactory::~SocketDriverFactory()
 {
    //if (log_.call()) log_.call(ME, "Destructor start");
-   Lock lock(getterMutex_);
+   thread::Lock lock(getterMutex_);
    DriversMap::iterator iter = drivers_.begin();
    while (iter != drivers_.end()) {
       delete ((*iter).second).first;
@@ -88,14 +79,13 @@ SocketDriver& SocketDriverFactory::getDriverInstance(Global* global)
    SocketDriver*  driver = NULL;
    int count = 1;
    {
-      Lock lock(getterMutex_);
+      thread::Lock lock(getterMutex_);
       DriversMap::iterator iter = drivers_.find(global);
       if (iter == drivers_.end()) {
          if (log.trace()) log.trace(ME, string("created a new instance for ") + instanceName);
-         driver = new SocketDriver(*global, mutex_, instanceName);
+         driver = new SocketDriver(*global, instanceName);
          // initially the counter is set to 1
          drivers_.insert(DriversMap::value_type(global, pair<SocketDriver*, int>(driver, 1)));
-         if (!isRunning_) start(); // if threadSafe isRunning_ will never be set to true
       }
       else {
          driver = ((*iter).second).first;
@@ -114,7 +104,7 @@ int SocketDriverFactory::killDriverInstance(Global* global)
    I_Log& log = global->getLog("org.xmlBlaster.client.protocol.socket");
 
    log.call(ME, string("killDriverInstance with a total of ") + lexical_cast<string>(drivers_.size()) + " instances, looking for global " + global->getId() + " instanceName=" + instanceName);
-   Lock lock(getterMutex_);
+   thread::Lock lock(getterMutex_);
    DriversMap::iterator iter = drivers_.find(global);
    if (iter == drivers_.end()) return -1;
    int ret = --(*iter).second.second;
