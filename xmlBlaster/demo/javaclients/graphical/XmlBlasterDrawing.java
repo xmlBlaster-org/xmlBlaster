@@ -339,9 +339,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          Hashtable tmpChanged = msgContent.getChanged();
          Hashtable tmpRemoved = msgContent.getRemoved();
 
-         this.log.info(ME, "update added " + tmpAdded.size() + " figures");
-         this.log.info(ME, "update changed " + tmpChanged.size() + " figures");
-         this.log.info(ME, "update removed " + tmpRemoved.size() + " figures");
+         this.log.info(ME, "update added " + tmpAdded.size() + " changed " + tmpChanged.size() + " removed " + tmpRemoved.size() + " figures");
 
          synchronized (this) {
             lock();
@@ -351,7 +349,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)tmpAdded.get(uniqueId);
-               if (!(fig instanceof Drawing)) {
+               if (!(fig instanceof XmlBlasterDrawing)) {
                   add(uniqueId, fig);
                   super.add(fig);
                }
@@ -361,7 +359,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)tmpChanged.get(uniqueId);
-					if (fig instanceof Drawing) continue;
+                                        if (fig instanceof Drawing) continue;
                Figure oldFigure = (Figure)this.timestampFigureTable.get(uniqueId);
                add(uniqueId, fig);
                super.replace(oldFigure, fig);
@@ -377,7 +375,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)this.timestampFigureTable.get(uniqueId);
-					if (fig instanceof Drawing) continue;
+                                        if (fig instanceof Drawing) continue;
                remove(uniqueId, fig);
                if (fig != null) {
                   super.orphan(fig);
