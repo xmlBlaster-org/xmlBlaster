@@ -9,7 +9,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**
  * Callback the client from XmlBlasterAccess if the connection to xmlBlaster is lost
- * or was reestablished (fail save mode).
+ * or was reestablished (failsafe mode).
  * <p>
  * @author xmlBlaster@marcelruff.info
  */

@@ -117,7 +117,7 @@ public:
     * Logout from the server. 
     * <p>
     * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
-    * Note that this kills the server ping thread as well (if in fail save mode)
+    * Note that this kills the server ping thread as well (if in failsafe mode)
     * </p>
     * @param qos The disconnect quality of service
     * @param flush Flushed pending publishOneway() messages if any

@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.9 2003/05/21 20:20:56 ruff Exp $
+Version:   $Id: Address.cpp,v 1.10 2003/05/21 21:56:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -132,7 +132,7 @@ string Address::toString()
 string Address::usage()
 {
    string text = "";
-   text += string("Control fail save connection to xmlBlaster server:\n");
+   text += string("Control failsafe connection to xmlBlaster server:\n");
    // is in ClientQueueProperty.java: text += "   -queue.maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";

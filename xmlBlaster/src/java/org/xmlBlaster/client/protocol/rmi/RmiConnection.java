@@ -41,7 +41,7 @@ import java.applet.Applet;
  * <p>
  * There is a constructor for applets, and standalone Java clients.
  * <p />
- * If you need a fail save client, you can invoke the xmlBlaster RMI methods
+ * If you need a failsafe client, you can invoke the xmlBlaster RMI methods
  * through this class as well (for example use rmiConnection.publish() instead of the direct
  * RMI server.publish()).
  * <p />
@@ -255,7 +255,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Logout from the server.
     * <p />
     * The callback server is removed as well, releasing all RMI threads.
-    * Note that this kills the server ping thread as well (if in fail save mode)
+    * Note that this kills the server ping thread as well (if in failsafe mode)
     * @return true successfully logged out
     *         false failure on gout
     */
@@ -302,7 +302,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode).
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode).
     * see explanations of publish() method.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
@@ -318,7 +318,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode)
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException {
@@ -339,7 +339,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * If the server disappears you get an exception.
     * This call will not block.
     * <p />
-    * Enforced by I_XmlBlasterConnection interface (fail save mode)
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {

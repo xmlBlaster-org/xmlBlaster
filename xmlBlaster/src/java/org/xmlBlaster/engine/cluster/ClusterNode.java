@@ -119,7 +119,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * On first invocation we connect to the other xmlBlaster cluster node. 
     * <p />
-    * The fail save mode is switched on, you can configure it:
+    * The failsafe mode is switched on, you can configure it:
     * <ul>
     *   <li>delay[heron] defaults to 4000L</li>
     *   <li>pingInterval[heron] defaults to 10 * 1000L</li>
@@ -191,7 +191,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          }
          catch(XmlBlasterException e) {
             log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
-            log.info(ME, "The connection is in fail save mode and will queue messages until " + getId() + " is available");
+            log.info(ME, "The connection is in failsafe mode and will queue messages until " + getId() + " is available");
          }
       }
       return xmlBlasterConnection;

@@ -308,7 +308,7 @@ public class SoapConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode).
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode).
     * Subscribe to messages.
     * <p />
     */

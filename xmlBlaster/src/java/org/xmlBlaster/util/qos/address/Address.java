@@ -89,7 +89,7 @@ public class Address extends AddressBase
 
    /** Client side usage used by XmlBlasterAccess */
    public final String usage() {
-      String text = "\nControl fail save connection to xmlBlaster server:\n";
+      String text = "\nControl failsafe connection to xmlBlaster server:\n";
       text += super.usage();
     //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
     //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";

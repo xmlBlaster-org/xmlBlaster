@@ -90,13 +90,13 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    string ClientQueueProperty::usage()
    {
       string text = "";
-      text += string("Control client side fail save queue properties (message recorder):\n");
+      text += string("Control client side failsafe queue properties (message recorder):\n");
       text += string("   -queue/clientSide/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
       text += string("                       0 switches recording of invocations off.\n");
       text += string("                       -1 sets it to unlimited.\n");
       text += string("   -queue.type         The queue plugin type [") + DEFAULT_type + string("].\n");
       text += string("   -queue.version      The queue plugin type [") + DEFAULT_version + string("].\n");
-      text += string("   -recorder.type      The plugin type to use for tail back messages in fail save mode [FileRecorder]\n");
+      text += string("   -recorder.type      The plugin type to use for tail back messages in failsafe mode [FileRecorder]\n");
       text += string("   -recorder.version   The version of the plugin [1.0]\n");
       text += string("   -recorder.path      The path (without file name) for the file for FileRecorder [<is generated>]\n");
       text += string("   -recorder.fn        The file name (without path) for the file for FileRecorder [<is generated unique>]\n");

@@ -345,7 +345,7 @@ public:
        * If the server disappears you get an exception.
        * This call will not block.
        * <p />
-       * Enforced by ServerOperations interface (fail save mode)
+       * Enforced by ServerOperations interface (failsafe mode)
        * @see xmlBlaster.idl
        */
       string ping(const string &qos=string("<qos/>"));

@@ -3,14 +3,14 @@ Name:      I_ConnectionProblems.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_ConnectionProblems.h,v 1.6 2003/02/09 21:24:52 ruff Exp $
+Version:   $Id: I_ConnectionProblems.h,v 1.7 2003/05/21 21:56:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Callback the client from XmlBlasterConnection if the connection to xmlBlaster is lost
- * or was reestablished (fail save mode).
+ * or was reestablished (failsafe mode).
  * <p>
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
 Author:    xmlBlaster@marcelruff.info
  * @author <a href='xmlBlaster@marcelruff.info'>Marcel Ruff</a>
  * @author <a href='laghi@swissinfo.org'>Michele Laghi</a>

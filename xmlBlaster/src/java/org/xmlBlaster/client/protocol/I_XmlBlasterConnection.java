@@ -25,7 +25,7 @@ import org.xmlBlaster.util.qos.address.Address;
  * Note that you don't need this code, you can access xmlBlaster
  * with your own lowlevel RMI or CORBA coding as well.
  * <p />
- * If you are interested in a fail save client connection, consider
+ * If you are interested in a failsafe client connection, consider
  * using XmlBlasterAccess.java which implements some nice features.
  * <p>
  * The plugins which implement this interface do NOT need to be thread safe.

@@ -1110,7 +1110,7 @@ public class Global implements Cloneable
                if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
                this.bootstrapAddress = new Address(this);
                if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getBootstrapHostname() +
-                              " port=" + this.bootstrapAddress.getBootstrapPort() + ": " + this.bootstrapAddress.getRawAddress());
+                              " port=" + this.bootstrapAddress.getBootstrapPort() + ", rawAddress='" + this.bootstrapAddress.getRawAddress()+"'");
                this.bootstrapAddress.setRawAddress(this.bootstrapAddress.getBootstrapUrl());
             }
          }

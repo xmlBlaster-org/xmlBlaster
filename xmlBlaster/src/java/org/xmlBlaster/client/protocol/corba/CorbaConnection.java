@@ -59,11 +59,11 @@ import java.applet.Applet;
  * <p>
  * There is a constructor for applets, and standalone Java clients.
  * <p />
- * If you need a fail save client, you can invoke the xmlBlaster CORBA methods
+ * If you need a failsafe client, you can invoke the xmlBlaster CORBA methods
  * through this class as well (for example use corbaConnection.publish() instead of the direct
  * CORBA server.publish()).
  * <p />
- * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
+ * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the failsafe mode
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  * <p />
@@ -537,7 +537,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
    /**
     * Logout from the server.
-    * Note that this kills the server ping thread as well (if in fail save mode)
+    * Note that this kills the server ping thread as well (if in failsafe mode)
     * @return true successfully logged out
     *         false failure on logout
     */
@@ -625,7 +625,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    }
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode).
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode).
     * see explanations of publish() method.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
@@ -641,7 +641,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    }
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode)
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException {
@@ -663,7 +663,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * If the server disappears you get an exception.
     * This call will not block.
     * <p />
-    * Enforced by I_XmlBlasterConnection interface (fail save mode)
+    * Enforced by I_XmlBlasterConnection interface (failsafe mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
