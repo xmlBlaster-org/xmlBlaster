@@ -22,11 +22,9 @@ Add the following line to your xmlBlaster.properties file (if not there already)
 
    JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
 
-   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
-                    JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+   ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
 
-   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
-                    JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+   CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 
 JdbcDriver.drivers is a comma delimited list of databse drivers.
 Use as many as you like.

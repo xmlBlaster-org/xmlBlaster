@@ -42,41 +42,25 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 
 #------------------------------------------------------------------------------
 # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
-# <protocol-type>:<driverClass>,<protocol-type>:<driverClass>,...
 # For supported protocol types see xmlBlaster/src/java/org/xmlBlaster/protocol directory
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html 
 
-# Switch on the CORBA, RMI and XML-RPC driver the EMAIL callback and the JDBC service:
-Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
-                 SOCKET:org.xmlBlaster.protocol.socket.SocketDriver,\
-                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
-                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
-                 JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
-Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
-                         SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
-                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
-                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
-                         JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,\
-                         EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver
+ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
+ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
+ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
+ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
+#ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver
+#ProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.NativeDriver
 
-# Example to switch on CORBA driver only:
-#Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
-#Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
-
-# Enable the email callback driver (demo hack only):
-#Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
-#                         EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
-
-# Switch on the demo native, CORBA, RMI and XML-RPC driver and the JDBC service:
-#Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
-#                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
-#                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
-#                 JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver, \
-#                 NativeDemo:org.xmlBlaster.protocol.nativ.NativeDriver
-#Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
-#                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
-#                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
-#                         JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver, \
-#                         NativeDemo:org.xmlBlaster.protocol.nativ.CallbackNativeDriver
+CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
+CbProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
+CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+#CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver
+CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
+#CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativeDriver
 #------------------------------------------------------------------------------
 
 

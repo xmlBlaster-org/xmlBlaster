@@ -77,7 +77,10 @@
    <p>Write some TestCase!</p>
    <p>How to proceed if the ClassPath is not a jar?<br/>
    i.e.:
-   [13.07.2002 22:19:51 INFO  ClassLoaderFactory-1] pluginName 'org.xmlBlaster.engine.persistence.filestore.FileDriver' loaded by /home/xmlblaster/work/xmlBlaster/classes/org/xmlBlaster/engine/persistence/filestore/FileDriver.class
+[13.07.2002 22:19:51 INFO  ClassLoaderFactory-1] 
+  pluginName 'org.xmlBlaster.engine.persistence.filestore.FileDriver' 
+  loaded by
+  /home/xmlblaster/work/xmlBlaster/classes/org/xmlBlaster/engine/persistence/filestore/FileDriver.class
    </p>
    </todo>
 
@@ -87,7 +90,7 @@
 
    <author>goetzger@gmx.net</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
 
    <testcase status="OPEN">
       <name></name>

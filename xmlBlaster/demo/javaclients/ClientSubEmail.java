@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.14 2002/07/24 12:12:33 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.15 2002/08/23 21:46:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -39,8 +39,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
  * Activate the email callback driver in xmlBlaster.properies first,
  * for example:
  * <pre>
- *    Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
- *                             EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ *    CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
  * 
  *    EmailDriver.smtpHost=192.1.1.1
  *    EmailDriver.from=xmlblast@localhost
@@ -212,8 +211,7 @@ public class ClientSubEmail implements I_Callback
          log.plain(ME, "   -email.content      The content of the email [Hello world].");
          log.plain(ME, "NOTE:");
          log.plain(ME, "   Activate the email callback plugin in xmlBlaster.properies first, for example:");
-         log.plain(ME, "   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\\");
-         log.plain(ME, "                            EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver");
+         log.plain(ME, "   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver");
          log.plain(ME, "   EmailDriver.smtpHost=localhost");
          log.plain(ME, "   EmailDriver.from=xmlblast@localhost");
          XmlBlasterConnection.usage();

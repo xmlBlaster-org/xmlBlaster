@@ -21,8 +21,8 @@ And this is how to try it:
 Add the driver to xmlBlaster.properties, this example starts
 the CORBA and the RMI server (the driver is activated by default):
 
-   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,RMI:org.xmlBlaster.protocol.rmi.RmiDriver
-   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver
+   ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
+   CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 
 Adjust the security policy file if you like to (it is currently totaly relaxed):
 

@@ -15,7 +15,7 @@ Steps to setup email updates from xmlBlaster
    
    The line
       
-    Protocol.CallbackDrivers=...,EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver,...
+     CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
 
    must contain the email plugin
 
