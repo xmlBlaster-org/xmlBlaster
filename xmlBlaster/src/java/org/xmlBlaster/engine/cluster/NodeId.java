@@ -48,6 +48,11 @@ public final class NodeId implements Comparable
    }
 
    public final boolean equals(NodeId n) {
+      if (id == null) {
+         if (n == null || n.getId() == null) return true;
+         return false;
+      }
+      if (n == null || n.getId() == null) return false;
       return id.equals(n.getId());
    }
   
