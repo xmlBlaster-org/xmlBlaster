@@ -44,7 +44,7 @@ import org.jutils.log.LogChannel;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/09/19 09:28:19 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/24 06:59:05 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
@@ -96,10 +96,12 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    public void start() throws Exception {
 
       //glob.getProperty().set("trace", "true");
+      glob.getProperty().set("xmlBlaster.isEmbedded", "true");
       log = glob.getLog(null);
       log.info(ME,"Starting XmlBlasterService");
       glob.getProperty().set("classloader.xmlBlaster","true");
       loadPropertyFile();
+      log = glob.getLog("XmlBlasterService");
       setupSecurityManager();
 
       //setUpClassLoader(); we skip this for now, does not help with concurrent.
