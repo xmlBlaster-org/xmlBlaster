@@ -138,15 +138,20 @@ namespace util {
       bool propertyExists(const std::string &name, bool env=true);
 
 
+      int get(const std::string &name, int def) { return getIntProperty(name, def, false); }
       int getIntProperty(const std::string &name, int def, bool env=true);
 
+      long get(const std::string &name, long def) { return getLongProperty(name, def, false); }
       long getLongProperty(const std::string &name, long def, bool env=true);
 
       org::xmlBlaster::util::Timestamp getTimestampProperty(const std::string &name, org::xmlBlaster::util::Timestamp def, bool env=true);
 
+      bool get(const std::string &name, bool def) { return getBoolProperty(name, def, false); }
       bool getBoolProperty(const std::string &name, bool def, bool env=true);
 
 
+      std::string get(const std::string &name, const char *def) { std::string defS=def; return getStringProperty(name, defS, false); }
+      std::string get(const std::string &name, const std::string &def) { return getStringProperty(name, def, false); }
       std::string getStringProperty(const std::string &name, const std::string &def, 
                             bool env=true);
 
