@@ -98,7 +98,22 @@ public class HelloWorld4
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (con != null) { con.disconnect(new DisconnectQos()); }
+         if (con != null) {
+            try {
+               EraseQosWrapper eq = new EraseQosWrapper();
+
+               EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld4");
+               con.erase(ek.toXml(), eq.toXml());
+               
+               ek = new EraseKeyWrapper("SomeOtherMessage");
+               con.erase(ek.toXml(), eq.toXml());
+            }
+            catch (XmlBlasterException e) {
+               log.error(ME, "Houston, we have a problem: " + e.toString());
+            }
+            
+            con.disconnect(new DisconnectQos());
+         }
       }
    }
 
