@@ -15,10 +15,9 @@ public class AllTests {
    }
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster contrib.dbwatcher plugin tests");
-      suite.addTest(new TestReplaceVariable());
-      suite.addTest(new TestResultSetToXmlConverter());
-      suite.addTest(new TestTimestamp());
-      //suite.addTest(TestResultSetToXmlConverter.suite());
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.dbwatcher.TestReplaceVariable.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.dbwatcher.TestResultSetToXmlConverter.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.dbwatcher.TestTimestamp.class));
       //suite.addTest(TestTimestamp.suite());
       return suite;
    }
