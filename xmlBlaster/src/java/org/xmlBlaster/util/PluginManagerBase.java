@@ -120,7 +120,7 @@ abstract public class PluginManagerBase {
       rawString = glob.getProperty().get(getPluginPropertyName(type, version), (String)null);
       if (rawString==null) {
          if (type != null)
-            Log.warn(ME, "Plugin type=" + type + " version=" + version + "not found, choosing default plugin");
+            Log.warn(ME, "Plugin type=" + type + " version=" + version + " not found, choosing default plugin");
          rawString = getDefaultPluginName(type, version);
       }
       if(rawString!=null) {
