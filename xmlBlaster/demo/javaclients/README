@@ -2,7 +2,7 @@ These demo clients run with any protocol supported by xmlBlaster,
 you can choose the protocol used with the -client.protocol
 command line setting (see below).
 
-Currently supported are 'IOR' for CORBA, 'RMI' and 'XML-RPC'.
+Currently supported are 'IOR' for CORBA, 'RMI', 'XML-RPC' and 'SOCKET'.
 
 The default protocol used by these clients is CORBA/IIOP.
 
@@ -17,17 +17,17 @@ publishing of messages.
 
    Start one of the clients, for example:
 
-      java javaclients.ClientSub
+      java HelloWorld3
 
 
    To get some more logging infos try:
 
-      java javaclients.ClientSub -trace true
+      java HelloWorld3 -trace true
 
 
    This displays the usage:
 
-     java javaclients.ClientSub -?
+     java HelloWorld3 -?
 
 
    Query xmlBlaster:
@@ -49,6 +49,10 @@ Running a client with XML-RPC protocol:
 
       java javaclients.ClientSub -client.protocol XML-RPC
 
+Running a client with SOCKET protocol:
+
+      java javaclients.ClientSub -client.protocol SOCKET
+
 Running a client which forces the GUI based authentication/authorization plugin:
 
       java javaclients.ClientSub -Security.Client.DefaultPlugin gui,1.0 \
@@ -57,3 +61,4 @@ Running a client which forces the GUI based authentication/authorization plugin:
 
 NOTE: To run these other protocols, the xmlBlaster server must
       have switched on the supporting driver (see xmlBlaster.properties)
+      They are switched on as default.
