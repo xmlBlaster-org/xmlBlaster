@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.12 2000/03/13 16:17:03 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.13 2000/05/03 17:33:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -65,6 +65,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    protected void setUp()
    {
       serverThread = ServerThread.startXmlBlaster(serverPort);
+      Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
       try {
          numReceived = 0;
 
