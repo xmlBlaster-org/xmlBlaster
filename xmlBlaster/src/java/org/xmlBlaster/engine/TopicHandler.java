@@ -717,7 +717,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                receiverSessionInfo.getLock().lock();
                //receiverSessionInfo.waitUntilAlive();
                if (receiverSessionInfo.isAlive()) {
-                  if (!receiverSessionInfo.getConnectQos().isPtpAllowed()) { // no spam, case 2
+                  if (!receiverSessionInfo.getConnectQos().isPtpAllowed() &&
+                      !Constants.EVENT_OID_ERASEDTOPIC.equals(cacheEntry.getKeyOid())) { // no spam, case 2
                      if (log.TRACE) log.trace(ME, "Rejecting PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "], isPtpAllowed=false");
                      throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
                            receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
@@ -971,7 +972,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
             int count = 0, currentCount = 0;
             for (int i=0; i < wrappers.length; i++) {
                if (this.distributor == null || wrappers[i].isInternal()) {
-                  currentCount = invokeCallback(null, sub, wrappers[i]);
+                  currentCount = invokeCallback(null, sub, wrappers[i], true);
                }
                if (currentCount == -1) break;
                count += currentCount;
@@ -1122,7 +1123,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       for (int ii=0; ii<subInfoArr.length; ii++) {
          SubscriptionInfo sub = subInfoArr[ii];
          if (!subscriberMayReceiveIt(sub, msgUnitWrapper)) continue;
-         if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapper) < 1) {
+         if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapper, true) < 1) {
             if (removeSet == null) removeSet = new HashSet();
             removeSet.add(sub); // We can't delete directly since we are in the iterator
          }
@@ -1261,7 +1262,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     * Returning -1 tells the invoker not to continue with these invocations (performance)
     */
    public final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
-      MsgUnitWrapper msgUnitWrapper) {
+      MsgUnitWrapper msgUnitWrapper, boolean doErrorHandling) {
       if (!checkIfAllowedToSend(publisherSessionInfo, sub)) return -1;
 
       if (msgUnitWrapper == null) {
@@ -1298,23 +1299,28 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       catch (Throwable e) {
          SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
                                      msgUnitWrapper.getMsgQosData().getSender();
-         if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
-                            sub.getSessionInfo().getId() + " failed: " + e.toString());
-         try {
-            MsgQueueEntry[] entries = {
-                  new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                              sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
-                              sub.getSubscribeQosServer().getWantUpdateOneway()) };
-            String reason = e.toString();
-            if (e instanceof XmlBlasterException)
-               reason = ((XmlBlasterException)e).getMessage();
-            requestBroker.deadMessage(entries, null, reason);
+         if ( doErrorHandling ) {
+            if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
+                               sub.getSessionInfo().getId() + " failed: " + e.toString());
+            try {
+               MsgQueueEntry[] entries = {
+                     new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                                 sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
+                                 sub.getSubscribeQosServer().getWantUpdateOneway()) };
+               String reason = e.toString();
+               if (e instanceof XmlBlasterException)
+                  reason = ((XmlBlasterException)e).getMessage();
+               requestBroker.deadMessage(entries, null, reason);
+            }
+            catch (XmlBlasterException e2) {
+               log.error(ME, "PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
+                               sub.getSessionInfo().getId() + " failed, message is lost: " + e2.getMessage() + " original exception is: " + e.toString());
+            }
+            return 1; // Don't remove subscriber for queue overflow exception
          }
-         catch (XmlBlasterException e2) {
-            log.error(ME, "PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
-                            sub.getSessionInfo().getId() + " failed, message is lost: " + e2.getMessage() + " original exception is: " + e.toString());
+         else {
+            return 0;
          }
-         return 1; // Don't remove subscriber for queue overflow exception
       }
    }
 
@@ -1843,24 +1849,95 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
    }
 
    /**
-    * Send erase event
-    * @param sessionName The session which triggered the erase
+    * Send erase event with a volatile non persistent erase message. 
+    * The oid is the oid of the erased topic, the state is set to STATE_ERASED 
+    * @param sessionName The session which triggered the erase 
     */
    private void notifySubscribersAboutErase(SessionName sessionName) {
       if (log.CALL) log.call(ME, "Sending client notification about message erase() event");
 
-      if (hasSubscribers() && (isAlive() || isUnconfigured())) {
+      if (hasSubscribers()) { // && (isAlive() || isUnconfigured())) { // Filter for Approach 1. (supresses XPath notifies)
+         if (Constants.EVENT_OID_ERASEDTOPIC.equals(getUniqueKey())) {
+            return;
+         }
          try {
             SessionInfo publisherSessionInfo = glob.getRequestBroker().getInternalSessionInfo();
-            org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
-                                                      getUniqueKey(), "text/plain", "1.0");
-            org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
-            pq.setState(Constants.STATE_ERASED);
-            pq.setVolatile(true);
-            pq.setSender(sessionName);
-            MsgUnit msgUnit = new MsgUnit(pk, getId(), pq); // content contains the global name?
-            PublishQosServer ps = new PublishQosServer(glob, pq.getData());
-            publish(publisherSessionInfo, msgUnit, ps);
+
+            /* 
+               // Approach 1: Send erase notify with same topic oid
+               // This was used until 0.91+
+               // Problem was that it triggered this dieing topic into ALIVE again
+               org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+                                                         getUniqueKey(), "text/plain", "1.0");
+               org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+               pq.setState(Constants.STATE_ERASED);
+               pq.setVolatile(true);
+               pq.setSender(sessionName);
+               MsgUnit msgUnit = new MsgUnit(pk, getId(), pq); // content contains the global name?
+               PublishQosServer ps = new PublishQosServer(glob, pq.getData());
+               publish(publisherSessionInfo, msgUnit, ps);
+            */
+
+               // Approach 2: Send PtP message with a dedicated topic
+               // Problem: We need to change the oid back to this topics oid to be back compatible
+               // (see CbDispatchConnection.java)
+               SubscriptionInfo[] arr = getSubscriptionInfoArr();
+               for(int i=0; i<arr.length; i++) {
+                  SubscriptionInfo sub = arr[i];
+                  org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+                                                            Constants.EVENT_OID_ERASEDTOPIC/*+":"+getUniqueKey()*/, "text/plain", "1.0");
+                  org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+                  pq.setState(Constants.STATE_ERASED);
+                  pq.setVolatile(true);
+                  pq.setSender(sessionName);
+                  pq.addDestination(new Destination(sub.getSessionInfo().getSessionName()));
+                  pq.addClientProperty("__oid", getUniqueKey());
+                  if (i==0) {
+                     TopicProperty topicProperty = new TopicProperty(glob);
+                     //topicProperty.setDestroyDelay(destroyDelay);
+                     topicProperty.setCreateDomEntry(false);
+                     org.xmlBlaster.util.qos.storage.HistoryQueueProperty prop = new org.xmlBlaster.util.qos.storage.HistoryQueueProperty(this.glob, null);
+                     prop.setMaxEntries(0);
+                     topicProperty.setHistoryQueueProperty(prop);
+                     pq.setTopicProperty(topicProperty);
+                     if (log.TRACE) log.trace(ME, "Added TopicProperty to " + pk.getOid() + " on first publish: " + topicProperty.toXml());
+                  }
+                  MsgUnit msgUnit = new MsgUnit(pk, getId(), pq);
+                  requestBroker.publish(publisherSessionInfo, msgUnit);
+               }
+
+            /* 
+               // Approach 3: Shuffle it directly into the callback queues
+               // Here the topic is not touched anymore but the msgUnitStore must remain alive
+               // The problem with this approach is that the msgUnitCache may be destroyed before the callback is delivered
+               org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+                                                         getUniqueKey(), "text/plain", "1.0");
+               org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+               pq.setState(Constants.STATE_ERASED);
+               pq.setVolatile(true);
+               pq.setSender(sessionName);
+               pq.getData().touchRcvTimestamp();
+               MsgUnit msgUnit = new MsgUnit(pk, getId(), pq); // content contains the global name?
+               MsgUnitWrapper msgUnitWrapper = null;
+               StorageId storageId = this.msgUnitCache.getStorageId();
+               int initialCounter = 1;
+               try {
+                  msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
+                  SubscriptionInfo[] arr = getSubscriptionInfoArr();
+                  for(int i=0; i<arr.length; i++) {
+                     SubscriptionInfo sub = arr[i];
+                     int num = invokeCallback(publisherSessionInfo, sub, msgUnitWrapper, false);
+                     if (num < 1) {
+                        log.warn(ME, "Sending of erase notification message '" + msgUnitWrapper.getLogId() +
+                                  "' from " + publisherSessionInfo.getId() + " to " +
+                                  sub.getSessionInfo().getId() + " failed, no notification is possible");
+                     }
+                  }
+               }
+               finally {
+                  if (msgUnitWrapper != null) msgUnitWrapper.incrementReferenceCounter(-1*initialCounter, storageId);
+               }
+            */
          }
          catch (XmlBlasterException e) {
             // The access plugin or client may throw an exception. The behavior is not coded yet
