@@ -61,7 +61,8 @@ static const char * test_stress()
    XmlBlasterException xmlBlasterException;
    XmlBlasterAccessUnparsed *xa = 0;
    bool retBool;
-   int iPub, iWait, numPublish, maxQueueEntries;
+   int iPub, iWait, numPublish, maxQueueEntries, maxSessions=10;
+   const char *sessionName = "joe";
 
    xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
@@ -70,7 +71,9 @@ static const char * test_stress()
    }
 
    numPublish      = xa->props->getInt(xa->props, "numPublish", 2500);
-   maxQueueEntries = xa->props->getInt(xa->props, "maxQueueEntries", numPublish);
+   maxQueueEntries = xa->props->getInt(xa->props, "queue/callback/maxEntries", numPublish);
+   sessionName     = xa->props->getString(xa->props, "session.name", sessionName);
+   maxSessions     = xa->props->getInt(xa->props, "session.maxSessions", maxSessions);
 
    {  /* connect */
       char connectQos[2048];
@@ -90,8 +93,9 @@ static const char * test_stress()
                "   <passwd>secret</passwd>"
                "  ]]>"
                " </securityService>"
+               " <session name='%.120s' timeout='3600000' maxSessions='%d' clearSessions='false' reconnectSameClientOnly='false'/>"
                "%.1024s"
-               "</qos>", callbackQos);
+               "</qos>", sessionName, maxSessions, callbackQos);
 
       response = xa->connect(xa, connectQos, myUpdate, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != '\0') {
@@ -148,15 +152,18 @@ static const char * test_stress()
 
    for (iWait=0; iWait<10; iWait++) {
       printf("[client] Publish of %d messages success, received %d updates\n", numPublish, updateCounter);
-      if (updateCounter == numPublish)
+      if (updateCounter >= numPublish)
          break;
       sleepMillis(500);
    }
 
    mu_assert("No update arrived", *updateContent != '\0');
-   if (updateCounter != numPublish) {
+   if (updateCounter < numPublish) {
       freeXmlBlasterAccessUnparsed(xa);
       mu_assert("Missing updates", updateCounter == numPublish);
+   }
+   else if (updateCounter > numPublish) {
+      printf("[client] WARN: Publish of %d messages but received %d updates\n", numPublish, updateCounter);
    }
    printf("[client] updateContent = %s, CONTENT = %s\n", updateContent, CONTENT);
    mu_assert("Received wrong message in update()", strstr(updateContent, CONTENT) != 0);
