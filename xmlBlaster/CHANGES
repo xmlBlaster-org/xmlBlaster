@@ -1,5 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o added I_QueueSizeListener to listen to changes in size of a queue
+
  o Bugfix: Reconfiguration of client reconnect (same pubSessionId)
    supports now queue properties and sync/async reconfiguration
    (with or without a client side callback server)
