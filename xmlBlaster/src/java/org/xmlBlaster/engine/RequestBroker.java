@@ -1455,42 +1455,49 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // cluster support - forward pubSub message to master ...
          if (useCluster) {
             if (!publishQos.isClusterUpdate()) { // updates from other nodes are arriving here in publish as well
-               if (publishQos.isPtp()) {  // is PtP message
-                  Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
-                  for (int ii = 0; ii<destinationArr.length; ii++) {
-                     if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
-                     publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, publishQos.isClusterUpdate(), destinationArr[ii]);
-                     if (publishReturnQos != null) {
-                        // Message was forwarded. TODO: How to return multiple publishReturnQos from multiple destinations? !!!
-                        publishQos.removeDestination(destinationArr[ii]);
+               //if (!glob.getClusterManager().isReady())
+               //   glob.getClusterManager().blockUntilReady(); 
+               if (glob.getClusterManager().isReady()) {
+                  if (publishQos.isPtp()) {  // is PtP message
+                     Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
+                     for (int ii = 0; ii<destinationArr.length; ii++) {
+                        if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
+                        publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, publishQos.isClusterUpdate(), destinationArr[ii]);
+                        if (publishReturnQos != null) {
+                           // Message was forwarded. TODO: How to return multiple publishReturnQos from multiple destinations? !!!
+                           publishQos.removeDestination(destinationArr[ii]);
+                        }
+                     }
+                     if (publishQos.getNumDestinations() == 0) { // we are done, all messages where forwarded
+                        return publishReturnQos.toXml();
                      }
                   }
-                  if (publishQos.getNumDestinations() == 0) { // we are done, all messages where forwarded
-                     return publishReturnQos.toXml();
+                  else { // if (publishQos.isSubscribeable()) {
+                     try {
+                        PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
+                        //Thread.currentThread().dumpStack();
+                        if (ret != null) { // Message was forwarded to master cluster
+                           publishReturnQos = ret.getPublishReturnQos();
+                           if (ret.getNodeDomainInfo().getDirtyRead() == false) {
+                              if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
+                              return publishReturnQos.toXml();
+                           }
+                           // else we publish it locally as well (dirty read!)
+                        }
+                     }
+                     catch (XmlBlasterException e) {
+                        if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+                           useCluster = false;
+                        }
+                        else {
+                           e.printStackTrace();
+                           throw e;
+                        }
+                     }
                   }
                }
-               else { // if (publishQos.isSubscribeable()) {
-                  try {
-                     PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
-                     //Thread.currentThread().dumpStack();
-                     if (ret != null) { // Message was forwarded to master cluster
-                        publishReturnQos = ret.getPublishReturnQos();
-                        if (ret.getNodeDomainInfo().getDirtyRead() == false) {
-                           if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
-                           return publishReturnQos.toXml();
-                        }
-                        // else we publish it locally as well (dirty read!)
-                     }
-                  }
-                  catch (XmlBlasterException e) {
-                     if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
-                        useCluster = false;
-                     }
-                     else {
-                        e.printStackTrace();
-                        throw e;
-                     }
-                  }
+               else {
+                  log.warn(ME, "Cluster manager is not ready, handling message locally");
                }
             }
          }
