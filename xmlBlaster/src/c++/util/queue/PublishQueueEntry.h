@@ -24,9 +24,12 @@ class Dll_Export PublishQueueEntry : public MsgQueueEntry
 public:
 
    /**
-    * Constructor suited for operations like publishes
+    * Constructor. You can provide a name different from 'publish'.
+    * Normally the entry has the priority specified in the PublishQos of the message unit. However, if you
+    * pass a non-negative priority, it will be taken as the priority of this entry, in other words, the
+    * priority of the message unit will be ignored.
     */
-   PublishQueueEntry(const MessageUnit& msgUnit);
+   PublishQueueEntry(const MessageUnit& msgUnit, const string& type="publish", int priority=-1, bool durable=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In

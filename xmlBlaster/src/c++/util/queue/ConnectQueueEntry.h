@@ -26,7 +26,7 @@ public:
    /**
     * Constructor suited for operations like publishes
     */
-   ConnectQueueEntry(const ConnectQos& connectQos);
+   ConnectQueueEntry(const ConnectQos& connectQos, const string& type="connect", int priority=9, bool durable=false);
 
    /**
     * gets the content of this queue entry (the embedded object). In

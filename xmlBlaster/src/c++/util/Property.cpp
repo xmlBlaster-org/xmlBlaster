@@ -45,8 +45,8 @@ Property::loadCommandLineProps(int args,
       }
       count++;
    }
-   if (count > 0)
-      std::cout << "Successfully read " << (count-1)/2 << " command line arguments" << std::endl;
+//   if (count > 0)
+//      std::cout << "Successfully read " << (count-1)/2 << " command line arguments" << std::endl;
    return ret;
 }
 
@@ -127,8 +127,8 @@ Property::readPropertyFile(const string &filename, bool overwrite)
       }
    }
    in.close();
-   if (count > 0)
-      std::cout << "Successfully read " << count << " entries from " << filename << std::endl;
+//   if (count > 0)
+//      std::cout << "Successfully read " << count << " entries from " << filename << std::endl;
    return count;
 }
 

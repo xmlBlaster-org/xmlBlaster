@@ -22,6 +22,7 @@ using org::xmlBlaster::util::MessageUnit;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 MsgQueueEntry::MsgQueueEntry(const MessageUnit& msgUnit, const string& type, int priority, bool durable)
+   : ReferenceCounterBase()
 {
    connectQos_       = NULL;
    connectReturnQos_ = NULL;
@@ -37,6 +38,7 @@ MsgQueueEntry::MsgQueueEntry(const MessageUnit& msgUnit, const string& type, int
 }
 
 MsgQueueEntry::MsgQueueEntry(const ConnectQos& connectQos, const string& type, int priority, bool durable)
+   : ReferenceCounterBase()
 {
    connectQos_       = new ConnectQos(connectQos);
    msgUnit_          = NULL;
@@ -59,6 +61,7 @@ MsgQueueEntry::~MsgQueueEntry()
 }
 
 MsgQueueEntry::MsgQueueEntry(const MsgQueueEntry& entry)
+   : ReferenceCounterBase(entry)
 {
    connectQos_       = NULL;
    msgUnit_          = NULL;
@@ -69,6 +72,7 @@ MsgQueueEntry::MsgQueueEntry(const MsgQueueEntry& entry)
 
 MsgQueueEntry& MsgQueueEntry::operator =(const MsgQueueEntry& entry)
 {
+   ReferenceCounterBase::operator =(entry);
    copy(entry);
    return *this;
 }

@@ -8,11 +8,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-PublishQueueEntry::PublishQueueEntry(const MessageUnit& msgUnit)
-   : MsgQueueEntry(msgUnit, "publish")
+PublishQueueEntry::PublishQueueEntry(const MessageUnit& msgUnit, const string& type, int priority, bool durable)
+   : MsgQueueEntry(msgUnit, type, priority, durable)
 {
    ME = "PublishQueueEntry";
-   priority_ = msgUnit.getQos().getPriority();
+   if (priority < 0) priority_ = msgUnit.getQos().getPriority();
 }
 
 void* PublishQueueEntry::getEmbeddedObject()

@@ -14,12 +14,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/qos/PublishQos.h>
 #include <client/qos/PublishReturnQos.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
+#include <util/ReferenceCounterBase.h>
 
 #include <stddef.h>
 
 using namespace org::xmlBlaster::client::qos;
 using org::xmlBlaster::client::protocol::I_XmlBlasterConnection;
 using org::xmlBlaster::util::qos::ConnectQos;
+using org::xmlBlaster::util::ReferenceCounterBase;
 using org::xmlBlaster::util::MessageUnit;
 
 /**
@@ -32,7 +34,7 @@ using org::xmlBlaster::util::MessageUnit;
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-class Dll_Export MsgQueueEntry
+class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 {
 protected:
    string       ME;
