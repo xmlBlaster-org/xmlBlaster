@@ -96,7 +96,14 @@ public interface I_XmlBlaster
      * Ping to check if xmlBlaster is alive. 
      * This ping checks the availability on the application level.
      * @param qos Currently an empty string ""
-     * @return    Currently an empty string ""
+     * @return qos, see StatusQosData.java
+     * <pre>
+     *  &lt;qos>
+     *     &lt;state id='OK'/>
+     *  &lt;/qos>
+     * </pre>
+     * Other returned id's are "RUNLEVEL_CLEANUP", "RUNLEVEL_STANDBY", "RUNLEVEL_HALTED".
+     * All none "OK" values tell that the server is not willing to process messages.
      */
    public String ping(String qos);
 

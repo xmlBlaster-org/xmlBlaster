@@ -321,6 +321,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          else if (MethodName.ERASE.toString().equalsIgnoreCase(actionType)) { // "erase"
             doPost(req, res);
          }
+         else if (MethodName.PING.toString().equalsIgnoreCase(actionType)) { // "ping"
+            doPost(req, res);
+         }
 
          //------------------ logout ---------------------------------------------------------
          else if (actionType.equals("logout")) {
@@ -540,6 +543,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                htmlOutput(str, res);
                return;
             }
+         }
+
+         else if (action.equals(MethodName.PING)) { // "ping"
+            log.trace(ME, "ping arrived, doing nothing ...");
+            //String ret = xmlBlaster.ping(qos);
          }
 
          else {

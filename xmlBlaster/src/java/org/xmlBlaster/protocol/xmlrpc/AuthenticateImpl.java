@@ -135,12 +135,12 @@ public class AuthenticateImpl
    }
 
    /**
-    * Test the xml-rpc connection.
-    * @return ""
+    * Test the xml-rpc connection and xmlBlaster availability. 
+    * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
    public String ping(String qos)
    {
-      return "";
+      return authenticate.ping(qos);
    }
 
    //   public String toXml() throws XmlBlasterException;

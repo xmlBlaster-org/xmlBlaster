@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.12 2003/03/24 16:13:20 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.13 2004/05/09 17:39:04 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -147,13 +147,11 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
 
    /**
      * Ping to check if xmlBlaster is alive. 
-     * This ping checks the availability on the application level.
-     * @param qos Currently an empty string ""
-     * @return    Currently an empty string ""
+     * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
      */
    public String ping(String qos) throws RemoteException
    {
-      return "";
+      return blasterNative.ping(qos);
    }
 }
 

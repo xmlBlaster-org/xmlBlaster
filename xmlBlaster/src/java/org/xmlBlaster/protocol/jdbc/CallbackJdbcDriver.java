@@ -162,14 +162,11 @@ public class CallbackJdbcDriver implements I_CallbackDriver
 
    /**
     * Ping to check if callback server is alive. 
-    * This ping checks the availability on the application level.
-    * @param qos Currently an empty string ""
-    * @return    Currently an empty string ""
-    * @exception XmlBlasterException If client not reachable
+    * @see org.xmlBlaster.protocol.I_CallbackDriver#ping(String)
     */
    public final String ping(String qos) throws XmlBlasterException
    {
-      return "";
+      return Constants.RET_OK;
    }
 
    /**

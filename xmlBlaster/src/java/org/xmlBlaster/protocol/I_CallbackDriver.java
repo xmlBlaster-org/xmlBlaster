@@ -71,14 +71,17 @@ public interface I_CallbackDriver extends I_Plugin
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException;
 
    /**
-    * Ping to check if xmlBlaster is alive. 
-    * This ping checks the availability on the application level.
-    * @param qos Currently an empty string ""
-    * @return    Currently an empty string ""
+    * Ping to check if the clients callback server instance is alive. 
+    * This ping checks the availability on the application level, a future implementation
+    * could return other values than 'OK' for example to signalize a standby mode
+    * of this client.
+    *
+    * @param qos Currently not looked at, please pass an empty string ""
+    * @return "&lt;qos>&lt;state id='OK'/>&lt;/qos>"
     * @exception On connection error
+    * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
    public String ping(String qos) throws XmlBlasterException;
-
 
    /**
     * @return true if the plugin is still alive, false otherwise

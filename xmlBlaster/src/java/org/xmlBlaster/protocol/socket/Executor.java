@@ -328,12 +328,16 @@ public abstract class Executor implements ExecutorBase
             executeResponse(receiver, response);
          }
          else if (MethodName.PING == receiver.getMethodName()) {
+            MsgUnitRaw[] arr = receiver.getMessageArr();
             if (this.cbClient == null && !glob.isServerSide()) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
                executeExecption(receiver, xmlBlasterException);
                return true;
             }
-            executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>"
+            if (xmlBlasterImpl != null) {
+               String response = xmlBlasterImpl.ping(/*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
+               executeResponse(receiver, response); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
+            }
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();

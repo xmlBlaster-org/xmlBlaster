@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.33 2004/02/22 17:28:27 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.34 2004/05/09 17:39:04 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -176,13 +176,12 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
    /**
     * Ping to check if xmlBlaster is alive.
-    * @param qos ""
-    * @return ""
+    * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
    public String ping(String qos)
    {
-      if (log.CALL) log.call(ME, "Entering ping() ...");
-      return "";
+      if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
+      return authenticate.ping(qos);
    }
 
    /**

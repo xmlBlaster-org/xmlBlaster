@@ -3,7 +3,7 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.14 2004/02/01 13:30:31 laghi Exp $
+Version:   $Id: I_Authenticate.java,v 1.15 2004/05/09 17:39:04 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -58,6 +58,12 @@ public interface I_Authenticate
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
     */
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException;
+
+   /**
+     * Ping to check if xmlBlaster is alive and willing to accept messages. 
+     * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
+     */
+   public String ping(String qos);
 
    /**
     * Administrative access. 
