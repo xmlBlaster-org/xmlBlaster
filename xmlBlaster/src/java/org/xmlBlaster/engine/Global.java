@@ -31,6 +31,8 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginHolder;
 
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+
 import java.util.*;
 import java.io.IOException;
 import org.jutils.init.Property;
@@ -43,6 +45,7 @@ import org.jutils.init.Property;
 public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
    private RunlevelManager runlevelManager;
+   private JmxWrapper jmxWrapper;
 
    /** the authentication service */
    private Authenticate authenticate;
@@ -429,7 +432,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (this.telnetSessionTimer != null) {
          synchronized(this) {
             if (this.telnetSessionTimer != null) {
-              this.telnetSessionTimer.shutdown(); 
+              this.telnetSessionTimer.shutdown();
               this.telnetSessionTimer = null;
             }
          }
@@ -446,6 +449,22 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       factory.initialize(this, name);
       return factory;
    }
+
+   /**
+     * @return the JmxWrapper used to manage the MBean resources
+     */
+     public JmxWrapper getJmxWrapper() throws XmlBlasterException {
+       if (this.jmxWrapper == null) {
+          synchronized (this) {
+             if (this.jmxWrapper == null) {
+                this.jmxWrapper = new JmxWrapper(this);
+             }
+          }
+       }
+       return this.jmxWrapper;
+     }
+
+
 
    /**
     * Access instance of remote command administration manager.
@@ -654,7 +673,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    /**
     * gets the object holding all configuration information for the plugins (both for
-    * statically loaded plugins (by the run level manager) and dynamically loaded 
+    * statically loaded plugins (by the run level manager) and dynamically loaded
     * plugins (such plugins loaded on client request).
     */
    public PluginHolder getPluginHolder() throws XmlBlasterException {
