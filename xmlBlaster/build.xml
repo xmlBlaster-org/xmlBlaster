@@ -1512,7 +1512,6 @@ TODO
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
-           <define name="DLL_BUILD" value="1" if="windows" />
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
