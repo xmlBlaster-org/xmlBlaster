@@ -27,7 +27,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
- * This client connects to xmlBlaster in fail save mode and uses specific update handlers. 
+ * This client connects to xmlBlaster in fail save mode and uses specific update handlers.
  * <p />
  * In fail save mode the client will poll for the xmlBlaster server and
  * queue messages until the server is available.<br />
@@ -46,7 +46,7 @@ public class HelloWorld6
    private ConnectReturnQos conRetQos = null;
 
    public HelloWorld6(final Global glob) {
-      
+
       log = glob.getLog(null);
 
       try {
@@ -71,12 +71,12 @@ public class HelloWorld6
          Address address = new Address(glob);
          address.setDelay(4000L);      // retry connecting every 4 sec
          address.setRetries(-1);       // -1 == forever
-         address.setPingInterval(0L);  // switched off
-         
+         address.setPingInterval(2000L);  // ping every 2 sec
+
          // Example how to hardcode a XmlRpc server:
-         //address.setType("XMLRPC");    // force SOCKET protocol
+         //address.setType("XMLRPC");    // force XmlRpc protocol
          //address.setRawAddress("http://noty:9456/"); // Address to find the server
-         
+
          // Example how to hardcode a SOCKET server:
          //address.setType("SOCKET");    // force SOCKET protocol
          //address.setRawAddress("socket://noty:9988"); // Address to find the server
@@ -98,7 +98,7 @@ public class HelloWorld6
 
          // We want to be notified about connection states:
          con.registerConnectionListener(new I_ConnectionStateListener() {
-               
+
                public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   conRetQos = connection.getConnectReturnQos();
                   log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
@@ -186,14 +186,14 @@ public class HelloWorld6
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
-         
+
          if (con != null && con.isConnected()) {
             try {
                EraseQos eq = new EraseQos(glob);
 
                EraseKey ek = new EraseKey(glob, "HelloWorld6");
                EraseReturnQos[] er = con.erase(ek, eq);
-               
+
                ek = new EraseKey(glob, "Banking");
                er = con.erase(ek, eq);
 
@@ -204,7 +204,7 @@ public class HelloWorld6
                log.error(ME, "Houston, we have a problem: " + e.toString());
                e.printStackTrace();
             }
-            
+
             con.disconnect(new DisconnectQos(glob));
          }
       }
@@ -219,7 +219,7 @@ public class HelloWorld6
     */
    public static void main(String args[]) {
       Global glob = new Global();
-      
+
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
          System.err.println("Example: java HelloWorld6 -session.name Jeff\n");
