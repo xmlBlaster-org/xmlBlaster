@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.14 2002/05/11 21:15:46 ruff Exp $
+Version:   $Id: Global.java,v 1.15 2002/05/15 12:58:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -39,8 +39,8 @@ public class Global implements Cloneable
    private static Global firstInstance = null;
 
    private final static String ME = "Global";
-   private String ip_addr = null;
-   private String id = "";
+   protected String ip_addr = null;
+   protected String id = "";
 
    /**
     * The IANA registered xmlBlaster port,
@@ -54,20 +54,21 @@ public class Global implements Cloneable
     */
    public static final int XMLBLASTER_PORT = 3412;
 
-   private String[] args;
-   private Property property = null;
+   protected String[] args;
+   protected Property property = null;
+   protected String errorText = null;
 
    // deprecated
    protected org.xmlBlaster.util.Log log;
 
-   private /*final*/ Map nativeCallbackDriverMap;
+   protected /*final*/ Map nativeCallbackDriverMap;
    /** Store objecte in the scope of one client connection or server instance */
-   private /*final*/ Map objectMap;
-   private Address bootstrapAddress = null;
-   private PluginLoader clientSecurityLoader = null;
+   protected /*final*/ Map objectMap;
+   protected Address bootstrapAddress = null;
+   protected PluginLoader clientSecurityLoader = null;
 
-   private Hashtable logChannels = new Hashtable();
-   private LogChannel logDefault = null;
+   protected Hashtable logChannels = new Hashtable();
+   protected LogChannel logDefault = null;
 
    /**
     * Constructs an initial Global object. 
@@ -86,6 +87,7 @@ public class Global implements Cloneable
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
+      //Thread.currentThread().dumpStack();
    }
 
    /**
@@ -106,6 +108,30 @@ public class Global implements Cloneable
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
       init(args);
+      //Thread.currentThread().dumpStack();
+   }
+
+   /**
+    * If you have a util.Global and need a shallow copy. 
+    */
+   public Global(org.xmlBlaster.util.Global utilGlob) {
+      shallowCopy(utilGlob);
+      //Thread.currentThread().dumpStack();
+   }
+
+   protected void shallowCopy(org.xmlBlaster.util.Global utilGlob)
+   {
+      this.ip_addr = utilGlob.ip_addr;
+      this.id = utilGlob.id;
+      this.args = utilGlob.args;
+      this.property = utilGlob.property;
+      this.errorText = utilGlob.errorText;
+      this.nativeCallbackDriverMap = utilGlob.nativeCallbackDriverMap;
+      this.objectMap = utilGlob.objectMap;
+      this.bootstrapAddress = utilGlob.bootstrapAddress;
+      this.clientSecurityLoader = utilGlob.clientSecurityLoader;
+      this.logChannels = utilGlob.logChannels;
+      this.logDefault = utilGlob.logDefault;
    }
 
    /**
@@ -208,12 +234,14 @@ public class Global implements Cloneable
                   property = new Property("xmlBlaster.properties", true, args, true);
                }
                catch (JUtilsException e) {
-                  System.err.println(ME + ": Error in xmlBlaster.properties: " + e.toString());
+                  errorText = ME + ": Error in xmlBlaster.properties: " + e.toString();
+                  System.err.println(errorText);
                   try {
                      property = new Property(null, true, args, true);  // initialize without properties file!
                   }
                   catch (JUtilsException e2) {
-                     System.err.println(ME + " ERROR: " + e2.toString());
+                     errorText = ME + " ERROR: " + e2.toString();
+                     System.err.println(errorText);
                   }
                   return -1;
                }
@@ -241,7 +269,8 @@ public class Global implements Cloneable
 
          return property.wantsHelp() ? 1 : 0;
       } catch (JUtilsException e) {
-         System.err.println(ME + " ERROR: " + e.toString()); // Log probably not initialized yet.
+         errorText = ME + " ERROR: " + e.toString();
+         System.err.println(errorText); // Log probably not initialized yet.
          return -1;
       }
    }
@@ -252,6 +281,13 @@ public class Global implements Cloneable
     */
    public final boolean wantsHelp() {
       return property.wantsHelp();
+   }
+
+   /**
+    * @return If not null there was an error during construction / initialization
+    */
+   public String getErrorText() {
+      return this.errorText;
    }
 
    /**
@@ -325,6 +361,7 @@ public class Global implements Cloneable
    protected Object clone() {
       try {
          Global g = (Global)super.clone();
+         g.errorText = null;
          g.property = (Property)this.property.clone();
          //g.logDefault = 
          g.logChannels = (Hashtable)this.logChannels.clone();
