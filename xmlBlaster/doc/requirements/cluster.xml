@@ -112,6 +112,17 @@
       If the master server is currently offline, it is queued
       for this 'client' until it logs in.
       </p>
+
+      <ul>
+      <li>Default master<br />
+      The 
+      </li>
+      <li>Master unknown<br />
+      If a node receives a messages and can't find the master,
+      the message is accepted and queued for the master.
+      If later a master appears the messages are flushed.
+      </li>
+      </ul>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -162,8 +173,9 @@
          </master>
       </clusternode>
 
-      <clusternode id='heron'>
+      <clusternode id='frodo'>
          <master>
+            <key domain='NO_DEFAULT'/> <!-- forward empty domains -->
             <key oid='radar.track'/>
             <key queryType='XPATH'>
                //STOCK_EXCHANGE
@@ -182,7 +194,7 @@
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
