@@ -4,7 +4,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.util.cluster.NodeId;
 
 import junit.framework.*;
 
@@ -32,7 +32,7 @@ public class SessionNameTest extends TestCase {
          assertEquals("", (String)null, sessionName.getNodeIdStr());
          assertEquals("", "client/jack", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", (String)null, sessionName.getPubSessionId());
+         assertEquals("", 0L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -45,7 +45,7 @@ public class SessionNameTest extends TestCase {
          assertEquals("", (String)null, sessionName.getNodeIdStr());
          assertEquals("", "client/jack", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", (String)null, sessionName.getPubSessionId());
+         assertEquals("", 0L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -58,7 +58,7 @@ public class SessionNameTest extends TestCase {
          assertEquals("", (String)null, sessionName.getNodeIdStr());
          assertEquals("", "client/jack/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", "99", sessionName.getPubSessionId());
+         assertEquals("", 99L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -71,7 +71,7 @@ public class SessionNameTest extends TestCase {
          assertEquals("", "heron", sessionName.getNodeId().getId());
          assertEquals("", "client/jack/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", "99", sessionName.getPubSessionId());
+         assertEquals("", 99L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -79,13 +79,13 @@ public class SessionNameTest extends TestCase {
          
       try { // Test copy constructor ...
          SessionName tmp = new SessionName(glob, "client/jack");
-         SessionName sessionName = new SessionName(glob, tmp, "-4");
+         SessionName sessionName = new SessionName(glob, tmp, -4L);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
          assertEquals("", "/node/unknown/client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", (String)null, sessionName.getNodeIdStr());
          assertEquals("", "client/jack/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", "-4", sessionName.getPubSessionId());
+         assertEquals("", -4L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -93,13 +93,13 @@ public class SessionNameTest extends TestCase {
 
       try { // Test given node ID ...
          SessionName tmp = new SessionName(glob, new NodeId("avalon"), "client/jack");
-         SessionName sessionName = new SessionName(glob, tmp, "-4");
+         SessionName sessionName = new SessionName(glob, tmp, -4);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
          assertEquals("", "/node/avalon/client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", "avalon", sessionName.getNodeId().getId());
          assertEquals("", "client/jack/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", "-4", sessionName.getPubSessionId());
+         assertEquals("", -4L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -107,13 +107,13 @@ public class SessionNameTest extends TestCase {
 
       try { // Test given node ID ...
          SessionName tmp = new SessionName(glob, new NodeId("/node/avalon"), "client/jack");
-         SessionName sessionName = new SessionName(glob, tmp, "-4");
+         SessionName sessionName = new SessionName(glob, tmp, -4);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
          assertEquals("", "/node/avalon/client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", "avalon", sessionName.getNodeId().getId());
          assertEquals("", "client/jack/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", "-4", sessionName.getPubSessionId());
+         assertEquals("", -4L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
@@ -126,7 +126,7 @@ public class SessionNameTest extends TestCase {
          assertEquals("", "sauron", sessionName.getNodeId().getId());
          assertEquals("", "client/jack/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
-         assertEquals("", "99", sessionName.getPubSessionId());
+         assertEquals("", 99L, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
          fail("testParse failed: " + e.toString());
