@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes svn
 ===========
+ o #12743 C++: lexical_cast from string (or char*) to bool is now handled on a special implementation
+
  o #12706,#12709 Added subversion revision number as exception text prefix, for example
      ex.getMessage()="#12702 Can't load your plugin"
 
