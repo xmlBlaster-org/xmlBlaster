@@ -152,14 +152,15 @@ filenames_file.xml you could have: <someURIs>
 <file>file1.xml</file> <file>file2.xml</file>
 <file>http://foo/file3.xml</file>
 <file>file://D|/dev/src/file4.xml</file>
-<file>../../file5.xml</file> </someURIs> Then in a template in
-your XSL you could have: <xsl:for-each
-select="document('filenames_file.xml')/someURIs/file/text()">
-<xsl:variable name="current_file_root"
-select="document(string(.))"/> <!-- the next lines are just for
-example --> <xsl:text> current file: </xsl:text> <xsl:value-of
-select="."/> <xsl:text> # of elements: </xsl:text>
-<xsl:value-of select="count($current_file_root//*)"/>
+<file>../../file5.xml</file> </someURIs>
+
+ Then in a template in your XSL you could have:
+
+<xsl:for-each select="document('filenames_file.xml')/someURIs/file/text()">
+	<xsl:variable name="current_file_root" select="document(string(.))"/> <!-- the next lines are just for example -->
+		<xsl:text> current file: </xsl:text> <xsl:value-of select="."/>
+		<xsl:text> # of elements: </xsl:text>
+	<xsl:value-of select="count($current_file_root//*)"/>
 </xsl:for-each> 
 
 
