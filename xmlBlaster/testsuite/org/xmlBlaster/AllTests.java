@@ -23,6 +23,7 @@ public class AllTests extends junit.framework.TestCase
     suite.addTest(classtest.AllTests.suite());
     suite.addTest(testsuite.org.xmlBlaster.TestAll.suite());
     suite.addTest(authentication.AllTests.suite());
+    suite.addTest(testsuite.org.xmlBlaster.stress.AllTests.suite());
     suite.addTest(testsuite.org.xmlBlaster.mime.AllTests.suite());
     suite.addTest(testsuite.org.xmlBlaster.jdbc.AllTests.suite());
     suite.addTest(clustertest.AllTests.suite());
