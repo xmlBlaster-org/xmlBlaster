@@ -22,7 +22,7 @@ public interface I_RunlevelListener extends java.util.EventListener {
    public String getName();
 
    /**
-    * Invoked on run level change, see Constants.RUNLEVEL_HALTED and Constants.RUNLEVEL_RUNNING
+    * Invoked on run level change, see for example RunlevelManager.RUNLEVEL_HALTED and RunlevelManager.RUNLEVEL_RUNNING
     * @param from The current runlevel
     * @param to The runlevel we want to switch to
     * @param force If true force the change even if messages are lost
