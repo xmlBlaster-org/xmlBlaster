@@ -1,0 +1,37 @@
+Howto start the xmlBlaster server:
+==================================
+
+1. Main.java and MainGUI.java is used to invoke the xmlBlaster server:
+
+      jaco org.xmlBlaster.Main
+
+   This example switches on some debugging on the console:
+
+      jaco org.xmlBlaster.Main -trace true -dump true -calls true -time true
+
+   Optionally you can also start the server with
+
+      jaco org.xmlBlaster.MainGUI
+
+   which pops up a control panel with query interface and
+   performance/logging display
+
+   This example redirects the logging output to a file:
+
+      jaco org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log
+
+   and finally, this example just displays the usage:
+
+      jaco org.xmlBlaster.Main -?
+
+   or start...
+
+     jaco org.xmlBlaster.Main -iorPort 7609 
+     jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref
+     
+
+
+2. xmlBlaster/demo/javaclients/ClientSub.java may be used as a first test client:
+
+     jaco javaclients.ClientSub -trace true
+
