@@ -88,7 +88,7 @@ EmailDriver.from=xmlblast@localhost
 # Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
 JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
 #JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
-#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver,de.sag.jdbc.adabasd.ADriver,sun.jdbc.odbc.JdbcOdbcDriver,com.sybase.jdbc2.jdbc.SybDriver
+#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver,sun.jdbc.odbc.JdbcOdbcDriver,com.sybase.jdbc2.jdbc.SybDriver
 #------------------------------------------------------------------------------
 
 
