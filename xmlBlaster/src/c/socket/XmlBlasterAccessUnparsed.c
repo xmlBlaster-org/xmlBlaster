@@ -11,6 +11,9 @@ Compile:
   WIN:     cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c ws2_32.lib pthreadVC.lib
            (download pthread for Windows and WinCE from http://sources.redhat.com/pthreads-win32)
   Solaris: cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
+
+  Linux with libxmlBlasterC.so:
+           gcc -DXmlBlasterAccessUnparsedMain -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c  -L../../../lib -lxmlBlasterClientC -I.. -Wl,-rpath=../../../lib -D_REENTRANT  -lpthread
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -571,7 +574,8 @@ int main(int argc, char** argv)
             "\n\nExample:"
             "\n  XmlBlasterAccessUnparsedMain -debug true"
                  " -dispatch/connection/plugin/socket/hostname server.mars.universe";
-            printf("Usage:\n%s%s\n", xmlBlasterAccessUnparsedUsage(usage), pp);
+            printf("Usage:\nXmlBlaster C SOCKET client %s\n%s%s\n",
+                   getXmlBlasterVersion(), xmlBlasterAccessUnparsedUsage(usage), pp);
             exit(1);
          }
       }
