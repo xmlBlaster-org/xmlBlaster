@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.98 2002/06/25 17:51:37 ruff Exp $
+Version:   $Id: Main.java,v 1.99 2002/06/27 14:16:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -74,11 +74,11 @@ public class Main implements I_RunlevelListener
    static MainGUI controlPanel = null;
 
 
-   public Main(String[] args, MainGUI controlPanel)
+   public Main(Global glob, MainGUI controlPanel)
    {
       this.controlPanel = controlPanel;
       controlPanel.xmlBlasterMain = this;
-      init(new Global(args));
+      init(glob);
    }
 
 
@@ -216,7 +216,7 @@ public class Main implements I_RunlevelListener
             if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
                   log.info(ME, "Invoking control panel GUI ...");
-                  controlPanel = new MainGUI(new String[0], this); // the constructor sets the variable controlPanel
+                  controlPanel = new MainGUI(glob, this); // the constructor sets the variable controlPanel
                   controlPanel.run();
                }
                else
