@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.32 2000/02/20 17:38:54 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.33 2000/03/18 19:45:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -581,7 +581,7 @@ public class XmlKeyBase
             sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
          if (queryType != PUBLISH)
             sb.append(" queryType='").append(getQueryTypeStr()).append("'");
-         sb.append(offset).append(">\n");
+         sb.append(">\n");
 
          if (queryString.length() > 0)
             sb.append(offset).append("   <queryString>").append(queryString).append("</queryString>\n");
