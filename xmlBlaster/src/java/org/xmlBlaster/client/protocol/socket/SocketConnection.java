@@ -23,9 +23,6 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.protocol.socket.ExecutorBase;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
@@ -61,10 +58,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    private SocketUrl localSocketUrl;
    /** The socket connection to/from one client */
    protected Socket sock;
-   /** Reading from socket */
-   protected InputStream iStream;
-   /** Writing to socket */
-   protected OutputStream oStream;
    /** SocketCallbackImpl listens on socket to receive callbacks */
    protected SocketCallbackImpl cbReceiver;
    /** The unique client sessionId */
@@ -172,27 +165,41 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
 
       this.localSocketUrl = new SocketUrl(glob, this.clientAddress, true, -1);
+      
+      // SSL support
+      boolean ssl = this.clientAddress.getEnv("SSL", false).getValue();
+      if (log.TRACE) log.trace(ME, clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
 
       try {
-         if (this.localSocketUrl.getPort() > -1) {
-            this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
-                                   this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
-            log.info(ME, getType() + " client connected to '" + this.socketUrl.getUrl() +
-                         "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
-                         " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway);
+         if (ssl) {
+            this.sock = this.socketUrl.createSocketSSL(this.localSocketUrl, this.clientAddress);
          }
          else {
-            if (log.TRACE) log.trace(ME, "Trying socket connection to " + socketUrl.getUrl() + " ...");
-            this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+            if (this.localSocketUrl.getPort() > -1) {
+               this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
+                                   this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
+            }
+            else {
+               if (log.TRACE) log.trace(ME, "Trying socket connection to " + socketUrl.getUrl() + " ...");
+               this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+            }
+         }
+
+         if (this.localSocketUrl.getPort() > -1) {
+            log.info(ME, getType() + (ssl ? " SSL" : "") +
+                  " client connected to '" + this.socketUrl.getUrl() +
+                  "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
+                  " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway);
+         }
+         else {
             this.clientAddress.setPluginProperty("localPort", ""+this.sock.getLocalPort());
             this.clientAddress.setPluginProperty("localHostname", this.sock.getLocalAddress().getHostAddress());
             this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
-            log.info(ME, getType() + " client connected to '" + socketUrl.getUrl() +
-                         "', callback address is '" + this.localSocketUrl.getUrl() +
-                         "' useUdpForOneway=" + this.useUdpForOneway);
+            log.info(ME, getType() + (ssl ? " SSL" : "") +
+                  " client connected to '" + socketUrl.getUrl() +
+                  "', callback address is '" + this.localSocketUrl.getUrl() +
+                  "' useUdpForOneway=" + this.useUdpForOneway);
          }
-         oStream = this.sock.getOutputStream();
-         iStream = this.sock.getInputStream();
 
          // start the socket sender and callback thread here
          if (this.cbReceiver != null) { // only the first time, not on reconnect
@@ -334,9 +341,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
-         getCbReceiver().execute(parser, ONEWAY, SOCKET_TCP);
-         shutdown(); // the callback server
-         sessionId = null;
+         getCbReceiver().execute(parser, WAIT_ON_RESPONSE/*ONEWAY*/, SOCKET_TCP);
          return true;
       }
       catch (XmlBlasterException e) {
@@ -345,6 +350,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".disconnect", "IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "disconnect", e1);
+      }
+      finally {
+         shutdown(); // the callback server
+         sessionId = null;
       }
    }
 
@@ -359,9 +368,11 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
          this.cbReceiver.shutdownSocket();
       }
-      try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (this.sock != null) { this.sock.close(); this.sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      if (this.sock != null) {
+         try { this.sock.getInputStream().close();  } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+         try { this.sock.getOutputStream().close(); } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+         try { this.sock.close(); this.sock=null;   } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      }
    }
 
    /**
@@ -413,7 +424,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Enforced by I_XmlBlasterConnection interface (failsafe mode).
     * Subscribe to messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
    public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -433,7 +444,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Unsubscribe from messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">The interface.unSubscribe requirement</a>
     */
    public final String[] unSubscribe(String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
@@ -456,7 +467,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Publish a message.
     * The normal publish is handled here like a publishArr
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
@@ -477,7 +488,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Publish multiple messages in one sweep.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final String[] publishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
@@ -502,7 +513,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Publish multiple messages in one sweep.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
@@ -533,19 +544,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Delete messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public final String[] erase (XmlKey xmlKey, EraseQosServer eraseQoS) throws XmlBlasterException {
-      String xmlKey_literal = xmlKey.toXml();
-      String eraseQoS_literal = eraseQoS.toXml();
-
-      return erase(xmlKey_literal, eraseQoS_literal);
-   }
-
-   /**
-    * Delete messages.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">The interface.erase requirement</a>
     */
    public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering erase() id=" + sessionId);
@@ -565,21 +564,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Synchronous access a message.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public final MsgUnitRaw[] get (XmlKey xmlKey, GetQosServer getQoS)
-      throws XmlBlasterException
-   {
-      String xmlKey_literal = xmlKey.toXml();
-      String getQoS_literal = getQoS.toXml();
-
-      return get(xmlKey_literal, getQoS_literal);
-   }
-
-   /**
-    * Synchronous access a message.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
@@ -689,6 +674,18 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "                       Defaults to one minute.\n";
       text += "   -dispatch/connection/plugin/socket/multiThreaded\n";
       text += "                       Use seperate threads per update() on client side [true].\n";
+      text += "   -dispatch/connection/plugin/socket/SSL\n";
+      text += "                       True enables SSL support on server socket [false].\n";
+      text += "   -dispatch/connection/plugin/socket/keystore\n";
+      text += "                       The path of your trusted keystore file. Use the java utility keytool.\n";
+      text += "   -dispatch/connection/plugin/socket/keystorepass\n";
+      text += "                       The password of your trusted keystore file.\n";
+      text += "   -dispatch/connection/plugin/socket/compress/type\n";
+      text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";
+      text += "                       '' disables compression, '"+Constants.COMPRESS_ZLIB_STREAM+"' compresses whole stream.\n";
+      text += "                       '"+Constants.COMPRESS_ZLIB+"' only compresses flushed chunks bigger than 'compress/minSize' bytes.\n";
+      text += "   -dispatch/connection/plugin/socket/compress/minSize\n";
+      text += "                       Compress message bigger than given bytes, see above.\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
