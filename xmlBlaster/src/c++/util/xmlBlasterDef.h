@@ -17,18 +17,33 @@ Version:   $Id$
 #include <util/XmlBCfg.h>
 //NEW: #include <util/basicDefs.h> // definition for Dll_Export, int64_t, the timestamps ... (see C-client library xmlBlaster/src/c/util/basicDefs.h)
 
-// definition for the timestamps (see xmlBlaster/src/c/util/basicDefs.h)
-namespace org { namespace xmlBlaster { namespace util {
-//  replace by basicDefs.h:
+// copied from xmlBlaster/src/c/util/basicDefs.h:
 #if defined(_WINDOWS)
   typedef __int64 int64_t;
+# define PRINTF_PREFIX_INT64_T "%I64d"
+  /*typedef long long int64_t;*/
   typedef __int32 int32_t;
-  //typedef __uint32 uint32_t; -> __uint32 is not correct, what is the correct type?
+  typedef __int16 int16_t;
 #else
-  typedef long long int int64_t;        // C99 standard: #include<stdint.h> has uint64_t etc.
-  typedef int int32_t;
-  //typedef unsigned int uint32_t;
+
+/* FreeBSD uses inttypes.h, not stdint.h.  Boost's lib suggests
+   this should read  defined(__FreeBSD__) || defined(__IBMCPP__)
+*/
+# if defined(__FreeBSD__) 
+#   include <inttypes.h>
+# elif defined(__sun)
+    /*#   include <int_types.h>*/ /* /usr/include/sys/int_types.h */
+# elif defined(__hpux)
+  /*typedef long long int64_t;*/
+  /*#   include <int_types.h>*/ /* /usr/include/sys/int_types.h */
+# else
+#   include <stdint.h>  /*-> C99:  uint64_t etc. */
+# endif
 #endif
+
+// definition for the timestamps (see xmlBlaster/src/c/util/basicDefs.h)
+namespace org { namespace xmlBlaster { namespace util {
+
 typedef int64_t Timestamp;
 
 // change this if it does not compile correctly
@@ -39,8 +54,7 @@ typedef int64_t Timestamp;
    class Global; // forward declaration for (chicken-egg)
 #endif
 
-
-}}}
+}}} // org::xmlBlaster::util
 
 // This is useful to retrieve stack traces in exceptions. If your system
 // contains execinfo.h then you can add the ifdef of that system here.
