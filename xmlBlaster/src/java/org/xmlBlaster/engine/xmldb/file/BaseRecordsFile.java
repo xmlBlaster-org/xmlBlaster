@@ -2,14 +2,14 @@
 Name:      BaseRecordsFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Defines main access methods for manipulationg records an dindex entries 
-Version:   $Id: BaseRecordsFile.java,v 1.1 2000/06/14 10:23:15 kron Exp $
+Comment:   Defines main access methods for manipulationg records an dindex entries
+Version:   $Id: BaseRecordsFile.java,v 1.2 2000/06/18 15:22:00 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.engine.xmldb.file;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.io.*;
@@ -22,7 +22,7 @@ public abstract class BaseRecordsFile {
   private RandomAccessFile file;
 
   // Current file pointer to the start of the record data.
-  protected long dataStartPtr;    
+  protected long dataStartPtr;
 
   // Total length in bytes of the global database headers.
   protected static final int FILE_HEADERS_REGION_LENGTH = 16;
@@ -44,29 +44,29 @@ public abstract class BaseRecordsFile {
 
   /**
    * Creates a new database file, initializing the appropriate headers. Enough space is allocated in
-   * the index for the specified initial size. 
+   * the index for the specified initial size.
    */
   protected BaseRecordsFile(String dbPath, int initialSize) throws IOException, XmlBlasterException {
     File f = new File(dbPath);
     if (f.exists()) {
       throw new XmlBlasterException(ME,"Database already exits: " + dbPath);
-    } 
+    }
     file = new RandomAccessFile(f, "rw");
-    dataStartPtr = indexPositionToKeyFp(initialSize);  // Record Data Region starts were the 
+    dataStartPtr = indexPositionToKeyFp(initialSize);  // Record Data Region starts were the
     setFileLength(dataStartPtr);                       // (i+1)th index entry would start.
     writeNumRecordsHeader(0);
     writeDataStartPtrHeader(dataStartPtr);
   }
 
   /**
-   * Opens an existing database file and initializes the dataStartPtr. The accessFlags 
-   * parameter can be "r" or "rw" -- as defined in RandomAccessFile. 
+   * Opens an existing database file and initializes the dataStartPtr. The accessFlags
+   * parameter can be "r" or "rw" -- as defined in RandomAccessFile.
    */
   protected BaseRecordsFile(String dbPath, String accessFlags) throws IOException, XmlBlasterException {
    File f = new File (dbPath);
     if(!f.exists()) {
       throw new XmlBlasterException(ME,"Database not found: " + dbPath);
-    } 
+    }
     file = new RandomAccessFile(f, accessFlags);
     dataStartPtr = readDataStartHeader();
   }
@@ -90,37 +90,37 @@ public abstract class BaseRecordsFile {
    * Maps a key to a record header.
    */
   protected abstract RecordHeader keyToRecordHeader(String key) throws XmlBlasterException;
- 
+
   /**
    * Locates space for a new record of dataLength size and initializes a RecordHeader.
    */
   protected abstract RecordHeader allocateRecord(String key, int dataLength) throws XmlBlasterException, IOException;
- 
+
   /**
    * Returns the record to which the target file pointer belongs - meaning the specified location
-   * in the file is part of the record data of the RecordHeader which is returned.  Returns null if 
+   * in the file is part of the record data of the RecordHeader which is returned.  Returns null if
    * the location is not part of a record. (O(n) mem accesses)
    */
   protected abstract RecordHeader getRecordAt(long targetFp) throws XmlBlasterException;
 
-  protected long getFileLength() throws IOException { 
-    return file.length(); 
+  protected long getFileLength() throws IOException {
+    return file.length();
   }
-  
-  protected void setFileLength(long l) throws IOException { 
-    file.setLength(l); 
+
+  protected void setFileLength(long l) throws IOException {
+    file.setLength(l);
   }
 
   /**
-   * Reads the number of records header from the file. 
+   * Reads the number of records header from the file.
    */
   protected int readNumRecordsHeader() throws IOException {
     file.seek(NUM_RECORDS_HEADER_LOCATION);
     return file.readInt();
   }
-  
+
   /**
-   * Writes the number of records header to the file. 
+   * Writes the number of records header to the file.
    */
   protected void writeNumRecordsHeader(int numRecords) throws IOException {
     file.seek(NUM_RECORDS_HEADER_LOCATION);
@@ -128,7 +128,7 @@ public abstract class BaseRecordsFile {
   }
 
   /**
-   * Reads the data start pointer header from the file. 
+   * Reads the data start pointer header from the file.
    */
   protected long readDataStartHeader() throws IOException {
     file.seek(DATA_START_HEADER_LOCATION);
@@ -136,17 +136,17 @@ public abstract class BaseRecordsFile {
   }
 
   /**
-   * Writes the data start pointer header to the file. 
+   * Writes the data start pointer header to the file.
    */
   protected void writeDataStartPtrHeader(long dataStartPtr) throws IOException {
     file.seek(DATA_START_HEADER_LOCATION);
     file.writeLong(dataStartPtr);
-  }  
+  }
 
 
   /**
    * Returns a file pointer in the index pointing to the first byte
-   * in the key located at the given index position.  
+   * in the key located at the given index position.
    */
   protected long indexPositionToKeyFp(int pos) {
     return FILE_HEADERS_REGION_LENGTH + (INDEX_ENTRY_LENGTH * pos);
@@ -154,14 +154,14 @@ public abstract class BaseRecordsFile {
 
   /**
    * Returns a file pointer in the index pointing to the first byte
-   * in the record pointer located at the given index position. 
+   * in the record pointer located at the given index position.
    */
   long indexPositionToRecordHeaderFp(int pos) {
     return indexPositionToKeyFp(pos) + MAX_KEY_LENGTH;
   }
-  
+
   /**
-   * Reads the ith key from the index. 
+   * Reads the ith key from the index.
    */
   String readKeyFromIndex(int position) throws IOException {
     file.seek(indexPositionToKeyFp(position));
@@ -169,15 +169,15 @@ public abstract class BaseRecordsFile {
   }
 
   /**
-   * Reads the ith record header from the index. 
-   */ 
+   * Reads the ith record header from the index.
+   */
   RecordHeader readRecordHeaderFromIndex(int position) throws IOException {
     file.seek(indexPositionToRecordHeaderFp(position));
     return RecordHeader.readHeader(file);
   }
 
   /**
-   * Writes the ith record header to the index. 
+   * Writes the ith record header to the index.
    */
   protected void writeRecordHeaderToIndex(RecordHeader header) throws IOException {
     file.seek(indexPositionToRecordHeaderFp(header.indexPosition));
@@ -194,7 +194,7 @@ public abstract class BaseRecordsFile {
       throw new XmlBlasterException(ME,"Key is larger than permitted size of " + MAX_KEY_LENGTH + " bytes");
     }
     file.seek(indexPositionToKeyFp(currentNumRecords));
-    temp.writeTo(file); 
+    temp.writeTo(file);
     file.seek(indexPositionToRecordHeaderFp(currentNumRecords));
     newRecord.write(file);
     newRecord.setIndexPosition(currentNumRecords);
@@ -203,8 +203,8 @@ public abstract class BaseRecordsFile {
 
 
   /**
-   * Removes the record from the index. Replaces the target with the entry at the 
-   * end of the index. 
+   * Removes the record from the index. Replaces the target with the entry at the
+   * end of the index.
    */
   protected void deleteEntryFromIndex(String key, RecordHeader header, int currentNumRecords) throws IOException, XmlBlasterException {
     if (header.indexPosition != currentNumRecords -1) {
@@ -222,7 +222,7 @@ public abstract class BaseRecordsFile {
   /**
    * Adds the given record to the database.
    */
-  public synchronized void insertRecord(RecordWriter rw) throws XmlBlasterException, IOException { 
+  public synchronized void insertRecord(RecordWriter rw) throws XmlBlasterException, IOException {
     String key = rw.getKey();
     if (recordExists(key)) {
       throw new XmlBlasterException(ME,"Key exists: " + key);
@@ -237,7 +237,7 @@ public abstract class BaseRecordsFile {
    * Updates an existing record. If the new contents do not fit in the original record,
    * then the update is handled by deleting the old record and adding the new.
    */
-  public synchronized void updateRecord(RecordWriter rw) throws XmlBlasterException, IOException { 
+  public synchronized void updateRecord(RecordWriter rw) throws XmlBlasterException, IOException {
     RecordHeader header = keyToRecordHeader(rw.getKey());
     if (rw.getDataLength() > header.dataCapacity) {
       deleteRecord(rw.getKey());
@@ -276,8 +276,8 @@ public abstract class BaseRecordsFile {
   /**
    * Updates the contents of the given record. A XmlBlasterException is thrown if the new data does not
    * fit in the space allocated to the record. The header's data count is updated, but not
-   * written to the file. 
-   */ 
+   * written to the file.
+   */
   protected void writeRecordData(RecordHeader header, RecordWriter rw) throws IOException, XmlBlasterException {
     if (rw.getDataLength() > header.dataCapacity) {
       throw new XmlBlasterException (ME,"Record data does not fit");
@@ -291,12 +291,12 @@ public abstract class BaseRecordsFile {
   /**
    * Updates the contents of the given record. A XmlBlasterException is thrown if the new data does not
    * fit in the space allocated to the record. The header's data count is updated, but not
-   * written to the file. 
-   */ 
+   * written to the file.
+   */
   protected void writeRecordData(RecordHeader header, byte[] data) throws IOException, XmlBlasterException {
     if (data.length > header.dataCapacity) {
       throw new XmlBlasterException (ME,"Record data does not fit");
-    } 
+    }
     header.dataCount = data.length;
     file.seek(header.dataPointer);
     file.write(data, 0, data.length);
@@ -315,25 +315,25 @@ public abstract class BaseRecordsFile {
     } else {
       RecordHeader previous = getRecordAt(delRec.dataPointer -1);
       if (previous != null) {
-	// append space of deleted record onto previous record
-	previous.dataCapacity += delRec.dataCapacity;
-	writeRecordHeaderToIndex(previous);
+        // append space of deleted record onto previous record
+        previous.dataCapacity += delRec.dataCapacity;
+        writeRecordHeaderToIndex(previous);
       } else {
-	// target record is first in the file and is deleted by adding its space to
-	// the second record.
-	RecordHeader secondRecord = getRecordAt(delRec.dataPointer + (long)delRec.dataCapacity);
-	byte[] data = readRecordData(secondRecord);
-	secondRecord.dataPointer = delRec.dataPointer;
-	secondRecord.dataCapacity += delRec.dataCapacity;
-	writeRecordData(secondRecord, data);
-	writeRecordHeaderToIndex(secondRecord);
+        // target record is first in the file and is deleted by adding its space to
+        // the second record.
+        RecordHeader secondRecord = getRecordAt(delRec.dataPointer + (long)delRec.dataCapacity);
+        byte[] data = readRecordData(secondRecord);
+        secondRecord.dataPointer = delRec.dataPointer;
+        secondRecord.dataCapacity += delRec.dataCapacity;
+        writeRecordData(secondRecord, data);
+        writeRecordHeaderToIndex(secondRecord);
       }
     }
-    deleteEntryFromIndex(key, delRec, currentNumRecords); 
+    deleteEntryFromIndex(key, delRec, currentNumRecords);
   }
 
 
-  // Checks to see if there is space for and additional index entry. If 
+  // Checks to see if there is space for and additional index entry. If
   // not, space is created by moving records to the end of the file.
   protected void insureIndexSpace(int requiredNumRecords) throws XmlBlasterException, IOException {
     int currentNumRecords = getNumRecords();
@@ -353,7 +353,7 @@ public abstract class BaseRecordsFile {
       writeRecordData(first, data);
       writeRecordHeaderToIndex(first);
       dataStartPtr += first.dataCapacity;
-      writeDataStartPtrHeader(dataStartPtr);  
+      writeDataStartPtrHeader(dataStartPtr);
     }
   }
 

@@ -3,11 +3,11 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.2 1999/12/09 13:28:38 ruff Exp $
+Version:   $Id: Util.java,v 1.3 2000/06/18 15:22:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 
 
 /**

@@ -3,12 +3,14 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.19 2000/06/13 13:04:01 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.20 2000/06/18 15:22:01 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -19,7 +21,6 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.Properties;
 
 
 /**
@@ -37,7 +38,7 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback

@@ -3,10 +3,11 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.2 2000/06/13 17:34:08 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.3 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import org.jutils.JUtilsException;
 
 /**
  * The basic exception handling class for xmlBlaster.
@@ -23,6 +24,12 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    {
       this.id = id;
       this.reason = reason;
+   }
+
+   public XmlBlasterException(JUtilsException e)
+   {
+      this.id = e.id;
+      this.reason = e.reason;
    }
 
    public String toString()

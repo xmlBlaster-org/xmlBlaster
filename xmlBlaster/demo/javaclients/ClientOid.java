@@ -3,11 +3,16 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.9 2000/06/13 13:03:56 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.10 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.init.Property;
+import org.jutils.time.StopWatch;
+
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -36,8 +41,12 @@ public class ClientOid
    {
       StopWatch stop = new StopWatch();
       try {
-         // check if parameter -name <userName> is given at startup of client
-         ME = Args.getArg(args, "-name", ME);
+         try {
+            // check if parameter -name <userName> is given at startup of client
+            ME = Args.getArg(args, "-name", ME);
+         } catch (org.jutils.JUtilsException e) {
+            Log.error(ME, e.toString());
+         }
          String loginName = ME;
 
          //----------- Find orb ----------------------------------

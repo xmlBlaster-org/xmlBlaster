@@ -3,14 +3,14 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.6 2000/06/13 13:04:01 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.7 2000/06/18 15:22:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.CallbackAddress;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.util.CallbackAddress;
  * <p>
  * THIS DRIVER IS NOT YET IMPLEMENTED
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author $Author: ruff $
  */
 public class CallbackEmailDriver implements I_CallbackDriver

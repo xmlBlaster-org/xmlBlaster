@@ -13,11 +13,13 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.3 1999/11/17 08:53:24 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.4 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
-import org.xmlBlaster.util.*;
+
+import org.jutils.log.Log;
+import org.jutils.time.StopWatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -145,10 +147,10 @@ class XtOmQueryTest
          Node node = (Node)obj;
          if (dumpIt) {
             //NameTableImpl nti = (NameTableImpl) node.getCreator();
- 
+
             System.out.println("Processing node " + node.getName() + ": " + node.getData());
             System.out.println("Processing node " + node.toString());
-            
+
             SafeNodeIterator siter = node.getAttributes();
 
             Object aobj = siter.next();
@@ -159,7 +161,7 @@ class XtOmQueryTest
             }
 
             com.jclark.xsl.om.Node parent = node.getParent();
-            
+
             if (parent == null)
                Log.warning(ME, "No parent");
             else {

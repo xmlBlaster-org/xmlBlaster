@@ -5,18 +5,20 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.5 2000/06/13 13:04:02 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.6 2000/06/18 15:22:01 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.init.Property;
+
 import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.omg.CosNaming.*;
+
 import java.io.*;
 import java.util.*;
 

@@ -3,12 +3,12 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.30 2000/06/13 17:34:08 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.31 2000/06/18 15:21:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ClientInfo;
 import java.util.*;

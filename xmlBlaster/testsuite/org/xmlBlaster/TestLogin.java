@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.10 2000/05/16 20:57:39 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.11 2000/06/18 15:22:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,9 +11,9 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;

@@ -3,15 +3,19 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.17 2000/06/13 13:04:01 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.18 2000/06/18 15:22:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
+
+import org.jutils.log.Log;
+
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.*;
+
 import javax.servlet.http.HttpServletRequest;
 
 
@@ -23,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class BlasterHttpProxy
 {

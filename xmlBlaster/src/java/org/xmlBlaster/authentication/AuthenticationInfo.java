@@ -3,11 +3,11 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.11 2000/06/13 13:03:57 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.12 2000/06/18 15:21:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 

@@ -3,21 +3,24 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.9 2000/06/13 13:03:58 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.10 2000/06/18 15:21:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.FileUtil;
-import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
+
+import org.jutils.log.Log;
+import org.jutils.JUtilsException;
+import org.jutils.init.Args;
+import org.jutils.io.FileUtil;
+import org.jutils.time.StopWatch;
+
 import java.io.File;
 
 
@@ -52,7 +55,7 @@ public class PublishFile
     *
     * @param args      Command line arguments
     */
-   public PublishFile(String[] args)
+   public PublishFile(String[] args) throws JUtilsException
    {
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
@@ -89,7 +92,7 @@ public class PublishFile
       byte[] content = null;
       if (contentFile != null) {
          try { content = FileUtil.readFile(contentFile); }
-         catch (XmlBlasterException e) { }
+         catch (JUtilsException e) { }
       }
       if (content == null && contentGiven != null) {
          content = contentGiven.getBytes();
@@ -102,7 +105,7 @@ public class PublishFile
       String xmlKey = null;
       if (keyFile != null) {
          try { xmlKey = FileUtil.readAsciiFile(keyFile); }
-         catch (XmlBlasterException e) { }
+         catch (JUtilsException e) { }
       }
       if (xmlKey == null) {
          xmlKey = xmlKeyGiven;
@@ -124,7 +127,7 @@ public class PublishFile
       String xmlQos = null;
       if (qosFile != null) {
          try { xmlQos = FileUtil.readAsciiFile(qosFile); }
-         catch (XmlBlasterException e) { }
+         catch (JUtilsException e) { }
       }
       if (xmlQos == null) {
          xmlQos = xmlQosGiven;
@@ -252,7 +255,12 @@ public class PublishFile
     */
    public static void main(String args[])
    {
-      PublishFile publishFile = new PublishFile(args);
+      try {
+         PublishFile publishFile = new PublishFile(args);
+      } catch (Throwable e) {
+         e.printStackTrace();
+         Log.panic(PublishFile.ME, e.toString());
+      }
       Log.exit(PublishFile.ME, "Good bye");
    }
 }

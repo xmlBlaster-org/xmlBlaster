@@ -3,9 +3,11 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.36 2000/06/13 13:04:03 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.37 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
+
+import org.jutils.log.Log;
 
 import org.xml.sax.InputSource;
 

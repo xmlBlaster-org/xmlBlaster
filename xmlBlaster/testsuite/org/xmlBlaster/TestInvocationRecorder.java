@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.6 2000/06/13 13:04:03 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.7 2000/06/18 15:22:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.XmlBlasterException;

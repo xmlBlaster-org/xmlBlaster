@@ -3,13 +3,13 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.10 2000/06/13 13:03:56 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.11 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;

@@ -3,13 +3,13 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.17 2000/06/13 13:03:59 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.18 2000/06/18 15:21:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
@@ -24,7 +24,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.17 2000/06/13 13:03:59 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.18 2000/06/18 15:21:59 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener

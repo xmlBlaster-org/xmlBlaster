@@ -4,7 +4,7 @@ Name:      ConnectionManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Singleton class to manage all JDBC connections
-Version:   $Id: ConnectionManager.java,v 1.2 2000/06/03 12:31:56 ruff Exp $
+Version:   $Id: ConnectionManager.java,v 1.3 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.util.pool.jdbc;
@@ -12,7 +12,7 @@ package org.xmlBlaster.util.pool.jdbc;
 import java.util.*;
 import java.sql.*;
 import org.xmlBlaster.protocol.jdbc.ConnectionDescriptor;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 
 /**
  * Class declaration

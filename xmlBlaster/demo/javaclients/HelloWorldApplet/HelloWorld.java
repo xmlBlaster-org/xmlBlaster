@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.7 2000/05/16 20:57:34 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.8 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -11,9 +11,9 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -34,7 +34,7 @@ import java.awt.*;
  *    application:  jaco javaclients.HelloWorldApplet.HelloWorld
  * </code>
  */
-public class HelloWorld extends Applet implements I_Callback, ActionListener, org.xmlBlaster.util.LogListener, WindowListener
+public class HelloWorld extends Applet implements I_Callback, ActionListener, org.jutils.log.LogListener, WindowListener
 {
    private static String ME = "HelloWorld";
    public static boolean isApplet = false;     // usually true; but jacorb.orb.ORB.init(Applet, Properties) is buggy !!!

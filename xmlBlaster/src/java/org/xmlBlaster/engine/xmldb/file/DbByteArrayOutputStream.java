@@ -3,14 +3,14 @@ Name:      DbByteArrayOutputStream.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Extends ByteArrayOutputStream to provide a way of writing the buffer to
-           a DataOutput without re-allocating it. 
-Version:   $Id: DbByteArrayOutputStream.java,v 1.1 2000/06/14 10:23:15 kron Exp $
+           a DataOutput without re-allocating it.
+Version:   $Id: DbByteArrayOutputStream.java,v 1.2 2000/06/18 15:22:00 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.engine.xmldb.file;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.io.*;
 

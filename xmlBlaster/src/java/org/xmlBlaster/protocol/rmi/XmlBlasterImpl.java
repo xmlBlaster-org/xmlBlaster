@@ -3,13 +3,13 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.2 2000/06/13 16:13:04 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.3 2000/06/18 15:22:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;

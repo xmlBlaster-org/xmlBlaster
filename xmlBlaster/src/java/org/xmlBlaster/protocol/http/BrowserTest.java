@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.6 2000/05/05 16:57:00 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.7 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -11,7 +11,8 @@ import java.rmi.RemoteException;
 import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import org.xmlBlaster.util.*;
+
+import org.jutils.log.Log;
 
 
 /**

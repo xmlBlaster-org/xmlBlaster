@@ -2,24 +2,24 @@
 Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine 
-Version:   $Id: PMessageUnit.java,v 1.6 2000/06/16 17:44:53 kron Exp $
-Author:    manuel.kron@gmx.net 
+Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine
+Version:   $Id: PMessageUnit.java,v 1.7 2000/06/18 15:21:59 ruff Exp $
+Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.engine;
 import java.io.*;
-  
+
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 
 import gnu.regexp.*;
 
 public class PMessageUnit implements Serializable
 {
    private static final String ME = "PMessageUnit";
-   public final MessageUnit msgUnit; 
+   public final MessageUnit msgUnit;
    public final PublishQoS  pubQos;
    public final String      sender;
    public final long        timeStamp;
@@ -32,7 +32,7 @@ public class PMessageUnit implements Serializable
       msgUnit   = mu;
       pubQos    = qos;
       sender    = send;
-     
+
       size = mu.xmlKey.length() + mu.content.length  + qos.size + 2200;
       oid = getOid();
 
@@ -55,15 +55,15 @@ public class PMessageUnit implements Serializable
               sb.append(matches[i]);
             }
             oid = sb.toString();
-            
+
          }else{
             Log.error(ME,"Invalid xmlKey.");
-         }   
-            
+         }
+
       }catch(REException e){
         Log.error(ME,"Can't create RE."+e.toString());
       }
-     return oid; 
+     return oid;
    }
 
 }

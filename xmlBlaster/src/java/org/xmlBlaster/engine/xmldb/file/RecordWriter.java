@@ -2,14 +2,14 @@
 Name:      RecordWriter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Used to construct a new record an dwrite it to file as byte buffer 
-Version:   $Id: RecordWriter.java,v 1.1 2000/06/14 10:23:15 kron Exp $
+Comment:   Used to construct a new record an dwrite it to file as byte buffer
+Version:   $Id: RecordWriter.java,v 1.2 2000/06/18 15:22:00 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.engine.xmldb.file;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.io.*;

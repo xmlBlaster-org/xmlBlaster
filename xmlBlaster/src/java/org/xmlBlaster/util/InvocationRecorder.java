@@ -3,14 +3,19 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.6 2000/06/13 13:04:02 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.7 2000/06/18 15:22:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import org.jutils.log.Log;
+import org.jutils.collection.Queue;
+import org.jutils.JUtilsException;
+
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
+
 import java.util.*;
 
 
@@ -21,7 +26,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements I_InvocationRecorder, BlasterCallbackOperations
@@ -81,7 +86,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
     */
    public final boolean isFull() throws XmlBlasterException
    {
-      return queue.isFull();
+      try {
+         return queue.isFull();
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
    }
 
 
@@ -238,7 +248,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.method = "subscribe";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
       return dummyS;
    }
 
@@ -253,7 +268,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.method = "unSubscribe";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
    }
 
 
@@ -267,7 +287,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.method = "publish";
       cont.msgUnit = msgUnit;
       cont.xmlQos = qos_literal;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
       return dummyS;
    }
 
@@ -282,7 +307,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.method = "publishArr";
       cont.msgUnitArr = msgUnitArr;
       cont.qosArr = qos_literal_Arr;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
       return dummySArr;
    }
 
@@ -297,7 +327,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.method = "erase";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
       return dummySArr;
    }
 
@@ -312,7 +347,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.method = "get";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
       return dummyMArr;
    }
 
@@ -329,7 +369,12 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.clientName = clientName;
       cont.xmlKey = xmlAttr_literal;
       cont.xmlQos = qos_literal;
-      queue.push(cont);
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
    }
 
 
@@ -352,7 +397,7 @@ public class InvocationRecorder implements I_InvocationRecorder, BlasterCallback
       cont.qosArr = qos_literal_Arr;
       try {
          queue.push(cont);
-      } catch (XmlBlasterException e) {
+      } catch (JUtilsException e) {
          Log.error(ME, "Can't push update(): " + e.reason);
       }
    }

@@ -3,9 +3,15 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.28 2000/06/13 13:04:01 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.29 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
+
+import org.jutils.log.Log;
+import org.jutils.io.FileUtil;
+import org.jutils.text.StringHelper;
+
+import org.xmlBlaster.util.XmlBlasterException;
 
 import java.rmi.RemoteException;
 import java.io.*;
@@ -13,8 +19,6 @@ import java.util.*;
 import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import org.xmlBlaster.util.*;
-
 
 /**
  * This handles and hides the different http push modes when sending

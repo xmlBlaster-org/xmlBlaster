@@ -3,14 +3,14 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.8 2000/06/13 13:04:03 ruff Exp $
+Version:   $Id: TestGet.java,v 1.9 2000/06/18 15:22:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;

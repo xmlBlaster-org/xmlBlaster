@@ -3,14 +3,21 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.55 2000/06/13 13:03:58 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.56 2000/06/18 15:21:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.time.StopWatch;
+import org.jutils.init.Property;
+import org.jutils.io.FileUtil;
+import org.jutils.JUtilsException;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.util.InvocationRecorder;
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -20,7 +27,6 @@ import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
 import org.omg.CosNaming.*;
 import java.applet.Applet;
-import java.util.Properties;
 
 
 /**
@@ -31,7 +37,7 @@ import java.util.Properties;
  * interface as well. You can also hack your own little wrapper, which does exactly
  * what you want.
  * <p>
- * This class converts the Corba based exception<br /> 
+ * This class converts the Corba based exception<br />
  *    org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException<br />
  * to<br />
  *    org.xmlBlaster.util.XmlBlasterException
@@ -70,7 +76,7 @@ import java.util.Properties;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.55 $
+ * @version $Revision: 1.56 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
@@ -385,7 +391,11 @@ public class CorbaConnection implements I_InvocationRecorder
 
       String authServerIORFile = Property.getProperty("iorFile", (String)null);  // -iorFile IOR string is given through a file
       if (authServerIORFile != null) {
-         authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
+         try {
+            authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
+         } catch (JUtilsException e) {
+            throw new XmlBlasterException(e);
+         }
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
          Log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);
          return authServer;

@@ -3,11 +3,14 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.3 2000/06/13 17:34:08 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.4 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.init.Property;
+
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;

@@ -3,14 +3,14 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.5 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.6 2000/06/18 15:22:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.XmlKeyBase;

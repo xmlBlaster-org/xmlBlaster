@@ -3,19 +3,22 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.5 2000/06/14 19:26:49 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.6 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
+
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.io.FileUtil;
+import org.jutils.time.StopWatch;
+import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.FileUtil;
-import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
+
 import java.io.File;
 import java.util.Random;
 
@@ -46,7 +49,7 @@ public class SystemInfoPublisher
     * <p />
     * @param args      Command line arguments
     */
-   public SystemInfoPublisher(String[] args)
+   public SystemInfoPublisher(String[] args) throws JUtilsException
    {
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
@@ -193,7 +196,11 @@ public class SystemInfoPublisher
     */
    public static void main(String args[])
    {
-      SystemInfoPublisher publishFile = new SystemInfoPublisher(args);
+      try {
+         SystemInfoPublisher publishFile = new SystemInfoPublisher(args);
+      } catch (org.jutils.JUtilsException e) {
+         Log.panic(ME, e.toString());
+      }
       Log.exit(SystemInfoPublisher.ME, "Good bye");
    }
 }

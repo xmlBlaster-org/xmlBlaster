@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.2 2000/05/25 13:43:28 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.3 2000/06/18 15:22:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,9 +11,9 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;
@@ -131,7 +131,7 @@ public class TestSubXPath extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Construct 5 messages and publish them. 
+    * TEST: Construct 5 messages and publish them.
     * <p />
     * The returned publishOid is checked
     */

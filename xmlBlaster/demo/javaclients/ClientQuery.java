@@ -3,12 +3,13 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.10 2000/06/13 13:03:56 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.11 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
@@ -68,6 +69,10 @@ public class ClientQuery
          }
 
          corbaConnection.logout();
+      }
+      catch (org.jutils.JUtilsException e) {
+          Log.error(ME, "Error occurred: " + e.toString());
+          e.printStackTrace();
       }
       catch (XmlBlasterException e) {
           Log.error(ME, "Error occurred: " + e.toString());

@@ -2,14 +2,17 @@
 
 package javaclients.jdbc;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.JUtilsException;
+
 import org.xmlBlaster.protocol.jdbc.*;
 import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.client.*;
-import org.omg.CosNaming.*;
 import org.xmlBlaster.client.UpdateQoS;
+
 import java.io.*;
 
 /**
@@ -45,7 +48,7 @@ public class XmlDBClient implements I_Callback
     *
     * @see
     */
-   public XmlDBClient(String args[])
+   public XmlDBClient(String args[]) throws JUtilsException
     {
       this.args = args;
 
@@ -135,8 +138,12 @@ public class XmlDBClient implements I_Callback
     * @see
     */
    public static void main(String args[])
-    {
-      XmlDBClient client = new XmlDBClient(args);
+   {
+      try {
+         XmlDBClient client = new XmlDBClient(args);
+      } catch (JUtilsException e) {
+         Log.panic("DBClient", e.toString());
+      }
    }
 
    /**
@@ -145,7 +152,7 @@ public class XmlDBClient implements I_Callback
     *
     * @see
     */
-   private void query()
+   private void query() throws JUtilsException
     {
       String   user = Args.getArg(args, "-user", "postgres");
       String   pass = Args.getArg(args, "-pass", "");

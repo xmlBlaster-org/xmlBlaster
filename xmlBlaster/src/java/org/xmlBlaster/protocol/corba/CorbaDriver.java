@@ -3,13 +3,13 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.3 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.4 2000/06/18 15:22:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Property;
-import org.xmlBlaster.util.FileUtil;
+import org.jutils.log.Log;
+import org.jutils.init.Property;
+import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;

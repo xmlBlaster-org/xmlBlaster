@@ -2,13 +2,13 @@
 Name:      RecordHeader.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Provides a wrapper to hold key information about a record 
-Version:   $Id: RecordHeader.java,v 1.1 2000/06/14 10:23:15 kron Exp $
+Comment:   Provides a wrapper to hold key information about a record
+Version:   $Id: RecordHeader.java,v 1.2 2000/06/18 15:22:00 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb.file;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.io.*;
 
@@ -19,7 +19,7 @@ public class RecordHeader {
   /**
    * File pointer to the first byte of record data (8 bytes).
    */
-  protected long dataPointer; 
+  protected long dataPointer;
 
   /**
    * Actual number of bytes of data held in this record (4 bytes).
@@ -29,7 +29,7 @@ public class RecordHeader {
   /**
    * Number of bytes of data that this record can hold (4 bytes).
    */
-  protected int dataCapacity;  
+  protected int dataCapacity;
 
   /**
    * Indicates this header's position in the file index.

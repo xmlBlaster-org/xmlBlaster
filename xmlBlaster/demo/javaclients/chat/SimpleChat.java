@@ -3,11 +3,17 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.7 2000/06/13 13:03:57 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.8 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.JUtilsException;
+
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
@@ -16,14 +22,15 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
-import org.omg.CosNaming.*;
 import org.xmlBlaster.client.UpdateQoS;
+
+import org.omg.CosNaming.*;
 import java.awt.event.*;
 import java.awt.*;
 
 
 /**
- * This client is a simple chat application using xmlBlaster. 
+ * This client is a simple chat application using xmlBlaster.
  * <p>
  * It demonstrates 'raw' Corba access.
  * Usage:
@@ -174,8 +181,12 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    /** find xmlBlaster server, login and subscribe  */
    public void initBlaster(){
       try {
-         // check if parameter -name <userName> is given at startup of client
-         ME = Args.getArg(args, "-name", ME);
+         try {
+            // check if parameter -name <userName> is given at startup of client
+            ME = Args.getArg(args, "-name", ME);
+         } catch (JUtilsException e) {
+            throw new XmlBlasterException(e);
+         }
 
          //----------- Find orb ----------------------------------
          corbaConnection = new CorbaConnection(args);
@@ -229,9 +240,14 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
       corbaConnection.logout();
    }
 
-   public static void main(String args[]){
+   public static void main(String args[]) {
       String title = "SimpleChat";
-      String loginName = Args.getArg(args, "-name", "Otto");
+      String loginName = null;
+      try {
+         loginName = Args.getArg(args, "-name", "Otto");
+      } catch (JUtilsException e) {
+         Log.panic(title, e.toString());
+      }
       SimpleChat chat = new SimpleChat(loginName, args);
       chat.setSize(320,250);
       chat.show();

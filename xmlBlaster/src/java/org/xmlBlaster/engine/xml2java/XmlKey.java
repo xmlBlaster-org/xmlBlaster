@@ -3,14 +3,14 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.4 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.5 2000/06/18 15:22:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
+import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.XmlToDom;
-import org.xmlBlaster.util.StringHelper;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.util.*;

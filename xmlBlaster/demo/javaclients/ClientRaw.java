@@ -3,13 +3,13 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.11 2000/06/13 13:03:56 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.12 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
 

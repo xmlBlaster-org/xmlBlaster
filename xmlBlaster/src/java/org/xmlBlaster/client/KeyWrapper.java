@@ -3,11 +3,11 @@ Name:      KeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: KeyWrapper.java,v 1.4 2000/06/14 13:54:04 ruff Exp $
+Version:   $Id: KeyWrapper.java,v 1.5 2000/06/18 15:21:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 
 

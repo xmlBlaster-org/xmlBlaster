@@ -3,20 +3,28 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.34 2000/06/13 13:04:01 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.35 2000/06/18 15:22:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
+
+import org.jutils.log.Log;
+import org.jutils.runtime.Memory;
+import org.jutils.time.TimeHelper;
+
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlQoSBase;
+import org.xmlBlaster.util.Destination;
+import org.xmlBlaster.client.*;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 
 import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
 import java.net.URLEncoder;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
-import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 
 
 /**
@@ -33,9 +41,9 @@ import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  */
-public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
+public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogListener
 {
    private static final String ME = "BlasterHttpProxyServlet";
 

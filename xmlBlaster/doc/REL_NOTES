@@ -24,16 +24,30 @@ Changes for 0.78 [???     2000]
     in your code as well (if not thrown from Corba).
 
   - Added new package org.jutils to the xmlBlaster distribution.
-    This replace org.xmlBlaster.util over the time.
+    This replaces org.xmlBlaster.util over the time.
     You need to set the environment variable JUTILS_HOME to:
       export JUTILS_HOME=${XMLBLASTER_HOME}
+    Changed package names:
+       org.xmlBlaster.util.Log          -> org.jutils.log.Log
+       org.xmlBlaster.util.FileUtil     -> org.jutils.io.FileUtil
+       org.xmlBlaster.util.Queue        -> org.jutils.collection.Queue
+       org.xmlBlaster.util.Args         -> org.jutils.init.Args
+       org.xmlBlaster.util.Property     -> org.jutils.init.Property
+       org.xmlBlaster.util.Memory       -> org.jutils.runtime.Memory
+       org.xmlBlaster.util.StringHelper -> org.jutils.text.StringHelper
+       org.xmlBlaster.util.StopWatch    -> org.jutils.time.StopWatch
+       org.xmlBlaster.util.Timeout      -> org.jutils.time.Timeout
+    rm Args.java FileUtil.java LogListener.java Log.java Memory.java Property.java Queue.java StopWatch.java StringHelper.java
+
+  - Compiled successfully xmlBlaster with JDK 1.3 for Linux.
+    Performance enhancment for CORBA access ~ 80%
 
   - Compiled successfully xmlBlaster with TowerJ native compiler.
     Performance enhancment for CORBA access ~ 30%
     See .bashrc for used settings
 
   - Added protocol plugin possibility in xmlBlaster.properties
-    Default settings are Corba drivers:
+    Default settings are Corba drivers, example for RMI is provided as well:
       #------------------------------------------------------------------------------
       # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
       # <protocol-type>:<driverClass>,<protocl-type>:<driverClass>,...

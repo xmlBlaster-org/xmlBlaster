@@ -5,16 +5,19 @@ Howto run the html examples with persistent http connection:
    for Apache e.g.:
 
    DocumentRoot "/home/ruff/xmlBlaster/demo/html"
-    
+
 
 2. Add the servlet to you servlet env, with jserv in zone.properties:
 
    servlet.SystemInfo.code=html.systemInfo.SystemInfo
-    
 
-3. Use the Makefile or do it manually:
-   cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
-   cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
+
+3. Use the Makefile or add symbolic links manually:
+   javascript -> ../../src/java/org/xmlBlaster/protocol/http/javascript
+   persistentWindow -> ../../src/java/org/xmlBlaster/protocol/http/persistentWindow
+   xmlBlaster -> ../..
+   xmlBlaster.css -> /home/ruff/xmlBlaster/doc/xmlBlaster.css
+   (or copy the directories under MS$).
 
 
 4. Start xmlBlaster
@@ -23,7 +26,7 @@ Howto run the html examples with persistent http connection:
 
 
 5. Start a publisher, so that we have some dynamic data:
-   
+
    java html.systemInfo.SystemInfoPublisher
 
 
@@ -39,6 +42,6 @@ Start it in the background on Linux:
 
    #jserv > /tmp/jserv.log 2>&1 &
    CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
-   java -Xms12M -Xmx32M org.apache.jserv.JServ /etc/httpd/conf/jserv/jserv.properties > /tmp/jserv.log 2>&1 & 
+   java -Xms12M -Xmx32M org.apache.jserv.JServ /etc/httpd/conf/jserv/jserv.properties > /tmp/jserv.log 2>&1 &
 
    java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &

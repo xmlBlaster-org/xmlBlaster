@@ -3,12 +3,14 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.5 2000/06/13 13:03:58 ruff Exp $
+Version:   $Id: BlasterCache.java,v 1.6 2000/06/18 15:21:58 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 

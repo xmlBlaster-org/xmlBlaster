@@ -82,6 +82,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jacorb.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/idl.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/gun-regexp-1.0.8.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
     You can do this automatically from your startup shell script.
     After a new login you are ready to start the xmlBlaster (see below).

@@ -3,16 +3,16 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.1 2000/06/13 17:37:33 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.2 2000/06/18 15:21:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.util.Property;
-import org.xmlBlaster.util.XmlBlasterException;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.init.Property;
+import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
@@ -62,8 +62,12 @@ public class ClientGet
    {
       Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
       try {
-         // check if parameter -name <userName> is given at startup of client
-         ME = Args.getArg(args, "-name", ME);
+         try {
+            // check if parameter -name <userName> is given at startup of client
+            ME = Args.getArg(args, "-name", ME);
+         } catch (org.jutils.JUtilsException e) {
+            Log.error(ME, e.toString());
+         }
          String loginName = ME;
          String passwd = "some";
 
@@ -208,7 +212,7 @@ public class ClientGet
       hostname = Property.getProperty("rmi.hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = Property.getProperty("rmi.RegistryPort", 
+      int registryPort = Property.getProperty("rmi.RegistryPort",
                          org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 

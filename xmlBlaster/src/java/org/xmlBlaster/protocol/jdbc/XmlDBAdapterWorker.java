@@ -6,13 +6,13 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.5 2000/06/18 12:31:17 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.6 2000/06/18 15:22:01 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;

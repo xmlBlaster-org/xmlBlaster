@@ -13,12 +13,14 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.2 1999/11/29 18:39:21 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.3 2000/06/18 15:22:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.query;
 
 import com.jclark.xsl.om.*;
-import org.xmlBlaster.util.*;
+
+import org.jutils.log.Log;
+import org.jutils.time.StopWatch;
 
 import java.io.File;
 import java.io.IOException;

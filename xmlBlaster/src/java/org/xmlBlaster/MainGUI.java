@@ -3,11 +3,14 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.31 2000/06/13 13:03:57 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.32 2000/06/18 15:21:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
-import org.xmlBlaster.util.*;
+import org.jutils.log.Log;
+import org.jutils.time.StopWatch;
+
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.CorbaConnection;
@@ -36,7 +39,7 @@ import java.lang.*;
  * The available start parameters are similar to Main
  * @see Main
  */
-public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogListener
+public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListener
 {
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
    private final String ME = "MainGUI";

@@ -3,13 +3,15 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.4 2000/06/14 13:54:04 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.5 2000/06/18 15:21:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.JUtilsException;
+
 import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
@@ -41,7 +43,7 @@ public class SubscribeMessage implements I_Callback
     * These command line parameters are not merged with xmlBlaster.property properties.
     * @param args      Command line arguments
     */
-   public SubscribeMessage(String[] args)
+   public SubscribeMessage(String[] args) throws JUtilsException
    {
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
@@ -201,7 +203,12 @@ public class SubscribeMessage implements I_Callback
     */
    public static void main(String args[])
    {
-      SubscribeMessage publishFile = new SubscribeMessage(args);
+      try {
+         SubscribeMessage publishFile = new SubscribeMessage(args);
+      } catch (Throwable e) {
+         e.printStackTrace();
+         Log.panic(SubscribeMessage.ME, e.toString());
+      }
       Log.exit(SubscribeMessage.ME, "Good bye");
    }
 }

@@ -2,14 +2,14 @@
 Name:      RecordsFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Provide an implementation for the abstract methods. 
-Version:   $Id: RecordsFile.java,v 1.1 2000/06/14 10:23:15 kron Exp $
+Comment:   Provide an implementation for the abstract methods.
+Version:   $Id: RecordsFile.java,v 1.2 2000/06/18 15:22:00 ruff Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.engine.xmldb.file;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.io.*;
@@ -20,16 +20,16 @@ public class RecordsFile extends BaseRecordsFile {
 
   private static String ME = "BaseRecordsFile";
   /**
-   * Hashtable which holds the in-memory index. For efficiency, the entire index 
+   * Hashtable which holds the in-memory index. For efficiency, the entire index
    * is cached in memory. The hashtable maps a key of type String to a RecordHeader.
    */
-  protected Hashtable memIndex;    
+  protected Hashtable memIndex;
 
   /**
-   * Creates a new database file.  The initialSize parameter determines the 
-   * amount of space which is allocated for the index.  The index can grow 
-   * dynamically, but the parameter is provide to increase 
-   * efficiency. 
+   * Creates a new database file.  The initialSize parameter determines the
+   * amount of space which is allocated for the index.  The index can grow
+   * dynamically, but the parameter is provide to increase
+   * efficiency.
    */
   public RecordsFile(String dbPath, int initialSize) throws IOException, XmlBlasterException {
     super(dbPath, initialSize);
@@ -37,7 +37,7 @@ public class RecordsFile extends BaseRecordsFile {
   }
 
   /**
-   * Opens an existing database and initializes the in-memory index. 
+   * Opens an existing database and initializes the in-memory index.
    */
   public RecordsFile(String dbPath, String accessFlags) throws IOException, XmlBlasterException {
     super(dbPath, accessFlags);
@@ -51,7 +51,7 @@ public class RecordsFile extends BaseRecordsFile {
     }
   }
 
-  
+
   /**
    * Returns an enumeration of all the keys in the database.
    */
@@ -60,14 +60,14 @@ public class RecordsFile extends BaseRecordsFile {
   }
 
   /**
-   * Returns the current number of records in the database. 
+   * Returns the current number of records in the database.
    */
   public synchronized int getNumRecords() {
     return memIndex.size();
   }
 
   /**
-   * Checks if there is a record belonging to the given key. 
+   * Checks if there is a record belonging to the given key.
    */
   public synchronized boolean recordExists(String key) {
     return memIndex.containsKey(key);
@@ -80,12 +80,12 @@ public class RecordsFile extends BaseRecordsFile {
     RecordHeader h = (RecordHeader)memIndex.get(key);
     if (h==null) {
       throw new XmlBlasterException(ME,"Key not found: " + key);
-    } 
+    }
     return h;
   }
 
   /**
-   * This method searches the file for free space and then returns a RecordHeader 
+   * This method searches the file for free space and then returns a RecordHeader
    * which uses the space. (O(n) memory accesses)
    */
   protected RecordHeader allocateRecord(String key, int dataLength) throws XmlBlasterException, IOException {
@@ -96,9 +96,9 @@ public class RecordsFile extends BaseRecordsFile {
       RecordHeader next = (RecordHeader)e.nextElement();
       int free = next.getFreeSpace();
       if (dataLength <= next.getFreeSpace()) {
-	newRecord = next.split();
-	writeRecordHeaderToIndex(next);
-	break;
+        newRecord = next.split();
+        writeRecordHeaderToIndex(next);
+        break;
       }
     }
     if (newRecord == null) {
@@ -106,13 +106,13 @@ public class RecordsFile extends BaseRecordsFile {
       long fp = getFileLength();
       setFileLength(fp + dataLength);
       newRecord = new RecordHeader(fp, dataLength);
-    } 
+    }
     return newRecord;
   }
 
   /**
    * Returns the record to which the target file pointer belongs - meaning the specified location
-   * in the file is part of the record data of the RecordHeader which is returned.  Returns null if 
+   * in the file is part of the record data of the RecordHeader which is returned.  Returns null if
    * the location is not part of a record. (O(n) mem accesses)
    */
   protected RecordHeader getRecordAt(long targetFp) throws XmlBlasterException {
@@ -120,8 +120,8 @@ public class RecordsFile extends BaseRecordsFile {
     while (e.hasMoreElements()) {
       RecordHeader next = (RecordHeader) e.nextElement();
       if (targetFp >= next.dataPointer &&
-	  targetFp < next.dataPointer + (long)next.dataCapacity) {
-	return next;
+          targetFp < next.dataPointer + (long)next.dataCapacity) {
+        return next;
       }
     }
     return null;
@@ -129,7 +129,7 @@ public class RecordsFile extends BaseRecordsFile {
 
 
   /**
-   * Closes the database. 
+   * Closes the database.
    */
   public synchronized void close() throws IOException, XmlBlasterException {
     try {
@@ -142,16 +142,16 @@ public class RecordsFile extends BaseRecordsFile {
 
   /**
    * Adds the new record to the in-memory index and calls the super class add
-   * the index entry to the file. 
+   * the index entry to the file.
    */
   protected void addEntryToIndex(String key, RecordHeader newRecord, int currentNumRecords) throws IOException, XmlBlasterException {
     super.addEntryToIndex(key, newRecord, currentNumRecords);
-    memIndex.put(key, newRecord);   
+    memIndex.put(key, newRecord);
   }
- 
+
   /**
-   * Removes the record from the index. Replaces the target with the entry at the 
-   * end of the index. 
+   * Removes the record from the index. Replaces the target with the entry at the
+   * end of the index.
    */
   protected void deleteEntryFromIndex(String key, RecordHeader header, int currentNumRecords) throws IOException, XmlBlasterException {
     super.deleteEntryFromIndex(key, header, currentNumRecords);

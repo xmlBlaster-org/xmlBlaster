@@ -3,16 +3,21 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.7 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.8 2000/06/18 15:22:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
+import org.jutils.log.Log;
+import org.jutils.init.Property;
+import org.jutils.io.FileUtil;
+import org.jutils.JUtilsException;
+
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
-import org.xmlBlaster.util.*;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 
 import java.io.File;
@@ -92,9 +97,13 @@ public class FileDriver implements I_PersistenceDriver
 
       String oid = xmlKey.getKeyOid(); // The file name
 
-      FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml());
-      FileUtil.writeFile(path, oid, content);
-      FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
+      try {
+         FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml());
+         FileUtil.writeFile(path, oid, content);
+         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
+      } catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
 
       if (Log.TRACE) Log.trace(ME, "Successfully stored " + oid);
    }
@@ -111,7 +120,11 @@ public class FileDriver implements I_PersistenceDriver
    {
       String oid = xmlKey.getKeyOid(); // The file name
 
-      FileUtil.writeFile(path, oid, content);
+      try {
+         FileUtil.writeFile(path, oid, content);
+      } catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
 
       if (Log.TRACE) Log.trace(ME, "Successfully updated store " + oid);
    }
@@ -146,18 +159,22 @@ public class FileDriver implements I_PersistenceDriver
     */
    public final void recover(String oid, ClientInfo clientInfo, RequestBroker requestBroker) throws XmlBlasterException
    {
-      String xmlKey_literal = FileUtil.readAsciiFile(path, oid + XMLKEY_TOKEN);
+      try {
+         String xmlKey_literal = FileUtil.readAsciiFile(path, oid + XMLKEY_TOKEN);
 
-      byte[] content = FileUtil.readFile(path, oid);
+         byte[] content = FileUtil.readFile(path, oid);
 
-      MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content);
+         MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content);
 
-      String xmlQos_literal = FileUtil.readAsciiFile(path, oid + XMLQOS_TOKEN);
-      PublishQoS publishQos = new PublishQoS(xmlQos_literal, true); // you need true here!
+         String xmlQos_literal = FileUtil.readAsciiFile(path, oid + XMLQOS_TOKEN);
+         PublishQoS publishQos = new PublishQoS(xmlQos_literal, true); // you need true here!
 
-      requestBroker.publish(clientInfo, msgUnit, publishQos);
+         requestBroker.publish(clientInfo, msgUnit, publishQos);
 
-      if (Log.TRACE) Log.trace(ME, "Successfully recovered message " + oid);
+         if (Log.TRACE) Log.trace(ME, "Successfully recovered message " + oid);
+      } catch (JUtilsException e) {
+         throw new XmlBlasterException(e);
+      }
    }
 
 

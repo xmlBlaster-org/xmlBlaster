@@ -3,15 +3,23 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.42 2000/06/13 17:34:08 ruff Exp $
+Version:   $Id: Main.java,v 1.43 2000/06/18 15:21:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
-import org.xmlBlaster.util.*;
+import org.jutils.JUtilsException;
+import org.jutils.log.Log;
+import org.jutils.init.Args;
+import org.jutils.init.Property;
+import org.jutils.io.FileUtil;
+import org.jutils.runtime.Memory;
+
 import org.xmlBlaster.engine.*;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
+
 import java.io.*;
 import java.util.*;
 
@@ -34,7 +42,7 @@ import java.util.*;
  * <br />
  * Every parameter may be set in the xmlBlaster.property file or at the command line,
  * but the command line is stronger. The leading "-" or "+" from the command line key
- * parameters are stripped (see org.xmlBlaster.util.Property.java).
+ * parameters are stripped (see org.jutils.init.Property.java).
  * <p />
  * Examples how to start the xmlBlaster server:
  * <p />
@@ -253,6 +261,9 @@ public class Main
                   }
                }
                catch(XmlBlasterException e) {
+                  Log.error(ME, "Sorry, dump failed: " + e.reason);
+               }
+               catch(JUtilsException e) {
                   Log.error(ME, "Sorry, dump failed: " + e.reason);
                }
             }

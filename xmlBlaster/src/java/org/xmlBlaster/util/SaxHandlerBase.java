@@ -3,9 +3,11 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.5 2000/06/13 13:04:03 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.6 2000/06/18 15:22:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
+
+import org.jutils.log.Log;
 
 import java.io.*;
 import org.xml.sax.*;

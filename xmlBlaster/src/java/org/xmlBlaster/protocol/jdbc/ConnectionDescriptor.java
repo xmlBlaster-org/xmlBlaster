@@ -6,20 +6,20 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Provides a wrapper defining a database connection
- * Version:   $Id: ConnectionDescriptor.java,v 1.1 2000/02/22 04:23:22 jsrbirch Exp $
+ * Version:   $Id: ConnectionDescriptor.java,v 1.2 2000/06/18 15:22:01 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
 package org.xmlBlaster.protocol.jdbc;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import com.sun.xml.tree.*;
 import org.w3c.dom.*;
 
 /**
  * Class declaration
- * 
- * 
+ *
+ *
  * @author
  * @version %I%, %G%
  */
@@ -41,10 +41,10 @@ public class ConnectionDescriptor {
 
    /**
     * Constructor declaration
-    * 
-    * 
+    *
+    *
     * @param document
-    * 
+    *
     * @see
     */
    public ConnectionDescriptor(XmlDocument document) {
@@ -55,8 +55,8 @@ public class ConnectionDescriptor {
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @see
     */
    private void parse() {
@@ -65,227 +65,227 @@ public class ConnectionDescriptor {
       Node        curNode = null;
 
       while ((curNode = (Node) tw.getNext()) != null) {
-         if (curNode.getNodeType() == Node.ELEMENT_NODE 
+         if (curNode.getNodeType() == Node.ELEMENT_NODE
                  && curNode.getNodeName().equalsIgnoreCase("database:url")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                url = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:username")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                username = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:password")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                password = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:interaction")) {
-            interaction = 
+            interaction =
                curNode.getAttributes().getNamedItem("type").getNodeValue();
 
             if (interaction == null || interaction.equals("")) {
                interaction = "query";
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:command")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                command = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:connectionkey")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                connectionkey = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:connectionlifespan")) {
-            String   ttl = 
+            String   ttl =
                curNode.getAttributes().getNamedItem("ttl").getNodeValue();
 
             try {
                connectionlifespan = Long.parseLong(ttl);
                connectionlifespan *= 60000;
-            } 
+            }
             catch (NumberFormatException e) {
                connectionlifespan = -1;
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:confirmation")) {
-            String   con = 
+            String   con =
                curNode.getAttributes().getNamedItem("confirm").getNodeValue();
 
             confirmation = (new Boolean(con)).booleanValue();
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:documentrootnode")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                documentrootnode = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:rowrootnode")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
                rowrootnode = curNode.getFirstChild().getNodeValue();
-            } 
-         } 
-         else if (curNode.getNodeType() == Node.ELEMENT_NODE 
+            }
+         }
+         else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:rowlimit")) {
-            String   lim = 
+            String   lim =
                curNode.getAttributes().getNamedItem("max").getNodeValue();
 
             try {
                rowlimit = Integer.parseInt(lim);
-            } 
+            }
             catch (NumberFormatException e) {
                rowlimit = -1;
-            } 
-         } 
-      } 
-   } 
+            }
+         }
+      }
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getUrl() {
       return url;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getUsername() {
       return username;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getPassword() {
       return password;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getInteraction() {
       return interaction;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getCommand() {
       return command;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getConnectionkey() {
       if (connectionkey.equals("")) {
          connectionkey = username + "::" + url;
-      } 
+      }
 
       return connectionkey;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public long getConnectionlifespan() {
       return connectionlifespan;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public boolean getConfirmation() {
       return confirmation;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getDocumentrootnode() {
       return documentrootnode;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public String getRowrootnode() {
       return rowrootnode;
-   } 
+   }
 
    /**
     * Method declaration
-    * 
-    * 
+    *
+    *
     * @return
-    * 
+    *
     * @see
     */
    public int getRowlimit() {
       return rowlimit;
-   } 
+   }
 
 }
 

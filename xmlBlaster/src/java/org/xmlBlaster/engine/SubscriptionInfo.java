@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.25 2000/06/13 13:03:59 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.26 2000/06/18 15:22:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,11 +11,11 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.SubscribeQoS;
 import org.xmlBlaster.engine.xml2java.UnSubscribeQoS;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.jutils.TimeHelper;
+import org.jutils.time.TimeHelper;
 
 
 /**
