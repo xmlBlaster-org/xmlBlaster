@@ -69,6 +69,7 @@ public class HelloWorld3 implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorld3", "text/xml", "1.0");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
+         pq.addClientProperty("myAge", new Integer(84));
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          con.publish(msgUnit);
 
@@ -126,9 +127,11 @@ public class HelloWorld3 implements I_Callback
          return "";
       }
 
+      int myAge = updateQos.getClientProperty("myAge", 0);
       log.info("", "Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
-                   " content=" + new String(content) + " from xmlBlaster");
+                   " content=" + new String(content) + 
+                   " clientProperty myAge=" + myAge + " from xmlBlaster");
 
       UpdateReturnQos uq = new UpdateReturnQos(glob);
       return uq.toXml();
