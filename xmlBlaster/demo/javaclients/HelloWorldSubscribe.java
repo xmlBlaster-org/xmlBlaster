@@ -71,6 +71,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String updateExceptionMessage;
    private String updateExceptionRuntime;
    private int maxContentLength;
+   boolean dumpContent;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -95,6 +96,7 @@ public class HelloWorldSubscribe implements I_Callback
          boolean local = glob.getProperty().get("local", true);
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
          boolean wantContent = glob.getProperty().get("wantContent", true);
+         this.dumpContent = glob.getProperty().get("dumpContent", false);
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
          boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
@@ -147,6 +149,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
          log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
          log.info(ME, "   -wantContent       " + wantContent);
+         log.info(ME, "   -dumpContent       " + dumpContent);
          log.info(ME, "   -unSubscribe       " + unSubscribe);
          log.info(ME, "   -disconnect        " + disconnect);
          log.info(ME, "   -filter.type       " + filterType);
@@ -285,6 +288,17 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
       System.out.println("</xmlBlaster>");
+
+      if (dumpContent) {
+         String fileName = updateKey.getOid() + "-" + updateQos.getRcvTimestamp().getTimestamp();
+         try {
+            org.jutils.io.FileUtil.writeFile(fileName, content);
+            System.out.println("Dumped content to file '" + fileName + "'");
+         }
+         catch (org.jutils.JUtilsException e) {
+            System.out.println("Can't dump content to file '" + fileName + "': " + e.toString());
+         }
+      }
 
       // If clientProperty is base64 encoded we print the real value as well:
       Map map = updateQos.getClientProperties();
