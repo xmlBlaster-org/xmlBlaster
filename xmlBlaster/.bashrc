@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.90 2002/01/10 20:57:22 ruff Exp $
+# $Id: .bashrc,v 1.91 2002/01/15 17:41:52 ruff Exp $
 #-----------------------------------------------------------
 
 
@@ -52,11 +52,18 @@ if [ "${CLASSPATH}" = "" ] ; then
    export CLASSPATH
 fi
 
+
 #-------- Checking xmlBlaster --------
 if [ "${XMLBLASTER_HOME}" = "" ] ; then
-   ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
-   ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
-   return
+	export XMLBLASTER_HOME=`pwd`
+   if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
+		export XMLBLASTER_HOME=${HOME}/xmlBlaster
+	   if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
+		   ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+   		${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
+		   return
+		fi
+	fi
 fi
 
 if [ ! -d ${XMLBLASTER_HOME} ] ; then
