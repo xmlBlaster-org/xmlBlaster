@@ -1,59 +1,74 @@
+INTRODUCTION:
+=============
 
 This is the implementation of the xmlBlaster client classes in c++.
 They are helper classes for simpler CORBA access to xmlBlaster.
 
-The source code is compiled to a shared library
+The C++ source code is compiled to a shared library
 
    xmlBlaster/lib/libxmlBlasterClient.so
 
 (the extension is .so on Linux, .sl on HPUX, .dll on Windows)
 
-NOTE:
-  The Makefiles are only tested on Linux!
-  You need to edit Makefile.def on other platforms.
-
 
 HOW TO BUILD THE CLIENT CLASSES:
+================================
 
 - retrieve xerces from http://xml.apache.org
-- install xerces (lets say in /opt/local/xerces)
+- install xerces, lets say in /opt/local/xerces
 - install one c++ implementation of corba (currently MICO or ORBACUS)
+  lets say in /opt/local/mico
 - define the following environment variables if different than the default
-  (the given value is the default setting):
+  (the given value is the default setting).
 
-     CORBACPP_HOME=/opt/local/mico
-     CORBACPP_VER=2.3.5
-     XMLCPP_HOME=/opt/local/xerces-c-src1_6_0
-     XMLCPP_VER=1_6_0
+  Do this by editing xmlBlaster/build.properties:
+
+     CORBACPP_HOME = /opt/local/mico
+     CORBACPP_VER  = 2.3.6
+     XMLCPP_HOME   = /opt/local/xerces-c-src1_6_0
+     XMLCPP_VER    = 1_6_0
     
-    USE_CPP=true (which tells the compiler to build the c++-classes)
     XMLCPP_HOME=<directory-where-you-installed-xerces>
                 (for example XMLCPP_HOME=/opt/local/xerces)
+
     XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_6_0")
-    CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
+
     ORBACUS_HOME or CORBACPP_HOME (depending if you run with orbacus or mico
         ex.: ORBACUS_HOME=/opt/local/orbacus
+
     ORBACUS_VER or CORBACPP_VER to the version of mico or orbacus
         ex.: CORBACPP_VER="2.3.6"
 
-So if you use bash, an example would be:
+    Currently not supported (sorry Michele):
+    CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
+ 
+  NOTE:
+   The Makefiles are only tested on Linux and are deprecated!
 
-export XMLCPP_HOME=/opt/local/xerces
-export XMLCPP_VER="1_6_0"
-export CORBA_CPP="mico"
-export CORBACPP_HOME=/opt/local/mico
-export CORBACPP_VER="2.3.6"
+  The recommended way to compile C++ is using ant.
+  Go to xmlBlaster root directory and type:
 
-Then you can run make from the $XMLBLASTER_HOME directory or from
-$XMLBLASTER_HOME/src/c++
+     build.bat cpp-lib
+  
+  or
+
+     build.sh cpp-lib
+
+  which will compile the xmlBlasterClient shared library (dll).
+  Some demo C++ clients are in xmlBlaster/testsuite/c++
 
 
 HOW TO RUN THE TESTSUITE:
-call make test from the ${XMLBLASTER_HOME}/testsuite/c++ directory
-to manually start a test look at the file test.sh in that directory.
+=========================
+
+Read ${XMLBLASTER_HOME}/testsuite/c++/README
+
+To manually start a test look at the file test.sh in that directory.
+
 
 
 And now some additional notes:
+==============================
 
 These c++ classes are practically a clone to the java-client & util classes (at
 the time of writing this, some of the util classes in java have moved out from
