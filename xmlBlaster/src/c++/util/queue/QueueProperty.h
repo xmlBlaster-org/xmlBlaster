@@ -80,8 +80,6 @@ public:
     */
    void setAddress(const Address& address);
 
-   void cleanUpAddresses();
-
    /**
     * clears up all addresses and allocates new ones.
     */

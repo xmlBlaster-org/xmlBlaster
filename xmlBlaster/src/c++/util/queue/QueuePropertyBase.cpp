@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.2 2002/12/07 13:31:09 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.3 2002/12/08 19:38:13 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -55,8 +55,9 @@ Dll_Export long DEFAULT_expires;
 
    QueuePropertyBase::~QueuePropertyBase()
    {
-       // delete all entries of the address vector since they are pointers
-       // owned by this object.
+      // delete all entries of the address vector since they are pointers
+      // owned by this object.
+      cleanupAddresses();
    }
 
 
@@ -569,6 +570,17 @@ Dll_Export long DEFAULT_expires;
    Global& QueuePropertyBase::getGlobal()
    {
       return global_;
+   }
+
+   void QueuePropertyBase::cleanupAddresses()
+   {
+      AddressVector::iterator iter = addressArr_.begin();
+      while (iter != addressArr_.end()) {
+        AddressBase* el = *iter;
+        addressArr_.erase(iter);
+        delete el;
+        iter = addressArr_.begin();
+      }
    }
 
 }}}} // namespaces

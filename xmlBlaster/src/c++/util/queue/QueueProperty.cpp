@@ -46,24 +46,13 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       addressArr_.insert(addressArr_.begin(), el);
    }
 
-   void QueueProperty::cleanUpAddresses()
-   {
-      AddressVector::iterator iter = addressArr_.begin();
-      while (iter != addressArr_.end()) {
-        AddressBase* el = *iter;
-        addressArr_.erase(iter);
-        delete el;
-        iter = addressArr_.begin();
-      }
-   }
-
    /**
     * clears up all addresses and allocates new ones.
     */
    void QueueProperty::setAddresses(const vector<Address>& addresses)
    {
       // clean up the old addresses vector ...
-      cleanUpAddresses();
+      QueuePropertyBase::cleanupAddresses();
       addressArr_ = AddressVector();
       vector<Address>::const_iterator iter = addresses.begin();
       while(iter != addresses.end()) {

@@ -3,9 +3,8 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.1 2002/12/07 13:31:09 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.2 2002/12/08 19:38:13 laghi Exp $
 ------------------------------------------------------------------------------*/
-
 
 /**
  * Helper class holding callback queue properties.
@@ -13,6 +12,9 @@ Version:   $Id: QueuePropertyBase.h,v 1.1 2002/12/07 13:31:09 laghi Exp $
  * See ConnectQos for XML syntax.
  * @see org.xmlBlaster.util.ConnectQos
  */
+
+#ifndef _UTIL_QUEUE_QUEUEPROPERTYBASE_H
+#define _UTIL_QUEUE_QUEUEPROPERTYBASE_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/Global.h>
@@ -385,112 +387,6 @@ public:
    AddressVector getAddresses() const;
 
    /**
-    * Called for queue start tag
-    */
-/*
-   void startElement(String uri, String localName, String name, Attributes attrs) {
-      if (attrs != null) {
-         int len = attrs.getLength();
-         int ii=0;
-         for (ii = 0; ii < len; ii++) {
-            if (attrs.getQName(ii).equalsIgnoreCase("relating")) {
-               setRelating(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxMsg")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxMsg(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxMsg='" + tmp + "'>, expected a long, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("type")) {
-               setType(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
-               setVersion(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxMsgCache")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxMsgCache(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxMsgCache='" + tmp + "'>, expected an long, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxSize")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxSize(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxSize='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxSizeCache")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxSizeCache(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxSizeCache='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapLevel")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setStoreSwapLevel(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapSize")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setStoreSwapSize(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue storeSwapSize='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapLevel")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setReloadSwapLevel(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapSize")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setReloadSwapSize(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue reloadSwapSize='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("expires")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setExpires(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue expires='" + tmp + "'>, expected a long in milliseconds, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("onOverflow")) {
-               setOnOverflow(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("onFailure")) {
-               setOnFailure(attrs.getValue(ii).trim());
-            }
-            else
-               log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <queue>");
-         }
-      }
-      else {
-         log.warn(ME, "Missing 'relating' attribute in connect QoS <queue>");
-      }
-   }
-*/
-
-   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
@@ -502,8 +398,10 @@ public:
     * returns the global object
     */
    Global& getGlobal();
+
+   void cleanupAddresses();
 };
 
 }}}} // namespaces
 
-
+#endif
