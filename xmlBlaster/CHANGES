@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o Zhang Zhi Wei added a Microsoft SQL Server port for our persistence layer
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.sqlserver.html
+
  o Completed ANSI-C client library for sync and async xmlBlaster access:
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 

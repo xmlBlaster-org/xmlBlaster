@@ -168,7 +168,23 @@ JdbcStorage[Oracle]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                     entriesTableName=ENTRIES,\
                     dbAdmin=true
 
+# Settings for the persistence plugins (StoragePlugin and QueuePlugin)
+# for Microsoft SQL server:
+JdbcStorage[MicrosoftSQLServer]=org.inforMessaging.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                  url=jdbc:microsoft:sqlserver://192.168.80.3:1433;SelectMethod=cursor;DatabaseName=zzw,\
+                  user=sa,\
+                  password=,\
+                  connectionPoolSize=5,\
+                  connectionBusyTimeout=90000,\
+                  maxWaitingThreads=300,\
+                  tableNamePrefix=XB_,\
+                  nodesTableName=NODES,\
+                  queuesTableName=QUEUES,\
+                  entriesTableName=ENTRIES,\
+                  dbAdmin=true
+
 StoragePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
 StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
 
@@ -182,6 +198,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 # Declare existing queue implementation plugins
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
 QueuePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
 QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
 
@@ -232,6 +249,7 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:\
 # Now you can configure your database access.
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables,connectionErrorCodes=1089:17002
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=LONG RAW,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME,connectionErrorCodes=1089:17002
+JdbcDriver.mapping[MicrosoftSQLServer]=string=CHAR(128),longint=numeric (19),boolean=char(1),blob=image,tables=pg_tables,tablename=tablename,connectionErrorCodes=1089:17002
 
 #------------------------------------------------------------------------------
 # Add here your MIME based plugins which allow to filter update messages
