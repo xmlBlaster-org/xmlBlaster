@@ -201,7 +201,7 @@ abstract public class PluginManagerBase {
       if (manager != null) {
          try {
             manager.init(glob, param);
-            Log.info(ME, "Plugin '" + pluginName + "' successfully initialized!");
+            Log.info(ME, "Plugin '" + pluginName + "' successfully initialized.");
          } catch (XmlBlasterException e) {
             //Log.error(ME, "Initializing of plugin " + manager.getType() + " failed:" + e.reason);
             throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + manager.getType() + " failed:" + e.reason);
