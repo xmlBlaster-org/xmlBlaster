@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.45 2004/09/27 21:55:30 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.46 2004/10/07 19:38:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -349,6 +349,13 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       this.xmlBlasterImpl = xmlBlasterImpl;
 
       this.socketUrl = new SocketUrl(glob, this.addressServer);
+
+      if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressServer.getCompressType())) {
+         log.info(ME, "Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
+      }
+      else if (Constants.COMPRESS_ZLIB.equals(this.addressServer.getCompressType())) {
+         log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + this.addressServer.getMinSize() + " bytes");
+      }
 
       if (this.socketUrl.getPort() < 1) {
          log.info(ME, "Option protocl/socket/port set to " + this.socketUrl.getPort() + ", socket server not started");

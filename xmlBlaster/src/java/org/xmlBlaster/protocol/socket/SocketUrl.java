@@ -206,7 +206,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
       */
       String trustStore = address.getEnv("trustStore", (String)System.getProperty("javax.net.ssl.trustStore", "")).getValue();
       if (trustStore != "") {
-         log.info(ME, "SSL server socket enabled, trustStore="+trustStore);
+         log.info(ME, "SSL server socket enabled for " + address.getRawAddress() + ", trustStore="+trustStore);
          System.setProperty("javax.net.ssl.trustStore", trustStore);
       }
       else {
@@ -223,7 +223,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
       
       String keyStore = address.getEnv("keyStore", System.getProperty("javax.net.ssl.keyStore", "")).getValue();
       if (keyStore != "") {
-         log.info(ME, "SSL server socket enabled, keyStore="+keyStore);
+         log.info(ME, "SSL server socket enabled for " + address.getRawAddress() + ", keyStore="+keyStore);
          System.setProperty("javax.net.ssl.keyStore", keyStore);
       }
       else {
