@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -822,9 +823,11 @@ public final class TopicHandler implements I_Timeout
             wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries(), false);
 
          if (wrappers != null && wrappers.length > 0) {
-            int count = 0, currentCount;
+            int count = 0, currentCount = 0;
             for (int i=0; i < wrappers.length; i++) {
-               currentCount = invokeCallback(null, sub, wrappers[i]);
+               if (this.distributor == null || wrappers[i].isInternal()) {
+                  currentCount = invokeCallback(null, sub, wrappers[i]);
+               }
                if (currentCount == -1) break;
                count += currentCount;
             }
@@ -949,7 +952,7 @@ public final class TopicHandler implements I_Timeout
       }
       if (log.TRACE) log.trace(ME, "Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
 
-      if (this.distributor != null) { // if there is a plugin
+      if (this.distributor != null &&  !msgUnitWrapper.isInternal()) { // if there is a plugin
          this.distributor.distribute(msgUnitWrapper);
          return;   
       }
@@ -970,6 +973,121 @@ public final class TopicHandler implements I_Timeout
       if (removeSet != null) handleCallbackFailed(removeSet);
    }
 
+
+   /**
+    * checks if it is allowed to send the entry to the callback queue
+    * @param publisherSessionInfo
+    * @param sub
+    * @return true if it is configured, there is a callback, and the topic is referenced 
+    */
+   public boolean checkIfAllowedToSend(SessionInfo publisherSessionInfo, SubscriptionInfo sub) {
+      if (!sub.getSessionInfo().hasCallback()) {
+         log.error(ME, "Internal problem: A client which subcribes should have a callback server: "
+                       + ((publisherSessionInfo != null) ? publisherSessionInfo.toXml("") : ""));
+         Thread.dumpStack();
+         return false;
+      }
+      if (isUnconfigured()) {
+         log.warn(ME, "invokeCallback() not supported, this MsgUnit was created by a subscribe() and not a publish()");
+         return false;
+      }
+      if (isUnreferenced()) {
+         log.error(ME, "PANIC: invoke callback is strange in state 'UNREFERENCED'");
+         Thread.dumpStack();
+         return false;
+      }
+      return true;
+   }
+
+   /**
+    * Checks if the filters allow this message to be sent to the specified session
+    * 
+    * @param publisherSessionInfo
+    * @param sub
+    * @param msgUnitWrapper
+    * @return true if the message is approved to be sent, false otherwise
+    * @throws XmlBlasterException in case an exception happened when checking the filters.
+    * This method handles internally the publishing of dead letters in case of a throwable
+    * and after that it throws this XmlBlasterException to notify the invoked about the
+    * abnormal flow.
+    */
+   public final boolean checkFilter(SessionInfo publisherSessionInfo, SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper) 
+      throws XmlBlasterException {
+
+      AccessFilterQos[] filterQos = sub.getAccessFilterArr();
+      if (filterQos != null) {
+         //SubjectInfo publisher = (publisherSessionInfo == null) ? null : publisherSessionInfo.getSubjectInfo();
+         //SubjectInfo destination = (sub.getSessionInfo() == null) ? null : sub.getSessionInfo().getSubjectInfo();
+         for (int ii=0; ii<filterQos.length; ii++) {
+            try {
+               I_AccessFilter filter = requestBroker.getAccessPluginManager().getAccessFilter(
+                                         filterQos[ii].getType(), filterQos[ii].getVersion(), 
+                                         getContentMime(), getContentMimeExtended());
+               if (filter != null && filter.match(sub.getSessionInfo(),
+                          msgUnitWrapper.getMsgUnit(), filterQos[ii].getQuery()) == false) {
+                  return false;
+               }
+            }
+            catch (Throwable e) {
+               // sender =      publisherSessionInfo.getLoginName()
+               // receiver =    sub.getSessionInfo().getLoginName()
+               // 1. We just log the situation:
+               SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
+                                  msgUnitWrapper.getMsgQosData().getSender();
+               String reason = "Mime access filter '" + filterQos[ii].getType() + "' for message '" +
+                         msgUnitWrapper.getLogId() + "' from sender '" + publisherName + "' to subscriber '" +
+                         sub.getSessionInfo().getSessionName() + "' threw an exception, we don't deliver " +
+                         "the message to the subscriber: " + e.toString();
+               if (log.TRACE) log.trace(ME, reason);
+               MsgQueueEntry[] entries = {
+                    new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                                sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()) };
+               requestBroker.deadMessage(entries, null, reason);
+                     
+               // 2. This error handling is wrong as the plugin should not invalidate the subscribe:
+               //sub.getSessionInfo().getDispatchManager().internalError(e); // calls MsgErrorHandler
+                     
+               // 3. This error handling is wrong as we handle a subscribe and not a publish:
+               /*
+               MsgQueueEntry entry =
+                    new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                                sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
+               publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, e));
+               */
+               //retCount++;
+               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME , "checkFilter: " + reason);
+            }
+         }
+      } // if filterQos
+      return true;
+   }
+
+
+   /**
+    * Checks if the subscriber is a cluster and the message has the 'dirtyRead' flag set.
+    * @param sub
+    * @param msgQosData
+    * @return true if dirtyRead is set, false otherwise.
+    */
+   public boolean isDirtyRead(SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper) 
+      throws XmlBlasterException {
+      MsgQosData msgQosData = msgUnitWrapper.getMsgQosData();
+      if (sub.getSessionInfo().getSubjectInfo().isCluster()) {
+         if (log.DUMP) log.dump(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + msgUnitWrapper.toXml());
+         if (msgQosData.dirtyRead(sub.getSessionInfo().getSubjectInfo().getNodeId())) {
+            if (log.TRACE) log.trace(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getSubscriptionId() + "', '" + sub.getKeyData().getOid() + "' we don't need to send it back");
+            return true;
+         }
+      }
+      return false;
+   }
+   
+   public final MsgQueueUpdateEntry createEntryFromWrapper(MsgUnitWrapper msgUnitWrapper, SubscriptionInfo sub) 
+      throws XmlBlasterException {
+      return new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+               sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
+   }
+
    /**
     * Send update to subscribed client (Pub/Sub mode only).
     * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
@@ -981,22 +1099,8 @@ public final class TopicHandler implements I_Timeout
     * Returning -1 tells the invoker not to continue with these invocations (performance)
     */
    public final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
-                                        MsgUnitWrapper msgUnitWrapper) {
-      if (!sub.getSessionInfo().hasCallback()) {
-         log.error(ME, "Internal problem: A client which subcribes should have a callback server: "
-                       + ((publisherSessionInfo != null) ? publisherSessionInfo.toXml("") : ""));
-         Thread.dumpStack();
-         return -1;
-      }
-      if (isUnconfigured()) {
-         log.warn(ME, "invokeCallback() not supported, this MsgUnit was created by a subscribe() and not a publish()");
-         return -1;
-      }
-      if (isUnreferenced()) {
-         log.error(ME, "PANIC: invoke callback is strange in state 'UNREFERENCED'");
-         Thread.dumpStack();
-         return -1;
-      }
+      MsgUnitWrapper msgUnitWrapper) {
+      if (!checkIfAllowedToSend(publisherSessionInfo, sub)) return -1;
 
       if (msgUnitWrapper == null) {
          log.error(ME, "invokeCallback() MsgUnitWrapper is null: " +
@@ -1008,70 +1112,22 @@ public final class TopicHandler implements I_Timeout
          //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
 
-      AccessFilterQos[] filterQos = sub.getAccessFilterArr();
-
-      MsgQosData msgQosData = msgUnitWrapper.getMsgQosData();
       try {
-         if (sub.getSessionInfo().getSubjectInfo().isCluster()) {
-            if (log.DUMP) log.dump(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + msgUnitWrapper.toXml());
-            if (msgQosData.dirtyRead(sub.getSessionInfo().getSubjectInfo().getNodeId())) {
-               if (log.TRACE) log.trace(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getSubscriptionId() + "', '" + sub.getKeyData().getOid() + "' we don't need to send it back");
-               return 1;
-            }
-         }
+         if (isDirtyRead(sub, msgUnitWrapper)) return 1;
 
-         if (filterQos != null) {
-            //SubjectInfo publisher = (publisherSessionInfo == null) ? null : publisherSessionInfo.getSubjectInfo();
-            //SubjectInfo destination = (sub.getSessionInfo() == null) ? null : sub.getSessionInfo().getSubjectInfo();
-            for (int ii=0; ii<filterQos.length; ii++) {
-               try {
-                  I_AccessFilter filter = requestBroker.getAccessPluginManager().getAccessFilter(
-                                            filterQos[ii].getType(), filterQos[ii].getVersion(), 
-                                            getContentMime(), getContentMimeExtended());
-                  if (filter != null && filter.match(sub.getSessionInfo(),
-                             msgUnitWrapper.getMsgUnit(), filterQos[ii].getQuery()) == false) {
-                     return 1;
-                  }
-               }
-               catch (Throwable e) {
-                  // sender =      publisherSessionInfo.getLoginName()
-                  // receiver =    sub.getSessionInfo().getLoginName()
-                  // 1. We just log the situation:
-                  SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
-                                     msgUnitWrapper.getMsgQosData().getSender();
-                  String reason = "Mime access filter '" + filterQos[ii].getType() + "' for message '" +
-                            msgUnitWrapper.getLogId() + "' from sender '" + publisherName + "' to subscriber '" +
-                            sub.getSessionInfo().getSessionName() + "' threw an exception, we don't deliver " +
-                            "the message to the subscriber: " + e.toString();
-                  if (log.TRACE) log.trace(ME, reason);
-                  MsgQueueEntry[] entries = {
-                       new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                   sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()) };
-                  requestBroker.deadMessage(entries, null, reason);
-                     
-                  // 2. This error handling is wrong as the plugin should not invalidate the subscribe:
-                  //sub.getSessionInfo().getDispatchManager().internalError(e); // calls MsgErrorHandler
-                     
-                  // 3. This error handling is wrong as we handle a subscribe and not a publish:
-                  /*
-                  MsgQueueEntry entry =
-                       new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
-                                   sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
-                  publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, e));
-                  */
-                  //retCount++;
-                  return 0;
-               }
-            }
-         } // if filterQos
+         try {
+            if (!checkFilter(publisherSessionInfo, sub, msgUnitWrapper)) return 1;
+         }
+         catch (XmlBlasterException ex) {
+            return 0;
+         }
 
          if (log.CALL) log.call(ME, "pushing update() message '" + sub.getKeyData().getOid() + "' " + msgUnitWrapper.getStateStr() +
                        "' into '" + sub.getSessionInfo().getId() + "' callback queue");
 
-         MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnitWrapper,
-                  sub.getMsgQueue().getStorageId(),
-                  sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
 
+         MsgQueueUpdateEntry entry = createEntryFromWrapper(msgUnitWrapper, sub);
+         
          sub.getMsgQueue().put(entry, I_Queue.USE_PUT_INTERCEPTOR);
 
          // If in MsgQueueUpdateEntry we set super.wantReturnObj = true; (see ReferenceEntry.java):
@@ -1844,8 +1900,8 @@ public final class TopicHandler implements I_Timeout
       return sb.toString();
    }
    
-   public void removeFromHistory(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
-      this.historyQueue.removeRandom(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()));
+   public void removeFromHistory(I_QueueEntry entry) throws XmlBlasterException {
+      this.historyQueue.removeRandom(entry);
    }   
    
    /**
@@ -1899,22 +1955,21 @@ public final class TopicHandler implements I_Timeout
 
    public final boolean subscriberMayReceiveIt(SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper) {
       if (sub == null) return false;
+      if (sub.getSessionInfo() == null) return false;
       QueryQosData qos = sub.getQueryQosData();
       if (qos == null) return false;
       if (!qos.getWantLocal() && 
            sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender())) return false;
       if (!qos.getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) return false; 
-      if (sub.getSessionInfo() == null) return false;
       return true;
    }
-   
 
+   public final I_MsgDistributor getMsgDistributorPlugin() {
+      return this.distributor;
+   }
 
-
-
-
-
-
-
+   public void doDistribute(SubscriptionInfo sub, I_QueueEntry entry) throws XmlBlasterException {
+      sub.getMsgQueue().put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+   }
    
 }
