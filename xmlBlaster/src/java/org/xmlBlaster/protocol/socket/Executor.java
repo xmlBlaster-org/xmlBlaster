@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.26 2002/09/14 23:09:24 ruff Exp $
+Version:   $Id: Executor.java,v 1.27 2002/09/15 17:06:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.InterruptedIOException;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -68,6 +71,7 @@ public abstract class Executor implements ExecutorBase
    protected I_XmlBlaster xmlBlasterImpl = null;
    /** To avoid creating a new dummy on each request, we do it here */
    private final String DUMMY_OBJECT = "";
+   private final Set latchSet = new HashSet();
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -175,7 +179,7 @@ public abstract class Executor implements ExecutorBase
    }
 
    public void finalize() {
-      log.info(ME, "Garbage Collected");
+      if (log.TRACE) log.trace(ME, "Garbage Collected");
    }
 
    public Socket getSocket() throws ConnectionException
@@ -370,10 +374,13 @@ public abstract class Executor implements ExecutorBase
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
-      final Latch startSignal = new Latch(); // defaults to false
+      final Latch startSignal;
 
       // Register the return value / Exception listener ...
       if (expectingResponse) {
+         startSignal = new Latch(); // defaults to false
+         synchronized (latchSet) { latchSet.add(startSignal); } // remember all blocking threads for release on shutdown 
+         if (sock == null) return null;
          addResponseListener(requestId, new I_ResponseListener() {
             public void responseEvent(String reqId, Object responseObj) {
                if (log.TRACE) log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
@@ -382,6 +389,8 @@ public abstract class Executor implements ExecutorBase
             }
          });
       }
+      else
+         startSignal = null;
 
       // Send the message / method invocation ...
       byte[] rawMsg = parser.createRawMsg();
@@ -400,14 +409,18 @@ public abstract class Executor implements ExecutorBase
 
       if (log.DUMP) log.dump(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
 
-      if (!expectingResponse)
+      if (!expectingResponse) {
          return null;
+      }
       
       // Waiting for the response to arrive ...
       try {
          boolean awaikened = startSignal.attempt(responseWaitTime); // block max. milliseconds
          if (awaikened) {
             if (log.TRACE) log.trace(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
+            if (response[0]==null) // Caused by freePendingThreads()
+               throw new IOException(ME + ": Lost socket connection for " + parser.getMethodName() + "(requestId=" + requestId + ")");
+            
             if (log.DUMP) log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
                throw (XmlBlasterException)response[0];
@@ -420,6 +433,35 @@ public abstract class Executor implements ExecutorBase
       }
       catch (InterruptedException e) {
          throw new XmlBlasterException(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + e.toString());
+      }
+      finally {
+         synchronized (latchSet) { latchSet.remove(startSignal); }
+      }
+   }
+
+   /**
+    * If we detect somewhere that the socket is down
+    * use this method to free blocking threads which wait on responses
+    */
+   public final void freePendingThreads() {
+      if (log.TRACE) log.trace(ME, "Freeing " + latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
+      while (true) {
+         Latch l = null;
+         synchronized (latchSet) {
+            Iterator it = latchSet.iterator();
+            if (it.hasNext()) {
+               l = (Latch)it.next();
+               it.remove();
+            }
+            else
+               break;
+         }
+         if (l == null)
+            break;
+         l.release();
+      }
+      synchronized(latchSet) {
+         latchSet.clear();
       }
    }
 
@@ -439,6 +481,7 @@ public abstract class Executor implements ExecutorBase
          returner.addMessage((MessageUnit)response);
       else
          throw new XmlBlasterException(ME, "Invalid response data type " + response.toString());
+      if (oStream == null) return;
       synchronized (oStream) {
          oStream.write(returner.createRawMsg());
          oStream.flush();
@@ -455,6 +498,7 @@ public abstract class Executor implements ExecutorBase
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);
+      if (oStream == null) return;
       synchronized (oStream) {
          oStream.write(returner.createRawMsg());
          oStream.flush();
