@@ -2,9 +2,11 @@ package org.xmlBlaster.test.classtest;
 
 import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -177,26 +179,21 @@ public class CommandWrapperTest extends TestCase {
       }
    }
 
-   /*
-   private void checkInvalid(String cmd) {
-      try {
-         String command = "/node/heron/client/joe/?sessionList";
-         CommandWrapper w = new CommandWrapper(glob, cmd);
-         assertEquals("Command '" + + "' wrong parsed", 
-      }
-      catch(XmlBlasterException e) {
-         fail(testName + " failed: " + e.toString());
-      }
-   }
-   */
+   public void testQosData() {
+      String cmd = null;
 
-
-   private void singleQosData(String cmd, boolean doCheck) {
+      GetQos getQos = new GetQos(this.glob);
+      getQos.addClientProperty("_one", "1");
+      getQos.addClientProperty("_two", "2");
+      
+      cmd = "client/joe/1/?queue&xmlBlaster.qos=" + getQos.toXml();
+      QueryKeyData keyData = new QueryKeyData(this.glob);
+      keyData.setOid("__cmd:" + cmd);
+      
       try {
-         CommandWrapper w = new CommandWrapper(glob, cmd, new QueryQosData(this.glob, MethodName.GET));
+         CommandWrapper w = new CommandWrapper(glob, keyData, null);
          QueryQosData qos = w.getQueryQosData();
          this.log.info(ME, qos.toXml());
-         if (!doCheck) return;
          ClientProperty clp = qos.getClientProperty("_one");
          assertNotNull("should not be null", clp);
          assertEquals("wrong value for this property", "1", clp.getStringValue());
@@ -210,22 +207,8 @@ public class CommandWrapperTest extends TestCase {
          e.printStackTrace();
          assertTrue("exception should not occur here: " + e.getMessage(), false);
       }
-   }
-
-   public void testQosData() {
-      String cmd = null;
-
-      cmd = "client/joe/1/?queue";
-      singleQosData(cmd, false);
-
-      cmd = "client/joe/1/?queue&qos.one=1&qos.two=2";
-      singleQosData(cmd, true);
-
-      cmd = "client/joe/1/?queue&qos.one=1&qos.two=2&";
-      singleQosData(cmd, true);
-
-      cmd = "client/joe/1/?queue=aaa&qos.one=1&qos.two=2";
-      singleQosData(cmd, true);
+      
+      
 
 
    }
