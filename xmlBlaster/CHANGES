@@ -2396,7 +2396,7 @@ Changes for 0.78 [Jul, 14 2000]
 
   - Added protocol plugin possibility in xmlBlaster.properties
     Default settings are Corba drivers, example for RMI is provided as well:
-      #------------------------------------------------------------------------------
+      #----------------------------------------------------------------------------
       # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
       # <protocol-type>:<driverClass>,<protocl-type>:<driverClass>,...
       # For protocol types see I_Driver.java
