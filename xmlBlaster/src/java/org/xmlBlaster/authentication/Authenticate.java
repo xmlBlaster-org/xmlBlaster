@@ -591,8 +591,9 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
 
       if (obj == null) {
-         log.error(ME+".Unknown", "Sorry, you are not known, no logout");
-         throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
+         log.warn(ME, "Sorry, '" + sessionInfo.getId() + "' is not known, no logout.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
+                   "Client '" + sessionInfo.getId() + "' is not known, disconnect is not possible.");
       }
 
       log.info(ME, "Disconnecting client " + sessionInfo.getSessionName() + ", instanceId=" + sessionInfo.getInstanceId() + ", secretSessionId=" + secretSessionId);
@@ -646,7 +647,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       catch (Exception e) {
          String text = "Can't generate a unique secretSessionId: " + e.getMessage();
          log.error(ME, text);
-         throw new XmlBlasterException("NoSessionId", text);
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, text);
       }
    }
 

@@ -6,6 +6,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.jutils.log.LogChannel;
 
@@ -29,8 +30,8 @@ public class Session implements I_Session, I_Subject {
    protected String loginName;
 
    public Session(Manager sm, String sessionId) throws XmlBlasterException {
-      secMgr = sm;
-      this.log = secMgr.getGlobal().getLog("ldap");
+      this.secMgr = sm;
+      this.log = this.secMgr.getGlobal().getLog("ldap");
       this.sessionId = sessionId;
       final String serverUrl = sm.getGlobal().getProperty().get("ldap.serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
       final String rootDN = sm.getGlobal().getProperty().get("ldap.rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
@@ -38,7 +39,7 @@ public class Session implements I_Session, I_Subject {
       final String loginFieldName = sm.getGlobal().getProperty().get("ldap.loginFieldName", "cn");
 
       log.info(ME, "Initializing LDAP access on ldap.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in ldap should be '" + loginFieldName + "'.");
-      ldap = new LdapGateway(secMgr.getGlobal(), serverUrl, rootDN, rootPwd, loginFieldName);
+      ldap = new LdapGateway(this.secMgr.getGlobal(), serverUrl, rootDN, rootPwd, loginFieldName);
    }
 
 
@@ -51,7 +52,7 @@ public class Session implements I_Session, I_Subject {
     *                                exist or the passwd is incorrect.
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
-      return init(new SecurityQos(secMgr.getGlobal(), xmlQoS_literal));
+      return init(new SecurityQos(this.secMgr.getGlobal(), xmlQoS_literal));
    }
 
 
@@ -74,7 +75,8 @@ public class Session implements I_Session, I_Subject {
       if (log.TRACE) log.trace(ME, "The password" /*+ passwd */+ " for cn=" + this.loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
 
       if (authenticated == false)
-         throw new XmlBlasterException("AccessDenied", "Authentication of user " + getName() + " failed");
+         throw new XmlBlasterException(this.secMgr.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
+                    "Authentication of user " + getName() + " failed, no authentication from LDAP server.");
 
       return null; // no extra information
    }
@@ -131,7 +133,7 @@ public class Session implements I_Session, I_Subject {
    public void changeSecretSessionId(String sessionId) throws XmlBlasterException {
       if(this.sessionId.endsWith(sessionId)) return;
       synchronized(sessionId) {
-         secMgr.changeSecretSessionId(this.sessionId, sessionId);
+         this.secMgr.changeSecretSessionId(this.sessionId, sessionId);
          this.sessionId = sessionId;
       }
    }
@@ -148,7 +150,7 @@ public class Session implements I_Session, I_Subject {
    }
 
    public I_Manager getManager() {
-      return secMgr;
+      return this.secMgr;
    }
 
    /**

@@ -21,6 +21,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.Address;
@@ -146,7 +147,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          Address addr = getNodeInfo().getAddress();
          if (addr == null) {
             log.error(ME, "Can't connect to node '" + getId() + "', address is null");
-            throw new XmlBlasterException(ME, "Can't connect to node '" + getId() + "', address is null");
+            throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_CONFIGURATION, ME,
+                      "Can't connect to node '" + getId() + "', address is null");
          }
          this.remoteGlob.setBootstrapAddress(addr);
 
@@ -392,7 +394,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       // Important: Do authentication of sender:
       if (!this.cbSessionId.equals(cbSessionId)) {
          log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + this.remoteGlob.getId());
-         throw new XmlBlasterException("AccessDenied", "Your callback sessionId is invalid, no access to " + this.remoteGlob.getId());
+         throw new XmlBlasterException(updateKey.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
+                     "Your callback sessionId is invalid, no access to " + this.remoteGlob.getId());
       }
 
       // Publish messages to our RequestBroker WITHOUT ANY FURTHER SECURITY CHECKS:
@@ -420,9 +423,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          return sessionId;
       }
       catch (Exception e) {
-         String text = "Can't generate a unique sessionId: " + e.toString();
+         String text = "Can't generate a unique callback sessionId: " + e.toString();
          log.error(ME, text);
-         throw new XmlBlasterException("NoSessionId", text);
+         throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, text);
       }
    }
 
