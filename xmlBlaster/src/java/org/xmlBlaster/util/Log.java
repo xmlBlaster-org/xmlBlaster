@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.51 2000/09/18 06:17:03 ruff Exp $
+Version:   $Id: Log.java,v 1.52 2000/09/18 06:24:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -58,8 +58,6 @@ import org.jutils.runtime.Memory;
  *   }
  * </pre>
  * @see org.jutils.init.Property
- * @see org.xmlBlaster.util.LogListener
- * @see org.xmlBlaster.util.LogFile
  */
 public class Log
 {
@@ -93,14 +91,17 @@ public class Log
    /**
     * Produce logging output on important method calls.
     * <p />
-    * Switch CALL mode to <code>false</code> for performance reasons<br />
-    * or switch it to <code>true</code> for debugging reasons.
+    * Logging output in the xmlBlaster code looks typically like this:
+    * <code>if (Log.TRACE) Log.trace(....); </code><br />
     * <p />
-    * Setting to false:<br />
-    * <code>if (Log.TRACE) Log.trace(....); </code> -> dead code elimination<br />
-    * Note that you need to uncomment the final declaration, set all booleans to false
-    * and comment out the code in method setPreLogLevelCheck(). Then recompile
-    * to achieve real dead code elimination.
+    * Switch CALL mode to <code>false</code> for performance reasons<br />
+    * or switch it to <code>true</code> to allow debugging output.<br />
+    * Every logging output is checked with this boolean comparison, which
+    * is not CPU intense.
+    * <p />
+    * Dead code elimination with final qualifier:<br />
+    * Note that you need to uncomment the final declaration, set all booleans to false.
+    * Then recompile to achieve real dead code elimination.
     * <p />
     * The same applies for CALL, TIME, TRACE and DUMP
     */

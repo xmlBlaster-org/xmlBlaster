@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.46 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.47 2000/09/18 06:24:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,7 +39,7 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.46 $
+ * @version $Revision: 1.47 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
@@ -71,7 +71,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
       // outcomment this line:
-      //Log.addLogListener(this);
+      //Log.addLogableDevice(this);
 
       Log.trace("BlasterHttpProxyServlet", "Initialize ...");
 
