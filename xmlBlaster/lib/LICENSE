@@ -308,3 +308,9 @@ only the SNMP subagent module jax.jar is GPL only!
   Postgres JDBC driver 74.213 for JDK 1.2 or better
   http://jdbc.postgresql.org
 
+37) wrapper.jar
+===============
+  Run xmlBlaster as a Windows/UNIX sercvice: version 3.1.0
+  See xmlBlaster\src\java\org\xmlBlaster\MainSvc.java
+  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.start.asService.html
+  http://wrapper.tanukisoftware.org/doc/english/introduction.html
