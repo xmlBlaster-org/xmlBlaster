@@ -29,18 +29,23 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.31 2004/10/10 20:20:47 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.31 2004/10/10 20:20:47 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
 #endif
 
 /**
- * @return e.g. "0.848"
+ * @return e.g. "0.848 #1207M"
  */
 Dll_Export const char *getXmlBlasterVersion(void)
 {
    /* Is replaced by xmlBlaster/build.xml ant task */
-   return "@version@";
+   static const char *p1 = "@version@";
+   static const char *p2 = "@version@ #@revision.number@";
+	if (strstr(p2, "@") == 0 && strstr(p2, "${") == 0) { /* Verify that subversion replacement worked fine */
+		return p2;
+	}
+   return p1;
 }
 
 /**
