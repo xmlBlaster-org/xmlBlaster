@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-package org.xmlBlaster.client.filesystem;
+package org.xmlBlaster.client.filepoller;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -53,7 +53,7 @@ public class DirectoryManager {
       this.global = global;
       if (filter != null)
          this.fileFilter = new FilenameFilter(filter);
-      this.log = this.global.getLog("filesystem");
+      this.log = this.global.getLog("filepoller");
       this.maximumFileSize = maximumFileSize; 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.warnOnEmptyFileDelay = warnOnEmptyFileDelay;

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 ------------------------------------------------------------------------------*/
 
-package org.xmlBlaster.client.filesystem;
+package org.xmlBlaster.client.filepoller;
 
 import java.util.Properties;
 import java.util.Set;
@@ -58,7 +58,7 @@ public class Publisher implements I_Timeout {
       this.name = name;
       this.isShutdown = false;
       this.global = global.getClone(Property.propsToArgs(properties));
-      this.log = this.global.getLog("filesystem");
+      this.log = this.global.getLog("filepoller");
       if (this.log.CALL) 
          this.log.call(ME, "constructor");
       // retreive all necessary properties:

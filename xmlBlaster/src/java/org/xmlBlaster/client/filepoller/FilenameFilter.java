@@ -3,7 +3,7 @@
  Project:   xmlBlaster.org
  Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  ------------------------------------------------------------------------------*/
-package org.xmlBlaster.client.filesystem;
+package org.xmlBlaster.client.filepoller;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-package org.xmlBlaster.client.filesystem;
+package org.xmlBlaster.client.filepoller;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -31,7 +31,7 @@ public class FilePollerPlugin implements I_Plugin {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
-      LogChannel log = global.getLog("filesystem");
+      LogChannel log = global.getLog("filepoller");
       if (log.CALL)
          log.call(ME, "init");
       this.info = pluginInfo;
