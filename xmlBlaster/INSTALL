@@ -121,6 +121,20 @@ You have three options to start the xmlBlaster-Server.
 
 
 
+                      A demo chat client
+-------------------------------------------------------------------------
+Have a look at xmlBlaster/demo/javaclients/chat/SimpleChat.java
+It´s a pretty basic kind of chat-application but worth a try.
+
+Compile it (make all) and start it like that:
+
+   jaco javaclients.chat.SimpleChat -name "Nickname"
+
+where "Nickname" should be different for each client you start.
+Don´t forget to start the server (jaco org.xmlBlaster.Main) first.
+
+
+
                              Testsuite
 -------------------------------------------------------------------------
 In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
