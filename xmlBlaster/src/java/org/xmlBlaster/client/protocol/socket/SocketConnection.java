@@ -660,9 +660,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     *  <li>-dispatch/connection/plugin/socket/localHostname
     *                      Specify the hostname who we are. Makes sense for multi homed computers
     *                      Defaults to our hostname</li>
-    *  <li>-dispatch/callback/plugin/socket/responseTimeout  How long to wait for a method invocation to return
+    *  <li>-dispatch/connection/plugin/socket/responseTimeout  How long to wait for a method invocation to return
     *                      Defaults to one minute</li>
-    *  <li>-dispatch/callback/plugin/socket/multiThreaded Use seperate threads per update() on client side [true]</li>
+    *  <li>-dispatch/connection/plugin/socket/multiThreaded Use seperate threads per update() on client side [true]</li>
     *  <li>-dump[socket]   true switches on detailed SOCKET debugging [false]</li>
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
@@ -684,12 +684,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "   -dispatch/connection/plugin/socket/localHostname\n";
       text += "                       Specify the hostname who we are. Makes sense for multi homed computers.\n";
       text += "                       Defaults to our hostname.\n";
-      text += "   -dispatch/callback/plugin/socket/responseTimeout\n";
+      text += "   -dispatch/connection/plugin/socket/responseTimeout\n";
       text += "                       How long to wait for a method invocation to return.\n";
       text += "                       Defaults to one minute.\n";
-      text += "   -dispatch/callback/plugin/socket/threadPrio\n";
-      text += "                       The priority 1=min - 10=max of the callback listener thread [5].\n";
-      text += "   -dispatch/callback/plugin/socket/multiThreaded\n";
+      text += "   -dispatch/connection/plugin/socket/multiThreaded\n";
       text += "                       Use seperate threads per update() on client side [true].\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
