@@ -92,8 +92,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Do we want to have an initial update on subscribe if the message
-    * exists already?
-    *
+    * exists already? 
+    * Defaults to true. 
     * @return true if initial update wanted
     *         false if only updates on new publishes are sent
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
@@ -102,33 +102,46 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       this.initialUpdate = initialUpdate;
    }
 
+   /**
+    * Defaults to true. 
+    */
    public boolean getWantInitialUpdate() {
       return this.initialUpdate;
    }
 
+   /**
+    * Defaults to true. 
+    */
    public void setWantNotify(boolean notify) {
       this.notify = notify;
    }
 
+   /**
+    * For erase(): Notify the subscribers on erase?
+    * Defaults to true. 
+    */
    public boolean getWantNotify() {
       return this.notify;
    }
 
    /**
-    * false Inhibit the delivery of messages to myself if i have published it.
+    * Defaults to true. 
+    * @param setWantLocal false Inhibit the delivery of messages to myself if i have published it.
     */
    public void setWantLocal(boolean local) {
       this.local = local;
    }
 
    /**
-    * false Inhibit the delivery of messages to myself if i have published it.
+    * Defaults to true. 
+    * @return false Inhibit the delivery of messages to myself if i have published it.
     */
    public boolean getWantLocal() {
       return this.local;
    }
 
    /**
+    * Defaults to true. 
     * @param meta false: Don't send me the meta information of a message key
     */
    public void setWantMeta(boolean meta) {
@@ -136,6 +149,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
+    * Defaults to true. 
     * @return false: Don't send me the meta information of a message key
     */
    public boolean getWantMeta() {
@@ -143,6 +157,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
+    * Defaults to true. 
     * If false, the update contains not the content (it is a notify of change only)
     * TODO: Implement in server!!!
     */
@@ -150,11 +165,15 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       this.content = content;
    }
 
+   /**
+    * Defaults to true. 
+    */
    public boolean getWantContent() {
       return this.content;
    }
 
    /**
+    * Defaults to false. 
     * @param forceDestroy
     */
    public void setForceDestroy(boolean forceDestroy) {
@@ -162,6 +181,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
+    * Defaults to false. 
     * @return for erase behaviour
     */
    public boolean getForceDestroy() {
