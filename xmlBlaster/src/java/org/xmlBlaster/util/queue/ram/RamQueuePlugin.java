@@ -117,6 +117,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       return this.property;
    }
 
+   public boolean isTransient() {
+      return true;
+   }
+
    public void setNotifiedAboutAddOrRemove(boolean notify) {
       this.notifiedAboutAddOrRemove = notify;
    }

@@ -59,6 +59,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
    private boolean debug = false;
 
+   public boolean isTransient() {
+      return false;
+   }
+
    /**
     * This method resets all cached sizes and counters. While testing it
     * could be invoked before each public invocation to see which method fails ...

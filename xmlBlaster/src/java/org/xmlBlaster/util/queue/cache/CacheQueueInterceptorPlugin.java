@@ -56,6 +56,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
    private I_QueueEntry referenceEntry;
 
+   public boolean isTransient() {
+      return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
+   }
+
    /**
     * Helper method to check the space left on a given queue.
     * @param  queue the queue on which to calculate the space left.
@@ -176,7 +180,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             list = this.transientQueue.peekWithLimitEntry(limitEntry);
             if (list.size() > 0) {
                // TAKE AWAY ALL TRANSIENTS !!!!!!
-      	       ArrayList list2 = new ArrayList();
+               ArrayList list2 = new ArrayList();
                for (int i=0; i < list.size(); i++) {
                   I_Entry entry = (I_Entry)list.get(i);
                   if (entry.isPersistent()) list2.add(entry);
