@@ -19,8 +19,8 @@
 # NOTE: The following 3 lines make xmlBlaster to run RAM based only (without any database)
 #       Comment the following 3 lines away and read the next NOTE to have persistency:
 
-persistence.defaultPlugin=RAM,1.0
-queue.defaultPlugin=RAM,1.0
+persistence/defaultPlugin=RAM,1.0
+queue/defaultPlugin=RAM,1.0
 useTopicStore=false
 
 # NOTE: You need to install a Postgres or Oracle database to have persistency
@@ -138,24 +138,17 @@ PriorizedDeliveryPlugin.config=<msgDispatch defaultStatus='64k' defaultAction='s
 
 
 #------------------------------------------------------------------------------
-# Server side plugins to store single messages persistently
-# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
-MsgUnitStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
-MsgUnitStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
-MsgUnitStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
+# Server side plugins to store single messages persistently 'msgUnitStore'
+# Server side setup to recover topics after a server crash 'topicStore'
 
-# Server side setup to recover topics after a server crash
-TopicStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
-TopicStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
-TopicStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
-
+StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
 
 # Choose the plugins
-#persistence.defaultPlugin=CACHE,1.0
+#persistence/defaultPlugin=CACHE,1.0
 #persistence/topicStore/defaultPlugin=JDBC,1.0
-# If you choose CACHE as defaultPlugin configure the CACHE plugin:
-#persistence.cache.persistentQueue=JDBC,1.0
-#persistence.cache.transientQueue=RAM,1.0
+#persistence/msgUnitStore/defaultPlugin=CACHE,1.0
 #------------------------------------------------------------------------------
 
 
@@ -163,14 +156,11 @@ TopicStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCa
 # Declare existing queue implementation plugins
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
 QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
-#QueuePlugin[NATIV][1.0]=org.xmlBlaster.util.queue.nativ.NativeQueuePlugin
 QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
-QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin
+QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
 
 # Choose the plugin (each client can overwrite this in its connect/publish QoS)
-#queue.defaultPlugin=CACHE,1.0
-queue.cache.persistentQueue=JDBC,1.0
-queue.cache.transientQueue=RAM,1.0
+#queue/defaultPlugin=CACHE,1.0
 #------------------------------------------------------------------------------
 
 
