@@ -170,6 +170,24 @@
   /node/heron/sysprop/?myTmpPath=/home/xmlblast/backup
     </pre>
 
+
+    <p>
+    Now we kill the login session '1' of client 'joe'. To test
+    it you should start a client with login name joe first.
+    </p>
+    <pre>
+  CMD> get client/joe/1/?killSession
+    </pre>
+
+
+    <p>
+    This would kill all login sessions of client 'joe'.
+    </p>
+    <pre>
+  CMD> get client/joe/?killClient
+    </pre>
+
+
     <p>
     Now lets query and change the run level:
     </p>
@@ -259,7 +277,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
