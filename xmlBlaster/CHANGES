@@ -19,7 +19,10 @@ Changes for 0.xxx [xxx, xx 2003]
       con.initFailSave(...  ->  con.registerConnectionListener(...
 
    NOTE: If you use mutliple clients to connect to xmlBlaster
-   you need a seperate util.Global instance for each of them (see HelloWorld5 example).
+         you need a seperate util.Global instance for each of them (see HelloWorld5 example).
+
+   NOTE: Please copy the new config/xmlBlaster.properties.template
+         to $HOME/xmlBlaster.properties
 
  o Fixed behavior and error handling of PtP messages, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.offline.html
