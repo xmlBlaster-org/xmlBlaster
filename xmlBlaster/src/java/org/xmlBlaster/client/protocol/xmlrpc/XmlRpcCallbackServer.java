@@ -137,7 +137,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             Log.info(ME, "XmlRpc callback http server not created, because of -xmlrpc.portCB is 0");
       } catch (Exception e) {
          e.printStackTrace();
-         throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XML-RPC registry: " + e.toString());
+         throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XML-RPC callback server port: " + e.toString());
       }
    }
 
