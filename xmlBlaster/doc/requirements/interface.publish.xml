@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='interface.publish' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>All messages sent to xmlBlaster use the publish method</topic>
+   <description>
+      <p>
+      The <b>publish()</b> method allows to send messages to xmlBlaster or in point to point
+      (PtP) mode route messages to other clients.
+      </p>
+      <p>
+      Method detail (CORBA IDL notation):
+      </p>
+      <pre>
+   string publish(in MessageUnit msgUnit) raises(XmlBlasterException);
+      </pre>
+         
+      <table border="1">
+         <tr>
+         <td>Parameter</td><td>Type</td><td>Description</td>
+         </tr>
+         <tr>
+         <td>msg</td><td>MessageUnit</td><td>A structure containing an XML key, an XML QoS and the binary message content (see MessageUnit link below)</td>
+         </tr>
+         <tr>
+         <td>return</td><td>string</td><td>An XML based return string containing status and other informations (see PublishRetQos link below)</td>
+         </tr>
+      </table>
+      <p>
+      Method variants:
+      </p>
+      <ul>
+       <li>publishArr() Publishes many messages in a bulk</li>
+       <li>publishOneway() Publishes many messages in a bulk without a return value (without synchronous ACK)</li>
+      </ul>
+   </description>
+
+
+   <example lang="XML" type="HTML">
+      <p>
+      Here is an example MessageUnit:
+      </p>
+      <table border="1">
+         <tr><td>Key</td><td>&lt;key oid='MyMessage' contentMime='text/plain'/></td></tr>
+         <tr><td>Content</td><td>Hello world</td></tr>
+         <tr><td>QoS</td><td>&lt;qos>&lt;priority>5&lt;/priority>&lt;/qos></td></tr>
+      </table>
+      <p>
+      And a return value:
+    </p>
+   <table border="1"><tr><td>
+   <pre>
+&lt;qos>
+   &lt;state id='OK' info='QUEUED[bilbo]'/>
+   &lt;key oid='yourMessageOid'/>
+&lt;/qos>
+   </pre>
+   </td></tr></table>
+   </example>
+
+   <example lang="XmlRpc" type="HTML">
+      <p>
+      This is the XmlRpc server interface variant:
+      </p>
+      <pre>
+   public String publish (String sessionId, Vector msgUnitWrap) throws XmlBlasterException
+      </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <p>
+      A typical Java client code in Publish/Subscribe mode:
+      </p>
+      <pre>
+   import org.xmlBlaster.client.*;
+   ...
+
+   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld4", "text/plain", "1.0");
+
+   PublishQosWrapper pq = new PublishQosWrapper();
+
+   MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+
+   PublishRetQos retQos = con.publish(msgUnit);
+      </pre>
+
+      <p>
+      A typical Java client code in PtP mode:
+      </p>
+      <pre>
+   import org.xmlBlaster.client.*;
+   ...
+
+   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld5", "text/plain", "1.0");
+
+   PublishQosWrapper pq = new PublishQosWrapper();
+   pq.addDestination(new Destination("michelle"));
+
+   MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+
+   PublishRetQos retQos = con.publish(msgUnit);
+      </pre>
+
+   <p>
+   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   </p>
+   </example>
+
+   <configuration>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.engine.helper.MessageUnit</see>
+   <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
+   <see type="API">org.xmlBlaster.client.PublishRetQos</see>
+   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
+
+   <see type="REQ">engine.qos.publish.PubSub</see>
+   <see type="REQ">engine.qos.publish.isDurable</see>
+   <see type="REQ">engine.qos.publish.forceUpdate</see>
+   <see type="REQ">engine.qos.publish.isVolatile</see>
+   <see type="REQ">engine.qos.publish.readonly</see>
+
+   <see type="REQ">engine.qos.publish.destination.ForceQueuing</see>
+   <see type="REQ">engine.qos.publish.destination.PtP</see>
+   <see type="REQ">engine.qos.publish.destination.PtX</see>
+   <see type="REQ">engine.qos.publish.destination.offline</see>
+ 
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 01</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Tests the publish method invocation</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPub</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPtD</test>
+   </testcase>
+</requirement>
+
