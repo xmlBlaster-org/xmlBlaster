@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.13 2002/05/02 19:08:39 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.14 2002/05/03 10:29:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -122,21 +122,15 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** The Address object holding the connection configuration */
    private Address address = null;
 
-   /**
-    * Default constructor for clients without asynchronous callbacks
-    * and default security plugin (as specified in xmlBlaster.properties)
-    */
-   public ConnectQos()
-   {
-      initialize(null);
-   }
+   /** The node id to which we want to connect */
+   private String nodeId = null;
 
    /**
     * Default constructor for clients without asynchronous callbacks
     * and default security plugin (as specified in xmlBlaster.properties)
     * @param glob A global instance, holding properties, command line arguments and logging object
     */
-   public ConnectQos(Global glob)
+   public ConnectQos(Global glob) throws XmlBlasterException
    {
       initialize(glob);
    }
@@ -157,22 +151,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    /**
     * Constructor for simple access with login name and password. 
-    * @param mechanism may be null to use the default security plugin
-    *                  as specified in xmlBlaster.properties
-    * @param version may be null to use the default
-    * @param loginName The unique userId
-    * @param password  Your credentials, depends on the plugin type
-    */
-   public ConnectQos(String mechanism, String version, String loginName, String password) throws XmlBlasterException
-   {
-      securityQos = getPlugin(mechanism,version).getSecurityQos();
-      securityQos.setUserId(loginName);
-      securityQos.setCredential(password);
-      initialize(null);
-   }
-
-   /**
-    * Constructor for simple access with login name and password. 
     * @param glob A global instance, holding properties, command line arguments and logging object
     * @param mechanism may be null to use the default security plugin
     *                  as specified in xmlBlaster.properties
@@ -182,10 +160,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {
+      initialize(glob);
       securityQos = getPlugin(mechanism,version).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
-      initialize(glob);
    }
 
    /**
@@ -195,10 +173,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, String loginName, String password) throws XmlBlasterException
    {
+      initialize(glob);
       securityQos = getPlugin(null, null).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
-      initialize(glob);
    }
 
    /**
@@ -212,10 +190,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     *    xmlBlasterConnection.connect(qos);
     * </pre>
     */
-   public ConnectQos(Global glob, I_SecurityQos securityQos)
+   public ConnectQos(Global glob, I_SecurityQos securityQos) throws XmlBlasterException
    {
-      this.securityQos = securityQos;
       initialize(glob);
+      this.securityQos = securityQos;
    }
 
    /**
@@ -224,13 +202,24 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param callback The object containing the callback address.<br />
     *        To add more callbacks, us the addCallbackAddress() method.
     */
-   public ConnectQos(Global glob, CallbackAddress callback)
+   public ConnectQos(Global glob, CallbackAddress callback) throws XmlBlasterException
    {
       initialize(glob);
       addCallbackAddress(callback);
    }
 
-   private final void initialize(Global glob)
+   /**
+    * Constructor for cluster server. 
+    * <p />
+    * @param nodeId The the unique cluster node id, supports configuration per node
+    */
+   public ConnectQos(String nodeId, Global glob) throws XmlBlasterException
+   {
+      this.nodeId = nodeId;
+      initialize(glob);
+   }
+
+   private final void initialize(Global glob) throws XmlBlasterException
    {
       tmpAddr = null;
       tmpProp = null;
@@ -239,9 +228,28 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          glob = new Global();
       }
       this.glob = glob;
-      sessionTimeout = glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS); // One day
-      maxSessions = glob.getProperty().get("session.maxSessions", 10);
-      clearSessions = glob.getProperty().get("session.clearSessions", false);
+      setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
+      setMaxSessions(glob.getProperty().get("session.maxSessions", 10));
+      clearSessions(glob.getProperty().get("session.clearSessions", false));
+      if (nodeId != null) {
+         setSessionTimeout(glob.getProperty().get("session.timeout["+nodeId+"]", getSessionTimeout()));
+         setMaxSessions(glob.getProperty().get("session.maxSessions["+nodeId+"]", getMaxSessions()));
+         clearSessions(glob.getProperty().get("session.clearSessions["+nodeId+"]", clearSessions()));
+      }
+
+      String type = glob.getProperty().get("security.plugin.type", "simple");
+      String version = glob.getProperty().get("security.plugin.version", "1.0");
+      String loginName = glob.getProperty().get("loginName", "guest");
+      String passwd = glob.getProperty().get("passwd", "secret");
+      if (nodeId != null) {
+         type = glob.getProperty().get("security.plugin.type["+nodeId+"]", type);
+         version = glob.getProperty().get("security.plugin.version["+nodeId+"]", version);
+         loginName = glob.getProperty().get("loginName["+nodeId+"]", loginName);
+         passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
+      }
+      securityQos = getPlugin(type,version).getSecurityQos();
+      securityQos.setUserId(loginName);
+      securityQos.setCredential(passwd);
    }
 
    /**
@@ -950,6 +958,24 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append(offset).append("</qos>");
 
       return sb.toString();
+   }
+
+   /**
+    * Get a usage string for the connection parameters
+    */
+   public final String usage()
+   {
+      String text = "\n";
+      text += "Control my session and security settings\n";
+      text += "   -session.timeout    How long lasts our login session in milliseconds, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
+      text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + 10 + "].\n";
+      text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
+      text += "   -security.plugin.type    The security plugin to use [simple]\n";
+      text += "   -security.plugin.version The version of the plugin [1.0]\n";
+      text += "   -loginName          The name for login []\n";
+      text += "   -passwd             My password []\n";
+      text += "\n";
+      return text;
    }
 
    /** For testing: java org.xmlBlaster.util.ConnectQos */
