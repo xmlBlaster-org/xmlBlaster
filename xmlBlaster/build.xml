@@ -758,29 +758,33 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates html requirements from doc/requirements/ XML files          -->
    <!-- =================================================================== -->
-   <target name="requirements" description="Creates html requirements from doc/requirements/ XML files">
-
-      <echo message="Creating detail requirement pages"/>
-      <apply dir="." executable="java" failonerror="false" parallel="false" dest="doc/requirements">
-         <arg line="-cp ${cp}"/>
-         <arg line="-Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver"/>
-         <srcfile/>
-         <arg line="doc/requirements/detail.xsl"/>
-         <targetfile/>
-         <fileset dir="doc/requirements">
-            <patternset>
-               <include name="**/*.xml"/>
-            </patternset>
-         </fileset>
-         <mapper type="glob" from="*.xml" to="*.html"/>
-      </apply>
-
-      <echo message="Creating overview requirement page"/>
-      <java classname="com.jclark.xsl.sax.Driver" classpath="${cp}" dir="${req.dir}" failonerror="false" fork="true">
-         <sysproperty key="com.jclark.xsl.sax.parser" value="com.jclark.xsl.dom.SunXMLProcessorImpl"/>
-         <arg line="all.xml overview.xsl requirement.html"/>
-      </java>
-
+    <target name="requirements" description="Creates html requirements from doc/requirements/ XML files">
+      <!-- create the all.xml file for overview -->
+      <fileset id="req.files"
+        dir="${req.dir}"
+        excludes="all.xml"
+        includes="*.xml"/>
+      <property name="url.start" value=" &lt;url>"/>
+      <property name="url.end " value=""/>
+      <pathconvert  dirsep="/" pathsep="&lt;/url>" property="files" refid="req.files">
+        <map from="${basedir}/doc/requirements/" to="&lt;url>"/>
+      </pathconvert>
+      <echo file="${req.dir}/all.xml"><![CDATA[<files>${files}</url></files>]]></echo>									
+      <!-- Create the overview -->
+      <style processor="trax" basedir="${req.dir}"
+             in="${req.dir}/all.xml"
+             out="${req.dir}/requirement.html"
+             extension=".html" style="${req.dir}/overview.xsl"
+             force="true">
+       </style>
+      <!-- generate each req -->
+      <style processor="trax" basedir="${req.dir}" 
+	     destdir="${req.dir}"
+             extension=".html" style="${req.dir}/detail.xsl"
+	     includes="*.xml"
+             excludes= "all.xml"
+             force="true">
+       </style>											      
    </target>
    <target name="requirements-delete" description="Removes html requirements">
       <echo message="Deleting all requirement html pages"/>
@@ -790,9 +794,13 @@ TODO
                <include name="**/*.html"/>
                <exclude name="**/package.html"/>
             </patternset>
+            <patternset>
+               <include name="all.xml"/>
+            </patternset>
          </fileset>
       </delete>
    </target>
+  
  
    <!-- =================================================================== -->
    <!-- Creates html whitepaper with docbook                                -->
