@@ -130,10 +130,10 @@ public:
 
    virtual ~TestSuite()
    {
-      if (log_.CALL) log_.call(ME, "destructor");
+      if (log_.call()) log_.call(ME, "destructor");
       delete embeddedServer_;
       embeddedServer_ = NULL;
-      if (log_.TRACE) log_.trace(ME, "destructor ended");
+      if (log_.trace()) log_.trace(ME, "destructor ended");
    }
 
    virtual void setUp()

@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.8 2003/01/16 10:11:56 laghi Exp $
+Version:   $Id: TestLogin.cpp,v 1.9 2003/02/07 11:49:08 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -107,7 +107,7 @@ public:
                UpdateKey &/*updateKey*/,
                void * /*content*/, long /*contentSize*/,
                UpdateQos &/*updateQos*/) {
-      if (log_.CALL) log_.call(me(), "Receiving update of a message ...");
+      if (log_.call()) log_.call(me(), "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
    }
@@ -210,7 +210,7 @@ public:
     * The returned subscribeOid is checked
     */
    void testSubscribeXPath() {
-      if (log_.TRACE) log_.trace(me(),"Subscribing using XPath syntax ...");
+      if (log_.trace()) log_.trace(me(),"Subscribing using XPath syntax ...");
 
       string xmlKey = "<key oid='' queryType='XPATH'>\n";
       xmlKey       += "   //TestLogin-AGENT </key>";
@@ -248,7 +248,7 @@ public:
     * @param ptp Use the Point to Point style
     */
    void testPublish(bool ptp) {
-      if (log_.TRACE) log_.trace(me(), "Publishing a message ...");
+      if (log_.trace()) log_.trace(me(), "Publishing a message ...");
 
       numReceived_ = 0;
       string qos = "<qos></qos>";

@@ -48,7 +48,7 @@ public:
 
    virtual ~TestFailsafe()
    {
-      if (log_.CALL) log_.call(ME, "destructor");
+      if (log_.call()) log_.call(ME, "destructor");
       delete connQos_;
       delete connRetQos_;
       delete subQos_;
@@ -56,7 +56,7 @@ public:
       delete pubQos_;
       delete pubKey_;
       delete address_;
-      if (log_.TRACE) log_.trace(ME, "destructor ended");
+      if (log_.trace()) log_.trace(ME, "destructor ended");
    }
 
    bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
@@ -294,10 +294,10 @@ public:
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
       Lock lock(updateMutex_);
-      if (log_.TRACE) log_.trace(ME, "update: key    : " + updateKey.toXml());
-      if (log_.TRACE) log_.trace(ME, "update: qos    : " + updateQos.toXml());
+      if (log_.trace()) log_.trace(ME, "update: key    : " + updateKey.toXml());
+      if (log_.trace()) log_.trace(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
-      if (log_.TRACE) log_.trace(ME, "update: content: " + help);
+      if (log_.trace()) log_.trace(ME, "update: content: " + help);
       if (updateQos.getState() == "ERASED" ) return "";
 
       int count = atoi(help.c_str());

@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.12 2003/01/22 16:04:36 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.13 2003/02/07 11:49:08 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -97,7 +97,7 @@ public:
                  long /*contentSize*/,
                  UpdateQos &/*updateQos*/) 
    {
-      if (log_.CALL) log_.call(ME, "Receiving update of a message ...");
+      if (log_.call()) log_.call(ME, "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
    }

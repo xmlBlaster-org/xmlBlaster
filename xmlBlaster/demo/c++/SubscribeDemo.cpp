@@ -59,10 +59,10 @@ public:
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
       log_.info(ME, "update invoked");
-      if (log_.TRACE) log_.trace(ME, "update: key    : " + updateKey.toXml());
-      if (log_.TRACE) log_.trace(ME, "update: qos    : " + updateQos.toXml());
+      if (log_.trace()) log_.trace(ME, "update: key    : " + updateKey.toXml());
+      if (log_.trace()) log_.trace(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
-      if (log_.TRACE) log_.trace(ME, "update: content: " + help);
+      if (log_.trace()) log_.trace(ME, "update: content: " + help);
       if (updateQos.getState() == "ERASED" ) return "";
 
       return "";

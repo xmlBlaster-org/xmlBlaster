@@ -120,7 +120,7 @@ public:
     */
    void testGet() 
    {
-      if (log_.TRACE) log_.trace(ME, "1. Get a not existing message " + publishOid_ + " ...");
+      if (log_.trace()) log_.trace(ME, "1. Get a not existing message " + publishOid_ + " ...");
       try {
          GetKey getKey(global_);
          getKey.setOid(publishOid_);
@@ -136,7 +136,7 @@ public:
          assert(0);
       }
 
-      if (log_.TRACE) log_.trace(ME, "2. Publish a message ...");
+      if (log_.trace()) log_.trace(ME, "2. Publish a message ...");
 
       try {
          PublishKey publishKey(global_);
@@ -154,7 +154,7 @@ public:
          assert(0);
       }
 
-      if (log_.TRACE) log_.trace(ME, "3. Get an existing message ...");
+      if (log_.trace()) log_.trace(ME, "3. Get an existing message ...");
       try {
          GetKey getKey(global_);
          getKey.setOid(publishOid_);

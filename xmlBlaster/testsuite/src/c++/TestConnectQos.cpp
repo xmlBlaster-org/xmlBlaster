@@ -79,7 +79,7 @@ public:
          ref.setSecretSessionId("IIOP:01110728321B0222011028");
          string lit1 = data.toXml();
          string lit2 = ref.toXml();
-         if (log_.TRACE) {
+         if (log_.trace()) {
             log_.trace(me, string("xml is: ") + lit1);
             log_.trace(me, string("xml should be: ") + lit2);
          }
@@ -145,7 +145,7 @@ public:
          assertEquals(log_, me, string("127.0.0.2"), address.getHostname(), "address hostname check");
          assertEquals(log_, me, string("undef"), address.getDispatchPlugin(), "address dispatch Plugin check");
 
-         if (log_.TRACE) log_.trace(me, string("the queue property literal: ") + prop.toXml());
+         if (log_.trace()) log_.trace(me, string("the queue property literal: ") + prop.toXml());
       }
       log_.info(me, "testing queue properties parsing: end");
    }

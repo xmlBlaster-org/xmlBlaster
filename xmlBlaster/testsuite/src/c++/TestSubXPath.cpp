@@ -26,7 +26,7 @@ private:
 
    void subscribeXPath(const string& query) 
    {
-      if (log_.TRACE) log_.trace(ME, "Subscribing using XPath syntax ...");
+      if (log_.trace()) log_.trace(ME, "Subscribing using XPath syntax ...");
       SubscribeKey subKey(global_);
       subKey.setQueryString(query);
       SubscribeQos qos(global_);

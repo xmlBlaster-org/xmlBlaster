@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.5 2003/01/23 22:01:13 laghi Exp $
+Version:   $Id: TestRam.cpp,v 1.6 2003/02/07 11:49:08 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -125,7 +125,7 @@ public:
     */
    void testPublish() 
    {
-      if (log_.TRACE) log_.trace(ME, "Publishing messages ...");
+      if (log_.trace()) log_.trace(ME, "Publishing messages ...");
 
       vector<util::MessageUnit> msgVec;
       msgVec.reserve(NUM_PUBLISH);

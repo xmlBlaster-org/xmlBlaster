@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.13 2003/01/22 16:04:36 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.14 2003/02/07 11:49:08 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -127,7 +127,7 @@ private:
     */
    void testSubscribeXPath() 
    {
-      if (log_.TRACE) log_.trace(ME, "Subscribing using XPath syntax ...");
+      if (log_.trace()) log_.trace(ME, "Subscribing using XPath syntax ...");
       SubscribeKey subKey(global_);
       subKey.setQueryString("//TestSub-AGENT");
       SubscribeQos subQos(global_);
@@ -161,7 +161,7 @@ private:
     */
    void testPublishCorbaMethods(TestType testType) 
    {
-      if (log_.TRACE) log_.trace(ME, "Publishing a message (old style) ...");
+      if (log_.trace()) log_.trace(ME, "Publishing a message (old style) ...");
       numReceived_ = 0;
       PublishKey pubKey(global_);
       pubKey.setOid(publishOid_);
@@ -215,7 +215,7 @@ private:
     */
    void testPublishSTLMethods(TestType testType) 
    {
-      if (log_.TRACE) log_.trace(ME, "Publishing a message (the STL way) ...");
+      if (log_.trace()) log_.trace(ME, "Publishing a message (the STL way) ...");
       numReceived_ = 0;
       string clientTags = string("") +
          "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
