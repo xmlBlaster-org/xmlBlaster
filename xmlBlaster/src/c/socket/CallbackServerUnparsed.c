@@ -5,9 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Establish a listen socket for xmlBlaster callbacks
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  LINUX:   gcc -g -Wall -DUSE_MAIN_CB -I.. -o CallbackServerUnparsed CallbackServerUnparsed.c xmlBlasterSocket.c ../msgUtil.c
-  WIN:     cl /MT -DUSE_MAIN_CB -D_WINDOWS -I.. CallbackServerUnparsed.c xmlBlasterSocket.c ../msgUtil.c ws2_32.lib
-  Solaris: cc -g -DUSE_MAIN_CB -I.. -o CallbackServerUnparsed CallbackServerUnparsed.c xmlBlasterSocket.c ../msgUtil.c -lsocket -lnsl
+  LINUX:   gcc -g -Wall -DUSE_MAIN_CB -I.. -o CallbackServerUnparsed CallbackServerUnparsed.c xmlBlasterSocket.c ../util/msgUtil.c ../util/Properties.c
+  WIN:     cl /MT -DUSE_MAIN_CB -D_WINDOWS -I.. CallbackServerUnparsed.c xmlBlasterSocket.c ../util/msgUtil.c ../util/Properties.c ws2_32.lib
+  Solaris: cc -g -DUSE_MAIN_CB -I.. -o CallbackServerUnparsed CallbackServerUnparsed.c xmlBlasterSocket.c ../util/msgUtil.c ../util/Properties.c -lsocket -lnsl
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +18,8 @@ Compile:
 #ifdef _WINDOWS
 #  define socklen_t int
 #  define ssize_t signed int
+#else
+#  include <unistd.h>
 #endif
 
 static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse);
@@ -35,12 +37,17 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb);
 /**
  * See header for a description. 
  */
-CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateFp update)
+CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
+                        UpdateFp update, void *updateUserData)
 {
-   int iarg;
-
-   CallbackServerUnparsed *cb = (CallbackServerUnparsed *)calloc(1, sizeof(CallbackServerUnparsed));
+   CallbackServerUnparsed *cb = (CallbackServerUnparsed *)calloc(1,
+                                sizeof(CallbackServerUnparsed));
    if (cb == 0) return cb;
+   cb->props = createProperties(argc, argv);
+   if (cb->props == 0) {
+      freeCallbackServerUnparsed(cb);
+      return (CallbackServerUnparsed *)0;
+   }
    cb->listenSocket = -1;
    cb->acceptSocket = -1;
    cb->useThisSocket = useThisSocket;
@@ -48,24 +55,17 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    cb->isListening = isListening;
    cb->shutdown = shutdownCallbackServer;
    cb->reusingConnectionSocket = false; /* is true if we tunnel callback through the client connection socket */
-   cb->logLevel = LOG_WARN;
+   cb->logLevel = parseLogLevel(cb->props->getString(cb->props, "logLevel", "WARN"));
    cb->log = xmlBlasterDefaultLogging;
-   cb->hostCB = 0;
-   cb->portCB = DEFAULT_CALLBACK_SERVER_PORT;
+   cb->hostCB = strcpyAlloc(cb->props->getString(cb->props, "dispatch/callback/plugin/socket/hostname", 0));
+   cb->portCB = cb->props->getInt(cb->props, "dispatch/callback/plugin/socket/port", DEFAULT_CALLBACK_SERVER_PORT);
    cb->update = update;
+   cb->updateUserData = updateUserData; /* A optional pointer from the client code which is returned to the update() function call */
    memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(char *));
    cb->addResponseListener = addResponseListener;
    cb->removeResponseListener = removeResponseListener;
    cb->isShutdown = false;
 
-   for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/hostname") == 0)
-         strcpyRealloc(&cb->hostCB, argv[++iarg]);
-      else if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/port") == 0)
-         cb->portCB = atoi(argv[++iarg]);
-      else if (strcmp(argv[iarg], "-logLevel") == 0)
-         cb->logLevel = parseLogLevel(argv[++iarg]);
-   }
    return cb;
 }
 
@@ -99,6 +99,7 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
 void freeCallbackServerUnparsed(CallbackServerUnparsed *cb)
 {
    if (cb != 0) {
+      freeProperties(cb->props);
       shutdownCallbackServer(cb);
       free(cb);
    }
@@ -189,8 +190,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
 
       if (success == false) { /* EOF */
-         if (cb->logLevel>=LOG_WARN) cb->log(cb->logLevel, LOG_WARN, __FILE__,
-            "Lost socket connect to xmlBlaster (EOF)");
+         if (!cb->reusingConnectionSocket)
+            cb->log(cb->logLevel, LOG_WARN, __FILE__, "Lost callback socket connection to xmlBlaster (EOF)");
          closeAcceptSocket(cb);
          break;
       }
@@ -226,7 +227,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       if (cb->update != 0) { /* Client has registered to receive callback messages? */
          if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
             "Received callback, calling client update() ...");
-         success = cb->update(msgUnitArr, &xmlBlasterException);
+         success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException);
       }
       else {
          success = true;
@@ -493,7 +494,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
          return;
       }
       if (cb->debug) printf("[CallbackServerUnparsed] Waiting for thread to die ...");
-      sleep(1);
+      sleepMillis(1000);
    }
    printf("[CallbackServerUnparsed] WARNING: Thread has not died after 10 sec");
    */
@@ -550,7 +551,7 @@ int main(int argc, char** argv)
       }
    }
 
-   cb = getCallbackServerUnparsed(argc, argv, myUpdate);
+   cb = getCallbackServerUnparsed(argc, argv, myUpdate, 0);
    printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
    cb->runCallbackServer(cb); /* blocks on socket listener */
 

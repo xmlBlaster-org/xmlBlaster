@@ -5,15 +5,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HelloWorld connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  Linux:   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c
-           socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
-  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\*.c ws2_32.lib
-  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c
-        socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
+  Linux C: gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+   util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+  Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+   util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+            -DXMLBLASTER_C_COMPILE_AS_CPP
+  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c util\*.c socket\*.c ws2_32.lib
+  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/msgUtil.c
+        util/Properties.c socket/xmlBlasterSocket.c
+        socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
 
   Linux with shared lib:
-        g++ -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I.
-            -Wl,-rpath=../../lib -DXMLBLASTER_C_COMPILE_AS_CP
+        gcc -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I.
+            -Wl,-rpath=../../lib -lpthread
 Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>

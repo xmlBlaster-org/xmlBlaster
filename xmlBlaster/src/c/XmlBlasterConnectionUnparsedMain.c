@@ -8,10 +8,10 @@ Comment:   Demo client for synchronous access.
            multi threading in this case.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  LINUX:   gcc -Wall -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
-  WIN:     cl /MT /W3 /Wp64 -D_WINDOWS -I. XmlBlasterConnectionUnparsedMain.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
-  Solaris: cc -Xc -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl 
-Invoke:    XmlBlasterConnectionUnparsedMain -dispatch/callback/plugin/socket/hostname develop -dispatch/callback/plugin/socket/port 7607 -debug true
+  LINUX:   gcc -Wall -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c util/msgUtil.c util/Properties.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
+  WIN:     cl /MT /W3 /Wp64 -D_WINDOWS -I. XmlBlasterConnectionUnparsedMain.c util\msgUtil.c util\Properties.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
+  Solaris: cc -Xc -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c util/msgUtil.c util/Properties.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl 
+Invoke:    XmlBlasterConnectionUnparsedMain -dispatch/callback/plugin/socket/hostname develop -dispatch/callback/plugin/socket/port 7607
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 Date:      05/2003
 -----------------------------------------------------------------------------*/
@@ -20,7 +20,6 @@ Date:      05/2003
 #include <string.h>
 #include <XmlBlasterConnectionUnparsed.h>
 
-static bool debug = false;
 static bool help = false;
 
 /**
@@ -41,20 +40,13 @@ int main(int argc, char** argv)
    }
    if (help) {
       const char *pp =
-      "\n  -debug               true/false [false]"
       "\n\nExample:"
-      "\n  XmlBlasterConnectionUnparsedMain -debug true -dispatch/connection/plugin/socket/hostname server.mars.universe";
+      "\n  XmlBlasterConnectionUnparsedMain -logLevel TRACE -dispatch/connection/plugin/socket/hostname server.mars.universe";
       printf("Usage:\n%s%s\n", xmlBlasterConnectionUnparsedUsage(), pp);
       exit(EXIT_FAILURE);
    }
 
-   for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-debug") == 0)
-         debug = (strcmp(argv[++iarg], "true") == 0) ? true : false;
-   }
-
    xb = getXmlBlasterConnectionUnparsed(argc, argv);
-   xb->debug = debug;
 
    if (xb->ping(xb, 0) == (char *)0) {
       printf("[XmlBlasterConnectionUnparsedMain] Pinging a not connected server failed -> this is OK\n");

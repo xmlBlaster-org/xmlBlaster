@@ -17,8 +17,11 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterConnectionUnparsed.h>
 
+#ifndef _WINDOWS
+#  include <unistd.h>
+#endif
 
-static bool initConnection(XmlBlasterConnectionUnparsed *xb);
+static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
 static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception);
 static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
@@ -30,6 +33,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
 static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos);
 static bool isConnected(XmlBlasterConnectionUnparsed *xb);
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
+static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, XmlBlasterException *exception);
 
 /**
  * Create a new instance to handle a synchronous connection to the server. 
@@ -39,8 +43,14 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
  */
 XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** argv) {
    XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)calloc(1, sizeof(XmlBlasterConnectionUnparsed));
+   if (xb == 0) return xb;
    xb->argc = argc;
    xb->argv = argv;
+   xb->props = createProperties(xb->argc, xb->argv);
+   if (xb->props == 0) {
+      freeXmlBlasterConnectionUnparsed(xb);
+      return (XmlBlasterConnectionUnparsed *)0;
+   }
    xb->socketToXmlBlaster = -1;
    xb->isInitialized = false;
    xb->requestId = 0;
@@ -59,7 +69,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** a
    xb->preSendEvent_userP = 0;
    xb->postSendEvent = 0;
    xb->postSendEvent_userP = 0;
-   xb->logLevel = LOG_WARN;
+   xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
    return xb;
 }
@@ -67,6 +77,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, char** a
 void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0) {
+      freeProperties(xb->props);
       xmlBlasterConnectionShutdown(xb),
       free(xb);
    }
@@ -76,10 +87,9 @@ void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
  * Connects on TCP/IP level to xmlBlaster
  * @return true If the low level TCP/IP connect to xmlBlaster succeeded
  */
-static bool initConnection(XmlBlasterConnectionUnparsed *xb)
+static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception)
 {
-   int iarg;
-   const char *servTcpPort = "7607";
+   const char *servTcpPort = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/port", "7607");
 
    struct sockaddr_in xmlBlasterAddr;
    struct hostent hostbuf, *hostP = 0;
@@ -114,15 +124,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
 
    strcpy(serverHostName, "localhost");
    gethostname(serverHostName, 250);
-
-   for (iarg=0; iarg < xb->argc-1; iarg++) {
-      if (strcmp(xb->argv[iarg], "-dispatch/connection/plugin/socket/hostname") == 0)
-         strncpy0(serverHostName, xb->argv[++iarg], 250);
-      else if (strcmp(xb->argv[iarg], "-dispatch/connection/plugin/socket/port") == 0)
-         servTcpPort = xb->argv[++iarg];
-      else if (strcmp(xb->argv[iarg], "-logLevel") == 0)
-         xb->logLevel = parseLogLevel(xb->argv[++iarg]);
-   }
+   strncpy0(serverHostName, xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName), 250);
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
       "Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...",
@@ -247,9 +249,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
 
    if (exception == 0) {
-      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid exception to sendData()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      xb->log(xb->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception to sendData()", __FILE__, __LINE__);
       return false;
    }
    initializeXmlBlasterException(exception);
@@ -438,14 +438,14 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    SocketDataHolder responseSocketDataHolder;
    char *response;
    
-   if (qos == 0 || exception == 0) {
+   if (qos == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterConnect()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
 
-   if (initConnection(xb) == false) {
+   if (initConnection(xb, exception) == false) {
       strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster, check your configuration", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
@@ -497,12 +497,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
  */
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception)
 {
-   if (exception == 0) {
-      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterDisconnect()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
-      return false;
-   }
+   if (checkArgs(xb, "disconnect", exception) == false ) return 0;
 
    if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),
@@ -529,6 +524,8 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    char *response = 0;
 
    char *data = encodeMsgUnit(msgUnit, &totalLen, xb->logLevel >= LOG_DUMP);
+
+   if (checkArgs(xb, "publish", exception) == false ) return 0;
 
    msgUnit->responseQos = 0; /* Initialize properly */
 
@@ -560,7 +557,9 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    SocketDataHolder responseSocketDataHolder;
    char *response;
 
-   if (key == 0 || exception == 0) {
+   if (checkArgs(xb, "subscribe", exception) == false ) return 0;
+   
+   if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterSubscribe()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
@@ -614,7 +613,9 @@ static char *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char 
    SocketDataHolder responseSocketDataHolder;
    char *response;
 
-   if (key == 0 || exception == 0) {
+   if (checkArgs(xb, "unSubscribe", exception) == false ) return 0;
+
+   if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterUnSubscribe()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
@@ -668,7 +669,9 @@ static char *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * cons
    SocketDataHolder responseSocketDataHolder;
    char *response;
 
-   if (key == 0 || exception == 0) {
+   if (checkArgs(xb, "erase", exception) == false ) return 0;
+
+   if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterErase()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
@@ -749,7 +752,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
    SocketDataHolder responseSocketDataHolder;
    MsgUnitArr *msgUnitArr = 0;
 
-   if (key == 0 || exception == 0) {
+   if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterGet()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
@@ -787,3 +790,37 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
 
    return msgUnitArr;
 }
+
+static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, XmlBlasterException *exception)
+{
+   if (xb == 0) {
+      char *stack = getStackTrace(10);
+      printf("[%s:%d] Please provide a valid XmlBlasterAccessUnparsed pointer to %s() %s",
+               __FILE__, __LINE__, methodName, stack);
+      free(stack);
+      return false;
+   }
+
+   if (exception == 0) {
+      char *stack = getStackTrace(10);
+      xb->log(xb->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception pointer to %s() %s",
+              __FILE__, __LINE__, methodName, stack);
+      free(stack);
+      return false;
+   }
+
+   if (!xb->isConnected(xb)) {
+      char *stack = getStackTrace(10);
+      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
+                __FILE__, __LINE__, methodName, stack);
+      free(stack);
+      xb->log(xb->logLevel, LOG_WARN, __FILE__, exception->message);
+      return false;
+   }
+
+   return true;
+}
+
+

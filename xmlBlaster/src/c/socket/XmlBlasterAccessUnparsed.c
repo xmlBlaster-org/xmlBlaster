@@ -7,12 +7,12 @@ Comment:   Wraps raw socket connection to xmlBlaster
            Needs pthread to compile (multi threading).
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  LINUX:   gcc -DXmlBlasterAccessUnparsedMain -D_ENABLE_STACK_TRACE_ -rdynamic -export-dynamic -Wall -pedantic -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
-           g++ -DXmlBlasterAccessUnparsedMain -DXMLBLASTER_C_COMPILE_AS_CPP -Wall -pedantic -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
-  WIN:     cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c ws2_32.lib pthreadVC.lib
+  LINUX:   gcc -DXmlBlasterAccessUnparsedMain -D_ENABLE_STACK_TRACE_ -rdynamic -export-dynamic -Wall -pedantic -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/msgUtil.c ../util/Properties.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
+           g++ -DXmlBlasterAccessUnparsedMain -DXMLBLASTER_C_COMPILE_AS_CPP -Wall -pedantic -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/msgUtil.c ../util/Properties.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
+  WIN:     cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\util\msgUtil.c ..\util\Properties.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c ws2_32.lib pthreadVC.lib
            (download pthread for Windows and WinCE from http://sources.redhat.com/pthreads-win32)
-  Solaris: cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
-           CC  -DXmlBlasterAccessUnparsedMain -DXMLBLASTER_C_COMPILE_AS_CPP -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
+  Solaris: cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/msgUtil.c ../util/Properties.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
+           CC  -DXmlBlasterAccessUnparsedMain -DXMLBLASTER_C_COMPILE_AS_CPP -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/msgUtil.c ../util/Properties.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
 
   Linux with libxmlBlasterC.so:
            gcc -DXmlBlasterAccessUnparsedMain -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c  -L../../../lib -lxmlBlasterClientC -I.. -Wl,-rpath=../../../lib -D_REENTRANT  -lpthread
@@ -30,14 +30,13 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #ifdef _WINDOWS
 #  define ssize_t signed int
 #else
-#  include <unistd.h> /* sleep(), only used in main */
 #  include <sys/time.h> /* gettimeofday() */
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
 #define  NANO_SECS_PER_SECOND MICRO_SECS_PER_SECOND * 1000
 
-static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp update);
+static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp update, XmlBlasterException *exception);
 static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const qos, UpdateFp update, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception);
 static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -51,6 +50,8 @@ static void responseEvent(void /*XmlBlasterAccessUnparsed*/ *userP, void /*Socke
 static MsgRequestInfo *preSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static MsgRequestInfo *postSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime);
+static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
+static bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException);
 
 /**
  * Create an instance for access xmlBlaster. 
@@ -59,11 +60,17 @@ static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *absti
  * usually by calling freeXmlBlasterAccessUnparsed().
  */
 XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
-   int iarg;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
+   if (xa == 0) return xa;
    xa->argc = argc;
    xa->argv = argv;
+   xa->props = createProperties(xa->argc, xa->argv);
+   if (xa->props == 0) {
+      freeXmlBlasterAccessUnparsed(xa);
+      return (XmlBlasterAccessUnparsed *)0;
+   }
    xa->isInitialized = false;
+   xa->userData = 0; /* A client can use this pointer to point to any client specific information */
    xa->connect = xmlBlasterConnect;
    xa->initialize = initialize;
    xa->disconnect = xmlBlasterDisconnect;
@@ -74,9 +81,11 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->get = xmlBlasterGet;
    xa->ping = xmlBlasterPing;
    xa->isConnected = isConnected;
-   xa->logLevel = LOG_WARN;
+   xa->logLevel = parseLogLevel(xa->props->getString(xa->props, "logLevel", "WARN"));
    xa->log = xmlBlasterDefaultLogging;
-   xa->responseTimeout = 60000; /* One minute (given in millis) */
+   xa->responseTimeout = xa->props->getLong(xa->props, "plugin/socket/responseTimeout", 60000L); /* One minute (given in millis) */
+   xa->responseTimeout = xa->props->getLong(xa->props, "dispatch/connection/plugin/socket/responseTimeout", xa->responseTimeout);
+   /* ERROR HANDLING ? xa->log(xa->logLevel, LOG_WARN, __FILE__, "Your configuration '-plugin/socket/responseTimeout %s' is invalid", argv[iarg]); */
    memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
    xa->responseType = 0;
    xa->callbackThreadId = 0;
@@ -100,31 +109,25 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    }
 #  endif
 
-   for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-logLevel") == 0)
-         xa->logLevel = parseLogLevel(argv[++iarg]);
-      else if (strcmp(argv[iarg], "-plugin/socket/responseTimeout") == 0) {
-         if (sscanf(argv[++iarg], "%ld", &xa->responseTimeout) != 1)
-            xa->log(xa->logLevel, LOG_WARN, __FILE__, "Your configuration '-plugin/socket/responseTimeout %s' is invalid", argv[iarg]);
-      }
-   }
-   for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-dispatch/connection/plugin/socket/responseTimeout") == 0) {
-         if (sscanf(argv[++iarg], "%ld", &xa->responseTimeout) != 1)
-           xa->log(xa->logLevel, LOG_WARN, __FILE__, "'-dispatch/connection/plugin/socket/responseTimeout %s' is invalid", argv[iarg]);
-      }
-   }
-   /*
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__,
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
                                 getLogLevelStr(xa->logLevel), xa->responseTimeout);
-   */
    return xa;
 }
 
 void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 {
    int retVal;
+
+   if (xa == 0) {
+      char *stack = getStackTrace(10);
+      printf("[%s:%d] Please provide a valid XmlBlasterAccessUnparsed pointer to freeXmlBlasterAccessUnparsed() %s",
+                __FILE__, __LINE__, stack);
+      free(stack);
+      return;
+   }
+
+   freeProperties(xa->props);
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed()");
    if (xa->connectionP != 0) {
@@ -155,14 +158,23 @@ void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
  * Creates client side connection object and the callback server. 
  * This method is automatically called by connect() so you usually only
  * call it explicitly if you are interested in the callback server settings.
+ * @param updateFp The clients callback handler function. If NULL our default handler is used
  * @return true on success
  */
-static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
+static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp, XmlBlasterException *exception)
 {
    int threadRet = 0;
 
+   if (checkArgs(xa, "initialize", false, exception) == false) return false;
+
    if (xa->isInitialized) {
       return true;
+   }
+
+   if (updateFp == 0) {
+      updateFp = defaultUpdate;
+      xa->log(xa->logLevel, LOG_WARN, "",
+        "Your callback UpdateFp pointer is NULL, we use our default callback handler");
    }
 
    xa->connectionP = getXmlBlasterConnectionUnparsed(xa->argc, xa->argv);
@@ -170,10 +182,10 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
       return false;
    }
    xa->connectionP->log = xa->log;
-   if (xa->connectionP->initConnection(xa->connectionP) == false) /* Establish low level TCP/IP connection */
+   if (xa->connectionP->initConnection(xa->connectionP, exception) == false) /* Establish low level TCP/IP connection */
       return false;
 
-   xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, updateFp);
+   xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, updateFp, xa);
    if (xa->callbackP == 0) {
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       return false;
@@ -211,7 +223,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
 
 static bool isConnected(XmlBlasterAccessUnparsed *xa)
 {
-   if (xa->connectionP == 0) {
+   if (xa == 0 || xa->connectionP == 0) {
       return false;
    }
    return xa->connectionP->isConnected(xa->connectionP);
@@ -220,7 +232,9 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
 /**
  * Callback from XmlBlasterConnectionInparsed just before a message is sent,
  * the msgRequestInfo contains the requestId used.
- * @param msgRequestInfo Contains some informations about the request
+ * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
+ * @param msgRequestInfo Contains some informations about the request, may not be NULL
+ * @param exception May not be NULL
  * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled. 
  *         If msgRequestInfo->blob.data was changed and malloc()'d by you, the caller will free() it.
  *         If you return NULL you need to call removeResponseListener() to avoid a memory leak.
@@ -246,6 +260,7 @@ static MsgRequestInfo *preSendEvent(void *userP, MsgRequestInfo *msgRequestInfo,
 /**
  * This function is called by the callback server when a response message arrived (after we send a request). 
  * The xa->responseBlob->data is malloc()'d with the response string, you need to free it. 
+ * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
  * @param socketDataHolder_ is on the stack and does not need to be freed, the 'data' member is
  *        malloc()'d but will be freed by the caller.
  */
@@ -278,6 +293,9 @@ static void responseEvent(void *userP, void /*SocketDataHolder*/ *socketDataHold
 
 /**
  * Callback function (wait for response) called directly after a message is sent. 
+ * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
+ * @param msgRequestInfo Contains some informations about the request, may not be NULL
+ * @param exception May not be NULL
  * @return The returned string from a request is written into msgRequestInfo->data,
  *         the caller needs to free() it.
  */
@@ -363,25 +381,51 @@ const char *xmlBlasterAccessUnparsedUsage(char *usage)
 
 /**
  * Connect to the server. 
- * @param qos The QoS to connect
- * @param updateFp The callback function pointer, if NULL an exception is thrown
+ * @param qos The QoS to connect, typically
+ * <pre>
+ *&lt;qos>
+ * &lt;securityService type='htpasswd' version='1.0'>
+ *   &lt;user>fritz&lt;/user>
+ *   &lt;passwd>secret&lt;/passwd>
+ * &lt;/securityService>
+ *&lt;queue relating='callback' maxEntries='100' maxEntriesCache='100'>
+ *  &lt;callback type='SOCKET' sessionId='%s'>
+ *    socket://myServer.myCompany.com:6645
+ *  &lt;/callback>
+ *&lt;/queue>
+ *&lt;/qos>
+ * </pre>
+ * @param updateFp The clients callback function pointer, if NULL our default handler is used
  * @param The exception struct, exception->errorCode is filled on exception
  * @return The ConnectReturnQos raw xml string, you need to free() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const qos, UpdateFp updateFp, XmlBlasterException *exception)
+static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const qos,
+                               UpdateFp updateFp, XmlBlasterException *exception)
 {
    char *response = 0;
+   char *qos_;
 
-   if (updateFp == 0 || exception == 0) {
+   if (checkArgs(xa, "connect", false, exception) == false) return 0;
+
+   /* Is allowed, we use our default handler in this case
+   if (updateFp == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid arguments 'updateFp or exception' to xmlBlasterConnect()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid argument 'updateFp' to connect()", __FILE__, __LINE__);
+      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      return false;
+   }
+   */
+
+   if (qos == 0) {
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid argument 'qos' to connect()", __FILE__, __LINE__);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
 
-   if (initialize(xa, updateFp) == false) {
+   if (initialize(xa, updateFp, exception) == false) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
@@ -390,11 +434,42 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "Invoking connect()");
 
+   if (strstr(qos, "<callback") != 0) {
+      /* User has given us a callback address */
+      qos_ = strcpyAlloc(qos);
+   }
+   else {
+      /* We add the callback sequence with our tunnel callback host and port
+         HACK: This is error prone depending on the given qos */
+      const char *pos;
+      char callbackQos[1024];
+      sprintf(callbackQos,
+               "<queue relating='callback'>" /* maxEntries='100' maxEntriesCache='100'>" */
+               "  <callback type='SOCKET' sessionId='%s'>"
+               "    socket://%.120s:%d"
+               "  </callback>"
+               "</queue>",
+               "NoCallbackSessionId", xa->callbackP->hostCB, xa->callbackP->portCB);
+      qos_ = (char *)calloc(strlen(qos) + 1024, sizeof(char *));
+      pos = strstr(qos, "</qos>");
+      if (pos == 0) {
+         strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Please provide valid 'qos' markup to connect()", __FILE__, __LINE__);
+         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+         return false;
+      }
+      strncpy0(qos_, qos, pos-qos+1);
+      strcat(qos_, callbackQos);
+      strcat(qos_, "</qos>");
+   }
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "Connecting with qos=%s", qos_);
+
    /* Register our function responseEvent() to be notified when the response arrives,
       this is done by preSendEvent() callback called during connect() */
 
-   response = xa->connectionP->connect(xa->connectionP, qos, exception);
+   response = xa->connectionP->connect(xa->connectionP, qos_, exception);
 
+   free(qos_);
    freeXmlBlasterBlobContent(&xa->responseBlob);
 
    /* The response was handled by a callback to postSendEvent */
@@ -416,6 +491,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
  */
 static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception)
 {
+   if (checkArgs(xa, "disconnect", true, exception) == false ) return 0;
    return xa->connectionP->disconnect(xa->connectionP, qos, exception);
 }
 
@@ -427,6 +503,7 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * cons
  */
 static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, XmlBlasterException *exception)
 {
+   if (checkArgs(xa, "publish", true, exception) == false ) return 0;
    return xa->connectionP->publish(xa->connectionP, msgUnit, exception);
 }
 
@@ -437,6 +514,7 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, X
  */
 static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
 {
+   if (checkArgs(xa, "subscribe", true, exception) == false ) return 0;
    return xa->connectionP->subscribe(xa->connectionP, key, qos, exception);
 }
 
@@ -447,6 +525,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * cons
  */
 static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
 {
+   if (checkArgs(xa, "unSubscribe", true, exception) == false ) return 0;
    return xa->connectionP->unSubscribe(xa->connectionP, key, qos, exception);
 }
 
@@ -457,6 +536,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * co
  */
 static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
 {
+   if (checkArgs(xa, "erase", true, exception) == false ) return 0;
    return xa->connectionP->erase(xa->connectionP, key, qos, exception);
 }
 
@@ -468,6 +548,9 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const ke
  */
 static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos)
 {
+   if (xa == 0 || !xa->isConnected(xa)) {
+      return 0;
+   }
    return xa->connectionP->ping(xa->connectionP, qos);
 }
 
@@ -479,6 +562,7 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos
  */
 static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception)
 {
+   if (checkArgs(xa, "get", true, exception) == false ) return 0;
    return xa->connectionP->get(xa->connectionP, key, qos, exception);
 }
 
@@ -537,13 +621,87 @@ static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *absti
 # endif
 }
 
+static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
+            bool checkIsConnected, XmlBlasterException *exception)
+{
+   if (xa == 0) {
+      char *stack = getStackTrace(10);
+      if (exception == 0) {
+         printf("[%s:%d] Please provide a valid XmlBlasterAccessUnparsed pointer to %s() %s",
+                  __FILE__, __LINE__, methodName, stack);
+      }
+      else {
+         strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                  "[%.100s:%d] Please provide a valid XmlBlasterAccessUnparsed pointer to %.16s() %s",
+                   __FILE__, __LINE__, methodName, stack);
+         xa->log(xa->logLevel, LOG_ERROR, __FILE__, exception->message);
+      }
+      free(stack);
+      return false;
+   }
+
+   if (exception == 0) {
+      char *stack = getStackTrace(10);
+      xa->log(xa->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception pointer to %s() %s",
+              __FILE__, __LINE__, methodName, stack);
+      free(stack);
+      return false;
+   }
+
+   if (checkIsConnected && !xa->isConnected(xa)) {
+      char *stack = getStackTrace(10);
+      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
+                __FILE__, __LINE__, methodName, stack);
+      free(stack);
+      xa->log(xa->logLevel, LOG_WARN, __FILE__, exception->message);
+      return false;
+   }
+
+   initializeXmlBlasterException(exception);
+
+   return true;
+}
+
+/**
+ * Here we receive the callback messages from xmlBlaster
+ * if the client has none specified. We just log the situation
+ * about the unhandled callback messages.
+ * @see UpdateFp in CallbackServerUnparsed.h
+ */
+bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
+{
+   size_t i;
+   bool testException = false;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
+   
+   for (i=0; i<msgUnitArr->len; i++) {
+      char *key = msgUnitArr->msgUnitArr[i].key;
+      xa->log(xa->logLevel, LOG_INFO, __FILE__,
+          "CALLBACK update() default handler: Asynchronous message update arrived:%s, we ignore it in this default handler\n",
+          key);
+      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      /* Return QoS: Everything is OK */
+   }
+   if (testException) {
+      strncpy0(xmlBlasterException->errorCode, "user.clientCode",
+               XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(xmlBlasterException->message, "I don't want these messages",
+               XMLBLASTEREXCEPTION_MESSAGE_LEN);
+      return false;
+   }
+   return true;
+}
 
 #ifdef XmlBlasterAccessUnparsedMain /* compile a standalone test program */
 
 /**
  * Here we receive the callback messages from xmlBlaster
+ * @see UpdateFp in CallbackServerUnparsed.h
  */
-bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
+bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
    bool testException = false;
@@ -571,6 +729,8 @@ int main(int argc, char** argv)
 {
    int ii;
    int numTests = 1;
+   bool testCallInitialize = false;
+
    for (ii=0; ii < argc-1; ii++)
       if (strcmp(argv[ii], "-numTests") == 0) {
          if (sscanf(argv[++ii], "%d", &numTests) != 1)
@@ -619,23 +779,32 @@ int main(int argc, char** argv)
       }
 
       xa = getXmlBlasterAccessUnparsed(argc, argv);
-      if (xa->initialize(xa, myUpdate) == false) {
-         printf("[client] Connection to xmlBlaster failed,"
-                " please start the server or check your configuration\n");
-         freeXmlBlasterAccessUnparsed(xa);
-         exit(1);
+
+      if (testCallInitialize) {
+         if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
+            printf("[client] Connection to xmlBlaster failed,"
+                   " please start the server or check your configuration\n");
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(1);
+         }
       }
 
       {  /* connect */
          char connectQos[2048];
          char callbackQos[1024];
-         SNPRINTF(callbackQos, 1024,
-                  "<queue relating='callback' maxEntries='100' maxEntriesCache='100'>"
-                  "  <callback type='SOCKET' sessionId='%s'>"
-                  "    socket://%.120s:%d"
-                  "  </callback>"
-                  "</queue>",
-                  callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+
+         if (testCallInitialize) {
+            SNPRINTF(callbackQos, 1024,
+                     "<queue relating='callback' maxEntries='100' maxEntriesCache='100'>"
+                     "  <callback type='SOCKET' sessionId='%s'>"
+                     "    socket://%.120s:%d"
+                     "  </callback>"
+                     "</queue>",
+                     callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+         }
+         else
+            *callbackQos = '\0';
+         
          SNPRINTF(connectQos, 2048,
                 "<qos>"
                 " <securityService type='htpasswd' version='1.0'>"

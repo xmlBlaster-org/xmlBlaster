@@ -53,13 +53,13 @@ COMPILE:
 
 cd xmlBlaster/demo/c/socket   (see HelloWorld.c)
 
-Linux:    gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
-          g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
+Linux:    gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/*.c socket/*.c -lpthread
+          g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/*.c socket/*.c -lpthread
 
-Windows:  cl -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
-     or:  cl /MT /W4 /Wp64 /GZ /Ge /GS  /FeHelloWorld.exe /VxmlBlaster-0.848 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
+Windows:  cl -D_WINDOWS -I. HelloWorld.c util\msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
+     or:  cl /MT /W4 /Wp64 /GZ /Ge /GS  /FeHelloWorld.exe /VxmlBlaster-0.848 -D_WINDOWS -I. HelloWorld.c util\msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
 
-Solaris:  cc -Xc -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
+Solaris:  cc -Xc -g -I. -o HelloWorld HelloWorld.c util\msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
 
 
 Note: Solaris CC has '__sun' defined.
@@ -103,7 +103,7 @@ CallbackServerUnparsed.h, here is a complete example:
    #include <CallbackServerUnparsed.h>
    int main(int argc, char** argv)
    {
-      CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate);
+      CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate, 0);
       printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
       cb->runCallbackServer(cb); // blocks on socket listener
 
@@ -154,8 +154,6 @@ o Adding mutex to every function call
 o Invoking xmlBlaster from within the callback thread (in update() function)
   will deadlock (i believe so).
   Probably we need to add a thread pool
-
-o Add extended property support (parsing command line and getenv())
 
 o XML parsing with expat
 

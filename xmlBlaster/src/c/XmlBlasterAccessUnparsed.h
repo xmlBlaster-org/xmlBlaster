@@ -25,7 +25,8 @@ extern "C" {
 #endif
 #endif
 
-#include <msgUtil.h>
+#include <util/msgUtil.h>
+#include <util/Properties.h>
 #include <XmlBlasterConnectionUnparsed.h>
 #include <CallbackServerUnparsed.h>
 #include <pthread.h> /* For Windows and WinCE (downloaded from http://sources.redhat.com/pthreads-win32) */
@@ -35,7 +36,7 @@ typedef struct XmlBlasterAccessUnparsedStruct XmlBlasterAccessUnparsed;
 
 /* Declare function pointers to use in struct to simulate object oriented access */
 typedef char *( * XmlBlasterAccessUnparsedConnect)(XmlBlasterAccessUnparsed *xb, const char * const qos, UpdateFp update, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterAccessUnparsedInitialize)(XmlBlasterAccessUnparsed *xa, UpdateFp update);
+typedef bool  ( * XmlBlasterAccessUnparsedInitialize)(XmlBlasterAccessUnparsed *xa, UpdateFp update, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessUnparsedDisconnect)(XmlBlasterAccessUnparsed *xb, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterAccessUnparsedPublish)(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
 typedef char *( * XmlBlasterAccessUnparsedSubscribe)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
@@ -53,9 +54,11 @@ typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_
 struct XmlBlasterAccessUnparsedStruct {
    int argc;
    char **argv;
+   Properties *props;
    XmlBlasterConnectionUnparsed *connectionP;
    CallbackServerUnparsed *callbackP;
    bool isInitialized;
+   void *userData; /* A client can use this pointer to point to any client specific information */
    XmlBlasterAccessUnparsedConnect connect;   
    XmlBlasterAccessUnparsedInitialize initialize;
    XmlBlasterAccessUnparsedDisconnect disconnect;   

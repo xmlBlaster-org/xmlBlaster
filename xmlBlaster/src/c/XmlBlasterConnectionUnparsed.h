@@ -17,13 +17,14 @@ extern "C" {
 #endif
 #endif
 
-#include <msgUtil.h>
+#include <util/msgUtil.h>
+#include <util/Properties.h>
 
 struct XmlBlasterConnectionUnparsedStruct;
 typedef struct XmlBlasterConnectionUnparsedStruct XmlBlasterConnectionUnparsed;
 
 /* Declare function pointers to use in struct to simulate object oriented access */
-typedef bool  ( * XmlBlasterConnectionUnparsedInitConnection)(XmlBlasterConnectionUnparsed *xb);
+typedef bool  ( * XmlBlasterConnectionUnparsedInitConnection)(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedConnect)(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterConnectionUnparsedDisconnect)(XmlBlasterConnectionUnparsed *xb, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedPublish)(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -44,6 +45,7 @@ typedef void  ( * XmlBlasterConnectionUnparsedLogging)(XMLBLASTER_LOG_LEVEL curr
 struct XmlBlasterConnectionUnparsedStruct {
    int argc;
    char **argv;
+   Properties *props;
    int socketToXmlBlaster;
    long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];

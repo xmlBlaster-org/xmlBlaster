@@ -19,7 +19,8 @@ extern "C" {
 #endif
 #endif
 
-#include <msgUtil.h>
+#include <util/msgUtil.h>
+#include <util/Properties.h>
 
 #define DEFAULT_CALLBACK_SERVER_PORT 7611
 
@@ -54,13 +55,14 @@ typedef bool (* IsListening)(CallbackServerUnparsed *cb);
  *       So you need to take a copy of all message members if needed out of the scope of this function.
  *
  * @param msgUnitArr The messages from the server, use mgsUnit->responseQos to transport the return value
+ * @param userData An optional pointer from the client with client specific data which is delivered back
  * @param xmlBlasterException This points on a valid struct, so you only need to fill errorCode with strcpy
  *        and the returned pointer is ignored and the exception is thrown to xmlBlaster.
  * @return Return true if everything is OK
  *         Return false if you want to throw an exception, please fill xmlBlasterException in such a case.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
  */
-typedef bool (*UpdateFp)(MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
+typedef bool (*UpdateFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException);
 
 typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
 
@@ -89,6 +91,7 @@ typedef void  ( * CallbackServerUnparsedLogging)(XMLBLASTER_LOG_LEVEL currLevel,
  * which is invoked when messages arrive. See the description of UpdateFp.
  */
 struct CallbackServerUnparsedStruct {
+   Properties *props;
    int listenSocket;
    int acceptSocket;
    char * hostCB;
@@ -106,6 +109,7 @@ struct CallbackServerUnparsedStruct {
    IsListening isListening;
    ShutdownCallbackServerRaw shutdown; /* For internal use (multi thread) only */
    UpdateFp update;
+   void *updateUserData; /* A optional pointer from the client code which is returned to the update() function call */
    UseThisSocket useThisSocket;
    ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
    AddResponseListener addResponseListener;
@@ -121,11 +125,13 @@ struct CallbackServerUnparsedStruct {
  * @param argv The command line arguments
  * @param update The function pointer on your update() function which handles the received messages
  *               Please read the documentation of UpdateFp above.
+ * @param userData An optional pointer from the client with client specific data
+ *               which is delivered back with the update() function
  * @return NULL if allocation or bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
 extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
-                               UpdateFp update);
+                               UpdateFp update, void *userData);
 
 /**
  * free() the CallbackServerUnparsed structure

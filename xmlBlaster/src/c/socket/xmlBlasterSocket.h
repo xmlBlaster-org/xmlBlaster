@@ -14,9 +14,8 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <netinet/in.h>
 #  include <netdb.h>
 #  include <arpa/inet.h>   /* inet_addr() */
-#  include <unistd.h>      /* gethostname(), sleep(seconds) */
 #endif
-#include <msgUtil.h>
+#include <util/msgUtil.h>
 
 #define  MAX_SESSIONID_LEN 256
 
