@@ -57,7 +57,6 @@ abstract public class DeliveryConnection implements I_Timeout
    protected final String myId;
    protected AddressBase address;
 
-   private final Timeout pingTimer;
    private Timestamp timerKey;
    /** Protects timerKey refresh */
    private final Object PING_TIMER_MONITOR = new Object();
@@ -82,7 +81,6 @@ abstract public class DeliveryConnection implements I_Timeout
       this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
       this.connectionsHandler = connectionsHandler;
       this.myId = connectionsHandler.getDeliveryManager().getQueue().getStorageId().getId();
-      this.pingTimer = glob.getCbPingTimer();
       this.address = address;
    }
 
@@ -138,7 +136,7 @@ abstract public class DeliveryConnection implements I_Timeout
    public void finalize()
    {
       if (this.timerKey != null) {
-         this.pingTimer.removeTimeoutListener(this.timerKey);
+         this.glob.getPingTimer().removeTimeoutListener(this.timerKey);
          this.timerKey = null;
       }
 
@@ -333,7 +331,7 @@ abstract public class DeliveryConnection implements I_Timeout
                // Probably this slows down on many updates and seldom pings,
                // should we remove the following two lines?
                synchronized (this.PING_TIMER_MONITOR) {
-                  this.timerKey = this.pingTimer.addOrRefreshTimeoutListener(this,
+                  this.timerKey = this.glob.getPingTimer().addOrRefreshTimeoutListener(this,
                               this.address.getPingInterval(), null, this.timerKey);
                }
             }
@@ -341,7 +339,7 @@ abstract public class DeliveryConnection implements I_Timeout
          }
       
          if (timerKey != null) {
-            this.pingTimer.removeTimeoutListener(timerKey);
+            this.glob.getPingTimer().removeTimeoutListener(timerKey);
             timerKey = null;
          }
 
@@ -350,7 +348,7 @@ abstract public class DeliveryConnection implements I_Timeout
             retryCounter = 0; // success
             log.info(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " connected.");
             if (this.address.getPingInterval() > 0L) // respan ping timer
-               timerKey = pingTimer.addTimeoutListener(this, this.address.getPingInterval(), null);
+               timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getPingInterval(), null);
             connectionsHandler.toAlive(this);
             return;
          }
@@ -361,7 +359,7 @@ abstract public class DeliveryConnection implements I_Timeout
             retryCounter++;
             if (this.address.getDelay() > 0L) { // respan reconnect poller
                if (log.TRACE) log.trace(ME, "Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState);
-               timerKey = pingTimer.addTimeoutListener(this, this.address.getDelay(), "poll");
+               timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getDelay(), "poll");
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   resetConnection();
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
@@ -424,7 +422,7 @@ abstract public class DeliveryConnection implements I_Timeout
       this.state = ConnectionStateEnum.DEAD;
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       if (timerKey != null) {
-         this.pingTimer.removeTimeoutListener(timerKey);
+         this.glob.getPingTimer().removeTimeoutListener(timerKey);
          timerKey = null;
       }
       retryCounter = 0;
