@@ -369,6 +369,7 @@ public interface I_Queue
 
    /**
     * Remove all queue entries
+    * @return The number of entries erased
     */
    public long clear();
 

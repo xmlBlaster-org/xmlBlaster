@@ -50,7 +50,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
  *
- *    java junit.swingui.TestRunner org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle
  * </pre>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">The engine.message.lifecycle requirement</a>
  * @see org.xmlBlaster.engine.TopicHandler
