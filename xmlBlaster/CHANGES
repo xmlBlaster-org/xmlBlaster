@@ -1,10 +1,12 @@
-Release notes for xmlBlaster    (http://www.xmlBlaster.org)
+Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for x.xxx [xxx, xx xxxx]
 ================================
 
 TODO:
 
+* Compile next release with ant instead of Makefile as ant replaces
+  version number and timestamp in util.Global.java
 * Test message expiry lifecycle (some implementation is missing)
 * Add support to reconnect to previous session again on reconnect
 * PtP with session destination
@@ -25,6 +27,14 @@ TODO:
 BUGS:
 
 * PtP isDurable redelivery
+
+
+Changes for xxxxx [xxx, xx 200x]
+================================
+
+  - Added more administrative introspection properties:
+    nodeId, version, buildTimestamp, buildJavaVendor, buildJavaVersion
+    numNodes, nodeList
 
 
 Changes for 0.79f [Jun, 17 2002]
