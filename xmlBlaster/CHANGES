@@ -2,6 +2,20 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for x.xxx [xxx, xx xxxx]
 ================================
+
+  - IANA has assigned following ports for us:
+      xmlblaster      3412/tcp                        # xmlBlaster
+      xmlblaster      3412/udp                        # xmlBlaster
+    The contacts are:
+      Michelle S. Cotton
+      IANA Administrator
+      Internet Assigned Numbers Authority (IANA)
+      4676 Admiralty Way, Suite 330
+      Marina del Rey, California 90292
+      Voice: (310) 823-9358
+      FAX:   (310) 823-8649
+      email: iana@iana.org
+
   - Heinrich has made the plugin interface more generic and
     has added the persistence drivers to this framework
 
