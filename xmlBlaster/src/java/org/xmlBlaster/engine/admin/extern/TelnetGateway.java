@@ -106,10 +106,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
          String cmdType = (String)st.nextToken();
 
          if (!st.hasMoreTokens()) {
-            if (cmdType.trim().equalsIgnoreCase("HELP")) {
-               return help();
-            }
-            else if (cmdType.trim().equalsIgnoreCase("GET")) {
+            if (cmdType.trim().equalsIgnoreCase("GET") || cmdType.trim().equalsIgnoreCase("SET")) {
                return getErrorText("Ignoring your empty command '" + cmd + "'");
             }
             else
@@ -136,9 +133,6 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
             if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
             return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
          }
-         else if (cmdType.trim().equalsIgnoreCase("HELP")) {
-            return CRLF + help(query) + CRLF;
-         }
          else {
             return null;
             //return getErrorText("Ignoring unknown command '" + cmdType + "' of '" + cmd + "'" + CRLF);
@@ -151,7 +145,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
    }
 
    private final String getErrorText(String error) {
-      String text = "ERROR-XmlBlaster telnet server: " + error + CRLF + "Try a 'get sysprop/?user.home' or 'set sysprop/?trace[core]=true' or just 'help'" + CRLF + CRLF + "CMD> ";
+      String text = "ERROR-XmlBlaster telnet server: " + error + CRLF + "Try a 'get sysprop/?user.home' or 'set sysprop/?trace[core]=true' or just 'help'" + CRLF + CRLF;
       log.info(ME, error);
       return text;
    }
@@ -160,13 +154,17 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
     * Enforced by "remotecons.CommandHandlerIfc"
     */
    public String help() {
-      return CRLF + "XmlBlaster telnet administration, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" + CRLF;
+      return CRLF +
+             "  XmlBlaster telnet administration" + CRLF +
+             "   get [command]  Get property or xmlBlaster state" + CRLF +
+             "   set [command]  Set a property or change xmlBlaster setting" + CRLF +
+             "  For commands see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" + CRLF;
    }
    /**
     * Enforced by "remotecons.CommandHandlerIfc"
     */
    public String help(String cmd) {
-      return help();
+      return "";
    }
 
    public CommandHandlerIfc getInstance() {
