@@ -148,7 +148,6 @@ TODO
    <!-- Force from outside compiler: build.bat -Duse-msvc=1 ...             -->
    <!-- =================================================================== -->
    <property name="compiler" value="msvc"/> <!-- "gcc" "VC6" "bcc" "msvc" -->
-   <!-- property name="use-CC" value="1" / --> <!-- SunOS C++ -->
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
@@ -163,29 +162,29 @@ TODO
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
       <!-- <compilerarg value="/GX" /> -->
-      <compilerarg value="/Gm" if="is-debug"/>      
-      <compilerarg value="/Zi" if="is-debug"/>      
+      <compilerarg value="/Gm" if="is-debug"/>
+      <compilerarg value="/Zi" if="is-debug"/>
       <!-- compilerarg value="/G6"/ -->                  <!-- target Pentium Pro -->
-      <!-- <compilerarg value="/MDd" />  -->        <!-- multi threading with debug and dll (/MT = multithreaded without DLL) will force MSVCRT[D].DLL to be included -->      
+      <!-- <compilerarg value="/MDd" />  -->        <!-- multi threading with debug and dll (/MT = multithreaded without DLL) will force MSVCRT[D].DLL to be included -->
       <compilerarg value="/W3"/>                    <!-- display many warnings -->
-      <!-- <compilerarg value="/Od" unless="is-debug"/> --> <!-- maximize speed --> 
-      <!-- compilerarg value="/Ob2" unless="is-debug"/ --> <!-- auto-inlining -->      
+      <!-- <compilerarg value="/Od" unless="is-debug"/> --> <!-- maximize speed -->
+      <!-- compilerarg value="/Ob2" unless="is-debug"/ --> <!-- auto-inlining -->
 
-      <!-- 
+      <!--
       This flag makes good sense though currently ace complains for some reason
       I think it is to do with the way I have built ace (Martin Johnson)
-      <defineset>      
-         <define name="_CRTDBG_MAP_ALLOC" if="is-debug"/>         
+      <defineset>
+         <define name="_CRTDBG_MAP_ALLOC" if="is-debug"/>
       </defineset>
       -->
-      
-   </compiler>   
+
+   </compiler>
 
    <compiler id="msvc" name="msvc" extends="base-msvc">
       <!--  disable Microsoft Extensions   -->
       <!-- <compilerarg value="/Za"/> -->
       <compilerarg value="-D${thread.impl}" />
-   </compiler>       
+   </compiler>
 
    <compiler id="msvc-with-extensions" extends="base-msvc">
       <!--  enable Microsoft Extensions   -->
@@ -226,7 +225,7 @@ TODO
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 -->
     <compilerarg value="-Kpic"/>
     <compilerarg value="-Bdynamic"/>
-  </compiler>   
+  </compiler>
 
 
    <!-- =================================================================== -->
@@ -1260,7 +1259,7 @@ TODO
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
 
-      <switch value="${os.family}" caseinsensitive="false">
+      <!-- switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
             <property name="use-gcc" value="true" />
          </case>
@@ -1269,7 +1268,11 @@ TODO
          </case>
          <default>
          </default>
-      </switch>
+      </switch -->
+      <echo message=" use-gcc       = ${use-gcc}"/>  <!-- Linux/UNIX default -->
+      <echo message=" use-CC        = ${use-CC}"/>   <!-- SunOS C++, set in your build.properties -->
+      <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
+      <echo message=" use-bcc       = ${use-bcc}"/>
 
       <property name="${corba.product}" value="true" /> <!-- Setting e.g. "MICO" or "TAO" to be used in if="" clause below -->
       <echo message=" Setting ${corba.product} = true" />
@@ -1282,7 +1285,7 @@ TODO
       <condition property="tao.lib.type" value="d">
          <equals arg1="${cpp.debug}" arg2="true" />
       </condition>
-      
+
       <condition property="tao.lib.type" value="">
          <equals arg1="${cpp.debug}" arg2="false" />
       </condition>
@@ -1423,8 +1426,8 @@ TODO
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line="-base:-cS.cpp:-hS.h"/> 
-               <arg line="-poa:-c.cpp:-h.h:-bS.h"/> 
+               <arg line="-base:-cS.cpp:-hS.h"/>
+               <arg line="-poa:-c.cpp:-h.h:-bS.h"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
@@ -1482,10 +1485,10 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />          
+         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
-         <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->                  
+         <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
@@ -1498,8 +1501,8 @@ TODO
            <define name="__NT__" if="windows"/>                      <!-- omnithread, OMNIORB -->
            <define name="__OSVERSION__" value="4" if="windows"/>     <!-- omnithread, OMNIORB -->
            <define name="_OMNITHREAD_DLL" value="1" if="windows"/>   <!-- omnithread, OMNIORB -->
-           
-           <define name="WIN32" value="1" if="windows" />        
+
+           <define name="WIN32" value="1" if="windows" />
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
            <define name="_MBCS" value="1" if="windows" />         <!-- TCHAR == char -->
@@ -1521,7 +1524,7 @@ TODO
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />       
+            <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServer${tao.lib.type}.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNaming${tao.lib.type}.lib" if="TAO,windows" />
 
@@ -1624,7 +1627,7 @@ TODO
 
          <defineset>
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
-           <define name="WIN32" value="1" if="windows" />        
+           <define name="WIN32" value="1" if="windows" />
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
@@ -1640,7 +1643,7 @@ TODO
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/tao" libs="TAO" if="TAO" />       
+            <libset dir="${CORBACPP_HOME}/tao" libs="TAO" if="TAO" />
             <libset dir="${CORBACPP_HOME}/tao/PortableServer" libs="TAO_PortableServer" if="TAO" />
             <libset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" libs="TAO_CosNaming" if="TAO" />
 
@@ -1658,7 +1661,7 @@ TODO
 
             <!-- xmlBlasterClient.dll -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
-      
+
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
 
@@ -1667,7 +1670,7 @@ TODO
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />       
+            <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServer${tao.lib.type}.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNaming${tao.lib.type}.lib" if="TAO,windows" />
 
