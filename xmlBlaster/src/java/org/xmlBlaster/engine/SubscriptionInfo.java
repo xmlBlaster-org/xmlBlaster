@@ -47,7 +47,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    private SubscribeQoS subscribeQos = null;
    /** reference to 'Quality of Service' of unsubscription */
    private UnSubscribeQoS unSubscribeQos = null;
-   /** The unique key of a subscription, which is a function of f(msgQueue,xmlKey,xmlQoS). <br />
+   /** The unique key of a subscription (subscriptionId), which is a function of f(msgQueue,xmlKey,xmlQoS). <br />
        This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
    /** reference to my managing container */
@@ -100,7 +100,6 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       this.sessionInfo = sessionInfo;
       this.msgQueue = msgQueue;
       this.xmlKey = xmlKey;
-      getUniqueKey(); // initialize the unique id this.uniqueKey
 
       // very bad hack, needs redesign (SubscribeQoS or UnSubscribeQoS are handled here)
       if (qos instanceof SubscribeQoS) {
@@ -117,6 +116,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       else
          this.unSubscribeQos = (UnSubscribeQoS)qos;
 
+      getUniqueKey(); // initialize the unique id this.uniqueKey
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getUniqueKey() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
 
@@ -356,7 +356,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
-    * Accessing a unique id generated for this SubscriptionInfo. 
+    * Accessing a unique subscription id generated for this SubscriptionInfo. 
     * <p />
     * The key will be generated on first invocation
     * @return A unique key for this particular subscription
@@ -375,7 +375,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
             if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
          }
          else {
-            this.uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, xmlQoSBase).toString();
+            this.uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, subscribeQos).toString();
             if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
          }
       }
@@ -419,8 +419,11 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>53</code>
     */
-   private static final String generateUniqueKey(MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
+   private static final String generateUniqueKey(MsgQueue msgQueue, XmlKey xmlKey, SubscribeQoS xmlQoS) throws XmlBlasterException
    {
+      if (xmlQoS.getSubscriptionId() != null && xmlQoS.getSubscriptionId().length() > 0) {
+         return xmlQoS.getSubscriptionId(); // Client forced his own key
+      }
       StringBuffer buf = new StringBuffer(126);
       synchronized (SubscriptionInfo.class) {
          uniqueCounter++;
