@@ -244,6 +244,7 @@ SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const Su
       log_.dump(ME, string("subscribe. The Qos:\n") + qos.toXml());
    }
    if (callback != 0) {
+      if (log_.trace()) log_.trace(ME, "subscribe: inserting individual callback in callback map");
       org::xmlBlaster::util::thread::Lock lock(updateMutex_);
       SubscribeReturnQos retQos = connection_->subscribe(key, qos);
       std::string subId = retQos.getSubscriptionId();
@@ -251,6 +252,7 @@ SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const Su
       return retQos;
    }
    else {
+      if (log_.trace()) log_.trace(ME, "subscribe: no specific callback");
       return connection_->subscribe(key, qos);
    }
 }
@@ -278,6 +280,7 @@ XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& q
    vector<UnSubscribeReturnQos> ret = connection_->unSubscribe(key, qos);
    vector<UnSubscribeReturnQos>::iterator iter = ret.begin();
    while (iter != ret.end()) {
+      if (log_.trace()) log_.trace(ME, std::string("unSubscribe: removing callback for '") + (*iter).getSubscriptionId() + "'");
       subscriptionCallbackMap_.erase((*iter).getSubscriptionId());
       iter++;
    }
@@ -341,6 +344,7 @@ XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, const un
       std::map<std::string, I_Callback*>::iterator 
          iter = subscriptionCallbackMap_.find(updateQos.getSubscriptionId());
       if (iter != subscriptionCallbackMap_.end()) {
+         if (log_.trace()) log_.trace(ME, std::string("update: invoking specific subscription callback"));
          return ((*iter).second)->update(sessionId, updateKey, content, contentSize, updateQos);
       }
    }
