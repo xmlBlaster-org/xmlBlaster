@@ -3,12 +3,13 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.4 1999/12/16 09:43:11 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.5 1999/12/16 11:29:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.StopParseException;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import java.io.*;
 import org.xml.sax.*;
@@ -83,7 +84,7 @@ public class UpdateKey extends SaxHandlerBase
 
 
    /**
-    * Start element callback, does handling of tag &lt;key> and its attributes. 
+    * Start element callback, does handling of tag &lt;key> and its attributes.
     * <p />
     * You may include this into your derived startElement() method like this:<br />
     * <pre>
@@ -123,9 +124,12 @@ public class UpdateKey extends SaxHandlerBase
     * <p />
     * Default implementation, knows how to parse &lt;key> but knows nothing about the tags inside of key
     */
-   public void startElement(String name, AttributeList attrs)
+   public void startElement(String name, AttributeList attrs) throws StopParseException
    {
-      startElementBase(name, attrs);
+      if (startElementBase(name, attrs) == true) {
+         // Now i know what i need to know, stop parsing here (i'm not interested in the tags inside)
+         throw new StopParseException();
+      }
    }
 
 

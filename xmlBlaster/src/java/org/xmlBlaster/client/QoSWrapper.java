@@ -3,7 +3,7 @@ Name:      QoSWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS message
-Version:   $Id: QoSWrapper.java,v 1.1 1999/12/14 23:18:00 ruff Exp $
+Version:   $Id: QoSWrapper.java,v 1.2 1999/12/16 11:29:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -29,9 +29,25 @@ public class QoSWrapper
 
 
    /**
-    * Constructor with unknown oid
+    * Constructs this base object
     */
    public QoSWrapper()
    {
+   }
+
+
+   /**
+    * Converts the data in XML ASCII string. 
+    * <p />
+    * This is the minimal key representation.<br />
+    * You should provide your own toString() method.
+    * @return An XML ASCII string
+    */
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer();
+      sb.append("<qos>\n");
+      sb.append("</qos>");
+      return sb.toString();
    }
 }
