@@ -43,8 +43,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 
    private I_Queue transientQueue;
    private I_Queue persistentQueue;
-   private boolean hasPersistentEntries = false;
-   private boolean isSwapping = false;
    private Global glob;
    private boolean isConnected = false;
 
@@ -110,10 +108,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
     * @see I_Queue#initialize(StorageId, Object)
     */
-   public void initialize(StorageId uniqueQueueId, Object userData)
+   synchronized public void initialize(StorageId uniqueQueueId, Object userData)
       throws XmlBlasterException
    {
       if (this.isDown) {
+
+         if (this.pluginProperties == null) {
+            this.pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
+         }
 
          this.property = null;
 //         Global glob = this.property.getGlobal();
@@ -169,24 +171,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
             // not used yet
             this.controlParam = new CacheControlParam((QueuePropertyBase)getProperties());
 
-            if (this.persistentQueue.getNumOfEntries() > 0) {
-               this.hasPersistentEntries = true;
+            loadFromPersistence();
 
-               // initial fill of RAM queue ...
-               long maxBytes = this.transientQueue.getMaxNumOfBytes();
-               // this.transientQueue.getMaxNumOfEntries();
-               int maxEntries = -1;
-
-               ArrayList entries = null;
-               try {
-                  entries = this.persistentQueue.peek(maxEntries, maxBytes);
-               }
-               catch (XmlBlasterException ex) {
-                  this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running");
-               }
-               I_QueueEntry[] cleanEntries = (I_QueueEntry[])entries.toArray(new I_QueueEntry[entries.size()]);
-               this.transientQueue.put(cleanEntries, false);
-            }
          } // persistentQueue!=null
          this.isDown = false;
          if (log.TRACE) log.trace(ME, "Successful initialized");
@@ -359,7 +345,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
             sizeOfEntries += sizeOfPersistents;
 
             if (persistentsFromEntries.size() > 0) {
-               this.hasPersistentEntries = true;
 
                long spaceLeft = this.persistentQueue.getMaxNumOfBytes() - this.persistentQueue.getNumOfBytes();
                if (spaceLeft < sizeOfPersistents) {
@@ -402,7 +387,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                long exceedingSize = this.transientQueue.getNumOfBytes() - this.transientQueue.getMaxNumOfBytes();
                if (exceedingSize >= 0L) {
                   if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " state: " + toXml(""));
-                  this.isSwapping = true;
                   if (this.persistentQueue == null)
                      throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "put: no persistent queue configured, needed for swapping");
 
@@ -420,7 +404,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                         sizeOfTransients += entry.getSizeInBytes();
                      }
                   }
-                  this.hasPersistentEntries = true;
                   long spaceLeft = this.persistentQueue.getMaxNumOfBytes() - this.persistentQueue.getNumOfBytes();
                   if (spaceLeft < sizeOfTransients)
                      throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: maximum size in bytes for the persistent queue exceeded when swapping. State: " + toXml(""));
@@ -480,20 +463,23 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 
 
    /**
+    * Aware: takeLowest for more than one entry is not implemented!!
     * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
     */
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
       ArrayList list = null;
       synchronized (this.swappingPutMonitor) {
-         if (isSwapping) {
+         if (this.persistentQueue.getNumOfPersistentEntries() != this.persistentQueue.getNumOfEntries()) {
+            // swapping
             list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
             if (this.notifiedAboutAddOrRemove) {
                for(int i=0; i<list.size(); i++)
                   ((I_Entry)list.get(i)).removed(this.queueId);
             }
             if (list.size() > 1) {
-               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "takeLowest for more than one entry is not implemented");
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+                        "takeLowest for more than one entry is not implemented");
             }
             long num = this.transientQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
             if (num > 0L) {
@@ -506,8 +492,18 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
                for(int i=0; i<list.size(); i++)
                   ((I_Entry)list.get(i)).removed(this.queueId);
             }
-            if (list.size() > 0 && this.persistentQueue!=null) {
-               this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
+
+            if (this.persistentQueue!=null && list.size() > 0 && this.persistentQueue.getNumOfEntries() > 0) {
+               boolean durableFound = false;
+               for(int i=0; i<list.size(); i++) {
+                  if (((I_Entry)list.get(i)).isPersistent()) {
+                     durableFound = true;
+                     break;
+                  }
+               }
+               if (durableFound) {
+                  this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
+               }
             }
          }
       }
@@ -655,46 +651,30 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
    private final long removeRandomUnsync(I_Entry[] queueEntries) throws XmlBlasterException {
 
       long ret = 0L;
-      if ((this.persistentQueue != null) && (this.hasPersistentEntries)) {
-         if (!this.isSwapping) { // cleanup all transient entries
-            ArrayList persistents = new ArrayList();
-            for (int i=0; i < queueEntries.length; i++) {
-               if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
-            }
-            if (this.log.TRACE) this.log.trace(ME, "removeRandom (swapping mode): remove " + persistents.size() + " persistent entries from persistent storage");
-            if (this.persistentQueue != null && this.isConnected) {
-               try {
-                  this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
-               }
-               catch (XmlBlasterException ex) {
-                  this.log.error(ME, "could not remove " + persistents.size() + " entries from the persitent queue. Probably due to failed connection to the DB");
-               }
-            }
+      if (this.persistentQueue != null) {
+         ArrayList persistents = new ArrayList();
+         for (int i=0; i < queueEntries.length; i++) {
+            if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
          }
-         else {
-            if (this.log.TRACE) this.log.trace(ME, "removeRandom (non-swapping mode): remove " + queueEntries.length + " entries from persistent storage");
+         if (this.log.TRACE) this.log.trace(ME, "removeRandom: remove " + persistents.size() + " persistent entries from persistent storage");
+         if (this.persistentQueue != null && this.isConnected) {
             try {
-               this.persistentQueue.removeRandom(queueEntries);
+               this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "could not remove " + queueEntries.length + " entries from the persitent queue. Probably due to failed connection to the DB");
+               this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB");
             }
          }
-         if (this.persistentQueue.getNumOfEntries() < 1) {
-            if (this.log.TRACE) this.log.trace(ME, "removeRandom: persitent storage is now empty (no swapping anymore)");
-            this.hasPersistentEntries = false;
-            this.isSwapping = false;
-         }
       }
+
       // and now the transient queue (the ram queue)
       if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
+      ret = this.transientQueue.removeRandom(queueEntries);
 
       if (this.notifiedAboutAddOrRemove) {
          for(int i=0; i<queueEntries.length; i++)
             queueEntries[i].removed(this.queueId);
       }
-
-      ret = this.transientQueue.removeRandom(queueEntries);
 
       loadFromPersistence();
       return ret;
@@ -706,38 +686,69 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * queue.
     */
    private final int loadFromPersistence() throws XmlBlasterException {
+      if (this.persistentQueue == null || !this.isConnected) return 0;
+
       // load further entries from persistence into transient queue
-      if (this.isSwapping) {
-         if (this.persistentQueue == null || !this.isConnected) return 0;
+      synchronized (this.swappingPutMonitor) {
+         if (this.persistentQueue.getNumOfEntries() > this.transientQueue.getNumOfEntries()) {
+            //or should it only fill a certain amount (percent) of the queue size ?
+            long freeEntries = this.transientQueue.getMaxNumOfEntries() - this.transientQueue.getNumOfEntries();
+            long freeBytes = this.transientQueue.getMaxNumOfBytes() - this.transientQueue.getNumOfBytes();
 
-         //or should it only fill a certain amount (percent) of the queue size ?
-         long bytes = this.transientQueue.getMaxNumOfBytes() - this.transientQueue.getNumOfBytes();
-         if (bytes < 0L) {
-            this.log.warn(ME, "loadFromPersistence: the transient queue is already full. max size: " + this.transientQueue.getMaxNumOfBytes() + " , currently: " + this.transientQueue.getNumOfBytes());
-            if (this.log.DUMP) this.log.dump(ME, "loadFromPersitence: the real current size in bytes of transient queue is: " + ((RamQueuePlugin)this.transientQueue).getSynchronizedNumOfBytes());
-            return 0;
-         }
-         if (this.log.TRACE) this.log.trace(ME, "removeRandom: swapping: reloading from persistence for a length of " + bytes);
+            if (freeEntries < 0L || freeBytes < 0L) {
+               this.log.warn(ME, "loadFromPersistence: the transient queue is already full." +
+                             " numOfBytes=" + this.transientQueue.getNumOfBytes() +
+                             " maxNumOfBytes=" + this.transientQueue.getMaxNumOfBytes() +
+                             " numOfEntries=" + this.transientQueue.getNumOfEntries() +
+                             " maxNumOfEntries=" + this.transientQueue.getMaxNumOfBytes());
+               if (this.log.DUMP) this.log.dump(ME, "loadFromPersitence: the real current size in bytes of transient queue is: " + ((RamQueuePlugin)this.transientQueue).getSynchronizedNumOfBytes());
+               return 0;
+            }
+            if (this.log.TRACE) this.log.trace(ME, "removeRandom: swapping: reloading from persistence for a length of " + freeBytes);
 
-         ArrayList list = null;
-         try {
-            list = this.persistentQueue.peek(-1, bytes);
-            if (this.persistentQueue.getNumOfEntries() < 1)
-               this.isSwapping = false;
-         }
-         catch (XmlBlasterException ex) {
-            this.log.error(ME, "could not read back data from persistence: Problably the DB is down or lost connection.");
-         }
-         try {
-            if (list != null) this.transientQueue.put((I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]), false);
+            // 1. Look into persistent store ...
+            ArrayList list = null;
+            try {
+               list = this.persistentQueue.peek((int)freeEntries, freeBytes);
+            }
+            catch (XmlBlasterException ex) {
+               this.log.error(ME, "could not read back data from persistence: Problably the DB is down or lost connection.");
+            }
+
+            if (list == null || list.size() < 1) {
+               return 0;
+            }
+
+            // 2. Put it into RAM ...
+            try {
+               this.transientQueue.put((I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]), false);
+            }
+            catch (XmlBlasterException ex) {
+               this.log.error(ME, "loadFromPeristence: no space left on transient queue: " + ex.getMessage());
+               return 0;
+            }
+
+            // 3. Erase the swapped and transient entries from persistence ...
+            ArrayList transients = new ArrayList();
+            int n = list.size();
+            for(int i=0; i<n; i++) {
+               if (!((I_Entry)list.get(i)).isPersistent()) {
+                  transients.add(list.get(i));
+               }
+            }
+            try {
+               if (transients.size() > 0)
+                  this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
+            }
+            catch (XmlBlasterException ex) {
+               this.log.error(ME, "loadFromPeristence: Memory leak: problems removing " + transients.size() + " swapped transient entries form persistent store: " + ex.getMessage());
+               return list.size();
+            }
+
             return list.size();
          }
-         catch (XmlBlasterException ex) {
-            this.log.error(ME, "loadFromPeristence: no space left on transient queue: " + ex.getMessage());
-            return 0;
-         }
+      } // sync
 
-      }
       return 0;
    }
 
