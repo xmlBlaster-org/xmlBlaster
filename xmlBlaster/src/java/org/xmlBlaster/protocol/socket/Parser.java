@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.7 2002/02/14 14:59:20 ruff Exp $
+Version:   $Id: Parser.java,v 1.8 2002/02/14 19:04:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -78,29 +78,81 @@ public class Parser extends Converter
    public static final String INVOKE_TYPE = "I";
    public static final String RESPONSE_TYPE = "R";
    public static final String EXCEPTION_TYPE = "E";
-   
+
+   public static final byte CHECKSUM_ADLER_BYTE = (byte)65; // 'A'
+   public static final byte COMPRESSED_GZIP_BYTE = (byte)90; // 'Z'
+   public static final byte INVOKE_BYTE = (byte)73; // INVOKE_TYPE = "I";
+   public static final byte RESPONSE_BYTE = (byte)82; // RESPONSE_TYPE = "R";
+   public static final byte EXCEPTION_BYTE = (byte)69; // EXCEPTION_TYPE = "E";
+   public static final byte VERSION_1_BYTE = (byte)49;  // '1'
    private static final byte[] EMPTY10 = new String("          ").getBytes();;
    private static final byte NULL_BYTE = (byte)0;
 
-   private long msgLength = -1L;
+   private long msgLength;
 
-   // Read 6 flag fields
-   private boolean checksum = false;
-   private boolean compressed = false;
-   private String type = new String(""); // request
-   private byte byte4 = 0;
-   private byte byte5 = 0;
-   private int version = 1;
+   /** flag fields 1 */
+   private boolean checksum;
+   /** flag fields 2 */
+   private boolean compressed;
+   /** flag fields 3 */
+   private String type;
+   /** flag fields 4 */
+   private byte byte4;
+   /** flag fields 5 */
+   private byte byte5;
+   /** flag fields 6 */
+   private int version;
 
-   private String requestId = null;
+   private String requestId;
    private String methodName;
-   private String sessionId = "";
-   private long lenUnzipped = -1L;
-   private long checkSumResult = -1L;
+   private String sessionId;
+   private long lenUnzipped;
+   private long checkSumResult;
 
+   /** Unique counter */
    private static long counter = 0L;
 
-   private Vector msgVec = null;
+   private Vector msgVec;
+
+
+   /**
+    * The same parser object may be reused. 
+    */
+   public Parser() {
+      msgVec = new Vector();
+      initialize();
+   }
+
+
+   public Parser(String type, String requestId, String methodName, String sessionId) {
+      msgVec = new Vector();
+      initialize();
+      setType(type);
+      setRequestId(requestId);
+      setMethodName(methodName);
+      setSessionId(sessionId);
+   }
+
+
+   /**
+    * This method allows to reuse a Parser instance. 
+    */
+   public void initialize() {
+      super.index = 0L;
+      msgLength = -1L;
+      checksum = false;
+      compressed = false;
+      type = INVOKE_TYPE; // request
+      byte4 = 0;
+      byte5 = 0;
+      version = 1;
+      requestId = null;
+      methodName = null;
+      sessionId = "";
+      lenUnzipped = -1L;
+      checkSumResult = -1L;
+      msgVec.clear();
+   }
 
    /** Parser.INVOKE_TYPE */
    public void setType(String type) {
@@ -209,9 +261,7 @@ public class Parser extends Converter
     * @exception IllegalArgumentException if invoked multiple times
     */
    public void addQos(String qos) {
-      if (msgVec == null)
-         msgVec = new Vector();
-      else
+      if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
       MessageUnit msg = new MessageUnit(null, null, qos);
       msgVec.add(msg);
@@ -222,9 +272,7 @@ public class Parser extends Converter
     * @exception IllegalArgumentException if invoked multiple times
     */
    public void addKeyAndQos(String key, String qos) {
-      if (msgVec == null)
-         msgVec = new Vector();
-      else
+      if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addKeyAndQos() may only be invoked once");
       MessageUnit msg = new MessageUnit(key, null, qos);
       msgVec.add(msg);
@@ -237,9 +285,7 @@ public class Parser extends Converter
     * @exception IllegalArgumentException if invoked multiple times
     */
    public void addException(XmlBlasterException e) {
-      if (msgVec == null)
-         msgVec = new Vector();
-      else
+      if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addException() may only be invoked once");
       MessageUnit msg = new MessageUnit(e.reason, null, e.id);
       msgVec.add(msg);
@@ -253,7 +299,6 @@ public class Parser extends Converter
     * Multiple adds are OK
     */
    public void addMessage(MessageUnit msg) {
-      if (msgVec == null) msgVec = new Vector();
       msgVec.add(msg);
    }
 
@@ -268,7 +313,7 @@ public class Parser extends Converter
     * Returns all messages as an array
     */
    public MessageUnit[] getMessageArr() {
-      if (msgVec == null) return new MessageUnit[0];
+      if (msgVec.isEmpty()) return new MessageUnit[0];
       MessageUnit[] arr = new MessageUnit[msgVec.size()];
       for (int ii=0; ii<msgVec.size(); ii++) {
          arr[ii] = (MessageUnit)msgVec.elementAt(ii);
@@ -280,7 +325,7 @@ public class Parser extends Converter
     * Response is usually only a QoS
     */
    public String getQos() {
-      if (msgVec == null || msgVec.isEmpty()) {
+      if (msgVec.isEmpty()) {
          Log.warn(ME, "getQos() is called without having a response");
          return "<qos></qos>";
       }
@@ -292,7 +337,7 @@ public class Parser extends Converter
     * Response is usually only a QoS
     */
    public XmlBlasterException getException() {
-      if (msgVec == null || msgVec.isEmpty()) {
+      if (msgVec.isEmpty()) {
          Log.warn(ME, "getException() is called without having an exception");
          return new XmlBlasterException(ME, "Invalid exception");
       }
@@ -306,7 +351,7 @@ public class Parser extends Converter
     */
    public void parse(InputStream inputStream) throws XmlBlasterException {
 
-      index = 0L;
+      initialize();
       try {
          for (int ii=0; ii<20 && (inputStream.available() <= 0); ii++) {
             Log.warn(ME, "Client sends empty data, trying again after sleeping 10 milli ...");
@@ -381,7 +426,6 @@ public class Parser extends Converter
     */
    private long getUserDataLen() {
       long len=0L;
-      if (msgVec == null) return len;
       for (int ii=0; ii<msgVec.size(); ii++) {
          MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
          len += unit.size() + 3;   // three null bytes
@@ -444,21 +488,21 @@ public class Parser extends Converter
 
          out.write(EMPTY10, 0, EMPTY10.length); // Reserve 10 bytes at the beginning ...
 
-         out.write((checksum)?(byte)65:0); // 'A'
-         out.write((compressed)?(byte)90:0); // 'Z'
-         if (isInvoke()) // INVOKE_TYPE = "I";
-            out.write((byte)73);
-         else if (isResponse()) // RESPONSE_TYPE = "R";
-            out.write((byte)82);
-         else if (isException()) // EXCEPTION_TYPE = "E";
-            out.write((byte)69);
+         out.write((checksum)?CHECKSUM_ADLER_BYTE:NULL_BYTE);    // 'A'
+         out.write((compressed)?COMPRESSED_GZIP_BYTE:NULL_BYTE); // 'Z'
+         if (isInvoke())
+            out.write(INVOKE_BYTE);
+         else if (isResponse())
+            out.write(RESPONSE_BYTE);
+         else if (isException())
+            out.write(EXCEPTION_BYTE);
          else {
             if (Log.TRACE) Log.trace(ME, "Unknown type '" + type + "', setting to invoke.");
-            out.write((byte)73); // INVOKE_TYPE = "I";
+            out.write(INVOKE_BYTE); // INVOKE_TYPE = "I";
          }
-         out.write(NULL_BYTE); // byte4
-         out.write(NULL_BYTE); // byte5
-         out.write((byte)49);  // '1'
+         out.write(NULL_BYTE);       // byte4
+         out.write(NULL_BYTE);       // byte5
+         out.write(VERSION_1_BYTE);  // '1'
 
          out.write(createRequestId(null).getBytes());
          out.write(NULL_BYTE);
@@ -473,7 +517,7 @@ public class Parser extends Converter
             out.write(new String(""+lenUnzipped).getBytes());
          out.write(NULL_BYTE);
 
-         if (msgVec == null) {
+         if (msgVec.isEmpty()) {
             out.write(NULL_BYTE);
             out.write(NULL_BYTE);
             out.write("0".getBytes());
