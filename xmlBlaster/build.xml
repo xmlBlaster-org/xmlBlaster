@@ -160,6 +160,7 @@ TODO
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
    <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
    <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
+   <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -1461,6 +1462,88 @@ TODO
       </if>
    </target>
 
+
+
+
+
+   <!-- =================================================================== -->
+   <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
+   <!-- =================================================================== -->
+   <target name="cpp-corba-idl-MICO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
+      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
+         </case>
+         <default>
+            <property name="idl.cmd" value="${CORBACPP_HOME}/win32-bin/idl" />
+         </default>
+      </switch>
+
+      <!-- Start IDL compiler to create CORBA stubs -->
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+
+      <if><equals arg1="${idlBuild.done}" arg2="true" />
+         <then>
+            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
+         </then>
+         <else>
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
+            <!-- A typical MICO idl CORBA compile:
+              /opt/mico/bin/idl - -poa - -c++-suffix cpp - -windows-dll /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+            -->
+            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
+               <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
+               <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
+               <env key="PATH" path="${CORBACPP_HOME}/bin" />
+               <arg line="--poa"/>
+               <arg line="--c++-suffix cpp"/>
+               <arg line="--windows-dll"/>                               <!-- To export from windows DLL -->
+               <arg line="../../../${idl.file}"/>
+            </exec>
+            <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+            <echo message="IDL compilation returned ${idl.returnvalue}"/>
+         </else>
+      </if>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Compile xmlBlaster.idl for ORBACUS to create C++ CORBA stubs        -->
+   <!-- =================================================================== -->
+   <target name="cpp-corba-idl-ORBACUS" description="Compiles xmlBlaster.idl for CORBA C++ clients">
+      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
+      <switch value="${os.family}" caseinsensitive="true">
+         <case value="unix">
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
+         </case>
+         <default>
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl.exe" />
+         </default>
+      </switch>
+
+      <!-- Start IDL compiler to create CORBA stubs -->
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+
+      <if><equals arg1="${idlBuild.done}" arg2="true" />
+         <then>
+            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
+         </then>
+         <else>
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
+            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <arg line=""/>
+               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+            </exec>
+            <echo message="IDL compilation returned ${idl.returnvalue}"/>
+         </else>
+      </if>
+   </target>
+
    <!-- =================================================================== -->
    <!-- c++ client integration - create libxmlBlasterClient.sl (so,dll)         -->
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
@@ -1511,6 +1594,8 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/.." /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
+         <sysincludepath location="${src.cpp.dir}/generated" /> <!-- ORBACUS -->
+
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
@@ -1566,6 +1651,9 @@ TODO
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+
+            <!-- ORBACUS -->
+            <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
@@ -1671,6 +1759,8 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${CORBACPP_HOME}/include" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${src.cpp.dir}/generated" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
@@ -1710,6 +1800,9 @@ TODO
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+
+            <!-- ORBACUS-->
+            <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />

@@ -50,15 +50,10 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define PING_THROW_SPECIFIER      
 
 /******************************************************************
- *                      ORBACUS (OB-4.03)
+ *                      ORBACUS (OB-4.03) and (OB-4.1.0)
  ******************************************************************/
 #elif defined(XMLBLASTER_ORBACUS)
 #define ORB_IS_THREAD_SAFE        true
-#ifdef SERVER_HEADER
-#  include <generated/xmlBlaster_skel.h>
-#else
-#  include <generated/xmlBlaster.h> // client side include header
-#endif
 #define CORBA_HEADER              <OB/CORBA.h>
 #define COSCONTAINEMENT           <not_implemented.h>
 #define COSOBJECTIDENTITY         <not_implemented.h>
@@ -77,6 +72,13 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTYPEDEVENT             <OB/CosTypedEventComm.h>
 #define UPDATE_THROW_SPECIFIER    
 #define PING_THROW_SPECIFIER      
+
+# include CORBA_HEADER
+#ifdef SERVER_HEADER
+#  include <generated/xmlBlaster_skel.h>
+#else
+#  include <generated/xmlBlaster.h> // client side include header
+#endif
 
 /*****************************************************************
  *                     MICO (ver. 2.3.1)
