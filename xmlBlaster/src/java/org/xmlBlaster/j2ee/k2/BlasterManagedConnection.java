@@ -384,7 +384,7 @@ public class BlasterManagedConnection implements ManagedConnection {
          System.out.println("Physical pipe: " + physicalPipe+"/CQos:"+qos);
          
          ConnectReturnQos ret = physicalPipe.connect(qos,null);
-         me = "BlasterManagedConnection/"+user+"/"+ret.getSessionId();
+         me = "BlasterManagedConnection/"+user+"/"+ret.getSecretSessionId();
          
       }catch(XmlBlasterException ex) {
          throw new CommException("Could not login : " +ex);

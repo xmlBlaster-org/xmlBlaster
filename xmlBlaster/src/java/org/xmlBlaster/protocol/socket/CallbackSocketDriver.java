@@ -93,7 +93,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
     */
    public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException
    {
-      return handler.sendUpdate(callbackAddress.getSessionId(), msgArr, ExecutorBase.WAIT_ON_RESPONSE);
+      return handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.WAIT_ON_RESPONSE);
    }
 
    /**
@@ -102,7 +102,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
     */
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException
    {
-      handler.sendUpdate(callbackAddress.getSessionId(), msgArr, ExecutorBase.ONEWAY);
+      handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.ONEWAY);
    }
 
    /**

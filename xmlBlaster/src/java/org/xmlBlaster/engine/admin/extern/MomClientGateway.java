@@ -98,7 +98,7 @@ public final class MomClientGateway implements I_ExternGateway
       }
       */
 
-      MsgUnitRaw[] msgs = commandManager.get(sessionInfo.getSessionId(), query);
+      MsgUnitRaw[] msgs = commandManager.get(sessionInfo.getSecretSessionId(), query);
       /*
       for (int ii=0; ii<msgs.length; ii++) {
          MsgUnitRaw msg = msgs[ii];
@@ -138,7 +138,7 @@ public final class MomClientGateway implements I_ExternGateway
          query = query + "=" + msgUnit.getContentStr();     // "/node/heron/?numClients=99"
       }
 
-      SetReturn ret = commandManager.set(sessionInfo.getSessionId(), query);
+      SetReturn ret = commandManager.set(sessionInfo.getSecretSessionId(), query);
 
       if (ret == null)
          throw new XmlBlasterException(ME, "Your command '" + ret.commandWrapper.getCommand() + "' failed, reason is unknown");

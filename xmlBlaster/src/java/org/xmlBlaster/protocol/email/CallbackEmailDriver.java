@@ -96,7 +96,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
    {
       if (msg == null || msg.length < 1) 
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSessionId());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSecretSessionId());
       try {
          String smtpHost = glob.getProperty().get("EmailDriver.smtpHost", "localhost");
          String from = glob.getProperty().get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();

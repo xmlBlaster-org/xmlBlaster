@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.36 2002/12/18 12:39:12 ruff Exp $
+Version:   $Id: Parser.java,v 1.37 2003/01/18 17:08:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -157,7 +157,7 @@ public class Parser
       setType(type);
       setRequestId(requestId);
       setMethodName(methodName);
-      setSessionId(sessionId);
+      setSecretSessionId(sessionId);
    }
 
 
@@ -279,12 +279,12 @@ public class Parser
    }
    
    /** The authentication sessionId */
-   public final void setSessionId(String sessionId) {
+   public final void setSecretSessionId(String sessionId) {
       this.sessionId = sessionId;
    }
    
    /** The authentication sessionId */
-   public final String getSessionId() {
+   public final String getSecretSessionId() {
       if (sessionId == null) return "";
       return this.sessionId;
    }
@@ -701,7 +701,7 @@ public class Parser
          out.write(getMethodName().getMethodNameBytes());
          out.write(NULL_BYTE);
 
-         out.write(getSessionId().getBytes());
+         out.write(getSecretSessionId().getBytes());
          out.write(NULL_BYTE);
 
          if (lenUnzipped > 0)
@@ -918,7 +918,7 @@ public class Parser
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.PUBLISH);
-            parser.setSessionId("oxf6hZs");
+            parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
             MsgUnitRaw msg = new MsgUnitRaw("<key oid='hello'/>", "Hello world".getBytes(), "<qos></qos>");
@@ -951,7 +951,7 @@ public class Parser
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.PUBLISH);
-            parser.setSessionId("oxf6hZs");
+            parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
             parser.addMessage(new MsgUnitRaw("<key oid='x1'/>", "Hello1".getBytes(), "<qos/>"));
@@ -986,7 +986,7 @@ public class Parser
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.GET);
-            parser.setSessionId("oxf6hZs");
+            parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
             parser.addKeyAndQos("<key oid='ooo'></key>", "<qos></qos>");
@@ -1016,7 +1016,7 @@ public class Parser
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.PUBLISH);
-            parser.setSessionId("oxf6hZs");
+            parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
             parser.addQos("<qos/>");
@@ -1048,7 +1048,7 @@ public class Parser
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.GET);
-            parser.setSessionId("oxf6hZs");
+            parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
 
@@ -1083,7 +1083,7 @@ public class Parser
          }
          {
             Parser receiver = new Parser(glob);
-            receiver.setSessionId(null);
+            receiver.setSecretSessionId(null);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             if (receiver.getMessageArr().length > 0) {
@@ -1109,7 +1109,7 @@ public class Parser
             parser.setType(Parser.EXCEPTION_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.PUBLISH);
-            parser.setSessionId("oxf6hZs");
+            parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
             XmlBlasterException ex = new XmlBlasterException("QueueOverflow", "The destination queue is full");
@@ -1140,7 +1140,7 @@ public class Parser
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.GET);
-            //parser.setSessionId("oxf6hZs");
+            //parser.setSecretSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
             MsgUnitRaw msg = new MsgUnitRaw("<key oid='hello'/>", "Hello world response".getBytes(), "<qos></qos>");
@@ -1173,7 +1173,7 @@ public class Parser
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
             parser.setMethodName(MethodName.ERASE);
-            //parser.setSessionId("");
+            //parser.setSecretSessionId("");
             parser.setChecksum(false);
             parser.setCompressed(false);
             parser.addQos("<qos><state id='OK'/></qos>");

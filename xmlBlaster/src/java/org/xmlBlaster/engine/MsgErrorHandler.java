@@ -141,7 +141,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                              ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
                              ": " + message);
                try {
-                  glob.getAuthenticate().disconnect(sessionInfo.getSessionId(), null);
+                  glob.getAuthenticate().disconnect(sessionInfo.getSecretSessionId(), null);
                }
                catch (Throwable e) {
                   log.error(ME, "PANIC: givingUpDelivery error handling failed, " +

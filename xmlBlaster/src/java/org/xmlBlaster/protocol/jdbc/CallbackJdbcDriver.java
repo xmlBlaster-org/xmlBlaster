@@ -154,7 +154,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
             driver.update(msgQosData.getSender().getAbsoluteName(), msgArr[ii].getContent());
          } catch (Throwable e) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-               "JDBC Callback of " + ii + "th message to client [" + callbackAddress.getSessionId() + "] failed.", e);
+               "JDBC Callback of " + ii + "th message to client [" + callbackAddress.getSecretSessionId() + "] failed.", e);
          }
       }
    }

@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.23 2003/01/05 23:06:14 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.24 2003/01/18 17:08:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -123,7 +123,7 @@ public class NativeDriver implements I_Driver
       connectQos.addCallbackAddress(callback);
       connectQos.getSessionQos().setSessionTimeout(0L);
       ConnectReturnQosServer returnQos = authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));
-      sessionId = returnQos.getSessionId();
+      sessionId = returnQos.getSecretSessionId();
    }
 
    /**

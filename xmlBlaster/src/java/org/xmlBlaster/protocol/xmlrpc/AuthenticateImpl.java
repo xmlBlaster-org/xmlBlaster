@@ -81,7 +81,7 @@ public class AuthenticateImpl
 
       ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
       if (log.TIME) log.time(ME, "Elapsed time in login()" + stop.nice());
-      return returnQos.getSessionId();
+      return returnQos.getSecretSessionId();
    }
 
 

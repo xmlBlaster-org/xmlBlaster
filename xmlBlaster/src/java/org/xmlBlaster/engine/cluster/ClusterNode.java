@@ -154,9 +154,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          this.xmlBlasterConnection.initFailSave(this);
 
          CallbackAddress callback = nodeInfo.getCbAddress();
-         if (callback.getSessionId().equals(AddressBase.DEFAULT_sessionId))
-            callback.setSessionId(createCbSessionId());
-         this.cbSessionId = callback.getSessionId();
+         if (callback.getSecretSessionId().equals(AddressBase.DEFAULT_sessionId))
+            callback.setSecretSessionId(createCbSessionId());
+         this.cbSessionId = callback.getSecretSessionId();
 
          ConnectQosData qos = new ConnectQosData(connectGlob, glob.getNodeId());
 

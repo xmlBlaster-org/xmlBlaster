@@ -148,7 +148,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       if (isLogin) {
          if (connectRetQos != null) {
             try {
-               glob.getAuthenticate().disconnect(connectRetQos.getSessionId(), null);
+               glob.getAuthenticate().disconnect(connectRetQos.getSecretSessionId(), null);
             }
             catch (org.xmlBlaster.util.XmlBlasterException e) {
                log.warn(ME, e.getMessage());
@@ -407,7 +407,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       ConnectQosServer connectQos = new ConnectQosServer(glob, clientConnectQos.getData());
       this.connectRetQos = glob.getAuthenticate().connect(connectQos);
       this.loginName = loginName;
-      this.sessionId = connectRetQos.getSessionId();
+      this.sessionId = connectRetQos.getSecretSessionId();
       isLogin = true;
 
       if (connectQos.getSessionTimeout() > 0L) {

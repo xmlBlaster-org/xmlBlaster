@@ -122,7 +122,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
             MsgUnitRaw msgUnit = msgArr[ii];
-            args.addElement(callbackAddress.getSessionId());
+            args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
@@ -131,7 +131,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
             retVal[ii] = (String)xmlRpcClient.execute("update", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSessionId() + "'");
+            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
          return retVal;
       }
@@ -165,7 +165,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
             MsgUnitRaw msgUnit = msgArr[ii];
-            args.addElement(callbackAddress.getSessionId());
+            args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
@@ -174,7 +174,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
             xmlRpcClient.execute("updateOneway", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSessionId() + "'");
+            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
       }
       catch (XmlRpcException ex) {

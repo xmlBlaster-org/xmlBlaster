@@ -219,8 +219,8 @@ public class HandleClient extends Executor implements Runnable
                      }
 
                      ConnectReturnQosServer retQos = authenticate.connect(conQos);
-                     this.sessionId = retQos.getSessionId();
-                     receiver.setSessionId(retQos.getSessionId()); // executeResponse needs it
+                     this.sessionId = retQos.getSecretSessionId();
+                     receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
 
                      executeResponse(receiver, retQos.toXml());
                    }
@@ -228,7 +228,7 @@ public class HandleClient extends Executor implements Runnable
                      this.sessionId = null;
                      // Note: the diconnect will call over the CbInfo our shutdown as well
                      // setting sessionId = null prevents that our shutdown calls disconnect() again.
-                     authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
+                     authenticate.disconnect(receiver.getSecretSessionId(), receiver.getQos());
                      //executeResponse(receiver, qos);   // The socket is closed already
                      shutdown();
                   }

@@ -111,7 +111,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
 
       try {
-         return this.cb.update(callbackAddress.getSessionId(), updateArr);
+         return this.cb.update(callbackAddress.getSecretSessionId(), updateArr);
       } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException ex) {
          XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, ex);
 
@@ -127,7 +127,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
          else {
             throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "CORBA Callback of " + msgArr.length + " messages to client [" +
-                   callbackAddress.getSessionId() + "] failed.", xmlBlasterException);
+                   callbackAddress.getSecretSessionId() + "] failed.", xmlBlasterException);
          }
       } catch (Throwable e) {
          if (callbackAddress == null)
@@ -136,7 +136,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
          else
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                 "CORBA Callback of " + msgArr.length + " messages to client ["
-                 + callbackAddress.getSessionId() + "] failed", e);
+                 + callbackAddress.getSecretSessionId() + "] failed", e);
       }
    }
 
@@ -157,11 +157,11 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
 
       try {
-         this.cb.updateOneway(callbackAddress.getSessionId(), updateArr);
+         this.cb.updateOneway(callbackAddress.getSecretSessionId(), updateArr);
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                "CORBA oneway callback of " + msgArr.length + " messages to client [" +
-               callbackAddress.getSessionId() + "] failed", e);
+               callbackAddress.getSecretSessionId() + "] failed", e);
       }
    }
 

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.21 2002/12/18 12:39:08 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.22 2003/01/18 17:08:05 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -67,7 +67,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.DUMP) log.dump(ME, "subscribe()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         String oid = blaster.subscribe(getSessionId(), xmlKey_literal, qos_literal);
+         String oid = blaster.subscribe(getSecretSessionId(), xmlKey_literal, qos_literal);
 
          if (log.TIME) log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
@@ -89,7 +89,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.DUMP) log.dump(ME, "unSubscribe()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         String[] strArr = blaster.unSubscribe(getSessionId(), xmlKey_literal, qos_literal);
+         String[] strArr = blaster.unSubscribe(getSecretSessionId(), xmlKey_literal, qos_literal);
 
          if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
 
@@ -110,7 +110,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.CALL) log.call(ME, "Entering publish() ...");
          if (log.DUMP) log.dump(ME, "publish()\n" + msgUnit.xmlKey + "\n" + msgUnit.qos);
 
-         String retVal = blaster.publish(getSessionId(), CorbaDriver.convert(glob, msgUnit));
+         String retVal = blaster.publish(getSecretSessionId(), CorbaDriver.convert(glob, msgUnit));
 
          return retVal;
       }
@@ -141,7 +141,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
          org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
 
-         String[] strArr = blaster.publishArr(getSessionId(), internalUnitArr);
+         String[] strArr = blaster.publishArr(getSecretSessionId(), internalUnitArr);
 
          return strArr;
       }
@@ -165,7 +165,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          log.info(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
 
          org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
-         blaster.publishOneway(getSessionId(), internalUnitArr);
+         blaster.publishOneway(getSecretSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
          log.error(ME, "publishOneway() failed, exception is not sent to client: " + e.toString());
@@ -183,7 +183,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.CALL) log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
          if (log.DUMP) log.dump(ME, "erase()\n" + xmlKey_literal + "\n" + qos_literal);
 
-         String [] retArr = blaster.erase(getSessionId(), xmlKey_literal, qos_literal);
+         String [] retArr = blaster.erase(getSecretSessionId(), xmlKey_literal, qos_literal);
 
          return retArr;
       }
@@ -204,7 +204,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.DUMP) log.dump(ME, "get()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
+         org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(getSecretSessionId(), xmlKey_literal, qos_literal);
 
          org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = CorbaDriver.convert(msgUnitArr);  // convert internal to Corba ...
 
@@ -223,7 +223,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     * <p />
     * This is a nice feature with CORBA-POA not available with RMI et al.
     */
-   private String getSessionId() throws XmlBlasterException
+   private String getSecretSessionId() throws XmlBlasterException
    {
       byte[] active_oid;
       String sessionId;

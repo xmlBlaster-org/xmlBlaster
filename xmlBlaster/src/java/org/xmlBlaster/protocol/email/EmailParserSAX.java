@@ -208,7 +208,7 @@ public class EmailParserSAX extends SaxHandlerBase
          if ("connect".equals(qName)) {
             ConnectQosServer connectQos = new ConnectQosServer(this.glob, this.character.toString());
             ConnectReturnQosServer ret = this.authenticator.connect(connectQos);
-            this.currentSessionId = ret.getSessionId();
+            this.currentSessionId = ret.getSecretSessionId();
             this.response.append("<connect>\n");
             this.response.append(ret.toXml());
             this.response.append("</connect>\n");

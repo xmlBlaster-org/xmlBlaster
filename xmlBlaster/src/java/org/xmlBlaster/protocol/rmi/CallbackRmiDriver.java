@@ -139,10 +139,10 @@ public class CallbackRmiDriver implements I_CallbackDriver
    {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSessionId());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSecretSessionId());
 
       try {
-         return getCb().update(callbackAddress.getSessionId(), msgArr);
+         return getCb().update(callbackAddress.getSecretSessionId(), msgArr);
       } catch (RemoteException remote) {
          Throwable nested = remote.detail;
          if (nested != null && nested instanceof XmlBlasterException) {
@@ -154,10 +154,10 @@ public class CallbackRmiDriver implements I_CallbackDriver
 
             throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "RMI Callback of " + msgArr.length +
-                   " messages to client [" + callbackAddress.getSessionId() + "] failed.", xmlBlasterException);
+                   " messages to client [" + callbackAddress.getSecretSessionId() + "] failed.", xmlBlasterException);
          }
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                     "RMI Callback of " + msgArr.length + " messages to client [" + callbackAddress.getSessionId() + "] failed", remote);
+                     "RMI Callback of " + msgArr.length + " messages to client [" + callbackAddress.getSecretSessionId() + "] failed", remote);
       }
    }
 
@@ -170,13 +170,13 @@ public class CallbackRmiDriver implements I_CallbackDriver
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
 
-      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSessionId());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSecretSessionId());
 
       try {
-         getCb().updateOneway(callbackAddress.getSessionId(), msgArr);
+         getCb().updateOneway(callbackAddress.getSecretSessionId(), msgArr);
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-            "RMI oneway callback of message to client [" + callbackAddress.getSessionId() + "] failed", e);
+            "RMI oneway callback of message to client [" + callbackAddress.getSecretSessionId() + "] failed", e);
       }
    }
 

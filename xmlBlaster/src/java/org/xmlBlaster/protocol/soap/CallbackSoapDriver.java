@@ -142,7 +142,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
          for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
             MsgUnitRaw msgUnit = msgArr[ii];
-            args.addElement(callbackAddress.getSessionId());
+            args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
@@ -152,7 +152,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
             retVal[ii] = (String)soapClient.execute("update", args);
 
             if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getKey()
-                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSessionId() + "'");
+                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSecretSessionId() + "'");
          }
          return retVal;
       }
@@ -187,7 +187,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
          for (int ii=0; ii < msgArr.length; ii++) {
             Vector args = new Vector();
             MsgUnitRaw msgUnit = msgArr[ii];
-            args.addElement(callbackAddress.getSessionId());
+            args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
@@ -197,7 +197,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
             soapClient.execute("updateOneway", args);
 
             if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getKey()
-                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSessionId() + "'");
+                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSecretSessionId() + "'");
          }
       }
       catch (SoapException ex) {
