@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.11 2002/06/27 11:11:12 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.12 2002/09/12 11:59:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -53,12 +53,18 @@ public class CbWorker implements Runnable
          
          String[] returnVals = cbManager.sendUpdate(entries, this.msgQueue.getErrorCounter()); // redeliver == errorCounter
 
-         this.msgQueue.resetErrorCounter(); // callback is fine
+         try {
+            this.msgQueue.resetErrorCounter(); // callback is fine
+            this.msgQueue.incrNumUpdate(returnVals.length);
 
-         this.msgQueue.incrNumUpdate(returnVals.length);
-
-         // Delete volatile messages ...
-         this.msgQueue.checkForVolatileErase(entries);
+            // Delete volatile messages ...
+            this.msgQueue.checkForVolatileErase(entries);
+         }
+         catch (Throwable e) {
+            // The message is sent and acknowledged already, so we ignore this exception and just log it
+            log.error(ME, "Unexpected exception: " + e.toString());
+            e.printStackTrace();
+         }
 
          //log.info(ME, "Sending of " + entries.length + " messages done");
       }
@@ -91,6 +97,8 @@ public class CbWorker implements Runnable
                try{ msgQueue.activateCallbackWorker(); } catch(Throwable e) { log.error(ME, e.toString()); e.printStackTrace(); }// Assure the queue is flushed with another worker
             }
          //}
+         entries = null;
+         msgQueue = null;
       }
 
       //log.info(ME, "Finished callback job. " + entries.length + " sent, " + msgQueue.size() + " messages in the queue. " + msgQueue.getCbWorkerPoolStatistic());
