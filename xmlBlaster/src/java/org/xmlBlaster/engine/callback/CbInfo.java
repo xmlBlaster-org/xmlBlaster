@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.11 2002/03/22 09:46:21 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.12 2002/04/24 06:51:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -170,8 +170,9 @@ public class CbInfo
          return;
 
       protocols = new Hashtable();
-      String defaultDrivers =
+      String defaultDrivers = // See Main.java for "Protocol.Drivers" default settings
                "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver," +
+               "SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver," +
                "RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver," +
                "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
                "JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver";
