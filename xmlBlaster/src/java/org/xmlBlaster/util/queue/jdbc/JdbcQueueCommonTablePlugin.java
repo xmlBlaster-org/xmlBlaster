@@ -1244,6 +1244,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
 
    /**
+    * @see I_Map#removeOldest()
+    */
+   public I_MapEntry removeOldest() throws XmlBlasterException {
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "removeOldest is not implemented");
+   }
+
+   /**
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)
     */
    public boolean registerStorageProblemListener(I_StorageProblemListener listener) {
