@@ -1,53 +1,60 @@
 ' XmlBlaster access with asynchronous callbacks
-' TODO: CALLBACKS ARE NOT ARRIVING
 ' @author Marcel Ruff
+Imports System
+
 Module HelloWorld3
     Private WithEvents xmlBlaster As XmlScriptAccess.XmlScriptAccessClass
+
     Sub Main()
         Call HelloWorld3()
     End Sub
 
-    ' This method is never called (event from java): What is wrong?
-    Private Sub update(ByVal evt As Object)
-        Console.WriteLine("UPDATE ARRIVED:" & evt.ToString())
-        MsgBox(evt.ToString)
-    End Sub
-
-    ' This method is never called (event from java): What is wrong?
-    Private Sub HelloWorld3_update(ByVal evt As Object)
-        Console.WriteLine("UPDATE ARRIVED:" & evt.ToString())
-        MsgBox(evt.ToString)
+    ' This method is called from java delivering a message
+    Private Sub XmlScriptAccess_update(ByVal msg As Object) Handles xmlBlaster.XmlScriptAccessSource_Event_update
+        Console.WriteLine("SUCCESS: Update arrived: " & msg.getCbSessionId() & msg.getKey().toXml() & msg.getContentStr() & msg.getQos().toXml())
+        MsgBox("SUCCESS: Update arrived: " & msg.getKey().toXml())
     End Sub
 
     Sub HelloWorld3()
         Dim request, response As String
-
-        'late binding
-        'Set objJava = CreateObject("XmlScriptAccess.Bean.1")
+        Dim prop As Object, msg As Object
+        Dim getMsgArr As Object()
 
         xmlBlaster = New XmlScriptAccess.XmlScriptAccessClass
 
-        'xmlBlaster.addUpdateListener(xmlBlaster)
-        '.XmlScriptAccessSource.update()
+        prop = xmlBlaster.createPropertiesInstance()
+        prop.setProperty("protocol", "SOCKET")
+        xmlBlaster.initialize(prop)
 
-        ' Configure using the SOCKET protocol
-        Dim argArr(1) As String
-        argArr(0) = "-protocol"
-        argArr(1) = "SOCKET"
-        xmlBlaster.initArgs(argArr)
-        'MsgBox("Connecting to xmlBlaster ...")
         Try
             ' Connect to the server
             response = xmlBlaster.sendRequest("<xmlBlaster><connect/></xmlBlaster>")
 
             ' Query the free memory
-            request = "<xmlBlaster><subscribe><key oid='test.VB'/></subscribe><publish><key oid='test.VB'/><content>This is a simple Visual Basic script test</content><qos/></publish></xmlBlaster>"
+            request = "<xmlBlaster>" & _
+                      "  <subscribe><key oid='test.VB'/></subscribe>" & _
+                      "  <publish><key oid='test.VB'/><content>Visual Basic script test</content><qos/></publish>" & _
+                      "</xmlBlaster>"
             response = xmlBlaster.sendRequest(request)
             Console.WriteLine("Got response:" & response)
 
+            xmlBlaster.publish("<key oid='test.VB'/>", "Bla", "<qos/>")
+
+            getMsgArr = xmlBlaster.get("<key oid='test.VB'/>", "<qos/>")
+            msg = getMsgArr(0)
+            Console.WriteLine("Get returned:" & msg.toXml())
+
+            xmlBlaster.erase("<key oid='test.VB'/>", "<qos/>")
+
             ' Leave the server
             response = xmlBlaster.sendRequest("<xmlBlaster><disconnect/></xmlBlaster>")
-        Catch e As Exception
+
+            ' Pass control to eventLoop ...
+            MsgBox("Waiting for update ...")
+            'System.Windows.Forms.Application.DoEvents()
+
+
+        Catch e As SystemException
             Console.WriteLine("Exception:" & e.ToString())
         End Try
     End Sub
