@@ -28,7 +28,7 @@ import java.util.Enumeration;
  * storing the messages to files.
  * <br />
  * TODO: Extend interface to support caching!<br />
- *
+ * @deprecated Please use I_Queue and I_Map instead
  * @author goetzger
  */
 public interface I_PersistenceDriver extends I_Plugin
