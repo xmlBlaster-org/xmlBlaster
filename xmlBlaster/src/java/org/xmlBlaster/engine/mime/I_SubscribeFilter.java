@@ -3,7 +3,7 @@ Name:      I_SubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_SubscribeFilter.java,v 1.3 2002/03/15 17:24:35 ruff Exp $
+Version:   $Id: I_SubscribeFilter.java,v 1.4 2002/03/16 08:45:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -40,7 +40,7 @@ import org.xmlBlaster.engine.Global;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author ruff@swand.lake.de
  */
 public interface I_SubscribeFilter
@@ -72,7 +72,12 @@ public interface I_SubscribeFilter
     *                null: If for a subscribe() no rule is given, your plugin
     *                      needs to have its own general rule or react how it likes.
     * @exception XmlBlasterException Is thrown on problems, for example if MIME type
-    *            does not fit to message content
+    *            does not fit to message content.<br />
+    *            Take care throwing an exception, as the
+    *            exception is routed back to the publisher. Subscribers which where served before
+    *            may receive the update, subscribers which are served after us won't get it.
+    *            For the publisher it looks as if the publish failed completely. Probably it is
+    *            best to return 'false' instead and log the situation.
     */
    public boolean match(MessageUnitWrapper msgUnitWrapper, String query) throws XmlBlasterException;
 }
