@@ -125,6 +125,9 @@ public class Constants
    public final static String STATE_FORWARD_ERROR = "FORWARD_ERROR";
    public final static String RET_FORWARD_ERROR = "<qos><state id='" + Constants.STATE_FORWARD_ERROR + "'/></qos>";
 
+   /** Additional info for state */
+   public final static String INFO_QUEUED = "QUEUED";
+
    /** Type of a message queue */
    public final static String RELATING_SESSION = "session";
    /** Type of a message queue */
