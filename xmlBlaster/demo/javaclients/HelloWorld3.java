@@ -82,7 +82,7 @@ public class HelloWorld3 implements I_Callback
                         UpdateQos updateQos)
    {
       Log.info("", "Received asynchronous message '" + updateKey.getOid() +
-                   "' from xmlBlaster");
+                   "' content=" + new String(content) + " from xmlBlaster");
       return "";
    }
 
