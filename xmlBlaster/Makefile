@@ -16,9 +16,18 @@ distclean: clean
 	$(RM_RECURSIVE) $(JAVADOC_DIR)
 	$(RM) $(JAR_DIR)/xmlBlaster.jar
 
-javadoc: all
-	$(MKDIR_RECURSIVE) $(JAVADOC_DIR)
-	$(JAVADOC) -d $(JAVADOC_DIR) `find $(XMLBLASTER_HOME)/src/java -name "[A-Za-z]*.java" -print`
+PACKGS = org.xmlBlaster \
+					org.xmlBlaster.engine \
+					org.xmlBlaster.authenticateIdl \
+					org.xmlBlaster.authentication \
+					org.xmlBlaster.client \
+					org.xmlBlaster.clientIdl \
+					org.xmlBlaster.serverIdl \
+					org.xmlBlaster.util
+
+javadoc:
+	$(JAVADOC) -d $(JAVADOC_DIR) -sourcepath ./src/java $(PACKGS) 
+ 
 
 jar: all
 	( cd $(CLASS_TOP_DIR); jar cvf $(JAR_DIR)/xmlBlaster.jar ./org )

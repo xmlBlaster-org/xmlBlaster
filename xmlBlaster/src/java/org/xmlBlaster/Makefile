@@ -35,5 +35,5 @@ clean: clean_SUB_DIRS
 	@echo "Removing all in $(CLASS_DIR) ..."
 	$(RM) $(CLASS_DIR)/*.*
 
-doc:
-	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java
+#doc:
+#	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java

@@ -50,7 +50,11 @@ RMIC=  rmic -d $(CLASS_TOP_DIR)
 
 JAVA=  java
 #JAVADOC= javadoc -author -version -private -J-ms39m -J-mx40m
-JAVADOC= javadoc -author -version -J-ms39m -J-mx40m
+#JAVADOC= javadoc -author -version -overview \
+#																	-group  "engine" "org.xmlBlaster.engine" \
+#																	-J-ms39m -J-mx40m
+
+JAVADOC= javadoc -J-ms39m -J-mx40m -author -version -private 
 
 MAKE=make
 
@@ -77,7 +81,7 @@ help:
 	@echo "   make all       --> makes everything new"
 	@echo "   make clean     --> deletes all classes"
 	@echo "   make distclean --> deletes all classes/doc/jar"
-	@echo "   make javadoc   --> makes javadoc docus into directory $(JAVADOC_DIR)"  
+	@echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir"
 	@echo "   make demo      --> makes everything new and starts a demo"
 	@echo "   make test      --> makes everything new and starts a test scenario"
 	@echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
