@@ -7,7 +7,8 @@
         communicating with an oracle database.
     </topic>
     <description>
-       <p>The generic plugin for jdbc based queues has been tested against Oracle 9.20 i on linux).</p>
+       <p>The generic plugin for jdbc based queues has been tested against Oracle 9.20 i and
+        10g (10.1.0.3.0) on Linux.</p>
         <p>Oracle is available on <a href='http://www.oracle.com'>http://www.oracle.com</a> where you can find all
         necessary information and instructions on how to make Oracle run.
         </p>
