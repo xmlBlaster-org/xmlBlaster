@@ -100,7 +100,7 @@ int main(int argc, char** argv)
          "\n  -sleepInterval       milliseconds to wait on callback messages [0]"
          "\n\nExample:"
          "\n  HelloWorld3 -logLevel TRACE"
-         " -dispatch/connection/plugin/socket/hostname 192.168.2.9";
+         " -dispatch/connection/plugin/socket/hostname 192.168.2.9"
          " -sleepInterval 100000";
          printf("Usage:\nXmlBlaster C SOCKET client %s\n%s%s\n",
                   getXmlBlasterVersion(), xmlBlasterAccessUnparsedUsage(usage), pp);
