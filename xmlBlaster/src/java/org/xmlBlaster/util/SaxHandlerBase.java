@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.26 2004/02/22 17:28:37 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.27 2004/03/11 16:56:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -160,9 +160,25 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       }
       catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)
          if (log.TRACE) log.trace(ME, "StopParseException: Parsing execution stopped half the way");
+         if (e.hasError()) {
+            throw e.getXmlBlasterException();
+         }
          return;
       }
       catch (Throwable e) {
+
+         if (e instanceof SAXException) { // Try to find an encapsulated XmlBlasterException ...
+            SAXException saxE = (SAXException)e;
+            if (log.TRACE) log.trace(ME, "SAXException: Parsing execution stopped half the way");
+            Exception exc = saxE.getException();
+            if (exc instanceof StopParseException) {
+               StopParseException stop = (StopParseException)exc;
+               if (stop.hasError()) {
+                  throw stop.getXmlBlasterException();
+               }
+            }
+         }
+
          String location = (locator == null) ? "" : locator.toString();
          if (e instanceof org.xml.sax.SAXParseException) {
             location = getLocationString((SAXParseException)e);
@@ -172,7 +188,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
          }
 
          if (e.getMessage() != null && e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
-            if (log.TRACE) log.trace(ME, location + ": Parsing execution stopped half the way");
+            if (log.TRACE) log.trace(ME, location + ": Parsing execution stopped half the way: " + e.getMessage() + ": " + e.toString());
             return;
          }
          if (log.TRACE) {

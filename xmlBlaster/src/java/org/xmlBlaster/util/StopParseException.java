@@ -3,7 +3,7 @@ Name:      StopParseException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Throw this exception to stop SAX parsing
-Version:   $Id: StopParseException.java,v 1.1 1999/12/16 11:29:09 ruff Exp $
+Version:   $Id: StopParseException.java,v 1.2 2004/03/11 16:56:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -18,4 +18,25 @@ package org.xmlBlaster.util;
  */
 public class StopParseException extends RuntimeException
 {
+   XmlBlasterException e;
+   /**
+    * Use this constructor to stop parsing when you are done. 
+    */
+   public StopParseException() {}
+
+   /**
+    * Use this constructor to stop parsing when an exception occurred. 
+    * The XmlBlasterException is transported embedded in this class
+    */
+   public StopParseException(XmlBlasterException e) {
+      this.e = e;
+   }
+
+   public boolean hasError() {
+      return this.e != null;
+   }
+
+   public XmlBlasterException getXmlBlasterException() {
+      return this.e;
+   }
 }
