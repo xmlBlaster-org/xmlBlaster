@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.2 2002/06/25 18:01:46 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.3 2002/06/27 12:49:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -32,7 +33,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner authentication.TestLogin
- *    java junit.ui.TestRunner authentication.TestLogin
+ *    java junit.swingui.TestRunner authentication.TestLogin
  * </pre>
  */
 public class TestLogin extends TestCase implements I_Callback
@@ -134,8 +135,10 @@ public class TestLogin extends TestCase implements I_Callback
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
       }
 
-      callbackConnection.disconnect(null);
-      secondConnection.disconnect(null);
+      DisconnectQos qos = new DisconnectQos();
+      qos.clearSessions(true);
+      callbackConnection.disconnect(qos);
+      secondConnection.disconnect(qos);
    }
 
 
