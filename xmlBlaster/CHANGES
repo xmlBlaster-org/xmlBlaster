@@ -47,7 +47,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    - Added native SOCKET protocol plugin based on the C-client library
    - Added logging abstraction interface to support different logging implementations
    - Added log4cplus 1.0.1 logging library to xmlBlaster distribution
-     see http://log4cplus.sourceforge.net
+     see http://log4cplus.sourceforge.net (Apache license)
    - Fixed command line usage, try 'HelloWorld2 -help'
    - Fixed memory leak for some XmlBlasterExceptions thrown
    - Logging cleanup (switchable xterm colors)
