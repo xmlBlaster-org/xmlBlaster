@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.41 $
+# $Revision: 1.42 $
 #-----------------------------------------------------------
 
 
@@ -191,7 +191,7 @@ fi
 #-------- Checking MICO --------
 if [ ${MICO_HOME:=""} = "" ] || [ ! -d ${MICO_HOME} ] ; then
    ${ECHO} "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
-   ${ECHO} "         Example: 'export MICO_HOME=/usr/local/mico'"
+   ${ECHO} "         Example: 'export MICO_HOME=/usr/local' if mico is in /usr/local/mico"
 else
    ${ECHO} "$BLACK_LTGREEN      Using MICO_HOME=${MICO_HOME}  $ESC"
 fi
