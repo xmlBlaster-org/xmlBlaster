@@ -3,14 +3,19 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.4 2002/12/06 21:13:32 laghi Exp $
+Version:   $Id: Global.cpp,v 1.5 2002/12/10 22:21:09 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
+#include <client/protocol/CbServerPluginManager.h>
+
+
+using org::xmlBlaster::client::protocol::CbServerPluginManager;
 
 namespace org { namespace xmlBlaster { namespace util {
 
    Global::Global() : ME("Global"), logMap_()
    {
+      cbServerPluginManager_ = NULL;
       copy();
       isInitialized_ = false;
    }
@@ -34,6 +39,7 @@ namespace org { namespace xmlBlaster { namespace util {
       try {
          logMap_.erase(logMap_.begin(), logMap_.end());
          delete property_;
+         delete cbServerPluginManager_;
       }
       catch (...) {
       }
@@ -114,6 +120,15 @@ namespace org { namespace xmlBlaster { namespace util {
       std::cout << "Global::getCbHostname implementation is not finished" << std::endl;
       return "127.0.0.1"; // STILL TO BE IMPLEMENTED !!!
    }
+
+   CbServerPluginManager& Global::getCbServerPluginManager()
+   {
+      if (cbServerPluginManager_ == NULL) {
+         cbServerPluginManager_ = new CbServerPluginManager(*this);
+      }
+      return *cbServerPluginManager_;
+   }
+
 
 }}}; // namespace
 

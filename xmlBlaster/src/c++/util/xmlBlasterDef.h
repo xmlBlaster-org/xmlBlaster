@@ -3,7 +3,7 @@ Name:      xmlBlaster.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains general definitions commonly used in the project
-Version:   $Id: xmlBlasterDef.h,v 1.8 2002/12/09 12:26:40 laghi Exp $
+Version:   $Id: xmlBlasterDef.h,v 1.9 2002/12/10 22:21:09 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_XMLBLASTERDEF_H
@@ -37,6 +37,11 @@ namespace org { namespace xmlBlaster { namespace util {
 
 // change this if it does not compile correctly
 #define STRING_TO_TIMESTAMP(x) atoll(x)
+
+#ifndef _UTIL_GLOBAL_H
+   class Global;
+#endif
+
 
 }}}
 
