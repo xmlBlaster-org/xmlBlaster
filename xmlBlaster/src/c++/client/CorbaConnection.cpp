@@ -13,6 +13,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>   // inet_addr()
+#include <unistd.h>      // gethostname()
 
 namespace org { namespace xmlBlaster {
 
@@ -111,7 +112,10 @@ namespace org { namespace xmlBlaster {
 
       // 3) Using builtin http IOR download ...
       {
-         string iorHost = log_.getProperties().getStringProperty("iorHost","localhost");
+         char myHostName[126];
+         strcpy(myHostName, "localhost");
+         gethostname(myHostName, 125);
+         string iorHost = log_.getProperties().getStringProperty("iorHost",myHostName);
          // Port may be a name from /etc/services: "xmlBlaster 7609/tcp"
          string iorPortStr = log_.getProperties().getStringProperty("iorPort","xmlBlaster"); // default port=7609
          if (log_.TRACE) log_.trace(me(), "Trying -iorHost=" + iorHost + " and -iorPort=" + iorPortStr + " ...");
@@ -160,7 +164,7 @@ namespace org { namespace xmlBlaster {
          if (!authServerIOR.empty()) {
             CORBA::Object_var obj = orb_->string_to_object(authServerIOR.c_str());
             authServer_ = authenticateIdl::AuthServer::_narrow(obj);
-            string msg  = "Accessing xmlBlaster using -iorHost="+iorHost;
+            string msg  = "Accessing xmlBlaster using -iorHost "+iorHost;
             log_.info(me(), msg);
             return authenticateIdl::AuthServer::_duplicate(authServer_);
          }
