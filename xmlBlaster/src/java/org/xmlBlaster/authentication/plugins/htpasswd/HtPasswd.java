@@ -8,6 +8,7 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.log.LogChannel;
 
 import java.io.* ;
@@ -36,6 +37,7 @@ import java.util.Vector;
  *  </ol>
  * <p />
  * NOTE: Currently the htpasswd file is reread every time a client logs in (see Session.java new HtPasswd())
+ *       we should change this to check the timestamp of the file.
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a> 16/11/01 09:06
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html">The security.htpasswd requirement</a>
  */
@@ -43,6 +45,7 @@ public class HtPasswd {
 
    private static final String ME = "HtPasswd";
 
+   protected Global glob;
    protected LogChannel log;
 
    protected final int ALLOW_PARTIAL_USERNAME = 1;
@@ -55,12 +58,14 @@ public class HtPasswd {
    protected Hashtable htpasswd = null ;
 
    private static boolean first = true;
+   private static boolean firstWild = true;
 
    /**
     * Check password
     * 16/11/01 19:36 mad@ktaland.com
     */
    public HtPasswd(Global glob) throws XmlBlasterException {
+      this.glob = glob;
       log = glob.getLog("auth");
       htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", "NONE" );
       boolean allowPartialUsername = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", false);
@@ -102,7 +107,7 @@ public class HtPasswd {
      String encoded = null,salt,userEncoded;
      for (Enumeration e = fileEncodedPass.elements();e.hasMoreElements();)
      { encoded = (String)e.nextElement();
-       if ( encoded != null ) 
+       if (encoded != null && encoded.length() > 2) 
        {  salt = encoded.substring(0,2);
           userEncoded = jcrypt.crypt(salt,userPassword);
           if (log.TRACE) log.trace(ME, "Comparing '" + userEncoded + "' with passwd entry '" + encoded + "'");
@@ -126,23 +131,23 @@ public class HtPasswd {
       if ( useFullUsername == SWITCH_OFF ) {
         return true;
       }
-      if( htpasswd != null && userName!=null && userPassword!=null ){
+      if( this.htpasswd != null && userName!=null && userPassword!=null ){
          Vector pws = new Vector();
 
          //find user in Hashtable htpasswd
          String key;
          boolean found = false;
          if ( useFullUsername == FULL_USERNAME ) {
-            String pw = (String)htpasswd.get(userName);
+            String pw = (String)this.htpasswd.get(userName);
             pws.addElement(pw);
             found = true;
          }
          else { // ALLOW_PARTIAL_USERNAME
-            for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
+            for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (log.TRACE) log.trace(ME, "Checking userName=" + userName + " with key='" + key + "'");
                if (userName.startsWith(key) || userName.endsWith(key)) {
-                  String pw = (String)htpasswd.get(key);
+                  String pw = (String)this.htpasswd.get(key);
                   pws.addElement(pw);
                   found = true;
                }
@@ -150,10 +155,10 @@ public class HtPasswd {
          }
 
          if (!found) { // allow wildcard entry, for example "*:ad9dfjhf0"
-            for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
+            for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (key.equals("*")) {
-                  pws.addElement((String)htpasswd.get(key));
+                  pws.addElement((String)this.htpasswd.get(key));
                }
             }
          }
@@ -176,26 +181,75 @@ public class HtPasswd {
       File            htpasswdFile ;
 
       if( htpasswdFilename == null)
-      throw new XmlBlasterException( ME, "missing property Security.Server.Plugin.htpasswd.secretfile" );
+      throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "missing property Security.Server.Plugin.htpasswd.secretfile" );
 
       htpasswdFile =new File(htpasswdFilename) ;
 
       if( ! htpasswdFile.exists() ) {
          log.error( ME, "Secret file doesn't exist : "+htpasswdFilename + ", please check your 'Security.Server.Plugin.htpasswd.secretfile' setting.");
-         throw new XmlBlasterException( ME, "secret file doesn't exist : "+htpasswdFilename );
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "secret file doesn't exist : "+htpasswdFilename );
       }
       if( ! htpasswdFile.canRead() ) {
          log.error( ME, "Secret file '"+htpasswdFilename + "' has no read permission");
-         throw new XmlBlasterException( ME, "no read access on file : "+htpasswdFilename );
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "no read access on file : "+htpasswdFilename );
       }
 
+      try {
+         String rawString = org.jutils.io.FileUtil.readAsciiFile(htpasswdFilename);
+         java.util.Map map = org.xmlBlaster.util.StringPairTokenizer.parseToStringStringPairs(glob, rawString, "\n", ":");
+         java.util.Iterator it = map.keySet().iterator();
+         while (it.hasNext()) {
+            String user = (String)it.next();
+            user = user.trim();
+            if (user.startsWith("#" )) {
+               continue;
+            }
+            String passwd = (String)map.get(user);
+            if (passwd == null) passwd = "";
+            passwd = passwd.trim();
+            if (this.htpasswd == null) this.htpasswd = new Hashtable();
+            this.htpasswd.put(user, passwd);
+            if (user.equals("*") && passwd.length() < 1) {
+               //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
+               useFullUsername = SWITCH_OFF;
+               if (firstWild) {
+                  log.warn(ME, "Security risk, no access control: '" + htpasswdFile + "' contains '*'");
+                  firstWild = false;
+               }
+            }
+         }
+
+         // Dump it:
+         if (log.DUMP) {
+            if (this.htpasswd != null) {
+               java.util.Iterator i = this.htpasswd.keySet().iterator();
+               System.out.println("========================================");
+               while (i.hasNext()) {
+                  String user = (String)i.next();
+                  System.out.println("user='" + user + "' passwd='" + this.htpasswd.get(user) + "'");
+               }
+               System.out.println("========================================");
+            }
+            else {
+               System.out.println("======NO PASSWD ENTRY==================================");
+            }
+         }
+
+         return true;
+      }
+      catch(Exception ex) {
+         this.htpasswd = null ;
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problem when reading password file '"+htpasswdFilename+"'", ex);
+      }
+
+      /*
       FileInputStream fis = null ;
 
       try {
          fis = new FileInputStream( htpasswdFile );
          Reader r = new BufferedReader( new InputStreamReader( fis ) );
          StreamTokenizer st = new StreamTokenizer(r);
-         st.slashSlashComments(true);
+         st.slashSlashComments(true); // Recognize C++ comments '//'
          //st.slashStarComments(true);
          st.ordinaryChars( 0,255 );
          st.eolIsSignificant(true);
@@ -268,8 +322,9 @@ public class HtPasswd {
             fis.close();
          }catch( IOException ioex ){}
          htpasswd = null ;
-         throw new XmlBlasterException( ME, "problem append when reading file : "+htpasswdFilename+". Ex="+ex );
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "problem append when reading file : "+htpasswdFilename+". Ex="+ex );
       }
+         */
 
    }//readHtpasswordFile
 
