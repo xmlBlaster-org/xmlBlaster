@@ -15,6 +15,7 @@ import org.jutils.runtime.ThreadLister;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
+import org.xmlBlaster.util.I_SignalListener;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -51,7 +52,7 @@ import java.io.IOException;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" target="others">admin.telnet</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>
  */
-public class Main implements I_RunlevelListener, I_Main
+public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 {
    private String ME = "Main";
 
@@ -65,7 +66,7 @@ public class Main implements I_RunlevelListener, I_Main
    private boolean showUsage = false;
 
    private boolean inShutdownProcess = false;
-   private SignalCatcher signalCatcher = null;
+   private SignalCatcher signalCatcher;
 
 
    /**
@@ -197,8 +198,12 @@ public class Main implements I_RunlevelListener, I_Main
       catch(XmlBlasterException e) {
          log.error(ME, "Problem during shutdown: " + e.toString());
       }
-      if (errors > 0)
+      if (errors > 0) {
          log.warn(ME, "There were " + errors + " errors during shutdown.");
+      }
+      else {
+         if (log.TRACE) log.trace(ME, "shutdown() done");
+      }
    }
 
    /**
@@ -345,13 +350,11 @@ public class Main implements I_RunlevelListener, I_Main
 
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
-            signalCatcher = new SignalCatcher(glob, new Thread("XmlBlaster signal catcher thread for controlled shudown") {
-               public void run() {
-                  log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
-                  shutdown();
-               }
-            });
-            signalCatcher.catchSignals();
+            boolean useSignalCatcher = glob.getProperty().get("useSignalCatcher", true);
+            if (useSignalCatcher) {
+               this.signalCatcher = new SignalCatcher(glob, this);
+               this.signalCatcher.catchSignals();
+            }
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
          }
@@ -403,11 +406,20 @@ public class Main implements I_RunlevelListener, I_Main
          }
 
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            if (signalCatcher != null)
-               signalCatcher.removeSignalCatcher();
-               signalCatcher = null;
+            if (this.signalCatcher != null) {
+               this.signalCatcher.removeSignalCatcher();
+               this.signalCatcher = null;
+            }
          }
       }
+   }
+
+   /**
+   * You will be notified when the runtime exits. 
+   * @see I_SignalListener#shutdownHook()
+   */
+   public void shutdownHook() {
+      shutdown();
    }
 
    /**
