@@ -181,8 +181,18 @@
                </address>
             </dispatch>
 
+            <subscribeList>__subId:3,__subId:XPATH2</subscribeList>
+            
             <subscribe id='__subId:3' oid='hello'
                        creationTime='Mar 7, 2003 6:33:14 PM'/>
+            
+            <subscribe id='__subId:XPATH2' oid='//key//sport'
+                       creationTime='Mar 12, 2003 10:53:27 AM'>
+               <subscribe id='__subId:XPATH2:3' oid='soccer'/>
+               <subscribe id='__subId:XPATH2:4' oid='tennis'/>
+               <subscribe id='__subId:XPATH2:5' oid='admiral cup'/>
+            <subscribe>
+
 
             <!-- The settings used on the client side -->
             <dispatch id='clientSide'>
@@ -735,7 +745,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.44 $</revision>
+   <revision>$Revision: 1.45 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
