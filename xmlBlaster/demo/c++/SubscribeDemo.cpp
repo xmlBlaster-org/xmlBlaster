@@ -58,6 +58,7 @@ private:
    bool notifyOnErase;
    bool local;
    bool initialUpdate;
+   bool updateOneway;
    bool wantContent;
    int historyNumUpdates;
    bool historyNewestFirst;
@@ -128,6 +129,7 @@ public:
       notifyOnErase = global_.getProperty().get("notifyOnErase", true);
       local = global_.getProperty().get("local", true);
       initialUpdate = global_.getProperty().get("initialUpdate", true);
+      updateOneway = global_.getProperty().get("updateOneway", false);
       wantContent = global_.getProperty().get("wantContent", true);
       historyNumUpdates = global_.getProperty().get("historyNumUpdates", 1);
       historyNewestFirst = global_.getProperty().get("historyNewestFirst", true);
@@ -168,6 +170,7 @@ public:
       log_.info(ME, "   -notifyOnErase       " + lexical_cast<string>(notifyOnErase));
       log_.info(ME, "   -local               " + lexical_cast<string>(local));
       log_.info(ME, "   -initialUpdate       " + lexical_cast<string>(initialUpdate));
+      log_.info(ME, "   -updateOneway        " + lexical_cast<string>(updateOneway));
       log_.info(ME, "   -historyNumUpdates   " + lexical_cast<string>(historyNumUpdates));
       log_.info(ME, "   -historyNewestFirst  " + lexical_cast<string>(historyNewestFirst));
       log_.info(ME, "   -wantContent         " + lexical_cast<string>(wantContent));
@@ -208,6 +211,7 @@ public:
          //}
          SubscribeQos sq(global_);
          sq.setWantInitialUpdate(initialUpdate);
+         sq.setWantUpdateOneway(updateOneway);
          sq.setMultiSubscribe(multiSubscribe);
          sq.setPersistent(persistentSubscribe);
          sq.setWantNotify(notifyOnErase);
