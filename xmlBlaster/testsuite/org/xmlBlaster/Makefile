@@ -17,7 +17,6 @@ SUB_DIRS = query
 #LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
-    $(CLASS_DIR)/ThreadLister.class \
     $(CLASS_DIR)/TestCorbaThreads.class \
     $(CLASS_DIR)/LoadTestSub.class \
     $(CLASS_DIR)/RamTest.class \
