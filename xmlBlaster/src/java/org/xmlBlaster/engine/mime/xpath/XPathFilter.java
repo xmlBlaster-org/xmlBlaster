@@ -182,22 +182,22 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in xpath match() call");
       }
       
-      DOMXPath expression;
-      if (query.getPreparedQuery() == null) {
-         try {
-            expression = new DOMXPath(query.getQuery());
-            query.setPreparedQuery(expression); 
-         } catch (JaxenException e) {
-            log.error(ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
-            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
-         }
-      }
-      else
-         expression = (DOMXPath)query.getPreparedQuery();
-      
-      Document doc = getDocument(msgUnitWrapper);
-      
       try {
+         DOMXPath expression;
+         if (query.getPreparedQuery() == null) {
+            try {
+               expression = new DOMXPath(query.getQuery());
+               query.setPreparedQuery(expression); 
+            } catch (JaxenException e) {
+               log.warn(ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't compile XPath filter expression '" + query + "'", e);
+            }
+         }
+         else
+            expression = (DOMXPath)query.getPreparedQuery();
+         
+         Document doc = getDocument(msgUnitWrapper);
+         
          if ( log.DUMP)
             log.dump(ME,"Matching query " + query.getQuery() + " against document: " + msgUnitWrapper.getContentStr());
          
@@ -206,9 +206,14 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
             log.trace(ME,"Query "+query.getQuery()+" did" + (match ? " match" : " not match"));
          
          return match;
-      }catch (JaxenException e) {
-         log.error(ME, "Error in querying dom tree with query " + query + ": " + e.toString());
-         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query + ": " + e.toString());
+      }
+      catch (JaxenException e) {
+         log.warn(ME, "Error in querying dom tree with query " + query + ": " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query, e);
+      }
+      catch (Throwable e) {
+         log.warn(ME, "Error in handling XPath filter with query '" + query + "': and '" + msgUnitWrapper.getContentStr() + "': " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query, e);
       }
    }
    
