@@ -13,7 +13,7 @@ Comment:   Handling the Client data
 #pragma warning(disable:4786)
 #endif
 
-#include <util/xmlbcfg.h>
+#include <util/XmlBCfg.h>
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>

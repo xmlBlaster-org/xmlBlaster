@@ -10,7 +10,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #ifndef _CLIENT_CORBACONNECTION_H
 #define _CLIENT_CORBACONNECTION_H
 
-#include <util/xmlbcfg.h>
+#include <util/XmlBCfg.h>
 #include <string>
 #include <vector>
 #include <fstream>
