@@ -11,7 +11,9 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 using namespace std;
 
 #include <vector>
-#include <algorithm>
+#ifndef STLPORT // Is automatically set by STLport if used, problem is on Linux/g++: STLport-4.5.1/stlport/stl/_algo.h:180: declaration of `operator MICO_LongDouble' as non-function
+#  include <algorithm>
+#endif
 
 #define CLIENT_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
@@ -122,11 +124,11 @@ namespace util {
          NameServerControl(CORBA::ORB_ptr orb, string sep1="/", 
                            string sep2=".", bool keepBindingsAfterDeath=false) :
             stripper_(sep1,sep2), nameList_() {
-	    /*
-	    //CORBA::Object_var myserv = orb->string_to_object ("corbaname::localhost:7608#xmlBlaster-Authenticate.MOM");
-	    CORBA::Object_var myserv = orb->string_to_object ("corbaname::localhost:7608/NameService#xmlBlaster-Authenticate.MOM");
-	    cout << "SUCCESS for corbaname::localhost:7608#xmlBlaster-Authenticate.MOM" << endl;
-	    */
+            /*
+            //CORBA::Object_var myserv = orb->string_to_object ("corbaname::localhost:7608#xmlBlaster-Authenticate.MOM");
+            CORBA::Object_var myserv = orb->string_to_object ("corbaname::localhost:7608/NameService#xmlBlaster-Authenticate.MOM");
+            cout << "SUCCESS for corbaname::localhost:7608#xmlBlaster-Authenticate.MOM" << endl;
+            */
             orb_ = CORBA::ORB::_duplicate(orb);
             keepBindingsAfterDeath = true;
             // Get naming service
