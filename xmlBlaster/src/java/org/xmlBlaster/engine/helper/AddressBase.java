@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.13 2002/05/30 16:29:06 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.14 2002/05/31 05:43:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -222,6 +222,13 @@ public abstract class AddressBase
     */
    public final String getOnExhaust() {
       return Constants.ONEXHAUST_KILL_SESSION; // in future possibly Constants.ONEXHAUST_KILL_CALLBACK
+   }
+
+   /**
+    * Kill login session if max callback retries is exhausted?
+    */
+   public final boolean getOnExhaustKillSession() {
+      return getOnExhaust().equalsIgnoreCase(Constants.ONEXHAUST_KILL_SESSION);
    }
 
    /**
