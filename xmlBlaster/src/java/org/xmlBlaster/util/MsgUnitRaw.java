@@ -13,7 +13,7 @@ package org.xmlBlaster.util;
  * The constructor arguments are checked to be not null and corrected
  * to "" or 'new byte[0]' if they are null
  */
-public final class MsgUnitRaw implements java.io.Serializable
+public final class MsgUnitRaw //implements java.io.Serializable
 {
    private transient static final byte[] EMPTY_BYTEARR = new byte[0];
    private transient static final String EMPTY_STRING = "";
