@@ -104,9 +104,59 @@ Solaris:
    </description>
    <example lang="C" type="HTML">
       <p><a NAME="example"></a></p>
+      <h2>C usage examples</h2>
       <p>
       See the test file <code>xmlBlaster/testsuite/src/c/TestQueue.c</code>
       </p>
+   </example>
+
+   <example lang="any" type="HTML">
+      <p><a NAME="sqliteExample"></a></p>
+      <h2>sqlite command line example</h2>
+      <p>From time to time you may want to look into the C client queue,
+      here are some command line examples:
+      </p>
+      <pre>
+sqlite xmlBlasterClientCpp.db
+
+
+sqlite> .schema XB_ENTRIES
+CREATE TABLE XB_ENTRIES (dataId bigint , queueName text , prio integer, flag text,
+             durable char(1), byteSize bigint, blob bytea, PRIMARY KEY (dataId, queueName));
+CREATE INDEX XB_ENTRIES_IDX ON XB_ENTRIES (prio);
+
+
+sqlite> .mode lines
+
+
+sqlite> select * from xb_entries;
+   dataId = 1097512282290000000
+queueName = connection_clientPublisher1
+     prio = 5
+     flag = MSG_RAW|publish
+  durable = T
+ byteSize = 302
+     blob = ? ?;pnr= ??;rs`sd?hcNJ.= ...
+
+
+sqlite> select dataId, queueName, prio, flag, durable, byteSize from xb_entries;
+   dataId = 1097512282290000000
+queueName = connection_clientPublisher1
+     prio = 5
+     flag = MSG_RAW|publish
+  durable = T
+ byteSize = 302
+
+   dataId = 1097512331701000000
+queueName = connection_clientPublisher1
+     prio = 5
+     flag = MSG_RAW|publish
+  durable = T
+ byteSize = 257
+
+
+sqlite> .quit
+      </pre>
    </example>
 
    <configuration where="client">
@@ -258,7 +308,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
