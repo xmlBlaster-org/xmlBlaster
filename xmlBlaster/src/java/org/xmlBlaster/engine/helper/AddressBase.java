@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.8 2002/05/03 10:33:55 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.9 2002/05/03 16:41:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -96,6 +96,20 @@ public abstract class AddressBase
    public AddressBase(Global glob, String rootTag) {
       this.glob = glob;
       setRootTag(rootTag);
+   }
+
+   /**
+    * Check if supplied address would connect to the address of this instance
+    */
+   public final boolean isSameAddress(Address other) {
+      String oa = other.getAddress();
+      if (oa != null && oa.length() > 1 && oa.equals(getAddress()))
+         return true;
+      String oh = other.getHostname();
+      int op = other.getPort();
+      if (op > 0 && op == getPort() && oh != null && oh.equals(getHostname()))
+         return true;
+      return false;
    }
 
    /**
@@ -534,7 +548,8 @@ public abstract class AddressBase
       if (DEFAULT_useForSubjectQueue != this.useForSubjectQueue)
           sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue).append("'");
       sb.append(">");
-      sb.append(offset).append("   ").append(getAddress());
+      if (getAddress() != null)
+         sb.append(offset).append("   ").append(getAddress());
       if (getCollectTime() != DEFAULT_collectTime || getCollectTimeOneway() != DEFAULT_collectTimeOneway) {
          sb.append(offset).append("   ").append("<burstMode");
          if (getCollectTime() != DEFAULT_collectTime)
