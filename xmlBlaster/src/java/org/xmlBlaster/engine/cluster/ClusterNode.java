@@ -41,6 +41,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 {
    private final String ME;
    private final Global glob;
+   /** 
+    * This util global instance is used for XmlBlasterConnection, it
+    * uses the specific settings from NodeInfo to connect to the remote node
+    */
+   private final org.xmlBlaster.util.Global connectGlob;
    private final LogChannel log;
    private final SessionInfo sessionInfo;
    
@@ -78,6 +83,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       this.nodeInfo = new NodeInfo(glob, nodeId);
       this.state = new NodeStateInfo(glob);
       this.ME = "ClusterNode-" + glob.getId() + "-" + getId();
+      this.connectGlob = glob.getClone(new String[0]);
 //!!!      addDomainInfo(new NodeDomainInfo());
    }
 
@@ -132,27 +138,28 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
  
          // TODO: get the protocol, login properties, callback properties etc. from the __sys__ messages as well:
-         // TODO: new Global(args)
-
-         this.xmlBlasterConnection = new XmlBlasterConnection(glob);
-         this.xmlBlasterConnection.setServerNodeId(getId());
-         this.xmlBlasterConnection.initFailSave(this);
-
-         CallbackAddress callback = nodeInfo.getCbAddress();
-         if (callback.getSessionId().equals(AddressBase.DEFAULT_sessionId))
-            callback.setSessionId(createSessionId());
-         this.cbSessionId = callback.getSessionId();
-
-         ConnectQos qos = new ConnectQos(getId(), glob);
-
-         qos.setUserId(glob.getId()); // the login name
-         // The password is from the environment -passwd or more specific -passwd[heron]
 
          Address addr = getNodeInfo().getAddress();
          if (addr == null) {
             log.error(ME, "Can't connect to node '" + getId() + "', address is null");
             throw new XmlBlasterException(ME, "Can't connect to node '" + getId() + "', address is null");
          }
+         connectGlob.setBootstrapAddress(addr);
+
+         this.xmlBlasterConnection = new XmlBlasterConnection(connectGlob);
+         this.xmlBlasterConnection.setServerNodeId(getId());
+         this.xmlBlasterConnection.initFailSave(this);
+
+         CallbackAddress callback = nodeInfo.getCbAddress();
+         if (callback.getSessionId().equals(AddressBase.DEFAULT_sessionId))
+            callback.setSessionId(createCbSessionId());
+         this.cbSessionId = callback.getSessionId();
+
+         ConnectQos qos = new ConnectQos(getId(), connectGlob);
+
+         qos.setUserId(connectGlob.getId()); // the login name
+         // The password is from the environment -passwd or more specific -passwd[heron]
+
          qos.setAddress(addr);      // use the configured access properties
          qos.addCallbackAddress(callback); // we want to receive update()
          qos.setSessionTimeout(0L); // session lasts forever
@@ -380,7 +387,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * see Authenticate.java createSessionId() for a discussion
     */
-   private String createSessionId() throws XmlBlasterException {
+   private String createCbSessionId() throws XmlBlasterException {
       try {
          String ip = glob.getLocalIP();
          java.util.Random ran = new java.util.Random();
