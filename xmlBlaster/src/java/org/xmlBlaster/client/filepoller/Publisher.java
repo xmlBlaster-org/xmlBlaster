@@ -162,7 +162,7 @@ public class Publisher implements I_Timeout {
          catch (XmlBlasterException ex) {
             this.log.error(ME, "publish: exception " + ex.getMessage());
             try {
-               Thread.sleep(100L);
+               Thread.sleep(this.pollInterval);
             }
             catch  (Exception e) {}      
          }

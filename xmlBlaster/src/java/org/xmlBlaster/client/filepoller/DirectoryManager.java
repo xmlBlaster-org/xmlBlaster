@@ -249,6 +249,7 @@ public class DirectoryManager {
       if (toRemove != null && toRemove.size() > 0) {
          String[] keys = (String[])toRemove.toArray(new String[toRemove.size()]);
          for (int i=0; i < keys.length; i++) {
+            this.log.warn(ME, "the file '" + keys[i] + "' has apparently been removed from the outside: will not send it. No further action required");
             existingFiles.remove(keys[i]);
          }
       }
@@ -320,6 +321,9 @@ public class DirectoryManager {
             moveTo(file, this.discardedDirectory);
          }
       }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
       catch (Throwable ex) {
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, ME + ".removeEntry", "", ex);
       }
@@ -366,7 +370,7 @@ public class DirectoryManager {
       if (file.isDirectory())
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".getContent", "'" + entryName + "' is a directory");
       if (!file.canWrite())
-         throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".getContent", "no rights to read from '" + entryName + "'");
+         throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".getContent", "no rights to write from '" + entryName + "'");
 
       try {
          int toRead = (int)info.getSize();
