@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes in current subversion repository (svn)
 ==============================================
+ o #12930 util.Global now throws IllegalArgumentException if loading of Property instance fails
+
  o #12818 Extended multiSubscribe support
    - Fixed multiSubscribe=false for XPath queries
    - Added support to reconfigure AccessFilter settings for existing subscriptions
