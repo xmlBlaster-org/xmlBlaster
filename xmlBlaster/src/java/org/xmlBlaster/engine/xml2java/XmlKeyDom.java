@@ -135,12 +135,18 @@ public class XmlKeyDom implements I_MergeDomNode
       ArrayList list = new ArrayList();
       String clientName = sessionInfo.toString();
 
+      if (xpathQuery == null || xpathQuery.length() < 1) {
+         log.warn(ME + ".InvalidQuery", "Sorry, can't access message, you supplied an empty XPATH query '" + xpathQuery + "', please check your query string");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME,
+          "Sorry, can't access message, you supplied an empty XPATH query '" + xpathQuery + "', please check your query string");
+      }
+
       Enumeration nodeIter;
       try {
          if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = " + xpathQuery);
          nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xpathQuery);
       } catch (Exception e) {
-         log.warn(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xpathQuery + "' : " + e.toString());
+         log.warn(ME + ".InvalidQuery", "Sorry, can't access, query syntax is wrong for '" + xpathQuery + "' : " + e.toString());
          throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
       }
       int n = 0;
