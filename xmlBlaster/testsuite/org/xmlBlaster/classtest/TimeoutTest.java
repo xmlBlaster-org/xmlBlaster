@@ -20,6 +20,7 @@ public class TimeoutTest extends TestCase {
    private String ME = "TimeoutTest";
    private LogChannel log;
    private boolean event = false;
+   private int counter = 0;
 
    public TimeoutTest(String name) {
       super(name);
@@ -74,8 +75,8 @@ public class TimeoutTest extends TestCase {
    public void testFunctionality() {
       System.out.println("***TimeoutTest: testFunctionality ...");
 
-      String ME = "Timeout-Tester";
       Timeout timeout = new Timeout();
+      counter = 0;
 
       // Test to remove invalid keys
       timeout.removeTimeoutListener(null);
@@ -86,7 +87,6 @@ public class TimeoutTest extends TestCase {
       final Timestamp[] keyArr = new Timestamp[4];
       class Dummy1 implements I_Timeout {
          private String ME = "Dummy1";
-         private int counter = 0;
          public void timeout(Object userData) {
             long time = System.currentTimeMillis();
             long diff = time - keyArr[counter].getMillis();
@@ -125,5 +125,48 @@ public class TimeoutTest extends TestCase {
       assertEquals("Should be expired", true, timeout.isExpired(keyArr[2]));
 
       System.out.println("***TimeoutTest: testFunctionality [SUCCESS]");
+   }
+
+   /**
+    * We test a big load
+    */
+   public void testLoad() {
+      System.out.println("***TimeoutTest: testLoad ...");
+
+      String ME = "Timeout-Tester";
+      Timeout timeout = new Timeout();
+      
+      final int numTimers = 10000;
+      timeout.shutdown();
+      timeout = new Timeout(); // get a new handle
+      class Dummy2 implements I_Timeout {
+         private String ME = "Dummy2";
+         private long start = 0L;
+         public void timeout(Object userData) {
+            if (counter == 0) {
+               start = System.currentTimeMillis();
+            }
+            counter++;
+            if (counter == numTimers) {
+               long diff = System.currentTimeMillis() - start;
+               assertTrue("Error testing " + numTimers + " timers, all updates needed " + diff + " millis", diff < 4000L);
+               log.info(ME, "Success, tested " + numTimers + " timers, all updates came in " + diff + " millis");
+            }
+         }
+      }
+      Dummy2 dummy2 = new Dummy2();
+      long start = System.currentTimeMillis();
+      for (int ii = 0; ii < numTimers; ii++) {
+         timeout.addTimeoutListener(dummy2, 4000L, "timer-" + ii);
+      }
+      assertEquals("Expected " + numTimers + " instead of " + timeout.getSize() + " active timers", numTimers, timeout.getSize());
+
+      log.info(ME, "Feeding of " + numTimers + " done, " + (long) (1000 * (double) numTimers / (System.currentTimeMillis() - start)) + " adds/sec");
+
+      while (counter != numTimers) {
+         try { Thread.currentThread().sleep(500L); } catch (Exception e) { fail("*****ERROR:main interrupt: " + e.toString()); }
+      }
+
+      System.out.println("***TimeoutTest: testLoad [SUCCESS]");
    }
 }
