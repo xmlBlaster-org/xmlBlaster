@@ -3,7 +3,7 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.9 2000/02/20 17:38:55 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.10 2000/05/19 15:16:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -37,6 +37,29 @@ public class XmlQoSBase extends SaxHandlerBase
    public XmlQoSBase()
    {
       if (Log.CALLS) Log.trace(ME, "Creating new XmlQoSBase");
+   }
+
+
+   /**
+    * To avoid SAX parsing (which costs many CPU cycles)
+    * check the QoS string here if it contains anything useful.
+    * @param qos The literal ASCII xml string
+    */
+   protected boolean isEmpty(String qos)
+   {
+      if (qos == null)
+         return true;
+      
+      qos = qos.trim();
+      
+      if (qos.length() < 11) // minimum: "<qos></qos>"
+         return true;
+
+      String middle = qos.substring(5, qos.length()-6);
+      if (middle.trim().length() < 1)
+         return true;
+      
+      return false;
    }
 
 
