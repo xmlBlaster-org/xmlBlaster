@@ -187,6 +187,7 @@ namespace org { namespace xmlBlaster {
    /** Prefix to create a sessionId */
    extern Dll_Export const char* SESSIONID_PREFIX;
    extern Dll_Export const char* SUBSCRIPTIONID_PREFIX;
+   extern Dll_Export const char* const SUBSCRIPTIONID_PtP;
 
    /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
      * see Requirement engine.qos.subscribe.id

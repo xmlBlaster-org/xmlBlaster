@@ -78,6 +78,7 @@ Dll_Export const Timestamp BILLION  = 1000 * MILLION;
 /** Prefix to create a sessionId */
 Dll_Export const char* SESSIONID_PREFIX = "sessionId:";
 Dll_Export const char* SUBSCRIPTIONID_PREFIX = "__subId:";
+Dll_Export const char* const SUBSCRIPTIONID_PtP = "__subId:PtP";
 
 /*
 const int getPriority(string prio, int defaultPriority)
