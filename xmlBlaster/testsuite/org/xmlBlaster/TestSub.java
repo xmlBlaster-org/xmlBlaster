@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.25 2001/12/07 23:45:51 ruff Exp $
+Version:   $Id: TestSub.java,v 1.26 2001/12/16 21:14:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -208,6 +208,8 @@ public class TestSub extends TestCase implements I_Callback
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
+
+      // Test requirement "engine.qos.update.rcvTimestamp":
       assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQoS.getRcvTimestamp(),
              sentTimestamp<updateQoS.getRcvTimestamp() && (sentTimestamp+1000)>updateQoS.getRcvTimestamp());
 
