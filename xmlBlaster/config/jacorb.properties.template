@@ -21,7 +21,7 @@
 #
 # xmlBlaster, builtin into CorbaDriver.java and CorbaConnection.java as default:
 #
-#ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
+ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
 
 #ORBInitRef.NameService=corbaloc::160.45.110.41:38693/StandardNS/NameServer%2DPOA/_root
 #ORBInitRef.NameService=file:/c:/NS_Ref
