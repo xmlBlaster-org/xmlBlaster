@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.11 2000/04/04 09:46:40 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.12 2000/04/14 07:07:58 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -37,7 +37,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -77,11 +77,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
       HttpSession session = req.getSession(true);
       String sessionId = session.getId();
+
       HttpPushHandler pushHandler = new HttpPushHandler(req, res);
 
-     
-      if(!req.isRequestedSessionIdFromCookie()) {
-         pushHandler.push("alert('Sorry, your browser does not support cookies, you will not get updates from xmlBlaster.');\n",false);
+/*
+      if(!req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
+         pushHandler.push("alert('Sorry, your browser does not support cookies, you will not get updates from xmlBlaster."+sessionId+"');\n",false);
          pushHandler.cleanup();
          Log.error(ME, "Cookies are not supported by the browser.");
          return;
@@ -89,7 +90,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       else{
          Log.info(ME,"Cookies are supported.");
       }
-      
+*/
 
       try {
          String actionType = Util.getParameter(req, "ActionType", "NONE");

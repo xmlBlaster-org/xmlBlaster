@@ -206,6 +206,9 @@ var queueing     = false;
 var listenerList = new Array();
 
 
+/*
+ *
+ */
 function FrameMessageQueue( frameHandle )
 {
    this.queueTime               = 100;
@@ -217,6 +220,9 @@ function FrameMessageQueue( frameHandle )
    this.queue                   = queue_;
 }
 
+/*
+ *
+ */
 function queue_( message )
 {
    //Log.info("Queueing message "+message.key.oid+" in queue "+this.frame.name);
@@ -237,6 +243,9 @@ function queue_( message )
    }
 }
 
+/*
+ *
+ */
 function sendMessageQueue(queueName)
 {
    var fmq;
@@ -286,6 +295,9 @@ function sendMessageQueue(queueName)
 
 
 
+/*
+ *
+ */
 function setReady( frame, ready )
 {
    for( i = 0; i < listenerList.length; i++) {
@@ -303,6 +315,15 @@ function setReady( frame, ready )
 function addUpdateListener( listenerFrame ) {
    if(listenerFrame.update==null) {
       return;
+   }
+
+   for( i = 0; i < listenerList.length;) {
+      if (listenerList[i].frame.closed ) {
+         if(Log.DEBUG) Log.warning("Frame has been closed, removing it ...");
+         removeUpdateListenerAtPos( i );
+         continue;
+      }
+      i++;
    }
 
    for( i = 0; i < listenerList.length; i++) {
@@ -373,6 +394,14 @@ function showListener()
    alert( str );
 }
 
+function reloadListener()
+{
+   for( var i = 0; i < listenerList.length; i++ ) {
+      listenerList[i].frame.document.location.reload();
+   }
+
+}
+
 
 /*
  *
@@ -425,11 +454,18 @@ function update( updateKey, content, updateQoS)
 
 
 
+
+/*
+ *
+ */
 function message(msg)
 {
    var decoded = unescape( msg.replace(/\+/g, " ") );
    alert( decoded );
 }
+/*
+ *
+ */
 function error(msg)
 {
    var decoded = unescape( msg.replace(/\+/g, " ") );

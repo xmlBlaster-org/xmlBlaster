@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.13 2000/03/29 16:33:35 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.14 2000/04/14 07:07:58 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -231,6 +231,14 @@ public class HttpPushHandler
    /**
     * Updating data to the browser (callback/push mode).
     * The data must be Javascript code
+    * @param
+    * @param confirm true - There will be append an Javascript code
+    *                                               [if (parent.browserReady != null) parent.browserReady();].
+    *                       This shows, that the browser had processed the whole message.
+    *                       If the Browser implements this javascript function, it could send
+    *                       a browserReady signal back to the  BlasterHttpProxyServlet.
+    *                       This feature solves the problem, that the browser got messages too fast
+    *                       and could not process all content of the message.
     */
    public void push(String str, boolean confirm) throws ServletException, IOException
    {
@@ -372,7 +380,7 @@ public class HttpPushHandler
     */
    public void ping() throws ServletException, IOException
    {
-      push("if (parent.ping != null) parent.ping();\n");
+      push("if (parent.ping != null) parent.ping();\n",false);
    }
 
 
@@ -397,12 +405,12 @@ public class HttpPushHandler
       public void run() {
          Log.trace(ME, "Pinging browser ...");
          while (pingRunning) {
-            
+
             try {
                Thread.currentThread().sleep(PING_INTERVAL);
-            } 
+            }
             catch (InterruptedException i) { }
-            
+
             try {
                if(Log.TRACE) Log.trace(ME,"pinging the Browser ...");
                pushHandler.ping();
