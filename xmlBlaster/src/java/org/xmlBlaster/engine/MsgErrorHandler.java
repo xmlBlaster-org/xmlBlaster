@@ -7,7 +7,6 @@ package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -18,7 +17,6 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.qos.DisconnectQos;
 
 import java.util.ArrayList;
