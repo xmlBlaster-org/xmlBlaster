@@ -32,8 +32,8 @@
        You will of course need to build both release and debug versions if you should so require. 
        Any deviation from the %TAO_ROOT%/TAOACE project file is likely to cause file linking problems
        with cpp-tasks enforcing case sensitivity of library file names.
-	   </td>
-	   </tr>
+           </td>
+           </tr>
 
        <tr>
        <td>ACE</td>
@@ -121,6 +121,40 @@ and some test clients in
       </pre>
    </configuration>
 
+   <configuration where="client">
+      <h3>Howto configure/access the TAO Nameservive</h3>
+      <p>
+      This is a cut and paste from the TAO mailing list:
+      </p>
+      <pre>
+Hi omon
+if you turned off the multicast option by defining -m 0 and I think thats
+the default
+ option. you must tell your client how to obtain the reference for the
+naming service.
+
+ first run the naming service with the option
+  -orbendpoint iiop://1.2@[hostname]:[portnumber]
+ which causes nameservice the listen  the requests at designated port
+then run your client with
+ -orbinitref
+NameService=corbaloc:iiop:1.2@[hostname]:[portnumber]/NameService
+ this will add the NameService ior to the orbs' initial reference table .
+
+ then you will be able to resolve to initial reference for your nameservice.
+ if you dont give the reference your client try the resolve the reference
+with multicast opton
+ as last resort which is non standart and likely the fail in certain
+situations.
+
+ have look at the readme file at the naming_service folder of your ACE+TAO
+distribution
+ for further   information.
+
+ Hürcan Solter
+   </pre>
+   </configuration>
+
    <todo type='HTML'>
       <p>
       Testsuite is missing.
@@ -136,7 +170,7 @@ and some test clients in
    
    <date>2002 08 27</date>
    
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
