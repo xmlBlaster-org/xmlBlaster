@@ -25,8 +25,14 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.serverIdl \
 			org.xmlBlaster.util
 
+TEST_PACKGS = testsuite.org.xmlBlaster
+
 javadoc:
 	$(JAVADOC) -d $(JAVADOC_DIR) -sourcepath ./src/java $(PACKGS) 
+ 
+
+javadoc_testsuite:
+	$(JAVADOC) -d $(JAVADOC_DIR) -sourcepath . $(TEST_PACKGS) 
  
 
 jar: all
