@@ -88,15 +88,17 @@ protected:
    org::xmlBlaster::client::XmlBlasterAccess connection_;
    org::xmlBlaster::util::EmbeddedServer*  embeddedServer_;
    bool             needsHelp_;
+   bool             doEmbeddedServerCheck_;
 
 public:
 
-   TestSuite(int args, char ** argv, const std::string& name) 
+   TestSuite(int args, const char * const argv[], const std::string& name, bool doEmbeddedServerCheck="true") 
       : ME(name), 
         applName_(ME), 
         global_(org::xmlBlaster::util::Global::getInstance().initialize(args, argv)), 
         log_(global_.getLog("test")),
-        connection_(global_)
+        connection_(global_),
+        doEmbeddedServerCheck_(doEmbeddedServerCheck)
    {
       needsHelp_ = false;
       for (int ii=0; ii<args; ii++) {
@@ -105,6 +107,9 @@ public:
             break;
          }
       }
+
+      if (!doEmbeddedServerCheck_)
+         return;
 
       if ( log_.call() ) log_.call(ME, "Entering TestSuite base class, initializing XML environment");
       embeddedServer_    = NULL;
@@ -137,12 +142,14 @@ public:
    virtual ~TestSuite()
    {
       if (log_.call()) log_.call(ME, "destructor");
-      delete embeddedServer_;
-      embeddedServer_ = NULL;
+      if (doEmbeddedServerCheck_) {
+         delete embeddedServer_;
+         embeddedServer_ = NULL;
+      }
       if (log_.trace()) log_.trace(ME, "destructor ended");
    }
 
-   virtual void setUp()
+   virtual void setUp(/*int args=0, char *argv[]=0*/)
    {
       if (needsHelp_) {
          usage();
