@@ -28,15 +28,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
       super(glob, nodeId);
       this.log = glob.getLog("core");
       relating = Constants.RELATING_MSGUNITSTORE;
-      initialize();
-   }
-
-   /**
-    * Configure property settings
-    */
-   protected void initialize() {
       super.initialize(Constants.RELATING_MSGUNITSTORE);
-      //super.initialize("topic"); //--> topic.msgUnitStore.maxMsg
    }
 
    public final boolean onOverflowDeadMessage() {
