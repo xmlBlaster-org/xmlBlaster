@@ -1,3 +1,8 @@
+/*------------------------------------------------------------------------------
+Name:      TestJmsSubscribe.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.jms;
 
 import javax.jms.JMSException;
@@ -11,7 +16,10 @@ import javax.jms.Topic;
 import javax.jms.TopicSession;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSubscriber;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import org.apache.naming.NamingService;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 
@@ -28,9 +36,12 @@ import junit.framework.*;
  * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.TestJmsSubscribe
  * @see org.xmlBlaster.util.qos.ConnectQosData
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/jms.html" target="others">the jms requirement</a>
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestJmsSubscribe extends TestCase implements MessageListener {
    private final static String ME = "TestJmsSubscribe";
+   private final static String CONNECTION_FACTORY = "connectionFactory";
+   private final static String TOPIC = "jms-test";
    protected Global glob;
    protected LogChannel log;
    int counter = 0, nmax;
@@ -40,13 +51,27 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    private TopicConnection connection;
    private Object latch = new Object();
    private long[] timestamps;
-
+   private String[] args;
+   private NamingService namingService;
 
    public TestJmsSubscribe(String name) {
       super(name);
+      try {
+         this.namingService = new NamingService();
+         this.namingService.start(); 
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("exception in constructor when starting naming service", false);
+      }
+   }
+
+   public void finalize() {
+      this.namingService.stop(); 
    }
 
    public void prepare(String[] args) {
+      this.args = args;
       this.glob = new Global(args);
       // this.glob.init(args);
       this.glob.getLog("test");
@@ -88,15 +113,24 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       this.glob = Global.instance();
       this.log = this.glob.getLog("test");
       try {
-         // create a factory (normally retreived by naming service)
-         this.factory = new XBConnectionFactory(this.glob);
-         // should be retreived via jndi
-         this.topic = new XBTopic("jms-test");
+         adminJmsStart();
+
+         try {
+            InitialContext ctx = new InitialContext();
+            this.factory = (XBConnectionFactory)ctx.lookup(CONNECTION_FACTORY);
+            this.topic = (XBTopic)ctx.lookup(TOPIC);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("naming exception", false);
+         }
+
          this.connection = this.factory.createTopicConnection();
          this.connection.start();
          this.nmax = 5;
          this.timestamps = new long[this.nmax];
          this.counter = 0;
+
       }
       catch (JMSException ex) {
          ex.printStackTrace();
@@ -107,19 +141,45 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    protected void tearDown() {
       try {
          this.connection.stop();
+         InitialContext ctx = new InitialContext();
+         ctx.unbind(CONNECTION_FACTORY);
+         ctx.unbind(TOPIC);
       }
       catch (JMSException ex) {
          ex.printStackTrace();
          assertTrue(false);
       }
+      catch (NamingException ex) {
+         ex.printStackTrace();
+         assertTrue("exception when unbinding", false);
+      }
    }
+   
+   protected void adminJmsStart() {
+      try {
+         // System.setProperty("java.naming.factory.initial", "org.apache.naming.modules.memory.MemoryURLContextFactory");
+         // System.setProperty("java.naming.factory.url.pkgs", "org.apache.naming.modules");
+         InitialContext ctx = new InitialContext();
+         ctx.bind(CONNECTION_FACTORY, new XBConnectionFactory(this.args));            
+         ctx.bind(TOPIC, new XBTopic(TOPIC));
+      }
+      catch (NamingException ex) {
+         ex.printStackTrace();
+         assertTrue("exception occured in testJndi", false);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("exception when starting naming service", false);
+      }
+   }
+   
 
    public void testSubAutoAck() {
       try {
          TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         TopicSubscriber subscriber = session.createSubscriber(topic);
+         TopicSubscriber subscriber = session.createSubscriber(this.topic);
          subscriber.setMessageListener(this);
-         TopicPublisher publisher = session.createPublisher(topic);
+         TopicPublisher publisher = session.createPublisher(this.topic);
          TextMessage msg = session.createTextMessage();
          msg.setText("this is a simple jms AUTO acknowlegded test message");
          
@@ -146,9 +206,9 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    public void testSubClientAck() {
       try {
          TopicSession session = connection.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-         TopicSubscriber subscriber = session.createSubscriber(topic);
+         TopicSubscriber subscriber = session.createSubscriber(this.topic);
          subscriber.setMessageListener(this);
-         TopicPublisher publisher = session.createPublisher(topic);
+         TopicPublisher publisher = session.createPublisher(this.topic);
          TextMessage msg = session.createTextMessage();
          msg.setText("this is a simple jms CLIENT acknowlegded test message");
          

@@ -5,15 +5,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+
 import javax.jms.JMSException;
 import javax.jms.Connection;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueConnection;
+import javax.naming.Referenceable;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 
-import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
@@ -22,16 +27,15 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBConnectionFactory implements TopicConnectionFactory, QueueConnectionFactory {
+public class XBConnectionFactory implements TopicConnectionFactory, Externalizable, Referenceable, QueueConnectionFactory {
 
    private final static String ME = "XBConnectionFactory";
-   private Global global;
-   private LogChannel log;
+   private final static long SER_VERSION = 1L;
+   // private Global global;
+   String[] args;
 
-   public XBConnectionFactory(Global global) {
-      if (global == null) this.global = Global.instance();
-      else this.global = global;
-      this.log = this.global.getLog("jms");
+   public XBConnectionFactory(String[] args) {
+      this.args = args;
    }
 
    public XBConnectionFactory() {
@@ -47,9 +51,8 @@ public class XBConnectionFactory implements TopicConnectionFactory, QueueConnect
    }
 
    public Connection createConnection() throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createConnection");
       try {
-         return new XBConnection(this.global); 
+         return new XBConnection(this.args); 
       }
       catch (XmlBlasterException ex) {
          throw convert(ex, null);
@@ -69,9 +72,8 @@ public class XBConnectionFactory implements TopicConnectionFactory, QueueConnect
     */
    public Connection createConnection(String userName, String password)
       throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createConnection");
       try {
-         return new XBConnection(this.global, userName, password); 
+         return new XBConnection(this.args, userName, password); 
       }
       catch (XmlBlasterException ex) {
          throw convert(ex, null);
@@ -88,4 +90,25 @@ public class XBConnectionFactory implements TopicConnectionFactory, QueueConnect
       return (QueueConnection)createConnection(userName, password);
    }
 
+   public Reference getReference() {
+      Reference ret = new Reference(this.getClass().getName(), XBObjectFactory.class.getName(), null);
+      for (int i=0; i < this.args.length; i++) {
+         ret.add(new StringRefAddr(this.args[i], null));         
+      }
+      return ret;
+   }
+
+   public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
+      long version = oi.readLong();
+      if (version <= SER_VERSION) {
+         this.args = (String[])oi.readObject();
+      }
+      else throw new IOException(ME + ".writeExternal: current version '" + SER_VERSION + "' is older than serialized version '" + version + "'");
+   }
+   
+   public void writeExternal(java.io.ObjectOutput oo) throws IOException {
+      oo.writeLong(SER_VERSION);
+      oo.writeObject(this.args);
+   }
+         
 }

@@ -1,9 +1,8 @@
-/*
- * Created on Sep 29, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
+/*------------------------------------------------------------------------------
+Name:      XBSession.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
 import java.io.Serializable;

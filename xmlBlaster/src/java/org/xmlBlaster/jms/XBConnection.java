@@ -56,10 +56,10 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
       return this.global;
    }
    
-   XBConnection(Global global, String user, String password) throws XmlBlasterException {
+   XBConnection(String[] args, String user, String password) throws XmlBlasterException {
+      this.global = new Global(args);
       this.user = user;
       this.password = password;
-      this.global = global;
       this.log = this.global.getLog("jms");
       // clone to make sure to have an own instance (or should the 'global' member be a clone ?)
       this.access = this.global.getClone(null).getXmlBlasterAccess();
@@ -69,8 +69,8 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
       this.metaData = new XBConnectionMetaData();
    }
    
-   XBConnection(Global global) throws XmlBlasterException {
-      this(global, null, null);
+   XBConnection(String[] args) throws XmlBlasterException {
+      this(args, null, null);
    }
 
    

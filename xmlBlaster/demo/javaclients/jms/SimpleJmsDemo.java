@@ -32,16 +32,18 @@ public class SimpleJmsDemo implements MessageListener {
 
    private Global global;
    private LogChannel log;
+   private String[] cmdLine;
 
-   public SimpleJmsDemo(Global global) {
-      this.global = global;
+   public SimpleJmsDemo(String[] cmdLine) {
+      this.cmdLine = cmdLine;
+      this.global = new Global(this.cmdLine);
       this.log = this.global.getLog("jms-test");
    }
    
    public void prepare() throws JMSException {
       try {
          // create a factory (normally retreived by naming service)
-         TopicConnectionFactory factory = new XBConnectionFactory(this.global);
+         TopicConnectionFactory factory = new XBConnectionFactory(this.cmdLine);
          // should be retreived via jndi
          Topic topic = new XBTopic("jms-test");
       
@@ -78,8 +80,7 @@ public class SimpleJmsDemo implements MessageListener {
    }
 
    public static void main(String[] args) {
-      Global global = new Global(args);
-      SimpleJmsDemo test = new SimpleJmsDemo(global);
+      SimpleJmsDemo test = new SimpleJmsDemo(args);
       try {
          test.prepare();
       }
