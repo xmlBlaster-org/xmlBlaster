@@ -14,7 +14,7 @@ static int tests_run = 0;
    do { if (expected != was) { sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %.500s: expected='%.500s' was='%.500s'", __FILE__, __LINE__, message, expected?"true":"false", was?"true":"false"); return MU_ASSERT_TEXT; }} while (0)
 
 #define mu_assertEqualsInt(message, expected, was) \
-   do { if (expected != was) { sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %.500s: expected='%d' was='%d'", __FILE__, __LINE__, message, expected, was); return MU_ASSERT_TEXT; }} while (0)
+   do { if (expected != was) { sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %.500s: expected='%d' was='%d'", __FILE__, __LINE__, message, (int)expected, (int)was); return MU_ASSERT_TEXT; }} while (0)
 
 #define mu_assertEqualsShort(message, expected, was) \
    do { if (expected != was) { sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %.500s: expected='%hd' was='%hd'", __FILE__, __LINE__, message, expected, was); return MU_ASSERT_TEXT; }} while (0)
