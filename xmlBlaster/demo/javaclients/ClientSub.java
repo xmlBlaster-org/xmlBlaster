@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.19 2000/11/14 07:06:28 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.20 2001/08/30 21:00:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -46,28 +46,13 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  */
 public class ClientSub implements I_Callback
 {
-   private XmlBlasterConnection blasterConnection = null;
    private static String ME = "ClientSub";
    private int numReceived = 0;         // error checking
 
 
    public ClientSub(String args[])
    {
-      // Initialize command line argument handling (this is optional)
-      boolean showUsage = false;
-      try {
-         showUsage = XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         showUsage = true;
-         Log.error(ME, e.toString());
-      }
-      if (showUsage) {
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [ClientSub].");
-         XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit(ME, "Example: jaco javaclients.ClientSub -name Jeff\n");
-      }
+      initArgs(args); // Initialize command line argument handling (this is optional)
 
       try {
          // check if parameter -name <userName> is given at startup of client
@@ -184,6 +169,28 @@ public class ClientSub implements I_Callback
       Log.plain("UpdateKey", updateKey.printOn().toString());
       Log.plain("content", (new String(content)).toString());
       Log.plain("UpdateQoS", updateQoS.printOn().toString());
+   }
+
+
+   /**
+    * Initialize command line argument handling (this is optional)
+    */
+   private void initArgs(String args[])
+   {
+      boolean showUsage = false;
+      try {
+         showUsage = XmlBlasterProperty.init(args);
+      } catch(org.jutils.JUtilsException e) {
+         showUsage = true;
+         Log.error(ME, e.toString());
+      }
+      if (showUsage) {
+         Log.plain("\nAvailable options:");
+         Log.plain("   -name               The login name [ClientSub].");
+         XmlBlasterConnection.usage();
+         Log.usage();
+         Log.exit(ME, "Example: jaco javaclients.ClientSub -name Jeff\n");
+      }
    }
 
 
