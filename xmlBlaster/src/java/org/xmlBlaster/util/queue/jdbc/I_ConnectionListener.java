@@ -10,7 +10,7 @@ package org.xmlBlaster.util.queue.jdbc;
  * Interface you need to implement to receive notifications from the 
  * JdbcConnectionPool that the pool has successfully reconnected
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
 public interface I_ConnectionListener

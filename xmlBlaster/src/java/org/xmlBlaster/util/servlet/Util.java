@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: Util.java,v 1.1 2000/03/27 07:33:19 kkrafft2 Exp $
+Version:   $Id: Util.java,v 1.2 2002/12/18 12:10:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
@@ -13,7 +13,7 @@ import javax.servlet.http.*;
 
 /**
  * Common servlet methods
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class Util
 {
