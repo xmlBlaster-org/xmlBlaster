@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.56 $
+# $Revision: 1.57 $
 #-----------------------------------------------------------
 
 
@@ -75,8 +75,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/TowerJ/xtdash.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/TowerJ/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
    if [ ${USE_ANT:=""} = "true" ] ; then
@@ -206,9 +206,14 @@ fi
 
 #-------- Running with TowerJ native compiler -
 # See xmlBlaster/bin/Project.tj
+# Replace xtdash.jar and jacorb.jar with the original ones.
 # Invoke:
 #   cd $XMLBLASTER_HOME/bin
 #   tj -b-jdk 2 -verbose  -project $XMLBLASTER_HOME/bin/Project.tj
+#  Run testsuite, invoke again
+#   tj -b-jdk 2 -verbose  -project $XMLBLASTER_HOME/bin/Project.tj
+#  until Main-xy.tjp shows no Java classes anymore.
+#  Other options:
 #   tj -b-jdk 2  -nofeedback
 #   tj -b-jdk 2  -O-closed
 TOWERJ=/opt/TowerJ
@@ -221,6 +226,8 @@ if [ ${TOWERJ:=""} != "" ] ; then
       export PATH
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TOWERJ}/lib/x86-linux
       export LD_LIBRARY_PATH
+		#TOWERJ_TJLIB_PATH= ???
+		#export TOWERJ_TJLIB_PATH
       ${ECHO} "$BLACK_LTGREEN      Using TOWERJ=${TOWERJ}  $ESC"
    fi
 fi
