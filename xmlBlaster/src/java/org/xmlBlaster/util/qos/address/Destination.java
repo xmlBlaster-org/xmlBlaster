@@ -7,6 +7,7 @@ package org.xmlBlaster.util.qos.address;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.enum.Constants;
 
 /**
  * Holding destination address attributes.
@@ -27,7 +28,10 @@ public class Destination implements java.io.Serializable
    private boolean DEFAULT_forceQueuing = false;
    private boolean forceQueuing = DEFAULT_forceQueuing;
 
-   public Destination() { } // for SAX parser
+   /** For SAX parser */
+   public Destination() {
+      //this(null, null);
+   }
 
    /**
     * Constructs the specialized quality of service destination object.
@@ -35,6 +39,16 @@ public class Destination implements java.io.Serializable
     *                this is typically the login name of another client
     */
    public Destination(SessionName address) {
+      this(null, address);
+   }
+
+
+   /**
+    * Constructs the specialized quality of service destination object.
+    * @param address The destination address (EXACT),
+    *                this is typically the login name of another client
+    */
+   public Destination(Global glob, SessionName address) {
       setDestination(address);
    }
 
@@ -147,9 +161,8 @@ public class Destination implements java.io.Serializable
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
-      String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<destination");
       if (!"EXACT".equals(queryType))
