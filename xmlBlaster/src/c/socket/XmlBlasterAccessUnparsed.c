@@ -258,17 +258,19 @@ static MsgRequestInfo *preSendEvent(void *userP, MsgRequestInfo *msgRequestInfo,
    retVal = xa->callbackP->addResponseListener(xa->callbackP, xa, msgRequestInfo->requestIdStr, responseEvent);
    if (retVal == false) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Couldn't register as response listener", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Couldn't register as response listener", __FILE__, __LINE__);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__,
-                  "preSendEvent(requestId=%s, xa->responseBlob.dataLen=%d, threadId=%ld), entering lock",
-                  msgRequestInfo->requestIdStr, xa->responseBlob.dataLen, pthread_self());
+                  "preSendEvent(requestId=%s, xa->responseBlob.dataLen=%d), entering lock",
+                  msgRequestInfo->requestIdStr, xa->responseBlob.dataLen);
    if ((retVal = pthread_mutex_lock(&xa->responseMutex)) != 0) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Error trying to lock responseMutex %d", __FILE__, __LINE__, retVal);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Error trying to lock responseMutex %d", __FILE__, __LINE__, retVal);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
@@ -294,7 +296,7 @@ static void responseEvent(void *userP, void /*SocketDataHolder*/ *socketDataHold
       xa->log(xa->logLevel, LOG_ERROR, __FILE__, "Trying to lock responseMutex in responseEvent() failed %d", retVal);
       /* return; */
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex threadId=%ld is LOCKED", pthread_self());
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex is LOCKED");
 
    blobcpyAlloc(&xa->responseBlob, s->blob.data, s->blob.dataLen);
    xa->responseType = s->type;
@@ -305,14 +307,14 @@ static void responseEvent(void *userP, void /*SocketDataHolder*/ *socketDataHold
    }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__,
-                                "responseEvent(requestId '%s', msgType=%c, dataLen=%d, threadId=%ld) occurred, wake up signal sent",
-                                s->requestId, xa->responseType, xa->responseBlob.dataLen, pthread_self());
+                                "responseEvent(requestId '%s', msgType=%c, dataLen=%d) occurred, wake up signal sent",
+                                s->requestId, xa->responseType, xa->responseBlob.dataLen);
 
    if ((retVal = pthread_mutex_unlock(&xa->responseMutex)) != 0) {
       xa->log(xa->logLevel, LOG_ERROR, __FILE__, "Trying to unlock responseMutex in responseEvent() failed %d", retVal);
       /* return; */
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex threadId=%ld is UNLOCKED", pthread_self());
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex is UNLOCKED");
 }
 
 /**
@@ -333,7 +335,7 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
       useTimeout = true;
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex threadId=%ld is LOCKED, entering wait ...", msgRequestInfo->requestIdStr, pthread_self());
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfo->requestIdStr);
    /* Wait for response, the callback server delivers it */
    while (xa->responseBlob.dataLen == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
       if (useTimeout == true) {
@@ -364,8 +366,8 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
 
    if (xa->logLevel>=LOG_TRACE)
       xa->log(xa->logLevel, LOG_TRACE, __FILE__,
-         "Thread #%ld woke up in postSendEvent(requestId=%s) for msgType=%c and dataLen=%d",
-         pthread_self(), msgRequestInfo->requestIdStr, msgRequestInfo->responseType, msgRequestInfo->blob.dataLen);
+         "Thread #%ld woke up in postSendEvent() for msgType=%c and dataLen=%d",
+         msgRequestInfo->requestIdStr, msgRequestInfo->responseType, msgRequestInfo->blob.dataLen);
 
    xa->responseType = 0;
    xa->responseBlob.dataLen = 0;
@@ -391,11 +393,11 @@ static bool mutexUnlock(XmlBlasterAccessUnparsed *xa, XmlBlasterException *excep
          xa->log(xa->logLevel, LOG_WARN, __FILE__, "Ignoring embedded exception %s: %s", exception->errorCode, exception->message);
       }
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] ERROR trying to unlock responseMutex for thread %ld, return=%d", __FILE__, __LINE__, pthread_self(), retVal);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] ERROR trying to unlock responseMutex, return=%d", __FILE__, __LINE__, retVal);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent() responseMutex threadId=%ld is UNLOCKED", pthread_self());
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent() responseMutex is UNLOCKED");
    return true;
 }
 
