@@ -1767,10 +1767,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public static void usage()
    {
+      Global glob = Global.instance();
       String text = "\n";
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
-      text += "                       Current setting is '" + Global.instance().getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
+      text += "                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";
@@ -1778,7 +1779,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "                       Clients can overwrite this with ConnectQos.java\n";
 
       Log.plain(text);
-      Global glob = new Global();
       try {
          Log.plain(new ConnectQos(glob).usage());
       } catch (XmlBlasterException e) {}
