@@ -21,17 +21,17 @@ import java.util.ArrayList;
  * <p />
  * <pre>
  *&lt;qos>
- *   &lt;subscribe id='_subId:1'/>  &lt;!-- Force a subscription ID from client side -->
+ *   &lt;subscribe id='_subId:1'/>    &lt;!-- Force a subscription ID from client side -->
  *   &lt;erase forceDestroy='true'/>  &lt;!-- Kill a MsgUnit even if there are pending updates or subscriptions -->
- *   &lt;meta>false&lt;/meta>       &lt;!-- Don't send me the xmlKey meta data on updates -->
- *   &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
+ *   &lt;meta>false&lt;/meta>         &lt;!-- Don't send me the xmlKey meta data on updates -->
+ *   &lt;content>false&lt;/content>   &lt;!-- Don't send me the content data on updates (notify only) -->
  *   &lt;multiSubscribe>false&lt;/multiSubscribe> &lt;!-- Ignore a second subscribe on same oid or XPATH -->
- *   &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
- *   &lt;initialUpdate>false&lt;/initialUpdate>; <!-- don't send an initial message after subscribe -->
- *   &lt;notify>false&lt;/notify>;  &lt;!-- Suppress erase event to subcribers -->
+ *   &lt;local>false&lt;/local>       &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+ *   &lt;initialUpdate>false&lt;/initialUpdate> <!-- don't send an initial message after subscribe -->
+ *   &lt;notify>false&lt;/notify>     &lt;!-- Suppress erase event to subcribers -->
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
- *                                  &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
- *   &lt;history numEntries='20'/>  &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
+ *                                    &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
+ *   &lt;history numEntries='20'/>    &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
  *&lt;/qos>
  * </pre>
  * @see org.xmlBlaster.util.qos.QueryQosData
