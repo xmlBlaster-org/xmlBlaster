@@ -74,19 +74,31 @@ I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, Xml
          isUsingXerces_ = true;
       }
    }
-   catch (const XMLException& toCatch) {
-      char* message = XMLString::transcode(toCatch.getMessage());
-      std::string txt = std::string("Constructor - error during initialization. Exception message is: ") + std::string(message);
+   catch (const XMLException& e) {
+      char* message = XMLString::transcode(e.getMessage());
+      std::string txt = std::string("XMLPlatformUtils::Initialize() - XMLException during initialization. Exception message is: ") + std::string(message);
       Sax2Parser::releaseXMLCh(&message);
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
+   catch (const std::exception& e) {
+      std::string txt = std::string("XMLPlatformUtils::Initialize() - std::exception during initialization. Exception message is: ") + std::string(e.what());
+      throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
+   }
+
    try {
       return new Sax2Parser(global, handler);
    }
-   catch (const XMLException& toCatch) {
-      char* message = XMLString::transcode(toCatch.getMessage());
-      std::string txt = std::string("createParser: error during SAX parser initialization. Exception message is: ") + std::string(message);
+   catch (const XmlBlasterException& e) {
+      throw e;
+   }
+   catch (const XMLException& e) {
+      char* message = XMLString::transcode(e.getMessage());
+      std::string txt = std::string("Sax2Parser(): error during SAX parser initialization. Exception message is: ") + std::string(message);
       Sax2Parser::releaseXMLCh(&message);
+      throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
+   }
+   catch (const std::exception& e) {
+      std::string txt = std::string("Sax2Parser() - std::exception during initialization. Exception message is: ") + std::string(e.what());
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
 }
