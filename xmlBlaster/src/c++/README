@@ -10,6 +10,9 @@ The C++ source code is compiled to a shared library
 
 (the extension is .so on Linux, .sl on HPUX, .dll on Windows)
 
+Tested with mico 2.3.6 and 2.3.7 (cvs from 2002-04-01)
+and xerces 1.6 and 1.7 on Linux.
+
 
 HOW TO BUILD THE CLIENT CLASSES:
 ================================
@@ -17,28 +20,31 @@ HOW TO BUILD THE CLIENT CLASSES:
 - retrieve xerces from http://xml.apache.org
 - install xerces, lets say in /opt/local/xerces
 - install one c++ implementation of corba (currently MICO or ORBACUS)
-  lets say in /opt/local/mico
-     ./configure --prefix /opt/local --disable-mini-stl
+  lets say in /opt/local/mico-src
+     ./configure --prefix /opt/local/mico --disable-mini-stl
+     gmake
+     gmake install
+     Installs the necessary stuff in /opt/local/mico
 - define the following environment variables if different than the default
   (the given value is the default setting).
 
   Do this by editing xmlBlaster/build.properties:
 
      CORBACPP_HOME = /opt/local/mico
-     CORBACPP_VER  = 2.3.6
-     XMLCPP_HOME   = /opt/local/xerces-c-src1_6_0
-     XMLCPP_VER    = 1_6_0
+     CORBACPP_VER  = 2.3.7
+     XMLCPP_HOME   = /opt/local/xerces-c-src1_7_0
+     XMLCPP_VER    = 1_7_0
     
     XMLCPP_HOME=<directory-where-you-installed-xerces>
                 (for example XMLCPP_HOME=/opt/local/xerces)
 
-    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_6_0")
+    XMLCPP_VER=<version-of-xerces> (currently XMLCPP_VER="1_7_0")
 
     ORBACUS_HOME or CORBACPP_HOME (depending if you run with orbacus or mico
         ex.: ORBACUS_HOME=/opt/local/orbacus
 
     ORBACUS_VER or CORBACPP_VER to the version of mico or orbacus
-        ex.: CORBACPP_VER="2.3.6"
+        ex.: CORBACPP_VER="2.3.7"
 
     Currently not supported (sorry Michele):
     CORBA_CPP=<your-corba-implementor> (currently "orbacus" or "mico")
