@@ -350,7 +350,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                putToHoldbackQueue(managerEntry, entry);
             }
             catch (XmlBlasterException e) {
-               deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, e));
+               deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, deliveryManager.getQueue(), e));
             }
             if (log.TRACE) log.trace(ME, "Removing from callback queue " + entry.getLogId() + " (is now a holdback message)");
             try {
@@ -446,7 +446,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
                catch (XmlBlasterException e) {
                   log.warn(ME, "flushHoldbackQueue() failed: " + e.getMessage());
                   // errorCode == "ONOVERFLOW"
-                  deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, queueEntries, e));
+                  deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, queueEntries, deliveryManager.getQueue(), e));
                }
 
                try {

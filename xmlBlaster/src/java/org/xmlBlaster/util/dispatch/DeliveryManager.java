@@ -251,7 +251,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.deliveryConnectionsHandler.getState());
       removeBurstModeTimer();
       // The error handler flushed the queue and does error handling with them
-      this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, ex));
+      this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, getQueue(), ex));
       shutdown();
    }
    
@@ -267,7 +267,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (xmlBlasterException.isUser()) {
          // Exception from remote client from update(), pass it to error handler and carry on ...
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-         getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, entries, xmlBlasterException));
+         getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, entries, getQueue(), xmlBlasterException));
          return;
       }
       else if (xmlBlasterException.isCommunication()) {
@@ -277,7 +277,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                entryList = this.msgInterceptor.handleNextMessages(this, entryList);
                if (entryList != null && entryList.size() > 0) {
                   MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, xmlBlasterException));
+                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), xmlBlasterException));
                }
             }
             catch (XmlBlasterException xmlBlasterException2) {
@@ -285,7 +285,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             }
             if (entryList != null && entryList.size() > 0) {
                MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-               this.failureListener.handleError(new MsgErrorInfo(glob, entries, xmlBlasterException));
+               this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), xmlBlasterException));
             }
             return;
          }
@@ -332,7 +332,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          if (ex.isUser()) {
             // Exception from remote client from update(), pass it to error handler and carry on ...
             MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-            getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, ex));
+            getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, getQueue(), ex));
          }
          else if (ex.isCommunication()) {
 
@@ -341,7 +341,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                   entryList = this.msgInterceptor.handleNextMessages(this, entryList);
                   if (entryList != null && entryList.size() > 0) {
                      MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                     this.failureListener.handleError(new MsgErrorInfo(glob, entries, ex));
+                     this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), ex));
                   }
                }
                catch (XmlBlasterException ex2) {
@@ -349,7 +349,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                }
                if (entryList != null && entryList.size() > 0) {
                   MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, ex));
+                  this.failureListener.handleError(new MsgErrorInfo(glob, entries, getQueue(), ex));
                }
             }
 
