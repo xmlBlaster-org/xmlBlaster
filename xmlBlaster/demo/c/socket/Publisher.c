@@ -119,7 +119,8 @@ int main(int argc, char** argv)
       bool readonly = xa->props->getBool(xa->props, "readonly", false);
       long destroyDelay = xa->props->getLong(xa->props, "destroyDelay", -1L);
       bool createDomEntry = xa->props->getBool(xa->props, "createDomEntry", true);
-      long historyMaxMsg = xa->props->getLong(xa->props, "queue/history/maxEntries", -1L);
+      long historyMaxMsg = xa->props->getLong(xa->props, "queue/history/maxEntries", 10L);
+      long historyMaxBytes = xa->props->getLong(xa->props, "queue/history/maxBytes", 2147483647L);
       bool forceQueuing = xa->props->getBool(xa->props, "forceQueuing", true);
       bool subscribable = xa->props->getBool(xa->props, "subscribable", true);
       const char *destination = xa->props->getString(xa->props, "destination", 0);
@@ -134,14 +135,14 @@ int main(int argc, char** argv)
       sprintf(topicQos, 
                    " <topic readonly='%.20s' destroyDelay='%ld' createDomEntry='%.20s'>"
                    "  <persistence/>"
-                   "  <queue relating='history' type='CACHE' version='1.0' maxEntries='%ld' maxBytes='4000'/>"
+                   "  <queue relating='history' type='CACHE' version='1.0' maxEntries='%ld' maxBytes='%ld'/>"
                    " </topic>",
                    readonly?"true":"false",
                    destroyDelay,
                    createDomEntry?"true":"false",
-                   historyMaxMsg
+                   historyMaxMsg,
+                   historyMaxBytes
                    );
-
       if (destination!=0)
          sprintf(destinationQos, " <destination queryType='EXACT' forceQueuing='%.20s'>%.512s</destination>",
                  forceQueuing?"true":"false", destination);
@@ -198,6 +199,8 @@ int main(int argc, char** argv)
                    "", "", /* ClientProperty */
                    topicQos
                    );
+
+         /*if (iPublish == 0) printf("[client] publishQos is\n%s\n", qos);*/
 
          if (contentSize > 0) {
             int i;
