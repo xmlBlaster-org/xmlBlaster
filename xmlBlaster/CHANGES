@@ -39,6 +39,10 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+  - Bugfix in XmlRpc login method which ignored
+    credentials (reported by Oliver Fels)
+    login() works now but is deprecated, use connect() instead
+
   - Added proper logout on runlevel change to HALTED
 
   - New PHP demo client, see
