@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.17 2002/05/02 19:08:38 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.18 2002/05/06 12:41:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -27,7 +27,7 @@ import java.util.Vector;
  *     &lt;priority>5&lt;/priority>
  *     &lt;expiration remainingLife='60000'/>
  *     &lt;isDurable />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
- *     &lt;forceUpdate>true</forceUpdate>
+ *     &lt;forceUpdate>true&lt;/forceUpdate>
  *     &lt;readonly />
  *  &lt;/qos>
  * </pre>

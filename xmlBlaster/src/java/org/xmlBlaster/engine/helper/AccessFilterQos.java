@@ -3,7 +3,7 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.3 2002/05/06 12:31:38 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.4 2002/05/06 12:38:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -15,7 +15,7 @@ import org.xml.sax.Attributes;
 
 
 /**
- * Helper class holding filter markup from a subscribe qos. 
+ * Helper class holding filter markup from a subscribe() or get() QoS. 
  * <p />
  * <pre>
  * &lt;filter type='ContentLength' version='1.0'>
@@ -26,6 +26,9 @@ import org.xml.sax.Attributes;
  * <pre>
  *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
  * </pre>
+ * The filter rules apply for cluster configuration as well.
+ *
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">MIME based access filter plugin framework</a>
  */
 public class AccessFilterQos
 {
