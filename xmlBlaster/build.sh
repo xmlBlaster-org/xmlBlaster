@@ -12,6 +12,6 @@ CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/
 # Set in your $HOME/build.properties
 # build.compiler=jikes  or  modern  or classic
 
-$JAVA_HOME/bin/java -Dant.home=$XMLBLASTER_HOME -classpath $CLASSPATH org.apache.tools.ant.Main $@
+$JAVA_HOME/bin/java -Xmx256m -Dant.home=$XMLBLASTER_HOME -classpath $CLASSPATH org.apache.tools.ant.Main $@
 
 # end of file
