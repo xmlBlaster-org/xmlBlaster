@@ -37,6 +37,12 @@ Howto install and compile xmlBlaster
 
    b) Start the xmlBlaster server (jaco is the java wrapper from jacORB):
 
-     jaco org.xmlBlaster.Main /tmp/NS_Ref
+     /usr/local/JacORB/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
 
      (or for better debugging: jaco -Djava.compiler= org.xmlBlaster.Main)
+
+	 c) Start the client (paste the IOR String from /tmp/NS_Ref):
+
+		 /usr/local/JacORB/bin/jaco org.xmlBlaster.Client IOR:....
+
+	 Good. You have done it!
