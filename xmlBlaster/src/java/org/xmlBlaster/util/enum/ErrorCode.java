@@ -384,6 +384,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_MESSAGE_INVALID = new ErrorCode("user.message.invalid",
+         "Usually thrown by a mime plugin if your MIME type does not fit to your message content, e.g. mime='text/xml' and content='<<<a>'.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "mime.plugin.accessfilter", "mime.plugin.accessfilter")
+         }
+      );
+
    public static final ErrorCode USER_QUERY_INVALID = new ErrorCode("user.query.invalid",
          "You have invoked get(), subscribe(), unSubscribe() or erase() with an illegal query syntax.",
          new ResourceInfo[] {
