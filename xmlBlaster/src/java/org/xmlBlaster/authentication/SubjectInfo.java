@@ -333,7 +333,7 @@ public class SubjectInfo implements I_AdminSubject
                break;
             int countForwarded = forwardToSessionQueue(entry);
             if (countForwarded > 0) {
-               this.subjectQueue.take(); // Remove the forwarded entry (blocking)
+               this.subjectQueue.remove(); // Remove the forwarded entry (blocking)
                numMsgs++;
             }
          }
@@ -358,6 +358,10 @@ public class SubjectInfo implements I_AdminSubject
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
+         if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
+                          this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
+                          " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
+                          " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
          if (sessionInfo.hasCallback()) {
             try {
                sessionInfo.queueMessage(entry);
