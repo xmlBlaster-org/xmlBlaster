@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.18 2000/05/06 16:38:53 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.19 2000/05/08 11:46:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -49,6 +49,7 @@ public class HttpPushHandler
    private boolean ready                        = false;
    private HttpPingThread pingThread            = null;
    private Vector pushQueue                     = null;
+   private boolean firstPush                    = true;
 
 
    /**
@@ -215,10 +216,16 @@ public class HttpPushHandler
    private boolean doesHandleMultipart() throws IOException
    {
       String browser = req.getHeader("User-Agent");
+      boolean doesMulti = false;
       if (browser == null)
-         return false;
-      if (browser.indexOf("Mozilla") != -1 && browser.indexOf("MSIE") == -1)
-         return true;
+         doesMulti = false;
+      else if (browser.indexOf("Mozilla") != -1 && browser.indexOf("MSIE") == -1)
+         doesMulti = true;
+
+      if (doesMulti)
+         Log.info(ME, "Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
+      else
+         Log.info(ME, "Checking browser = " + browser + ". We won't use 'multipart requests'");
       return false;
    }
 
@@ -258,6 +265,7 @@ public class HttpPushHandler
 
          //setting Http push connection to false.
          if (handlesMultipart) {
+            Log.trace(ME, "Pushing multipart, pushQueue.size=" + pushQueue.size());
             /* Every line which is sent to the browser overwrites the former one
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -293,6 +301,7 @@ public class HttpPushHandler
             }
          }
          else {
+            Log.trace(ME, "Pushing plain, pushQueue.size=" + pushQueue.size());
             /*
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -306,23 +315,31 @@ public class HttpPushHandler
             synchronized(outPlain) {
                res.setContentType("text/html");
 
-               outPlain.println(head);
+               StringBuffer buf = new StringBuffer();
+               if (firstPush)
+                  buf.append(head);
+               else
+                  buf.append("<script language='JavaScript'>\n");
 
                for( int i = 0; i < pushQueue.size(); i++ )
-                outPlain.println((String)pushQueue.elementAt(i));
+                  buf.append((String)pushQueue.elementAt(i));
 
                if( confirm ) {
-                  outPlain.println(readyStr);
+                  buf.append(readyStr);
                   ready = false;
                }
-               // This newline forces a refresh everytime,
-               // only necessary if the str fills less then one line in the netscape browser window
-               //outPlain.println("<P />");
 
-               outPlain.println(tail);
+               buf.append(tail);
 
+               if (Log.DUMP) Log.dump(ME, "Sending plain to callbackFrame:\n" + buf.toString());
+
+               outPlain.println(buf.toString());
+
+               outPlain.println("</script>\n");
+
+               firstPush = false;
                outPlain.flush();
-               outPlain.close();
+               //outPlain.close();
                pushQueue.clear();
             }
          }
