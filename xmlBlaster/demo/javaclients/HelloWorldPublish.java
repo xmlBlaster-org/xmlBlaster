@@ -103,10 +103,14 @@ public class HelloWorldPublish
          log.info(ME, " Pub/Sub settings");
          log.info(ME, "   -numPublish     " + numPublish);
          log.info(ME, "   -oid            " + oid);
-         if (contentSize >= 0)
+         if (contentSize >= 0) {
+            log.info(ME, "   -content        [generated]");
             log.info(ME, "   -contentSize    " + contentSize);
-         else
+         }
+         else {
             log.info(ME, "   -content        " + content);
+            log.info(ME, "   -contentSize    " + content.length);
+         }
          log.info(ME, "   -priority       " + priority.toString());
          log.info(ME, "   -persistent     " + persistent);
          log.info(ME, "   -lifeTime       " + lifeTime);
