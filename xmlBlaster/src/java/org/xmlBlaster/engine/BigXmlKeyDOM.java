@@ -2,14 +2,13 @@
 Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.30 2002/11/26 12:38:21 ruff Exp $
-Author:    ruff@swand.lake.de
+Comment:   Building a huge DOM tree for all known MsgUnit xmlKey
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.xml2java.XmlKeyDom;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
@@ -19,13 +18,14 @@ import java.util.*;
 import java.io.*;
 
 /**
- * Building a huge DOM tree for all known MessageUnit.xmlKeys.
+ * Building a huge DOM tree for all known MsgUnit.xmlKeys.
  * <p />
  * This huge DOM tree contains all meta data about the known messages.<br />
  * Since the message content is a BLOB, messages may only be queried through<br />
  * this DOM tree using XPath.
  * <p />
  * Full text search scanning the content BLOB may be available through MIME based plugins.
+ * @author xmlBlaster@marcelruff.info
  */
 public class BigXmlKeyDOM extends XmlKeyDom
 {
@@ -60,11 +60,11 @@ public class BigXmlKeyDOM extends XmlKeyDom
    /**
     * Invoked on message erase() invocation.
     */
-   public void messageErase(MessageUnitHandler msgUnitHandler) throws XmlBlasterException
+   public void messageErase(TopicHandler topicHandler) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Erase event occured ...");
-      if (msgUnitHandler.isPublishedWithData()) {
-         org.w3c.dom.Node node = removeKeyNode(msgUnitHandler.getRootNode());
+      if (!topicHandler.isUnconfigured()) {
+         org.w3c.dom.Node node = removeKeyNode(topicHandler.getRootNode());
       }
    }
 
@@ -74,9 +74,8 @@ public class BigXmlKeyDOM extends XmlKeyDom
     * <br>
     * @return XML state of BigXmlKeyDOM
     */
-   public final StringBuffer printOn() throws XmlBlasterException
-   {
-      return printOn((String)null);
+   public final String toXml() throws XmlBlasterException {
+      return toXml((String)null);
    }
 
 
@@ -86,23 +85,21 @@ public class BigXmlKeyDOM extends XmlKeyDom
     * @param extraOffset indenting of tags
     * @return XML state of BigXmlKeyDOM
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
-   {
+   public final String toXml(String extraOffset) throws XmlBlasterException {
       StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset + "<BigXmlKeyDOM>");
+      sb.append(offset).append("<BigXmlKeyDOM>");
       try {
          java.io.ByteArrayOutputStream out = XmlNotPortable.write(xmlKeyDoc);
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
-            sb.append(offset + "   " + st.nextToken());
+            sb.append(offset).append(Constants.INDENT).append(st.nextToken());
          }
       } catch (Exception e) { }
-      sb.append(offset + "</BigXmlKeyDOM>\n");
+      sb.append(offset).append("</BigXmlKeyDOM>\n");
 
-      return sb;
+      return sb.toString();
    }
 }
