@@ -141,7 +141,14 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
             }
             return null; // handle locally: clusterManager.getMyClusterNode();
          }
-         if (log.TRACE) log.trace(ME, "Selected master node id='" + nodeDomainInfo.getClusterNode().getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+
+         if (log.TRACE)
+            log.trace(ME, "Selected master node id='" + 
+                     nodeDomainInfo.getClusterNode().getId() + "' from a choice of " + 
+                     nodeDomainInfoSet.size() + " nodes.  alive = " + 
+                     nodeDomainInfo.getClusterNode().isAlive() + ", polling = " +
+                     nodeDomainInfo.getClusterNode().isPolling());
+
          return nodeDomainInfo;
       }
 
