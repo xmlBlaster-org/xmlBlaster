@@ -146,6 +146,8 @@ If you want to compile with the Make utility:
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jta-spec1_0_1.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jms.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
+     # JNDI, only needed for JDK 1.2, not for JDK 1.3
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/jndi-jdk1_3_1.jar
 
     You can do this automatically from your startup shell script.
     After a new login you are ready to start the xmlBlaster (see below).
