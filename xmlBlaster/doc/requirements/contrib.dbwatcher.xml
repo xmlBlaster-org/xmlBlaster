@@ -198,59 +198,10 @@
 
    <configuration where="server">
       <p>
-         The plugin is configured in the xmlBlasterPlugins.xml configuration file. Here an example where
-         all properties are used:
-<pre>
-<![CDATA[
-  <xmlBlaster>
-    ...
-
-     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
-        <attribute id='directoryName'>/tmp/filePoller</attribute>
-        <attribute id='topicName'>poller.test</attribute>
-        <attribute id='publishKey'><key oid='poller.test'><poller><test/></poller></key></attribute>
-        <attribute id='publishQos'><qos><expiration lifeTime='4000'/></qos></attribute>
-        <attribute id='connectQos'></attribute>
-        <attribute id='maximumFileSize'>10000000</attribute>
-        <attribute id='delaySinceLastFileChange'>10000</attribute>
-        <attribute id='pollInterval'>2000</attribute>
-
-        <attribute id='loginName'>fritz</attribute>
-        <attribute id='password'>secret</attribute>
-        <attribute id='sent'>Sent</attribute>
-        <attribute id='discarded'>Discarded</attribute>
-        <attribute id='fileFilter'></attribute>
-        <attribute id='lockExtention'>*.lck</attribute>
-
-        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
-        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
-     </plugin>
-   ...
-
- </xmlBlaster>
-]]>
-</pre>
-and here a minimalistic one:
-
-<pre>
-<![CDATA[
-  <xmlBlaster>
-    ...
-
-     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
-        <attribute id='directoryName'>/tmp/filePoller</attribute>
-        <attribute id='topicName'>poller.test</attribute>
-        <!-- determines on which level to start/shutdown the plugin and what to do in case of an exception -->
-        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
-        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
-     </plugin>
-   ...
-
- </xmlBlaster>
-]]>
-</pre>
- </p>
- and here a more detailed description about each attribute:
+         The plugin is configured in the <tt>xmlBlasterPlugins.xml</tt> configuration file.
+         If you run DbWatcher outside of xmlBlaster the <tt>I_Info</tt> interface
+         must return those settings.
+      </p>
 
     <table border="1">
        <tr>
@@ -539,6 +490,42 @@ and here a minimalistic one:
        </tr>
      </table>   
 
+  <p>
+  The plugin is configured in the <tt>xmlBlasterPlugins.xml</tt> configuration file. Here an example where
+  most properties are used:
+  </p>
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
+
+  <plugin id='DbWatcherPlugin.MD5' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+     <attribute id='topicName'>poller.test</attribute> 
+     <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
+     <attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl</attribute>
+     <attribute id='db.user'>system</attribute>
+     <attribute id='db.password'>secret</attribute>
+     <attribute id='db.queryMeatStatement'></attribute>
+     <attribute id='mom.topicName'>db.change.event.${groupColValue}</attribute>
+     <attribute id='mom.loginName'>dbWatcher/1</attribute>
+     <attribute id='mom.password'>secret</attribute>
+     <attribute id='mom.alertSubscribeKey'><key oid=''/></attribute>
+     <attribute id='mom.alertSubscribeQos'><qos/></attribute>
+     <attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector</attribute>
+     <attribute id='alertScheduler.pollInterval'>5000</attribute>
+     <attribute id='changeDetector.groupColName'>ICAO_ID</attribute>
+     <attribute id='changeDetector.detectStatement'>SELECT col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID</attribute>
+     <attribute id='converter.class'>org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter</attribute>
+     <attribute id='transformer.class'></attribute>
+     <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+     <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+   </plugin>
+   ...
+
+ </xmlBlaster>
+]]>
+</pre>
+
    </configuration>
 
    <example lang="any" type="HTML">
@@ -573,7 +560,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
    &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
    &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
    &lt;attribute id='db.user'>system&lt;/attribute>
-   &lt;attribute id='db.password'>frifra20&lt;/attribute>
+   &lt;attribute id='db.password'>secret&lt;/attribute>
    &lt;attribute id='db.queryMeatStatement'>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR&lt;/attribute>
    &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
    &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
