@@ -116,7 +116,7 @@ TODO
    <property name="idl" value="org.xmlBlaster.protocol.corba"/>
    <property name="idl.class" value="org.jacorb.idl.parser"/>
    <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
-   <property name="idl.file" value="${idl.dir}/xmlBlaster.idl" />
+   <property name="idl.file" value="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl" />
 
    <property name="build.dir" value="./build.tmp"/>
    <property name="build.src" value="${build.dir}/src"/>
@@ -1599,7 +1599,7 @@ TODO
                <arg line="--poa"/>
                <arg line="--c++-suffix cpp"/>
                <arg line="${idl.cmd.flag}"/>                             <!-- To export from windows DLL -->
-               <arg line="../../../${idl.file}"/>
+               <arg line="${idl.file}"/>
             </exec>
             <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
@@ -1634,7 +1634,7 @@ TODO
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${build.src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
-               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+               <arg line="${idl.file}"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
@@ -1669,7 +1669,7 @@ TODO
                <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
                <env key="PATH" path="${CORBACPP_HOME}/bin" />
                <arg line="-bcxx -Wbh=.h -Wbs=.cpp"/>
-               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+               <arg line="${idl.file}"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
@@ -1704,7 +1704,7 @@ TODO
             <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line="-base:-cS.cpp:-hS.h"/>
                <arg line="-poa:-c.cpp:-h.h:-bS.h"/>
-               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+               <arg line="${idl.file}"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
@@ -1738,7 +1738,7 @@ TODO
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
             <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line=""/>
-               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+               <arg line="${idl.file}"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
