@@ -67,9 +67,9 @@ All packages allow free use for both commercial and non-commercial applications.
    Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
 
 
-6) jacorb.jar and idl.jar 1.2.1
+6) jacorb.jar and idl.jar 1.2.2
 ===============================
-   This is the JacORB 1.2.1 CORBA library, on which xmlBlaster is based.
+   This is the JacORB 1.2.2 CORBA library, on which xmlBlaster is based.
    It us under LGPL.
 
    Download http://www.inf.fu-berlin.de/~brose/jacorb
@@ -82,15 +82,6 @@ All packages allow free use for both commercial and non-commercial applications.
       jacorb.events
       jacorb.trading
 
-   Patch for multihomed hosts (ippp0 or eth0:0) in JacORB 1.2.1:
-    cd /www/JacORB-1_2_1/src
-    vi jacorb/orb/BasicAdaptor.java:352
-       remove 17 lines (the ip check code forOAIAddr) and add:
-         java.net.InetAddress target_addr = java.net.InetAddress.getByName(ip_addr);
-         System.out.println("[ Listener: Trying ip addr " + target_addr.toString() +" ]");
-   javac jacorb/orb/BasicAdapter.java
-   jar -uvf $XMLBLASTER_HOME/lib/jacorb.jar jacorb/orb/BasicAdapter*.class
-   java -DOAIAddr=193.197.24.129 org.xmlBlaster.Main
 
 7) xmlBlaster/bin/code2html
 ===========================
