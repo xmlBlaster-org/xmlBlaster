@@ -46,7 +46,7 @@ public class I_MapTest extends TestCase {
    static I_Map[] IMPL = {
                    new org.xmlBlaster.engine.msgstore.ram.MapPlugin(),
                    new org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin(),
-                   new org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin()
+                   new org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin()
                  };
 
    public I_MapTest(String name, int currImpl) {
@@ -57,11 +57,12 @@ public class I_MapTest extends TestCase {
          "-persistence.transientQueue", "RAM,1.0",
       };
       this.glob = new Global(args);
+      this.log = glob.getLog(null);
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
+      this.log.error(ME, "PLEASE UPDATE OUTDATED PROPS");
    }
 
    protected void setUp() {
-      log = glob.getLog(null);
       try {
          glob.getProperty().set("topic.queue.persistent.tableNamePrefix", "TEST");
       }
