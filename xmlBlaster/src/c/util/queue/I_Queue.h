@@ -53,9 +53,9 @@ typedef struct QueueException {
 #define QUEUE_ENTRY_EMBEDDEDTYPE_LEN 28
 
 typedef struct QueueEntry {
+   int64_t uniqueId;
    int16_t priority;
    bool isPersistent;
-   int64_t uniqueId;
    /*void *embeddedObject;*/
    char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN];
    BlobStruct embeddedBlob; /* blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
