@@ -3,11 +3,11 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.26 2002/06/20 21:21:04 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.27 2002/06/25 17:40:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -63,6 +63,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 {
    private String ME = "ConnectQos";
    private transient Global glob = null;
+   private transient LogChannel log = null;
 
    /** PtP messages wanted?
     * <p />
@@ -159,11 +160,11 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "Creating ConnectQos(" + xmlQoS_literal + ")");
+      //if (log.DUMP) log.dump(ME, "Creating ConnectQos(" + xmlQoS_literal + ")");
       //addressArr = null;
       initialize(glob);
       init(xmlQoS_literal);
-      if (Log.DUMP) Log.dump(ME, "Parsed ConnectQos to\n" + toXml());
+      //if (log.DUMP) log.dump(ME, "Parsed ConnectQos to\n" + toXml());
    }
 
    /**
@@ -245,6 +246,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          glob = new Global();
       }
       this.glob = glob;
+      this.log = glob.getLog(null);
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
       setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
@@ -260,7 +262,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          loginName = glob.getProperty().get("loginName["+nodeId+"]", loginName);
          passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
       }
-      if (Log.TRACE) Log.trace(ME, "initialize loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
+      if (log.TRACE) log.trace(ME, "initialize loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
       securityQos = getPlugin(null,null).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(passwd);
@@ -359,7 +361,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (nodeId != null) {
             passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
          }
-         if (Log.TRACE) Log.trace(ME, "Initializing loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
+         if (log.TRACE) log.trace(ME, "Initializing loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
          securityQos.setCredential(passwd);
       }
       securityQos.setUserId(loginName);
@@ -380,8 +382,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                plugin=pMgr.getCurrentClientPlugin();
          }
          catch (XmlBlasterException e) {
-            Log.error(ME+".ConnectQos", "Security plugin initialization failed. Reason: "+e.toString());
-            Log.error(ME+".ConnectQos", "No plugin. Trying to continue without the plugin.");
+            log.error(ME+".ConnectQos", "Security plugin initialization failed. Reason: "+e.toString());
+            log.error(ME+".ConnectQos", "No plugin. Trying to continue without the plugin.");
          }
       }
 
@@ -650,9 +652,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * The connection address and properties of the xmlBlaster server
     * we want connect to.
-    * @return null if not configured
+    * @return never null
     */
    public final Address getAddress() {
+      if (this.address == null) {
+         if (log.TRACE) log.trace(ME, "Creating default server address instance");
+         setAddress(glob.getBootstrapAddress());
+      }
       return this.address;
    }
 
@@ -680,19 +686,19 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (prop == null) return;
       if (prop.isSessionRelated()) {
          if (this.sessionCbQueueProperty != null) {
-            Log.warn(ME, "addCbQueueProperty() overwrites previous session queue setting");
+            log.warn(ME, "addCbQueueProperty() overwrites previous session queue setting");
             Thread.currentThread().dumpStack();
          }
          this.sessionCbQueueProperty = prop;
          queuePropertyVec.addElement(prop);
       }
       else if (prop.isSubjectRelated()) {
-         if (this.subjectCbQueueProperty != null) Log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
+         if (this.subjectCbQueueProperty != null) log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
          this.subjectCbQueueProperty = prop;
          queuePropertyVec.addElement(prop);
       }
       else if (prop.isUnrelated()) {
-         Log.error(ME, "You can't add a queue of type 'unrelated' to connect QoS, this is only supported with subscribe QoS");
+         log.error(ME, "You can't add a queue of type 'unrelated' to connect QoS, this is only supported with subscribe QoS");
       }
    }
 
@@ -747,7 +753,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      //if (Log.TRACE) Log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
+      //if (log.TRACE) log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
 
       if (name.equalsIgnoreCase("serverRef")) {
          inServerRef = true;
@@ -763,7 +769,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             }
          }
          if (type == null) {
-            Log.error(ME, "Missing 'serverRef' attribute 'type' in login-qos");
+            log.error(ME, "Missing 'serverRef' attribute 'type' in login-qos");
             type = "IOR";
          }
          tmpServerRef = new ServerRef(type);
@@ -798,7 +804,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (name.equalsIgnoreCase("queue")) {
          inQueue = true;
          if (inCallback) {
-            Log.error(ME, "<queue> tag is not allowed inside <callback> tag, element ignored.");
+            log.error(ME, "<queue> tag is not allowed inside <callback> tag, element ignored.");
             character.setLength(0);
             return;
          }
@@ -831,8 +837,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                }
             }
          }
-         if (!existsTypeAttr) Log.error(ME, "Missing 'type' attribute in login-qos <securityService>");
-         if (!existsVersionAttr) Log.error(ME, "Missing 'version' attribute in login-qos <securityService>");
+         if (!existsTypeAttr) log.error(ME, "Missing 'type' attribute in login-qos <securityService>");
+         if (!existsVersionAttr) log.error(ME, "Missing 'version' attribute in login-qos <securityService>");
          character.setLength(0);
          // Fall through and collect xml, will be parsed later by appropriate security plugin
       }
@@ -852,7 +858,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                else if (attrs.getQName(ii).equalsIgnoreCase("publicSessionId"))
                   this.publicSessionId = attrs.getValue(ii).trim();
                else
-                  Log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
+                  log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
          }
          character.setLength(0);
@@ -912,7 +918,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (super.endElementBase(uri, localName, name) == true)
          return;
 
-      //if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      //if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
       if (name.equalsIgnoreCase("serverRef")) {
          inServerRef = false;
@@ -982,7 +988,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
            securityQos.parse(tmp);
          }
          catch(XmlBlasterException e) {
-            Log.warn(ME, "Can't parse security string - " + e.toString() + "\n Check:\n" + tmp);
+            log.warn(ME, "Can't parse security string - " + e.toString() + "\n Check:\n" + tmp);
             throw new StopParseException(); // Enough error handling??
          }
       }
@@ -1031,12 +1037,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          try {
             securityQos = getPlugin(null,null).getSecurityQos();
          } catch(XmlBlasterException e) {
-            Log.warn(ME+".toXml", e.toString());
+            log.warn(ME+".toXml", e.toString());
          }
       }
 
       StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
+      String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
@@ -1045,23 +1051,23 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       // <securityService ...
       if(securityQos!=null) sb.append(securityQos.toXml(extraOffset)); // includes the qos of the ClientSecurityHelper
 
-      sb.append(offset).append("<ptp>").append(ptpAllowed).append("</ptp>");
+      sb.append(offset).append("   <ptp>").append(ptpAllowed).append("</ptp>");
    
       if (isClusterNode())
-         sb.append(offset).append("<isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
+         sb.append(offset).append("   <isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
 
       if (duplicateUpdates() == false)
-         sb.append(offset).append("<duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
+         sb.append(offset).append("   <duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
 
-      sb.append(offset).append("<session timeout='").append(sessionTimeout);
+      sb.append(offset).append("   <session timeout='").append(sessionTimeout);
       sb.append("' maxSessions='").append(maxSessions);
       sb.append("' clearSessions='").append(clearSessions());
       if (getPublicSessionId() != null)
          sb.append("' publicSessionId='").append(getPublicSessionId());
       if(sessionId!=null) {
          sb.append("'>");
-         sb.append(offset).append("   <sessionId>").append(sessionId).append("</sessionId>");
-         sb.append(offset).append("</session>");
+         sb.append(offset).append("      <sessionId>").append(sessionId).append("</sessionId>");
+         sb.append(offset).append("   </session>");
       }
       else
          sb.append("'/>");
@@ -1175,7 +1181,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("TestFailed", e.toString());
+         Global.instance().getLog(null).error("TestFailed", e.toString());
       }
    }
 }
