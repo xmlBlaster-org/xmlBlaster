@@ -5,17 +5,26 @@ What 'configure' does:
     It will configure the CVS tree to build all the java files into 
     class files (under the classes directory) and make the jar file (
     xmlBlaster.jar) placing the final jar file in $XMLBLASTER_HOME/lib
+    It will now try to build the c++ clients if you use --with-cpp
     
 What 'configure' does not:
-    It does not build anything other than java files yet.  No C++ files,
-    no javadoc, and I doubt 'make install' will do anything useful.
+    It does not make the javadoc documentation.  We will have to 
+    hook up some kind of 'make test' also, and I doubt 'make install' 
+    will do anything useful. Currently configure only works with mico
+    and xerces-c.  The Orbacus option has to be created and integrated.
 
 To try it out:
     cd $XMLBLASTER_HOME
     gunzip < config/xmlBlaster-autoconf.tar.gz | tar xvf -
     configure
-        (if you do not have $JAVA_HOME set, you can specify the configure
-         option --with-jdk-home=DIR)
+        if you do not have $JAVA_HOME set, you can specify the configure
+            option --with-jdk-home=DIR
+        if you want to compile the c++ clients, use 
+            --with-cpp
+            and if you are using mico and xerces use
+            --with-mico=DIR
+            --with-xerces-c=DIR
+        
     gmake
     
 To get rid of it:
@@ -24,4 +33,4 @@ To get rid of it:
     rm config.* configure.in configure install-sh missing mkinstalldirs *.m4
     cvs update
 
-If you have errors please let me know: coryb@csd.sgi.com
+If you have errors please let me know: coryb@sgi.com
