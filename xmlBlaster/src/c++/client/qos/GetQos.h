@@ -7,18 +7,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 /**
  * This class encapsulates the QoS of an erase() request. 
  * <p />
- * A full specified <b>erase</b> qos could look like this:<br />
- * <pre>
- *&lt;qos>
- *   &lt;!-- The subscribers shall not be notified when this message is destroyed -->
- *   &lt;notify>false&lt;/notify> <!-- currently not implemented -->
- *&lt;/qos>
- * </pre>
- * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  * @see org.xmlBlaster.util.qos.QueryQosData
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
- * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html">erase interface</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.get.html">get interface</a>
  */
 
 #ifndef _CLIENT_QOS_GETQOS_H
