@@ -59,7 +59,7 @@ public final class PublishQos
     */
    public PublishQos(Global glob) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.msgQosData = new MsgQosData(glob, glob.getMsgQosFactory(), MethodName.PUBLISH); 
+      this.msgQosData = new MsgQosData(this.glob, this.glob.getMsgQosFactory(), MethodName.PUBLISH); 
 
       // TODO: use local glob
       long lt = org.xmlBlaster.util.Global.instance().getProperty().get("message.lifeTime", -1L);
