@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.5 2000/10/13 08:34:11 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.6 2000/10/13 08:40:37 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -176,7 +176,7 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
          String sessionId = "Session1";
 
          String loginAnswer = client.login("LunaMia", "silence", qos, sessionId);
-         Log.info(ME, "Login successful, the answer from the login is: " + loginAnswer);
+         Log.info(ME, "Login successful, the answer from the login is: [" + loginAnswer + "] xmlrpc.cb_host=" + getLocalIP() + " xmlrpc.cb_port=" + cb_port);
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
