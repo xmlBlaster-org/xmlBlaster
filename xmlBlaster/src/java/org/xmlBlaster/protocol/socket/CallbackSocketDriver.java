@@ -29,6 +29,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
    private String loginName;
    private HandleClient handler;
    private CallbackAddress callbackAddress;
+   private boolean isFirstPing_hack = true;
 
    /**
     * Should not be instantiated by plugin loader.
@@ -92,18 +93,16 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException
-   {
-      return handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.WAIT_ON_RESPONSE);
+   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      return this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.WAIT_ON_RESPONSE);
    }
 
    /**
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException
-   {
-      handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.ONEWAY);
+   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, ExecutorBase.ONEWAY);
    }
 
    /**
@@ -113,10 +112,16 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * @return    Currently an empty string ""
     * @exception XmlBlasterException If client not reachable
     */
-   public final String ping(String qos) throws XmlBlasterException
-   {
+   public final String ping(String qos) throws XmlBlasterException {
+      if (this.isFirstPing_hack) {
+         // Ingore first ping (which is triggered by dispatch framework after plugin creation
+         // It leads to a deadlock since we are working on a connec() and should first return the ConnectReturnQos
+         // See CbDeliveryConnection.java this.cbDriver.ping("");
+         this.isFirstPing_hack = false;
+         return "";
+      }
       try {
-         return handler.ping(qos);
+         return this.handler.ping(qos);
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                      "SOCKET callback ping failed", e);
@@ -125,7 +130,9 @@ public class CallbackSocketDriver implements I_CallbackDriver
 
    public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
-      handler.shutdown();
+      if (this.handler != null) {
+         this.handler.shutdown();
+      }
    }
 
 }
