@@ -356,7 +356,7 @@ print "\nLogout done, bye.\n";
    <configuration>
    </configuration>
 
-   <see type="API">javaclients.HelloWorldPublish</see>
+   <see type="LOCAL">../../demo/javaclients/HelloWorldPublish.java.html</see>
    <see type="API">org.xmlBlaster.util.enum.PriorityEnum</see>
    <see type="API">org.xmlBlaster.util.MsgUnit</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
@@ -382,7 +382,7 @@ print "\nLogout done, bye.\n";
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.25 $</revision>
+   <revision>$Revision: 1.26 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
