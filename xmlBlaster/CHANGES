@@ -7,18 +7,23 @@ TODO:
 
 * Renew lease for msg queue automatically on usage
 * Test message lifecycle (some implementation is missing)
-* RMI update() variant with string return
 * PtP with session destination
 * RequestBroker.get() the return QoS should be merged with UpdateQos
-* SOCKET protocol driver: Port to use read(buf, msgLen) -> performance
 * Test (implement?) forceUpdate=false with same content
 * Remove thread save gap in RequestBroker:publish()
 * Test: C++, Perl, HTTP, different protocol drivers ...
+* Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 
 DONE:
+  - SOCKET protocol driver performance tune:
+    Using now read() and write() with large buffer
+
   - Added client side burst mode for publishOneway
     in java client helper classes.
     see -client.publishOneway.collectTime 500
+
+  - RMI and XmlRpc
+    see CORBA xmlBlaster.idl changes
 
   - CORBA changes in xmlBlaster.idl
 
