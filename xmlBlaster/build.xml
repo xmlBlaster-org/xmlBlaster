@@ -177,6 +177,7 @@ Else add it manually.
     <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
     <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy"/>
     <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
+    <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties"/>
 
     <javac srcdir="${build.src}/xmlBlaster"
            destdir="${build.dest}"
@@ -222,7 +223,7 @@ Else add it manually.
     <delete file="${lib.dir}/demo.jar"/>
     <delete file="${lib.dir}/testsuite.jar"/>
     <delete file="${build.dir}/${name}.jar"/>
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
     <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
   </target>
 
