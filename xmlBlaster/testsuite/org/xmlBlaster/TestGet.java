@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.15 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestGet.java,v 1.16 2000/10/29 20:24:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -36,7 +36,7 @@ public class TestGet extends TestCase
    private static String ME = "Tim";
 
    private String publishOid = "TestGet";
-   private XmlBlasterConnection corbaConnection;
+   private XmlBlasterConnection connection;
    private String loginName;
    private String senderContent = "A test message";
 
@@ -65,10 +65,11 @@ public class TestGet extends TestCase
    protected void setUp()
    {
       try {
-         corbaConnection = new XmlBlasterConnection(); // Find orb
+         connection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         corbaConnection.login(loginName, passwd, qos); // Login to xmlBlaster
+         // Login to xmlBlaster, don't create a callback server
+         connection.login(loginName, passwd, qos);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -90,12 +91,12 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = corbaConnection.erase(xmlKey, qos);
+         strArr = connection.erase(xmlKey, qos);
          Log.info(ME, "Success, erased a message");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
-      corbaConnection.logout();
+      connection.logout();
       // Give the server some millis to finish the iiop handshake ...
       try { Thread.currentThread().sleep(200); } catch (InterruptedException e) {}
       Log.info(ME, "Success, logged out");
@@ -113,7 +114,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
+         MessageUnit[] msgArr = connection.get(xmlKey, qos);
          assert("get of not existing message is not possible", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
@@ -124,7 +125,7 @@ public class TestGet extends TestCase
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
          PublishQosWrapper qosWrapper = new PublishQosWrapper(); // the same as "<qos></qos>"
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qosWrapper.toXml());
-         corbaConnection.publish(msgUnit);
+         connection.publish(msgUnit);
          Log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
          assert("publish - XmlBlasterException: " + e.reason, false);
@@ -134,7 +135,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
+         MessageUnit[] msgArr = connection.get(xmlKey, qos);
          Log.info(ME, "Success, got the message");
          assertEquals("Corrupted content", senderContent, new String(msgArr[0].content));
       } catch(XmlBlasterException e) {
@@ -155,7 +156,7 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       for (int ii=0; ii<num; ii++) {
          try {
-            MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
+            MessageUnit[] msgArr = connection.get(xmlKey, qos);
             assert("get of not existing message is not possible", false);
          } catch(XmlBlasterException e) {
             // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
