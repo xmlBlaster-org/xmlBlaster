@@ -40,6 +40,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
    private String attributeKey;
    private StringBuffer attributeValue;
    private boolean inAction = false;
+   private boolean inAttribute = false;
    private boolean wrappedInCDATA = false;
 
    /**
@@ -145,14 +146,25 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          return;
       }
       if ("attribute".equalsIgnoreCase(name)) {
+         this.inAttribute = true;
          this.wrappedInCDATA = false;
          this.attributeKey = attrs.getValue("id");
-         this.attributeValue = new StringBuffer();
+         this.attributeValue = new StringBuffer(1024);
          if (this.attributeKey == null || this.attributeKey.length() < 1)
             this.ex = new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".startElement",  "the attributes in the <plugin> tag must have an non-empty 'id' attribute");
          return;
       }
-      this.log.warn(ME, "startElement: unknown tag '" + name + "'");
+
+      if (this.inAttribute) {
+         this.attributeValue.append("<").append(name);
+         for (int i=0; i<attrs.getLength(); i++) {
+            this.attributeValue.append(" ").append(attrs.getLocalName(i)).append("='").append(attrs.getValue(i)).append("'");
+         }
+         this.attributeValue.append(">");
+      }
+      else {
+         this.log.warn(ME, "startElement: unknown tag '" + name + "'");
+      }
    }
 
    public void startCDATA() {
@@ -185,6 +197,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          return;
       }
       if ("attribute".equalsIgnoreCase(name)) {
+         this.inAttribute = false;
          if (this.attributeKey != null && this.attributeValue != null) {
             this.pluginConfig.addAttribute(this.attributeKey, this.attributeValue.toString());
             if (this.wrappedInCDATA) {
@@ -196,6 +209,9 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          this.attributeValue = null;
          return;
       }   
+      if (this.inAttribute) {
+         this.attributeValue.append("</"+name+">");
+      }
    }
 
    /**
