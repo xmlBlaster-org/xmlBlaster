@@ -35,9 +35,11 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     * For persistence recovery
     */
    public MsgQueueHistoryEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
-                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes) {
+                              String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes)
+                              throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, priority, storageId,
-            entryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null);
+            entryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null,
+            (String)null, (String)null, (byte[])null);
       if (sizeInBytes != getSizeInBytes()) {
          log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
       }
