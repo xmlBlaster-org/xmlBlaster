@@ -51,13 +51,14 @@
    If all callback addresses fail, the result will depend on the
    specified login qos.
    </p>
-   
+
    <p>
    XmlBlaster allows to check clients with a ping to the callback server.
    The ping frequency is adjustable at login time by the client itself.
    Interested parties can subscribe on Login/Logout events, to find out if
    a client arrives or disappears.
-   A client disappears when it does a logout or on failure (no response to the ping).
+   A client disappears when it does a logout or on failure (no response to the ping)
+   or on session-timeout.
    </p>
 
    <p>
@@ -175,7 +176,7 @@
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
