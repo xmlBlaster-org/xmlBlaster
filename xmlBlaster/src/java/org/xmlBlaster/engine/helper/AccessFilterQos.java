@@ -3,12 +3,14 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.1 2002/03/28 10:00:47 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.2 2002/05/06 07:29:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.mime.Query;
 import org.xml.sax.Attributes;
 
 
@@ -28,9 +30,10 @@ import org.xml.sax.Attributes;
 public class AccessFilterQos
 {
    private static final String ME = "AccessFilterQos";
+   private final Global glob;
 
-   /** The filter rule */
-   private String query;
+   /** The filter rule string and an object to hold the prepared query on demand  */
+   private Query query;
 
    /** The plugin name e.g. "ContentLength" */
    private String type;
@@ -41,8 +44,9 @@ public class AccessFilterQos
 
    /**
     */
-   public AccessFilterQos()
+   public AccessFilterQos(Global glob)
    {
+      this.glob = glob;
    }
 
    /**
@@ -50,8 +54,22 @@ public class AccessFilterQos
     * @param version The plugin version
     * @param query   Your filter rule
     */
-   public AccessFilterQos(String type, String version, String query)
+   public AccessFilterQos(Global glob, String type, String version, String query)
    {
+      this.glob = glob;
+      setType(type);
+      setVersion(version);
+      setQuery(new Query(glob, query));
+   }
+
+   /**
+    * @param type    The plugin name
+    * @param version The plugin version
+    * @param query   Your filter rule
+    */
+   public AccessFilterQos(Global glob, String type, String version, Query query)
+   {
+      this.glob = glob;
       setType(type);
       setVersion(version);
       setQuery(query);
@@ -96,7 +114,7 @@ public class AccessFilterQos
     *
     * @param query The filter query, e.g. "8000" for max length of a content with "ContentLenFilter" plugin
     */
-   public final void setQuery(String query)
+   public final void setQuery(Query query)
    {
       this.query = query;
    }
@@ -105,7 +123,7 @@ public class AccessFilterQos
     * Returns the query, the syntax is depending on what your plugin supports.
     * @return e.g. "a>12 AND b<15"
     */
-   public final String getQuery()
+   public final Query getQuery()
    {
       return query;
    }
@@ -118,7 +136,7 @@ public class AccessFilterQos
    {
       String tmp = character.toString().trim(); // The query
       if (tmp.length() > 0) {
-         setQuery(tmp);
+         setQuery(new Query(glob, tmp));
       }
       character.setLength(0);
 
@@ -157,7 +175,7 @@ public class AccessFilterQos
       if (name.equalsIgnoreCase("filter")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            setQuery(tmp);
+            setQuery(new Query(glob, tmp));
          else if (getQuery() == null)
             Log.error(ME, "filter QoS contains no query data");
       }
