@@ -9,6 +9,7 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.RequestBroker;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -40,6 +41,8 @@ import java.io.IOException;
 public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
    private RunlevelManager runlevelManager;
+
+   private ContextNode contextNode;
 
    /** the authentication service */
    private Authenticate authenticate;
@@ -146,7 +149,15 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * @return Can be null during startup
     */
    public final NodeId getNodeId() {
-      return nodeId;
+      return this.nodeId;
+   }
+
+   /**
+    * The unique name of this xmlBlaster server instance. 
+    * @return Can be null during startup
+    */
+   public final ContextNode getContextNode() {
+      return contextNode;
    }
 
    /**
@@ -162,7 +173,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    public final void setId(String id) {
       super.setId(id);
-      this.nodeId = new NodeId(id);
+      this.nodeId = new NodeId(id); // ContextNode should replace NodeId one day
+      this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), (ContextNode)null);
    }
 
    /**
@@ -328,10 +340,12 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * See private org.xmlBlaster.Main#createNodeId()
     */
    public void setUniqueNodeIdName(String uniqueNodeIdName) {
-      if (nodeId == null && uniqueNodeIdName != null) {
-         nodeId = new NodeId(uniqueNodeIdName);
-         log.info(ME, "Setting xmlBlaster instance name to '" + nodeId.toString() + "'");
-         getRunlevelManager().setId(nodeId.getId());
+      if (this.nodeId == null && uniqueNodeIdName != null) {
+         this.nodeId = new NodeId(uniqueNodeIdName);
+         super.id = this.nodeId.getId();
+         this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), (ContextNode)null);
+         log.info(ME, "Setting xmlBlaster instance name to '" + this.nodeId.toString() + "'");
+         getRunlevelManager().setId(this.nodeId.getId());
       }
    }
 
