@@ -127,9 +127,10 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       super();
       this.glob = glob;
       this.log = glob.getLog("script");
+      this.commandsToFire.add("get");
       this.commandsToFire.add("connect");
       this.commandsToFire.add("subscribe");
-      this.commandsToFire.add("unsubscribe");
+      this.commandsToFire.add("unSubscribe");
       this.commandsToFire.add("publish");
       this.commandsToFire.add("publishArr");
       this.commandsToFire.add("erase");
@@ -210,12 +211,9 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
    public void characters(char[] ch, int start, int length) {
       // append on the corresponding buffer
-      if (this.inQos) this.qos.append(ch);
-      else if (this.inKey) this.key.append(ch);
-      else if (this.inContent) {
-         String tmp = new String(ch, start, length);
-         this.content.append(tmp);
-      } 
+      if (this.inQos) this.qos.append(ch, start, length);
+      else if (this.inKey) this.key.append(ch, start, length);
+      else if (this.inContent) this.content.append(ch, start, length);
       else super.characters(ch, start, length);
    }
 
@@ -417,7 +415,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- get -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<get>");
-            this.response.append("  <message>\n");
+            this.response.append("\n  <message>");
             for (int i=0; i < ret.length; i++) {
                this.response.append(ret[i].toXml("    "));
             }

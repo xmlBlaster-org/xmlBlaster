@@ -59,9 +59,9 @@ public class StreamCallback implements I_Callback {
     * @param buf the StringBuffer object to fill with the content
     */
    protected void writeContent(byte[] content, StringBuffer buf) {
-      buf.append("\n").append(this.offset).append("<content>\n");
-      buf.append(new String(content)); // here you can change according to your needs
-      buf.append("\n").append(this.offset).append("</content>\n");
+      buf.append(this.offset).append("   ").append("<content>");
+      buf.append("<![CDATA [").append(new String(content)).append("]]>"); // here you can change according to your needs
+      buf.append("</content>");
    }
 
    /**
@@ -70,7 +70,7 @@ public class StreamCallback implements I_Callback {
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (this.out == null) return "OK";
       StringBuffer buf = new StringBuffer();
-      buf.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- publishArr -- -- -- -- -- -- -- -- -- -- -- -->");
+      buf.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->");
       buf.append("\n").append(this.offset).append("<update>\n");
       buf.append(this.offset).append("<sessionId>").append(cbSessionId).append("</sessionId>");
       buf.append(updateKey.toXml(this.offset + "  ")).append("\n");
