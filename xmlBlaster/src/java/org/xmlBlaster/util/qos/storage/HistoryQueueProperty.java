@@ -23,13 +23,13 @@ public class HistoryQueueProperty extends QueuePropertyBase
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -queue/history/maxMsg and -/node/heron/queue/history/maxMsg will be searched
     */
    public HistoryQueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("core");
       setRelating(Constants.RELATING_HISTORY);
-      super.initialize(Constants.RELATING_HISTORY); //related='history'--> -history.queue.maxMsg
+      super.initialize(Constants.RELATING_HISTORY); //related='history'--> -queue/history/maxMsg
    }
 
    /**
