@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.31 2002/08/12 13:31:48 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.32 2002/08/12 14:00:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -39,6 +39,7 @@ import java.util.StringTokenizer;
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * @author ruff@swand.lake.de
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html" target="others">engine.service.rdbms requirement</a>
  */
 public class JdbcDriver implements I_Driver, I_Publish
 {
