@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.24 2002/04/26 21:31:48 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.25 2002/05/26 17:15:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -28,7 +28,7 @@ import java.io.*;
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.24 2002/04/26 21:31:48 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.25 2002/05/26 17:15:41 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -209,7 +209,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             subMap = (Map)obj;
          }
          subMap.put(subscriptionInfo.getUniqueKey(), subscriptionInfo);
-         if (Log.TRACE) Log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getUniqueKey() + " to abomap");
+         if (Log.TRACE) Log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getUniqueKey() + " to subMap");
       }
 
 
