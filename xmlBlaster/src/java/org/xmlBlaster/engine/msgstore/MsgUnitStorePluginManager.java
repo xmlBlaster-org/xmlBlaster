@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      MsgStorePluginManager.java
+Name:      MsgUnitStorePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -16,39 +16,46 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
 /**
- * MsgStorePluginManager loads the I_Map implementation plugins. 
+ * MsgUnitStorePluginManager loads the I_Map implementation plugins. 
  * <p>
  * Usage examples:
  * </p>
  * <pre>
  * // xmlBlaster.properties or on command line
- * MsgStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
- * </pre>
- * <pre>
- * // Access it in the code
- * String defaultPersistent = glob.getProperty().get("msgstore.cache.persistentQueue", "JDBC,1.0");
- * I_Map storage = glob.getMsgStorePluginManager().getPlugin(defaultPersistent, new StorageId("SpecialJdbcQueue"), queuePropertyBase);
+ * #------------------------------------------------------------------------------
+ * # Declare existing queue implementation plugins
+ * # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
+ * MsgUnitStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+ * MsgUnitStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+ * MsgUnitStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
+ * 
+ * # Choose the plugin (each publisher can overwrite this in its publish topic-QoS)
+ * msgUnitStore.defaultPlugin=CACHE,1.0
+ * # If you choose CACHE as defaultPlugin configure the CACHE plugin:
+ * msgUnitStore.cache.persistentQueue=JDBC,1.0
+ * msgUnitStore.cache.transientQueue=RAM,1.0
+ * #------------------------------------------------------------------------------
  * </pre>
  * @author <a href="mailto:laghi@swissinfo.com">Michele Laghi</a>.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.queue.html" target="others">engine.queue</a>
  */
-public class MsgStorePluginManager extends PluginManagerBase
+public class MsgUnitStorePluginManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
    private final LogChannel log;
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.engine.msgstore.ram.MapPlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
-                                                          {"CACHE", "org.xmlBlaster.engine.msgstore.cache.MsgStoreCachePlugin"} };
-   public static final String pluginPropertyName = "MsgStorePlugin";
+                                                          {"CACHE", "org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin"} };
+   public static final String pluginPropertyName = "MsgUnitStorePlugin";
 
-   public MsgStorePluginManager(Global glob) {
+   public MsgUnitStorePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("msgstore");
-      this.ME = "MsgStorePluginManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Constructor MsgStorePluginManager");
+      this.log = glob.getLog("msgUnitStore");
+      this.ME = "MsgUnitStorePluginManager" + this.glob.getLogPrefixDashed();
+      if (log.CALL) log.call(ME, "Constructor MsgUnitStorePluginManager");
    }
 
    /**
@@ -82,8 +89,8 @@ public class MsgStorePluginManager extends PluginManagerBase
 
    /**
     * Enforced by PluginManagerBase. 
-    * @return The name of the property in xmlBlaster.property "MsgStorePlugin"
-    * for "MsgStorePlugin[JDBC][1.0]"
+    * @return The name of the property in xmlBlaster.property "MsgUnitStorePlugin"
+    * for "MsgUnitStorePlugin[JDBC][1.0]"
     */
    protected String getPluginPropertyName() {
       return pluginPropertyName;
