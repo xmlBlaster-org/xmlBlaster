@@ -159,7 +159,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * So we will rearrange the stratum here. The given stratum in routeInfo
     * is used to recalculate the other nodes as well.
     */
-   public void addRouteInfo(RouteInfo routeInfo) {
+   public final void addRouteInfo(RouteInfo routeInfo) {
       if (routeInfo == null) {
          log.error(ME, "Adding null routeInfo");
          return;
@@ -182,9 +182,16 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    /**
+    * The number of hops
+    */
+   public final int getNumRouteNodes() {
+      return (this.routeNodeList == null) ? 0 : this.routeNodeList.size();
+   }
+
+   /**
     * @return never null, but may have length==0
     */
-   public RouteInfo[] getRouteNodes() {
+   public final RouteInfo[] getRouteNodes() {
       if (this.routeNodeList == null)
          this.routeNodes = ROUTE_INFO_ARR_DUMMY;
       if (this.routeNodes == null)
@@ -192,7 +199,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       return this.routeNodes;
    }
 
-   public void clearRoutes() {
+   public final void clearRoutes() {
       this.routeNodes = null;
       if (this.routeNodeList != null)
          this.routeNodeList.clear();
