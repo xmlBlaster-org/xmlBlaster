@@ -57,7 +57,7 @@ struct XmlBlasterAccessUnparsedStruct {
 
 /**
  * Get an instance of this to get xmlBlaster access. 
- * NOTE: Every call creates a new and independend client accessor to xmlBlaster
+ * NOTE: Every call creates a new and independent client access instance to xmlBlaster
  */
 extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv);
 
