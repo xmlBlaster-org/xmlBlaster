@@ -34,6 +34,33 @@
       <hostname>server.mycomp.com</hostname> <!-- bootstrap -->
       <port>3412</port>
 
+      <plugin id='ProtocolPlugin:SOCKET:admin' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+         <port>69000</port>
+      </plugin>
+
+      <plugin id='DispatchPlugin[Priority][1.0]'>
+      </plugin>
+
+      <!-- /node/heron/plugin/SOCKET:users/port=69001 -->
+      <plugin id='SOCKET:users'>
+         <port>69001</port>
+      </plugin>
+
+      <plugin id='QueuePlugin:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+         <plugin refid='${QueuePlugin:RAM}'/>
+         <plugin refid='${QueuePlugin:JDBC}'/>
+      </plugin>
+
+      <plugin id='QueuePlugin:RAM' className='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'/>
+
+      <plugin id='QueuePlugin:JDBC' className='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+      </plugin>
+
       <buildTimestamp>06/17/2002 01:59 PM</buildTimestamp>
       <buildJavaVendor>Sun Microsystems Inc.</buildJavaVendor>
       <buildJavaVersion>1.3.1-beta</buildJavaVersion>
@@ -115,21 +142,6 @@
       <sysprop id='Persistence.Path'>/home/mom/data</sysprop>
       <sysprop id='logFile'>/var/log/xmlBlaster-heron.log</sysprop>
          ...
-
-      <plugin id='QueuePluginCache' code='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
-         <plugin refid='${QueuePluginRAM}'/>
-         <plugin refid='${QueuePluginJDBC}'/>
-      </plugin>
-
-      <plugin id='QueuePluginRAM' code='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'/>
-
-      <plugin id='QueuePluginJDBC' code='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'>
-         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
-         <attribute id='user'>joe</attribute>
-         <attribute id='password'>secret</attribute>
-         <attribute id='connectionBusyTimeout'>90000</attribute>
-         <attribute id='maxWaitingThreads'>300</attribute>
-      </plugin>
 
       <!-- xmlBlaster messages -->
       <numTopics>7140</numTopics>
@@ -608,7 +620,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.37 $</revision>
+   <revision>$Revision: 1.38 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
