@@ -674,8 +674,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       Iterator it = pMap.keySet().iterator();
       while (it.hasNext()) {
          String key = (String)it.next();
-         map.put("/qos/clientProperty[@name='"+key+"']/text()", pMap.get(key)); 
-         map.put("/qos/clientProperty[@name='"+key+"']/@type", pMap.get(key));
+         ClientProperty p = (ClientProperty)pMap.get(key);
+         map.put("/qos/clientProperty[@name='"+key+"']/text()", p.getValueRaw()); 
+         map.put("/qos/clientProperty[@name='"+key+"']/@type", p.getType());
+         map.put("/qos/clientProperty[@name='"+key+"']/@encoding", p.getEncoding());
       }
 
       if (isUpdate() || isGet()) {
