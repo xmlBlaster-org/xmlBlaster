@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.12 2002/05/11 19:17:57 ruff Exp $
+Version:   $Id: Global.java,v 1.13 2002/05/11 20:59:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -120,7 +120,7 @@ public class Global implements Cloneable
    private void initLog(LogChannel lc) {
       String key = lc.getChannelKey();
 
-      lc.setDefaultLogLevel();
+      //lc.setDefaultLogLevel();
 
       boolean bVal = getProperty().get("logConsole", true);
       if (key != null) getProperty().get("logConsole[" + key + "]", bVal);
@@ -165,6 +165,7 @@ public class Global implements Cloneable
       if (key != null && key.length() > 0) {
          initLog(log);
          logChannels.put(key, log);
+         log.info(ME, "New log channel '" + key + "' ready: " + LogChannel.bitToLogLevel(log.getLogLevel()));
          return true;
       }
       return false;
