@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.6 1999/12/09 17:15:48 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.7 1999/12/22 09:40:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -125,7 +125,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
    public org.w3c.dom.Node mergeNode(org.w3c.dom.Node node) throws XmlBlasterException
    {
       try {     // !!! synchronize is missing !!!
-         Log.info(ME, "mergeNode=" + node.toString());
+         if (Log.TRACE) Log.trace(ME, "mergeNode=" + node.toString());
 
          xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
 
@@ -197,7 +197,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
                Log.error(ME, e.toString());
             }
          }
-         Log.info(ME, n + " MessageUnits matched to subscription " + xmlKey.literal());
+         Log.info(ME, n + " MessageUnits matched to subscription \"" + xmlKey.getQueryString() + "\"");
       }
 
       else {
