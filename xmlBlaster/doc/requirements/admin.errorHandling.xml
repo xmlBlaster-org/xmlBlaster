@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.errorHandling' type='NEW' prio='LOW' status="CLOSED">
+   <topic>XmlBlaster supports specific error handling and dead messages</topic>
+   <description>
+    <p>
+      When xmlBlaster experiences error or exception situations which it
+      can't handle with its standard program flow (like throwing an exception back to the client)
+      the problem is forwarded to the exception handler which usually publishes
+      a dead message containing the lost message.
+    </p>
+    <p>
+    You can now implement a specific client which subscribes on the <tt>"__sys__deadMessage"</tt> topic
+    to process the dead messages in your specific way.
+    </p>
+    <p>XmlBlaster provides a little server side plugin called <tt>DeadMessageDumper</tt>
+    which subscribes to dead messages and dumps them to a configurable directory.
+    </p>
+   </description>
+
+   <example lang="ANY" type="HTML">
+     <h2>DeadMessageDumper</h2>
+     <p>
+     If you activate the <tt>DeadMessageDumper</tt> plugin in <tt>xmlBlasterPlugins.xml</tt> all dead messages
+     are dumped for example to <tt>/tmp/xmlBlaster-deadMessages/2005-02-03_22_15_31_664.xml</tt>:
+     </p>
+     <pre>
+&lt;plugin id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
+   &lt;action do='LOAD' onStartupRunlevel='7' sequence='1' onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='1'/>
+   &lt;attribute id='loginName'>_DeadMessageDumper&lt;/attribute>
+   &lt;attribute id='directoryName'>${java.io.tmpdir}${file.separator}xmlBlaster-deadMessages&lt;/attribute>
+   &lt;attribute id='password'>secret&lt;/attribute>
+   &lt;attribute id='forceBase64'>false&lt;/attribute>
+&lt;/plugin>
+     </pre>
+     <p>
+     The content of a dumped dead message file contains all detailed informations about the problem:
+     </p>
+     <pre>
+  &lt;!-- Dump of topic 'Company_data.Woody' cause: -->
+  &lt;!-- Generating dead message
+       'callback:/node/xmlBlaster_217_35_23_67_3412/client/xmlblast/-3/NORM/1107447908405000000/Company_data.Woody'
+       from publisher=/node/xmlBlaster_217_35_23_67_3412/client/publisher/1 because delivery with queue 'null' failed:
+       Mime access filter 'XPathFilter' for message 'Company_data.Woody/2005-02-03 17:23:44.022'
+       from sender '/node/xmlBlaster_217_35_23_67_3412/client/publisher/1'
+       to subscriber '/node/xmlBlaster_217_35_23_67_3412/client/xmlblast/-3' threw an exception,
+       we don't deliver the message to the subscriber:
+       errorCode=user.configuration message=#13159:13171
+         Error in querying dom tree with query //root :
+         errorCode=user.illegalArgument message=#13159:13171
+         Could not parse xml: Expected "&lt;/dsafroot>" to terminate element starting on line 1. at line=40 column=-1
+         in systemIDnull -->
+&lt;xmlBlaster>
+ &lt;publish>
+ &lt;qos>
+  &lt;subscribable/>
+  &lt;sender>/node/xmlBlaster_217_35_23_67_3412/client/publisher/1&lt;/sender>
+  &lt;expiration lifeTime='-1' forceDestroy='false'/>
+  &lt;rcvTimestamp nanos='1107447824022000000'/>
+  &lt;persistent/>
+  &lt;forceUpdate/>
+  &lt;route>
+   &lt;node id='xmlBlaster_217_35_23_67_3412' stratum='0' timestamp='1107447824022000000' dirtyRead='false'/>
+  &lt;/route>
+  &lt;isPublish/>
+  &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
+    &lt;msgDistributor typeVersion='undef,1.0'/>
+    &lt;persistence relating='msgUnitStore' maxEntries='100000000' maxEntriesCache='10000'/>
+    &lt;queue relating='history' maxEntries='10' maxEntriesCache='10'/>
+  &lt;/topic>
+  &lt;clientProperty name='__isErrorHandled' type='boolean'>true&lt;/clientProperty>
+ &lt;/qos>
+ &lt;key oid='Company_data.Woody' contentMime='text/xml' contentMimeExtended='1.0'>
+  &lt;org.xmlBlaster>&lt;demo-1>&lt;/demo-1>&lt;/org.xmlBlaster>
+ &lt;/key>
+ &lt;content size='946'><![CDATA[<dsafroot><co_guid>1</co_guid>
+<co_typ>L</co_typ>
+<co_nr>10001</co_nr>
+<co_status>18</co_status>
+<co_sort>test</co_sort>
+<co_str>Teststr. 5</co_str>
+<co_email></co_email>
+</root>]]>&lt;/content>
+ &lt;/publish>
+&lt;/xmlBlaster>
+   </pre>
+   <p>An administrator can edit the message and resend it using the
+   xmlBlaster scripting client or any other customized tool.
+   You need to remove all <tt>&lt;qos></tt> entries like
+   <tt>&lt;route></tt> and <tt>&lt;rcvTimestamp></tt> before sending the message manually
+   or use the command line setting <tt>-prepareForPublish true</tt> which does this for you:
+   </p>
+   <p><tt>
+java javaclients.script.XmlScript -session.name joe -prepareForPublish true -requestFile 2005-02-03_22_15_31_664.xml  
+   </tt></p>
+   <h2>Wrong sender address</h2>
+   <p>One problem remains: The sender of the message changes to be the xml script client
+   instead of the original sender. To allow sending a faked sender address
+   in the QoS you can start xmlBlaster with this option:</p>
+   <tt>java org.xmlBlaster.Main -xmlBlaster/acceptWrongSenderAddress/joe true</tt>.
+   </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the error handling.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td></td>
+            <td></td>
+            <td>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+   </todo>
+   
+   <see type="API">org.xmlBlaster.util.error.I_MsgErrorHandler</see>
+   <see type="API">org.xmlBlaster.engine.MsgErrorHandler</see>
+   <see type="API">org.xmlBlaster.client.ClientErrorHandler</see>
+   <see type="API">org.xmlBlaster.engine.DeadMessageDumper</see>
+   <!-- see type="REQ">admin.commands</see -->
+   
+   <author>xmlBlaster@marcelruff.info</author>
+   
+   <date>2005 02 04</date>
+   
+   <revision>$Revision: 1.26 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Currently not available</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
