@@ -45,29 +45,20 @@ public:
       log_.info(ME, "testSessionQos(): Starting tests ...");
       try {
          {
-            string qos = "<session name='/node/http:/client/ticheta/-3' timeout='86400000' maxSessions='10' \n" +
+            string qos = "<session name='/node/http:/client/ticheta/3' timeout='86400000' maxSessions='10' \n" +
                  string("         clearSessions='false' reconnectSameClientOnly='false' sessionId='IIOP:01110728321B0222011028'/>\n");
      
-            Global& glob = Global::getInstance();
-            glob.initialize(args, argv);
-            SessionQosFactory factory(glob);
+            SessionQosFactory factory(global_);
             SessionQosData data = factory.readObject(qos);
 
-            data.getPubSessionId() 
-            data.getSubjectId()
-            data.getClusterNodeId()
-       
-            SessionQosData data2(glob);
-            cout << data2.toXml() << endl;
-            cout << data2.getPubSessionId() << endl;
-            cout << data2.getSubjectId() << endl;
-            cout << data2.getClusterNodeId() << endl << endl;
-     
-     
-            assertEquals(log_, ME, "client/ticheta/-3", data2.getPubSessionId(), "name");
-            assertEquals(log_, ME, "client/ticheta", data2.getSubjectId(), "encoding");
-            assertEquals(log_, ME, "/node/http:", data2.getClusterNodeId(), "isBase64");
-         }
+            assertEquals(log_, ME, 3L, data.getPubSessionId(), "public sessionId");
+            assertEquals(log_, ME, "ticheta", data.getSubjectId(), "subjectId");
+            assertEquals(log_, ME, "http:", data.getClusterNodeId(), "http:");
+            assertEquals(log_, ME, 86400000L, data.getTimeout(), "timeout");
+            assertEquals(log_, ME, 10, data.getMaxSessions(), "maxSessions");
+            assertEquals(log_, ME, false, data.getClearSessions(), "clearSessions");
+            assertEquals(log_, ME, false, data.getReconnectSameClientOnly(), "reconnectSameClientOnly");
+            assertEquals(log_, ME, "IIOP:01110728321B0222011028", data.getSecretSessionId(), "secret sessionId");
          }
       }
       catch(bad_cast b) {
@@ -87,14 +78,6 @@ public:
 
 
 
-
-    {
-    }
-   return 0;
-}
-
-
-
 using namespace org::xmlBlaster::test;
 
 int main(int args, char *argv[]) 
@@ -105,8 +88,9 @@ int main(int args, char *argv[])
    TestQos testObj(glob, "TestQos");
 
    testObj.setUp();
-   testObj.testClientProperty();
+   testObj.testSessionQos();
    testObj.tearDown();
+
    return 0;
 }
 
