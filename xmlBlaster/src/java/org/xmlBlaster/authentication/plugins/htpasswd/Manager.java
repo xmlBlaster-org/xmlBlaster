@@ -93,9 +93,5 @@ public class Manager implements I_Manager {
       }
    }
 
-   Subject getSubject(String name) throws XmlBlasterException {
-      // throw new XmlBlasterException(ME + ".unknownSubject", "There is no user called " + name);
-      return new Subject(name); // dummy implementation
-   }
-
 }//class Manager
+
