@@ -39,7 +39,7 @@ DEMO:
   A functional C# demo client is under xmlBlaster\demo\activex 
 
   Visual Studio:
-    -> References -> (right mouse): Add Reference -> XmlScriptAccess
+    -> Solution Explorer -> References -> (right mouse): Add Reference -> COM -> XmlScriptAccess
 
   Task bar: Java Icon:
     -> Open Console
