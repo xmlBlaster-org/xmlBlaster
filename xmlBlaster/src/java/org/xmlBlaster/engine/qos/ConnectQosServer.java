@@ -28,28 +28,31 @@ public final class ConnectQosServer
    private String ME = "ConnectQosServer";
    private final Global glob;
    private final ConnectQosData connectQosData;
-   private final boolean internal; // if the connection is generated internally i.e. no need to notify clients 
    private boolean bypassCredentialCheck = false;
+   private long persistenceUniqueId;
 
-   public ConnectQosServer(Global glob, ConnectQosData connectQosData, boolean internal) {
+   public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.internal = internal;
       this.connectQosData = connectQosData;
       // better keep it for forwarding etc.
       //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
-   public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
-      this(glob, connectQosData, false);
-   }
-
    public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.internal = false;
       this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
-      
-      // better keep it for forwarding etc.
-      //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
+   }
+
+   /**
+    * Serialize first to have a clone for security reasons (and to guarantee our Global). 
+    * @param glob Use the new Global for the returned clone
+    */
+   public ConnectQosServer getClone(Global newGlob) throws XmlBlasterException {
+      ConnectQosServer aClone = new ConnectQosServer(newGlob, toXml());
+      aClone.bypassCredentialCheck(bypassCredentialCheck());
+      aClone.isFromPersistenceRecovery(isFromPersistenceRecovery());
+      aClone.setPersistenceUniqueId(getPersistenceUniqueId());
+      return aClone;
    }
 
    public ConnectQosData getData() {
@@ -69,6 +72,25 @@ public final class ConnectQosServer
 
    public boolean bypassCredentialCheck() {
       return this.bypassCredentialCheck;
+   }
+
+   public void isFromPersistenceRecovery(boolean fromPersistenceRecovery) {
+      this.connectQosData.isFromPersistenceRecovery(fromPersistenceRecovery);
+   }
+
+   public long getPersistenceUniqueId() {
+      return this.persistenceUniqueId;
+   }
+
+   public void setPersistenceUniqueId(long persistenceUniqueId) {
+      this.persistenceUniqueId = persistenceUniqueId;
+   }
+
+   /**
+    * Marker if the message comes from persistent store after recovery. 
+    */
+   public boolean isFromPersistenceRecovery() {
+      return this.connectQosData.isFromPersistenceRecovery();
    }
 
    /**
@@ -283,15 +305,5 @@ public final class ConnectQosServer
    public String toXml() {
       return this.connectQosData.toXml();
    }
-
-   /**
-    * tells whether the connection is internal, i.e. has been done from
-    * a recovery from persitence
-    * @return true if internal, false if it comes from the client
-    */   
-   public boolean isInternal() {
-      return this.internal;
-   }
-
 }
 
