@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.7 2002/12/17 19:09:13 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.8 2002/12/17 20:10:37 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -153,8 +153,12 @@ void QueuePropertyBase::initialize(const string propertyPrefix)
          relating_ = Constants::RELATING_SESSION;
       else if (Constants::RELATING_SUBJECT == relating)
          relating_ = Constants::RELATING_SUBJECT;
-      else if (Constants::RELATING_CLIENT ==relating)
+      else if (Constants::RELATING_CLIENT == relating)
          relating_ = Constants::RELATING_CLIENT;
+      else if (Constants::RELATING_HISTORY == relating)
+         relating_ = Constants::RELATING_HISTORY;
+      else if (Constants::RELATING_TOPICCACHE == relating)
+         relating_ = Constants::RELATING_TOPICCACHE;
       else {
          log_.warn(ME, string("Ignoring relating=") + relating);
       }
