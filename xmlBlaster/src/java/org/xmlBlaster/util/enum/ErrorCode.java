@@ -171,6 +171,7 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_DB_UNAVAILABLE = new ErrorCode("resource.db.unavailable",
          "There is no connection to a backend database using JDBC",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "queue.jdbc.hsqldb", "queue.jdbc.hsqldb"),
             new ResourceInfo(ResourceInfo.API, "JDBC connection management", "org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool")
          }
       );
@@ -178,6 +179,7 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_DB_UNKNOWN = new ErrorCode("resource.db.unknown",
          "An unknown error with the backend database using JDBC occurred",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "queue.jdbc.hsqldb", "queue.jdbc.hsqldb"),
             new ResourceInfo(ResourceInfo.API, "JDBC connection management", "org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool")
          }
       );
