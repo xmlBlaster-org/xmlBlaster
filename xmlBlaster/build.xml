@@ -834,14 +834,18 @@ TODO
 		refid="j2me.preverify.cp}" />
     -->
 
+   <condition property="J2ME_HOME" value="${env.J2ME_HOME}">
+      <isset property="env.J2ME_HOME"/>
+   </condition>
+   <condition property="J2ME_HOME" value="">
+      <not>
+         <isset property="J2ME_HOME"/>
+      </not>
+   </condition>
+
    <target name="j2me" depends="prepare" description="Compile j2me demo and packages it">
       <switch value="${J2ME_HOME}" caseinsensitive="false">
          <case value="">
-	    <echo message="========================================================================"/>
-	    <echo message="!!!!!!!!!!!! YOU HAVE TO SET THE ENVIRONMENT VARIABLE J2ME_HOME !!!!!!!!"/>
-	    <echo message="========================================================================"/>
-         </case>
-         <case value="${J2ME_HOME}">
 	    <echo message="========================================================================"/>
 	    <echo message="!!!!!!!!!!!! YOU HAVE TO SET THE ENVIRONMENT VARIABLE J2ME_HOME !!!!!!!!"/>
 	    <echo message="========================================================================"/>
