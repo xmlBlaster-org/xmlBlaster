@@ -1784,6 +1784,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
+      text += "                       Example: java MyApp -client.protocol RMI -rmi.hostname 192.168.10.34\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";
@@ -1806,6 +1807,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       Log.plain(CorbaConnection.usage());
       Log.plain(RmiConnection.usage());
       Log.plain(XmlRpcConnection.usage());
+      Log.plain(Global.usage()); // for LogChannel help
    }
 
 } // class XmlBlasterConnection
