@@ -1960,6 +1960,8 @@ TODO
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
+           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Compile Corba tests? -->
+           <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Compile Socket tests? -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
@@ -1999,7 +2001,7 @@ TODO
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
             <!-- xmlBlasterClientC.so -->
-            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
