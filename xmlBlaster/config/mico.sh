@@ -15,7 +15,7 @@ fi
 
 export CORBA_CPP="mico"
 export CORBACPP_HOME=${MICO_HOME}
-if [ $MICO_VER ]
+if [ $MICO_VER ] ; then
   export CORBACPP_VER=${MICO_VER}
 fi
 
