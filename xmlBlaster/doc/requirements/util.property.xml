@@ -4,28 +4,68 @@
 <requirement id='util.property' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster provides a property file to allow a simple configuration</topic>
    <description>
+      <p>
       The xmlBlaster.properties file allows to customize the behavior of xmlBlaster.
-   </description>
-   <example lang="Java">
-     <p>Here is the sequence described by which xmlBlaster looks into the file system to find the
+      </p>
+     <p>Here is the sequence by which xmlBlaster looks into the file system to find the
         properties file:
      </p>
-     <ul>
-       <li>user.dir</li>
-       <li>full name (complete with path) for example -propertyFile /tmp/xy.properties</li>
-       <li>PROJECT_HOME global property (ex: java -DPROJECT_HOME=/opt/xmlBlaster)</li>
-       <li>user.home</li>
-       <li>classpath (the complete given classpath)</li>
-       <li>java.ext.dirs e.g. /opt/jdk1.2.2/jre/lib/ext</li>
-       <li>java.home e.g. /opt/jdk1.2.2/jre/lib</li>
-       <li>Fallback: \jutils or /usr/local/jutils</li>
-     </ul>
+     <table border="1">
+      <tr>
+        <th>Location</th>
+        <th>Example</th>
+        <th>Comment</th>
+      </tr>
+       <tr>
+         <td>user.dir</td>
+         <td>/opt/xmlBlaster</td>
+         <td>The current directory</td>
+       </tr>
+       <tr>
+         <td>-propertyFile</td>
+         <td>/tmp/xy.properties </td>
+         <td>full property file name (complete with path)</td>
+       </tr>
+       <tr>
+          <td>PROJECT_HOME</td>
+          <td>java -DPROJECT_HOME=/opt/xmlBlaster</td>
+          <td>global property</td>
+       </tr>
+       <tr>
+          <td>user.home</td>
+          <td>/home/joe</td>
+          <td>Your home directory</td>
+       </tr>
+       <tr>
+          <td>CLASSPATH</td>
+          <td>lib/xmlBlaster.jar:/opt/classes.zip</td>
+          <td>The complete given classpath</td>
+       </tr>
+       <tr>
+          <td>java.ext.dirs</td>
+          <td>/opt/jdk1.2.2/jre/trb/ext</td>
+          <td>Your JVM installations ext directory</td>
+       </tr>
+       <tr>
+          <td>java.home</td>
+          <td>/opt/jdk1.2.2/jre/trb</td>
+          <td>Your JVM installation (JAVA_HOME)</td>
+       </tr>
+       <tr>
+          <td>Default</td>
+          <td>\jutils or /usr/local/jutils</td>
+          <td>Fallback</td>
+       </tr>
+     </table>
+   </description>
+   <example lang="Java">
    </example>
+   <see type="REQ">util.property.env</see>
    <see type="API">org.xmlBlaster.util.XmlBlasterProperty</see>
    <see type="API">org.jutils.init.Property</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>xmlBlaster@marcelruff.info</name>
       <comment>
