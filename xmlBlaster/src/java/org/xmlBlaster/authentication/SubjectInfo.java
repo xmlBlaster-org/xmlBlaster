@@ -290,8 +290,12 @@ public class SubjectInfo
       this.callbackAddressCache = null;
       this.subjectQueue.setCallbackAddresses(getCallbackAddresses());
 
-      if (Log.TRACE) Log.trace(ME, "Flushing " + this.subjectQueue.size() + " messages");
-      this.subjectQueue.activateCallbackWorker();
+      synchronized (this.subjectQueue) {
+         if (this.subjectQueue.size() > 0) {
+            if (Log.TRACE) Log.trace(ME, "Flushing " + this.subjectQueue.size() + " messages");
+            this.subjectQueue.activateCallbackWorker();
+         }
+      }
    }
 
 
