@@ -17,7 +17,7 @@ echo Starting Ant...
 
 REM -Dbuild.compiler=jikes  or  modern  or classic
 
-%JAVA_HOME%\bin\java.exe -Dant.home=. -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
+%JAVA_HOME%\bin\java.exe -Dant.home=. -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %*
 
 goto end
 
