@@ -390,6 +390,92 @@ tcpdump -i lo -A -vvv dst port 7607
       <pre>
 java -Djavax.net.debug=all ...
       </pre>
+      <p>
+      These are the benefits of the above connection:
+      </p>
+      <ul>
+          <li>Integrity Protection. SSL protects against modification of messages by an active wiretapper.</li>
+          <li>Authentication. Here xmlBlaster is authenticated, the client knows to which xmlBlaster it talks,
+              but xmlBlaster does not assure on this SSL layer who the client is.</li>
+          <li>Confidentiality (Privacy Protection). In most modes, SSL encrypts data being sent between client and server. This protects the confidentiality of data, so that passive wiretappers won't see sensitive data such as financial information or personal information of many kinds.</li>
+      </ul>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2 id="SSL2">
+      Using SSL communication with additional client authentication
+      </h2>
+      <p>
+      In the section before we have explained how to establish a SSL connection between
+      a client and xmlBlaster, in that setup xmlBlaster did not authenticate the clients on SSL layer.
+      Let's add additionally client authentication.
+      The following steps create a client private key and than exchange the clients and servers public
+      key so that both sides know the other side.
+      </p>
+      <p>
+      Create a private key for client <i>joe</i>:
+      </p>
+      <tt>
+keytool -genkey -dname "cn=joe, ou=client, o=xmlBlaster, c=org" -alias joe
+        --keypass testtest -keystore testStore.joe -storepass testtest -keyalg RSA
+      </tt>
+      <p>
+      Export joe's certificate:
+      </p>
+      <tt>
+keytool -alias joe -export -keystore testStore.joe -storepass testtest -rfc -file joeTrustStore.Cert
+      </tt>
+      <p>
+      and import it to the servers trust store named <tt>testStore</tt>:
+      </p>
+      <tt>
+keytool -import -alias joe -file joeTrustStore.Cert -keystore testStore -storepass testtest
+      </tt>
+      <p>
+      Create a certificate of the xmlBlaster server (the servers private key is in <tt>teststore</tt> which 
+      was created in the example before):
+      </p>
+      <tt>
+keytool -alias xmlBlaster -export -keystore testStore -storepass testtest -rfc -file xmlBlasterTrustStore.Cert
+      </tt>
+      <p>
+      and import it to joe's trust store:
+      </p>
+      <tt>
+keytool -import -alias xmlBlaster -file xmlBlasterTrustStore.Cert -keystore testStore.joe -storepass testtest
+      </tt>
+      <p>
+      On problems look into the key store file and verify all is correct:
+      </p>
+      <tt>
+keytool -list -v  -storepass testtest -keystore testStore.joe<br />
+keytool -list -v  -storepass testtest -keystore testStore
+      </tt>
+
+      <p>
+      Start the server:
+      </p>
+      <tt>
+java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keyStore testStore -plugin/socket/keyStorePassword testtest -plugin/socket/trustStoretestStore -plugin/socket/trustStorePassword testtest -plugin/socket/needClientAuth true
+      </tt>
+      <p>
+      and a client to test it:
+      </p>
+      <tt>
+java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keyStore testStore.joe -plugin/socket/keyStorePassword testtest
+      </tt>
+      <p>
+      These are the benefits of the above connection:
+      </p>
+      <ul>
+          <li>Integrity Protection. SSL protects against modification of messages by an active wiretapper.</li>
+          <li>Authentication. <b>Here SSL provides peer authentication. The xmlBlaster server is authenticated, and clients need to authenticate themselves.</b></li>
+          <li>Confidentiality (Privacy Protection). In most modes, SSL encrypts data being sent between client and server. This protects the confidentiality of data, so that passive wiretappers won't see sensitive data such as financial information or personal information of many kinds.</li>
+      </ul>
+      <p>
+      Note: To simplify the server setup you should add all server settings to
+      the <tt>xmlBlasterPlugins.xml</tt> file as described in the next example.
+      </p>
    </example>
 
    <example lang="Java" type="HTML">
@@ -417,6 +503,7 @@ java -Djavax.net.debug=all ...
    &lt;attribute id='trustStorePassword'>testtest&lt;/attribute>
    &lt;attribute id='keyStore'>testStore&lt;/attribute>
    &lt;attribute id='keyStorePassword'>testtest&lt;/attribute>
+   &lt;attribute id='needClientAuth'>false&lt;/attribute>
    &lt;attribute id='port'>7609&lt;/attribute>
    &lt;attribute id='startUdpListener'>false&lt;/attribute>
 &lt;/plugin>
@@ -749,9 +836,10 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
          </tr>
 
          <tr>
-            <td>plugin/socket/keyStore</td>
-            <td>''</td>
-            <td>The path of your SSL keystore file. Use the java utility keytool.
+            <td>plugin/socket/needClientAuth</td>
+            <td>false</td>
+            <td>Set to 'true' if the client needs to be authenticated by the server.
+            In such a case you need to add the clients public key to the servers trustStore.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>

@@ -264,7 +264,8 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
 
 
          paramCls = new Class[] { boolean.class };
-         params = new Object[] {  Boolean.FALSE };
+         boolean needClientAuth = address.getEnv("needClientAuth", false).getValue();
+         params = new Object[] { needClientAuth ? Boolean.TRUE : Boolean.FALSE };
          // serverSocket: can not access a member of class com.sun.net.ssl.internal.ssl.SSLServerSocketImpl with modifiers "public"
          // so we force access to the base class:
          Class clazzI = java.lang.Class.forName("javax.net.ssl.SSLServerSocket");
@@ -306,6 +307,24 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
        in which case no additional settings are needed here (they are actually ignored by the JDK ssl implementation)
       */
 
+      // Configure a stand alone client key store (containing the clients private key)
+      String keyStore = address.getEnv("keyStore", System.getProperty("javax.net.ssl.keyStore", "")).getValue();
+      if (keyStore != "") {
+         log.info(ME, "SSL client socket enabled for " + address.getRawAddress() + ", keyStore="+keyStore);
+         System.setProperty("javax.net.ssl.keyStore", keyStore);
+      }
+      else {
+         log.warn(ME, "SSL client socket is enabled but no keyStore is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+      }
+
+      String keyStorePassword = address.getEnv("keyStorePassword", System.getProperty("javax.net.ssl.keyStorePassword", "")).getValue();
+      if (keyStorePassword != "") {
+         System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+      }
+      else {
+         log.warn(ME, "SSL client socket is enabled but no keyStorePassword is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+      }
+
       // The trustStore file can be identical to the server side keyStore file:
       String trustStore = address.getEnv("trustStore", (String)System.getProperty("javax.net.ssl.trustStore", "")).getValue();
       String pass = address.getEnv("trustStorePassword", (String)System.getProperty("javax.net.ssl.trustStorePassword", "")).getValue();
@@ -334,6 +353,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
       if (pass != "") {
          System.setProperty("javax.net.ssl.trustStorePassword", pass);
       }
+
 
       java.net.Socket retSock = null;
 

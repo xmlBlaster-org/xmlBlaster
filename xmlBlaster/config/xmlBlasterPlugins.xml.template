@@ -66,6 +66,7 @@
       <attribute id='trustStorePassword'>testtest</attribute>
       <attribute id='keyStore'>testStore</attribute>
       <attribute id='keyStorePassword'>testtest</attribute>
+      <attribute id='needClientAuth'>false</attribute>
       <attribute id='port'>7609</attribute>
       <attribute id='compress/type'>zlib:stream</attribute>
       <attribute id='startUdpListener'>false</attribute>

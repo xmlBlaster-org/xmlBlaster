@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #13043 SOCKET SSL communication: Added property 'needClientAuth' to support
+   authentication of connecting clients as well, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL2
+
  o #13038 jutils-logging Fixed synchronization gap when making log-backup files
 
  o #13035 FilePoller final release
