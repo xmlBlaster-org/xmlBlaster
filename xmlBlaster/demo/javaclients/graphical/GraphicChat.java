@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 package javaclients.graphical;
-import CH.ifa.draw.util.StorageFormatManager;
 import CH.ifa.draw.contrib.SVGStorageFormat;
 
 import javax.swing.JToolBar;
@@ -18,7 +17,6 @@ import CH.ifa.draw.samples.javadraw.*;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -62,6 +60,7 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp {
     * 
     * TODO: Read storage formats from a config file.
     */
+/*
    public StorageFormatManager createStorageFormatManager() {
       StorageFormatManager storageFormatManager = new StorageFormatManager();
       SVGStorageFormat format = new SVGStorageFormat();
@@ -69,7 +68,7 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp {
       storageFormatManager.setDefaultStorageFormat(format);
       return storageFormatManager;
    }
-
+*/
    //-- main -----------------------------------------------------------
 
    public static void main(String[] args) {

@@ -7,7 +7,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package javaclients.graphical;
 
 import CH.ifa.draw.framework.FigureChangeEvent;
-import CH.ifa.draw.framework.FigureEnumeration;
 import CH.ifa.draw.framework.Figure;
 import CH.ifa.draw.standard.StandardDrawing;
 
