@@ -28,7 +28,7 @@ public abstract class QueuePropertyBase implements Cloneable
 {
    private static final String ME = "QueuePropertyBase";
    protected final Global glob;
-   protected final LogChannel log;
+   protected LogChannel log;
 
    private String propertyPrefix = "";
 
@@ -124,7 +124,7 @@ public abstract class QueuePropertyBase implements Cloneable
       }
       else
          this.glob = glob;
-      this.log = glob.getLog("core");
+      this.log = glob.getLog("core"); // will be overwritten in initialize with "queue" or "persistence"
       this.nodeId = (nodeId == null) ? glob.getStrippedId() : nodeId;
    }
 
@@ -175,6 +175,7 @@ public abstract class QueuePropertyBase implements Cloneable
    protected void initialize(String relating) {
       this.relating = (relating == null) ? "" : relating;
       String prefix = getPrefix();
+      this.log = this.glob.getLog(getRootTagName());
       String context = null; // something like "/topic/HelloWorld"
 
       // extract the plugin type and version from 'defaultPlugin'
@@ -216,6 +217,8 @@ public abstract class QueuePropertyBase implements Cloneable
       }
       
       checkConsistency();
+
+      if (log.TRACE) log.trace(ME, "Initialized: " + toXml());
    }
 
    /**
@@ -235,7 +238,7 @@ public abstract class QueuePropertyBase implements Cloneable
       else if (Constants.RELATING_TOPICSTORE.equalsIgnoreCase(relating))
          this.relating = Constants.RELATING_TOPICSTORE;
       else {
-         log.warn(ME, "Ignoring relating='" + relating + "'");
+         this.log.warn(ME, "Ignoring relating='" + relating + "'");
          Thread.currentThread().dumpStack();
       }
    }
@@ -643,15 +646,16 @@ public abstract class QueuePropertyBase implements Cloneable
    protected String usage(String headerline) {
       String prefix = getPrefix();
       String text = "";
-      text += headerline + "\n";
-      text += "   -"+prefix+"maxMsg       The maximum allowed number of messages [" + this.maxMsg.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"maxMsgCache  The maximum allowed number of messages in the cache [" + this.maxMsgCache.getDefaultValue() + "].\n";
+      text += "\n" + headerline + "\n";
+      text += "   -"+prefix+"maxMsg        The maximum allowed number of messages [" + this.maxMsg.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxMsgCache   The maximum allowed number of messages in the cache [" + this.maxMsgCache.getDefaultValue() + "].\n";
       text += "   -"+prefix+"maxBytes      The maximum size in bytes of the storage [" + this.maxBytes.getDefaultValue() + "].\n";
       text += "   -"+prefix+"maxBytesCache The maximum size in bytes in the cache [" + this.maxBytesCache.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"onOverflow What happens if storage is full [" + this.onOverflow.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"onFailure  Error handling when storage failed [" + this.onFailure.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"type       The plugin type [" + this.type.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"version    The plugin version [" + this.version.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"onOverflow    What happens if storage is full [" + this.onOverflow.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"onFailure     Error handling when storage failed [" + this.onFailure.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"type          The plugin type [" + this.type.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"version       The plugin version [" + this.version.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"defaultPlugin The plugin type,version (short form) [" + this.type.getDefaultValue()+","+this.version.getDefaultValue() + "]\n";
       return text;
    }
 
