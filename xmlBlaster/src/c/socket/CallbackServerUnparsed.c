@@ -82,7 +82,7 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
          "Can't determine the local socket host and port, errno=%d", errno);
       return false;
    }
-   cb->portCB = localAddr.sin_port;
+   cb->portCB = (int)ntohs(localAddr.sin_port);
    strcpyRealloc(&cb->hostCB, inet_ntoa(localAddr.sin_addr)); /* inet_ntoa holds the host in an internal static string */
 
    cb->listenSocket = socketToUse;
@@ -224,23 +224,40 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 
       msgUnitArr = parseMsgUnitArr(socketDataHolder.blob.dataLen, socketDataHolder.blob.data);
 
-      if (cb->update != 0) { /* Client has registered to receive callback messages? */
-         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
-            "Received callback, calling client update() ...");
-         success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException);
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+         "Received callback methodName=%s", socketDataHolder.methodName);
+
+      success = true;
+      
+      if (strcmp(socketDataHolder.methodName, XMLBLASTER_PING) == 0) {
+         size_t i;
+         for (i=0; i<msgUnitArr->len; i++) {
+            msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos/>");
+         }
+      }
+      else if (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE) == 0 ||
+               strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0) {
+         if (cb->update != 0) { /* Client has registered to receive callback messages? */
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+               "Calling client update() ...");
+            success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException);
+         }
       }
       else {
-         success = true;
+         cb->log(cb->logLevel, LOG_ERROR, __FILE__,
+         "Received unknown callback methodName=%s", socketDataHolder.methodName);
       }
 
-      if (success == true) {
-         sendResponse(cb, &socketDataHolder, msgUnitArr);
-      }
-      else {
-         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
-            "CallbackServerUnparsed.update(): Throwing the XmlBlasterException '%s' back to the server:\n%s",
-                xmlBlasterException.errorCode, xmlBlasterException.message);
-         sendXmlBlasterException(cb, &socketDataHolder, &xmlBlasterException);
+      if (! (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0)) {
+         if (success == true) {
+            sendResponse(cb, &socketDataHolder, msgUnitArr);
+         }
+         else {
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+               "CallbackServerUnparsed.update(): Throwing the XmlBlasterException '%s' back to the server:\n%s",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
+            sendXmlBlasterException(cb, &socketDataHolder, &xmlBlasterException);
+         }
       }
 
       freeXmlBlasterBlobContent(&socketDataHolder.blob);
@@ -286,8 +303,8 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
    }
 
    /*
-      * Create the address we will be binding to.
-      */
+    * Create the address we will be binding to.
+    */
    serv_addr.sin_family = AF_INET;
    hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen);
    if (hostP != NULL) {
