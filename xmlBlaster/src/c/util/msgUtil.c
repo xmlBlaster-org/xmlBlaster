@@ -64,7 +64,7 @@ static const char *LOG_TEXT_ESCAPE[] = {
 /**
  * @return e.g. "0.848"
  */
-const char *getXmlBlasterVersion()
+Dll_Export const char *getXmlBlasterVersion()
 {
    /* Is replaced by xmlBlaster/build.xml ant task */
    return "@version@";
@@ -75,7 +75,7 @@ const char *getXmlBlasterVersion()
  * @return The stack trace, you need to free() it.
  *         Returns NULL if out of memory.
  */
-char *getStackTrace(int maxNumOfLines)
+Dll_Export char *getStackTrace(int maxNumOfLines)
 {
 #ifdef _ENABLE_STACK_TRACE_
    int i;
@@ -123,7 +123,7 @@ char *getStackTrace(int maxNumOfLines)
 /**
  * Sleep for given milliseconds, on none real time systems expect ~ 10 millisecs tolerance. 
  */
-void sleepMillis(long millisecs)
+Dll_Export void sleepMillis(long millisecs)
 {
 #ifdef _WINDOWS
    Sleep(millisecs);
@@ -171,7 +171,7 @@ void sleepMillis(long millisecs)
 /**
  * Frees everything inside MsgUnitArr and the struct MsgUnitArr itself
  */
-void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
+Dll_Export void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
 {
    size_t i;
    if (msgUnitArr == (MsgUnitArr *)0) return;
@@ -186,7 +186,7 @@ void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
 /**
  * Does not free the msgUnit itself
  */
-void freeMsgUnitData(MsgUnit *msgUnit)
+Dll_Export void freeMsgUnitData(MsgUnit *msgUnit)
 {
    if (msgUnit == (MsgUnit *)0) return;
    if (msgUnit->key != 0) {
@@ -212,7 +212,7 @@ void freeMsgUnitData(MsgUnit *msgUnit)
 /**
  * Frees everything. 
  */
-void freeMsgUnit(MsgUnit *msgUnit)
+Dll_Export void freeMsgUnit(MsgUnit *msgUnit)
 {
    if (msgUnit == (MsgUnit *)0) return;
    freeMsgUnitData(msgUnit);
@@ -224,7 +224,7 @@ void freeMsgUnit(MsgUnit *msgUnit)
  *
  * @return A ASCII XML formatted message or NULL if out of memory
  */
-char *messageUnitToXml(MsgUnit *msg)
+Dll_Export char *messageUnitToXml(MsgUnit *msg)
 {
    if (msg->key == 0 && msg->contentLen < 1) {
       return strcpyAlloc(msg->qos);
@@ -256,7 +256,7 @@ char *messageUnitToXml(MsgUnit *msg)
  * @return The given blob (or a new malloc()'d if blob was NULL), the data is 0 terminated.
  *         We return NULL on out of memory.
  */
-XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen)
+Dll_Export XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen)
 {
    if (blob == 0) {
       blob = (XmlBlasterBlob *)calloc(1, sizeof(XmlBlasterBlob));
@@ -278,7 +278,7 @@ XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t data
  * @param blob
  * @return The given blob
  */
-XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob)
+Dll_Export XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob)
 {
    if (blob->data != 0) {
       free(blob->data);
@@ -293,7 +293,7 @@ XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob)
  * You need to free it with free()
  * @return The allocated string or NULL if out of memory
  */
-char *strcpyAlloc(const char *src)
+Dll_Export char *strcpyAlloc(const char *src)
 {
    char *dest;
    if (src == 0) return (char *)0;
@@ -307,7 +307,7 @@ char *strcpyAlloc(const char *src)
  * Same as strcat but reallocs the 'dest' string
  * @return The allocated string (*dest) or NULL if out of memory
  */
-char *strcatAlloc(char **dest, const char *src)
+Dll_Export char *strcatAlloc(char **dest, const char *src)
 {
    assert(dest != 0);
    if (src == 0) return (char *)0;
@@ -322,7 +322,7 @@ char *strcatAlloc(char **dest, const char *src)
  * @return *dest The allocated string filled with 'src',
  *         you need to free() it when not needed anymore.
  */
-char *strcpyRealloc(char **dest, const char *src)
+Dll_Export char *strcpyRealloc(char **dest, const char *src)
 {
    if (*dest != 0)
       free(*dest);
@@ -336,7 +336,7 @@ char *strcpyRealloc(char **dest, const char *src)
  * @return The string, never null.
  *         You need to free it with free()
  */
-char *strFromBlobAlloc(const char *blob, const size_t len)
+Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
 {
    char *dest;
    size_t i;
@@ -364,7 +364,7 @@ char *strFromBlobAlloc(const char *blob, const size_t len)
  *        so effectively only maxLen-1 from 'from' are copied.
  * @return The destination string 'to'
  */
-char *strncpy0(char * const to, const char * const from, const size_t maxLen)
+Dll_Export char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 {
    char *ret=strncpy(to, from, maxLen-1);
    *(to+maxLen-1) = '\0';
@@ -374,7 +374,7 @@ char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 /**
  * strip leading and trailing spaces of the given string
  */
-void trim(char *s)
+Dll_Export void trim(char *s)
 {
    size_t first=0;
    size_t len;
@@ -413,7 +413,7 @@ void trim(char *s)
  * @param blob The binary data
  * @return readable is returned, it must be free()'d
  */
-char *blobDump(XmlBlasterBlob *blob)
+Dll_Export char *blobDump(XmlBlasterBlob *blob)
 {
    return toReadableDump(blob->data, blob->dataLen);
 }
@@ -425,7 +425,7 @@ char *blobDump(XmlBlasterBlob *blob)
  * @return readable is returned, it must be free()'d.
  *         If allocation fails NULL is returned
  */
-char *toReadableDump(char *data, size_t len)
+Dll_Export char *toReadableDump(char *data, size_t len)
 {
    char *readable;
    size_t i;
@@ -447,7 +447,7 @@ char *toReadableDump(char *data, size_t len)
 /**
  * Should be called on any xmlBlasterException before using it
  */
-_INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
+Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
 {
    xmlBlasterException->remote = false;
    *xmlBlasterException->errorCode = (char)0;
@@ -468,7 +468,7 @@ _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *xmlBlasterE
  * NOTE: If the return is not NULL you need to free(*tmphstbuf)
  * @author Caolan McNamara (2000) <caolan@skynet.ie> (with some leak fixes by Marcel)
  */
-struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
+Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
 {
 #ifdef _WINDOWS_FUTURE
   /* See  http://www.hmug.org/man/3/getaddrinfo.html for an example */
@@ -676,7 +676,7 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
  * @param fmt The formatting string
  * @param ... Other variables to log, corresponds to 'fmt'
  */
-void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
+Dll_Export void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...)
 {
@@ -743,7 +743,7 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
  * @param logLevelStr The level e.g. "WARN" or "warn" or "2"
  * @return The enum, e.g. LOG_WARN
  */
-XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
+Dll_Export XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
 {
    int i;
    int len = sizeof(LOG_TEXT);
@@ -767,7 +767,7 @@ XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
 /**
  * @return A human readable log level, e.g. "ERROR"
  */
-const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel)
+Dll_Export const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel)
 {
    return LOG_TEXT[logLevel];
 }
@@ -778,7 +778,7 @@ const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel)
  * @param level The level of this log entry
  * @return true If logging is desired
  */
-_INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level)
+Dll_Export _INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level)
 {
    return (currLevel <= level) ? true : false;
 }

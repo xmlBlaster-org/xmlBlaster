@@ -59,7 +59,7 @@ static bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterExce
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterAccessUnparsed().
  */
-XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
+Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
    if (xa == 0) return xa;
    xa->argc = argc;
@@ -115,7 +115,7 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    return xa;
 }
 
-void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
+Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 {
    int retVal;
 
@@ -381,7 +381,7 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
  * @param usage Please pass a string with at least XMLBLASTER_MAX_USAGE_LEN chars allocated (or on stack)
  * @return Your usage pointer filled with informations
  */
-const char *xmlBlasterAccessUnparsedUsage(char *usage)
+Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
 {
    /* take care not to exceed XMLBLASTER_MAX_USAGE_LEN */
    SNPRINTF(usage, XMLBLASTER_MAX_USAGE_LEN, "%.950s%.950s%s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage(),

@@ -53,7 +53,7 @@ typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_
  * All function pointers return exception.errorCode="user.notConnected" if connection
  * to xmlBlaster is lost.
  */
-struct XmlBlasterAccessUnparsedStruct {
+struct Dll_Export XmlBlasterAccessUnparsedStruct {
    int argc;
    char **argv;
    Properties *props;
@@ -86,17 +86,17 @@ struct XmlBlasterAccessUnparsedStruct {
  * Get an instance of this to get xmlBlaster access. 
  * NOTE: Every call creates a new and independent client access instance to xmlBlaster
  */
-extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv);
+Dll_Export extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv);
 
 /**
  * Free your instance after accessing xmlBlaster. 
  */
-extern void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAccess);
+Dll_Export extern void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAccess);
 
 /**
  * Help usage
  */
-extern const char *xmlBlasterAccessUnparsedUsage(char *usage);
+Dll_Export extern const char *xmlBlasterAccessUnparsedUsage(char *usage);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

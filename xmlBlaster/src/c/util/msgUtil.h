@@ -39,12 +39,12 @@ typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    LOG_DUMP,   /* supported, use for debugging purposes */
    LOG_PLAIN   /* don't use */
 } XMLBLASTER_LOG_LEVEL;
-extern void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
+Dll_Export extern void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...);
-extern XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr);
-extern const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel);
-extern bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level);
+Dll_Export extern XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr);
+Dll_Export extern const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel);
+Dll_Export extern bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level);
 
 /**
  * Holds arbitrary raw data and its length
@@ -86,27 +86,27 @@ typedef struct XmlBlasterExceptionStruct {
    char message[XMLBLASTEREXCEPTION_MESSAGE_LEN];
 } XmlBlasterException;
 
-extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException);
+Dll_Export extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException);
 
-extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
-extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
+Dll_Export extern XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen);
+Dll_Export extern XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob);
 
-extern const char *getXmlBlasterVersion();
-extern char *getStackTrace(int maxNumOfLines);
-extern void sleepMillis(long millis);
-extern void freeMsgUnitData(MsgUnit *msgUnit);
-extern void freeMsgUnit(MsgUnit *msgUnit);
-extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
-extern char *messageUnitToXml(MsgUnit *msg);
-extern char *strFromBlobAlloc(const char *blob, const size_t len);
-extern char *strcpyAlloc(const char *src);
-extern char *strcpyRealloc(char **dest, const char *src);
-extern char *strcatAlloc(char **dest, const char *src);
-extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
-extern void trim(char *s);
-extern char *blobDump(XmlBlasterBlob *blob);
-extern char *toReadableDump(char *data, size_t len);
-extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
+Dll_Export extern const char *getXmlBlasterVersion();
+Dll_Export extern char *getStackTrace(int maxNumOfLines);
+Dll_Export extern void sleepMillis(long millis);
+Dll_Export extern void freeMsgUnitData(MsgUnit *msgUnit);
+Dll_Export extern void freeMsgUnit(MsgUnit *msgUnit);
+Dll_Export extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
+Dll_Export extern char *messageUnitToXml(MsgUnit *msg);
+Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
+Dll_Export extern char *strcpyAlloc(const char *src);
+Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
+Dll_Export extern char *strcatAlloc(char **dest, const char *src);
+Dll_Export extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
+Dll_Export extern void trim(char *s);
+Dll_Export extern char *blobDump(XmlBlasterBlob *blob);
+Dll_Export extern char *toReadableDump(char *data, size_t len);
+Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
 
 
 #endif /* XMLBLASTER_MSGUTIL_H */
