@@ -802,7 +802,7 @@ TODO
       <copy todir="${build.war}/WEB-INF/classes/http">
          <fileset dir="${build.dest}/http"/>
       </copy>
-      <unjar src="${lib.dir}/concurrent.jar" dest="${build.war}/WEB-INF/lib/concurrent.jar" />
+      <copy file="${lib.dir}/concurrent.jar" tofile="${build.war}/WEB-INF/lib/concurrent.jar"/>
       <copy file="${lib.dir}/jacorb/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
       <copy file="${lib.dir}/jacorb/avalon-framework-4.1.5.jar" tofile="${build.war}/WEB-INF/lib/avalon-framework-4.1.5.jar"/>
       <copy file="${lib.dir}/jacorb/logkit-1.2.jar" tofile="${build.war}/WEB-INF/lib/logkit-1.2.jar"/>
