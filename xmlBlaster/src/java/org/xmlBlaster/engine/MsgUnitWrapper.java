@@ -23,6 +23,7 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.qos.PublishQosServer; // for main only
 import org.xmlBlaster.client.key.PublishKey;       // for main only
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 
 
 /**
