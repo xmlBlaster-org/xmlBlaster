@@ -29,9 +29,6 @@ public abstract class QueuePropertyBase implements Cloneable
 
    private String propertyPrefix = "";
 
-   /** Allows to mark that a (RAM) queue is running in a cache configuration */
-   private boolean isCacheQueue = false;
-
    /** The queue plugin type "CACHE" "RAM" "JDBC" or others */
    public static String DEFAULT_type = "CACHE";
    protected String type;
@@ -155,8 +152,8 @@ public abstract class QueuePropertyBase implements Cloneable
    }
 
    /**
-    * The command line prefix to configure the queue or msgstore
-    * @return e.g. "msgstore." or "history.queue."
+    * The command line prefix to configure the queue or msgUnitStore
+    * @return e.g. "msgUnitStore." or "history.queue."
     */
    public String getPrefix() {
       return (this.propertyPrefix.length() > 0) ? this.propertyPrefix+"."+getRootTagName()+"." : getRootTagName()+".";
@@ -168,7 +165,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
     */
    public String getPropName(String token) {
-      return "-" + getPrefix() + token + (isCacheQueue() ? "Cache" : "");
+      return "-" + getPrefix() + token;
    }
 
    /**
@@ -196,7 +193,7 @@ public abstract class QueuePropertyBase implements Cloneable
          this.log.error(ME, "initialize: could not set the default plugin to what indicated by queue.defaultPlugin");
       }
                                 
-      // prefix is e.g. "cb.queue." or "msgstore"
+      // prefix is e.g. "cb.queue." or "msgUnitStore"
 
       setMaxMsgUnchecked(glob.getProperty().get(prefix+"maxMsg", DEFAULT_maxMsgDefault));
       setMaxMsgCacheUnchecked(glob.getProperty().get(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
@@ -567,14 +564,6 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public AddressBase[] getAddresses() {
       return addressArr;
-   }
-
-   public boolean isCacheQueue() {
-      return this.isCacheQueue;
-   }
-
-   public void setCacheQueue(boolean isCacheQueue) {
-      this.isCacheQueue = isCacheQueue;
    }
 
    /**
