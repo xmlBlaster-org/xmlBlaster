@@ -48,9 +48,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
-	if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
-	   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-	fi
+   if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+   fi
    export CLASSPATH
 
    PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
@@ -71,34 +71,35 @@ fi
 
 
 #-------- Checking JacORB --------
+# Is JacORB home not set already? Try to find where JacORB is:
 if ! [ ${JacORB_HOME} ] ; then
    JACO_EXE=`which jaco`
    if [ ${JACO_EXE} ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
-      PATH=${JacORB_HOME}/bin:${PATH}
-      export PATH
-      CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
-      export CLASSPATH
-   else
-      echo -e ""
-      echo -e "$BLACK_RED   Please set environment variable JacORB_HOME                       $ESC"
-      echo -e "$BLACK_RED      Example: 'export JacORB_HOME=/usr/local/JacORB'                $ESC"
-      echo -e "$BLACK_RED      or set PATH to contain 'jaco' and we will do the rest for you  $ESC"
-      echo -e ""
-      return 1
    fi
-   echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
-else
-   PATH=${JacORB_HOME}/bin:${PATH}
-   export PATH
-   CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
-   export CLASSPATH
-   echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
+fi
+
+if ! [ ${JacORB_HOME} ] ; then
+   # No external JacORB found, use the with xmlBlaster delivered JacORB:
+   JacORB_HOME=${XMLBLASTER_HOME}
+   export JacORB_HOME
 fi
 
 if [ -d ${JacORB_HOME} ] ; then
+   PATH=${JacORB_HOME}/bin:${PATH}
+   export PATH
+   if [ -f ${JacORB_HOME}/classes/jacorb.jar ] ; then
+      # The original JacORB distribution is used
+      CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
+   else
+      # The with xmlBlaster delivered JacORB distribution is used
+      CLASSPATH=${JacORB_HOME}/lib/jacorb.jar:${CLASSPATH}
+   fi
+   export CLASSPATH
+   echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
+
    if ! [ -f ${HOME}/.jacorb_properties ]; then
       cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
       echo -e "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
