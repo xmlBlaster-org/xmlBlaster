@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.4 2002/06/25 17:47:28 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.5 2002/06/27 11:11:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -171,7 +171,7 @@ public class CbConnection implements I_Timeout
     * Send the messages back to the client. 
     * @return The returned string from the client, for oneway updates it is null
     */
-   public String[] sendUpdate(MsgQueueEntry[] msg, int redeliver) throws XmlBlasterException
+   public synchronized String[] sendUpdate(MsgQueueEntry[] msg, int redeliver) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "sendUpdate(msg.length=" + msg.length + ", redeliver=" + redeliver + ")"); 
       if (msg.length == 0) { // assert
