@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.39 1999/12/10 15:55:43 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.40 1999/12/12 13:29:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,7 +28,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.39 $
+ * @version $Revision: 1.40 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -255,7 +255,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
 
       else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
-         Log.info(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
+         if (Log.TRACE) Log.trace(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
          xmlKeyVec = new Vector();
          xmlKeyVec.addElement(xmlKeyExact);
@@ -649,7 +649,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Client wants to erase a message.
+    * Client wants to erase a message. 
     * <p />
     * @param clientInfo  The ClientInfo object, describing the invoking client
     * @param xmlKey      Key allowing XPath or exact selection<br>
@@ -657,6 +657,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param eraseQoS    Quality of Service, flags to control the erasing
     *
     * @return String array with the key oid's which are deleted
+    *         "" strings mark query subscriptions
     */
    public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
@@ -667,7 +668,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
 
          if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
-            Log.warning(ME, "Unsubscribe on a unknkown message is ignored: oid=" + xmlKey.getUniqueKey());
+            Log.warning(ME, "Erase on unknown message [" + xmlKey.getUniqueKey() + "] is ignored");
+            oidArr[ii] = ""; // !!! how to report to client?
+                             // !!! how to delete XPath subscriptions, still MISSING ???
             continue;
          }
 

@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.5 1999/12/09 16:12:27 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.6 1999/12/12 13:29:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -30,8 +30,10 @@ import java.util.Properties;
  * <p />
  * If you have a servlet development kit installed (http://java.sun.com/products/servlet/index.html)
  * you may remove the comments from all servlets based code.
+ * <p />
+ * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -383,18 +385,26 @@ public class CorbaConnection
     */
    public BlasterCallback createCallbackServer(BlasterCallbackOperations callbackImpl) throws XmlBlasterException
    {
+      org.omg.PortableServer.POA poa;
+      BlasterCallbackPOATie callbackTie;
+      
+      // Getting the default POA implementation "RootPOA"
       try {
-         // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
-            org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+         poa = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+      } catch (Exception e) {
+         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
+         throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
+      }
 
-         // Intialize my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(callbackImpl);
+      // Intialize my Callback interface (tie approach):
+      callbackTie = new BlasterCallbackPOATie(callbackImpl);
+
+      try {
          callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
          return callback;
 
       } catch (Exception e) {
-         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server: " + e.toString());
+         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
       }
    }
