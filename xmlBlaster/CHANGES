@@ -17,6 +17,9 @@ TODO:
 
 DONE:
 
+  - Changes to Java client library. We now support separate
+    instantiation of callback protocol drivers and client drivers.
+
   - Added a framework to add your own MIME based plugins to filter subscriptions
     Please read
        http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.subscribe.html
