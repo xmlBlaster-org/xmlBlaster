@@ -30,10 +30,13 @@ Changes cvs
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - Changed CallbackServer again to close socket on server EOF to avoid clients thread blocking
+	- Fixed handling of remote xmlBlaster server exceptions in C client library
    - We support now a debugging so/dll compilation with an added 'D' parallel to the optimized lib
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - Fixed initial queueing of connect request if xmlBlaster server is not available
    - We support now a debugging so/dll compilation with an added 'D' parallel to the optimized lib
    - Changed to initialize callback address in ConnectQos only if a callback server is created
    - Changed to only install a CORBA callback server if necessary
