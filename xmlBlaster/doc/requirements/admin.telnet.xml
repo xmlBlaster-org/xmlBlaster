@@ -233,8 +233,8 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
 
          <tr>
             <td>admin.remoteconsole.sessionTimeout</td>
-            <td>600000</td>
-            <td>Auto logout after given milli seconds, defaults to 10 minutes.</td>
+            <td>3600000</td>
+            <td>Auto logout after given milli seconds, defaults to one hour.</td>
             <td>yes</td>
          </tr>
       </table>
@@ -255,7 +255,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
