@@ -5,7 +5,7 @@ echo -------------------
 
 if "%JAVA_HOME%" == "" goto error
 
-if "%XML_BLASTERHOME%" == "" goto noblasterhome
+if "%XMLBLASTER_HOME%" == "" goto noblaster
 
 if "%ACE_ROOT%" == "" goto noace
 
@@ -19,7 +19,7 @@ echo Starting Ant...
 
 REM -Dbuild.compiler=jikes  or  modern  or classic
 
-%JAVA_HOME%\bin\java.exe -Dant.home=. -Dxerces.home=%XMLCPP_HOME% -Dace.root=%ACE_ROOT% -Dxmlblaster.home=%XML_BLASTERHOME% -Dms.path=%MSVCDir% -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
+%JAVA_HOME%\bin\java.exe -Dant.home=. -Dxerces.home=%XMLCPP_HOME% -Dace.root=%ACE_ROOT% -Dxmlblaster.home=%XMLBLASTER_HOME% -Dms.path=%MSVCDir% -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
 
 goto end
 
@@ -29,10 +29,10 @@ echo ERROR: JAVA_HOME not found in your environment.
 echo Please, set the JAVA_HOME variable in your environment to match the
 echo location of the Java Virtual Machine you want to use.
 
-:noblasterhome
+:noblaster
 
-echo ERROR: XML_BLASTERHOME was not found in your environment.
-echo Please, set the XML_BLASTERHOME variable in your environment to match the
+echo ERROR: XMLBLASTER_HOME was not found in your environment.
+echo Please, set the XMLBLASTER_HOME variable in your environment to match the
 echo location of the Root level of your XmlBlaster installation.
 
 :noace
