@@ -185,6 +185,11 @@ public class Constants
    public final static String INTERNAL_OID_PREFIX = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
    public final static String INTERNAL_OID_CLUSTER_PREFIX = INTERNAL_OID_PREFIX +"cluster";  // "__sys__cluster"
 
+   public final static String EVENT_OID_LOGIN = "__sys__Login";
+   public final static String EVENT_OID_LOGOUT = "__sys__Logout";
+   public final static String EVENT_OID_USERLIST = "__sys__UserList";
+   public final static String EVENT_OID_ERASEDTOPIC = "__sys__ErasedTopic";
+
    /** JDBC access messages */
    public final static String JDBC_OID = INTERNAL_OID_PREFIX + "jdbc";
 
