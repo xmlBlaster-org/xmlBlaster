@@ -14,6 +14,7 @@ import org.jutils.log.LogDeviceConsole;
 import org.jutils.log.LogDeviceFile;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -681,6 +682,13 @@ public class Global implements Cloneable
     */
    public final ContextNode getContextNode() {
       return this.contextNode;
+   }
+
+   /**
+    * @return null on client side
+    */
+   public NodeId getNodeId() {
+      return null;
    }
 
    /**
@@ -1562,6 +1570,15 @@ public class Global implements Cloneable
          messageTimer.shutdown();
          messageTimer = null;
       }
+   }
+
+   /**
+    * Check where we are, on client or on server side?
+    * engine.Global overwrites this
+    * @return false As we are util.Global and running client side
+    */
+   public boolean isServer() {
+      return false;
    }
 
    /**
