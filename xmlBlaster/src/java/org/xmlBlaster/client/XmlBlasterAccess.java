@@ -831,7 +831,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    private void cleanupForNewServer() {
       if (this.updateDispatcher.size() > 0) {
-         int num = this.updateDispatcher.clearAckSubscriptions(); // to avoid memory leaks
+         int num = this.updateDispatcher.clearAckSubscriptions(); // to avoid memory leaks, subscribes pending in the queue are not cleared
          if (num > 0) {
             log.info(ME, "Removed " + num + " subscribe specific callback registrations");
          }
