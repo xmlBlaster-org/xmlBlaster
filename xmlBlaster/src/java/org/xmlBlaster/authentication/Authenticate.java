@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.47 2002/02/15 19:10:18 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.48 2002/02/16 13:27:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -572,7 +572,7 @@ final public class Authenticate implements I_Authenticate
 
       if (obj == null) {
          Log.error(ME+".AccessDenied", "Sorry, sessionId '" + sessionId + "' is invalid");
-         (new Exception("")).printStackTrace();
+         //(new Exception("")).printStackTrace();
          throw new XmlBlasterException("AccessDenied", "Sorry, sessionId is invalid!");
       }
       ClientInfo clientInfo = (ClientInfo)obj;
