@@ -46,6 +46,10 @@
       <code>midl.exe</code> is missing.
       In the runtime environment you don't need VC++.
      </p>
+     <p>
+      It was tested for example with Microsoft .net Framework 1.1.4322
+      on Windows XP Professional 2002 Service Pack 1.
+     </p>
      
      <h2>Installation</h2>
      <p>
