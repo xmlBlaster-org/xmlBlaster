@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.93 2002/01/15 21:30:19 goetzger Exp $
+# $Id: .bashrc,v 1.94 2002/01/15 22:06:31 goetzger Exp $
 #-----------------------------------------------------------
 
 
@@ -85,12 +85,12 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
    # using release 1.04b; from http://www.dbxml.org
-   CLASSPATH=${DBXML_HOME}/java/lib/dbXML.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/xmldb.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/juggernaut-1.0.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/openorb-1.2.0.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/xerces-1.4.3.jar:${CLASSPATH}
-   CLASSPATH=${DBXML_HOME}/java/lib/xalan-2.0.1.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/dbXML.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xmldb.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/juggernaut-1.0.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/openorb-1.2.0.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xerces-1.4.3.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xalan-2.0.1.jar:${CLASSPATH}
 
 
    #a2Blaster - authentication and authorisation service
@@ -210,10 +210,10 @@ if [ "${JAVA_HOME}" != "" ] ; then
          #ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
          #if [ ! -f ${ORB_PROPS} ]; then
          #   cp ${XMLBLASTER_HOME}/config/orb.properties ${ORB_PROPS}
-         #	RESULT=$?
-         #	if [ ${RESULT} = "0" ]; then
+         #      RESULT=$?
+         #      if [ ${RESULT} = "0" ]; then
          #      ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
-         #	else
+         #      else
          #      ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
          #      fi
          #fi
