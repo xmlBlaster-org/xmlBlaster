@@ -19,6 +19,7 @@ import org.jutils.io.FileUtil;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
@@ -31,6 +32,8 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
 
@@ -41,11 +44,11 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.persistence.TestPersistence2
  *
- *    java junit.swingui.TestRunner org.xmlBlaster.test.persistence.TestPersistence2
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.persistence.TestPersistence2
  * </pre>
  * @author mAd@ktaland.com
  */
-public class TestPersistence2 extends TestCase implements I_Callback
+public class TestPersistence2 extends TestCase
 {
    private final static String ME = "TestPersistence2";
    private final Global glob;
@@ -58,10 +61,10 @@ public class TestPersistence2 extends TestCase implements I_Callback
    private XmlBlasterConnection senderConnection = null;
    private String senderContent = "Some persistent content";
 
-   private int numReceived = 0;
-
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7604;
+
+   private MsgInterceptor updateInterceptor;
 
    /**
     * Constructs the TestPersistence2 object.
@@ -93,9 +96,11 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
    private void doLogin() {
       try {
-         senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login( senderName, senderPasswd, qos, this);
+         this.senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
+         ConnectQos qos = new ConnectQos(glob, senderName, senderPasswd);
+
+         this.updateInterceptor = new MsgInterceptor(glob, log, null);
+         this.senderConnection.connect(qos, this.updateInterceptor);
       }
       catch (XmlBlasterException e) {
           log.warn(ME, "setUp() - login failed");
@@ -119,12 +124,12 @@ public class TestPersistence2 extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
       try {
-         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = this.senderConnection.erase(xmlKey, qos);
          if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
       } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
-      checkContent(false);
+      //checkContent(false);
 
-      senderConnection.disconnect(null);
+      this.senderConnection.disconnect(null);
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
@@ -149,7 +154,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
-         String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
+         String returnedOid = this.senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
@@ -157,9 +162,8 @@ public class TestPersistence2 extends TestCase implements I_Callback
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
-      waitOnUpdate(1000L, 0);
-      assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
-      numReceived = 0;
+      assertEquals("numReceived after sending", 0, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_OK));
+      assertEquals("", 0, this.updateInterceptor.count());
    }
 
 
@@ -179,18 +183,28 @@ public class TestPersistence2 extends TestCase implements I_Callback
       doLogin();
 
       try {
-         senderConnection.subscribe("<key oid='" + publishOid + "'/>", "<qos/>");
+         this.senderConnection.subscribe("<key oid='" + publishOid + "'/>", "<qos/>");
          log.info(ME, "Subscribe done");
       } catch(XmlBlasterException e) {
          log.error(ME, "subscribe() XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
 
-      waitOnUpdate(2000L, 1);
-      assertEquals("numReceived after restart", 1, numReceived);
-      numReceived = 0;
+      assertEquals("", 1, this.updateInterceptor.waitOnUpdate(2000L, publishOid, Constants.STATE_OK));
+      //this.updateInterceptor.compareToReceived(sentArr, null);
+      //this.updateInterceptor.compareToReceived(sentQos);
 
-      checkContent(true);
+      Msg msg = this.updateInterceptor.getMsgs()[0];
+
+      assertEquals("Wrong sender", senderName, msg.getUpdateQos().getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, msg.getUpdateKey().getOid());
+      assertEquals("Wrong mime of message returned", "text/plain", msg.getUpdateKey().getContentMime());
+      assertEquals("Wrong extended mime of message returned", "2.0", msg.getUpdateKey().getContentMimeExtended());
+      assertEquals("Wrong domain of message returned", "RUGBY", msg.getUpdateKey().getDomain());
+      assertEquals("Message content is corrupted", new String(senderContent), msg.getContentStr());
+
+      this.updateInterceptor.clear();
+      //checkContent(true);
    }
 
    /**
@@ -208,16 +222,18 @@ public class TestPersistence2 extends TestCase implements I_Callback
       log.info( ME, "Restarting Test Server" );
 
       try {
-         senderConnection.disconnect(null);
+         this.senderConnection.disconnect(null);
          EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
          serverThread = null ;
          Util.delay( delay4Server );    // Wait some time
 
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
          Util.delay( delay4Server );    // Wait some time
-         ConnectQos conectqos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, senderPasswd, conectqos, this);
 
+         this.senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
+         ConnectQos qos = new ConnectQos(glob, senderName, senderPasswd);
+         this.updateInterceptor = new MsgInterceptor(glob, log, null);
+         this.senderConnection.connect(qos, this.updateInterceptor);
       }
       catch (XmlBlasterException e) {
          log.warn(ME, "setUp() - login failed");
@@ -230,6 +246,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
    /**
     * If the FileDriver is used, check if the correct content is written.
+    * @deprecated FileDriver is deprecated
     */
    void checkContent(boolean checkContent)
    {
@@ -265,53 +282,6 @@ public class TestPersistence2 extends TestCase implements I_Callback
    }
 
    /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
-      log.info(ME, "Receiving update of a message, checking ...");
-
-      numReceived += 1;
-
-      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
-      assertEquals("Wrong mime of message returned", "text/plain", updateKey.getContentMime());
-      assertEquals("Wrong extended mime of message returned", "2.0", updateKey.getContentMimeExtended());
-      assertEquals("Wrong domain of message returned", "RUGBY", updateKey.getDomain());
-      assertEquals("Message content is corrupted", new String(senderContent), new String(content));
-      return "";
-   }
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (numReceived < numWait) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
-   }
-
-
-   /**
     * Method is used by TestRunner to load these tests
     */
    public static Test suite()
@@ -320,7 +290,6 @@ public class TestPersistence2 extends TestCase implements I_Callback
       suite.addTest(new TestPersistence2(new Global(), "testPersistent"));
       return suite;
    }
-
 
    /**
     * Invoke: java org.xmlBlaster.test.persistence.TestPersistence2
