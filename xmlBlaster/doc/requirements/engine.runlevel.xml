@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.runlevel' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='engine.runlevel' type='NEW' prio='HIGH' status="CLOSED">
    <topic>XmlBlaster supports different run levels</topic>
    
    <description>
@@ -287,7 +287,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
