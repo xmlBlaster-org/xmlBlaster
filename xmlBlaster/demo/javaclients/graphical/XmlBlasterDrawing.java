@@ -74,7 +74,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
 
    public void init(Global global) {
-      this.global = global;
+      this.global = global.getClone(null);
       this.log = this.global.getLog("graphical");
 		if (this.log.CALL) this.log.call(ME, "init");
       this.doPublishEvent = true;
@@ -91,6 +91,8 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.timeout = new Timeout("PublishTimer");
          this.timeout.addTimeoutListener(this, this.publishDelay, this);
       }  
+
+		this.drawingName = this.getTitle();
       initConnection();
    }
 
@@ -109,6 +111,8 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          HistoryQos historyQos = new HistoryQos(this.global);
          historyQos.setNumEntries(1);
          sq.setHistoryQos(historyQos);
+         
+         this.publishMetaInfo(this.drawingName);
          this.subscribeReturnQos = this.access.subscribe(sk, sq);
       }
       catch (XmlBlasterException ex) {
@@ -359,12 +363,8 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    private void publish(Figure figure) {
 		if (this.log.CALL) this.log.call(ME, "publish");
-		if (this.log.DUMP) {
-			this.log.dump(ME, "publish");
-			Thread.dumpStack();
-		} 
-		if (figure == null) return;
       // publish the message here ...
+		if (figure == null) return;
       try {
 			if (this.log.TRACE) traceToFront("publish", figure);
          String figureId = getFigureId(figure);
@@ -373,6 +373,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          PublishKey pk = new PublishKey(this.global, figureId, "application/draw", "1.0");
          pk.setClientTags("<drawingName>"+this.drawingName+"</drawingName>");
          PublishQos pq = new PublishQos(this.global);
+
          MsgUnit msgUnit = new MsgUnit(pk, content.toBytes(), pq);
          this.access.publish(msgUnit);
          if (figure.getAttribute(TO_FRONT) != null) figure.setAttribute(TO_FRONT, null);
@@ -384,6 +385,22 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.log.error(ME, "exception occured when publishing: " + ex.getMessage());
       }
    }
+
+	private void publishMetaInfo(String data) {
+		if (this.log.CALL) this.log.call(ME, "publishMetaInfo");
+		// publish the message here ...
+		try {
+			PublishKey pk = new PublishKey(this.global, null, "text/plain", "1.0");
+			pk.setClientTags("<drawingMetadata>"+this.drawingName+"</drawingMetadata>");
+			PublishQos pq = new PublishQos(this.global);
+
+			MsgUnit msgUnit = new MsgUnit(pk, data.getBytes(), pq);
+			this.access.publish(msgUnit);
+		}
+		catch (XmlBlasterException ex) {
+			this.log.error(ME, "exception occured when publishing: " + ex.getMessage());
+		}
+	}
 
 	private void recursiveFigureUpdate(Figure fig) {
 		currentFigureUpdate(fig);

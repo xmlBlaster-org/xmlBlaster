@@ -6,6 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package javaclients.graphical;
 
+import java.io.File;
+
+import javax.swing.JFileChooser;
 import javax.swing.JToolBar;
 import CH.ifa.draw.framework.*;
 import CH.ifa.draw.standard.*;
@@ -15,22 +18,45 @@ import CH.ifa.draw.samples.net.*;
 import CH.ifa.draw.samples.javadraw.*;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class GraphicChat extends /*NetApp*/ JavaDrawApp {
+public class GraphicChat extends /*NetApp*/ JavaDrawApp implements I_Callback {
 
    private Global global;
    private LogChannel log;
    private String ME = "GraphicChat";
+	private I_XmlBlasterAccess accessor;
 
    public GraphicChat(Global global) {
       super("GraphicChat");
       this.global = global;
       this.log = this.global.getLog("main");
    }
+
+	public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+		this.log.info(ME, "update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
+		return "OK";
+	}
+
+	protected void init() {
+		this.accessor = this.global.getXmlBlasterAccess();
+		
+	}
+
+
+
+
+
+
+
+
 
    protected Drawing createDrawing() {
       XmlBlasterDrawing drawing = new XmlBlasterDrawing(this.global);
@@ -50,6 +76,25 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp {
       tool = new ConnectionTool(this, new LineConnection());
       palette.add(createToolButton(IMAGES + "CONN", "Connection Tool", tool));
    }
+
+	/**
+	 * Create a file chooser for the open file dialog. Subclasses may override this
+	 * method in order to customize the open file dialog.
+	 */
+	protected JFileChooser createOpenFileChooser() {
+		JFileChooser openDialog = new JFileChooser();
+		openDialog.setDialogTitle("Open Online Drawing...");
+		
+		File parent = new File(".");
+		File child1 = new File(parent, "drawing1.draw");
+		File child2 = new File(parent, "drawing2.draw");
+		File child3 = new File(parent, "drawing3.draw");
+		File child4 = new File(parent, "drawing4.draw");
+
+		openDialog.setCurrentDirectory(parent);
+		
+		return openDialog;
+	}
 
 
    /**
