@@ -443,7 +443,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * we return 0 without doing anything.
     * @return number of messages taken from queue and forwarded
     */
-   synchronized private final long forwardToSessionQueue() {
+   synchronized final long forwardToSessionQueue() {
 
       if (getSessions().length < 1 || this.subjectQueue.getNumOfEntries() < 1) return 0;
 
