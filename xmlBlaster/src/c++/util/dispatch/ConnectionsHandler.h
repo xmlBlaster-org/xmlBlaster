@@ -130,6 +130,12 @@ public:
 
    bool isConnected() const;
 
+   /**
+    * Get connection status string for logging. 
+    * @return "CONNECTED" | "POLLING" | "DEAD"
+    */
+   std::string getStatusString() const;
+
    org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const org::xmlBlaster::util::qos::ConnectQos& connectQos);
 
    virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection() const;

@@ -123,8 +123,12 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
       global_.setId(connectReturnQos_->getSessionQos().getAbsoluteName());
    }
    catch (XmlBlasterException &ex) {
-      if (log_.trace()) log_.trace(ME, "exception occured when connecting");
-      if ( ex.isCommunication() && pingIsStarted_) return queueConnect();
+      if (log_.trace()) log_.trace(ME, "exception " + ex.getErrorCodeStr() + " occured when connecting, pingIsStarted=" + lexical_cast<std::string>(pingIsStarted_));
+      if ((ex.isCommunication() || ex.getErrorCodeStr().find("user.configuration") == 0)) {
+         if (!pingIsStarted_)
+            startPinger();
+         return queueConnect();
+      }
       else {
          if (log_.trace()) log_.trace(ME, string("the exception in connect is ") + ex.toXml());
          throw ex;
@@ -427,10 +431,12 @@ void ConnectionsHandler::timeout(void * /*userData*/)
       try {
          if (connection_) {
             connection_->ping("<qos/>");
+            if ( log_.trace() ) log_.trace(ME, "lowlevel ping returned: status is 'CONNECTED'");
             startPinger();
          }
       }
       catch (XmlBlasterException& ex) {
+         if ( log_.trace() ) log_.trace(ME, "lowlevel ping failed: " + ex.toString());
          toPollingOrDead(&ex);
       }
       return;
@@ -653,7 +659,10 @@ bool ConnectionsHandler::startPinger()
       pingInterval = tmp.getAddress().getPingInterval();
    }
    if (log_.trace()) {
-      log_.trace(ME, string("startPinger: parameters are: delay '") + lexical_cast<std::string>(delay)  + "' and pingInterval '" + lexical_cast<std::string>(pingInterval));
+      log_.trace(ME, string("startPinger(status=") + 
+               getStatusString() +
+               "): parameters are: delay '" + lexical_cast<std::string>(delay) +
+               "' and pingInterval '" + lexical_cast<std::string>(pingInterval));
    }
    if (delay > 0 && pingInterval > 0) {
       long delta = delay;
@@ -662,6 +671,15 @@ bool ConnectionsHandler::startPinger()
       pingIsStarted_ = true;
    }
    return true;
+}
+
+string ConnectionsHandler::getStatusString() const
+{
+   if (status_ == CONNECTED) return "CONNECTED";
+   else if (status_ == POLLING) return "POLLING";
+   else if (status_ == DEAD) return "DEAD";
+   else if (status_ == START) return "START";
+   return "END";;
 }
 
 
