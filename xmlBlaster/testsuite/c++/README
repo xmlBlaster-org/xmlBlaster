@@ -17,7 +17,7 @@ This is an example to access xmlBlaster from a C++ client
 
 3) Start the xmlBlaster server
 
-	 ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+	 jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
 
 
 4) And connect with the C++ client
