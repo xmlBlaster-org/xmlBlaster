@@ -135,7 +135,7 @@ public class PluginInfo {
       PropString prop = new PropString(defaultClass);
       String usedPropertyKey = prop.setFromEnv(glob, contextNode, propertyKey);
       
-      //log.error(ME, "DEBUG ONLY: Trying contextNode=" + ((contextNode==null)?"null":contextNode.getRelativeName()) + " propertyKey=" + propertyKey);
+      if (log.TRACE) log.trace(ME, "Trying contextNode=" + ((contextNode==null)?"null":contextNode.getRelativeName()) + " propertyKey=" + propertyKey);
 
       String rawString = prop.getValue();// "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
 
@@ -190,6 +190,9 @@ public class PluginInfo {
       return className;
    }
 
+   /**
+    * @return The configuration, never null
+    */
    public Properties getParameters() {
       return params;
    }
