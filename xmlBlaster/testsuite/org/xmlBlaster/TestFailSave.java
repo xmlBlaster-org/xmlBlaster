@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.14 2000/05/16 20:57:39 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.15 2000/05/24 14:35:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -157,9 +157,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public void testPublish(int counter) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
-
       String oid = "Message" + "-" + counter;
+      Log.info(ME, "Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestFailSave-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestFailSave-AGENT>" +
@@ -179,12 +178,18 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    public void testFailSave()
    {
       testSubscribe();
+      Log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       for (int ii=0; ii<numPublish; ii++) {
          try {
-            if (ii == numStop) // 3
+            if (ii == numStop) { // 3
+               Log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
                ServerThread.stopXmlBlaster(serverThread);
-            if (ii == 5)
+            }
+            if (ii == 5) {
+               Log.info(ME, "Starting xmlBlaster again, expecting the previous published messages ...");
                serverThread = ServerThread.startXmlBlaster(serverPort);
+               waitOnUpdate(8000L);
+            }
             testPublish(ii+1);
             waitOnUpdate(2000L);
             //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
@@ -193,7 +198,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             if (e.id.equals("TryingReconnect"))
                Log.warning(ME, e.id + " exception: Lost connection, my connection layer is polling");
             else if (e.id.equals("NoConnect"))
-               assert("Lost connection, my connection layer is not polling", false);
+               assert("Lost connection, my connection layer is NOT polling", false);
             else
                assert("Publishing problems id=" + e.id + ": " + e.reason, false);
          }
