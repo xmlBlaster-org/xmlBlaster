@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.53 2000/09/18 06:27:47 ruff Exp $
+Version:   $Id: Log.java,v 1.54 2000/10/10 09:36:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -146,6 +146,7 @@ public class Log
     * Method for retrieving the LogChannel object.
     */
    public static final boolean isLoglevelEnabled(int level) {
+      if (lc == null) return false;
       return lc.isLoglevelEnabled(level);
    }
 
@@ -174,24 +175,29 @@ public class Log
    }
 
    public static final void addLogLevel(String logLevel) {
+      if (lc == null) return;
       lc.addLogLevel(logLevel);
       init();
    }
 
    public static void removeLogLevel(String logLevel) {
+      if (lc == null) return;
       lc.removeLogLevel(logLevel);
       init();
    }
 
    public static int getLogLevel() {
+      if (lc == null) return 0;
       return lc.getLogLevel();
    }
 
    public static final String bitToLogLevel(int level) {
+      if (lc == null) return "";
       return lc.bitToLogLevel(level);
    }
 
    public static final void setDefaultLogLevel() {
+      if (lc == null) return;
       lc.setDefaultLogLevel();
       init();
    }
@@ -199,6 +205,7 @@ public class Log
 
    private static final void init()
    {
+      if (lc == null) return;
       if (lc.isLoglevelEnabled(LogChannel.LOG_CALL))
          CALL = true;
       else
@@ -230,6 +237,7 @@ public class Log
     * delegate log exeption to LogChannel object.
     */
    public static final void exception(String source, Throwable t) {
+      if (lc == null) return;
       lc.exception(source, t);
    }
 
@@ -239,6 +247,7 @@ public class Log
     */
    public static final void error(String source, String text) {
       numErrorInvocations++;
+      if (lc == null) return;
       lc.error(source, text);
    }
 
@@ -248,6 +257,7 @@ public class Log
     */
    public static final void warn(String source, String text) {
       numWarnInvocations++;
+      if (lc == null) return;
       lc.warn(source, text);
    }
 
@@ -256,6 +266,7 @@ public class Log
     * delegate log info to LogChannel object.
     */
    public static final void info(String source, String text) {
+      if (lc == null) return;
       lc.info(source, text);
    }
 
@@ -264,6 +275,7 @@ public class Log
     * delegate log call to LogChannel object.
     */
    public static final void call(String source, String text) {
+      if (lc == null) return;
       lc.call(source, text);
    }
 
@@ -272,6 +284,7 @@ public class Log
     * delegate log time to LogChannel object.
     */
    public static final void time(String source, String text) {
+      if (lc == null) return;
       lc.time(source, text);
    }
 
@@ -280,6 +293,7 @@ public class Log
     * delegate log trace to LogChannel object.
     */
    public static final void trace(String source, String text) {
+      if (lc == null) return;
       lc.trace(source, text);
    }
 
@@ -288,6 +302,7 @@ public class Log
     * delegate log plain to LogChannel object.
     */
    public static final void plain(String source, String text) {
+      if (lc == null) return;
       lc.plain(source, text);
    }
 
@@ -297,6 +312,7 @@ public class Log
     */
    public static final void dump(String instance, String text)
    {
+      if (lc == null) return;
       lc.dump(instance, text);
       lc.dump(instance, Memory.getStatistic());
    }
@@ -305,6 +321,7 @@ public class Log
     * delegate log plain to LogChannel object.
     */
    public static final void plain(String text) {
+      if (lc == null) return;
       lc.plain("unknown", text);
    }
 
