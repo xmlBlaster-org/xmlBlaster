@@ -56,6 +56,7 @@
 &lt;qos>
    &lt;state id='OK' info='QUEUED[bilbo]'/>
    &lt;key oid='MyMessageOid'/>
+   &lt;rcvTimestamp nanos='1042801493152000001'/>
 &lt;/qos>
    </pre>
    </td></tr></table>
@@ -291,7 +292,7 @@ print "\nLogout done, bye.\n";
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
