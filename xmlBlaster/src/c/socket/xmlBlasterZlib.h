@@ -20,7 +20,7 @@ extern "C" {
 #  include <zlib.h>
 #endif
 
-#define XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN 16
+#define XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN 20000
 
 /**
  * Helper struct to compress a byte buffer before putting it into the socket. 
@@ -40,7 +40,7 @@ typedef struct XmlBlasterZlibWriteBuffers {
 } XmlBlasterZlibWriteBuffers;
 
 
-#define XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN 16
+#define XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN 20000
 
 /**
  * Helper struct to uncompress a byte buffer coming from the socket connection. 
