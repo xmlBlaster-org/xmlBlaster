@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13202 StartupTasks plugin added
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html
+
  o #13187 Redirect xmlBlaster logging to JDK 1.4 java.util.logging framework
    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html#JDK14
 
@@ -13,6 +16,7 @@ Changes for 1.0x (patches for 1.0 stable)
 
  o #13174 Extended DeadMessageDumper:
    Changed to create missing directory, now supports ${} replacement
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html
 
  o #13173 More detailed logging for mime XPathFilter plugin
  
