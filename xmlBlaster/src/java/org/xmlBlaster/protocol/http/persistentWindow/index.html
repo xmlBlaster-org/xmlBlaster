@@ -15,7 +15,7 @@
       <script Language="JavaScript" src="/javascript/callback.js" type="text/javascript"></script>
 
       <script language="JavaScript1.2">
-         // Set debugging level here:
+         // Set initial debugging level here:
          Log.INFO = false;
          Log.TRACE = false;
 
@@ -30,9 +30,16 @@
                Log.trace("Received ping for successful login");
                self.opener.loginSucceeded(self); // callback my opener that the connection is established
             }
+            else {
+               // Response to servlet that we are alive ...
+               self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
+            }
             if ((typeof pingTimeoutHandler) != "undefined")
                window.clearTimeout(pingTimeoutHandler);
-            pingTimeoutHandler = window.setTimeout( "cutConnection()", 25000 );
+
+            // Check for ping every 15 seconds, this value needs to 
+            // be bigger than the HttpPushHandler.java  PING_INTERVAL value
+            pingTimeoutHandler = window.setTimeout( "cutConnection()", 15000);
          }
 
          /**
@@ -58,7 +65,7 @@
 
 <!-- frames -->
 <frameset cols="10,10,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
-<frame name="callbackFrame" src="emptyCB.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+<frame name="callbackFrame" src="loginCB.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="controlFrame" src="empty.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 <frame name="connectionTextFrame" src="connected.html" scrolling="no" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
 </frameset>
