@@ -10,7 +10,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * Parses the key of returned MessageUnit of update(). 
+ * Parses the key of returned MsgUnit of update(). 
  * <p>
  * See MsgKeySaxFactory for a syntax description of the allowed xml structure
  * </p>
