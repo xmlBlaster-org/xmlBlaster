@@ -1876,10 +1876,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          this.ME = "LoginThread-" + con.getServerNodeId();
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
-         if (retryInterval > 30000)  // millisec
+         long logEveryMillis = 60000; // every minute a log
+         if (retryInterval > logEveryMillis)  // millisec
             logInterval = 1;
          else
-            logInterval = (int)(30000L / retryInterval);
+            logInterval = (int)(logEveryMillis / retryInterval);
          if (log.CALL) log.call(ME, "Entering constructor retry delay=" + retryInterval + " millis and retries=" + retries);
       }
 
@@ -1996,7 +1997,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       {
          try {
             if (xmlBlasterConnection.queueSize() > 0) {
-               log.info(ME, "We were lucky, reconnected to " + getServerNodeId() + ", sending tailback " + xmlBlasterConnection.queueSize() + " messages ...");
+               log.info(ME, "We were lucky, reconnected to " + getServerNodeId() + ", sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
                xmlBlasterConnection.flushQueue();
             }
             else
