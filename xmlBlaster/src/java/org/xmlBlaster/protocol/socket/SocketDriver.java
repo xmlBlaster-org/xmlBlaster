@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.25 2002/09/14 23:08:33 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.26 2002/09/15 11:16:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -44,6 +44,7 @@ import java.io.OutputStream;
  * All adjustable parameters are explained in {@link org.xmlBlaster.protocol.socket.SocketDriver#usage()}
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  * @see org.xmlBlaster.protocol.socket.Parser
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class SocketDriver extends Thread implements I_Driver
 {
@@ -289,7 +290,7 @@ public class SocketDriver extends Thread implements I_Driver
     *  <li><i>-socket.hostname</i>    Specify a hostname where the SOCKET web server runs
     *                          Default is the localhost.</li>
     *  <li><i>-socket.backlog</i>     Queue size for incoming connection request [50]</li>
-    *  <li><i>-socket.debug</i>       1 or 2 switches on detailed SOCKET debugging [0]</li>
+    *  <li><i>-dump[socket]</i>       true switches on detailed SOCKET debugging [false]</li>
     * </ul>
     * <p />
     * Enforced by interface I_Driver.
@@ -305,7 +306,8 @@ public class SocketDriver extends Thread implements I_Driver
       text += "   -socket.responseTimeout Max wait for the method return value/exception [60000] msec.\n";
       text += "   -socket.backlog     Queue size for incoming connection request [50].\n";
       text += "   -socket.threadPrio  The priority 1=min - 10=max of the listener thread [5].\n";
-      text += "   -socket.debug       1 or 2 switches on detailed SOCKET debugging [0].\n";
+      text += "   -socket.cb.multiThreaded False switches off multi threaded callback (update() invocations) [true].\n";
+      text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
    }
