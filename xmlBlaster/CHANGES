@@ -3,6 +3,26 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes cvs
 ===========
 
+ o SOCKET compression for Java server and clients added
+   The compression is based on jzlib and supports 2 ways of compression
+   namely 'stream based' and 'message content' based.
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+
+ o SOCKET SSL support for Java server and clients added, the usage is simple, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+   
+ o SOCKET incompatible change:
+   The disconnect returns a server side ACK now (from SOCKET protocol layer).
+   This is a fix of the protocol.socket requirement:
+   disconnect can throw an exception and therefore it also needs to have a return value
+
+ o SOCKET incompatible change:
+   Behaviour changed on client side so that disconnect() always makes a
+   shutdown even on low level exceptions
+
+ o SOCKET java protocol plugin:
+   Fixed memory leak on InterruptedIOException (very seldom case)
+
  o C client library:
    - Fixed callback ping return for SOCKET protocol
 
