@@ -10,7 +10,7 @@ import java.util.Map;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterESexception;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -1061,8 +1061,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       sb.append("                       java MyApp -dispatch/connection/protocol RMI -dispatch/callback/protocol XMLRPC\n");
       sb.append("\n");
       sb.append("Security features:\n");
-      sb.append("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");
-      sb.append("                       Force the given authentication schema, here the GUI is enforced\n");
+      sb.append("   -Security.Client.DefaultPlugin \"htpasswd,1.0\"\n");
+      sb.append("                       Force the given authentication schema, here the 'htpasswd' is enforced\n");
       sb.append("                       Clients can overwrite this with ConnectQos.java\n");
       try {
       sb.append(new org.xmlBlaster.client.qos.ConnectQos(glob).usage());
