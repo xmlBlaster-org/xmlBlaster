@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $
+Version:   $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.58 2004/02/09 10:41:22 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -130,6 +130,7 @@ Global& Global::initialize(int args, const char * const argv[])
    if (property_ != NULL) delete property_;
    property_ = NULL;
    property_ = new Property(args, argv);
+   property_->loadPropertyFile(); // load xmlBlaster.properties
    isInitialized_ = true;
    return *this;
 }
