@@ -760,7 +760,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          // TODO: In case we changed from persistent to transient it should be removed from the 
          // persistence. In case it changed from transient to persistent it should be stored on the
          // persistence too.
-         if (newEntry.isPersistent() && this.persistentStore != null && this.isConnected) {
+         boolean forcePersistentWrite = false; // we currently do not write (this is done when swapping)
+         if (forcePersistentWrite && newEntry.isPersistent() && this.persistentStore != null && this.isConnected) {
             retEntry = this.persistentStore.change(newEntry, null);
          }
          return retEntry;
