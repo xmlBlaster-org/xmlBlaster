@@ -113,7 +113,7 @@ CorbaDriverFactory& CorbaDriverFactory::getFactory(Global& global, CORBA::ORB_pt
    if(factory_ == NULL)
    {
      factory_ = new CorbaDriverFactory(global, orb);
-     Object_Lifetime_Manager::instance()->manage_object(factory_);  // if not pre-allocated.
+     org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object(factory_);  // if not pre-allocated.
    }
    return *factory_;
 }
