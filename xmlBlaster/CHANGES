@@ -18,6 +18,8 @@ Changes for 0.79a [Nov, 16 2000]
    with the new xmlBlaster.properties.template or set
    Persistence.LazyRecovery=true
 
+ - Several smaller fixes.
+
 
 Changes for 0.79 [Nov, 3 2000]
 ==============================
