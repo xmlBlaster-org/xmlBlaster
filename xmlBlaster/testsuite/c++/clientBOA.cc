@@ -43,6 +43,9 @@ int main(int argc, char* argv[])
       if (argc == 2) {
          strncpy(objref_str, argv[1], 1024);
       }
+      else if (argc == 3) {
+         strncpy(objref_str, argv[2], 1024); // allow -ior ...
+      }
       else {
         cout << "Enter IOR from AuthServer-Server: ";
         cin  >> objref_str;
@@ -58,6 +61,7 @@ int main(int argc, char* argv[])
       callback_impl = new clientIdl::BlasterCallback_impl();
       // cout << "\t" << orb->object_to_string(callback_impl) << endl;
       boa->impl_is_ready (CORBA::ImplementationDef::_nil());
+      cout << "Successful created callback server!" << endl;
 
 
 
