@@ -3,7 +3,7 @@ Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.8 2002/07/24 12:12:33 ruff Exp $
+Version:   $Id: ClientPersistence.java,v 1.9 2002/09/09 13:40:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -21,7 +21,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import org.xmlBlaster.util.ServerThread;
 //import testsuite.org.xmlBlaster.Util;
 
 //import test.framework.*;
