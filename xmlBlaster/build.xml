@@ -133,7 +133,7 @@ TODO
    <property name="cp.orb" value="lib/miniJacorb.jar:lib/idl.jar:lib/jacorb.jar:lib/logkit.jar"/>
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar"/>
-   <property name="cp.db" value="lib/jdbc7.2dev-1.2.jar"/>
+   <property name="cp.db" value="lib/jdbc7.2dev-1.2.jar:lib/hsqldb.jar:lib/mckoidb.jar"/>
    <property name="cp.xpath" value="lib/xpath/jaxen-core.jar:lib/xpath/jaxen-dom.jar:lib/xpath/saxpath.jar"/>
    <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
    <property name="cp.wrapper" value="lib/wrapper.jar"/>

@@ -84,6 +84,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    # Funny stuff for speech synthetizer ...
    CLASSPATH=${XMLBLASTER_HOME}/lib/speech.jar:${CLASSPATH}
 
+   # classpath for the embedded db ...
+   CLASSPATH=${XMLBLASTER_HOME}/lib/hsqldb.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/mckoidb.jar:${CLASSPATH}
+
    # Even funnier things for graphics with xmlBlaster ...
    CLASSPATH=${XMLBLASTER_HOME}/lib/jhotdraw.jar:${CLASSPATH}
 
