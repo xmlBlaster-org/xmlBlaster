@@ -226,6 +226,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
       if (this.value == null) return "";
       if (!Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
          if (this.value.indexOf("<") != -1 ||
+             this.value.indexOf("&") != -1 ||
              this.value.indexOf("]]>") != -1) {
             // Force base64 encoding
             setValue(this.value, Constants.ENCODING_BASE64);
