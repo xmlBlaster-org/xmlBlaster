@@ -23,15 +23,18 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
 {
    private final static String ME = "MsgQueueUpdateEntry";
    private final String subscriptionId;
+   /** Contains state|updateOneway, for example "OK|oneway" or "OK" */
+   private final String flag;
    private final String state;
+   private final boolean updateOneway;
 
    /**
     * A new message object is fed by method publish(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
    public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
-                              String subscriptionId) throws XmlBlasterException {
-      this(glob, msgUnitWrapper, (Timestamp)null, storageId, receiver, subscriptionId);                           
+                              String subscriptionId, boolean wantUpdateOneway) throws XmlBlasterException {
+      this(glob, msgUnitWrapper, (Timestamp)null, storageId, receiver, subscriptionId, wantUpdateOneway);                           
    }   
    
    /**
@@ -42,14 +45,17 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * @param storageId
     * @param receiver
     * @param subscriptionId
+    * @param wantUpdateOneway
     * @throws XmlBlasterException
     */
    public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, Timestamp timestamp, StorageId storageId, SessionName receiver,
-                              String subscriptionId) throws XmlBlasterException {
+                              String subscriptionId, boolean wantUpdateOneway) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, timestamp, storageId, receiver);
       this.getMsgQosData().setSender(msgUnitWrapper.getMsgQosData().getSender());
       this.subscriptionId = subscriptionId;
       this.state = msgUnitWrapper.getMsgUnit().getQosData().getState();
+      this.updateOneway = wantUpdateOneway;
+      this.flag = (this.updateOneway) ? this.state+"|oneway" : this.state;
       if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message '" + msgUnitWrapper.getLogId() + "', id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
@@ -59,14 +65,17 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     */
    public MsgQueueUpdateEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
                               String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes,
-                              SessionName receiver, String subscriptionId, String state,
+                              SessionName receiver, String subscriptionId, String flag,
                               int redeliverCount,
                               String qos, String key, byte[] content) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
             updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, receiver,
             qos, key, content);
       this.subscriptionId = subscriptionId;
-      this.state = state;
+      this.flag = flag;
+      int index = this.flag.indexOf("|");
+      this.state = (index == -1) ? this.flag : this.flag.substring(0,index);
+      this.updateOneway = (index != -1 && this.flag.indexOf("|oneway") != -1) ? true : false;
       super.redeliverCounter = redeliverCount;
       if (sizeInBytes != getSizeInBytes()) {
          log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
@@ -77,7 +86,8 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * Copy constructor, used to get a shallow clone, we still reference the original MsgUnitWrapper. 
     */
    public MsgQueueUpdateEntry(MsgQueueUpdateEntry entry, StorageId storageId) throws XmlBlasterException {
-      this(entry.getGlobal(), entry.getMsgUnitWrapper(), entry.uniqueIdTimestamp, storageId, entry.getReceiver(), entry.getSubscriptionId());
+      this(entry.getGlobal(), entry.getMsgUnitWrapper(), entry.uniqueIdTimestamp, storageId,
+           entry.getReceiver(), entry.getSubscriptionId(), entry.updateOneway());
    }
 
    public String getSubscriptionId() {
@@ -86,6 +96,21 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
 
    public String getState() {
       return this.state;
+   }
+
+   /**
+    * Holds state and updateOneway information
+    * @return for example "OK|oneway"
+    */
+   public String getFlag() {
+      return this.flag;
+   }
+
+   /**
+    * true if the subscriber has passed &lt;updateOneway> in his SubscribeQos
+    */
+   public boolean updateOneway() {
+      return this.updateOneway;
    }
 
    public long getSizeInBytes() {
@@ -111,7 +136,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
                           new Long(this.msgUnitWrapperUniqueId),
                           this.receiver.getAbsoluteName(),
                           this.subscriptionId,
-                          this.state,
+                          this.flag,
                           new Integer(getRedeliverCounter())
                            };
             return obj;
@@ -125,7 +150,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
                              new Long(this.msgUnitWrapperUniqueId),
                              this.receiver.getAbsoluteName(),
                              this.subscriptionId,
-                             this.state,
+                             this.flag,
                              new Integer(getRedeliverCounter()),
                              meat[0],   // QoS
                              meat[1],   // key
@@ -139,7 +164,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
                           new Long(this.msgUnitWrapperUniqueId),
                           this.receiver.getAbsoluteName(),
                           this.subscriptionId,
-                          this.state,
+                          this.flag,
                           new Integer(getRedeliverCounter())
                            };
             return obj;
@@ -187,7 +212,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       sb.append(" redeliverCounter='").append(getRedeliverCounter()).append("'");
       sb.append(offset).append(" isExpired='").append(isExpired()).append("'");
       sb.append(" isDestroyed='").append(isDestroyed()).append("'");
-      sb.append(" state='").append(getState()).append("'");
+      sb.append(" flag='").append(getFlag()).append("'");
       {
          MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
             if (msgUnitWrapper != null)
