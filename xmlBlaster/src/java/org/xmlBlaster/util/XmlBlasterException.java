@@ -205,7 +205,19 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                               embeddedMessage, // {8}
                               transactionInfo, // {9}
                               errorCodeEnum.getDescription() }; // {10}
-      if (isInternal()) {
+
+      boolean handleAsInternal = this.cause != null &&
+              (
+                 this.cause instanceof XmlBlasterException && ((XmlBlasterException)this.cause).isInternal() ||
+                 this.cause instanceof NullPointerException ||
+                 this.cause instanceof IllegalArgumentException ||
+                 this.cause instanceof ArrayIndexOutOfBoundsException ||
+                 this.cause instanceof StringIndexOutOfBoundsException ||
+                 this.cause instanceof ClassCastException ||
+                 this.cause instanceof OutOfMemoryError
+              );
+
+      if (isInternal() || handleAsInternal) {
          return MessageFormat.format(this.logFormatInternal, arguments);
       }
       else if (isResource()) {
@@ -557,6 +569,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
       }
       else if (throwable instanceof StringIndexOutOfBoundsException) {
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
+      }
+      else if (throwable instanceof ClassCastException) {
          return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
       }
       else if (throwable instanceof OutOfMemoryError) {
