@@ -1,30 +1,58 @@
+FEATURES
+--------
 
-TODO for release 0.80
----------------------
+o Test message expiry lifecycle (some implementation is missing)
 
-(1) Generic support for DOM  and SAX in the xmlBlaster (JAXP)  [ok]
-(2) Integrate persistence support with Xindice                 [ok]
-(3) Perl support(src/perl) with xmlrpc and not with COPE.      [ok]
-(4) Suport for searching in our Maillinglist                   [ok]
-(5) Integrate XmlRpc                                           [ok]
-(6) Integrate XmlRpc for Python                                [ok]
-(7) Autoconf for C++                                           [ok]
-(8) XmlBlaster-Matrix                                          [--]
-(9) Documentation (some samll HOWTOs)                          [--]
-(10) Integrate JacOrb 1.2.1                                    [ok]
-(11) SOAP  ?                                                   [--]
-(12) Configure the xmlBlaster by xmlBlaster.xml                [--]
-(13) CLASSPATH is to long                                      [ok]
-(14) xmlBlaster HP support for all browsers                    [ok]
-(15) New callback framework                                    [ok]
-(16) Embed BeanShell or Javascript scripting                   [--]
-(17) drop xerces in lib/ant                                    [--]
+o Add support to reconnect to previous session again on reconnect
 
+o PtP with session destination
 
-URI based loginName handling:
------------------------------
+o PtP in cluster environment
 
-This URI does a login and delivers some qos:
+o RequestBroker.get() the return QoS should be merged with UpdateQos
+
+o Remove thread save gap in RequestBroker:publish() for PtP messages
+
+o Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
+
+o Change to Sun coding convention: http://checkstyle.sourceforge.net/
+
+o Handle QueueProperty.java similar to CbQueueProperty.java in ConnectQos.java
+
+o XmlBlaster internal statistic overview with http://www.object-refinery.com/jfreechart/
+
+o SMS protocol driver with http://www.imail.gr/jsmsengine/index.php
+
+o Transaction support, based on:
+    Java(tm) Transaction Service (JTS) 1.0 Specification.
+    JTS specifies the implementation of a Transaction Manager which
+    supports the Java(tm) Transaction API (JTA) 1.0 Specification.
+    http://java.sun.com/products/jts/
+
+o Embeed RDBMS http://axion.tigris.org/features.html
+
+o SOAP support
+  RMI-SOAP gateway: http://www.sys-con.com/java/articleprint.cfm?id=1479
+  Or embeed SOAP: http://www.soapanywhere.org/saw/index.jsp
+     (uses mixture of LGPL and APACHE)
+   http://www.w3.org/TR/SOAP/
+   http://www.soap-wrc.com
+   http://www.alphaWorks.ibm.com/tech/soap4j
+   http://msdn.microsoft.com/xml/general/toolkit_intro.asp
+   http://msdn.microsoft.com/msdnmag/issues/0300/soap/soap.asp (tutorial)
+   http://windows.oreilly.com/news/soapreview_0600.html (IBM versus M$ comparison)
+
+o Use http://xdoclet.sourceforge.net/ for our xmlBlaster.war (web archive)
+
+o Use xdoc http://jakarta.apache.org/site/jakarta-site2.htm for homepage
+
+o xmlBlaster mirroring / object persistence with object persistence
+  - http://www.prevayler.org/wiki.jsp?topic=StartingPoints
+
+o Embed BeanShell or Javascript scripting
+
+o URI based loginName handling:
+  This URI does a login and delivers some qos:
 
    xmlBlaster.login://joe:mypassword@server.xmlBlaster.org:3412?qos.master=IOR:0000345&qos.topic.type=EXACT&qos.topic=WindVeloc
    xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:3412?key.oid=MyMessage&content=Hello&nbsp;world&sessionId=09278cn88sa
@@ -33,89 +61,60 @@ This URI does a login and delivers some qos:
 
    joe:mypassword@server.xmlBlaster.org:8080
 
+o Journaled Communication (History)
+  For auditing/logging and play back of events (error recovery).
 
-Some small TODO's for the next release
---------------------------------------
-(1) Documenation based on XML2PDF
-(2) Journaled Communication (History)
-    For auditing/logging and play back of events (error recovery).
-(3) Allowing compound messages.
-(4) Online demos'
+o Allowing compound messages
 
-Choosing the port for the server/callback server (e.g. XmlRpl):
+o Online demos'
+
+o Choosing the port for the server/callback server (e.g. XmlRpl):
   Java has a feature whereby you can specify Port 0 when opening a
   ServerSocket which results in opening the Socket on "any available
   port".  This can be very convenient when the port does not need to be
-  predefined.  We doe not have a mechanism for
-  finding out what port was selected.
-  An easy modification code to fix this is to add a
-  method "getServerPort" that retrieves the port value from serverSocket
-  and returns it.  [michael wilke]
+  predefined.
 
-Using dynamic Proxies for logging etc. see
-  http://java.sun.com/j2se/1.3/docs/guide/reflection/proxy.html
+o JMX integration
 
---------------------------- TODO for the future ------------------------
+o Client should be able to query which subscriptions he has
 
 
 PERFORMANCE
 -----------
-(1) Normalizing the DOM tree
-(2) Profiling http://www.optimizeit.com/ or http://www.klg.com/ - JProbe (no Linux!?) or whatever
-(3) Use SML instead of XML? http://www.xml.com/pub/1999/11/sml/index.html
-(4) Evaluate other query engines for better performance, see
-    http://www-db.research.bell-labs.com/user/simeon/xquery.html
 
-TECHNOLOGY
-----------
-(1) XML Schema support. Necessary to use XPATH DTD-ID:
-    An element node may have a unique identifier (ID).
-    This is the value of the attribute that is declared in the Schema/DTD as type ID
+o Normalizing the DOM tree
 
-(2) Support for Wireless Application Protocol (WAP)
+o Profiling http://www.optimizeit.com/ or http://www.klg.com/ - JProbe or whatever
 
-(3) proprietary Protocol plugins (not CORBA)
-    ----------------------------------------
-    - Protocol plugins (www.webdav.com)
-    - state less protocols (email, http, webDav)
-    SOAP:
-      http://www.w3.org/TR/SOAP/
-      http://www.soap-wrc.com
-      http://www.alphaWorks.ibm.com/tech/soap4j
-      http://msdn.microsoft.com/xml/general/toolkit_intro.asp
-      http://msdn.microsoft.com/msdnmag/issues/0300/soap/soap.asp (tutorial)
-      http://windows.oreilly.com/news/soapreview_0600.html (IBM versus M$ comparison)
-    - http protocol Java servlet (including a Java web server):
-      http://www.mortbay.com/software/iX.html
+o Evaluate other query engines for better performance, see
+  http://www-db.research.bell-labs.com/user/simeon/xquery.html
 
-SERVER
-------
-    Transaction support, based on:
-    Java(tm) Transaction Service (JTS) 1.0 Specification.
-    JTS specifies the implementation of a Transaction Manager which
-    supports the Java(tm) Transaction API (JTA) 1.0 Specification.
-    http://java.sun.com/products/jts/
+o Implement cb.burstMode.collectTimeOneway
 
-CLIENT
-------
-(1) Client should be able to query which subscriptions he has
-
-(2) Automatic disconnect detection of a client e.g. [ Closing connection to 192.168.1.1:1424 ]
-    this is important if the client didn't logout properly.
-    There is no standard way to get a callback from CORBA on socket EOF.
+o Performance analysis with garbage collector http://wireless.java.sun.com/midp/articles/garbage/
+  - Port to http://gongolo.usr.dsi.unimi.it/~vigna/fastUtil/?
+  - Port to use Piccolo SAX parser ?
+  - http://www.thoughtcrime.org/profiler.html
 
 
-AUTHENTICATE
-------------
-(1) Add an AuthenticateException type
+TEST
+----
 
-(2) xmlBlaster.idl
+o Use XMLunit http://xmlunit.sourceforge.net/ in testsuite.
+
+o Add automatic testssuite for C++, Perl, PHP
+
+
+AUTHENTICATE / AUTHORIZATION
+----------------------------
+
+o Add an AuthenticateException type
+
+o xmlBlaster.idl
     * rename AuthServer to AuthenticationService
     * rename Server to xmlBlaster
 
-AUTHORIZATION
--------------
-(1) Authorization (ACL access control lists)
+o Authorization (ACL access control lists)
     Our ACL should be XML based, so its possible to
     query who may do what through XPath on Client meta informations which
     are XML based, simple approach:
@@ -127,11 +126,4 @@ AUTHORIZATION
     User:   may be any user based information like role, group, property etc. (XPath query)
     Action: read, write, erase, change
     Data:   Any data in xmlBlaster (XPath query)
-
-HOMEPAGE
---------
-(1) cvsweb access using  http://www.lyra.org/viewcvs/
-
-(2) Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
-    http://www.unicorn-enterprises.com/
 
