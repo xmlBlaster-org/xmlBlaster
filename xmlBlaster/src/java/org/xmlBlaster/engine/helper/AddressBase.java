@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.14 2002/05/31 05:43:12 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.15 2002/06/23 10:48:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -34,6 +34,7 @@ public abstract class AddressBase
 
    public static final String DEFAULT_hostname = "";
    protected String hostname = DEFAULT_hostname;
+   protected boolean isCardcodedHostname = false; // set to true if setHostname() was explicitly called by user
 
    public static final int DEFAULT_port = 3412;
    protected int port = DEFAULT_port;
@@ -159,6 +160,15 @@ public abstract class AddressBase
          if (getPort() > 0)
             this.address += ":" + getPort();
       }
+      isCardcodedHostname = true;
+   }
+
+   /**
+    * @return true if the hostname is explicitly set by user with setHostname()
+    * false if it is determined automatically
+    */
+   public boolean isCardcodedHostname() {
+      return isCardcodedHostname;
    }
 
    /**
