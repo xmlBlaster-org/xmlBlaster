@@ -107,12 +107,19 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     *   final I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
     * </pre>
     * @param glob Your environment handle or null to use the default Global.instance()
+    *        You must use a cloned Global for each XmlBlasterAccess created.
+    *        engine.Global is not allowed here, only util.Global is supported
+    * @exception IllegalArgumentException If engine.Global is used as parameter
     */
    public XmlBlasterAccess(Global glob) {
       super((glob==null) ? Global.instance() : glob);
       //if (glob.wantsHelp()) {
       //   usage();
       //}
+      if (glob.getNodeId() != null) {
+         // it is a engine.Global!
+         throw new IllegalArgumentException("XmlBlasterAccess can't be created with a engine.Global, please clone a org.xmlBlaster.util.Global to create me");
+      }
       setServerNodeId(super.glob.getId());
       this.updateDispatcher = new UpdateDispatcher(super.glob);
    }
