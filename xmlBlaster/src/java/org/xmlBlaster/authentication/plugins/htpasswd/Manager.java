@@ -34,16 +34,12 @@ public class Manager implements I_Manager {
    }
 
    /**
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
       this.glob = glob;
       this.log = glob.getLog("auth");
-      if (log.TRACE) log.trace(ME+".init()", "Entering init");
-      if (options.length>0) {
-         log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
-      }
-      if (log.TRACE) log.trace(ME+".init()", "Leaving init");
    }
 
    public final Global getGlobal() {

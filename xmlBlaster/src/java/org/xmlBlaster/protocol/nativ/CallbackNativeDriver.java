@@ -3,7 +3,7 @@ Name:      CallbackNativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using native interface.
-Version:   $Id: CallbackNativeDriver.java,v 1.9 2002/08/23 21:24:56 ruff Exp $
+Version:   $Id: CallbackNativeDriver.java,v 1.10 2002/08/26 11:04:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
@@ -56,8 +56,11 @@ public class CallbackNativeDriver implements I_CallbackDriver
       return "1.0";
    }
 
-   /** Enforced by I_Plugin */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) {
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**

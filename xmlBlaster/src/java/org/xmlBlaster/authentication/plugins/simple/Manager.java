@@ -2,7 +2,6 @@ package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
 
@@ -16,7 +15,6 @@ import java.util.Hashtable;
 
 public class Manager implements I_Manager{
    private static final String          ME = "SimpleManager";
-
    private static final String        TYPE = "simple";
    private static final String     VERSION = "1.0";
 
@@ -24,19 +22,14 @@ public class Manager implements I_Manager{
    // --> a pool would be a good idea at this point :)
    private              Hashtable sessions = new Hashtable();
 
-
    public Manager() {
-      if (Log.CALL) Log.call(ME, "Constructor");
    }
 
    /**
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
-      if (Log.CALL) Log.call(ME, "init()");
-      if (options.length>0) {
-         Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
-      }
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    public String getType() {
@@ -47,9 +40,7 @@ public class Manager implements I_Manager{
       return VERSION;
    }
 
-
    public I_Session reserveSession(String sessionId) {
-      if (Log.CALL) Log.call(ME, "reserveSession(sessionId="+sessionId+")");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
@@ -86,10 +77,8 @@ public class Manager implements I_Manager{
       }
    }
 
-
    Subject getSubject(String name) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".unknownSubject", "There is no user called " + name);
       return new Subject(name); // dummy implementation
    }
-
 }

@@ -44,7 +44,7 @@ public class PluginClassLoaderFactory {
    public PluginClassLoader getPluginClassLoader(PluginInfo pluginInfo) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering getPluginClassLoader for plugin=" + pluginInfo.getClassName());
 
-      Hashtable pluginParams = pluginInfo.getParameters();
+      java.util.Properties pluginParams = pluginInfo.getParameters();
       LoaderInfo loaderInfo = getLoaderInfo(this, pluginInfo.getClassName());
       if (log.TRACE) log.trace(ME, loaderInfo.toString());
 

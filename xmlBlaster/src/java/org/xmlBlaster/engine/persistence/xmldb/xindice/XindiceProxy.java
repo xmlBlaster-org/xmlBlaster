@@ -3,12 +3,12 @@ Name:      XindiceProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a Xindice Proxy
-Version:   $Id: XindiceProxy.java,v 1.4 2002/05/11 09:36:29 ruff Exp $
+Version:   $Id: XindiceProxy.java,v 1.5 2002/08/26 11:04:21 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb.xindice;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -34,6 +34,7 @@ public class XindiceProxy {
 
    private static final String ME = "XindiceProxy";
    private final Global glob;
+   private final LogChannel log;
 
    // private static Xindice Xdb = null; // instance of Xindice Database
 
@@ -53,20 +54,9 @@ public class XindiceProxy {
     * CAUTION: This Proxy is under development, it may not be used for production environment!
     * <br />
     */
-   public XindiceProxy(Global glob)
-   {
-      this.glob = glob;
-      if (Log.CALL) Log.call(ME, "Constructor for XindiceProxy");
-
-      xindiceDriver = glob.getProperty().get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
-      xindiceFilterClass = glob.getProperty().get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
-
-      // start the db here, if it's not running already
-      // this.startXindice();
-
-      if (Log.TRACE) Log.trace(ME, "xindiceDriver " + xindiceDriver);
-      if (Log.TRACE) Log.trace(ME, "xindiceFilterClass " + xindiceFilterClass);
-   } // end of  public XindiceProxy()
+   public XindiceProxy(Global glob) throws XmlBlasterException {
+      this(glob, null);
+   }
 
    /**
     * Constructs and opens the XindiceProxy object and opens the collection.
@@ -80,7 +70,8 @@ public class XindiceProxy {
    public XindiceProxy(Global glob, String path)  throws XmlBlasterException
    {
       this.glob = glob;
-      if (Log.CALL) Log.call(ME, "Constructor for XindiceProxy, using path: " + path);
+      this.log = glob.getLog("persistence");
+      if (log.CALL) log.call(ME, "Constructor for XindiceProxy, using path: " + path);
 
       xindiceDriver = glob.getProperty().get("Persistence.xindiceDriver", "org.apache.xindice.client.xmldb.DatabaseImpl");
       xindiceFilterClass = glob.getProperty().get("Persistence.xindiceFilterClass", "org.apache.xindice.core.filer.BTreeFiler");
@@ -88,26 +79,27 @@ public class XindiceProxy {
       // start the db her, if it's not running already
       // this.startXindice();
 
-      if (Log.TRACE) Log.trace(ME, "xindiceDriver " + xindiceDriver);
-      if (Log.TRACE) Log.trace(ME, "xindiceFilterClass " + xindiceFilterClass);
+      if (log.TRACE) log.trace(ME, "xindiceDriver " + xindiceDriver);
+      if (log.TRACE) log.trace(ME, "xindiceFilterClass " + xindiceFilterClass);
 
-      openCollection(path);
+      if (path != null)
+         openCollection(path);
 
    } // end of  public XindiceProxy()
 
    /*
    private void startXindice()
    {
-      if (Log.CALL) Log.call(ME, "startXindice");
+      if (log.CALL) log.call(ME, "startXindice");
 
       if (isRunning) {
-         Log.error(ME, "Cannot start Xindice, it's running already!");
+         log.error(ME, "Cannot start Xindice, it's running already!");
          return;
         }
       Xdb = new Xindice();
 
       //System.out.println();
-      Log.info(ME, Xdb.Title+" "+Xdb.Version+" ("+Xdb.Codename+")");
+      log.info(ME, Xdb.Title+" "+Xdb.Version+" ("+Xdb.Codename+")");
       //System.out.println();
       new Kernel("Xindice/system.xml");
 
@@ -118,10 +110,10 @@ public class XindiceProxy {
    /*
    private void shutdownXindice()
    {
-      if (Log.CALL) Log.call(ME, "shutdownXindice");
+      if (log.CALL) log.call(ME, "shutdownXindice");
 
       if (!isRunning) {
-         Log.error(ME, "Cannot shutdown Xindice, it's not running!");
+         log.error(ME, "Cannot shutdown Xindice, it's not running!");
          return;
         }
 
@@ -136,17 +128,17 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     * <p />
     * @param colName The Name of the collection
     */
    public void createCollection(String colName) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "createCollection");
+      if (log.CALL) log.call(ME, "createCollection");
       String colConfig = null;
 
       if (!isOpen) {
-         Log.error(ME, "Cannot create collection '" + colName + "', db needs to be opened first!");
+         log.error(ME, "Cannot create collection '" + colName + "', db needs to be opened first!");
          return;
         }
 
@@ -166,7 +158,7 @@ public class XindiceProxy {
          throw new XmlBlasterException( "org.apache.xindice.util.XindiceException occured", e2.toString() );
       }
 
-      if (Log.TRACE) Log.trace(ME, "Collection '" + colName + "' created using '" + colConfig + "'");
+      if (log.TRACE) log.trace(ME, "Collection '" + colName + "' created using '" + colConfig + "'");
    } // end of public createCollection()
 
    /**
@@ -175,16 +167,16 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     * <p />
     * @param colName The Name of the collection
     */
    public void deleteCollection(String colName) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "deleteCollection");
+      if (log.CALL) log.call(ME, "deleteCollection");
 
       if (!isOpen) {
-         Log.error(ME, "Cannot delete collection, collection needs to be opened first!");
+         log.error(ME, "Cannot delete collection, collection needs to be opened first!");
          return;
         }
 
@@ -195,7 +187,7 @@ public class XindiceProxy {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
       }
 
-      if (Log.TRACE) Log.trace(ME, "Collection '" + colName + "' removed");
+      if (log.TRACE) log.trace(ME, "Collection '" + colName + "' removed");
    } // end of deleteCollection()
 
    /**
@@ -204,13 +196,13 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database is open already.
+    * This method stops with an log.error, if the database is open already.
     * <p />
     * @param path The Path of the collection i.e. xmldb:xindice:///db/xmlBlaster
     */
    public void openCollection(String path) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "invoking openCollection: " + path);
+      if (log.CALL) log.call(ME, "invoking openCollection: " + path);
       this.setCollection(path);
       this.openCollection();
    } // end of openCollection
@@ -221,28 +213,28 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database is open already.
+    * This method stops with an log.error, if the database is open already.
     */
    public void openCollection() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "openCollection");
-      if (Log.TRACE) Log.trace(ME, "colPath " + colPath);
-      if (Log.TRACE) Log.trace(ME, "xindiceDriver " + xindiceDriver);
+      if (log.CALL) log.call(ME, "openCollection");
+      if (log.TRACE) log.trace(ME, "colPath " + colPath);
+      if (log.TRACE) log.trace(ME, "xindiceDriver " + xindiceDriver);
 
       if (isOpen) {
-         Log.error(ME, "Cannot open collection, collection is open already!");
+         log.error(ME, "Cannot open collection, collection is open already!");
          return;
         }
 
       try {
          Class c = Class.forName(xindiceDriver);
-        //Log.info(ME, "Here I am 1");
+        //log.info(ME, "Here I am 1");
          Database database = (Database) c.newInstance();
-        //Log.info(ME, "Here I am 2");
+        //log.info(ME, "Here I am 2");
          DatabaseManager.registerDatabase(database);
-        //Log.info(ME, "Here I am 3");
+        //log.info(ME, "Here I am 3");
          col = DatabaseManager.getCollection(colPath);
-        //Log.info(ME, "Here I am 4");
+        //log.info(ME, "Here I am 4");
       } catch (XMLDBException e1) {
          e1.printStackTrace();
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
@@ -254,7 +246,7 @@ public class XindiceProxy {
          throw new XmlBlasterException( "java.lang.IllegalAccessException occured ", e4.toString() );
       }
 
-      if (Log.TRACE) Log.trace(ME, "Collection '" + colPath + "' opened");
+      if (log.TRACE) log.trace(ME, "Collection '" + colPath + "' opened");
       isOpen = true;
 
    } // end of openCollection()
@@ -265,23 +257,23 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     */
    public void closeCollection() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "closeCollection");
+      if (log.CALL) log.call(ME, "closeCollection");
 
       if (!isOpen) {
-         Log.error(ME, "Cannot close collection, collection needs to be opened first!");
+         log.error(ME, "Cannot close collection, collection needs to be opened first!");
          return;
       } else {
          try {
             col.close();
          } catch (XMLDBException e) {
-            Log.error(ME, e.toString());
+            log.error(ME, e.toString());
             throw new XmlBlasterException( String.valueOf(e.errorCode), e.toString() );
          }
-         if (Log.TRACE) Log.trace(ME, "Collection closed");
+         if (log.TRACE) log.trace(ME, "Collection closed");
          isOpen = false;
       }
    } // end of closeCollection()
@@ -292,14 +284,14 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     */
    public void listCollection() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "listCollections:");
+      if (log.CALL) log.call(ME, "listCollections:");
 
       if (!isOpen) {
-         Log.error(ME, "Cannot list collection, collection needs to be opened first!");
+         log.error(ME, "Cannot list collection, collection needs to be opened first!");
          return;
         }
       String[] colArray = null;
@@ -309,12 +301,12 @@ public class XindiceProxy {
             colArray = col.listChildCollections();
 
             for ( int i=0 ; i < colArray.length ; i++ ) {
-                Log.info(ME, "\t - " + colArray[i] );
+                log.info(ME, "\t - " + colArray[i] );
             }
-            Log.info(ME, "Total collections: " + colArray.length);
+            log.info(ME, "Total collections: " + colArray.length);
          }
          else {
-            Log.error(ME, "Collection not found");
+            log.error(ME, "Collection not found");
          }
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
@@ -329,9 +321,9 @@ public class XindiceProxy {
     */
    public void setCollection(String path)
    {
-      if (Log.CALL) Log.call(ME, "setCollection");
+      if (log.CALL) log.call(ME, "setCollection");
 
-      if (Log.TRACE) Log.trace(ME, "path = " + path);
+      if (log.TRACE) log.trace(ME, "path = " + path);
       colPath = path;
    } // end of setCollection()
 
@@ -344,10 +336,10 @@ public class XindiceProxy {
     */
    public String getCollection()
    {
-      if (Log.CALL) Log.call(ME, "getCollection");
+      if (log.CALL) log.call(ME, "getCollection");
 
       if (!isOpen) {
-         Log.error(ME, "Collection closed, no collection name available!");
+         log.error(ME, "Collection closed, no collection name available!");
          return "";
         }
       return colPath;
@@ -359,18 +351,18 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     * <p />
     * @param data The data to be stored
     * @param id The unique id of the stored data
     */
    public void addDocument(String data, String id) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "addDocument");
-      if (Log.TRACE) Log.info(ME, "Add document   '" + colPath + "/" + data + "' as: " + id );
+      if (log.CALL) log.call(ME, "addDocument");
+      if (log.TRACE) log.info(ME, "Add document   '" + colPath + "/" + data + "' as: " + id );
 
       if (!isOpen) {
-         Log.error(ME, "Cannot add document, collection needs to be opened first!");
+         log.error(ME, "Cannot add document, collection needs to be opened first!");
          return;
         }
       try {
@@ -379,7 +371,7 @@ public class XindiceProxy {
          resource.setContent(data);
          col.storeResource(resource);
 
-         if (Log.TRACE) Log.trace(ME, "Added document '" + colPath + "/" + data + "' as: " + resource.getId() );
+         if (log.TRACE) log.trace(ME, "Added document '" + colPath + "/" + data + "' as: " + resource.getId() );
          resource = null;
 
       } catch (XMLDBException e1) {
@@ -393,17 +385,17 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     * <p />
     * @param id The unique id of the stored data
     * @return The stored data belonging to the id, null otherwise
     */
    public String retrieveDocument(String id) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "retrieveDocument key='" + id +"'");
+      if (log.CALL) log.call(ME, "retrieveDocument key='" + id +"'");
 
       if (!isOpen) {
-         Log.error(ME, "Cannot retrieve document, collection needs to be opened first!");
+         log.error(ME, "Cannot retrieve document, collection needs to be opened first!");
          return "";
         }
       String ret = null;
@@ -412,13 +404,13 @@ public class XindiceProxy {
 
          // Verify that we were able to find the document
          if ( resource == null ) {
-            Log.error(ME, "Document not found!");
+            log.error(ME, "Document not found!");
             return ret;
          }
 
          String documentstr = (String)resource.getContent();
 
-         if (Log.TRACE) Log.info(ME, "retrieved document " + documentstr );
+         if (log.TRACE) log.info(ME, "retrieved document " + documentstr );
 
          ret = documentstr;
 
@@ -435,16 +427,16 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     * <p />
     * @param id The unique id of the document to delete
     */
    public void deleteDocument(String id) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "deleteDocument");
+      if (log.CALL) log.call(ME, "deleteDocument");
 
       if (!isOpen) {
-         Log.error(ME, "Cannot delete document, collection needs to be opened first!");
+         log.error(ME, "Cannot delete document, collection needs to be opened first!");
          return;
         }
 
@@ -453,7 +445,7 @@ public class XindiceProxy {
 
          col.removeResource(colresource);
 
-         if (Log.TRACE) Log.trace(ME, "DELETED: " + id);
+         if (log.TRACE) log.trace(ME, "DELETED: " + id);
 
       } catch (XMLDBException e1) {
          throw new XmlBlasterException( String.valueOf(e1.errorCode), e1.toString() );
@@ -466,16 +458,16 @@ public class XindiceProxy {
     * <p />
     * The database needs to be running see <a href="http://www.dbxml.org">Xindice</a> for details.
     * <p />
-    * This method stops with an Log.error, if the database isn't open already.
+    * This method stops with an log.error, if the database isn't open already.
     * <p />
     * @return String[] Array containing the id's (unique key's) of all stored data
     */
    public String[] listDocuments() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "listDocuments");
+      if (log.CALL) log.call(ME, "listDocuments");
 
       if (!isOpen) {
-         Log.error(ME, "Cannot list documents, collection needs to be opened first!");
+         log.error(ME, "Cannot list documents, collection needs to be opened first!");
          return null;
         }
 

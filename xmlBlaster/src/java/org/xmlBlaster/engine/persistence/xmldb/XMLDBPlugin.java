@@ -3,12 +3,12 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.7 2002/05/11 09:36:28 ruff Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.8 2002/08/26 11:04:20 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -47,6 +47,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
 {
    private static final String ME = "XMLDBPlugin";
    private Global glob = null;
+   private LogChannel log = null;
    private String driverPath = null;  // path where persistent messages will be stored
    private String colName = null;     // name of storage instance
    private XindiceProxy db = null;    // instance of db proxy Xindice, dbXML, eXist, ...
@@ -62,23 +63,22 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * Constructs and opens the XMLDBPlugin object (reflection constructor).
     */
    public XMLDBPlugin() throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME, "XMLDBPlugin (reflection constructor)");
+      if (log.CALL) log.call(ME, "XMLDBPlugin (reflection constructor)");
    }
 
-     /**
+   /**
     * initialises an instance of the XMLDB persistence plugin
     * <p />
-    * @param Global An xmlBlaster instance global object holding logging and property informations
-    * @param param  Aditional parameter for the persistence plugin
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob;
-      if (Log.CALL) Log.call(ME, "init " + param);
+      this.log = glob.getLog("persistence");
 
       driverPath = glob.getProperty().get("Persistence.Path", "xmldb:xindice:///db");
       colName = glob.getProperty().get("Persistence.Collection", "xmlBlaster");
 
-      Log.info(ME, "using collectionPath '" + driverPath + "/" + colName + "'");
+      log.info(ME, "using collectionPath '" + driverPath + "/" + colName + "'");
 
       // fixed to xindice right now, needs to be opend to eXist or Tamino or ... as well. TODO!!!
       db = new XindiceProxy(glob, driverPath + "/" + colName);
@@ -99,9 +99,9 @@ public class XMLDBPlugin implements I_PersistenceDriver
    */
    public final void shutdown() throws XmlBlasterException {
 
-      if (Log.CALL) Log.call(ME, "shutdown");
+      if (log.CALL) log.call(ME, "shutdown");
       db.closeCollection();
-      Log.info(ME, "succesfully closed collection '" + driverPath + "/" + colName);
+      log.info(ME, "succesfully closed collection '" + driverPath + "/" + colName);
    }
 
 
@@ -113,7 +113,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     */
    public final void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "store");
+      if (log.CALL) log.call(ME, "store");
 
       /*
       XmlKey xmlKey = messageWrapper.getXmlKey();
@@ -132,10 +132,10 @@ public class XMLDBPlugin implements I_PersistenceDriver
       db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
 
-      // Log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMessageUnit().content)+"]]></content>");
-      //        Log.trace(ME, new String(messageWrapper.getMessageUnit().content));
+      // log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMessageUnit().content)+"]]></content>");
+      //        log.trace(ME, new String(messageWrapper.getMessageUnit().content));
 
-      if (Log.TRACE) Log.trace(ME, "Successfully stored; oid= " + oid + "key= " + key );
+      if (log.TRACE) log.trace(ME, "Successfully stored; oid= " + oid + "key= " + key );
    }
 
 
@@ -148,14 +148,14 @@ public class XMLDBPlugin implements I_PersistenceDriver
     */
    public final void update(MessageUnitWrapper messageWrapper) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "update");
+      if (log.CALL) log.call(ME, "update");
 
       String oid = messageWrapper.getXmlKey().getKeyOid();
       db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       // Store the sender as well:
       db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
 
-      if (Log.TRACE) Log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
    }
 
 
@@ -167,7 +167,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     */
    public final MessageUnit fetch(String oid) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "fetch");
+      if (log.CALL) log.call(ME, "fetch");
       MessageUnit msgUnit = null;
 
       String xmlKey_literal = db.retrieveDocument(oid + XMLKEY_TOKEN);
@@ -176,24 +176,24 @@ public class XMLDBPlugin implements I_PersistenceDriver
       String con = db.retrieveDocument(oid + XMLCON_TOKEN);
 
       /*
-      // if (Log.TRACE) Log.trace(ME, " 1 con: '" + con + "'");
+      // if (log.TRACE) log.trace(ME, " 1 con: '" + con + "'");
       if ( con.startsWith(XML_PI_TOKEN) )
          con = con.substring(XML_PI_TOKEN.length() + 1 , con.length() );
 
-      // if (Log.TRACE) Log.trace(ME, " 2 con: '" + con + "'");
+      // if (log.TRACE) log.trace(ME, " 2 con: '" + con + "'");
 
       if ( con.startsWith(BEGCON_TOKEN) && con.endsWith(ENDCON_TOKEN) )
          con = con.substring(BEGCON_TOKEN.length(), con.length() - ENDCON_TOKEN.length() );
 
-      // if (Log.TRACE) Log.trace(ME, " 3 con: '" + con + "'");
-      if (Log.TRACE) Log.trace(ME, "con: '" + con + "'");
+      // if (log.TRACE) log.trace(ME, " 3 con: '" + con + "'");
+      if (log.TRACE) log.trace(ME, "con: '" + con + "'");
       */
       //if ( con.startsWith(XML_PI_TOKEN) )
       //   if ( con.startsWith(BEGCON_TOKEN) && con.endsWith(ENDCON_TOKEN) )
       //      con = con.substring(XML_PI_TOKEN.length() + 1 + BEGCON_TOKEN.length(), con.length() - ENDCON_TOKEN.length() );
 
-      // if (Log.TRACE) Log.trace(ME, " 4 con: '" + con + "'");
-      // if (Log.TRACE) Log.trace(ME, "con: '" + con + "'");
+      // if (log.TRACE) log.trace(ME, " 4 con: '" + con + "'");
+      // if (log.TRACE) log.trace(ME, "con: '" + con + "'");
 
       byte[] content =
          con.substring( XML_PI_TOKEN.length() + 1 + BEGCON_TOKEN.length(),
@@ -201,10 +201,10 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
       msgUnit = new MessageUnit(xmlKey_literal, content, xmlQos_literal);
 
-      if (Log.TRACE) Log.trace(ME, "Successfully fetched message " + oid);
-      if (Log.TRACE) Log.trace(ME, "    content '" + content + "'");
-      if (Log.TRACE) Log.trace(ME, "       key '" + xmlKey_literal + "'");
-      if (Log.TRACE) Log.trace(ME, "       qos '" + xmlQos_literal + "'");
+      if (log.TRACE) log.trace(ME, "Successfully fetched message " + oid);
+      if (log.TRACE) log.trace(ME, "    content '" + content + "'");
+      if (log.TRACE) log.trace(ME, "       key '" + xmlKey_literal + "'");
+      if (log.TRACE) log.trace(ME, "       qos '" + xmlQos_literal + "'");
 
       return msgUnit;
    }
@@ -218,7 +218,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     */
     public final Enumeration fetchAllOids() throws XmlBlasterException
     {
-      if (Log.CALL) Log.call(ME, "fetchAllOids");
+      if (log.CALL) log.call(ME, "fetchAllOids");
 
       Vector oidContainer = new Vector();
 
@@ -233,7 +233,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
          }
       }
 
-      Log.info(ME, "Successfully got " + oidContainer.size() + " stored message-oids from " + driverPath + "/" + colName);
+      log.info(ME, "Successfully got " + oidContainer.size() + " stored message-oids from " + driverPath + "/" + colName);
 
       return oidContainer.elements();
     }
@@ -246,7 +246,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     */
    public final void erase(XmlKey xmlKey) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "erase");
+      if (log.CALL) log.call(ME, "erase");
 
       String oid = xmlKey.getKeyOid();
 
@@ -254,7 +254,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
       db.deleteDocument(oid + XMLCON_TOKEN);
       db.deleteDocument(oid + XMLQOS_TOKEN);
 
-      if (Log.TRACE) Log.trace(ME, "Successfully erased; oid= " + oid);
+      if (log.TRACE) log.trace(ME, "Successfully erased; oid= " + oid);
    }
 
 
@@ -294,7 +294,8 @@ public class XMLDBPlugin implements I_PersistenceDriver
     */
    private static void XMLDBPluginTest() throws Exception
    {
-      Log.info(ME, "invoking XMLDBPluginTest");
+      LogChannel log = Global.instance().getLog(null);
+      log.info(ME, "invoking XMLDBPluginTest");
 
       String test_data =
       "<product product_id=\"7042001\">" +
@@ -310,10 +311,10 @@ public class XMLDBPlugin implements I_PersistenceDriver
       String colName = glob.getProperty().get("Persistence.Collection", "xmlBlaster_test");
 
       try {
-         if (Log.CALL) Log.call(ME, "in try");
+         if (log.CALL) log.call(ME, "in try");
          XindiceProxy db = new XindiceProxy(glob, colPath);
-         // Log.info(ME, "colPath: " + colPath);
-         // Log.info(ME, "colName: " + colName);
+         // log.info(ME, "colPath: " + colPath);
+         // log.info(ME, "colName: " + colName);
 
          // open a path, create, list and remove a collection
          // db.openCollection(colPath);
@@ -322,7 +323,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
          db.deleteCollection("to_remove_test_only");
          db.closeCollection();
 
-         Log.info(ME, "--- new test starts here ---");
+         log.info(ME, "--- new test starts here ---");
 
          // create collection manual by using:
          // xindiceadmin ac -c /db -n xmlBlaster_test
@@ -337,17 +338,17 @@ public class XMLDBPlugin implements I_PersistenceDriver
          // list all documents:
          // xindice ld -c /db/xmlBlaster_test
 
-         Log.info(ME, "Found: " + db.retrieveDocument(test_index) + "\n");
+         log.info(ME, "Found: " + db.retrieveDocument(test_index) + "\n");
          db.deleteDocument(test_index);
          db.closeCollection();
 
       //Thread.currentThread().sleep(100000);
       } catch (Exception e) {
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
          e.printStackTrace();
       }
 
-      Log.info(ME, "end of test");
+      log.info(ME, "end of test");
    }
 
    // javac -classpath $CLASSPATH:. *.java
@@ -358,7 +359,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
    /** Invoke:  java -cp $CLASSPATH:. org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin */
    public static void main(String[]args) throws Exception
    {
-      Log.setLogLevel(args); // initialize log level
+      new Global(args); // initialize log level
 
       XMLDBPluginTest();
       XMLDBPluginTest();

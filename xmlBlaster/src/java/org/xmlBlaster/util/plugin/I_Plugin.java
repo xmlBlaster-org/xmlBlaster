@@ -3,10 +3,12 @@ package org.xmlBlaster.util.plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * @author  goetzger
- * @version $Revision: 1.1 $ (State: $State) (Date: $Date: 2002/08/26 09:01:32 $)
+ * This interface must be implemented by xmlBlaster plugins. 
+ *
+ * @author W. Kleinertz (wkl) H. Goetzger
+ * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-
 public interface I_Plugin
 {
    /**
@@ -14,17 +16,20 @@ public interface I_Plugin
     * <p/>
     * Example how options are evaluated:
     * <pre>
-    *   MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20
+    *   // An entry in xmlBlaster.properties (in one line):
+    *   MimeSubscribePlugin[ContentLenFilter][1.0]=\
+    *                 org.xmlBlaster.engine.mime.demo.ContentLenFilter,\
+    *                 DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20
     *
-    *   options[0]=DEFAULT_MAX_LEN
-    *   options[1]=200
-    *   options[2]=DEFAULT_MIN_LEN
-    *   options[3]=20
+    *  // Access it like this:
+    *  java.util.Properties props = pluginInfo.getParameters();
+    *  String maxLen = (String)props.get("DEFAULT_MAX_LEN");
+    *  String throwLen = (String)props.get("THROW_EXCEPTION_FOR_LEN");
     * </pre>
     * @param Global   An xmlBlaster instance global object holding logging and property informations
-    * @param String[] Some arguments from xmlBlaster.properties.
+    * @param PluginInfo A container holding informations about the plugin, e.g. its parameters
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException;
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException;
 
    public String getType();
    public String getVersion();

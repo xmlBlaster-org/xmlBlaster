@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.44 2002/08/23 21:24:56 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.45 2002/08/26 11:04:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -92,8 +92,11 @@ public class CorbaDriver implements I_Driver
       return "1.0";
    }
 
-   /** Enforced by I_Plugin */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) {
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**

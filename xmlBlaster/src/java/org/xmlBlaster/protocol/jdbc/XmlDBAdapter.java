@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.21 2002/08/23 21:24:56 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.22 2002/08/26 11:04:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -57,7 +57,7 @@ public class XmlDBAdapter
       this.namedPool = namedPool;
       if (this.namedPool == null) {
          Thread.currentThread().dumpStack();
-         throw new IllegalArgumentException("XmlDBAdapter: namedPool is null");
+         throw new IllegalArgumentException("XmlDBAdapter: namedPool is null, check your -ProtocolPlugin[JDBC][1.0] configuration");
       }
    }
 

@@ -3,12 +3,13 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.33 2002/08/23 21:24:56 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.34 2002/08/26 11:04:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -83,7 +84,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    }
 
    /** Enforced by I_Plugin */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) {
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
    }
 
    /**

@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.mime.regex;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.Constants;
@@ -71,23 +72,10 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
    }
 
    /**
-    * This method is called by the PluginManager.
-    * <p />
-    * This xmlBlaster.properties entry example
-    * <pre>
-    *   MimeAccessPlugin[GnuRegexFilter][1.0]=org.xmlBlaster.engine.mime.regex.GnuRegexFilter,SOME_PROP=true
-    * </pre>
-    * passes 
-    * <pre>
-    *   options[0]="SOME_PROP"
-    *   options[1]="true"
-    * </pre>
-    * <p/>
-    * @param Global   An xmlBlaster instance global object holding logging and property informations
-    * @param String[] Some arguments from xmlBlaster.properties.
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
-      // see ../demo/ContentLenFilter.java for an example
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**

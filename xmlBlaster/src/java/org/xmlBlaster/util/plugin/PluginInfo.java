@@ -4,10 +4,16 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
-import java.util.Hashtable;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
 
+/**
+ * Holds data about a plugin. 
+ *
+ * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ */
 public class PluginInfo {
 
    private final LogChannel log;
@@ -26,7 +32,7 @@ public class PluginInfo {
    private String className;
 
    /** key/values from "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100" */
-   private Hashtable params;
+   private Properties params;
    
 
    public PluginInfo( Global glob, PluginManagerBase manager, String type_, String version_ ) throws XmlBlasterException {
@@ -51,7 +57,7 @@ public class PluginInfo {
    private void parsePropertyValue(String rawString) throws XmlBlasterException {
       if (rawString==null) throw new IllegalArgumentException(ME + ".parsePropertyValue(null)");
 
-      params = new Hashtable();
+      params = new Properties();
       if(rawString!=null) {
          StringTokenizer st = new StringTokenizer(rawString, ",");
          boolean first=true;
@@ -78,7 +84,7 @@ public class PluginInfo {
       return className;
    }
 
-   public Hashtable getParameters() {
+   public Properties getParameters() {
       return params;
    }
 

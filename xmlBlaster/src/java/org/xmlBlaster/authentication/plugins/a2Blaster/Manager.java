@@ -3,6 +3,7 @@ package org.xmlBlaster.authentication.plugins.a2Blaster;
 import java.util.Hashtable;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.a2Blaster.client.api.CorbaConnection;
@@ -13,9 +14,17 @@ import org.a2Blaster.Environment;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/08/26 09:10:05 $)
+ * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/08/26 11:04:16 $)
  * Last Changes:
  *    ($Log: Manager.java,v $
+ *    (Revision 1.5  2002/08/26 11:04:16  ruff
+ *    (INCOMPATIBLE plugin interface change!
+ *    (This is of importance only if you use your own plugins.
+ *    (The I_Plugin interface method changed from
+ *    (  public void init(org.xmlBlaster.util.Global glob, String[] options)
+ *    (to
+ *    (  public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo)
+ *    (
  *    (Revision 1.4  2002/08/26 09:10:05  ruff
  *    (Ported to redesigned plugin framework
  *    (
@@ -61,16 +70,9 @@ public class Manager implements I_Manager{
 
    /**
     * Initialize the Manager.
-    * <p/>
-    * @param XmlBlasterException
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".init()", "-------START--------\n");
-      if (options.length>0){
-         Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
-      }
-      if (Log.CALL) Log.call(ME+".init()", "-------END--------\n");
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws org.xmlBlaster.util.XmlBlasterException {
    }
 
    /**

@@ -161,12 +161,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    }
 
    /**
-    * This method is called by the PluginManager.
-    * <p />
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(Global,String[])
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
-      // see ../demo/ContentLenFilter.java for an example
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**

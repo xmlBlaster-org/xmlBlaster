@@ -3,8 +3,6 @@ Name:      PluginManagerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Baseclass to load plugins.
-Version:   $Id: PluginManagerBase.java,v 1.1 2002/08/26 09:01:32 ruff Exp $
-Author:    W. Kleinertz (wkl), Heinrich Goetzger goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.plugin;
 
@@ -22,7 +20,7 @@ import java.util.StringTokenizer;
 import java.net.URL;
 
 /**
- * Baseclass to load plugins.
+ * Base class to load plugins.
  * <p />
  * A typical syntax in the xmlBlaster.properties file is:
  * <pre>
@@ -31,7 +29,8 @@ import java.net.URL;
  *       DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20,classpath=mime.jar
  * </pre>
  * @author W. Kleinertz (wkl) H. Goetzger
- * @version 1.0
+ * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
+ * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
 abstract public class PluginManagerBase {
 
@@ -159,7 +158,7 @@ abstract public class PluginManagerBase {
       // Initialize the plugin
       if (plugin != null) {
          try {
-            plugin.init(glob, pluginInfo.getParameterArr());
+            plugin.init(glob, pluginInfo);
             postInstantiate(plugin, pluginInfo);
             log.info(ME, "Plugin '" + pluginName + "' successfully initialized.");
          } catch (XmlBlasterException e) {

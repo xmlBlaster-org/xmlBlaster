@@ -2,7 +2,6 @@ package org.xmlBlaster.authentication.plugins.ldap;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
@@ -29,18 +28,14 @@ public class Manager implements I_Manager {
    private Hashtable sessions = new Hashtable();
 
    public Manager() {
-      if (Log.CALL) Log.call(ME, "Constructor");
    }
 
    /**
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
       this.glob = glob;
-      if (Log.CALL) Log.call(ME, "init()");
-      if (options.length>0) {
-         Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
-      }
    }
 
    final Global getGlobal() {
@@ -57,7 +52,6 @@ public class Manager implements I_Manager {
 
 
    public final I_Session reserveSession(String sessionId) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME, "reserveSession(sessionId="+sessionId+")");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);

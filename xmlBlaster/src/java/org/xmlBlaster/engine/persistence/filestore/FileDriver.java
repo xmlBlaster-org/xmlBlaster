@@ -75,7 +75,11 @@ public class FileDriver implements I_PersistenceDriver
     * @param Global Global object holding logging and property informations
     * @param param  aditional parameter for the filedriver plugin
     */
-   public final void init(org.xmlBlaster.util.Global glob, String[] param) throws XmlBlasterException {
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public final void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       if (Log.CALL) Log.call(ME, "Entering init()");
 
       this.glob = glob;

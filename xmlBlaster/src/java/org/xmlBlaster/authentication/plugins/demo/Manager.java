@@ -4,6 +4,7 @@ import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import java.util.Hashtable;
 import java.awt.*;
 
@@ -52,14 +53,10 @@ public class Manager implements I_Manager{
    }
 
    /**
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global glob, String[] options)
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
-      Log.call(ME+".init()", "-------START--------\n");
-      if (options.length>0) {
-         Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
-      }
-      Log.call(ME+".init()", "-------END--------\n");
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    public String getType() {

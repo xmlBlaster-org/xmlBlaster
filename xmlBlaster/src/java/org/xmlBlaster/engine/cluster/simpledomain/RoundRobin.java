@@ -47,29 +47,10 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
    }
 
    /**
-    * This method is called by the PluginManager.
-    * <p />
-    * This xmlBlaster.properties entry example
-    * <pre>
-    *   LoadBalancerPlugin[RoundRobin][1.0]=org.xmlBlaster.engine.cluster.simpledomain.RoundRobin,DEFAULT_MAX_LEN=200
-    * </pre>
-    * passes 
-    * <pre>
-    *   options[0]="DEFAULT_MAX_LEN"
-    *   options[1]="200"
-    * </pre>
-    * <p/>
-    * @param Global   An xmlBlaster instance global object holding logging and property informations
-    * @param String[] Some arguments from xmlBlaster.properties.
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
-      if (options != null) {
-         for (int ii=0; ii<options.length-1; ii++) {
-            if (options[ii].equalsIgnoreCase("DUMMY")) {
-               //DUMMY = (new Long(options[++ii])).longValue();  // ...
-            }
-         }
-      }
+   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
    }
 
    /**
