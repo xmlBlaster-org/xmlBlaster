@@ -8,14 +8,63 @@ COMMENT:
       <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
       <script language="Javascript1.2">
          /**
+          * Check the browser version
+          */
+         var vers = parseInt(navigator.appVersion);
+         var isNetscape = false;
+         var isMozilla = false;
+         var isOpera = false;
+         var isExplorer = false;
+         if (vers < 4) {
+            alert("Please use a browser version higher than 4.x\n Let's try it nevertheless.");
+         }
+
+         // appVersion=4.70 (Win16;I)
+         // appName=Netscape
+         isOpera = (navigator.appName.indexOf("Netscape") != -1) && (navigator.appVersion.indexOf("(Win16;") != -1);
+         
+         isExplorer = (navigator.appVersion.indexOf("MSIE") != -1);
+
+         if (!isOpera && !isExplorer) {
+            // appVersion=4.72 [en] (X11; I; Linux 2.2.14 i686)
+            // appName=Netscape
+            isNetscape = (navigator.appName.indexOf("Netscape") != -1) && (vers == 4); 
+            
+            // appVersion=5.0 [de-DE] (Linux; I) 
+            // appName=Netscape
+            isMozilla = ((navigator.appName.indexOf("Netscape") != -1) && (vers >= 5));
+         }
+
+         /**
           * Get some browser infos formatted as HTML
           */
          function getBrowserInfo()
          {
-            var appName     = "Browser name: <i>" + navigator.appName + "</i><br>";
-            var appVersion  = "Browser version: <i>" + navigator.appVersion + "</i><br>";
-            var platform    = "Operating system: <i>" + navigator.platform + "</i><br>";
-            return appName + appVersion + platform;
+            //if (isExplorer == true)
+            //   navigator = window.navigator;
+
+            if (isNetscape) {
+               var appName     = "Browser name: <i>" + navigator.appName + "</i><br />";
+               var appVersion  = "Browser version: <i>" + navigator.appVersion + "</i><br />";
+               var platform    = "Operating system: <i>" + navigator.platform + "</i><br />";
+               return "Netscape:<br />" + appName + appVersion + platform;
+            }
+            else if (isMozilla) {
+               var appName     = "Browser name: <i>" + navigator.appName + "</i><br>";
+               var appVersion  = "Browser version: <i>" + navigator.appVersion + "</i><br>";
+               var platform    = "Operating system: <i>" + navigator.platform + "</i><br>";
+               return "Mozilla:<br />" + appName + appVersion + platform;
+            }
+            else if (isExplorer) {
+               var appName     = "Browser name: <i>" + navigator.appName + "</i><br>";
+               var appVersion  = "Browser version: <i>" + navigator.appVersion + "</i><br>";
+               var platform    = "Operating system: <i>" + navigator.platform + "</i><br>";
+               return "Explorer (not tested yet):<br />" + appName + appVersion + platform;
+            }
+            else if (isOpera)
+               return "Opera support on Linux is broken";
+            else
+               return "You are using an untested browser";
          }
       </script>
    </head>
