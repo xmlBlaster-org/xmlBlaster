@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.26 2000/02/28 18:39:49 ruff Exp $
+Version:   $Id: Main.java,v 1.27 2000/02/29 17:03:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -181,7 +181,7 @@ public class Main
 
 
    /**
-    *  Instructs the ORB to shut down, which causes all object adapters to shut down. 
+    *  Instructs the ORB to shut down, which causes all object adapters to shut down.
     */
    public void shutdown(boolean wait_for_completion)
    {
@@ -199,7 +199,7 @@ public class Main
 
 
    /**
-    * Access the authentication singleton. 
+    * Access the authentication singleton.
     */
    public Authenticate getAuthenticate()
    {
@@ -322,9 +322,9 @@ public class Main
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Following interactive keyboard input is recognized:");
       Log.plain(ME, "Key:");
-      Log.plain(ME, "   -g             Popup the control panel GUI.");
-      Log.plain(ME, "   -d <file name> Dump internal state of xmlBlaster to file.");
-      Log.plain(ME, "   -q             Quit xmlBlaster.");
+      Log.plain(ME, "   g             Popup the control panel GUI.");
+      Log.plain(ME, "   d <file name> Dump internal state of xmlBlaster to file.");
+      Log.plain(ME, "   q             Quit xmlBlaster.");
       Log.plain(ME, "----------------------------------------------------------");
    }
 
