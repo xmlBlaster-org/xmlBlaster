@@ -28,7 +28,7 @@ public class JmxWrapper
 {
    private final Global glob;
    private final LogChannel log;
-   private final String ME = "JmxWrapper";
+   private final String ME;
    private static MBeanServer mbeanServer;
    private static HtmlAdaptorServer html;
    private final static String NAME_PREFIX = "xmlBlaster:name=";
@@ -63,6 +63,7 @@ public class JmxWrapper
    {
       this.glob = glob;
       this.log = glob.getLog("jmx");
+      this.ME = "JmxWrapper" + this.glob.getLogPrefixDashed();
       init();
    }
 
@@ -94,6 +95,7 @@ public class JmxWrapper
     */
    public void register(Object obj, String name) throws XmlBlasterException
    {
+      if (log.CALL) log.call(ME, "register(" + name + ")");
       if (obj == null) {
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, " could not register '" + name + "' into MBean Server since object to register is null.");
       }
@@ -111,6 +113,7 @@ public class JmxWrapper
     */
    public void unRegister(String name) throws XmlBlasterException
    {
+      if (log.CALL) log.call(ME, "unRegister(" + name + ")");
       try {
          ObjectName objName = new ObjectName(this.NAME_PREFIX + name);
          this.mbeanServer.unregisterMBean(objName);
