@@ -80,9 +80,13 @@ static const char * test_methods()
    xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       freeXmlBlasterAccessUnparsed(xa);
+      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__,
+         "Connection to xmlBlaster failed, please start the server or check your configuration");
       mu_assert("[TEST FAIL] Connection to xmlBlaster failed, please start the server or check your configuration",
                 false);
    }
+
+   xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
 
    {  /* connect */
       char connectQos[2048];
@@ -160,6 +164,7 @@ static const char * test_methods()
       free(response);
    }
 
+   sleepMillis(1000);
    mu_assert("[TEST FAIL] No update arrived", updateContent != 0);
    mu_assert("[TEST FAIL] Received wrong message in update()", strcmp(CONTENT, updateContent) == 0);
    free(updateContent);
@@ -230,6 +235,8 @@ static const char * test_methods()
       printf("[client] Erase success\n");
       freeQosArr(response);
    }
+
+   sleepMillis(1000);
 
    retBool = xa->disconnect(xa, 0, &xmlBlasterException);
    if (*xmlBlasterException.errorCode != '\0') {
