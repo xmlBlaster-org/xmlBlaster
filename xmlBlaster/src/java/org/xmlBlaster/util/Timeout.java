@@ -276,15 +276,15 @@ public class Timeout extends Thread
 
       if (obj == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_UNKNOWN, ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
       }
       Container container = (Container)obj;
       I_Timeout callback = container.getCallback();
       if (callback == null) {
          if (this.useWeakReference)
-            throw new XmlBlasterException(ME, "The weak callback reference for timeout handle '" + key + "' is garbage collected, no timeout refresh done");
+            throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_UNKNOWN, ME, "The weak callback reference for timeout handle '" + key + "' is garbage collected, no timeout refresh done");
          else
-            throw new XmlBlasterException(ME, "Internal error for timeout handle '" + key + "', no timeout refresh done");
+            throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error for timeout handle '" + key + "', no timeout refresh done");
       }
       return addTimeoutListener(callback, delay, container.getUserData());
    }
