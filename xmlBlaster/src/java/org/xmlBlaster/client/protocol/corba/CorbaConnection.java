@@ -193,6 +193,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
       }
       resetConnection();
+      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**

@@ -114,6 +114,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("rmi");
       XmlBlasterSecurityManager.createSecurityManager(this.glob);
+      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**

@@ -4,9 +4,9 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
 <<<<<<< SocketConnection.java
-Version:   $Id: SocketConnection.java,v 1.43 2003/03/24 16:13:05 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.44 2003/03/26 11:09:40 ruff Exp $
 =======
-Version:   $Id: SocketConnection.java,v 1.43 2003/03/24 16:13:05 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.44 2003/03/26 11:09:40 ruff Exp $
 >>>>>>> 1.41.6.2
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
@@ -129,6 +129,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       // Put this instance in the NameService, will be looked up by SocketCallbackImpl
       this.glob.addObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection", this);
       initSocketClient(); // Establish a raw socket connection
+      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**

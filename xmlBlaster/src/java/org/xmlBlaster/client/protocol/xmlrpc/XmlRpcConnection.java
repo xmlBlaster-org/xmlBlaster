@@ -95,6 +95,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("xmlrpc");
+      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**
