@@ -1,0 +1,370 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+
+<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="500" viewBox="0 0 500 500" onload="doInit(evt)" onmouseup="movePoint(evt)">
+
+  <defs>
+      <script xlink:href="xparser.js" type="text/ecmascript"/>
+      <script type="text/ecmascript"> 
+
+<![CDATA[    
+
+importPackage(java.awt);
+importPackage(Packages.org.xmlBlaster.client);
+importPackage(Packages.org.xmlBlaster.client.protocol);
+importPackage(Packages.org.xmlBlaster.engine.helper);
+importPackage(Packages.org.xmlBlaster.util);
+
+var x0  = 0;
+var y0  = 0;
+var doc;
+var currentElement;
+var xmlBlaster;
+
+
+// hack to force to update the screen in batik (2002-03-26)
+function fireClickEvent() {
+  var evt = doc.createEvent("MouseEvents");
+  evt.initEvent("click", true, true);
+
+  var el = doc.getElementById("0");
+  el.dispatchEvent(evt);
+  System.out.println("event fired");
+}
+
+
+function update(loginName, key, content, qos) {
+   var root = Xparse(new String(content));
+   var element = root.contents[0];
+   var id = element.contents[0].contents[0].value;
+
+   var transform = element.contents[1].contents[0].value;
+   var el = doc.getElementById(id);
+   el.setAttribute("transform", transform);
+   // hack to update the screen in batik ...
+   setTimeout('fireClickEvent()', 1);
+}
+  
+  
+function createTranslateAttribute(element, dx, dy) {
+   var buf = element.getAttribute("transform");
+   var pos = buf.indexOf("translate(");
+   var x   = dx;
+   var y   = dy;
+	
+   if (pos > -1) {
+      buf = buf.substring(pos+10, buf.length());
+      var A = new Array();
+      A  = buf.split(',');
+      x  += parseInt(A[0], 10);
+      var B = new Array();
+      B  = A[1].split(')');
+      y += parseInt(B[0], 10);
+   }
+   return "translate(" + x + "," + y + ")";
+}
+  
+  
+function toXml(id, transform) {
+   var content = "<chess><id>" + id + "</id><transform>" + transform + "</transform></chess>";
+   return content;
+}
+        
+  
+function doInit(evt) { 
+   doc = evt.target.ownerDocument;
+   var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
+
+   args = new Array(2);
+   // you can set here the command line to pass to XmlBlasterConnection
+   args[0] = new String("-iorHost");
+   args[1] = new String("localhost");
+   xmlBlaster = new XmlBlasterConnection(args);
+
+   xmlBlaster.login("michele", "secret", new ConnectQos(), new JavascriptCallback(this));
+   xmlBlaster.subscribe(key, "<qos></qos>");
+}  
+        
+
+function setStartPosition(evt) {
+   x0 = evt.getClientX();
+   y0 = evt.getClientY();
+   currentElement = evt.target;
+}
+  
+  
+function movePoint (evt) {
+   var dx = evt.getClientX() - x0;
+   var dy = evt.getClientY() - y0;
+          
+   //   var id = currentElement.getAttribute("id");
+   // the next lines are a workaround for the bug in batik.
+   var id = currentElement.getAttribute("id") + "A"; // workaround for the Bug ?
+   currentElement = doc.getElementById(id);
+   // end of the bugfix
+
+   var transform = createTranslateAttribute(currentElement, dx, dy);
+   var content = new String(toXml(id, transform));
+   var key = "<?xml version='1.0'?><key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
+   var qos = "<qos></qos>";
+     
+   messageUnit = new MessageUnit(key, content, qos);
+   xmlBlaster.publish(messageUnit);
+  
+}
+  
+  
+]]>
+  
+  </script>
+
+
+    <g id="raw">
+      <rect x="0" y="0" width="50" height="50" transform="translate(  0,  0)" style="fill:black"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate( 50,  0)" style="fill:white"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate(100,  0)" style="fill:black"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate(150,  0)" style="fill:white"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate(200,  0)" style="fill:black"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate(250,  0)" style="fill:white"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate(300,  0)" style="fill:black"/>
+      <rect x="0" y="0" width="50" height="50" transform="translate(350,  0)" style="fill:white"/>
+    </g>
+
+    <g id="whiteQueen">
+      <path d="M 15 40 L 10 20 L 20 30 L 25 20 L 30 30 L 40 20 L 35 40 z" fill="red" />
+    </g>
+
+    <g id="blackQueen">
+      <path d="M 15 40 L 10 20 L 20 30 L 25 20 L 30 30 L 40 20 L 35 40 z" fill="blue" />
+    </g>
+
+    <g id="whiteKing">
+      <path d="M 20 40 L 10 10 L 20 20 L 25 10 L 30 20 L 40 10 L 30 40 z" fill="red" />
+    </g>
+
+    <g id="blackKing">
+      <path d="M 20 40 L 10 10 L 20 20 L 25 10 L 30 20 L 40 10 L 30 40 z" fill="blue" />
+    </g>
+
+    <g id="whiteHorse">
+      <path d="M 10 40 L 10 35 L 20 35 L 20 25 L 10 25 L 10 20 L 20 15 L 20 10 L 30 20 L 30 35 L 40 35 L 40 40 L 10 40 z" fill="red" />
+    </g>
+
+    <g id="blackHorse">
+      <path d="M 10 40 L 10 35 L 20 35 L 20 25 L 10 25 L 10 20 L 20 15 L 20 10 L 30 20 L 30 35 L 40 35 L 40 40 L 10 40 z" fill="blue" />
+    </g>
+
+    <g id="whiteRunner">
+      <rect x="11" y="38" width="28" height="10" style="fill:red"/>
+      <rect x="18" y="18" width="14" height="22" style="fill:red"/>
+      <circle cx="25" cy="18" r="9" style="fill:red"/>
+    </g>
+
+    <g id="blackRunner">
+      <rect x="11" y="38" width="28" height="10" style="fill:blue"/>
+      <rect x="18" y="18" width="14" height="22" style="fill:blue"/>
+      <circle cx="25" cy="18" r="9" style="fill:blue"/>
+    </g>
+
+    <g id="whitePiece">
+      <rect x="10" y="35" width="30" height="10" style="fill:red"/>
+      <rect x="20" y="20" width="10" height="20" style="fill:red"/>
+      <circle cx="25" cy="20" r="7" style="fill:red"/>
+    </g>
+
+    <g id="blackPiece">
+      <rect x="10" y="35" width="30" height="10" style="fill:blue"/>
+      <rect x="20" y="20" width="10" height="20" style="fill:blue"/>
+      <circle cx="25" cy="20" r="7" style="fill:blue"/>
+    </g>
+
+    <g id="whiteTower">
+      <rect x="10" y="30" width="30" height="10" style="fill:red"/>
+      <rect x="20" y="20" width="10" height="10" style="fill:red"/>
+      <rect x="10" y="15" width="30" height="5" style="fill:red"/>
+      <rect x="10" y="10" width="6" height="10" style="fill:red"/>
+      <rect x="22" y="10" width="6" height="10" style="fill:red"/>
+      <rect x="34" y="10" width="6" height="10" style="fill:red"/>
+    </g>
+
+    <g id="blackTower">
+      <rect x="10" y="30" width="30" height="10" style="fill:blue"/>
+      <rect x="20" y="20" width="10" height="10" style="fill:blue"/>
+      <rect x="10" y="15" width="30" height="5" style="fill:blue"/>
+      <rect x="10" y="10" width="6" height="10" style="fill:blue"/>
+      <rect x="22" y="10" width="6" height="10" style="fill:blue"/>
+      <rect x="34" y="10" width="6" height="10" style="fill:blue"/>
+    </g>
+
+</defs>
+
+<g transform="translate(50,50)">
+  <g>
+    <use x="0" y="0" width="350" height="50" xlink:href="#raw"/>
+    <use x="50" y="50" width="350" height="50" xlink:href="#raw"/>
+    <use x="0" y="100" width="350" height="50" xlink:href="#raw"/>
+    <use x="50" y="150" width="350" height="50" xlink:href="#raw"/>
+    <use x="0" y="200" width="350" height="50" xlink:href="#raw"/>
+    <use x="50" y="250" width="350" height="50" xlink:href="#raw"/>
+    <use x="0" y="300" width="350" height="50" xlink:href="#raw"/>
+    <use x="50" y="350" width="350" height="50" xlink:href="#raw"/>
+  </g>
+
+
+  <g id="0A" onclick="System.out.println('0A')" transform="translate(0,50)" onmousedown="setStartPosition(evt)">
+    <use onclick="System.out.println('0B')" x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect onclick="System.out.println('0C')" id="0" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="1A" transform="translate(50,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="1" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="2A" transform="translate(100,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="2" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="3A" transform="translate(150,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="3" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="4A" transform="translate(200,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="4" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="5A" transform="translate(250,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="5" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="6A" transform="translate(300,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="6" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="7A" transform="translate(350,50)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whitePiece"/>
+    <rect id="7" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="8A" transform="translate(0,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="8" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="9A" transform="translate(50,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="9" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="10A" transform="translate(100,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="10" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="11A" transform="translate(150,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="11" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="12A" transform="translate(200,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="12" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="13A" transform="translate(250,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="13" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="14A" transform="translate(300,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="14" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="15A" transform="translate(350,300)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackPiece"/>
+    <rect id="15" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+
+  <g id="16A" transform="translate(0,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackTower"/>
+    <rect id="16" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="17A" transform="translate(350,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackTower"/>
+    <rect id="17" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="18A" transform="translate(0,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteTower"/>
+    <rect id="18" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="19A" transform="translate(350,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteTower"/>
+    <rect id="19" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+
+  <g id="20A" transform="translate(100,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteRunner"/>
+    <rect id="20" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="22A" transform="translate(250,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteRunner"/>
+    <rect id="22" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="23A" transform="translate(100,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackRunner"/>
+    <rect id="23" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+  <g id="24A" transform="translate(250,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackRunner"/>
+    <rect id="24" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+
+  <g id="25A" transform="translate(50,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteHorse"/>
+    <rect id="25" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="26A" transform="translate(300,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteHorse"/>
+    <rect id="26" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="27A" transform="translate(50,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackHorse"/>
+    <rect id="27" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="28A" transform="translate(300,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackHorse"/>
+    <rect id="28" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+
+  <g id="29A" transform="translate(150,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteKing"/>
+    <rect id="29" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="30A" transform="translate(150,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackKing"/>
+    <rect id="30" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="31A" transform="translate(200,0)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#whiteQueen"/>
+    <rect id="31" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+  <g id="21A" transform="translate(200,350)" onmousedown="setStartPosition(evt)">
+    <use x="0" y="0" width="50" height="50" xlink:href="#blackQueen"/>
+    <rect id="21" x="0" y="0" width="50" height="50" style="fill:green" opacity="0.10"/> 
+  </g>
+
+</g>
+
+</svg>
+
