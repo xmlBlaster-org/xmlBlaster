@@ -4,6 +4,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o JDBC configuration: Added column name prefix, used for MS-SQLServer to
+   prefix reserved DB names 'byteSize' and 'dataId', see
+      colNamePrefix=XB_
+   in xmlBlaster.properties.template (the prefix is internally converted to uppercase)
+
  o modified http.applet protocol to allow invocations from standalone apps and from j2me
 
  o Renamed admin access to subjectInfo getCbQueueNumMsgs to getSubjectQueueNumMsgs
