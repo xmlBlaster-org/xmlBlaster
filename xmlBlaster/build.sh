@@ -7,7 +7,7 @@ if [ ${JAVA_HOME:=""} = "" ] ; then
    exit
 fi
 
-CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:$CLASSPATH:lib/ant/xerces.jar
+CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:lib/ant/xerces.jar
 
 ALL_ENV=`env`
 MY_DEF=""
