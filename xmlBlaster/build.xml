@@ -454,6 +454,9 @@ TODO
             <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/OracleSqlFactory.java"/>
             <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver -->
+            <!-- Activate excludes to compile with JDK 1.2 -->
+            <!-- exclude name="**/jmx/**"/ -->
+            <!-- exclude name="**/jmxgui/**"/ -->
          </fileset>
       </copy>
 
