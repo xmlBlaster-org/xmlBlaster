@@ -3,8 +3,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes cvs
 ===========
 
- o Fixed Windows C++ compile
-   Thanks to Bjoern Ruff
+ o C client library:
+   - Fixed callback ping return for SOCKET protocol
+
+ o C++ client library:
+   - Changed to initialize callback address in ConnectQos only if a callback server is created
+   - Changed to only install a CORBA callback server if necessary
+     Thanks to pikaiyuan@163.com
+   - Fixed Windows C++ compile in build.xml (unresolved externals)
+     Thanks to Bjoern Ruff
 
 
 Changes for 0.91 [2004-08-30]
