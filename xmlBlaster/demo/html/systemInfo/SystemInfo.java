@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.7 2000/05/07 09:49:53 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.8 2000/05/09 15:49:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
+import org.xmlBlaster.protocol.http.HttpPushHandler;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.client.*;
@@ -53,7 +54,7 @@ public class SystemInfo extends HttpServlet
 
 
    /**
-    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'. 
+    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'.
     * <p />
     * The message updates are received asynchronous over the callbackFrame.
     * <br />
@@ -81,7 +82,14 @@ public class SystemInfo extends HttpServlet
             return;
          }
 
-         CorbaConnection corbaConnection = BlasterHttpProxy.getCorbaConnection(sessionId);
+         CorbaConnection corbaConnection = BlasterHttpProxy.getCorbaConnection(request, sessionId);
+         if (corbaConnection == null) {
+            String text = "Your Session ID is not valid, please try again with cookies enabled";
+            Log.error(ME, text);
+            popupError(response, text);
+            return;
+         }
+
          corbaConnection.initCache(10);
 
          // Expecting actionType = "cpuinfo" or "meminfo" but it could be
@@ -104,13 +112,16 @@ public class SystemInfo extends HttpServlet
          }
       }
       catch (XmlBlasterException e) {
-         String text = "Error from xmlBlaster: " + e.reason;
+         String text = "Error from xmlBlaster in doGet(): " + e.reason;
          Log.error(ME, text);
-         popupError(sessionId, text);
+         popupError(response, text);
+         return;
       }
       catch (Exception e) {
          e.printStackTrace();
-         Log.error(ME, "Error: " + e.toString());
+         Log.error(ME, "Error in doGet(): " + e.toString());
+         popupError(response, e.toString());
+         return;
       }
 
       htmlOutput(output, response);
@@ -145,13 +156,18 @@ public class SystemInfo extends HttpServlet
     * @param sessionId The browser
     * @param error The text to display
     */
-   public void popupError(String sessionId, String error)
+   public void popupError(HttpServletResponse response, String error)
    {
       try {
-         BlasterHttpProxy.getProxyConnectionBySessionId(sessionId).getHttpPushHandler(sessionId).error(error);
+         response.setContentType("text/html");
+         PrintWriter pw;
+         pw = response.getWriter();
+         pw.println(HttpPushHandler.alert(error));
+         pw.close();
+         // BlasterHttpProxy.getProxyConnectionBySessionId(sessionId).getHttpPushHandler(sessionId).error(error);
       }
-      catch(XmlBlasterException e) {
-         Log.error(ME, e.id+":"+e.reason);
+      catch(IOException e) {
+         Log.error(ME, "Sending of error failed: " + error + "\n Reason=" + e.toString());
       }
    }
 
