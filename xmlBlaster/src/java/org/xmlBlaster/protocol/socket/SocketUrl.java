@@ -11,7 +11,10 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.FileLocator;
 import java.net.InetAddress;
+import java.net.URL;
+import java.io.InputStream;
 
 /**
  * This knows how to parse the URL notation of our SOCKET protocol. 
@@ -31,7 +34,8 @@ public class SocketUrl
    /** The port */
    private int port = ExecutorBase.DEFAULT_SERVER_PORT;
    private boolean isLocal = false;
-   private static boolean first = true;
+   private static boolean firstKey = true;
+   private static boolean firstTrust = true;
 
    /**
     * @param hostname if null or empty the local IP will be used
@@ -265,6 +269,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
 
          paramCls = new Class[] { boolean.class };
          boolean needClientAuth = address.getEnv("needClientAuth", false).getValue();
+         log.info(ME, "SSL server socket is configured with needClientAuth=" + needClientAuth + ": SSL client authentication is " + (needClientAuth==true?"":"NOT ") + "enabled");
          params = new Object[] { needClientAuth ? Boolean.TRUE : Boolean.FALSE };
          // serverSocket: can not access a member of class com.sun.net.ssl.internal.ssl.SSLServerSocketImpl with modifiers "public"
          // so we force access to the base class:
@@ -313,9 +318,6 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
          log.info(ME, "SSL client socket enabled for " + address.getRawAddress() + ", keyStore="+keyStore);
          System.setProperty("javax.net.ssl.keyStore", keyStore);
       }
-      else {
-         log.warn(ME, "SSL client socket is enabled but no keyStore is specified, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
-      }
 
       String keyStorePassword = address.getEnv("keyStorePassword", System.getProperty("javax.net.ssl.keyStorePassword", "")).getValue();
       if (keyStorePassword != "") {
@@ -327,11 +329,11 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
 
       // The trustStore file can be identical to the server side keyStore file:
       String trustStore = address.getEnv("trustStore", (String)System.getProperty("javax.net.ssl.trustStore", "")).getValue();
-      String pass = address.getEnv("trustStorePassword", (String)System.getProperty("javax.net.ssl.trustStorePassword", "")).getValue();
+      String trustStorePassword = address.getEnv("trustStorePassword", (String)System.getProperty("javax.net.ssl.trustStorePassword", "")).getValue();
       if (trustStore != "") {
-         if (first) {
+         if (firstTrust) {
             log.info(ME, "SSL client socket enabled, trustStore="+trustStore);
-            first = false;
+            firstTrust = false;
          }
       }
       else {
@@ -339,67 +341,132 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
          // Reuse a server store if one is found
          trustStore = address.getEnv("keyStore", (String)System.getProperty("javax.net.ssl.keyStore", "")).getValue();
       }
-      if (pass != "") {
+      if (trustStorePassword != "") {
       }
       else {
          if (log.TRACE) log.trace(ME, "SSL client socket is configured but no trustStorePassword is specified we now check your keyStorePassword setting ..., see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
          // Reuse a server store if one is found
-         pass = address.getEnv("keyStorePassword", (String)System.getProperty("javax.net.ssl.keyStorePassword", "")).getValue();
+         trustStorePassword = address.getEnv("keyStorePassword", (String)System.getProperty("javax.net.ssl.keyStorePassword", "")).getValue();
       }
 
       if (trustStore != "") {
          System.setProperty("javax.net.ssl.trustStore", trustStore);
       }
-      if (pass != "") {
-         System.setProperty("javax.net.ssl.trustStorePassword", pass);
+      if (trustStorePassword != "") {
+         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
       }
-
 
       java.net.Socket retSock = null;
 
       try  {
-         // Use Reflection because of JDK 1.3 has no SSL
-         Class clazz = java.lang.Class.forName("javax.net.ssl.SSLSocketFactory");
-         Class[] paramCls = new Class[0];
-         Object[] params = new Object[0];
-         java.lang.reflect.Method method = clazz.getMethod("getDefault", paramCls);
-         Object socketFactory = method.invoke(clazz, params); // Returns "SocketFactory"
+         boolean findStoreInXmlBlasterSearchPath = address.getEnv("findStoreInXmlBlasterSearchPath", false).getValue();
 
-         if (localSocketUrl != null && localSocketUrl.getPort() > -1) {
-            paramCls = new Class[] {
-               java.net.InetAddress.class,        // address
-               int.class,                         // port
-               java.net.InetAddress.class,        // localAddress
-               int.class,                         // localPort
-            };
-            params = new Object[] {
-               getInetAddress(),
-               new Integer(getPort()),
-               localSocketUrl.getInetAddress(),
-               new Integer(localSocketUrl.getPort())
-            };
+         if (findStoreInXmlBlasterSearchPath) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "findStoreInXmlBlasterSearchPath=true: SSL keyStore lookup in xmlBlaster search path is not implemented as it only compiles with JDK 1.4 or above:" +
+                         " Uncomment in SocketUrl.java:365 the code and recompile xmlBlaster with JDK >= 1.4 to have this support, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+            /*
+            javax.net.ssl.KeyManagerFactory kmf = null;    // since JDK 1.4
+            javax.net.ssl.TrustManagerFactory tmf = null;
+
+            // Can be changed by "keystore.type" in JAVA_HOME/lib/security/java.security, defaults to "jks"
+            // "JKS" in caps works ok on java 1.4.x.. on java 1.5 you must use "jks" in lowercase
+            String storeType = address.getEnv("keystore.type", java.security.KeyStore.getDefaultType()).getValue();
+
+            {  // keyStore with my private key
+               FileLocator locator = new FileLocator(glob);
+               URL url = locator.findStoreInXmlBlasterSearchPath(null, keyStore);
+               if (url != null) {
+                  InputStream in = url.openStream();
+                  java.security.KeyStore ks = java.security.KeyStore.getInstance(storeType); // since JDK 1.2
+                  ks.load(in, keyStorePassword.toCharArray());
+                  kmf = javax.net.ssl.KeyManagerFactory.getInstance(javax.net.ssl.KeyManagerFactory.getDefaultAlgorithm());
+                  kmf.init(ks, keyStorePassword.toCharArray());
+                  if (firstKey) {
+                     log.info(ME, "SSL keyStore="+url.getFile().toString());
+                     firstKey = false;
+                  }
+               }
+               else {
+                  log.warn(ME, "SSL client socket can't find keyStore=" + keyStore + " in xmlBlaster search pathes, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+               }
+            }
+            {  // trustStore with others public keys
+               FileLocator locator = new FileLocator(glob);
+               URL url = locator.findStoreInXmlBlasterSearchPath(null, trustStore);
+               if (url != null) {
+                  InputStream in = url.openStream();
+                  java.security.KeyStore ks = java.security.KeyStore.getInstance(storeType);
+                  ks.load(in, trustStorePassword.toCharArray());
+                  tmf = javax.net.ssl.TrustManagerFactory.getInstance(javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm());
+                  tmf.init(ks);
+                  if (firstTrust) {
+                     log.info(ME, "SSL trustStore="+url.getFile().toString());
+                     firstTrust = false;
+                  }
+                  else {
+                     log.warn(ME, "SSL client socket can't find trustStore=" + trustStore + " in xmlBlaster search pathes, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+                  }
+               }
+            }
+
+            javax.net.ssl.SSLContext ctx = javax.net.ssl.SSLContext.getInstance("SSLv3");
+            java.security.SecureRandom random = null; // since JDK 1.2
+            ctx.init((kmf==null)?null:kmf.getKeyManagers(), (tmf==null)?null:tmf.getTrustManagers(), random);
+            javax.net.ssl.SSLSocketFactory ssf = ctx.getSocketFactory();
+            if (localSocketUrl != null && localSocketUrl.getPort() > -1)
+               retSock = ssf.createSocket(getInetAddress(),
+                          getPort(), localSocketUrl.getInetAddress(), localSocketUrl.getPort());
+            else
+               retSock = ssf.createSocket(getInetAddress(), getPort());
+            */
          }
          else {
-            paramCls = new Class[] {
-               java.net.InetAddress.class,
-               int.class,
-            };
-            params = new Object[] {
-               getInetAddress(),
-               new Integer(getPort()),
-            };
+            if (!new java.io.File(keyStore).canRead()) {
+               log.warn(ME, "SSL client socket is enabled but i can't read keyStore=" + keyStore + ", see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+            }
+
+            // Use Reflection because of JDK 1.3 has no SSL
+            Class clazz = java.lang.Class.forName("javax.net.ssl.SSLSocketFactory");
+            Class[] paramCls = new Class[0];
+            Object[] params = new Object[0];
+            java.lang.reflect.Method method = clazz.getMethod("getDefault", paramCls);
+            Object socketFactory = method.invoke(clazz, params); // Returns "SocketFactory"
+
+            if (localSocketUrl != null && localSocketUrl.getPort() > -1) {
+               paramCls = new Class[] {
+                  java.net.InetAddress.class,        // address
+                  int.class,                         // port
+                  java.net.InetAddress.class,        // localAddress
+                  int.class,                         // localPort
+               };
+               params = new Object[] {
+                  getInetAddress(),
+                  new Integer(getPort()),
+                  localSocketUrl.getInetAddress(),
+                  new Integer(localSocketUrl.getPort())
+               };
+            }
+            else {
+               paramCls = new Class[] {
+                  java.net.InetAddress.class,
+                  int.class,
+               };
+               params = new Object[] {
+                  getInetAddress(),
+                  new Integer(getPort()),
+               };
+            }
+
+            method = socketFactory.getClass().getMethod("createSocket", paramCls);
+            retSock = (java.net.Socket)method.invoke(socketFactory, params);
+
+            // JDK 1.4 and higher:
+            //   if (localSocketUrl != null && localSocketUrl.getPort() > -1)
+            //      retSock = javax.net.ssl.SSLSocketFactory.getDefault().createSocket(getInetAddress(),
+            //               getPort(), localSocketUrl.getInetAddress(), localSocketUrl.getPort());
+            //   else
+            //      retSock = javax.net.ssl.SSLSocketFactory.getDefault().createSocket(getInetAddress(), getPort());
          }
-
-         method = socketFactory.getClass().getMethod("createSocket", paramCls);
-         retSock = (java.net.Socket)method.invoke(socketFactory, params);
-
-         /* JDK 1.4 and higher:
-            if (localSocketUrl != null && localSocketUrl.getPort() > -1)
-               retSock = javax.net.ssl.SSLSocketFactory.getDefault().createSocket(getInetAddress(),
-                        getPort(), localSocketUrl.getInetAddress(), localSocketUrl.getPort());
-            else
-               retSock = javax.net.ssl.SSLSocketFactory.getDefault().createSocket(getInetAddress(), getPort());
-         */
       }
       catch (Exception e) {
          log.trace(ME, "Can't switch on SSL socket: " + e.toString());
