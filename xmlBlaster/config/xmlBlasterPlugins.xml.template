@@ -34,9 +34,25 @@
       <action do='LOAD' onStartupRunlevel='3' sequence='2' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <attribute id='startUdpListener'>true</attribute>
       <attribute id='useUdpForOneway'>true</attribute>
       <attribute id='port'>7608</attribute>
       <attribute id='threadPrio'>3</attribute>
+   </plugin>
+-->
+
+   <!-- Example to start a second SOCKET plugin with SSL support on different listener port -->
+   <!-- Read: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL -->
+<!--
+   <plugin id='socket_ssl' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='2' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <attribute id='SSL'>true</attribute>
+      <attribute id='keystore'>testStore</attribute>
+      <attribute id='keystorepass'>testtest</attribute>
+      <attribute id='port'>7609</attribute>
+      <attribute id='startUdpListener'>false</attribute>
    </plugin>
 -->
 

@@ -72,7 +72,7 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 # NOTE: Please use xmlBlasterPlugins.xml to configure which protocols to offer
 
 CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
-CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+#CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
 #CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
 CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
@@ -88,6 +88,7 @@ CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
 # Register the client side protocol plugin to connect to server
 ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnection
 ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
+ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
 #ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
 ClientProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
 ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConnection
@@ -96,6 +97,7 @@ ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConne
 # Register the client side callback server plugins:
 ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
 ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
+ClientCbServerProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
 #ClientCbServerProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiCallbackServer
 ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer
 ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl
