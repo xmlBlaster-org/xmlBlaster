@@ -488,7 +488,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
 &lt;/sql>
 </pre>
    <p>Use the <tt>mom.eraseOnDrop=true</tt> configuration to delete the topic on
-   a table DROP event</p>
+   a table DROP event.</p>
 
    </example>
 
