@@ -1,9 +1,15 @@
+Please read the cluster requirement
+
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
+
+first.
+
 1. Copy this to your $HOME/xmlBlaster.properties to configure a cluster
 =======================================================================
 
 
-2. Start avalon (the slave):
-============================
+2. Start avalon (the xmlBlaster slave node):
+============================================
 
    cd xmlBlaster/demo/javaclients/cluster
 
@@ -20,6 +26,14 @@
 
  The port is the same as specified for avalon in avalon.properties
 
+
+4. Start heron (the master):
+============================
+
+   java org.xmlBlaster.Main -propertyFile heron.properties
+
+ Heron should be contacted by avalon and receive the
+ tailed back message sent by PublishToSlave
 
 
 Example configuration:

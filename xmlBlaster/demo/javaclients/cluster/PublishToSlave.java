@@ -49,8 +49,12 @@ public class PublishToSlave implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         Log.panic("PublishToSlave", e.toString());
+         Log.error("PublishToSlave", e.toString());
+         System.out.println("Hit a key to quit ...");
+         try { System.in.read(); } catch(Exception e2) { }
       }
+
+      Log.exit("PublishToSlave", "Bye");
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
