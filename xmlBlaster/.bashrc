@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Id: .bashrc,v 1.96 2002/02/09 20:11:22 goetzger Exp $
+# $Id: .bashrc,v 1.97 2002/02/25 17:06:36 ruff Exp $
 #-----------------------------------------------------------
 
 
@@ -107,6 +107,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
+
+   CLASSPATH=${XMLBLASTER_HOME}/lib/concurrent.jar:${CLASSPATH}
 
    #CLASSPATH=${XMLBLASTER_HOME}/lib/cpptasks.jar:${CLASSPATH}
 
