@@ -50,6 +50,7 @@ public:
 
    org::xmlBlaster::util::key::MsgKeyData getData() const;
 
+   org::xmlBlaster::util::Global& getGlobal() { return global_; }
 
    /**
     *  @return The key oid or "" if not set (see org::xmlBlaster::util::key::MsgKeyData.getOid() which generates the oid if it was "").
