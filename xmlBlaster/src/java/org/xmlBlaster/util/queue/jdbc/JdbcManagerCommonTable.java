@@ -77,6 +77,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private final TreeSet queues;
 
    private final String tableNamePrefix;
+   private final String colNamePrefix;
    // the names to be used
    private String stringTxt = null;
    private String longintTxt = null;
@@ -94,6 +95,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String entriesTableName = null;
    private java.util.HashSet nodesCache;
    private String blobVarName;
+   private String byteSizeColName;
+   private String dataIdColName;
    private String keyAttr;
 
    private final boolean AUTO_COMMIT = true;
@@ -192,6 +195,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.keyAttr == null) this.keyAttr = ""; // could be "not null" for MySQL
 
       this.tableNamePrefix = this.pool.getTableNamePrefix();
+      this.colNamePrefix = this.pool.getColNamePrefix();
       // this.queueIncrement = this.pool.getTableAllocationIncrement(); // 2
 
       this.nodesTableName = this.tableNamePrefix + 
@@ -203,6 +207,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       this.entriesTableName = this.tableNamePrefix + 
                             (String)pool.getPluginProperties().getProperty("entriesTableName", "ENTRIES");
       this.entriesTableName = this.entriesTableName.toUpperCase();
+
+      // byteSize and dataId are reserved in MS-SQLServer, prefixing other column names are not yet coded
+      this.byteSizeColName = this.colNamePrefix + "byteSize";
+
+      this.dataIdColName = this.colNamePrefix + "dataId";
       
       this.enableBatchMode = this.pool.isBatchModeEnabled();
 
@@ -475,15 +484,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!entriesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.entriesTableName + "' as the 'entries' table");
-            req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + " (dataId " + this.longintTxt + " " + this.keyAttr +
+            req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + 
+                  " (" + this.dataIdColName + " " + this.longintTxt + " " + this.keyAttr +
                   ", nodeId " + this.stringTxt + " " + this.keyAttr +
                   ", queueName " + this.stringTxt + " " + this.keyAttr +
                   ", prio " + this.intTxt +
                   ", flag " + this.stringTxt +
                   ", durable " + this.booleanTxt +
-                  ", byteSize " + this.longintTxt +
+                  ", " + this.byteSizeColName + " " + this.longintTxt +
                   ", " + this.blobVarName + " " + this.blobTxt +
-                  ", PRIMARY KEY (dataId, queueName)" + 
+                  ", PRIMARY KEY (" + this.dataIdColName + ", queueName)" + 
                   ", FOREIGN KEY (queueName, nodeId) REFERENCES " + this.queuesTableName + " (queueName , nodeId)";
             if (this.pool.isCascadeDeleteSuppported()) req  += " ON DELETE CASCADE)";
             else req += ")";
@@ -772,7 +782,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       try {
          conn = this.pool.getConnection();
-         String req = "UPDATE " + this.entriesTableName + " SET prio = ? , flag = ? , durable = ? , byteSize = ? , " + this.blobVarName + " = ? WHERE  dataId = ? AND nodeId = ? AND queueName = ?";
+         String req = "UPDATE " + this.entriesTableName + " SET prio = ? , flag = ? , durable = ? , " + this.byteSizeColName + " = ? , " + this.blobVarName + " = ? WHERE  " + this.dataIdColName + " = ? AND nodeId = ? AND queueName = ?";
 
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), req);
          preStatement = conn.prepareStatement(req);
@@ -915,7 +925,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          // check if the exception was due to an existing entry. If yes, no exception will be thrown
          try {
-            String req = "SELECT count(*) from " + this.entriesTableName + " where (dataId='" + dataId + "' AND nodeId='" + nodeId + "')";
+            String req = "SELECT count(*) from " + this.entriesTableName + " where (" + this.dataIdColName + "='" + dataId + "' AND nodeId='" + nodeId + "')";
             if (this.log.TRACE) this.log.trace(ME, "addEntry: checking if entry already in db: request='" + req + "'");
             exStatement = conn.createStatement();
 //            exStatement.setQueryTimeout(this.pool.getQueryTimeout());
@@ -1267,7 +1277,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedStatement st = null;
 
       try {
-         String req = "SELECT sum(byteSize) from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "'";
+         String req = "SELECT sum(" + this.byteSizeColName + ") from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "'";
          conn = this.pool.getConnection();
          st = conn.prepareStatement(req);
          st.setQueryTimeout(this.pool.getQueryTimeout());
@@ -1576,7 +1586,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       try {
          //inverse order here ...
-         String req = "select * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio ASC, dataid DESC";
+         String req = "select * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio ASC, " + this.dataIdColName + " DESC";
          query = new PreparedQuery(pool, req, false, this.log, -1);
 
          // process the result set. Give only back what asked for (and only delete that)
@@ -1639,7 +1649,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             for (int i=0; i < uniqueIds.length; i++)
                uniqueIds[i] = ((I_Entry)ret.list.get(i)).getUniqueId();
            
-            String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(";
+            String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND " + this.dataIdColName + " in(";
             ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
             for (int i=0; i < reqList.size(); i++) {
                req = (String)reqList.get(i);
@@ -1705,7 +1715,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       Connection conn = null;
       try {
          int count = 0;
-         String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(";
+         String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND " + this.dataIdColName + " in(";
          ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
 
          conn = pool.getConnection();
@@ -1861,7 +1871,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       try {
          // String req = "delete from " + this.entriesTableName + " where queueName=? AND nodeId=? AND dataId=?";
-         String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND nodeId='"+nodeId+"' AND dataId='"+uniqueId+"'";
+         String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND nodeId='"+nodeId+"' AND " + this.dataIdColName + "='"+uniqueId+"'";
          conn =  this.pool.getConnection();
          // st = conn.prepareStatement(req);
          // st.setString(1, queueName);
@@ -1921,7 +1931,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedQuery query = null;
 
       try {
-         String req = "select dataId,byteSize from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, dataid ASC";
+         String req = "select " + this.dataIdColName + "," + this.byteSizeColName + " from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
          query = new PreparedQuery(pool, req, false, this.log, -1);
          // I only want the uniqueId (dataId)
          ret = processResultSetForDeleting(query.rs, (int)numOfEntries, amount);
@@ -1932,7 +1942,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          long[] uniqueIds = new long[nmax];
          for (int i=0; i < nmax; i++) uniqueIds[i] = ((Long)ret.list.get(i)).longValue();
 
-         ArrayList reqList = whereInStatement("delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(", uniqueIds);
+         ArrayList reqList = whereInStatement("delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND " + this.dataIdColName + " in(", uniqueIds);
          ret.countEntries = 0L;
 
          // everything in the same transaction (just in case)
@@ -1993,7 +2003,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND prio >= " + minPrio + " and prio <= " + maxPrio +
-            " ORDER BY prio DESC, dataid ASC";
+            " ORDER BY prio DESC, " + this.dataIdColName + " ASC";
                                                                  
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesByPriority"), "Request: '" + req + "'");
 
@@ -2058,12 +2068,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             query.close();
             query = null;
             req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
-                  "' and prio=" + prio + " ORDER BY dataId ASC";
+                  "' and prio=" + prio + " ORDER BY " + this.dataIdColName + " ASC";
          }
          else {
             req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
                   "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
-                  "' AND nodeId='" + nodeId + "')  ORDER BY dataId ASC";
+                  "' AND nodeId='" + nodeId + "')  ORDER BY " + this.dataIdColName + " ASC";
          }
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
 
@@ -2110,7 +2120,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return new ArrayList();
       }
 
-      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, dataid ASC";
+      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
       PreparedQuery query = null;
       try {
@@ -2154,7 +2164,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       int limitPrio = limitEntry.getPriority();
       long limitId = limitEntry.getUniqueId();
-      String req = "SELECT * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") ) ORDER BY prio DESC, dataid ASC";
+      String req = "SELECT * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND " + this.dataIdColName + " < "  + limitId + ") ) ORDER BY prio DESC, " + this.dataIdColName + " ASC";
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
@@ -2202,9 +2212,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
         
          String req = null;
          if (inclusive) 
-            req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId <= "  + limitId + ") )";
+            req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND " + this.dataIdColName + " <= "  + limitId + ") )";
          else
-            req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") )";      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Request: '" + req + "'");
+            req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND " + this.dataIdColName + " < "  + limitId + ") )";      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Request: '" + req + "'");
          int ret = update(req);
          if (this.log.TRACE) this.log.trace(ME, "removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
          return (long)ret;
@@ -2231,7 +2241,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       String req = null;
       if ((dataids == null) || (dataids.length < 1)) return new ArrayList();
 
-      req = "SELECT * FROM " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataid in (";
+      req = "SELECT * FROM " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND " + this.dataIdColName + " in (";
 
       ArrayList requests = this.whereInStatement(req, dataids);
 
@@ -2372,7 +2382,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return 0L;
       }
 
-      String req = "select sum(bytesize) from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='T'";
+      String req = "select sum(" + this.byteSizeColName + ") from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='T'";
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getSizeOfPersistents"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {

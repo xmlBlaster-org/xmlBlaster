@@ -191,6 +191,7 @@ JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTa
                   nodesTableName=NODES,\
                   queuesTableName=QUEUES,\
                   entriesTableName=ENTRIES,\
+                  colNamePrefix=XB_,\
                   dbAdmin=true
 
 # for HSQLDB (the default embedded database)

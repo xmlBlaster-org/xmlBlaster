@@ -53,6 +53,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private boolean isNotified = false;
 
    private String tableNamePrefix = "XB"; // stands for "XMLBLASTER", it is chosen short for Postgres max. eval length = 26 chars (timestamp has already 19 chars)
+   private String colNamePrefix = "";     // SQLServer does not allow column name 'byteSize' and 'dataId', so we can add a token e.g. XBbyteSize, XBdataId
    private int tableAllocationIncrement = 2;
    /** will be set when a connecton is broken */
    private int status = I_StorageProblemListener.UNDEF;
@@ -326,6 +327,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       // these should be handled by the JdbcManager
       this.tableAllocationIncrement = prop.get("queue.persistent.tableAllocationIncrement", 10);
       this.tableNamePrefix = prop.get("queue.persistent.tableNamePrefix", "XB").toUpperCase(); // XB stands for XMLBLASTER
+      this.colNamePrefix = prop.get("queue.persistent.colNamePrefix", "").toUpperCase();
 
       // the property settings specific to this plugin type / version
       this.url = pluginProp.getProperty("url", this.url);
@@ -381,6 +383,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
 
       this.tableNamePrefix = pluginProp.getProperty("tableNamePrefix", this.tableNamePrefix).trim().toUpperCase();
+      this.colNamePrefix = pluginProp.getProperty("colNamePrefix", this.colNamePrefix).trim().toUpperCase();
 
       String tmp = pluginProp.getProperty("dbAdmin", "true").trim();
       this.dbAdmin = true;
@@ -415,6 +418,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          this.log.dump(ME, "initialize -driver list            : " + xmlBlasterJdbc);
          this.log.dump(ME, "initialize -max. waiting Threads   :" + this.maxWaitingThreads);
          this.log.dump(ME, "initialize -tableNamePrefix        :" + this.tableNamePrefix);
+         this.log.dump(ME, "initialize -colNamePrefix          :" + this.colNamePrefix);
          this.log.dump(ME, "initialize -dbAdmin                :" + this.dbAdmin);
          this.log.dump(ME, "initialize -cascadeDeleteSupported :" + this.cascadeDeleteSupported);
          this.log.dump(ME, "initialize -nestedBracketsSupported:" + this.nestedBracketsSupported);
@@ -444,6 +448,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             this.log.info(ME, "diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
             this.log.info(ME, "diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
             this.log.dump(ME, "diagnostics: initialize -tableNamePrefix     :" + this.tableNamePrefix);
+            this.log.dump(ME, "diagnostics: initialize -colNamePrefix       :" + this.colNamePrefix);
             ex.printStackTrace();
          }
          else {
@@ -464,6 +469,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     */
    public String getTableNamePrefix() {
       return this.tableNamePrefix;
+   }
+
+
+   /**
+    * @return the prefix for the name of the columns in each DB table
+    */
+   public String getColNamePrefix() {
+      return this.colNamePrefix;
    }
 
 
