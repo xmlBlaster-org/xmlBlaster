@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.27 2003/03/01 14:05:49 johnson Exp $
+Version:   $Id: Global.cpp,v 1.28 2003/03/02 19:10:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -16,7 +16,7 @@ Version:   $Id: Global.cpp,v 1.27 2003/03/01 14:05:49 johnson Exp $
    // how to do it?
 #else
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.27 2003/03/01 14:05:49 johnson Exp $";
+   static char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.28 2003/03/02 19:10:58 ruff Exp $";
 #endif
 
 using namespace std;
@@ -81,16 +81,13 @@ Global& Global::initialize(int args, const char * const argc[])
 
 string &Global::getVersion()
 {
-   static string version = "0.842";
-   if ( version[0] == '@' ) {
-      version = "0.842";
-   }
+   static string version = "@version@";  // is replaced by ant / build.xml to e.g. "0.843"
    return version;
 }
 
 string &Global::getBuildTimestamp()
 {
-   static string timestamp = "03/01/2003 10:22 PM";
+   static string timestamp = "@build.timestamp@"; // is replaced by ant / build.xml to e.g. "03/01/2003 10:22 PM";
    return timestamp;
 }
 
