@@ -7,15 +7,15 @@
 #
 
 # number of retries if connection cannot directly be established
-jacorb.retries=5
-jacorb.retry_interval=500
+jacorb.retries=2
+jacorb.retry_interval=1000
 
 # size of network buffers for outgoing messages
 jacorb.outbuf_size=2048
 
 # URL where IORs are stored (used in orb.resolve_initial_service())
-jacorb.NameServerURL=NAMESERVERURL
-jacorb.TradingServiceURL=TRADERURL
+jacorb.NameServerURL=http://localhost:80/NS_Ref
+jacorb.TradingServiceURL=http://localhost:80/TS_Ref
 jacorb.ImplementationRepositoryURL=http://www.inf.fu-berlin.de/~brose/ImR_Ref
 jacorb.ProxyServerURL=http://www.inf.fu-berlin.de/~brose/Proxy_Ref
 
@@ -29,17 +29,17 @@ jacorb.verbosity=1
 jacorb.implname=StandardImplName
 
 # where does output go? Terminal is default
-#jacorb.logfile=LOGFILEPATH
+#jacorb.logfile=/tmp/JacORB.log
 
 #
 # interceptor configuration, interceptors can be
 # configured out for performance
 #
-jacorb.interceptor.client.Requests=on
-jacorb.interceptor.client.Messages=on
-jacorb.interceptor.server.Messages=on
-jacorb.interceptor.server.Requests=on
-jacorb.interceptor.perObject=on
+jacorb.interceptor.client.Requests=off
+jacorb.interceptor.client.Messages=off
+jacorb.interceptor.server.Messages=off
+jacorb.interceptor.server.Requests=off
+jacorb.interceptor.perObject=off
 
 #
 # Implementation Repository Configuration Options
@@ -62,10 +62,13 @@ jacorb.poa.monitoring=off
 # thread pool configuration for request processing
 jacorb.poa.thread_pool_max=50
 jacorb.poa.thread_pool_min=10
+#jacorb.poa.thread_pool_max=1000
+#jacorb.poa.thread_pool_min=10
 
 # size of the request queue, clients will receive Corba.TRANSIENT
 # exceptions if load exceeds this limit
-jacorb.poa.queue_max=100
+#jacorb.poa.queue_max=100
+jacorb.poa.queue_max=1000
 
 #
 # Trader configuration, please see
