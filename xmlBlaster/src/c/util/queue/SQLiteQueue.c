@@ -45,6 +45,7 @@ static char *strncpy0(char * const to, const char * const from, const size_t max
 static void initializeQueueException(QueueException *exception);
 static bool createTables(I_Queue *queueP, QueueException *exception);
 static bool execSilent(I_Queue *queueP, const char *sqlStatement, const char *comment, QueueException *exception);
+static bool compilePreparedQuery(I_Queue *queueP, const char *methodName, sqlite_vm **ppVm, const char *queryString, QueueException *exception);
 
 static Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len);
 
@@ -281,6 +282,17 @@ static bool execSilent(I_Queue *queueP, const char *queryString, const char *com
 }
 
 /*
+void hex(int dataLen, const char *data)
+{
+   int i=0;
+   for (; i<dataLen; i++) {
+      printf(" %i", data[i]);
+   }
+   printf("\n");
+}
+*/
+
+/*
  * This is the callback routine that the SQLite library
  * invokes for each row of a query result.
 static int callback(void *pArg, int nArg, char **azArg, char **azCol){
@@ -303,59 +315,29 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
 
 static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueException *exception)
 {
-   int iRetry, numRetry=10;
    char *errMsg = 0;
    int rc = 0;
-   const char *pzTail = 0;   /* OUT: uncompiled tail of zSql */
    bool stateOk = true;
    DbInfo *dbInfo;
 
    if (checkArgs(queueP, "put", true, exception) == false ) return;
 
-   if (queueP->log) queueP->log(__FILE__, "put() entering ...");
-
    dbInfo = getDbInfo(queueP);
 
    if (dbInfo->pVm_put == 0) {  /* Compile prepared query only once */
-      char queryString[256];
-      /*INSERT INTO XB_ENTRIES VALUES ( 1081317015888000000, 'xmlBlaster_192_168_1_4_3412', 'topicStore_xmlBlaster_192_168_1_4_3412', 5, 'TOPIC_XML', 'T', 670, '\\254...')*/
+      char queryString[256];    /*INSERT INTO XB_ENTRIES VALUES ( 1081317015888000000, 'xmlBlaster_192_168_1_4_3412', 'topicStore_xmlBlaster_192_168_1_4_3412', 5, 'TOPIC_XML', 'T', 670, '\\254...')*/
       sprintf(queryString, "INSERT INTO %.20sENTRIES VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)", dbInfo->tablePrefix);
-      //sprintf(queryString, "SELECT name, type FROM sqlite_master WHERE type like ?");
-      for (iRetry = 0; iRetry < numRetry; iRetry++) {
-         rc = sqlite_compile(dbInfo->db, queryString, &pzTail, &dbInfo->pVm_put, &errMsg);
-         switch (rc) {
-            case SQLITE_BUSY:
-               if (queueP->log) queueP->log(__FILE__, "put(%lld) Sleeping as other thread holds DB %s", queueEntry->uniqueId, (errMsg==0)?"":errMsg);
-               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               sleep(1);
-               break;
-            case SQLITE_OK:
-               iRetry = numRetry; /* We're done */
-               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               break;
-            default:
-               fprintf(stderr, "SQL error: %s\n", (errMsg==0)?"":errMsg);
-               if (queueP->log) queueP->log(__FILE__, "put(%lld) SQL error: %s", queueEntry->uniqueId, (errMsg==0)?"":errMsg);
-               strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-               SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
-                        "[%.100s:%d] put(%lld) SQL error: %s", __FILE__, __LINE__, queueEntry->uniqueId, (errMsg==0)?"":errMsg);
-               iRetry = numRetry; /* We're done */
-               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               stateOk = false;
-               break;
-         }
-      }
+      stateOk = compilePreparedQuery(queueP, "put", &dbInfo->pVm_put, queryString, exception);
    }
-   if (dbInfo->pVm_put == 0) stateOk = false;
 
    if (stateOk) { /* set prepared statement tokens */
       char tmp[256];
       int index = 0;
-      int len = -1; /* Calculated by sqlite_bind */
+      const int len = -1; /* Calculated by sqlite_bind */
       rc = SQLITE_OK;
 
       sprintf(tmp, "%lld", queueEntry->uniqueId);
-      if (queueP->log) queueP->log(__FILE__, "put uniqueId as string '%s'", tmp);
+      /*if (queueP->log) queueP->log(__FILE__, "put uniqueId as string '%s'", tmp);*/
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, tmp, len, true);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->nodeId, len, false);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->queueName, len, false);
@@ -372,32 +354,30 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
          else { /* As SQLite does only store strings we encode our blob to a string */
             int estimatedSize = 2 +(257 * queueEntry->embeddedBlob.dataLen )/254;
             unsigned char *out = (unsigned char *)malloc(estimatedSize*sizeof(char));
-            int newSize =
+            int encodedSize =
               sqlite_encode_binary((const unsigned char *)queueEntry->embeddedBlob.data,
                                  (int)queueEntry->embeddedBlob.dataLen, out);
-            if (queueP->log) queueP->log(__FILE__, "put(%lld) Blob size=%d encoded to size=%d: %.100s",
-                             queueEntry->uniqueId, queueEntry->embeddedBlob.dataLen, newSize, out);
-            rc = sqlite_bind(dbInfo->pVm_put, ++index, (const char *)out, newSize, true);
+            /*if (queueP->log) queueP->log(__FILE__, "put(%lld) Blob size=%d encoded to encodedSize=%d: %.100s",
+                               queueEntry->uniqueId, queueEntry->embeddedBlob.dataLen, encodedSize, out);
+            hex(encodedSize, out);*/
+            rc = sqlite_bind(dbInfo->pVm_put, ++index, (const char *)out, encodedSize+1, true);
             free(out);
          }
       }
 
-      switch (rc) {
-         case SQLITE_OK:
-            if (queueP->log) queueP->log(__FILE__, "put(%lld) Bound to prepared statement [sqlCode=%d]", queueEntry->uniqueId, rc);
-            break;
-         default:
-            fprintf(stderr, "SQL error from sqlite_bind: %d\n", rc);
-            if (queueP->log) queueP->log(__FILE__, "put(%lld) SQL error: %d", queueEntry->uniqueId, rc);
-            strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-            SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
-                     "[%.100s:%d] put(%lld) SQL error: %d", __FILE__, __LINE__, queueEntry->uniqueId, rc);
-            stateOk = false;
-            break;
+      if (rc == SQLITE_OK) {
+         if (queueP->log) queueP->log(__FILE__, "put(%lld) Bound to prepared statement [sqlCode=%d]", queueEntry->uniqueId, rc);
+      }
+      else {
+         if (queueP->log) queueP->log(__FILE__, "put(%lld) SQL error: %d", queueEntry->uniqueId, rc);
+         strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+                  "[%.100s:%d] put(%lld) SQL error: %d", __FILE__, __LINE__, queueEntry->uniqueId, rc);
+         stateOk = false;
       }
    }
 
-   if (stateOk) { /* start the query */
+   if (stateOk) { /* start the query, process results */
       int iCol;
       int iRow = 0;
       int numCol = 0;
@@ -437,15 +417,61 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
       if (errMsg != 0) sqlite_freemem(errMsg);
    }
 
-   /*
-   if (stateOk) {
-      rc = sqlite_finalize(dbInfo->pVm_put, &errMsg);
-      if (errMsg != 0) sqlite_freemem(errMsg);
-      dbInfo->pVm_put = 0;
-   }
-   */
-
    if (queueP->log) queueP->log(__FILE__, "put(%lld) %s", queueEntry->uniqueId, stateOk ? "done" : "failed");
+}
+
+
+/**
+ * Compile a prepared query. 
+ * No parameters are checked, they must be valid
+ * @param methodName A nice string for logging
+ * @param ppVm The virtual machine will be initialized if still 0
+ * @param queryString
+ * @return false on error and exception->errorCode is not null
+ */
+static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
+                    sqlite_vm **ppVm, const char *queryString, QueueException *exception)
+{
+   int iRetry, numRetry=10;
+   char *errMsg = 0;
+   int rc = 0;
+   const char *pzTail = 0;   /* OUT: uncompiled tail of zSql */
+   bool stateOk = true;
+   DbInfo *dbInfo = getDbInfo(queueP);
+
+   if (*ppVm == 0) {  /* Compile prepared  query */
+      for (iRetry = 0; iRetry < numRetry; iRetry++) {
+         rc = sqlite_compile(dbInfo->db, queryString, &pzTail, ppVm, &errMsg);
+         switch (rc) {
+            case SQLITE_BUSY:
+               if (iRetry == (numRetry-1)) {
+                  strncpy0(exception->errorCode, "resource.db.block", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
+                  SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+                           "[%.100s:%d] SQL error #%d in %s(): %s", __FILE__, __LINE__, rc, methodName, (errMsg==0)?"":errMsg);
+               }
+               if (queueP->log) queueP->log(__FILE__, "%s() Sleeping as other thread holds DB %s", methodName, (errMsg==0)?"":errMsg);
+               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
+               sleep(1);
+               break;
+            case SQLITE_OK:
+               iRetry = numRetry; /* We're done */
+               if (queueP->log) queueP->log(__FILE__, "%s() Pre-compiled prepared query '%s'", methodName, queryString);
+               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
+               break;
+            default:
+               if (queueP->log) queueP->log(__FILE__, "SQL error #%d in %s(): %s: %s", rc, methodName, (errMsg==0)?"":errMsg);
+               strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
+               SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+                        "[%.100s:%d] SQL error #%d in %s(): %s", __FILE__, __LINE__, rc, methodName, (errMsg==0)?"":errMsg);
+               iRetry = numRetry; /* We're done */
+               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
+               stateOk = false;
+               break;
+         }
+      }
+   }
+   if (*ppVm == 0) stateOk = false;
+   return stateOk;
 }
 
 /**
@@ -453,10 +479,8 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
  */
 static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, QueueException *exception)
 {
-   int iRetry, numRetry=10;
    char *errMsg = 0;
    int rc = 0;
-   const char *pzTail = 0;   /* OUT: uncompiled tail of zSql */
    bool stateOk = true;
    DbInfo *dbInfo;
    QueueEntryArr *queueEntryArr = (QueueEntryArr *)calloc(1, sizeof(QueueEntryArr));;
@@ -469,39 +493,15 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
 
    if (dbInfo->pVm_peekWithSamePriority == 0) {  /* Compile prepared  query */
       char queryString[512];
-      //"SELECT * FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415' and prio=(select max(prio) from XB_ENTRIES where queueName='connection_clientJoe' AND nodeId='clientJoe1081594557415') ORDER BY dataId ASC";
+      /*"SELECT * FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415' and prio=(select max(prio) from XB_ENTRIES where queueName='connection_clientJoe' AND nodeId='clientJoe1081594557415') ORDER BY dataId ASC";*/
       sprintf(queryString, 
            "SELECT * FROM %.20sENTRIES where queueName=? and nodeId=?"
            " and prio=(select max(prio) from %.20sENTRIES where queueName=?  AND nodeId=?)"
            " ORDER BY dataId ASC",
            dbInfo->tablePrefix, dbInfo->tablePrefix);
-
-      for (iRetry = 0; iRetry < numRetry; iRetry++) {
-         rc = sqlite_compile(dbInfo->db, queryString, &pzTail, &dbInfo->pVm_peekWithSamePriority, &errMsg);
-         switch (rc) {
-            case SQLITE_BUSY:
-               if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() Sleeping as other thread holds DB %s", (errMsg==0)?"":errMsg);
-               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               sleep(1);
-               break;
-            case SQLITE_OK:
-               iRetry = numRetry; /* We're done */
-               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               break;
-            default:
-               fprintf(stderr, "SQL error: %s\n", (errMsg==0)?"":errMsg);
-               if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() SQL error: %s", (errMsg==0)?"":errMsg);
-               strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-               SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
-                        "[%.100s:%d] peekWithSamePriority() SQL error: %s", __FILE__, __LINE__, (errMsg==0)?"":errMsg);
-               iRetry = numRetry; /* We're done */
-               if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               stateOk = false;
-               break;
-         }
-      }
+      stateOk = compilePreparedQuery(queueP, "peekWithSamePriority",
+                    &dbInfo->pVm_peekWithSamePriority , queryString, exception);
    }
-   if (dbInfo->pVm_peekWithSamePriority == 0) stateOk = false;
 
    if (stateOk) { /* set prepared statement tokens */
       int index = 0;
@@ -518,7 +518,6 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
             if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() Bound to prepared statement [sqlCode=%d]", rc);
             break;
          default:
-            fprintf(stderr, "SQL error from sqlite_bind: %d\n", rc);
             if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() SQL error: %d", rc);
             strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
             SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
@@ -532,8 +531,6 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
       QueueEntry *queueEntry = 0;
       size_t currIndex = 0;
       int numAssigned;
-      //int iCol;
-      //int iRow = 0;
       int numCol = 0;
       const char **pazValue = 0;
       const char **pazColName = 0;
@@ -545,7 +542,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
          rc = sqlite_step(dbInfo->pVm_peekWithSamePriority, &numCol, &pazValue, &pazColName);
          switch( rc ){
             case SQLITE_DONE:
-               if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() executed.");
+               /*if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() executed.");*/
                done = true;
             break;
             case SQLITE_BUSY:
@@ -553,13 +550,6 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
                sleep(1);
             break;
             case SQLITE_ROW:
-               /*
-               iRow++;
-               printf("RESULT[%d]\n", iRow);
-               for (iCol = 0; iCol < numCol; iCol++) {
-                  printf("%10.10s = %s\n", pazColName[iCol], pazValue[iCol]);
-               }
-               */
                if (currIndex >= queueEntryArr->len) {
                   queueEntryArr->len += 10;
                   queueEntryArr->queueEntryArr = (QueueEntry *)realloc(queueEntryArr->queueEntryArr, queueEntryArr->len * sizeof(QueueEntry));
@@ -568,10 +558,19 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
                memset(queueEntry, 0, sizeof(QueueEntry));
 
                numAssigned = sscanf(pazValue[0], "%lld", &queueEntry->uniqueId);  /* TODO: handle error */
-               if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority uniqueId as int '%lld' as string '%s', ret=%d", queueEntry->uniqueId, pazValue[0], numAssigned);
+               if (numAssigned != 1) {
+                  if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' to uniqueId, ignoring entry.", pazValue[0]);
+                  break;
+               }
+
+               if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority(%lld) currIndex=%d", queueEntry->uniqueId, currIndex);
                /* strncpy0(dbInfo->nodeId, pazValue[1], ID_MAX); TODO: assert() */
                /* strncpy0(dbInfo->queueName, pazValue[2], ID_MAX); */
                numAssigned = sscanf(pazValue[3], "%hd", &queueEntry->priority);
+               if (numAssigned != 1) {
+                  if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority(%lld) ERROR: Can't parse pazValue[3] '%.20s' to priority, setting it to NORM", queueEntry->uniqueId, pazValue[3]);
+                  queueEntry->priority = 4;
+               }
                strncpy0(queueEntry->embeddedType, pazValue[4], QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
                queueEntry->isPersistent = *pazValue[5] == 'T' ? true : false;
                {
@@ -580,20 +579,23 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
                   queueEntry->embeddedBlob.dataLen = (size_t)ival;
                }
 
-               // TODO!!! in Java the length is the size in RAM and not strlen(data)
-               //queueEntry->embeddedBlob.data = (char *)malloc(queueEntry->embeddedBlob.dataLen*sizeof(char));
-               queueEntry->embeddedBlob.data = (char *)malloc(strlen(pazValue[7])*sizeof(char)); // we spoil some 2 %
+               /* TODO!!! in Java the length is the size in RAM and not strlen(data) */
+               /* queueEntry->embeddedBlob.data = (char *)malloc(queueEntry->embeddedBlob.dataLen*sizeof(char)); */
+               queueEntry->embeddedBlob.data = (char *)malloc(strlen(pazValue[7])*sizeof(char)); /* we spoil some 2 % */
                decodeSize = sqlite_decode_binary((const unsigned char *)pazValue[7], (unsigned char *)queueEntry->embeddedBlob.data);
-               if (decodeSize != queueEntry->embeddedBlob.dataLen) {
-                  if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() ERROR: Returned blob len=%d but expected len=%d.",
-                                   decodeSize, queueEntry->embeddedBlob.dataLen);
-                  // TODO: create exception
+               if (decodeSize == -1 || decodeSize != queueEntry->embeddedBlob.dataLen) {
+                  *(queueEntry->embeddedBlob.data + strlen(pazValue[7]) - 1) = 0; 
+                  if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority(%lld) ERROR: Returned blob encoded='%s', decodeSize=%d"
+                                   " but expected decoded len=%d: '%s'",
+                                   queueEntry->uniqueId, pazValue[7], decodeSize, queueEntry->embeddedBlob.dataLen, queueEntry->embeddedBlob.data);
+                  /* hex(strlen(pazValue[7]), pazValue[7]); */
+                  /* TODO: create exception */
                }
-               if (false) {
+               /* {
                   char *dump = queueEntryToXmlLimited(queueEntry, 200);
                   if (queueP->log) queueP->log(__FILE__, "peekWithSamePriority() Read:%s", dump);
                   free(dump);
-               }
+               } */
             break;
             case SQLITE_ERROR:   /* If exists already */
             case SQLITE_MISUSE:
@@ -644,7 +646,7 @@ static bool persistentQueueEmpty(I_Queue *queueP, QueueException *exception)
       char *errMsg = 0;
       int retVal;
       DbInfo *dbInfo = getDbInfo(queueP);
-      char queryString[512]; //"SELECT count(dataId) FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415'"
+      char queryString[512]; /* "SELECT count(dataId) FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415'" */
 
       sprintf(queryString, 
               "SELECT count(dataId) FROM %.20sENTRIES where queueName='%s' and nodeId='%s'",
@@ -673,9 +675,13 @@ static bool persistentQueueEmpty(I_Queue *queueP, QueueException *exception)
    return true;
 }
 
+/**
+ * Shutdown without destroying any entry. 
+ * Clears all DB resources.
+ */
 static void persistentQueueShutdown(I_Queue *queueP, QueueException *exception)
 {
-   if (checkArgs(queueP, "shutdown()", false, exception) == false ) return;
+   if (checkArgs(queueP, "shutdown", false, exception) == false ) return;
    {
       DbInfo *dbInfo = getDbInfo(queueP);
       if(dbInfo && dbInfo->db) {
@@ -779,7 +785,8 @@ Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDu
 {
    if (queueEntry == (QueueEntry *)0) return 0;
    char *contentStr = strFromBlobAlloc(queueEntry->embeddedBlob.data, queueEntry->embeddedBlob.dataLen);
-   size_t len = 200 + QUEUE_ENTRY_EMBEDDEDTYPE_LEN + queueEntry->embeddedBlob.dataLen;
+   const size_t blobLen = (maxContentDumpLen >= 0) ? maxContentDumpLen : queueEntry->embeddedBlob.dataLen;
+   const size_t len = 200 + QUEUE_ENTRY_EMBEDDEDTYPE_LEN + blobLen;
    char *xml = (char *)calloc(len, sizeof(char));
    if (xml == 0) {
       free(contentStr);
@@ -839,7 +846,9 @@ Dll_Export char *queueEntryToXml(QueueEntry *queueEntry)
 }
 
 /**
- * Checks the given arguments to be valid. 
+ * Checks the given arguments to be valid.
+ * @param methodName For logging
+ * @param checkIsConnected If true does check the connection state as well 
  * @return false if the parameters are not usable,
  *         in this case 'exception' is filled with detail informations
  */
@@ -881,6 +890,8 @@ static bool checkArgs(I_Queue *queueP, const char *methodName,
    }
 
    initializeQueueException(exception);
+
+   if (queueP->log) queueP->log(__FILE__, "%s() entering ...", methodName);
 
    return true;
 }
