@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.1 2000/05/03 17:29:48 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.2 2000/05/04 20:14:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package demo.html.systemInfo;
 
@@ -78,7 +78,7 @@ public class SystemInfoPublisher
             try { Thread.currentThread().sleep(val); } catch( InterruptedException i) {}
             int mem = getMeminfo();
             publish("meminfo", mem);
-         } 
+         }
          catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }
@@ -89,7 +89,9 @@ public class SystemInfoPublisher
 
 
    /**
-    * The Linux way ...
+    * The Linux way ... 
+    * <p />
+    * For now it is a random hack
     */
    private int getCpuload() throws XmlBlasterException
    {
@@ -100,13 +102,18 @@ public class SystemInfoPublisher
 
 
    /**
-    * The Linux way ...
+    * The Linux way ... 
+    * <p />
+    * For now it is a random hack
     */
    private int getMeminfo() throws XmlBlasterException
    {
       // String text = FileUtil.readAsciiFile("/proc/meminfo");
       // Log.info(ME, "meminfo=\n" + text);
-      return random.nextInt(100); // hack!
+      int val = random.nextInt(100); // hack!
+      if (val < 11) val = 11;
+      if (val > 96) val = 96;
+      return val;
    }
 
 
