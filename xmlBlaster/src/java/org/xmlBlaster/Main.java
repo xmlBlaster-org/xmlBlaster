@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.102 2002/07/13 16:58:08 ruff Exp $
+Version:   $Id: Main.java,v 1.103 2002/08/03 10:14:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -96,9 +96,12 @@ public class Main implements I_RunlevelListener
     * Start xmlBlaster.
     * @param args The command line parameters
     */
-   public Main(String[] args)
-   {
+   public Main(String[] args) {
       init(new Global(args));
+   }
+
+   public Global getGlobal() {
+      return this.glob;
    }
 
    private void init(Global glob)
