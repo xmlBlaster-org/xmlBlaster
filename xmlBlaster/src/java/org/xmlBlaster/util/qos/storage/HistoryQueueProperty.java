@@ -1,0 +1,65 @@
+/*------------------------------------------------------------------------------
+Name:      HistoryQueueProperty.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.util.qos.storage;
+
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.engine.cluster.NodeId;
+import org.xml.sax.Attributes;
+
+/**
+ * Helper class holding history queue properties.
+ * <p />
+ * See ConnectQos for XML sysntax.
+ * @see org.xmlBlaster.util.ConnectQos
+ */
+public class HistoryQueueProperty extends QueuePropertyBase
+{
+   private static final String ME = "HistoryQueueProperty";
+   private final LogChannel log;
+
+   /**
+    * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
+    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    */
+   public HistoryQueueProperty(Global glob, String nodeId) {
+      super(glob, nodeId);
+      this.log = glob.getLog("core");
+      setRelating(Constants.RELATING_HISTORY);
+      initialize();
+   }
+
+   /**
+    * Show some important settings for logging
+    */
+   public final String getSettings() {
+      StringBuffer buf = new StringBuffer(256);
+      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      return buf.toString();
+   }
+
+   /**
+    * Configure property settings
+    */
+   protected void initialize() {
+      super.initialize("history");
+   }
+
+   public final boolean onOverflowDeadMessage() {
+      if (Constants.ONOVERFLOW_DEADMESSAGE.equalsIgnoreCase(getOnOverflow()))
+         return true;
+      return false;
+   }
+
+   /** For testing: java org.xmlBlaster.engine.helper.HistoryQueueProperty */
+   public static void main(String[] args) {
+      HistoryQueueProperty prop = new HistoryQueueProperty(new Global(args), null);
+      System.out.println(prop.toXml());
+   }
+}
+
+
