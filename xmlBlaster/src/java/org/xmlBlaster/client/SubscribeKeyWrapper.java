@@ -3,7 +3,7 @@ Name:      SubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.java,v 1.1 2000/01/21 19:06:04 ruff Exp $
+Version:   $Id: SubscribeKeyWrapper.java,v 1.2 2000/01/24 11:13:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -55,11 +55,16 @@ public class SubscribeKeyWrapper extends KeyWrapper
     * @param queryString  The String with e.g. XPath syntax
     * @param queryType    The query syntax, only "XPATH" for the moment
     */
-   public SubscribeKeyWrapper(String queryString, String queryType)
+   public SubscribeKeyWrapper(String queryString, String queryType) throws XmlBlasterException
    {
       super("");
-      this.queryString = queryString;
       this.queryType = queryType;
+      if (queryType == "EXACT")
+         oid = queryString;
+      else if (queryType == "XPATH")
+         this.queryString = queryString;
+      else
+         throw new XmlBlasterException(ME, "Your queryType=" + queryType + " is invalid, use one of \"EXACT\", \"XPATH\"");
    }
 
 

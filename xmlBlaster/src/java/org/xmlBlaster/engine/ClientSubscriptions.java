@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.10 2000/01/23 22:45:05 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.11 2000/01/24 11:13:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -22,7 +22,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.10 2000/01/23 22:45:05 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.11 2000/01/24 11:13:30 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
@@ -124,7 +124,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     * @param clientInfo All infos about the client
     * @param xmlKey     The XML based message key
     * @param qos        The base QoS class
-    * @return corresponding subscriptionInfo object
+    * @return corresponding subscriptionInfo object<br />
+    *         or null if not found
     */
    public SubscriptionInfo getSubscription(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
@@ -140,7 +141,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     * You can access XPATH or EXACT subscription objects through this method
     * @param clientInfo All infos about the client
     * @param subscriptionInfoUniqueKey
-    * @return corresponding subscriptionInfo object
+    * @return corresponding subscriptionInfo object<br />
+    *         or null if not found
     */
    public SubscriptionInfo getSubscription(ClientInfo clientInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
@@ -391,7 +393,31 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       offset += extraOffset;
 
       sb.append(offset + "<ClientSubscriptions>");
-      sb.append(offset + "   <PENDING/>");
+      sb.append(offset + "   <ExactSubscriptions>");
+      synchronized(clientSubscriptionMap) {
+         Iterator iterator = clientSubscriptionMap.values().iterator();
+         while (iterator.hasNext()) {
+            Map aboMap = (Map)iterator.next();
+            synchronized(aboMap) {
+               Iterator iterator2 = aboMap.values().iterator();
+               while (iterator2.hasNext()) {
+                  SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
+                  if (sub.getXmlKey().isExact())
+                     sb.append(offset).append("      <").append(sub.getUniqueKey()).append(" />");
+               }
+            }
+         }
+      }
+      sb.append(offset + "   </ExactSubscriptions>");
+      sb.append(offset + "   <XPathSubscriptions>");
+      synchronized(querySubscribeRequestsSet) {
+         Iterator iterator = querySubscribeRequestsSet.iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            sb.append(offset).append("      <").append(sub.getUniqueKey()).append(" />");
+         }
+      }
+      sb.append(offset + "   </XPathSubscriptions>");
       sb.append(offset + "</ClientSubscriptions>\n");
       return sb;
    }
