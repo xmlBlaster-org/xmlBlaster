@@ -1,0 +1,18 @@
+Howto run the html examples with persistent http connection:
+============================================================
+
+1. Set the DocumentRoot of your web server to this directory:
+
+2. Use the Makefile or do it manually:
+	cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
+	cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
+
+3. Start xmlBlaster
+
+4. Start a publisher, so that we have some dynamic data:
+	
+	java demo.html.systemInfo.SystemInfoPublisher
+
+5. Start you browser
+
+   http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=martin&passwd=secret
