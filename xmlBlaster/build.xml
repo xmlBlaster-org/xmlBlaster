@@ -1214,7 +1214,6 @@ TODO
          <fileset dir="${src.cpp.dir}/util/qos" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/qos/storage" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/qos/address" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/cfg" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/queue" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/dispatch" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/cluster" includes="*.cpp" />
