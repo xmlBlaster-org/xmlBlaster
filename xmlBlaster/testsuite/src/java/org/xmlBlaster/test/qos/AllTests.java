@@ -57,6 +57,7 @@ public class AllTests
       suite.addTest(TestUnSub.suite());
       suite.addTest(TestVolatile.suite());
       suite.addTest(TestPtD.suite());
+      suite.addTest(TestPtSession.suite());
       suite.addTest(TestPtDQueue.suite());
       suite.addTest(TestPub.suite());
       suite.addTest(TestPubBurstMode.suite());
