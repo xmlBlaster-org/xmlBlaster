@@ -145,8 +145,9 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_OVERFLOW_QUEUE_BYTES = new ErrorCode("resource.overflow.queue.bytes",
          "The maximum size in bytes of a queue is exhausted",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "queue", "queue"),
             new ResourceInfo(ResourceInfo.REQ, "engine.queue", "engine.queue"),
-            new ResourceInfo(ResourceInfo.REQ, "engine.qos.update.queue", "engine.qos.update.queue"),
+            new ResourceInfo(ResourceInfo.API, "queue configuration", "org.xmlBlaster.util.qos.storage.QueuePropertyBase"),
             new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.ClientQueueProperty"),
             new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.storage.CbQueueProperty")
          }
@@ -155,8 +156,9 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_OVERFLOW_QUEUE_ENTRIES = new ErrorCode("resource.overflow.queue.entries",
          "The maximum number of entries of a queue is exhausted",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "queue", "queue"),
             new ResourceInfo(ResourceInfo.REQ, "engine.queue", "engine.queue"),
-            new ResourceInfo(ResourceInfo.REQ, "engine.qos.update.queue", "engine.qos.update.queue"),
+            new ResourceInfo(ResourceInfo.API, "queue configuration", "org.xmlBlaster.util.qos.storage.QueuePropertyBase"),
             new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.storage.ClientQueueProperty"),
             new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.storage.CbQueueProperty")
          }
