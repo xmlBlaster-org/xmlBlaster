@@ -8,7 +8,7 @@ Compile:
   Linux with libxmlBlasterC.so:
            gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c
                 -L../../../lib -lxmlBlasterClientC -Wl,-rpath=../../../lib -lpthread
-See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>

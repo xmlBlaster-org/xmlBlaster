@@ -22,7 +22,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
  * Here we receive the callback messages from xmlBlaster
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception)
 {
    size_t i;
    bool testException = false;
@@ -37,9 +37,9 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException
       /* Return QoS: Everything is OK */
    }
    if (testException) {
-      strncpy0(xmlBlasterException->errorCode, "user.clientCode",
+      strncpy0(exception->errorCode, "user.clientCode",
                XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      strncpy0(xmlBlasterException->message, "I don't want these messages",
+      strncpy0(exception->message, "I don't want these messages",
                XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
    }
