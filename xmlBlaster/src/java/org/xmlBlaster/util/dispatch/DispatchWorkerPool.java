@@ -24,6 +24,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
    private Global glob;
    private LogChannel log;
    private PooledExecutor pool;
+   private PropInt threadPrio = new PropInt(Thread.NORM_PRIORITY);
    private PropInt maximumPoolSize = new PropInt(200);
    private PropInt minimumPoolSize = new PropInt(2);
    private PropInt createThreads = new PropInt(minimumPoolSize.getValue());
@@ -33,12 +34,15 @@ public class DispatchWorkerPool //implements I_RunlevelListener
 
    protected static class DeamonThreadFactory implements ThreadFactory {
       private final String id;
-      DeamonThreadFactory(String id) {
+      private final int priority;
+      DeamonThreadFactory(String id, int priority) {
          this.id = id;
+         this.priority = priority;
       }
       public Thread newThread(Runnable command) {
          Thread t = new Thread(command, "XmlBlaster.DispatchWorkerPool."+id);
          t.setDaemon(true);
+         t.setPriority(priority);
          //System.out.println("Created new daemon thread instance for DispatchWorkerPool");
          return t;
       }
@@ -57,14 +61,17 @@ public class DispatchWorkerPool //implements I_RunlevelListener
 
    private synchronized void initialize() {
       this.pool = new PooledExecutor(new LinkedQueue());
-      this.pool.setThreadFactory(new DeamonThreadFactory(glob.getId()));
-      
+
       // Example server side:
       // -dispatch/callback/minimumPoolSize 34
       // Example client side:
       // -dispatch/connection/minimumPoolSize 28
       String context = null; // usually 'client/joe'
       String instanceName = (glob.isServerSide()) ? Constants.RELATING_CALLBACK : Constants.RELATING_CLIENT;
+
+      this.threadPrio.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "threadPriority");
+      this.pool.setThreadFactory(new DeamonThreadFactory(glob.getId(), this.threadPrio.getValue()));
+      
       this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "maximumPoolSize");
       this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "minimumPoolSize");
       this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "createThreads");
