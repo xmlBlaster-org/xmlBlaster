@@ -11,7 +11,7 @@ Compile:   JacORB:
              /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            Mico:
              /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.14 1999/11/16 18:44:45 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.15 1999/11/16 18:57:38 ruff Exp $
 ================================================================================
 */
 
@@ -75,11 +75,17 @@ module clientIdl
    interface BlasterCallback
    {
       /**
+       * This update is invoked when the server calls back to the client. 
+       *
+       * oneway is choosen because of:
+       *
+       *  - better performance
+       *  - server doesn't block (decoupling of server dependency on clients)
+       *
        * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
        * @param qos         Qualitiy of Service for each MessageUnit
        */
-     //oneway
-     void update(in serverIdl::MessageUnitArr messageUnitArr,
+     oneway void update(in serverIdl::MessageUnitArr messageUnitArr,
                  in serverIdl::XmlTypeArr qosArr);
    };
 
