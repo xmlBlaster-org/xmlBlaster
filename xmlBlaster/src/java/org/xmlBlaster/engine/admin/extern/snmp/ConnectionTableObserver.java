@@ -95,6 +95,9 @@ public class ConnectionTableObserver implements Observer {
                          if ((connectionIndex == remConInd) && 
                              (nodeIndex == connectionTableSubject.nodeIndex.intValue())) {
                              connectionTable.removeEntry(connectionEntryImpl);
+                          
+                             // decrement node table reference count
+                             connectionTableSubject.nodeTableObserver.decrement(connectionTableSubject.nodeIndex);
 			     break;
                          }
                       }

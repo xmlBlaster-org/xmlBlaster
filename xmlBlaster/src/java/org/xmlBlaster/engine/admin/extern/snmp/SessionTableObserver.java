@@ -101,6 +101,9 @@ public class SessionTableObserver implements Observer {
                              (clientIndex == sessionTableSubject.nodeIndex.intValue()) && 
                              (nodeIndex == sessionTableSubject.nodeIndex.intValue())) {
                              sessionTable.removeEntry(sessionEntryImpl);
+
+                             // decrement client table reference count
+                             sessionTableSubject.clientTableObserver.decrement(sessionTableSubject.clientIndex);
 			     break;
                          }
                       }

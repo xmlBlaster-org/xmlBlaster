@@ -161,6 +161,9 @@ public class ClientTableObserver implements Observer {
                          if ((clientIndex == remInd) && 
                              (nodeIndex == clientTableSubject.nodeIndex.intValue())) {
                              clientTable.removeEntry(clientEntryImpl);
+                          
+                             // decrement node table reference count
+                             clientTableSubject.nodeTableObserver.decrement(clientTableSubject.nodeIndex);
 			     break;
                          }
                       }
