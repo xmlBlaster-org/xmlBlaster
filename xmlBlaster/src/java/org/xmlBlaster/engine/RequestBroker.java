@@ -36,6 +36,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.PublishKey;
@@ -804,8 +805,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          }
 
          StatusQosData qos = null;
-         if (useCluster) { // cluster support - forward message to master
+         if (this.useCluster) { // cluster support - forward message to master
             try {
+               subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
                SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
                if (ret != null)
                   qos = ret.getData();
@@ -814,7 +816,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             }
             catch (XmlBlasterException e) {
                if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
-                  useCluster = false;
+                  this.useCluster = false;
                }
                else {
                   e.printStackTrace();
@@ -823,10 +825,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             }
          }
 
-         //if (qos == null) { Currently we can't use the cluster subId, as it is not unique in another cluster node
-            qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
+         if (qos == null || qos.getSubscriptionId() == null ||  qos.getSubscriptionId().length() < 1) {
+            // The cluster subId is unique in another cluster node as well e.g.: "__subId:heron-2"
+            if (qos == null) qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
-         //}
+         }
+         if (log.CALL) log.call(ME, "Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
          return qos.toXml();
       }
       catch (XmlBlasterException e) {
@@ -1284,11 +1288,41 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     *       &lt;notify>false</notify>     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
     *    &lt;/qos>
     * </pre>
+    * @return An array of canceled subscriptions e.g.
+    * <pre>
+    *   &lt;qos>
+    *      &lt;subscribe id='__subId:2'/>
+    *      &lt;isUnSubscribe/>
+    *   &lt;/qos>
+    * </pre>
     */
    String[] unSubscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, UnSubscribeQosServer unSubscribeQos) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "') ...");
+         if (log.CALL) log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') ...");
+
+         if (this.useCluster) { // cluster support - forward message to master
+            try {
+               UnSubscribeReturnQos[] ret = glob.getClusterManager().forwardUnSubscribe(sessionInfo, xmlKey, unSubscribeQos);
+               if (ret != null) {
+                  log.info(ME, "unSubscribe of '" + xmlKey.getNiceString() + "' matched " + ret.length + " entries in remote cluster");
+                  // Currently we only return the local matched subscriptions,
+                  // we need to discuss how they can differ from the remote cluster
+                  // unSubscribes ...
+               }
+            }
+            catch (XmlBlasterException e) {
+               if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+                  log.warn(ME, "unSubscribe of '" + xmlKey.getNiceString() + "' entries in remote cluster: " + e.getMessage());
+                  useCluster = false;
+               }
+               else {
+                  log.warn(ME, "unSubscribe of '" + xmlKey.getNiceString() + "' in remote cluster: " + e.getMessage());
+                  e.printStackTrace();
+                  throw e;
+               }
+            }
+         }
 
          Set subscriptionIdSet = new HashSet();
 
