@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.6 1999/12/09 17:15:48 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.7 1999/12/10 08:21:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -65,7 +65,7 @@ public class ClientSub
             Log.trace(ME, "Subscribing using XPath syntax ...");
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                            "<key oid='' queryType='XPATH'>\n" +
-                           "/xmlBlaster/key/AGENT" +
+                           "   /xmlBlaster/key/ClientSub-AGENT" +
                            "</key>";
             stop.restart();
             try {
@@ -89,10 +89,10 @@ public class ClientSub
          {
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                             "<key oid='' contentMime='text/xml'>\n" +
-                            "<AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                            "<DRIVER id='FileProof' pollingFreq='10'>" +
-                            "</DRIVER>"+
-                            "</AGENT>" +
+                            "   <ClientSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                            "      <ClientSub-DRIVER id='FileProof' pollingFreq='10'>" +
+                            "      </ClientSub-DRIVER>"+
+                            "   </ClientSub-AGENT>" +
                             "</key>";
             String content = "Yeahh, i'm the new content";
             MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
@@ -158,7 +158,7 @@ public class ClientSub
          }
 
          // Now we know all about the received message, dump it or do some checks
-         //Log.plain("UpdateKey", updateKey.printOn().toString());    !!!
+         Log.plain("UpdateKey", updateKey.printOn().toString());
          Log.plain("content", (new String(content)).toString());
          Log.plain("UpdateQoS", updateQoS.printOn().toString());
 
