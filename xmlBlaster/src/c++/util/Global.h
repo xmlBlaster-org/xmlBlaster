@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.39 2004/09/24 19:59:43 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 #ifndef ORG_XMLBLASTER_UTIL_GLOBAL_H
@@ -149,6 +149,19 @@ public:
     *         or "@version@" if not set
     */
    static std::string& getVersion();
+
+   /**
+    * The subversion revision number field is automatically set by ant on compilation (see filter token in build.xml)
+    * @return The revision number std::string e.g. "12708M"
+    *         or getVersion() if not set
+    */
+   static std::string& getRevisionNumber();
+
+	/**
+	 * String containing getVersion() and getRevisionNumber()
+	 * @return For example "0.91 #12107M"
+	 */
+	static std::string& getReleaseId();
 
    /**
     * The timestamp field is automatically set by ant on compilation (see filter token in build.xml)

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id$ xmlBlaster @version@ #@revision.number@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -221,6 +221,22 @@ string &Global::getVersion()
    return version;
 }
 
+string &Global::getRevisionNumber()
+{
+   static string revisionNumber = "@revision.number@";  // is replaced by ant / build.xml to subversions revision number, e.g. "1207"
+   if (revisionNumber.find("@",0) != 0 && revisionNumber!=string("${revision.number}"))
+      return revisionNumber;
+   return getVersion();
+}
+
+string &Global::getReleaseId()
+{
+   if (Global::getVersion() == Global::getRevisionNumber())
+      return Global::getVersion();
+   static string releaseId = Global::getVersion() + " #" + Global::getRevisionNumber();
+	return releaseId;
+}
+
 string &Global::getBuildTimestamp()
 {
    static string timestamp = "@build.timestamp@"; // is replaced by ant / build.xml to e.g. "03/20/2003 10:22 PM";
@@ -259,7 +275,7 @@ string Global::usage()
 {
    string sb;
    sb += "\n";
-   sb += "\nXmlBlaster C++ client " + Global::getVersion() + " compiled at " + Global::getBuildTimestamp() + " with " + Global::getCompiler();
+   sb += "\nXmlBlaster C++ client " + Global::getReleaseId() + " compiled at " + Global::getBuildTimestamp() + " with " + Global::getCompiler();
    sb += "\n";
 //#  if COMPILE_SOCKET_PLUGIN && COMPILE_CORBA_PLUGIN
    sb += "\n   -protocol SOCKET | IOR";

@@ -8,6 +8,7 @@ Comment:   Basic xmlBlaster exception.
 #include <util/ErrorCode.h>
 #include <stdexcept>
 #include <util/lexical_cast.h>
+#include <util/Global.h>
 
 
 using namespace std;
@@ -77,7 +78,7 @@ XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
                     location_(""),
                     lang_("en"),
                     message_(errorCode.description),
-                    versionInfo_(""),
+                    versionInfo_(Global::getReleaseId()),
                     timestamp_(""),
                     stackTrace_(""),
                     embeddedMessage_(embeddedMessage),
