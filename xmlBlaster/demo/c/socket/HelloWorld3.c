@@ -15,11 +15,14 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 
 /**
  * Here we receive the callback messages from xmlBlaster
+ * @see UpdateFp in CallbackServerUnparsed.h
  */
-bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
+bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
    bool testException = false;
+   /* XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData; */
+
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
@@ -72,7 +75,7 @@ int main(int argc, char** argv)
    }
 
    xa = getXmlBlasterAccessUnparsed(argc, argv);
-   if (xa->initialize(xa, myUpdate) == false) {
+   if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       printf("[client] Connection to xmlBlaster failed,"
              " please start the server or check your configuration\n");
       freeXmlBlasterAccessUnparsed(xa);

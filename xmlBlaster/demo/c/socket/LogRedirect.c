@@ -20,7 +20,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
-static bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException);
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException);
 
 /**
  * Invoke: LogRedirect -logLevel TRACE
@@ -157,7 +157,7 @@ static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
 /**
  * Here we receive the callback messages from xmlBlaster
  */
-static bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
    for (i=0; i<msgUnitArr->len; i++) {
