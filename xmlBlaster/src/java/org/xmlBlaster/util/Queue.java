@@ -3,7 +3,7 @@ Name:      Queue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: Queue.java,v 1.2 2000/02/25 13:51:01 ruff Exp $
+Version:   $Id: Queue.java,v 1.3 2000/03/27 13:52:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -22,13 +22,15 @@ import java.util.NoSuchElementException;
  * It is based on a linked list.
  * <p />
  * TODO: Allow persistence store e.g. via JDBC bridge into Orcale with some smart caching
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class Queue
 {
    private String ME = "Queue";
    private final int MAX_ENTRIES;
+   /** Default is false, and you get an Exception if queue is full */
+   private boolean discardOldest = false;
 
    /**
     * The queue is implemented with a linked list.
@@ -50,6 +52,17 @@ public class Queue
 
 
    /**
+    * Default is that an Exception is thrown if the queue is full.
+    * Calling this method changes the behavior that if the queue is
+    * filled, the supernumerary entries are falling out at the end and are lost
+    */
+   public void setModeToDiscardOldest()
+   {
+      this.discardOldest = true;
+   }
+
+
+   /**
     * Allocates a new LinkedList.
     */
    private void init()
@@ -60,7 +73,7 @@ public class Queue
 
 
    /**
-    * Add a unit to the queue.
+    * Add a unit to the beginning of the queue.
     * <p />
     * @exception no more space
     */
@@ -68,15 +81,19 @@ public class Queue
    {
       if (Log.CALLS) Log.calls(ME, "Entering push() ...");
       synchronized (queueList) {
-         if (queueList.size() >= MAX_ENTRIES)
-            throw new  XmlBlasterException(ME+".MaxSize", "Maximun size of queue reached");
+         if (queueList.size() >= MAX_ENTRIES) {
+            if (discardOldest)
+               pull();  // Discard oldest
+            else
+               throw new  XmlBlasterException(ME+".MaxSize", "Maximun size of queue reached");
+         }
          queueList.addFirst(obj);
       }
    }
 
 
    /**
-    * pull the next unit from the queue.
+    * pull the next unit from the end of the queue.
     * <p />
     * @return The object
     */
@@ -142,6 +159,7 @@ public class Queue
       String me = "Queue-Tester";
       int size = 3;
       Queue queue = new Queue(size);
+      queue.setModeToDiscardOldest();
       try {
          queue.push("Hello ");
          queue.push("world ");
@@ -153,6 +171,6 @@ public class Queue
       while(queue.size() > 0) {
          result.append(queue.pull());
       }
-      Log.info(me, "The for a queue with max size=" + size + " the result is: " + result.toString());
+      Log.info(me, "For a queue with max size=" + size + " the result is: " + result.toString());
    }
 }
