@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.client.LogoutQosWrapper;
+import org.xmlBlaster.util.DisconnectQos;
 
 
 /**
@@ -75,16 +75,16 @@ public class AuthenticateImpl
     */
    public String logout(String sessionId) throws XmlBlasterException
    {
-      authenticate.disconnect(sessionId, (new LogoutQosWrapper()).toXml());
+      authenticate.disconnect(sessionId, (new DisconnectQos()).toXml());
       return "";
    }
 
    /**
     * Login to xmlBlaster.
-    * @parameter qos_literal See LoginQosWrapper.java
+    * @parameter qos_literal See ConnectQos.java
     * @return The xml string from ConnectReturnQos.java<br />
-    * @see org.xmlBlaster.client.LoginQosWrapper
-    * @see org.xmlBlaster.engine.xml2java.ConnectReturnQos
+    * @see org.xmlBlaster.util.ConnectQos
+    * @see org.xmlBlaster.util.ConnectReturnQos
     */
    public String connect(String qos_literal) throws XmlBlasterException
    {

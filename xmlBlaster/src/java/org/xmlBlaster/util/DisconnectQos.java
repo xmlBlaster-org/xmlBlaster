@@ -1,16 +1,17 @@
 /*------------------------------------------------------------------------------
-Name:      LogoutQosWrapper.java
+Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LogoutQosWrapper.java,v 1.3 2001/09/05 12:21:26 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.1 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.client;
+package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
+import org.xmlBlaster.client.QosWrapper;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import java.util.Vector;
 
@@ -29,14 +30,14 @@ import java.util.Vector;
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
-public class LogoutQosWrapper extends QosWrapper
+public class DisconnectQos extends QosWrapper
 {
-   private String ME = "LogoutQosWrapper";
+   private String ME = "DisconnectQos";
 
    /**
     * Default constructor
     */
-   public LogoutQosWrapper()
+   public DisconnectQos()
    {
    }
 
@@ -81,12 +82,12 @@ public class LogoutQosWrapper extends QosWrapper
       return sb.toString();
    }
 
-   /** For testing: java org.xmlBlaster.client.LogoutQosWrapper */
+   /** For testing: java org.xmlBlaster.client.DisconnectQos */
    public static void main(String[] args)
    {
       try {
          org.xmlBlaster.util.XmlBlasterProperty.init(args);
-         LogoutQosWrapper qos = new LogoutQosWrapper();
+         DisconnectQos qos = new DisconnectQos();
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.22 2001/08/22 07:58:25 laghi Exp $
+Version:   $Id: SimpleChat.java,v 1.23 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.I_Callback;
@@ -127,12 +127,12 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          MessageUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
          if (msgUnit != null) {
             for (int i=0; i < msgUnit.length; i++) {
-		appendOutput("users: " + System.getProperty("line.separator") +
-			    new String(msgUnit[i].content) + 
-			    System.getProperty("line.separator"));
+                appendOutput("users: " + System.getProperty("line.separator") +
+                            new String(msgUnit[i].content) + 
+                            System.getProperty("line.separator"));
             }
-	    appendOutput("these where all users connected" + 
-			 System.getProperty("line.separator"));
+            appendOutput("these where all users connected" + 
+                         System.getProperty("line.separator"));
          }
       }
       catch (XmlBlasterException ex) {

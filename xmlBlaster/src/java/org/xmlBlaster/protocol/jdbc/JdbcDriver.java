@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.14 2001/09/05 12:21:27 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.15 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -16,9 +16,9 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.client.LogoutQosWrapper;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
 
 import java.util.StringTokenizer;
 
@@ -121,7 +121,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void shutdown()
    {
-      try { authenticate.disconnect(sessionId, (new LogoutQosWrapper()).toXml()); } catch(XmlBlasterException e) { }
+      try { authenticate.disconnect(sessionId, (new DisconnectQos()).toXml()); } catch(XmlBlasterException e) { }
       namedPool.destroy();
       Log.info(ME, "JDBC service stopped, resources released.");
    }

@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.12 2001/09/05 12:21:27 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.13 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.client.LogoutQosWrapper;
+import org.xmlBlaster.util.DisconnectQos;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -81,13 +81,13 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
 
    /**
     * Login to xmlBlaster.
-    * @parameter qos_literal See LoginQosWrapper.java
+    * @parameter qos_literal See ConnectQos.java
     * @return The xml string from ConnectReturnQos.java<br />
     *         We could return the ConnectReturnQos object as well, but adding
     *         attributes to this object would force clients to install the new class
     *         declaration. In future we could use the Jini apporach here.
-    * @see org.xmlBlaster.client.LoginQosWrapper
-    * @see org.xmlBlaster.engine.xml2java.ConnectReturnQos
+    * @see org.xmlBlaster.util.ConnectQos
+    * @see org.xmlBlaster.util.ConnectReturnQos
     */
    public String connect(String qos_literal)
                         throws RemoteException, XmlBlasterException
@@ -128,7 +128,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout()");
-      disconnect(sessionId, (new LogoutQosWrapper()).toXml());
+      disconnect(sessionId, (new DisconnectQos()).toXml());
    }
 
 

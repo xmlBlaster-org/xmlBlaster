@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.1 2000/11/07 19:29:00 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.2 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -78,7 +78,7 @@ public class TestPubBurstMode extends TestCase
          numPublish = XmlBlasterProperty.get("numPublish", 100);
          senderConnection = new XmlBlasterConnection();   // Find orb
          String passwd = "secret";
-         LoginQosWrapper qos = new LoginQosWrapper();     // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos();     // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos); // Login to xmlBlaster
       }
       catch (Exception e) {

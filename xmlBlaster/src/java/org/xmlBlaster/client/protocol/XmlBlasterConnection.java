@@ -20,8 +20,8 @@ import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.KeyWrapper;
-import org.xmlBlaster.client.LoginQosWrapper;
-import org.xmlBlaster.client.LogoutQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -429,7 +429,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param qos       The Quality of Service for this client, you may pass 'null' for default behavior
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, LoginQosWrapper qos) throws XmlBlasterException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException
    {
       login(loginName, passwd, qos, null);
    }
@@ -454,14 +454,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param client    Your implementation of I_Callback, or null if you don't want any.
     * @exception       XmlBlasterException if login fails
     */
-   public synchronized void login(String loginName, String passwd, LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
+   public synchronized void login(String loginName, String passwd, ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
       this.ME = "XmlBlasterConnection-" + loginName;
       this.updateClient = client;
       if (Log.CALL) Log.call(ME, "login() ...");
 
       if (qos == null)
-         qos = new LoginQosWrapper();
+         qos = new ConnectQos();
       
       I_SecurityQos securityQos = qos.getSecurityQos();
       if(securityQos == null) {
@@ -506,7 +506,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                  you have to pass at least the authentication tags
     * @exception       XmlBlasterException if login fails
     */
-   public void connect(LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
+   public void connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
       if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
          throw new XmlBlasterException(ME+".Authentication", "Please add your authentication in your login QoS");
@@ -640,7 +640,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public synchronized boolean logout()
    {
-      return disconnect(new LogoutQosWrapper());
+      return disconnect(new DisconnectQos());
    }
 
 
@@ -651,7 +651,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @return true successfully logged out
     *         false failure on logout
     */
-   public synchronized boolean disconnect(LogoutQosWrapper qos)
+   public synchronized boolean disconnect(DisconnectQos qos)
    {
       if (Log.CALL) Log.call(ME, "logout() ...");
 
@@ -1260,7 +1260,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";
       text += "                       Force the given authentication schema, here the GUI is enforced\n";
-      text += "                       Clients can overwrite this with LoginQosWrapper.java\n";
+      text += "                       Clients can overwrite this with ConnectQos.java\n";
       text += "\n";
       text += "Fail Save Mode:\n";
       text += "   -client.failSave.retryInterval   How many milli seconds sleeping before we retry a connection [5000]\n";

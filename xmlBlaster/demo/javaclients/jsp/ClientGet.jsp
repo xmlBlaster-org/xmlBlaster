@@ -13,7 +13,7 @@
    <%@ page import = "org.jutils.text.StringHelper" %>
    <%@ page import = "org.xmlBlaster.client.protocol.XmlBlasterConnection" %>
    <%@ page import = "org.xmlBlaster.client.I_Callback" %>
-   <%@ page import = "org.xmlBlaster.client.LoginQosWrapper" %>
+   <%@ page import = "org.xmlBlaster.util.ConnectQos" %>
    <%@ page import = "org.xmlBlaster.client.UpdateKey" %>
    <%@ page import = "org.xmlBlaster.client.UpdateQoS" %>
    <%@ page import = "org.xmlBlaster.client.GetKeyWrapper" %>
@@ -38,7 +38,7 @@
             // check if parameter -name <userName> is given at startup of client
             String loginName = Args.getArg(args, "-name", ME);
             String passwd = Args.getArg(args, "-passwd", "secret");
-            LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
+            ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
 
             blasterConnection = new XmlBlasterConnection(args);
             blasterConnection.login(loginName, passwd, loginQos);

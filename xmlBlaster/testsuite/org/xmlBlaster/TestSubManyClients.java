@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.5 2000/11/06 21:24:38 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.6 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -184,7 +184,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
          try {
             sub.connection = new XmlBlasterConnection();
-            LoginQosWrapper loginQosW = new LoginQosWrapper(); // "<qos></qos>"; During login this is manipulated (callback address added)
+            ConnectQos loginQosW = new ConnectQos(); // "<qos></qos>"; During login this is manipulated (callback address added)
             sub.connection.login(sub.loginName, passwd, loginQosW, this);
          }
          catch (Exception e) {

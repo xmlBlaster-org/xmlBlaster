@@ -3,7 +3,7 @@ Name:      TestLogin.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cc,v 1.6 2001/03/16 09:51:59 ruff Exp $
+Version:   $Id: TestLogin.cc,v 1.7 2001/09/05 12:48:47 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -23,7 +23,7 @@ Version:   $Id: TestLogin.cc,v 1.6 2001/03/16 09:51:59 ruff Exp $
 #include <string>
 #include <util/Log.h>
 #include <client/CorbaConnection.h>
-#include <client/LoginQosWrapper.h>
+#include <client/ConnectQos.h>
 #include <util/PlatformUtils.hpp>
 //#include <unistd.h>
 #include <util/StopWatch.h>
@@ -112,7 +112,7 @@ public:
          senderConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd     = "secret";
 
-         LoginQosWrapper qosWrapper;
+         ConnectQos qosWrapper;
          senderConnection_->login(senderName_, passwd, qosWrapper, this);
 
          // Login to xmlBlaster

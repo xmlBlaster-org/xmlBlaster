@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.25 2000/10/18 20:45:43 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.26 2001/09/05 12:48:47 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -15,7 +15,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 
 import java.io.*;
 import java.util.*;
@@ -38,7 +38,7 @@ import javax.servlet.http.*;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -69,7 +69,7 @@ public class ProxyConnection implements I_Callback
 
       // initFailSave() ???
 
-      xmlBlasterConnection.login(loginName, passwd, new LoginQosWrapper(), this);
+      xmlBlasterConnection.login(loginName, passwd, new ConnectQos(), this);
    }
 
    /**

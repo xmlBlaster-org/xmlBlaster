@@ -3,14 +3,14 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.18 2001/03/27 20:18:56 ruff Exp $
+Version:   $Id: TestGet.java,v 1.19 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.GetQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -68,7 +68,7 @@ public class TestGet extends TestCase
       try {
          connection = new XmlBlasterConnection(); // Find orb
          String passwd = "secret";
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          // Login to xmlBlaster, don't create a callback server
          connection.login(loginName, passwd, qos);
       }

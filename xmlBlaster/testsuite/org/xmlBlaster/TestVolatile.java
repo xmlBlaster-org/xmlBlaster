@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.1 2001/02/23 01:39:42 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.2 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,7 @@ import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -69,7 +69,7 @@ public class TestVolatile extends TestCase implements I_Callback
       try {
          String passwd = "secret";
          senderConnection = new XmlBlasterConnection();
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos, this);
       }
       catch (Exception e) {

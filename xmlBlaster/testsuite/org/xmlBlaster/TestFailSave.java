@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.24 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.25 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.UpdateKey;
@@ -92,7 +92,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
          // and do the login ...
          String passwd = "secret";
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          corbaConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {

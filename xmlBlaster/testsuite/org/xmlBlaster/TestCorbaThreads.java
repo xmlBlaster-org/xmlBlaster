@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.8 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.9 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -79,7 +79,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
          String passwd = "secret";
 
          corbaConnection = new CorbaConnection(new String[0]);
-         corbaConnection.login(loginName, passwd, new LoginQosWrapper(), this);
+         corbaConnection.login(loginName, passwd, new ConnectQos(), this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

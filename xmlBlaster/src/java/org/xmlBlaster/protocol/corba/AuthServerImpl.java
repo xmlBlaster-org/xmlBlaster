@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.16 2001/09/05 12:21:27 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.17 2001/09/05 12:48:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -18,7 +18,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
-import org.xmlBlaster.client.LogoutQosWrapper;
+import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.helper.ServerRef;
 
@@ -229,7 +229,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout()");
-      disconnect(getSessionId(xmlServer), (new LogoutQosWrapper()).toXml());
+      disconnect(getSessionId(xmlServer), (new DisconnectQos()).toXml());
    }
 
 

@@ -3,7 +3,7 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.79c [Sep, 05 2001]
 ================================
 
- - Remove your old xmlBlaster.properties and jacorb.properties
+ - Remove your old xmlBlaster.properties, jacorb.properties
    and orb.properties files.
    Use the new files from directory xmlBlaster/config
    if wanted.

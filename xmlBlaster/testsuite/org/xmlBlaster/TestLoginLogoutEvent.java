@@ -3,14 +3,14 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.10 2001/03/26 14:09:41 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.11 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import java.util.StringTokenizer;
 import org.xmlBlaster.util.Log;
 
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -84,7 +84,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    {
       try {
          firstConnection = new XmlBlasterConnection(); // Find orb
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          firstConnection.login(firstName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -157,7 +157,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       expectedName = secondName; // second name should be returned on this login
       try {
          secondConnection = new XmlBlasterConnection(); // Find orb
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
          waitOnUpdate(1000L, 1);  // login event arrived?
 

@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.8 2001/02/14 12:16:34 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.9 2001/09/05 12:48:47 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -77,7 +77,7 @@ public class XmlRpcHttpClient
          
          Log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterConnection");
          String sessionId = "Session1";
-         LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
+         ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
 
          client.login("LunaMia", "silence", loginQos, null);
          Log.info(ME, "Login successful");

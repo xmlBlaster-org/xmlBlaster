@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.42 2001/09/05 12:21:26 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.43 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -177,7 +177,7 @@ final public class Authenticate implements I_Authenticate
     *
     * If the sessionId from xmlQoS_literal is null, we generate one.
     *
-    * @param xmlQoS_literal The login/init QoS, see ConnectQos.java and LoginQosWrapper.java
+    * @param xmlQos The login/connect QoS, see ConnectQos.java
     */
    public final ConnectReturnQos connect(ConnectQos xmlQos) throws XmlBlasterException
    {
@@ -196,8 +196,8 @@ final public class Authenticate implements I_Authenticate
     * <p />
     * TODO: Totally rewrite this connect() method to allow multiple sessions
     *
-    * @param xmlQoS The login/init QoS, see ConnectQos.java and LoginQosWrapper.java
-    * @param sessionId      The caller (here CORBA-POA protocol driver) may insist to you its own sessionId
+    * @param connectQos  The login/connect QoS, see ConnectQos.java
+    * @param sessionId   The caller (here CORBA-POA protocol driver) may insist to you its own sessionId
     */
    public final ConnectReturnQos connect(ConnectQos connectQos, String sessionId) throws XmlBlasterException
    {

@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.13 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.14 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,9 +13,14 @@ import org.jutils.init.Property;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.ServerThread;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionProblems;
 
 import test.framework.*;
 
@@ -89,7 +94,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
 
          // and do the login ...
          String passwd = "secret";
-         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          corbaConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {

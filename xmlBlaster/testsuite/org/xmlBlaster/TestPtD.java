@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.20 2000/10/18 20:45:45 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.21 2001/09/05 12:48:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,7 +14,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -84,13 +84,13 @@ public class TestPtD extends TestCase implements I_Callback
          String passwd = "secret";
 
          receiverConnection = new XmlBlasterConnection();
-         receiverConnection.login(receiverName, passwd, new LoginQosWrapper(), this);
+         receiverConnection.login(receiverName, passwd, new ConnectQos(), this);
 
          receiver2Connection = new XmlBlasterConnection();
-         receiver2Connection.login(receiver2Name, passwd, new LoginQosWrapper(), this);
+         receiver2Connection.login(receiver2Name, passwd, new ConnectQos(), this);
 
          senderConnection = new XmlBlasterConnection();
-         senderConnection.login(senderName, passwd, new LoginQosWrapper(), this);
+         senderConnection.login(senderName, passwd, new ConnectQos(), this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
