@@ -12,7 +12,25 @@ import org.xmlBlaster.engine.helper.Constants;
  * This client connects to xmlBlaster node "avalon.mycomp.com" and publishes
  * a "RUGBY_NEWS" message, which is routed to the master node "heron.mycomp.com". 
  *
- * Invoke: java javaclients.cluster.PublishToSlave -client.protocol SOCKET -socket.port 7601
+ * Invoke examples:
+ * <pre>
+ *  java javaclients.cluster.PublishToSlave -port 7601
+ *  java javaclients.cluster.PublishToSlave -port 7604
+ * </pre>
+ * We expect avalon to run on 7601, the domain is RUGBY_NEWS if not changed.<br />
+ * If we set -port 7604 we expect to find bilbo which routes the message over
+ * several node hops to the master. The message content is "We win".
+ *
+ * <pre>
+ *  java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE
+ * </pre>
+ * Now our message is sent with domain='STOCK_EXCHANGE', it should be routed to avalon
+ *
+ * <pre>
+ *  java javaclients.cluster.PublishToSlave -port 7604 -content "We loose"
+ * </pre>
+ * Now our message is sent with the content "We loose" to bilbo, the message
+ * is not forwarded as bilbo filters with a regular expression contents containing the word 'loose'.
  */
 public class PublishToSlave implements I_Callback
 {
@@ -21,20 +39,21 @@ public class PublishToSlave implements I_Callback
       try {
          con = new XmlBlasterConnection(glob);
 
-         // Check if other name or password was given on command line:
-         String name = glob.getProperty().get("name", "PublishToSlave");
-         String passwd = glob.getProperty().get("passwd", "secret");
+         String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
+         String content = glob.getProperty().get("content", "We win");
 
-         ConnectQos qos = new ConnectQos(glob, "simple", "1.0", name, passwd);
+         ConnectQos qos = new ConnectQos(glob);
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          Log.info("PublishToSlave", "Connected to xmlBlaster.");
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", "RUGBY_NEWS");
+         PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
          pq.setPriority(Constants.MIN_PRIORITY);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "We won".getBytes(), pq.toXml());
+         MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
          String retQos = con.publish(msgUnit);
-         Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' to xmlBlaster node, the returned QoS is: " + retQos);
+         Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+                                    "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
+                                    ", the returned QoS is: " + retQos);
       }
       catch (Exception e) {
          Log.error("PublishToSlave-Exception", e.toString());
@@ -77,12 +96,8 @@ public class PublishToSlave implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [PublishToSlave].");
-         Log.plain("   -passwd             The login name [secret].");
          XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit("PublishToSlave", "Example: java PublishToSlave -name Jeff\n");
+         Log.exit("PublishToSlave", "Example: java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE -content 'We win'\n");
       }
 
       new PublishToSlave(glob);
