@@ -251,6 +251,17 @@ public class DbWatcher implements I_ChangeListener {
       this.changeCount = 0;
       final String command = (changeEvent.getCommand() == null) ? "UPDATE" : changeEvent.getCommand();
       Connection connRet = null;
+
+      if ("DROP".equals(command) && dataConverter != null) {
+         ByteArrayOutputStream bout = new ByteArrayOutputStream();
+         BufferedOutputStream out = new BufferedOutputStream(bout);
+         dataConverter.setOutputStream(out, command, changeEvent.getGroupColValue());
+         dataConverter.done();
+         String resultXml = bout.toString();
+         hasChanged(new ChangeEvent(changeEvent.getGroupColName(), changeEvent.getGroupColValue(), resultXml, command), true);
+         return 1;
+      }
+
       try {
           connRet = this.dbPool.select(conn, stmt, autoCommit, new I_ResultCb() {
              public void result(ResultSet rs) throws Exception {
