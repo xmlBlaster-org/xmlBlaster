@@ -17,12 +17,12 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <authentication/SecurityQos.h>
 #include <util/Log.h>
 
-#include <util/cfg/AddressFactory.h>
-#include <util/cfg/Address.h>
-#include <util/cfg/CallbackAddress.h>
-#include <util/queue/QueuePropertyFactory.h>
-#include <util/queue/QueueProperty.h>
-#include <util/queue/CbQueueProperty.h>
+#include <util/qos/address/AddressFactory.h>
+#include <util/qos/address/Address.h>
+#include <util/qos/address/CallbackAddress.h>
+#include <util/qos/storage/QueuePropertyFactory.h>
+#include <util/qos/storage/QueueProperty.h>
+#include <util/qos/storage/CbQueueProperty.h>
 
 #include <vector>
 
@@ -57,8 +57,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cfg;
-using namespace org::xmlBlaster::util::queue;
+using namespace org::xmlBlaster::util::qos::address;
+using namespace org::xmlBlaster::util::qos::storage;
 
 class Dll_Export ConnectQosData
 {

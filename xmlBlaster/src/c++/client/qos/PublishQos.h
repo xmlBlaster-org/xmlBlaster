@@ -41,7 +41,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _CLIENT_QOS_PUBLISHQOS_H
 
 #include <util/xmlBlasterDef.h>
-#include <util/queue/QueuePropertyBase.h>
+#include <util/qos/storage/QueuePropertyBase.h>
 #include <util/PriorityEnum.h>
 #include <util/qos/MsgQosData.h>
 

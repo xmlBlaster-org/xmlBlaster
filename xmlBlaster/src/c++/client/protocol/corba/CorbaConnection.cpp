@@ -284,7 +284,7 @@ CorbaConnection::login(const string &loginName, const string &passwd,
      defaultCallback_ =  new DefaultCallback(global_, loginName_, client, 0);
      callback_ = createCallbackServer(defaultCallback_);
      callbackIOR_ = orb_->object_to_string(callback_);
-     util::cfg::CallbackAddress addr(global_, "IOR");
+     util::qos::address::CallbackAddress addr(global_, "IOR");
      addr.setAddress(callbackIOR_);
      loginQos_.addCallbackAddress(addr);
      if (log_.TRACE) log_.trace(me(), string("Success, exported ") +

@@ -43,8 +43,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cfg;
-using namespace org::xmlBlaster::util::queue;
+using namespace org::xmlBlaster::util::qos::address;
+using namespace org::xmlBlaster::util::qos::storage;
 
 class Dll_Export ConnectQosFactory: public util::SaxHandlerBase
 {

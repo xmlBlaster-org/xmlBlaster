@@ -27,7 +27,7 @@ Comment:   Holding filter address string and protocol string
 
 using namespace org::xmlBlaster::util;
 using namespace std;
-using org::xmlBlaster::util::mime::Query;
+using org::xmlBlaster::util::qos::Query;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 

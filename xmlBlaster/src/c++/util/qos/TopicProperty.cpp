@@ -28,7 +28,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 using boost::lexical_cast;
 
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::queue;
+using namespace org::xmlBlaster::util::qos::storage;
 
 using namespace std;
 

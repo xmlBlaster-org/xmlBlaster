@@ -33,11 +33,10 @@ namespace org { namespace xmlBlaster { namespace client {
  * </p>
  */
 
-using org::xmlBlaster::util::qos::ConnectQos;
-using org::xmlBlaster::util::qos::ConnectReturnQos;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::protocol;
-using org::xmlBlaster::util::Log;
-using org::xmlBlaster::util::MessageUnit;
+using org::xmlBlaster::util::queue::MsgQueueEntry;
 
 class XmlBlasterAccess : public I_Callback
 {

@@ -26,11 +26,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <vector>
 #include <string>
 #include <util/Log.h>
-#include <util/queue/TopicCacheProperty.h>
-#include <util/queue/HistoryQueueProperty.h>
+#include <util/qos/storage/TopicCacheProperty.h>
+#include <util/qos/storage/HistoryQueueProperty.h>
 
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::queue;
+using namespace org::xmlBlaster::util::qos::storage;
 
 using namespace std;
 

@@ -13,12 +13,12 @@ Comment:   Holding information about the current node.
 #include <map>
 #include <util/Log.h>
 
-#include <util/cfg/CallbackAddress.h>
-#include <util/cfg/Address.h>
+#include <util/qos/address/CallbackAddress.h>
+#include <util/qos/address/Address.h>
 #include <util/cluster/NodeId.h>
 
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cfg;
+using namespace org::xmlBlaster::util::qos::address;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {

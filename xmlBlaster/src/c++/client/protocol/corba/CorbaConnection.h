@@ -18,7 +18,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <client/protocol/corba/DefaultCallback.h>
 #include <util/Log.h>
 #include <client/protocol/corba/NameServerControl.h>
-#include <util/cfg/CallbackAddress.h>
+#include <util/qos/address/CallbackAddress.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQosFactory.h>
 

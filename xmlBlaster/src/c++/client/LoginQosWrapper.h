@@ -10,7 +10,7 @@ Comment:   Handling one xmlQoS
 
 #include <vector>
 #include <client/QosWrapper.h>
-#include <util/cfg/CallbackAddress.h>
+#include <util/qos/address/CallbackAddress.h>
 
 /**
  * This class encapsulates the qos of a publish() message.
@@ -30,7 +30,7 @@ Comment:   Handling one xmlQoS
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
 using namespace std;
-using org::xmlBlaster::util::cfg::CallbackAddress;
+using org::xmlBlaster::util::qos::address::CallbackAddress;
 
 namespace org { namespace xmlBlaster {
    

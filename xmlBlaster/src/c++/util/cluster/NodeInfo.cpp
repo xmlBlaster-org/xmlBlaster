@@ -9,7 +9,7 @@ Comment:   Holding information about the current node.
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::cfg;
+using namespace org::xmlBlaster::util::qos::address;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {

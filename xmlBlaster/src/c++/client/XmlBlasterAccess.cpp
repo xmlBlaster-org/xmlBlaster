@@ -17,6 +17,7 @@ using org::xmlBlaster::util::qos::ConnectReturnQos;
 using namespace org::xmlBlaster::client::protocol;
 using org::xmlBlaster::util::Log;
 using org::xmlBlaster::util::MessageUnit;
+using org::xmlBlaster::util::queue::MsgQueueEntry;
 
 XmlBlasterAccess::XmlBlasterAccess(Global& global)
    : ME("XmlBlasterAccess"),

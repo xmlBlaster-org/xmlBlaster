@@ -33,7 +33,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/I_Timeout.h>
 #include <util/Timeout.h>
-#include <util/cfg/AddressBase.h>
+#include <util/qos/address/AddressBase.h>
 #include <util/XmlBlasterException.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/Log.h>
@@ -49,7 +49,7 @@ using boost::lexical_cast;
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client;
-using org::xmlBlaster::util::cfg::AddressBase;
+using org::xmlBlaster::util::qos::address::AddressBase;
 using org::xmlBlaster::client::protocol;
 using org::xmlBlaster::util::queue::MsgQueueEntry;
 
