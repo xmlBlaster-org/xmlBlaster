@@ -245,6 +245,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       I_Map cache = getOwnerCache();
       synchronized (cache) {
          if (isSwapped()) {
+            if (this.log.TRACE) 
+               this.log.trace(ME+this.getLogId(), "incrementReferenceCounter: unexpected swapped message");
             return false;
          }
          boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));

@@ -7,6 +7,7 @@ package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -165,22 +166,30 @@ public class ReferenceEntry extends MsgQueueEntry
 
    private void incrementReferenceCounter(int incr, StorageId storageId) {
       try {
-         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-         if (msgUnitWrapper != null) {
-            boolean done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
-            if (!done) {
-               this.weakMsgUnitWrapper = null;
-               msgUnitWrapper = getMsgUnitWrapper(); // reload
-               done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
+         RequestBroker rb = this.glob.getRequestBroker();
+         if (rb == null) return;
+         TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
+         if (topicHandler == null) return;
+
+         // we need to synchronize it over the caching process
+         synchronized(topicHandler.getMsgUnitCache()) {
+            MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+            if (msgUnitWrapper != null) {
+               boolean done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
                if (!done) {
-                  log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' failed, entry is swapped");
+                  this.weakMsgUnitWrapper = null;
+                  msgUnitWrapper = getMsgUnitWrapper(); // reload
+                  done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
+                  if (!done) {
+                     log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' failed, entry is swapped");
+                  }
                }
             }
+            else {
+               log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+            }
+            msgUnitWrapper = null;
          }
-         else {
-            log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
-         }
-         msgUnitWrapper = null;
       }
       catch (Throwable ex) {
          log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
@@ -296,14 +305,12 @@ public class ReferenceEntry extends MsgQueueEntry
    }
 
    /** @return the MsgUnitWrapper or null if not found */
-   public MsgUnitWrapper lookup() {
-      if (this.glob.getRequestBroker() == null) {
-         return null;
-      }
-      TopicHandler topicHandler = this.glob.getRequestBroker().getMessageHandlerFromOid(keyOid);
-      if (topicHandler == null) {
-         return null;
-      }
+   private MsgUnitWrapper lookup() {
+      RequestBroker rb = this.glob.getRequestBroker();
+      if (rb == null) return null;
+      TopicHandler topicHandler = rb.getMessageHandlerFromOid(keyOid);
+      if (topicHandler == null) return null;
+
       try {
          return topicHandler.getMsgUnitWrapper(this.msgUnitWrapperUniqueId);
       }
