@@ -1,8 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 
-Changes for 0.x [200x-xx-xx]
-============================
+Changes for 0.901 [2004-04-27]
+==============================
+
+ o Changed synchronization of disconnecting a client which could be
+   a portential dead lock if a shutdown and a client disconnect comes
+   simultaneously
 
  o Added an 'AvailabilityChecker' to protect xmlBlaster in the different run levels.
    This is another step for enhanced maintenance modes.
@@ -12,6 +16,8 @@ Changes for 0.x [200x-xx-xx]
 
  o Changed jacorb to ver. 2.1. This to eliminate a nasty bug causing an implicit redelivery of 
    messages. Moved jacorb jar files to xmlBlaster/lib/jacorb
+   NOTE: You need to use the ajusted xmlBlaster/config/jacorb.properties.template
+         (which is copied into xmlBlaster.jar) if you use your own jacorb.jar.
    NOTE: The name of the property jacorb.verbosity has changed to jacorb.log.default.verbosity
 
  o Fixed release generation to remove build.tmp and
