@@ -13,8 +13,9 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/clientIdl
 
 
 #------------------------------------------------------------------------------
-LOCAL_FILES = \
-			$(CLASS_DIR)/BlasterCallbackImpl.class
+LOCAL_FILES =
+
+#			$(CLASS_DIR)/BlasterCallbackImpl_example.class
 #------------------------------------------------------------------------------
 
 
