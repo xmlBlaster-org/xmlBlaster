@@ -5,8 +5,8 @@
 #
 # Example (copy this into your .profile or .bashrc):
 #   export JDK_HOME=/usr/local/jdk
-#   export JacORB_HOME=/usr/local/JacORB
 #   export XMLBLASTER_HOME=${HOME}/xmlBlaster
+#   export JacORB_HOME=/usr/local/JacORB       (optional)
 #   export MICO_HOME=/usr/local/mico           (optional)
 #   export JIKES_HOME=/usr/local/jikes         (optional)
 #   . ${XMLBLASTER_HOME}/.bashrc
@@ -23,6 +23,8 @@ ESC="\033[0m"
 OS="`uname -s`"
 
 if [ ${OS} = "Linux" ]; then
+   ECHO="echo -e"
+elif [ ${OS} = "SunOS" ]; then
    ECHO="echo -e"
 else
    ECHO="echo"
@@ -105,11 +107,12 @@ if [ -d ${JacORB_HOME} ] ; then
    export PATH
    if [ -f ${JacORB_HOME}/classes/jacorb.jar ] ; then
       # The original JacORB distribution is used
-      export JacORB_LIB=${JacORB_HOME}/classes
+      JacORB_LIB=${JacORB_HOME}/classes
    else
       # The with xmlBlaster delivered JacORB distribution is used
-      export JacORB_LIB=${JacORB_HOME}/lib
+      JacORB_LIB=${JacORB_HOME}/lib
    fi
+   export JacORB_LIB
    CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
    # The following two entries are only useful if you have JacORB installed separately:
@@ -131,7 +134,7 @@ fi
 
 
 #-------- Checking MICO --------
-if [ ! -d ${MICO_HOME} ] ; then
+if [ "x${MICO_HOME}" = "x" ] || [ ! -d ${MICO_HOME} ] ; then
    ${ECHO} "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
    ${ECHO} "         Example: 'export MICO_HOME=/usr/local/mico'"
 else
@@ -145,7 +148,8 @@ if [ "x${JDK_HOME}" != "x" ] ; then
    if [ -d ${JDK_HOME} ] ; then
       if [ -f ${JDK_HOME}/lib/classes.zip ]; then
          # JDK 1.1.x
-         export JDK_1_1=true
+         JDK_1_1=true
+         export JDK_1_1
          CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
       else
          # JDK 1.2
