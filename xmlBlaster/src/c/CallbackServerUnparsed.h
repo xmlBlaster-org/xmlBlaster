@@ -13,6 +13,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
+#ifndef XMLBLASTER_CallbackServerUnparsed_H
+#define XMLBLASTER_CallbackServerUnparsed_H
+
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP /* 'g++ -DXMLBLASTER_C_COMPILE_AS_CPP ...' allows to compile the lib as C++ code */
 extern "C" {
@@ -155,4 +158,6 @@ typedef void * (*cbFp)(void *);
 }
 #endif
 #endif
+
+#endif /* XMLBLASTER_CallbackServerUnparsed_H */
 
