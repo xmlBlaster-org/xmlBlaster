@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.32 2002/09/30 10:03:28 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.33 2002/10/07 16:08:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -66,7 +66,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private Label label;
 
    private java.lang.reflect.Method speakMethod = null;
-	private Object                   speaker     = null;
+        private Object                   speaker     = null;
 
    public SimpleChat(Global glob){
       super(glob.getProperty().get("loginName", "SimpleChat - <NoName>"));
@@ -88,16 +88,17 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       logFileName = glob.getProperty().get("logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
       log.info(ME, "Logging messages to " + logFileName);
 
-		//prepare the speach synthetizer ...
+                //prepare the speach synthetizer ...
       try {
-	      Class speech = Class.forName("com.eclettic.speech.DefaultInputSpeaker");
-   	   java.lang.reflect.Constructor constr = speech.getConstructor(null);
-      	this.speaker = constr.newInstance(null);
-	      Class[] argClasses = new Class[1];
-   	   argClasses[0] = String.class;
-      	this.speakMethod = speech.getMethod("speak", argClasses);
-		}
-      catch (Exception ex) {
+         Class speech = Class.forName("com.eclettic.speech.DefaultInputSpeaker");
+         java.lang.reflect.Constructor constr = speech.getConstructor(null);
+         this.speaker = constr.newInstance(null);
+         Class[] argClasses = new Class[1];
+         argClasses[0] = String.class;
+         this.speakMethod = speech.getMethod("speak", argClasses);
+      }
+      catch (Throwable ex) {
+         log.error(ME, "Speech support failed (you need JDK 1.4): " + ex.toString());
       }
 
       label.setText(logFileName);
@@ -203,7 +204,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
         return;
       }
 
-	  if ("sound".equals(command)) {
+          if ("sound".equals(command)) {
         if (this.withSound) {
             this.withSound = false;
             this.soundButton.setLabel("no Sound");
@@ -263,19 +264,19 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       String msgContent = new String(content);
 
       if (this.withSound) {
-      	java.awt.Toolkit.getDefaultToolkit().beep();
+        java.awt.Toolkit.getDefaultToolkit().beep();
 
-        	if ((this.speakMethod != null) && (this.speaker !=null)) {
-         	try {
-	         	Object[] args = new Object[1];
-   	      	args[0] = msgContent;
-					this.speakMethod.invoke(this.speaker, args);
-         	}
-         	catch (Exception ex){
-         	}
-        	}
-			toFront();
-		}
+                if ((this.speakMethod != null) && (this.speaker !=null)) {
+                try {
+                        Object[] args = new Object[1];
+                args[0] = msgContent;
+                                        this.speakMethod.invoke(this.speaker, args);
+                }
+                catch (Exception ex){
+                }
+                }
+                        toFront();
+                }
 
 
       DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
