@@ -16,7 +16,7 @@
 
    StringArr erase(in XmlType xmlKey, in XmlType qos) raises(XmlBlasterException);
       </pre>
-         
+
       <table border="1">
          <tr>
          <th>Parameter</th><th>Type</th><th>Description</th>
@@ -86,7 +86,12 @@
 
    EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld4");
 
-   EraseRetQos er = con.erase(ek.toXml(), eq.toXml());
+   try {
+      EraseRetQos[] er = con.erase(ek.toXml(), eq.toXml());
+   } catch(XmlBlasterException e) {
+      e.printStackTrace();
+   } // -- try
+
       </pre>
    <p>
    See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
@@ -108,7 +113,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
