@@ -24,6 +24,7 @@ Invoke:    callbackServer <pathToXmlrpcConf>abyss.conf
 #include <xmlrpc_abyss.h>
 
 xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data);
+xmlrpc_value *ping (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data);
 
 
 /**
@@ -38,6 +39,7 @@ int main (int argc, char **argv)
 
     xmlrpc_server_abyss_init(XMLRPC_SERVER_ABYSS_NO_FLAGS, argv[1]);
     xmlrpc_server_abyss_add_method("update", &update, NULL);
+    xmlrpc_server_abyss_add_method("ping", &ping, NULL);
 
     printf("server: switching to background.\n");
     xmlrpc_server_abyss_run();
@@ -85,6 +87,30 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
       printf("cbSessionId=%s\nkey=%s\ncontent=%s\nqos=%s\n",
                        cbSessionId, key, buf, qos);
       printf("\n-------------------------------------------\n");
+   }
+
+   // Return our result
+   retData = "<qos><state>OK</state></qos>";
+   retVal = xmlrpc_build_value(env, "s#", retData, strlen(retData));
+   return retVal;
+}
+
+
+/**
+ * Update message arrives here.
+ * This is the callback invoked from xmlBlaster
+ */
+xmlrpc_value *ping (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data)
+{
+   xmlrpc_value *retVal = NULL;
+   char *retData = NULL;
+
+   {  // print info ...
+      printf("\n\n-------------------------------------------\n");
+      if (env->fault_occurred)
+         printf("callbackServer: Entering ping(), ERROR message arrives ...\n");
+      else
+         printf("callbackServer: Entering ping(), message arrives ...\n\n");
    }
 
    // Return our result
