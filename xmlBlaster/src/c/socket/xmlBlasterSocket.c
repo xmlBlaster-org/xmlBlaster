@@ -316,6 +316,7 @@ void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exc
    len = ((blob->dataLen-currpos) > XMLBLASTEREXCEPTION_MESSAGE_LEN) ? XMLBLASTEREXCEPTION_MESSAGE_LEN : (blob->dataLen-currpos);
    strncpy0(exception->message, blob->data+currpos, len);
    trim(exception->message);
+   if (debug) printf("[xmlBlasterSocket] Converted to XmlBlasterException\n");
 }
 
 /**

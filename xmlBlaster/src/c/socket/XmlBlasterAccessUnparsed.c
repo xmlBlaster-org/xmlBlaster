@@ -19,7 +19,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <sys/time.h> /* gettimeofday() */
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterAccessUnparsed.h>
 
@@ -27,6 +26,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #  define ssize_t signed int
 #else
 #  include <unistd.h> /* sleep(), only used in main */
+#  include <sys/time.h> /* gettimeofday() */
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -45,7 +45,7 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa);
 static void responseEvent(void /*XmlBlasterAccessUnparsed*/ *userP, void /*SocketDataHolder*/ *socketDataHolder);
 static MsgRequestInfo *preSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static MsgRequestInfo *postSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
-static void getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime);
+static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime);
 
 /**
  * Create an instance for access xmlBlaster. 
@@ -264,6 +264,8 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
 {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
    int retVal;
+   struct timespec abstime;
+   bool useTimeout = false;
 
    if (xa->debug) printf("[XmlBlasterAccessUnparsed] postSendEvent(requestId=%s, xa->responseBlob.dataLen=%d)\n",
                   msgRequestInfo->requestIdStr, xa->responseBlob.dataLen);
@@ -274,17 +276,20 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
       return (MsgRequestInfo *)0;
    }
    
+   if (xa->responseTimeout > 0) {
+      if (getAbsoluteTime(xa, &abstime) == true) {
+         useTimeout = true;
+      }
+   }
+
    /* Wait for response, the callback server delivers it */
    while (xa->responseBlob.dataLen == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
-      if (xa->responseTimeout > 0) {
-         struct timespec abstime;
-         int error;
-         getAbsoluteTime(xa, &abstime);
-         error = pthread_cond_timedwait(&xa->responseCond, &xa->responseMutex, &abstime);
+      if (useTimeout == true) {
+         int error = pthread_cond_timedwait(&xa->responseCond, &xa->responseMutex, &abstime);
          if (error == ETIMEDOUT) {
             strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
             sprintf(exception->message, "[XmlBlasterAccessUnparsed] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis\n",
-                                        msgRequestInfo->methodName, msgRequestInfo->requestIdStr, xa->responseTimeout);
+                                          msgRequestInfo->methodName, msgRequestInfo->requestIdStr, xa->responseTimeout);
             if (xa->debug) { printf(exception->message); printf("\n"); }
             return (MsgRequestInfo *)0;
          }
@@ -454,18 +459,12 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * cons
  * Fills the given abstime with absolute time, using the given timeout xa->responseTimeout in milliseconds
  * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),
  * but patches are available at http://sourceforge.net/projects/high-res-timers
+ * @return true If implemented
  */
-static void getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime)
+static bool getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime)
 {
-# if _WINDOWS
-   clock_gettime(CLOCK_REALTIME, abstime);
-
-   abstime->tv_sec += xa->responseTimeout / 1000;
-   abstime->tv_nsec += (xa->responseTimeout % 1000) * 1000 * 1000;
-   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
-      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
-      abstime->tv_sec += 1;
-   }
+# ifdef _WINDOWS
+   return false; /* TODO !!! How to get the current time on Win? */
 # else /* LINUX, __sun */
    struct timeval tv;
 
@@ -481,6 +480,18 @@ static void getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *absti
       abstime->tv_nsec -= NANO_SECS_PER_SECOND;
       abstime->tv_sec += 1;
    }
+   return true;
+# endif
+# if MORE_REALTIME
+   clock_gettime(CLOCK_REALTIME, abstime);
+
+   abstime->tv_sec += xa->responseTimeout / 1000;
+   abstime->tv_nsec += (xa->responseTimeout % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+   return true;
 # endif
 }
 
