@@ -36,7 +36,7 @@ import java.util.ArrayList;
  * <br />
  * NOTE: This class is not synchronized and not Serializable (add these functionality when you need it)
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
- * @see org.xmlBlaster.util.qos.ConnectQosFactory
+ * @see org.xmlBlaster.util.qos.ConnectQosSaxFactory
  * @see org.xmlBlaster.test.classtest.ConnectQosTest
  */
 public final class ConnectQosData // implements java.io.Serializable, Cloneable
@@ -67,6 +67,11 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     * Defaults to true.
     */
    protected PropBoolean duplicateUpdates = new PropBoolean(true);
+
+   /**
+    * Used for ConnetReturnQos only: If reconnected==true a client has reconnected to an existing session
+    */
+   protected PropBoolean reconnected = new PropBoolean(false);
 
    /** Session settings */
    private SessionQos sessionQos;
@@ -139,9 +144,13 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    }
 
    /**
-    * Returns never null. 
+    * The subjectQueue is exactly one instance for a subjectId (a loginName), it
+    * is used to hold the PtP messages send to this subject.
+    * <p>
     * The subjectQueue has never callback addresses, the addresses of the sessions are used
     * if configured.
+    * </p>
+    * @return never null. 
     */
    public CbQueueProperty getSubjectQueueProperty() {
       if (this.subjectQueueProperty == null) {
@@ -313,11 +322,41 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
    }
 
    /**
-    * Adds a server reference
+    * Adds a server reference, we check for identical addresses to no contain duplicates. 
     */
    public void addServerRef(ServerRef addr) {
+      int n = this.serverRefVec.size();
+      for(int i=0; i<n; i++) {
+         if (((ServerRef)this.serverRefVec.elementAt(i)).equals(addr)) {
+            return;   // ignore identical
+         }
+      }
       this.serverRefVec.addElement(addr);
       this.serverRefArr = null; // reset to be recalculated on demand
+   }
+
+   /**
+    * @return true If the entry was found and removed
+    */
+   public boolean removeServerRef(ServerRef addr) {
+      boolean rem = this.serverRefVec.remove(addr);
+      if (rem) {
+         this.serverRefArr = null; // reset to be recalculated on demand
+      }
+      return rem;
+   }
+
+   /**
+    * @return true If the entry of protocol given by type was found and removed
+    */
+   public boolean removeServerRef(String type) {
+      ServerRef[] refArr = getServerRefs();
+      for(int i=0; i<refArr.length; i++) {
+         if (refArr[i].getType().equalsIgnoreCase(type)) {
+            return removeServerRef(refArr[i]);
+         }
+      }
+      return false;
    }
 
    /**
@@ -374,6 +413,27 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     */
    public PropBoolean duplicateUpdatesProp() {
       return this.duplicateUpdates;
+   }
+
+   /**
+    * Used for ConnetReturnQos only: If reconnected==true a client has reconnected to an existing session
+    */
+   public void setReconnected(boolean reconnected) {
+      this.reconnected.setValue(reconnected);
+   }
+
+   /**
+    * Used for ConnetReturnQos only. 
+    * @return true A client has reconnected to an existing session
+    */
+   public boolean isReconnected() {
+      return this.reconnected.getValue();
+   }
+
+   /**
+    */
+   public PropBoolean getReconnectedProp() {
+      return this.reconnected;
    }
 
    /**
@@ -438,11 +498,18 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
       return (QueueProperty)this.clientQueuePropertyList.get(0);
    }
 
-   public QueueProperty[] getQueuePropertyArr() {
+   public QueueProperty[] getClientQueuePropertyArr() {
       if (this.clientQueuePropertyList.size() < 1) {
          getClientQueueProperty(); // force creation
       }
       return (QueueProperty[])this.clientQueuePropertyList.toArray(new QueueProperty[this.clientQueuePropertyList.size()]);
+   }
+
+   /**
+    * Usually done on server side as the server is not interested in it
+    */
+   public void eraseClientQueueProperty() {
+      this.clientQueuePropertyList.clear();
    }
 
    /**
