@@ -5,6 +5,7 @@
 #include "Property.h"
 #include <cstdlib> //<stdlib.h>
 #include <fstream>
+#include <iostream>
 #include <util/lexical_cast.h>
 #include <util/PropertyDef.h>
 #include <util/Constants.h>
@@ -35,22 +36,24 @@ void Property::initializeDefaultProperties()
    bool useEnv = true;
    bool overwrite = false;
    
+#if defined(_WINDOWS)
+   // Windows: _WINDOWS
+   // HOMEDRIVE=C:
+   // HOMEPATH=\Documents and Settings\Marcel
+   char *driveP = getenv("HOMEDRIVE");
+   string drive = (driveP != 0) ? string(driveP) : string("");
+   char *pathP = getenv("HOMEPATH");
+   string path = (pathP != 0) ? string(pathP) : string("");
+   setProperty("user.home", drive + path);
+#else
    if (!propertyExists("user.home", false)) {
       string value = getProperty("HOME", useEnv);
       if (value != "") {
          setProperty("user.home", value, true); // UNIX
       }
-      else {
-         // Windows: _WINDOWS
-         // HOMEDRIVE=C:
-         // HOMEPATH=\Documents and Settings\Marcel
-         char *driveP = getenv("HOMEDRIVE");
-         string drive = (driveP != 0) ? string(driveP) : string("");
-         char *pathP = getenv("HOMEPATH");
-         string path = (pathP != 0) ? string(pathP) : string("");
-         setProperty("user.home", drive + path);
-      }
    }
+#endif
+   //std::cout << "user.home=" << getProperty("user.home", "??") << std::endl;
 
    if (!propertyExists("user.name", false)) {
       string value = getProperty("USER", useEnv);
@@ -217,6 +220,7 @@ int Property::readPropertyFile(const string &filename, bool overwrite)
    string  line, tmp;
    int     count = 0;
    if (in == 0) return -1;
+   std::cout << "Reading property file " << filename << std::endl;
    while (!in.eof()) {
       getline(in, tmp);
       StringTrim::trimEnd(tmp);
