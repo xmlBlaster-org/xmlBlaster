@@ -18,12 +18,32 @@
     <url-pattern>/dhtml/systemInfo</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>SystemInfo</servlet-name>
+    <description>Persistent HTTP connection demo servlet with SVG</description>
+    <servlet-class>http.svg.systemInfo.SystemInfo</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SystemInfo</servlet-name>
+    <url-pattern>/svg/systemInfo</url-pattern>
+  </servlet-mapping>
+
+  <mime-mapping>
+    <extension>svg</extension>
+    <mime-type>image/svg+xml</mime-type>
+  </mime-mapping>
+
 
   <!-- Core servlets to support persistent http -->
   <servlet>
     <servlet-name>BlasterHttpProxyServlet</servlet-name>
     <description>Persistent HTTP connection demo servlet</description>
     <servlet-class>org.xmlBlaster.protocol.http.BlasterHttpProxyServlet</servlet-class>
+    <init-param>
+      <param-name>trace</param-name>
+      <param-value>false</param-value>
+      <description>sets the trace</description>
+    </init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>BlasterHttpProxyServlet</servlet-name>

@@ -1,23 +1,31 @@
 Howto run the html examples with persistent http connection:
 ============================================================
 
-1. Run 'build.bat deploy_war' or copy manually:
-   cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
-   cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
-   cp -r  ../../doc/howto/xmlBlaster.css  xmlBlaster.css
+1. Run 'build.bat deploy_war'
+   Assumes tomcat in $HOME/jakarta_tomcat and creates
+   $HOME/jakarta_tomcat/webapps/xmlBlaster.war
+
+2. Start xmlBlaster
+
+   java org.xmlBlaster.Main -xmlrpc.port 8081
+
+   (We tell XmlRpc not to use tomcats 8080 port)
 
 
-4. Start xmlBlaster
-
-   java org.xmlBlaster.Main
-
-
-5. Start a publisher, so that we have some dynamic data:
+3. Start a publisher, so that we have some dynamic data:
 
    java html.systemInfo.SystemInfoPublisher
 
 
-6. Start you browser
+4. Start tomcat
+
+   Before you need to edit tomcat.sh and add out jar file in front of
+   the tomcat CLASSPATH:
+
+   export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
+
+
+5. Start you browser
 
    http://127.0.0.1:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret
 
@@ -41,6 +49,17 @@ Using tomcat 3.2.3 serlvet enginge (http://jakarta.apache.org):
                  debug="9"
                  reloadable="true" >
         </Context>
+
+- xmlBlaster/demo/http/WEB-INF contains already: 
+    <mime-mapping>
+        <extension>
+            svg
+        </extension>
+        <mime-type>
+            image/svg+xml
+        </mime-type>
+    </mime-mapping>
+
 
 Add xmlBlaster CLASSPATH
 
