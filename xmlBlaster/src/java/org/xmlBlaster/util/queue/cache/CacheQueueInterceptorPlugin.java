@@ -84,8 +84,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          String reason = queueName + " queue overflow, " + queue.getNumOfBytes() +
                          " bytes are in queue, try increasing '" + 
-                         this.property.getPropName(maxBytes) + "' on client login. Occured at " + extraTxt;
-         this.log.warn(ME, reason + this.toXml(""));
+                         this.property.getPropName(maxBytes) + "' on client login.";
+         if (this.log.TRACE) this.log.trace(ME, reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -770,6 +770,46 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
 
+
+   private final boolean[] removePossibleSwappedEntries(boolean[] ret, I_Entry[] queueEntries) {
+      if (this.log.CALL) this.log.call(ME, "removePossibleSwappedEntries");
+
+      // prepare the entries array
+      int count = 0;
+      for (int i=0; i < ret.length; i++) if (!ret[i]) count++;
+      if (count == 0) return ret;
+
+      if (this.log.TRACE) this.log.trace(ME, "removePossibleSwappedEntries, there were entries '" + count + "' to delete on persistence");
+      if (queueEntries == null || queueEntries.length < 1) return ret;
+      if (this.persistentQueue == null || !this.isConnected) return ret;
+      
+      I_Entry[] entries = new I_Entry[count];
+      count = 0;
+      for (int i=0; i < ret.length; i++) {
+         if (!ret[i]) {
+            entries[count] = queueEntries[i];
+            count++;
+         }
+      }
+
+      try {
+         boolean[] ret1 = this.persistentQueue.removeRandom(entries);
+         count = 0;
+         for (int i=0; i < ret.length; i++) {
+            if (!ret[i]) {
+               ret[i] = ret1[count];
+               count++;
+               if (this.log.DUMP) this.log.dump(ME, "removePossibleSwappedEntries entry '" + entries[count].getUniqueId() + "' has been deleted ? : " + ret1[count]);
+            }
+         }
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "exception occured when trying to remove entries which have supposely been swapped since the last peek. reason: " + ex.getMessage());
+         return ret;
+      }
+      return ret;
+   }
+
    /**
     * @see I_Queue#removeRandom(I_Entry[])
     */
@@ -800,6 +840,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
             try {
                ret = this.transientQueue.removeRandom(queueEntries);
+               ret = removePossibleSwappedEntries(ret, queueEntries);
             }
             catch (XmlBlasterException ex) {
                this.log.error(ME, "could not remove " + queueEntries.length + " entries from the transient queue.: " + ex.getMessage());
