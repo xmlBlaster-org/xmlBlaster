@@ -397,17 +397,33 @@ public final class CommandWrapper
    private void fillKeyAndQos() throws XmlBlasterException {
       if (this.qosData != null) return;
       
-      String qosLitteral = (String)this.props.get("xmlBlaster.qos");
+      // String qosLitteral = (String)this.props.get("xmlBlaster.qos");
+
+      // TODO fix this hack. Currently only one property is allowed: xmlBlaster.qos
+      int qosPos = this.cmd.indexOf("&xmlBlaster.qos=");
+      String qosLitteral =null;
+      if (qosPos > -1) 
+         qosLitteral = this.cmd.substring(qosPos + "&xmlBlaster.qos=".length());
+      // end of the brutal hack
+      
       if (qosLitteral == null) 
          this.qosData = new QueryQosData(this.glob, MethodName.GET);
       else {
          QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
          this.qosData = factory.readObject(qosLitteral);
       }
-      int pos = this.sixth.indexOf('&');
-      if (pos > -1) this.sixth = this.sixth.substring(0, pos);
+      if (this.sixth == null) {
+         this.keyData.setOid("__cmd:" + this.cmd);
+      }
+      else {
+         int pos = this.sixth.indexOf('&');
+         if (pos > -1) this.sixth = this.sixth.substring(0, pos);
+         pos = this.cmd.indexOf('&');
+         String tmpCmd = "";
+         if (pos > -1) tmpCmd = this.cmd.substring(0, pos);
+         this.keyData.setOid("__cmd:" + tmpCmd);
+      }
       
-      this.keyData.setOid("__cmd:/" + this.root + "/" + this.clusterNodeId + "/" + this.sixth);
    }
 
 }
