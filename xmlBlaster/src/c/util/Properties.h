@@ -57,12 +57,17 @@ struct PropertiesStruct {
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeProperties().
  */
-extern Properties *createProperties(int argc, const char* const* argv);
+Dll_Export extern Properties *createProperties(int argc, const char* const* argv);
 
 /**
  * Free your instance after accessing xmlBlaster. 
  */
-extern void freeProperties(Properties *props);
+Dll_Export extern void freeProperties(Properties *props);
+
+/**
+ * Dump properties to console, for debugging only. 
+ */
+Dll_Export extern void dumpProperties(Properties *props);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

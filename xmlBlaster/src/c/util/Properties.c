@@ -55,12 +55,6 @@ Properties *createProperties(int argc, const char* const* argv) {
             props->argv[iarg-1] = (char *)argv[iarg];
       }
    }
-   /*
-   for (iarg=0; iarg < props->argc-1; iarg++) {
-      printf("#%d, %s=%s\n", iarg, props->argv[iarg], props->argv[iarg+1]);
-      iarg++;
-   }
-   */
    return props;
 }
 
@@ -74,6 +68,20 @@ void freeProperties(Properties *props)
       props->argv = 0;
    }
    free(props);
+}
+
+/**
+ * See header Properties.h for documentation
+ */
+void dumpProperties(Properties *props)
+{
+   int iarg;
+   if (props == 0) return;
+
+   for (iarg=0; iarg < props->argc-1; iarg++) {
+      printf("#%d, %s=%s\n", iarg, props->argv[iarg], props->argv[iarg+1]);
+      iarg++;
+   }
 }
 
 /**
