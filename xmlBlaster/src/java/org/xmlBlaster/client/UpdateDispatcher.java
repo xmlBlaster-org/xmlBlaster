@@ -11,7 +11,7 @@ import java.util.Set;
 
 /**
  * Dispatches callback messages depending on the subscriptionId to the specific client listener. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class UpdateDispatcher
 {
